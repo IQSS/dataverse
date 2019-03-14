@@ -5,7 +5,6 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
-
     <h:head>
     </h:head>
 
@@ -13,6 +12,7 @@
         <f:metadata>
             <f:viewParam name="guestbookId" value="#{guestbookResponsesPage.guestbookId}"/>
             <f:viewParam name="dataverseId" value="#{guestbookResponsesPage.dataverseId}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{guestbookResponsesPage.init}"/> 
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(guestbookResponsesPage.dataverse)}"/> 
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/manage-guestbooks.xhtml?dataverseId='.concat(guestbookResponsesPage.dataverseId), bundle['dataset.manageGuestbooks.pageTitle'])}"/>   

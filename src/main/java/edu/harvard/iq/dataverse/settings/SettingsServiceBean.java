@@ -83,13 +83,6 @@ public class SettingsServiceBean {
          * https://wiki.apache.org/solr/HighlightingParameters#hl.fragsize
          */
         SearchHighlightFragmentSize,
-       /**
-        * Domain name specific code for Google Analytics
-        *//**
-        * Domain name specific code for Google Analytics
-        */
-        GoogleAnalyticsCode,
-
         /**
          * Revert to MyData *not* using the Solr "permission documents" which
          * was the behavior in Dataverse 4.2. Starting to use Solr permission
@@ -290,6 +283,10 @@ public class SettingsServiceBean {
         */
         StyleCustomizationFile,
         /*
+         Location and name of analytics code file
+        */
+        WebAnalyticsCode,
+        /*
          Location and name of installation logo customization file
         */
         LogoCustomizationFile,
@@ -369,6 +366,33 @@ public class SettingsServiceBean {
          * 
          */
         FilePIDsEnabled,
+
+        /**
+         * Indicates if the Handle service is setup to work 'independently' (No communication with the Global Handle Registry)
+         */
+        IndependentHandleService,
+
+        /**
+         * Archiving can be configured by providing an Archiver class name (class must extend AstractSubmitToArchiverCommand)
+         * and a list of settings that should be passed to the Archiver.
+         * Note: 
+         * Configuration may also require adding Archiver-specific jvm-options (i.e. for username and password) in glassfish.
+         * 
+         * To automate the submission of an archival copy step as part of publication, a post-publication workflow must also be configured.
+         * 
+         * For example:
+         * ArchiverClassName - "edu.harvard.iq.dataverse.engine.command.impl.DPNSubmitToArchiveCommand"
+         * ArchiverSettings - "DuraCloudHost, DuraCloudPort, DuraCloudContext"
+         * 
+         * Note: Dataverse must be configured with values for these dynamically defined settings as well, e.g. 
+         * 
+         * DuraCloudHost , eg. "qdr.duracloud.org", a non-null value enables submission
+         * DuraCloudPort, default is 443
+         * DuraCloudContext, default is "durastore"
+         */
+        
+        ArchiverClassName,
+        ArchiverSettings,
         /**
          * A comma-separated list of roles for which new dataverses should inherit the
          * corresponding role assignments from the parent dataverse. Also affects

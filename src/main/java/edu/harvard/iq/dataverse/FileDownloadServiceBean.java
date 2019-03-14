@@ -29,6 +29,9 @@ import javax.persistence.PersistenceContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
+import org.primefaces.PrimeFaces;
+import org.primefaces.context.RequestContext;
+
 /**
  *
  * @author skraffmi
@@ -145,14 +148,19 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         logger.fine("issued file download redirect for datafile "+guestbookResponse.getDataFile().getId());
     }
 
+    public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
+        if(!fileMetadata.getDatasetVersion().isDraft()){
+            guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
+            writeGuestbookResponseRecord(guestbookResponse);
+        }
+    }
+    
     public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse) {
-
         try {
             CreateGuestbookResponseCommand cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, guestbookResponse.getDataset());
             commandEngine.submit(cmd);
         } catch (CommandException e) {
             //if an error occurs here then download won't happen no need for response recs...
-
         }
     }
     
@@ -230,16 +238,16 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 dataFile = guestbookResponse.getDataFile();
             }
         }
+        //For tools to get the dataset and datasetversion ids, we need a full DataFile object (not a findCheapAndEasy() copy)
+        if(dataFile.getFileMetadata()==null) {
+            dataFile=datafileService.find(dataFile.getId());
+        }
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken);
         // Back when we only had TwoRavens, the downloadType was always "Explore". Now we persist the name of the tool (i.e. "TwoRavens", "Data Explorer", etc.)
         guestbookResponse.setDownloadtype(externalTool.getDisplayName());
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
         logger.fine("Exploring with " + toolUrl);
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(toolUrl);
-        } catch (IOException ex) {
-            logger.info("Problem exploring with " + toolUrl + " - " + ex);
-        }
+        PrimeFaces.current().executeScript("window.open('"+toolUrl + "', target='_blank');");
         // This is the old logic from TwoRavens, null checks and all.
         if (guestbookResponse != null && guestbookResponse.isWriteResponse()
                 && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)) {
@@ -316,10 +324,10 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation: 
-            fileNameString = "attachment;filename=" + getFileNameDOI(citation.getPersistentId()) + ".xml";
+            fileNameString = "attachment;filename=" + getFileNameFromPid(citation.getPersistentId()) + ".xml";
         } else {
             // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.ENDNOTE);
+            fileNameString = "attachment;filename=" + getFileNameFromPid(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.ENDNOTE);
         }
         response.setHeader("Content-Disposition", fileNameString);
         try {
@@ -361,10 +369,10 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation: 
-            fileNameString = "attachment;filename=" + getFileNameDOI(citation.getPersistentId()) + ".ris";
+            fileNameString = "attachment;filename=" + getFileNameFromPid(citation.getPersistentId()) + ".ris";
         } else {
             // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.RIS);
+            fileNameString = "attachment;filename=" + getFileNameFromPid(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.RIS);
         }
         response.setHeader("Content-Disposition", fileNameString);
 
@@ -378,8 +386,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
     
-    private String getFileNameDOI(GlobalId id) {
-        return "DOI:" + id.getAuthority() + "_" + id.getIdentifier();
+    private String getFileNameFromPid(GlobalId id) {
+        return id.asString();
     }
 
     public void downloadDatasetCitationBibtex(Dataset dataset) {
@@ -406,15 +414,16 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         //SEK 12/3/2018 changing this to open the json in a new tab. 
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        // FIXME: BibTeX isn't JSON. Firefox will try to parse it and report "SyntaxError".
         response.setContentType("application/json");
 
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation:
-            fileNameString = "inline;filename=" + getFileNameDOI(citation.getPersistentId()) + ".bib";
+            fileNameString = "inline;filename=" + getFileNameFromPid(citation.getPersistentId()) + ".bib";
         } else {
             // Datafile-level citation:
-            fileNameString = "inline;filename=" + getFileNameDOI(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.BIBTEX);
+            fileNameString = "inline;filename=" + getFileNameFromPid(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.BIBTEX);
         }
         response.setHeader("Content-Disposition", fileNameString);
 

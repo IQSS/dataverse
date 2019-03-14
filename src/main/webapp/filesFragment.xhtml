@@ -36,8 +36,8 @@
                 <!-- Cloud Storage Access -->
                 <div class="form-group col-xs-12 text-left">
                     <div class="col-xs-12">
-                        <p class="help-block text-muted"><span class="glyphicon glyphicon-info-sign"/> 
-                            <h:outputFormat value=" #{bundle['file.cloudStorageAccess.help']}" escape="false">
+                        <p class="help-block">
+                            <h:outputFormat value="#{bundle['file.cloudStorageAccess.help']}" escape="false">
                                 <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                 <f:param value="#{systemConfig.guidesVersion}"/>
                                 <f:param value="#{DatasetPage.cloudEnvironmentName}"/>
@@ -45,9 +45,9 @@
                         </p>
                     </div>
                     <label class="col-sm-3 control-label">
-                        <span data-toggle="tooltip" data-placement="auto top" class="tooltiplabel text-info" data-original-title="#{bundle['file.cloudStorageAccess.tip']}">
-                            #{bundle['file.cloudStorageAccess']}
-                        </span>
+                        #{bundle['file.cloudStorageAccess']}
+                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                              data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['file.cloudStorageAccess.tip']}"></span>
                     </label>
                     <div class="col-md-4 col-sm-5 col-xs-6 input-group">
                         <div id="copy-input" class="form-control">#{DatasetPage.swiftContainerName}</div>
@@ -130,28 +130,30 @@
                 </div>
             </div>
             
-            <div class="row" jsf:rendered="#{DatasetPage.selectedFiles.size() gt 0}">
+            <div class="row" jsf:rendered="#{DatasetPage.workingVersion.fileMetadatas.size() gt 10 and (DatasetPage.selectedFiles.size() gt 0)}">
                 <div class="col-xs-12 bg-warning text-left" style="font-weight:normal;padding-top:.5em;">
                     <!-- SELECTION MESSAGE -->
                     <p>
                         <h:outputFormat value="#{bundle['file.numFilesSelected']}">
                             <f:param value="#{DatasetPage.selectedFiles.size()}"/>
                         </h:outputFormat>
+                        <ui:fragment rendered="#{DatasetPage.selectedFiles.size() lt DatasetPage.workingVersion.fileMetadatas.size()}">
                         &#160;
-                        <p:commandLink rendered="#{DatasetPage.workingVersion.fileMetadatas.size() gt 1 and (DatasetPage.selectedFiles.size() le DatasetPage.workingVersion.fileMetadatas.size())}" action="#{DatasetPage.selectAllFiles}" update="@form">
+                        <p:commandLink action="#{DatasetPage.selectAllFiles}" update="@form">
                             <h:outputFormat value="#{bundle['file.selectAllFiles']}">
                                 <f:param value="#{DatasetPage.fileMetadatasSearch.size()}"/>
                             </h:outputFormat>
                         </p:commandLink>
+                        </ui:fragment>
                         &#160;
                         <p:commandLink value="#{bundle['file.clearSelection']}" action="#{DatasetPage.clearSelection}" update="@form"/>
                     </p>
-                    </div>
-
                 </div>
+            </div>
         </f:facet>
         
         <p:column selectionMode="multiple" class="text-center" style="width:20px !important;"  />
+        
         <p:column class="col-file-thumb" style="width:64px !important;">
             <div class="thumbnail-block text-center">
                 <!-- Thumbnail Preview -->
@@ -234,6 +236,7 @@
                 </ui:fragment>
             </div>
         </p:column>
+
         <p:column class="col-file-action text-right #{settingsWrapper.rsyncOnly ? 'col-file-access' : ''}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
             <f:facet name="header" class="col-file-action text-right">
                 <!-- EDIT -->
@@ -256,8 +259,9 @@
                                     <h:outputText value="#{bundle['file.metadata']}"/>
                                 </p:commandLink>
                             </li>
-                            <ui:fragment rendered="#{!settingsWrapper.publicInstall and !DatasetPage.workingVersion.hasPackageFile }">
-                                <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
+                            <!--no restrict on non-s3 package file -->
+                            <ui:fragment rendered="#{!settingsWrapper.publicInstall and (!DatasetPage.workingVersion.hasPackageFile or DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://')) }">
+                                <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}"> 
                                     <p:commandLink oncomplete="toggle_dropdown();" 
                                                    onclick="testFilesSelectedForRestriction()">
                                         <h:outputText value="#{bundle['file.restrict']}"/>
@@ -292,7 +296,7 @@
                                     and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
                                     and !DatasetPage.isHasTabular()}">
                     <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
-                                    type="button" styleClass="btn btn-default"
+                                    type="button" styleClass="btn btn-default btn-download"
                                     disabled="#{false and DatasetPage.lockedFromDownload}"
                                     update="@form"
                                     actionListener="#{DatasetPage.validateFilesForDownload(false, false)}">
@@ -300,7 +304,7 @@
                     </p:commandLink>
                     <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                     <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
-                                    type="button" styleClass="btn btn-default"
+                                    type="button" styleClass="btn btn-default btn-download"
                                     disabled="#{false and DatasetPage.lockedFromDownload}"
                                     action="#{DatasetPage.validateFilesForDownload(true, false)}"
                                     update="@form" oncomplete="">
@@ -311,7 +315,7 @@
                      jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
                                     and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
                                     and DatasetPage.isHasTabular()}">
-                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">  
+                        <button type="button" class="btn btn-default btn-download dropdown-toggle" data-toggle="dropdown">  
                             <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"/>
                         </button>
                         <ul jsf:id="downloadDropdownOptions" class="dropdown-menu multi-level pull-right text-left" role="menu">
@@ -349,13 +353,13 @@
                 </div>
 
                 <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired}"
-                                type="button" styleClass="btn btn-default"                                   
+                                type="button" styleClass="btn btn-default btn-request"                                   
                                 update="@form" action="#{DatasetPage.requestAccessMultipleFiles()}"
                                 disabled="#{DatasetPage.locked}">
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
                 <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiSignUpButtonRequired}"
-                                type="button" styleClass="btn btn-default"
+                                type="button" styleClass="btn btn-default btn-request"
                                 onclick="PF('accessSignUpLogIn_popup').show()"
                                 disabled="#{DatasetPage.locked}">
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
@@ -375,7 +379,8 @@
                 </ui:include>
             </ui:fragment>
 
-            <div class="btn-group" jsf:rendered="#{!fileMetadata.dataFile.filePackage}">
+            <div class="btn-group" jsf:rendered="#{!fileMetadata.dataFile.filePackage or
+                fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}">
                 <ui:include src="file-download-button-fragment.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                     <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
@@ -388,8 +393,9 @@
                     <ui:param name="exploreTools" value="#{DatasetPage.getExploreToolsForDataFile(fileMetadata.dataFile.id)}"/>
                 </ui:include>
             </div>
-            
-            <div class="col-xs-12 text-left small" jsf:rendered="#{fileMetadata.dataFile.filePackage}">
+            <div class="col-xs-12 text-left small" jsf:rendered="#{fileMetadata.dataFile.filePackage and systemConfig.rsyncDownload 
+                and !DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://') 
+                }">
                 <!-- Data Access for Rsync Download -->
                 <ui:include src="file-data-access-fragment.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
@@ -398,5 +404,5 @@
                 </ui:include>
             </div>
         </p:column>
-    </p:dataTable>    
+    </p:dataTable>
 </ui:composition>

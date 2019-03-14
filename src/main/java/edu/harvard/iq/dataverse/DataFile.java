@@ -369,6 +369,16 @@ public class DataFile extends DvObject implements Comparable {
         }
         return null;
     }
+    
+    public Long getOriginalFileSize() {
+        if (isTabularData()) {
+            DataTable dataTable = getDataTable();
+            if (dataTable != null) {
+                return dataTable.getOriginalFileSize();
+            }
+        }
+        return null;
+    }
 
     @Override
     public boolean isAncestorOf( DvObject other ) {
@@ -424,7 +434,7 @@ public class DataFile extends DvObject implements Comparable {
         return getLatestFileMetadata();
     }
     
-    private FileMetadata getLatestFileMetadata() {
+    public FileMetadata getLatestFileMetadata() {
         FileMetadata fmd = null;
 
         // for newly added or harvested, just return the one fmd

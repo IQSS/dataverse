@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.search.SolrField;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.util.Collection;
 
 import java.io.Serializable;
@@ -9,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.MissingResourceException;
 import javax.faces.model.SelectItem;
 import javax.persistence.*;
 
@@ -507,9 +510,9 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     
     public String getDisplayName() {
         if (isHasParent() && !parentDatasetFieldType.getTitle().equals(title)) {
-        return parentDatasetFieldType.getTitle() + " " + title;
+        return parentDatasetFieldType.getLocaleTitle()  + " " + getLocaleTitle();
         } else {
-            return title;
+            return getLocaleTitle();
         }
     }
 
@@ -553,6 +556,43 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             boolean makeSolrFieldMultivalued = false;
             SolrField solrField = new SolrField(oddValue, solrType, makeSolrFieldMultivalued, facetable);
             return solrField;
+        }
+    }
+
+    public String getLocaleTitle() {
+        if(getMetadataBlock()  == null) {
+            return title;
+        }
+        else {
+            try {
+                return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".title", getMetadataBlock().getName());
+            } catch (MissingResourceException e) {
+                return title;
+            }
+        }
+    }
+
+    public String getLocaleDescription() {
+        if(getMetadataBlock()  == null) {
+            return description;
+        } else {
+            try {
+                return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".description", getMetadataBlock().getName());
+            } catch (MissingResourceException e) {
+                return description;
+            }
+        }
+    }
+
+    public String getLocaleWatermark()    {
+        if(getMetadataBlock()  == null) {
+            return watermark;
+        } else {
+            try {
+                return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".watermark", getMetadataBlock().getName());
+            } catch (MissingResourceException e) {
+                return watermark;
+            }
         }
     }
 

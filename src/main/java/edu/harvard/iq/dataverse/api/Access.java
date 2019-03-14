@@ -107,6 +107,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.StreamingOutput;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 /*
     Custom API exceptions [NOT YET IMPLEMENTED]
@@ -388,11 +389,13 @@ public class Access extends AbstractApiBean {
         DataFile dataFile = null; 
 
         
-        //httpHeaders.add("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
-        //httpHeaders.add("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
-        response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
-        
         dataFile = findDataFileOrDieWrapper(fileId);
+        
+        if (!dataFile.isTabularData()) { 
+           throw new BadRequestException("tabular data required");
+        }
+        
+        response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
         
         String fileName = dataFile.getFileMetadata().getLabel().replaceAll("\\.tab$", "-ddi.xml");
         response.setHeader("Content-disposition", "attachment; filename=\""+fileName+"\"");
@@ -476,7 +479,7 @@ public class Access extends AbstractApiBean {
         if (df.isTabularData()) {
             dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=prep", "Preprocessed data in JSON"));
         } else {
-            throw new ServiceUnavailableException("Preprocessed Content Metadata requested on a non-tabular data file.");
+            throw new BadRequestException("tabular data required");
         }
         DownloadInstance downloadInstance = new DownloadInstance(dInfo);
         if (downloadInstance.checkIfServiceSupportedAndSetConverter("format", "prep")) {
@@ -578,23 +581,25 @@ public class Access extends AbstractApiBean {
                                         //without doing a large deal of rewriting or architecture redo.
                                         //The previous size checks for non-original download is still quick.
                                         //-MAD 4.9.2
-                                        DataAccessRequest daReq = new DataAccessRequest();
-                                        StorageIO<DataFile> accessObject = DataAccess.getStorageIO(file, daReq);
+                                        // OK, here's the better solution: we now store the size of the original file in 
+                                        // the database (in DataTable), so we get it for free. 
+                                        // However, there may still be legacy datatables for which the size is not saved. 
+                                        // so the "inefficient" code is kept, below, as a fallback solution. 
+                                        // -- L.A., 4.10
+                                        
+                                        if (file.getDataTable().getOriginalFileSize() != null) {
+                                            size = file.getDataTable().getOriginalFileSize();
+                                        } else {
+                                            DataAccessRequest daReq = new DataAccessRequest();
+                                            StorageIO<DataFile> storageIO = DataAccess.getStorageIO(file, daReq);
+                                            storageIO.open();
+                                            size = storageIO.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
 
-                                        if (accessObject != null) {
-                                            Boolean gotOriginal = false;
-                                            StoredOriginalFile sof = new StoredOriginalFile();
-                                            StorageIO<DataFile> tempAccessObject = sof.retreive(accessObject);
-                                            if(null != tempAccessObject) { //If there is an original, use it
-                                                gotOriginal = true;
-                                                accessObject = tempAccessObject; 
-                                            } 
-                                            if(!gotOriginal) { //if we didn't get this from sof.retreive we have to open it
-                                                accessObject.open();
-                                            }
-                                            size = accessObject.getSize(); 
+                                            // save it permanently: 
+                                            file.getDataTable().setOriginalFileSize(size);
+                                            fileService.saveDataTable(file.getDataTable());
                                         }
-                                        if(size == 0L){
+                                        if (size == 0L){
                                             throw new IOException("Invalid file size or accessObject when checking limits of zip file");
                                         }
                                     } else {

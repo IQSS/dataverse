@@ -6,13 +6,13 @@
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
-
     <h:head>
     </h:head>
 
     <h:body>
         <f:metadata>
             <f:viewParam name="dataverseId" value="#{dataverseServiceBean.findRootDataverse().id}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{harvestingSetsPage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverse.id), bundle['dashboard.title'])}"/>   
@@ -42,7 +42,6 @@
                     <p:fragment id="serviceDisabled" rendered="#{!harvestingSetsPage.harvestingServerEnabled}">
                         <div>
                             <p class="help-block">
-                                <span class="glyphicon glyphicon-info-sign"/>&#160;
                                 <h:outputText value="#{bundle['harvestserver.service.disabled.msg']}"/>
                             </p>
                         </div>
@@ -179,8 +178,8 @@
                     <!-- confirmation dialog for deleting a set: -->
                     <p:dialog id="deleteConfirmation" header="#{bundle['harvestserver.tab.header.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="help-block">
-                            <span class="glyphicon glyphicon-warning-sign text-danger"/> 
-                            <h:outputFormat styleClass="text-danger" value=" #{bundle['harvestserver.tab.header.action.btn.delete.dialog.tip']}">
+                            <span class="glyphicon glyphicon-warning-sign text-warning"/> 
+                            <h:outputFormat styleClass="text-warning" value=" #{bundle['harvestserver.tab.header.action.btn.delete.dialog.tip']}">
                                 <f:param value="#{harvestingSetsPage.getSelectedSet().spec}"/>
                             </h:outputFormat>
                         </p>
@@ -198,14 +197,15 @@
                         <p:fragment id="newOAISetDialogContent">
                             <p:focus context="newOAISetDialogContent"/>
                             <p class="help-block">
-                                <span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{bundle['harvestserver.newSetDialog.help']}"/>
+                                <h:outputText value="#{bundle['harvestserver.newSetDialog.help']}"/>
                             </p>
                             <div class="form-horizontal">
                                 <div class="form-group">
                                     <label for="setquery" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestserver.newSetDialog.setquery.tip']}">
-                                            #{bundle['harvestserver.newSetDialog.setquery']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{!harvestingSetsPage.setQueryValidated}" title="#{bundle.requiredField}"/>
-                                        </span>
+                                        #{bundle['harvestserver.newSetDialog.setquery']} 
+                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{!harvestingSetsPage.setQueryValidated}" title="#{bundle.requiredField}"/>
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestserver.newSetDialog.setquery.tip']}"></span>
                                     </label>
                                     <div class="col-sm-8">
                                         <p:inputText id="setquery" styleClass="form-control"
@@ -232,9 +232,7 @@
                                 <!-- the set spec is not editable in "edit existing set" mode; so we just show it here as a label: -->
                                 <div class="form-group" jsf:rendered="#{harvestingSetsPage.editMode}">
                                     <label for="setspec" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestserver.newSetDialog.setspec.tip']}">
-                                            #{bundle['harvestserver.newSetDialog.setspec']}
-                                        </span>
+                                        #{bundle['harvestserver.newSetDialog.setspec']}
                                     </label>
                                     <div class="col-sm-8">
                                         <p class="form-control-static" jsf:rendered="#{!harvestingSetsPage.selectedSet.defaultSet}"><h:outputText rendered="#{!harvestingSetsPage.selectedSet.defaultSet}" value="#{harvestingSetsPage.newSetSpec}"/></p>
@@ -267,9 +265,10 @@
                                     <!-- the set spec is only editable in "create" mode; in the "edit existing set" mode the set spec name is shown as a label in the first step popup. -->
                                     <div class="form-group" jsf:rendered="#{harvestingSetsPage.createMode}">
                                         <label for="setspec" class="col-sm-3 control-label">
-                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestserver.newSetDialog.setspec.tip']}">
-                                                #{bundle['harvestserver.newSetDialog.setspec']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingSetsPage.setQueryValidated}" title="#{bundle.requiredField}"/>
-                                            </span>
+                                            #{bundle['harvestserver.newSetDialog.setspec']} 
+                                            <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingSetsPage.setQueryValidated}" title="#{bundle.requiredField}"/>
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestserver.newSetDialog.setspec.tip']}"></span>
                                         </label>
                                         <div class="col-sm-8">
                                             <p:inputText id="setspec" styleClass="form-control"
@@ -282,9 +281,10 @@
                                     
                                     <div class="form-group">
                                         <label for="setdescription" class="col-sm-3 control-label">
-                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestserver.newSetDialog.setdescription.tip']}">
-                                                #{bundle['harvestserver.newSetDialog.setdescription']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingSetsPage.setSpecValidated}" title="#{bundle.requiredField}"/>
-                                            </span>
+                                            #{bundle['harvestserver.newSetDialog.setdescription']} 
+                                            <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingSetsPage.setSpecValidated}" title="#{bundle.requiredField}"/>
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestserver.newSetDialog.setdescription.tip']}"></span>
                                         </label>
                                         <div class="col-sm-8">
                                             <p:inputText id="setdescription" styleClass="form-control"

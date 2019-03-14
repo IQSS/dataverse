@@ -99,7 +99,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             Logger.getLogger(ProvPopupFragmentBean.class.getName())
                     .log(Level.INFO, BundleUtil.getStringFromBundle("file.editProvenanceDialog.invalidSchemaError")); 
             removeJsonAndRelatedData();
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.editProvenanceDialog.invalidSchemaError")); 
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.editProvenanceDialog.invalidSchemaError"));
         }
         
         else {
@@ -110,11 +110,11 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
                 Logger.getLogger(ProvPopupFragmentBean.class.getName())
                         .log(Level.SEVERE, BundleUtil.getStringFromBundle("file.editProvenanceDialog.uploadError"), e);
                 removeJsonAndRelatedData();
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.editProvenanceDialog.uploadError")); 
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.editProvenanceDialog.uploadError"));
             } 
             if(provJsonParsedEntities.isEmpty()) {
                 removeJsonAndRelatedData();
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.editProvenanceDialog.noEntitiesError"));
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.editProvenanceDialog.noEntitiesError"));
             }
         }
 
@@ -255,24 +255,24 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         if(saveInPopup) {
             if(isJsonUpdated()) {
                 if(isDataFilePublishedRendering()) {
-                   message += JH.localize("file.provAlert.filePage.published.json");
+                   message += BundleUtil.getStringFromBundle("file.provAlert.filePage.published.json");
                 } else {
-                   message += JH.localize("file.provAlert.filePage.unpublished.json");
+                   message += BundleUtil.getStringFromBundle("file.provAlert.filePage.unpublished.json");
                 }
             }
             if (isFreeformUpdated()) {
-                message += JH.localize("file.provAlert.filePage.freeform");
+                message += BundleUtil.getStringFromBundle("file.provAlert.filePage.freeform");
             }
         } else {
             if(isJsonUpdated()) {
                 if(isDataFilePublishedRendering()) {
-                   message += JH.localize("file.provAlert.published.json");
+                   message += BundleUtil.getStringFromBundle("file.provAlert.published.json");
                 } else {
-                   message += JH.localize("file.provAlert.unpublished.json");
+                   message += BundleUtil.getStringFromBundle("file.provAlert.unpublished.json");
                 }
             }
             if (isFreeformUpdated()) {
-                message += JH.localize("file.provAlert.freeform");
+                message += BundleUtil.getStringFromBundle("file.provAlert.freeform");
             }
         } 
 

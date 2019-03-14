@@ -387,13 +387,13 @@ public class ManageGroupsPage implements java.io.Serializable {
             if (! Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", value) ) {
                 input.setValid(false);
                 context.addMessage(toValidate.getClientId(),
-                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("dataverse.permissions.explicitGroupEditDialog.groupIdentifier.invalid")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("dataverse.permissions.explicitGroupEditDialog.groupIdentifier.invalid")));
 
             } else if ( explicitGroupService.findInOwner(dataverse.getId(), value) != null ) {
                 // Ok, see that the alias is not taken
                 input.setValid(false);
                 context.addMessage(toValidate.getClientId(),
-                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("dataverse.permissions.explicitGroupEditDialog.groupIdentifier.taken")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("dataverse.permissions.explicitGroupEditDialog.groupIdentifier.taken")));
             }
         }
     }

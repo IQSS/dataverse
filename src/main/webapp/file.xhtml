@@ -23,6 +23,7 @@
                     <f:viewParam name="fileId" value="#{FilePage.fileId}"/>
                     <f:viewParam name="version" value="#{FilePage.version}"/>
                     <f:viewParam name="persistentId" value="#{FilePage.persistentId}"/>
+                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{FilePage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(FilePage.fileMetadata)}"/>
                 </f:metadata>
@@ -45,7 +46,7 @@
                             <div class="button-block pull-right">
                                 <!-- Email/Share Button Group -->
                                 <div class="btn-group" id="datasetButtonBar" role="group" jsf:rendered="#{!widgetWrapper.widgetView}">
-                                    <p:commandLink class="text-button bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
+                                    <p:commandLink class="text-button btn-contact bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
                                                    update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
@@ -53,14 +54,14 @@
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{FilePage.fileMetadata.dataFile}"/>
                                         <span class="glyphicon glyphicon-envelope"/> #{bundle['contact.contact']}
                                     </p:commandLink>
-                                    <p:commandLink styleClass="text-button bootstrap-button-tooltip" rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}"
+                                    <p:commandLink styleClass="text-button btn-share bootstrap-button-tooltip" rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}"
                                                    title="#{bundle['dataset.share.datasetShare']}"
                                                    oncomplete="PF('shareDialog').show();sharrre();">
                                         <span class="glyphicon glyphicon-share"/> #{bundle['share']}
                                     </p:commandLink>
                                 </div>
                                 <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true"  rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
-                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.share.datasetShare.tip']}</p>
+                                    <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
 
                                         <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{FilePage.fileMetadata.datasetVersion.dataset.globalIdString}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
 
@@ -173,7 +174,8 @@
                                 <!-- Explore/Download/Request Button Block -->
                                 <div class="button-container btn-group" jsf:rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
                                                                                             (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset())) 
-                                                                                             and !FilePage.fileMetadata.dataFile.filePackage}">
+                                                                                             and (!FilePage.fileMetadata.dataFile.filePackage or
+                                                                                                   FilePage.fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload)}">
                                     <ui:include src="file-download-button-fragment.xhtml">
                                         <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
                                         <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
@@ -234,15 +236,18 @@
                                 <div class="col-xs-12 citation-block no-margin-bottom">
                                     <div class="col-xs-12 #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
                                         <div class="row">
-                                            <div class="#{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'col-xs-12' : 'col-xs-6 col-md-7'} citation">
+                                            <div class="#{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'col-xs-12' : 'col-xs-12 col-md-7'} citation">
                                                 <span class="citation-select" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
                                                     <h:outputText value="#{FilePage.fileMetadata.datasetVersion.getCitation(true)}" escape="false"/>
                                                 </span>
-                                                <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
-                                                <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released and FilePage.fileMetadata.datasetVersion.draft}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
-                                                <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
+                                                <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" 
+                                                      data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
+                                                <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released and FilePage.fileMetadata.datasetVersion.draft}" 
+                                                      data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
+                                                <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}" 
+                                                      data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
                                             </div>
-                                            <div class="col-sm-6 col-md-5 text-right citation-download" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
+                                            <div class="col-xs-12 col-md-5 text-right citation-download" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                                 <div class="dropdown">
                                                     <button type="button" class="btn btn-default dropdown-toggle downloadCitation" data-toggle="dropdown">
                                                         <span class="glyphicon glyphicon-list"/> #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
@@ -265,7 +270,7 @@
                                                         </li>
                                                     </ul>
                                                 </div>
-                                                <div class="small text-muted text-right citation-standards"><span class="glyphicon glyphicon-info-sign"></span> <h:outputText value=" #{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
+                                                <div class="small text-muted text-right citation-standards"><h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
                                             </div>
                                         </div>
                                     </div>
@@ -278,14 +283,16 @@
                                 <div class="col-xs-12 citation-block">
                                      <div class="col-xs-12 #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation bg-citation-file'}">
                                         <div class="row">
-                                            <div class="#{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'col-xs-12' : 'col-xs-6 col-md-7'} citation">
+                                            <div class="#{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'col-xs-12' : 'col-xs-12 col-md-7'} citation">
                                                 <span id="citation-select-2" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
                                                     <h:outputText value="#{FilePage.fileMetadata.dataFile.isIdentifierRegistered() ? FilePage.fileMetadata.getDirectFileCitation(true) : FilePage.fileMetadata.getFileCitation(true)}" escape="false"/>
                                                 </span>
-                                                <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
-                                                <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released and FilePage.fileMetadata.datasetVersion.draft}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
+                                                <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" 
+                                                      data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
+                                                <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released and FilePage.fileMetadata.datasetVersion.draft}" 
+                                                      data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
                                             </div>
-                                            <div class="col-sm-6 col-md-5 text-right citation-download" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
+                                            <div class="col-xs-12 col-md-5 text-right citation-download" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                                 <div class="dropdown">
                                                     <button type="button" class="btn btn-default dropdown-toggle downloadCitation" data-toggle="dropdown">
                                                         <span class="glyphicon glyphicon-list"/> #{bundle['file.cite.file.downloadBtn']} <span class="caret"></span>
@@ -308,7 +315,7 @@
                                                         </li>
                                                     </ul>
                                                 </div>
-                                                <div class="small text-muted text-right citation-standards"><span class="glyphicon glyphicon-info-sign"></span> <h:outputText value=" #{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
+                                                <div class="small text-muted text-right citation-standards"><h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
                                             </div>
                                             <!-- END: Cite Data Button -->
                                         </div>
@@ -362,7 +369,8 @@
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{FilePage.selectedTabIndex}">
                             <p:ajax event="tabChange" listener="#{FilePage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
                             <p:tab id="accessTab" class="padding-none" title="#{bundle['file.dataFilesTab.dataAccess']}"
-                                   rendered="#{settingsWrapper.rsyncDownload and FilePage.fileMetadata.dataFile.filePackage }">
+                                   rendered="#{settingsWrapper.rsyncDownload and FilePage.fileMetadata.dataFile.filePackage and systemConfig.rsyncDownload
+                                        and !FilePage.fileMetadata.getDataFile().getOwner().getStorageIdentifier().startsWith('s3://') }">
                                 <ui:include src="file-data-access-fragment.xhtml">
                                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                                     <ui:param name="datasetVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
@@ -395,7 +403,7 @@
 
                                     <!-- Export Button -->
                                     <div class="btn-group" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released}">
-                                        <button class="btn btn-default dropdown-toggle" type="button" styleClass="btn btn-default" data-toggle="dropdown">
+                                        <button class="btn btn-default btn-export dropdown-toggle" type="button" styleClass="btn btn-default" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-export"/> #{bundle['dataset.exportBtn']} <span class="caret"/></button>
                                         <ul class="dropdown-menu" role="menu">
                                             <ui:repeat var="exporter" value="#{FilePage.getExporters()}">
@@ -425,12 +433,18 @@
                                                 </div>
                                             </div>
                                             <!--Only show Public download url if identifier is available -->
-                                            <div class="form-group" jsf:rendered="#{FilePage.publiclyDownloadable and !FilePage.fileMetadata.dataFile.filePackage and FilePage.file.identifier != null}">
+                                            <div class="form-group" jsf:rendered="#{FilePage.publiclyDownloadable and !FilePage.fileMetadata.dataFile.filePackage}">
                                                 <label class="col-sm-3 control-label">                                                   
                                                    #{bundle['file.metadataTab.fileMetadata.downloadUrl.label']}
                                                 </label>
                                                 <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.publicDownloadUrl}"/>
+                                                    <p class="help-block">
+                                                        <h:outputFormat value="#{bundle['file.metadataTab.fileMetadata.downloadUrl.info']}" escape="false">
+                                                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                                            <f:param value="#{systemConfig.guidesVersion}"/>
+                                                        </h:outputFormat>
+                                                    </p>
+                                                    <code><h:outputText value="#{FilePage.publicDownloadUrl}"/></code>
                                                 </div>
                                             </div>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.unf)}">
@@ -551,6 +565,16 @@
                              </ui:include>
                         </div>
                     </p:dialog>
+                    <p:dialog id="downloadPackagePopup" styleClass="smallPopUp" header="#{bundle['packageDownload.title']}" widgetVar="downloadPackagePopup" modal="true">
+                         <ui:include src="package-download-popup-fragment.xhtml">
+                            <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
+                            <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                            <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
+                            <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
+                            <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
+                            <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
+                        </ui:include>
+                    </p:dialog>
                     
                     <p:dialog header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true" 
                         id="configureToolPopup" styleClass="smallPopUp" rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset()}">
@@ -567,7 +591,7 @@
                     <!-- Request Access Sign Up/Log In Button -->
                     <p:dialog header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup" modal="true">
                         <p class="help-block">
-                            <span class="glyphicon glyphicon-warning-sign text-danger"/>&#160;
+                            <span class="glyphicon glyphicon-exclamation-sign text-danger"/>&#160;
                             <h:outputFormat styleClass="text-danger" value="#{dataverseHeaderFragment.signupAllowed ? bundle['file.requestAccess.dialog.msg.signup'] : bundle['file.requestAccess.dialog.msg']}" escape="false">
                                 <f:param value="#{navigationWrapper.redirectPage}"/>
                                 <f:param value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}"/>
@@ -591,9 +615,9 @@
                             <div class="form-horizontal">
                                 <div class="form-group">
                                     <label for="metadata_TermsAccess" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
-                                            #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                                        </span>
+                                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
                                     </label>
                                     <div class="col-sm-9">
                                         <p:inputTextarea value="#{FilePage.fileMetadata.datasetVersion.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa" />
@@ -601,9 +625,9 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="metadata_RequestAccess" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}">
-                                            #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
-                                        </span>
+                                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                             data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
                                     </label>
                                     <div class="col-sm-9">
                                         <p:selectBooleanCheckbox id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}"

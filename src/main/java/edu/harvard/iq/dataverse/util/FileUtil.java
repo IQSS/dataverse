@@ -28,6 +28,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import static edu.harvard.iq.dataverse.dataaccess.S3AccessIO.S3_IDENTIFIER_PREFIX;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
@@ -76,6 +77,7 @@ import org.apache.commons.io.FileUtils;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 
 
 /**
@@ -91,7 +93,7 @@ public class FileUtil implements java.io.Serializable  {
     private static final String[] TABULAR_DATA_FORMAT_SET = {"POR", "SAV", "DTA", "RDA"};
     
     private static Map<String, String> STATISTICAL_FILE_EXTENSION = new HashMap<String, String>();
-   
+    
     /*
      * The following are Stata, SAS and SPSS syntax/control cards: 
      * These are recognized as text files (because they are!) so 
@@ -257,6 +259,10 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static String getUserFriendlyOriginalType(DataFile dataFile) {
+        if (!dataFile.isTabularData()) {
+            return null; 
+        }
+        
         String fileType = dataFile.getOriginalFileFormat();
          
         if (fileType != null && !fileType.equals("")) {
@@ -500,7 +506,7 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     // from MD5Checksum.java
-    public static String CalculateChecksum(String datafile, ChecksumType checksumType) {
+    public static String calculateChecksum(String datafile, ChecksumType checksumType) {
 
         FileInputStream fis = null;
         try {
@@ -509,11 +515,11 @@ public class FileUtil implements java.io.Serializable  {
             throw new RuntimeException(ex);
         }
 
-        return CalculateChecksum(fis, checksumType);
+        return FileUtil.calculateChecksum(fis, checksumType);
     }
 
     // from MD5Checksum.java
-    public static String CalculateChecksum(InputStream in, ChecksumType checksumType) {
+    public static String calculateChecksum(InputStream in, ChecksumType checksumType) {
         MessageDigest md = null;
         try {
             // Use "SHA-1" (toString) rather than "SHA1", for example.
@@ -538,10 +544,28 @@ public class FileUtil implements java.io.Serializable  {
             }
         }
 
-        byte[] mdbytes = md.digest();
+        return checksumDigestToString(md.digest());
+    }
+    
+    public static String calculateChecksum(byte[] dataBytes, ChecksumType checksumType) {
+        MessageDigest md = null;
+        try {
+            // Use "SHA-1" (toString) rather than "SHA1", for example.
+            md = MessageDigest.getInstance(checksumType.toString());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+
+        md.update(dataBytes);
+
+        return checksumDigestToString(md.digest());
+        
+    }
+    
+    private static String checksumDigestToString(byte[] digestBytes) {
         StringBuilder sb = new StringBuilder("");
-        for (int i = 0; i < mdbytes.length; i++) {
-            sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
+        for (int i = 0; i < digestBytes.length; i++) {
+            sb.append(Integer.toString((digestBytes[i] & 0xff) + 0x100, 16).substring(1));
         }
         return sb.toString();
     }
@@ -1029,7 +1053,7 @@ public class FileUtil implements java.io.Serializable  {
         try {
             // We persist "SHA1" rather than "SHA-1".
             datafile.setChecksumType(checksumType);
-            datafile.setChecksumValue(CalculateChecksum(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier(), datafile.getChecksumType()));
+            datafile.setChecksumValue(calculateChecksum(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier(), datafile.getChecksumType()));
         } catch (Exception cksumEx) {
             logger.warning("Could not calculate " + checksumType + " signature for the new file " + fileName);
         }
@@ -1130,6 +1154,12 @@ public class FileUtil implements java.io.Serializable  {
         }
 
         return filesTempDirectory;
+    }
+    
+    public static void generateS3PackageStorageIdentifier(DataFile dataFile) {
+        String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
+        String storageId = S3_IDENTIFIER_PREFIX + "://" + bucketName + ":" + dataFile.getFileMetadata().getLabel();
+        dataFile.setStorageIdentifier(storageId);
     }
     
     public static void generateStorageIdentifier(DataFile dataFile) {
@@ -1317,11 +1347,18 @@ public class FileUtil implements java.io.Serializable  {
      * This is what the UI displays for "Download URL" on the file landing page
      * (DOIs rather than file IDs.
      */
-    public static String getPublicDownloadUrl(String dataverseSiteUrl, String persistentId) {
-        String path = "/api/access/datafile/:persistentId?persistentId=" + persistentId;
-        return dataverseSiteUrl + path;
+    public static String getPublicDownloadUrl(String dataverseSiteUrl, String persistentId, Long fileId) {
+        String path = null;
+        if(persistentId != null) {
+            path = dataverseSiteUrl + "/api/access/datafile/:persistentId?persistentId=" + persistentId;
+        } else if( fileId != null) {
+            path = dataverseSiteUrl + "/api/access/datafile/" + fileId;
+        } else {
+            logger.info("In getPublicDownloadUrl but persistentId & fileId are both null!");
+        }
+        return path;
     }
-
+    
     /**
      * The FileDownloadServiceBean operates on file IDs, not DOIs.
      */

@@ -7,13 +7,13 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:fn="http://java.sun.com/jsp/jstl/functions"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
-
     <h:head>
     </h:head>
 
     <h:body>
         <f:metadata>
             <f:viewParam name="redirectPage" value="#{LoginPage.redirectPage}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{LoginPage.init}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
@@ -68,7 +68,7 @@
                                             <div class="col-sm-8">
                                                 <h:inputText rendered="#{not fc.credential.secret}" value="#{fc.value}" id="credValue" styleClass="form-control"/>
                                                 <p:message rendered="#{not fc.credential.secret}" for="credValue" display="text"/>
-                                                <h:inputSecret rendered="#{fc.credential.secret}" value="#{fc.value}" id="sCredValue" styleClass="form-control"/>
+						<h:inputSecret rendered="#{fc.credential.secret}" value="#{fc.value}" id="sCredValue" styleClass="form-control" autocomplete="off"/><!-- browsers will in general not respect autocomplete="foo", but scanners will still flag it as a potential problem -->
                                                 <p:message rendered="#{not fc.credential.secret}" for="sCredValue" display="text"/>
                                             </div>
                                         </div>
@@ -107,8 +107,7 @@
                             <div id="remoteProvider" jsf:rendered="#{LoginPage.authProvider.id == 'shib'}">
                                 <h:form>
                                     <p class="help-block">
-                                        <span class="glyphicon glyphicon-info-sign"/>
-                                        <h:outputFormat value=" #{bundle['login.institution.blurb']} " escape="false">
+                                        <h:outputFormat value="#{bundle['login.institution.blurb']} " escape="false">
                                             <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                             <f:param value="#{systemConfig.guidesVersion}"/>
                                         </h:outputFormat>
@@ -169,8 +168,7 @@
                             <div class="form-horizontal" jsf:rendered="#{LoginPage.authProvider.OAuthProvider}">
                                 <o:form useRequestURI="true">
                                     <p class="help-block">
-                                        <span class="glyphicon glyphicon-info-sign"/>
-                                        <h:outputFormat value=" #{bundle['auth.providers.blurb']}" escape="false">
+                                        <h:outputFormat value="#{bundle['auth.providers.blurb']}" escape="false">
                                             <o:param value="#{LoginPage.authProvider.info.title}"/>
                                             <o:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                             <o:param value="#{systemConfig.guidesVersion}"/>
@@ -214,8 +212,8 @@
                                     </ui:repeat>
                                 </h:form>
                                 <div jsf:rendered="#{LoginPage.authProvider.id == 'builtin'}">
-                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/>
-                                        <h:outputFormat value=" #{bundle['auth.providers.tip']}" escape="false">
+                                    <p class="help-block">
+                                        <h:outputFormat value="#{bundle['auth.providers.tip']}" escape="false">
                                             <o:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                             <o:param value="#{systemConfig.guidesVersion}"/>
                                         </h:outputFormat>

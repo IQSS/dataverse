@@ -60,6 +60,10 @@ Refactoring Code to Make It Unit-Testable
 
 Existing code is not necessarily written in a way that lends itself to easy testing. Generally speaking, it is difficult to write unit tests for both JSF "backing" beans (which end in ``Page.java``) and "service" beans (which end in ``Service.java``) because they require the database to be running in order to test them. If service beans can be exercised via API they can be tested with integration tests (described below) but a good technique for making the logic testable it to move code to "util beans" (which end in ``Util.java``) that operate on Plain Old Java Objects (POJOs). ``PrivateUrlUtil.java`` is a good example of moving logic from ``PrivateUrlServiceBean.java`` to a "util" bean to make the code testable.
 
+Parameterized Tests and JUnit Theories
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Often times you will want to test a method multiple times with similar values. In order to avoid test bloat (writing a test for every data combination), JUnit offers Data-driven unit tests with ``Parameterized.class`` and ``Theories.class``. This allows a test to be run for each set of defined data values. For reference, take a look at issue https://github.com/IQSS/dataverse/issues/5619 .
+
 Observing Changes to Code Coverage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
