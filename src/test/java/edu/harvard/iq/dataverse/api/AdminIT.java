@@ -602,6 +602,13 @@ public class AdminIT {
         assertEquals(200, mergeAccounts.getStatusCode());
         mergeAccounts.prettyPrint();
         
+        //After merging user see that old one is gone and new one exists
+        Response getConsumedUserResponse =  UtilIT.getAuthenticatedUser(usernameConsumed, apiToken);
+        assertEquals(400, getConsumedUserResponse.getStatusCode());
+        
+        Response getPersistedUserResponse =  UtilIT.getAuthenticatedUser(targetname, apiToken);
+        assertEquals(200, getPersistedUserResponse.getStatusCode());
+        
         //Make sure that you can publish the dataverse/dataset as the newly assigned user
         
         Response publishDataverseResponse =  UtilIT.publishDataverseViaNativeApi(dataverseAlias, targetToken);

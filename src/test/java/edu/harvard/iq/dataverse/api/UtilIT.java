@@ -1928,8 +1928,8 @@ public class UtilIT {
     }
     
     static Response mergeAccounts(String baseId, String consumedId) {
-        System.out.print(String.format("/api/admin/authenticatedUsers/%s/mergeInUser/%s", baseId, consumedId  ));
-        String apiPath = String.format("/api/admin/authenticatedUsers/%s/mergeInUser/%s", baseId, consumedId  );
+        System.out.print(String.format("/api/admin/authenticatedUsers/%s/mergeIntoUser/%s", consumedId, baseId ));
+        String apiPath = String.format("/api/admin/authenticatedUsers/%s/mergeIntoUser/%s", consumedId, baseId );
         return given()
                 .post(apiPath);
     }

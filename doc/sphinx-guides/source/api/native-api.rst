@@ -1213,11 +1213,11 @@ Combining Accounts
 
 If a user has created multiple accounts and has been performed actions under both accounts that need to be preserved, these accounts can be combined.  One account can be merged into another account and all data associated with both accounts will be combined in the surviving account::
 
-    POST https://$SERVER/api/admin/authenticatedUsers/$continuingIdentifier/mergeIntoUser/$toMergeIdentifier
+    POST https://$SERVER/api/admin/authenticatedUsers/$toMergeIdentifier/mergeIntoUser/$continuingIdentifier
 
-Example: ``curl -X POST http://$server/api/admin/authenticatedUsers/toKeepIdentifier/mergeIntoUser/toMergeIdentifier``
+Example: ``curl -X POST http://$server/api/admin/authenticatedUsers/jsmith2/mergeIntoUser/jsmith``
 
-This action moves account data from toMergeIdentifier into the account toKeepIdentifier and deletes the account of toMergeIdentifier.
+This action moves account data from jsmith2 into the account jsmith and deletes the account of jsmith2.
 
 Change User Identifier
 ~~~~~~~~~~~~~~~~~~~~~~

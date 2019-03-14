@@ -315,8 +315,8 @@ public class Admin extends AbstractApiBean {
 	}
         
         @POST
-        @Path("authenticatedUsers/{baseIdentifier}/mergeInUser/{consumedIdentifier}")
-        public Response mergeInAuthenticatedUser(@PathParam("baseIdentifier") String baseIdentifier, @PathParam("consumedIdentifier") String consumedIdentifier) {
+        @Path("authenticatedUsers/{consumedIdentifier}/mergeIntoUser/{baseIdentifier}")
+        public Response mergeInAuthenticatedUser(@PathParam("consumedIdentifier") String consumedIdentifier, @PathParam("baseIdentifier") String baseIdentifier) {
             
             if(null == baseIdentifier || baseIdentifier.isEmpty()) {
                 return error(Response.Status.BAD_REQUEST, "Base identifier provided to change is empty.");
