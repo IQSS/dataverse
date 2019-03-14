@@ -1212,11 +1212,11 @@ POSTed JSON example::
 Combining Accounts
 ~~~~~~~~~~~~~~~~~~
 
-If a user has created multiple accounts and has been performed actions under both accounts that need to be preserved, these accounts can be combined.  One account can be merged into another account and all data associated with both accounts will be combined in the surviving account::
+If a user has created multiple accounts and has been performed actions under both accounts that need to be preserved, these accounts can be combined.  One account can be merged into another account and all data associated with both accounts will be combined in the surviving account. Only accessible to superusers.::
 
-    POST https://$SERVER/api/admin/authenticatedUsers/$toMergeIdentifier/mergeIntoUser/$continuingIdentifier
+    POST https://$SERVER/users/$toMergeIdentifier/mergeIntoUser/$continuingIdentifier
 
-Example: ``curl -X POST http://$server/api/admin/authenticatedUsers/jsmith2/mergeIntoUser/jsmith``
+Example: ``curl -X POST http://demo.dataverse.org/users/jsmith2/mergeIntoUser/jsmith``
 
 This action moves account data from jsmith2 into the account jsmith and deletes the account of jsmith2.
 
@@ -1225,11 +1225,11 @@ This action moves account data from jsmith2 into the account jsmith and deletes 
 Change User Identifier
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The body of the PUT request is the new identifier for the user. Changes identifier for user in ``AuthenticatedUser``, ``BuiltinUser``, ``AuthenticatedUserLookup`` & ``RoleAssignment``. ::
+Changes identifier for user in ``AuthenticatedUser``, ``BuiltinUser``, ``AuthenticatedUserLookup`` & ``RoleAssignment``. Allows them to log in with the new identifier. Only accessible to superusers.::
 
-    PUT http://$SERVER/api/admin/authenticatedUsers/$oldIdentifier/changeIdentifier/$newIdentifier
+    PUT http://$SERVER/users/$oldIdentifier/changeIdentifier/$newIdentifier
 
-Example: ``curl -X POST  https://demo.dataverse.org/api/admin/authenticatedUsers/oldIdentifier/changeIdentifier/newIdentifier``
+Example: ``curl -X POST  https://demo.dataverse.org/users/johnsmith/changeIdentifier/jsmith``
 
 Make User a SuperUser
 ~~~~~~~~~~~~~~~~~~~~~
