@@ -8,8 +8,8 @@
    <div class="text-right margin-bottom" 
         jsf:rendered="#{dataverseSession.user.authenticated and empty editMode and !widgetWrapper.widgetView
                         and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}">
-       <!--<p:commandLink type="button" styleClass="btn btn-default btn-access" actionListener="#{DatasetPage.edit('LICENSE')}"
-                      update="@form,:messagePanel" oncomplete="javascript:post_edit_terms()" disabled="#{DatasetPage.lockedFromEdits}">
+       <!--<p:commandLink type="button" styleClass="btn btn-default btn-access" actionListener="#{DatasetPage.edit('LICENSE')}" 
+                      update="@form,:messagePanel" oncomplete="javascript:bind_bsui_components();" disabled="#{DatasetPage.lockedFromEdits}">
            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
            <span class="glyphicon glyphicon-briefcase"/> #{bundle['file.dataFilesTab.terms.editTermsBtn']}
        </p:commandLink>-->
@@ -239,9 +239,9 @@
                    <ui:fragment rendered="#{empty editMode}">
                        <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
                            <label for="metadata_RestrictedFiles" class="col-sm-3 control-label">
-                               <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.title']}">
-                                   #{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles']}
-                               </span>
+                               #{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles']}
+                               <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                     data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.title']}"></span>
                            </label>
                            <div class="col-sm-9">
                                <p>
@@ -253,9 +253,9 @@
                        </div>
                        <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.termsOfAccess}">
                            <label for="metadata_TermsAccess" class="col-sm-3 control-label">
-                               <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
-                                   #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                               </span>
+                               #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                               <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                     data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
                            </label>
                            <div class="col-sm-9">
                                <p><h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.termsOfAccess)}" escape="false"/></p>
@@ -263,9 +263,9 @@
                        </div>
                        <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall and (DatasetPage.restrictedFileCount > 0)}">
                            <label for="metadata_RequestAccess" class="col-sm-3 control-label">
-                               <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}">
-                                   #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
-                               </span>
+                               #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
+                               <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                     data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
                            </label>
                            <div class="col-sm-9">
                                <p jsf:rendered="#{!DatasetPage.workingVersion.draft}">
@@ -282,9 +282,9 @@
                    <ui:fragment rendered="#{!empty editMode}">
                        <div class="form-group">
                            <label for="metadata_TermsAccess" class="col-sm-3 control-label">
-                               <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
-                                   #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                               </span>
+                               #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                               <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                     data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
                            </label>
                            <div class="col-sm-9">
                                <p:inputTextarea value="#{termsOfUseAndAccess.termsOfAccess}" rows="5" styleClass="form-control" />
@@ -292,9 +292,9 @@
                        </div>
                        <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
                            <label for="metadata_RequestAccess" class="col-sm-3 control-label">
-                               <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}">
-                                   #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
-                               </span>
+                               #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
+                               <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                     data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
                            </label>
                            <div class="col-sm-9">
                                <p:selectBooleanCheckbox id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" value="#{termsOfUseAndAccess.fileAccessRequest}"/>
@@ -312,9 +312,9 @@
                            <ui:fragment rendered="#{empty editMode}">
                                <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.dataAccessPlace}">
                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace']}
-                                       </span>
+                                       #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace']}
+                                       <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                             data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace.title']}"></span>
                                    </label>
                                    <div class="col-sm-9">
                                        <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.dataAccessPlace)}" escape="false"/>
@@ -322,9 +322,9 @@
                                </div>
                                <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.originalArchive}">
                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive']}
-                                       </span>
+                                       #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive']}
+                                       <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                             data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive.title']}"></span>
                                    </label>
                                    <div class="col-sm-9">
                                        <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.originalArchive)}" escape="false"/>
@@ -332,9 +332,9 @@
                                </div>
                                <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.availabilityStatus}">
                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus']}
-                                       </span>
+                                       #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus']}
+                                       <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                             data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus.title']}"></span>
                                    </label>
                                    <div class="col-sm-9">
                                        <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.availabilityStatus)}" escape="false"/>
@@ -342,9 +342,9 @@
                                </div>
                                <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.contactForAccess}">
                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess']}
-                                       </span>
+                                       #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess']}
+                                       <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                             data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess.title']}"></span>
                                    </label>
                                    <div class="col-sm-9">
                                        <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.contactForAccess)}" escape="false"/>
@@ -352,9 +352,9 @@
                                </div>
                                <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.sizeOfCollection}">
                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection.tip']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection']}
-                                       </span>
+                                       #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection']}
+                                       <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                             data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection.tip']}"></span>
                                    </label>
                                    <div class="col-sm-9">
                                        <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.sizeOfCollection)}" escape="false"/>
@@ -362,9 +362,9 @@
                                </div>
                                <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.studyCompletion}">
                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion']}
-                                       </span>
+                                       #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion']}
+                                       <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                             data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion.title']}"></span>
                                    </label>
                                    <div class="col-sm-9">
                                        <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.studyCompletion)}" escape="false"/>
@@ -374,9 +374,9 @@
                            <ui:fragment rendered="#{!empty editMode}">
                                <div class="form-group">
                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace']}
-                                       </span>
+                                       #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace']}
+                                       <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                             data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace.title']}"></span>
                                    </label>
                                    <div class="col-sm-9">
                                        <p:inputTextarea value="#{termsOfUseAndAccess.dataAccessPlace}" rows="5" cols="60" styleClass="form-control" />
@@ -384,9 +384,9 @@
                                </div>
                                <div class="form-group">
                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive']}
-                                       </span>
+                                       #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive']}
+                                       <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                             data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive.title']}"></span>
                                    </label>
                                    <div class="col-sm-9">
                                        <p:inputTextarea value="#{termsOfUseAndAccess.originalArchive}" rows="5" cols="60" styleClass="form-control" />
@@ -394,9 +394,9 @@
                                </div>
                                <div class="form-group">
                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus']}
-                                       </span>
+                                       #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus']}
+                                       <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                             data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus.title']}"></span>
                                    </label>
                                    <div class="col-sm-9">
                                        <p:inputTextarea value="#{termsOfUseAndAccess.availabilityStatus}" rows="5" cols="60" styleClass="form-control" />
@@ -404,9 +404,9 @@
                                </div>
                                <div class="form-group">
                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess']}
-                                       </span>
+                                       #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess']}
+                                       <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                             data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess.title']}"></span>
                                    </label>
                                    <div class="col-sm-9">
                                        <p:inputTextarea value="#{termsOfUseAndAccess.contactForAccess}" rows="5" cols="60" styleClass="form-control" />
@@ -414,9 +414,9 @@
                                </div>
                                <div class="form-group">
                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection.tip']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection']}
-                                       </span>
+                                       #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection']}
+                                       <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                             data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection.tip']}"></span>
                                    </label>
                                    <div class="col-sm-9">
                                        <p:inputTextarea value="#{termsOfUseAndAccess.sizeOfCollection}" rows="5" cols="60" styleClass="form-control" />
@@ -424,9 +424,9 @@
                                </div>
                                <div class="form-group">
                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion']}
-                                       </span>
+                                       #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion']}
+                                       <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                             data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion.title']}"></span>
                                    </label>
                                    <div class="col-sm-9">
                                        <p:inputTextarea value="#{termsOfUseAndAccess.studyCompletion}" rows="5" cols="60" styleClass="form-control" />
@@ -448,9 +448,9 @@
                <div class="panel-body">
                    <div class="form-group">
                        <label for="metadata_Guestbook" class="col-sm-3 control-label">
-                           <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.title']}">
-                               #{bundle['file.dataFilesTab.terms.list.guestbook']}
-                           </span>
+                           #{bundle['file.dataFilesTab.terms.list.guestbook']}
+                           <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                 data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.title']}"></span>
                        </label>
                        <div class="col-sm-9">
                            <ui:fragment rendered="#{empty editMode}">
@@ -542,9 +542,9 @@
             </div>
             <div class="form-group">
                 <label class="col-sm-3 control-label">
-                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData.title']}">
-                       #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData']}
-                    </span>
+                    #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData']}
+                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData.title']}"></span>
                 </label>
                 <div class="col-sm-8">
                     <p class="form-control-static">

@@ -2,10 +2,13 @@ package edu.harvard.iq.dataverse.bannersandmessages.messages.dto;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.DataverseTextMessage;
-import edu.harvard.iq.dataverse.locale.DataverseLocaleBean;
 
 import javax.ejb.Stateless;
+import javax.inject.Inject;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +20,10 @@ import static org.apache.commons.lang.StringUtils.EMPTY;
 @Stateless
 public class DataverseMessagesMapper {
 
+    @Inject
+    private SettingsWrapper settingsWrapper;
+    
+    
     public DataverseTextMessageDto mapToDto(DataverseTextMessage textMessage) {
         DataverseTextMessageDto dto = new DataverseTextMessageDto();
 
@@ -31,7 +38,7 @@ public class DataverseMessagesMapper {
                 .forEach(dlm -> dataverseLocalizedMessageDto.add(new DataverseLocalizedMessageDto(
                         dlm.getLocale(),
                         dlm.getMessage(),
-                        new DataverseLocaleBean().getLanguage(dlm.getLocale()))));
+                        settingsWrapper.getConfiguredLocales().get(dlm.getLocale()))));
         dto.setDataverseLocalizedMessage(dataverseLocalizedMessageDto);
 
         return dto;
@@ -46,7 +53,7 @@ public class DataverseMessagesMapper {
     }
 
     public List<DataverseLocalizedMessageDto> mapDefaultLocales() {
-        Map<String, String> locales = new DataverseLocaleBean().getDataverseLocales();
+        Map<String, String> locales = settingsWrapper.getConfiguredLocales();
 
         return locales.entrySet().stream()
                 .map(e -> new DataverseLocalizedMessageDto(e.getKey(), EMPTY, e.getValue()))

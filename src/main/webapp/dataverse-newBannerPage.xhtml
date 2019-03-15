@@ -6,7 +6,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:p="http://primefaces.org/ui">
-<f:view locale="#{dataverseLocaleBean.localeCode}"/>
+<f:view locale="#{dataverseSession.localeCode}"/>
 
 <h:body>
     <f:metadata>
@@ -31,7 +31,7 @@
                             <label class="col-sm-2 control-label" for="message-locale">
                                     <span data-toggle="tooltip" data-placement="auto right"
                                           class="tooltiplabel text-info">
-                                        #{dataverseLocaleBean.getLanguage(lm.locale)} <span
+                                        #{settingsWrapper.getConfiguredLocaleName(lm.locale)} <span
                                             class="glyphicon glyphicon-asterisk text-danger"
                                             title="#{bundle.requiredField}"/>
                                     </span>
@@ -77,7 +77,7 @@
                             <p:calendar id="message-fromtime"
                                         tabindex="#{EditBannerPage.dto.dataverseLocalizedBanner.size() + 1}"
                                         value="#{EditBannerPage.dto.fromTime}"
-                                        locale="#{dataverseLocaleBean.localeCode}"
+                                        locale="#{dataverseSession.localeCode}"
                                         pattern="yyyy-MM-dd HH:mm"
                                         mask="true"
                             />
@@ -102,7 +102,7 @@
                             <p:calendar id="message-totime"
                                         tabindex="#{EditBannerPage.dto.dataverseLocalizedBanner.size() + 2}"
                                         value="#{EditBannerPage.dto.toTime}"
-                                        locale="#{dataverseLocaleBean.localeCode}"
+                                        locale="#{dataverseSession.localeCode}"
                                         pattern="yyyy-MM-dd HH:mm"
                                         mask="true"
                             />

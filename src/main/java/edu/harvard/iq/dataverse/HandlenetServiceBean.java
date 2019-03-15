@@ -95,7 +95,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
             
             logger.log(Level.INFO, "Re-registering an existing handle id {0}", handle);
             
-            String authHandle = getHandleAuthority(dvObject);
+            String authHandle = getAuthenticationHandle(dvObject);
 
             HandleResolver resolver = new HandleResolver();
 
@@ -148,7 +148,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
 
         logger.log(Level.INFO, "Creating NEW handle {0}", handle);
 
-        String authHandle = getHandleAuthority(dvObject);
+        String authHandle = getAuthenticationHandle(dvObject);
 
         PublicKeyAuthenticationInfo auth = getAuthInfo(handlePrefix);
         HandleResolver resolver = new HandleResolver();
@@ -233,7 +233,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
         key = readKey(adminCredFile);        
         PrivateKey privkey = null;
         privkey = readPrivKey(key, adminCredFile);
-        String authHandle =  getHandleAuthority(handlePrefix);
+        String authHandle =  getAuthenticationHandle(handlePrefix);
         PublicKeyAuthenticationInfo auth =
                 new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), handlenetIndex, privkey);
         return auth;
@@ -308,13 +308,17 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
         return handle;
     }
     
-    private String getHandleAuthority(DvObject dvObject){
-        return getHandleAuthority(dvObject.getAuthority());
+    private String getAuthenticationHandle(DvObject dvObject){
+        return getAuthenticationHandle(dvObject.getAuthority());
     }
     
-    private String getHandleAuthority(String handlePrefix) {
-        logger.log(Level.FINE,"getHandleAuthority");
-        return "0.NA/" + handlePrefix;
+    private String getAuthenticationHandle(String handlePrefix) {
+        logger.log(Level.FINE,"getAuthenticationHandle");
+        if (systemConfig.isIndependentHandleService()) {
+            return handlePrefix + "/ADMIN";
+        } else {
+            return "0.NA/" + handlePrefix;
+        }
     }
 
     @Override
@@ -355,7 +359,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     @Override
     public void deleteIdentifier(DvObject dvObject) throws Exception  {
         String handle = getDvObjectHandle(dvObject);
-        String authHandle = getAuthHandle(dvObject);
+        String authHandle = getAuthenticationHandle(dvObject);
 
         String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
         int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
@@ -388,11 +392,6 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
         logger.log(Level.FINE,"updateIdentifierStatus");
         reRegisterHandle(dvObject); // No Need to register new - this is only called when a handle exists
         return true;
-    }
-
-    private String getAuthHandle(DvObject dvObject) {
-        // TODO hack: GNRSServiceBean retrieved this from vdcNetworkService
-        return "0.NA/" + dvObject.getAuthority();
     }
     
     @Override

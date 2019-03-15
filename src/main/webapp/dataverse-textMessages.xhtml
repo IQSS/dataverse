@@ -6,7 +6,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:p="http://primefaces.org/ui">
-<f:view locale="#{dataverseLocaleBean.localeCode}"/>
+<f:view locale="#{dataverseSession.localeCode}"/>
 <h:head>
 </h:head>
 
@@ -106,7 +106,7 @@
                                     <ui:repeat value="#{banner.dataverseLocalizedBanner}" var="localbanner">
                                         <div class="p-col">
                                             <h:outputLabel for="banner-thumbnail"
-                                                           value="#{dataverseLocaleBean.getLanguage(localbanner.locale)}:"
+                                                           value="#{settingsWrapper.getConfiguredLocaleName(localbanner.locale)}:"
                                                            style="margin-right: 10px"/>
                                             <p:graphicImage style="padding: 2px" stream="false" id="banner-thumbnail"
                                                             value="#{localbanner.miniDisplayImage}"/>

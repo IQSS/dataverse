@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.bannersandmessages.banners.dto;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.BannerLimits;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.DataverseBanner;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.DataverseLocalizedBanner;
-import edu.harvard.iq.dataverse.locale.DataverseLocaleBean;
 import org.apache.commons.lang.StringUtils;
 import org.imgscalr.Scalr;
 import org.primefaces.model.ByteArrayContent;
@@ -29,13 +29,16 @@ public class BannerMapper {
     private static final Logger logger = Logger.getLogger(BannerMapper.class.getCanonicalName());
 
     private BannerLimits bannerLimits;
+    
+    private SettingsWrapper settingsWrapper;
 
     public BannerMapper() {
     }
 
     @Inject
-    public BannerMapper(BannerLimits bannerLimits) {
+    public BannerMapper(BannerLimits bannerLimits, SettingsWrapper settingsWrapper) {
         this.bannerLimits = bannerLimits;
+        this.settingsWrapper = settingsWrapper;
     }
 
     public DataverseBannerDto mapToDto(DataverseBanner dataverseBanner) {
@@ -130,7 +133,7 @@ public class BannerMapper {
     }
 
     private List<DataverseLocalizedBannerDto> mapDefaultLocales() {
-        Map<String, String> locales = new DataverseLocaleBean().getDataverseLocales();
+        Map<String, String> locales = settingsWrapper.getConfiguredLocales();
 
         return locales.entrySet().stream()
                 .map(e -> new DataverseLocalizedBannerDto(e.getKey()))

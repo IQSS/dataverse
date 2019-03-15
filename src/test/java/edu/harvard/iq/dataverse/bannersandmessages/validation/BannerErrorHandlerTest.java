@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.BannerLimits;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.DataverseBanner;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.DataverseLocalizedBanner;
+
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -13,7 +13,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.omnifaces.util.Faces;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.ExternalContext;
@@ -49,14 +48,6 @@ public class BannerErrorHandlerTest {
     private static final java.util.Date TO_TIME = convertToDate(
             LocalDateTime.of(2018, 11, 2, 10, 25, 55));
 
-    @Before
-    public void setup() {
-        Faces.setContext(facesContextMock);
-
-        Mockito.when(facesContextMock.getExternalContext()).thenReturn(externalContextMock);
-        Mockito.when(externalContextMock.getRequestLocale()).thenReturn(locale);
-        Mockito.when(externalContextMock.getRequestLocale().getLanguage()).thenReturn("en");
-    }
 
     @Test
     public void shouldAddErrorMessageImageMissing() {

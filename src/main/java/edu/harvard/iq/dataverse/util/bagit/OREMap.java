@@ -200,7 +200,7 @@ public class OREMap {
             // File DOI if it exists
             String fileId = null;
             String fileSameAs = null;
-            if (df.getGlobalId() != null) {
+            if (df.getGlobalId().asString().length() != 0) {
                 fileId = df.getGlobalId().asString();
                 fileSameAs = SystemConfig.getDataverseSiteUrlStatic()
                         + "/api/access/datafile/:persistentId?persistentId=" + fileId;

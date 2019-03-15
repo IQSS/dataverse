@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.bannersandmessages;
 
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.BannerDAO;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.ImageWithLinkDto;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.DataverseTextMessageServiceBean;
@@ -27,13 +28,17 @@ public class MessagesAndBannersFragment implements java.io.Serializable {
 
     @Inject
     private BannerDAO bannerDAO;
+    
+    @Inject
+    private DataverseSession dataverseSession;
+
 
     public List<String> textMessages(Long dataverseId) {
-        return textMessageService.getTextMessagesForDataverse(dataverseId);
+        return textMessageService.getTextMessagesForDataverse(dataverseId, dataverseSession.getLocaleCode());
     }
 
     public List<ImageWithLinkDto> banners(Long dataverseId) {
-        return bannerDAO.getBannersForDataverse(dataverseId);
+        return bannerDAO.getBannersForDataverse(dataverseId, dataverseSession.getLocaleCode());
     }
 
     public void redirect(String link) throws IOException {

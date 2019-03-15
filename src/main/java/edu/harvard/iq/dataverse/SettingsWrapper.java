@@ -13,11 +13,15 @@ import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import javax.mail.internet.InternetAddress;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  *
@@ -192,6 +196,50 @@ public class SettingsWrapper implements java.io.Serializable {
 
         return !getDropBoxKey().isEmpty();
     }
+    
+    // Language Locales Configuration: 
+    
+    // Map from locale to display name eg     en -> English
+    private Map<String, String> configuredLocales;
+    
+    public boolean isLocalesConfigured() {
+        if (configuredLocales == null) {
+            initLocaleSettings();
+        }
+        return configuredLocales.size() > 1;
+    }
 
+    public Map<String, String> getConfiguredLocales() {
+        if (configuredLocales == null) {
+            initLocaleSettings(); 
+        }
+        return configuredLocales;
+    }
+    
+    public String getConfiguredLocaleName(String localeCode) {
+        if (configuredLocales == null) {
+            initLocaleSettings(); 
+        }
+        return configuredLocales.get(localeCode);
+    }
+    
+    private void initLocaleSettings() {
+        
+        configuredLocales = new LinkedHashMap<>();
+        
+        try {
+            JSONArray entries = new JSONArray(getValueForKey(SettingsServiceBean.Key.Languages, "[{\"locale\":\"en\", \"title\":\"English\"}]"));
+            for (Object obj : entries) {
+                JSONObject entry = (JSONObject) obj;
+                String locale = entry.getString("locale");
+                String title = entry.getString("title");
+
+                configuredLocales.put(locale, title);
+            }
+        } catch (JSONException e) {
+            //e.printStackTrace();
+            // do we want to know? - probably not
+        }
+    }
 }
 

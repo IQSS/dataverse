@@ -5,7 +5,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:p="http://primefaces.org/ui">
-<f:view locale="#{dataverseLocaleBean.localeCode}">
+<f:view locale="#{dataverseSession.localeCode}">
   <h:head>
   </h:head>
 
@@ -15,6 +15,7 @@
       <ui:param name="showDataverseHeader" value="false"/>
       <ui:define name="body">
           <f:metadata>
+              <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
               <f:viewAction action="#{SuperUserPage.init}"/>
           </f:metadata>
         <h:form id="indexAllForm">

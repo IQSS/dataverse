@@ -1,7 +1,11 @@
 package edu.harvard.iq.dataverse.bannersandmessages.banners.dto;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.BannerLimits;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.DataverseBanner;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.DataverseLocalizedBanner;
@@ -36,13 +40,18 @@ public class BannerMapperTest {
 
     @Mock
     private UploadedFile uploadedFile;
+    
+    @Mock
+    private SettingsWrapper settingsWrapper;
 
+    
     private BannerMapper bannerMapper;
 
     @Before
     public void setup() throws IOException {
-        bannerMapper = new BannerMapper(new BannerLimits());
+        bannerMapper = new BannerMapper(new BannerLimits(), settingsWrapper);
 
+        Mockito.when(settingsWrapper.getConfiguredLocales()).thenReturn(ImmutableMap.of("pl", "pl", "en", "en"));
         Mockito.when(uploadedFile.getContents()).thenReturn(Files.readAllBytes(BANNER_PATH));
         Mockito.when(uploadedFile.getContentType()).thenReturn("image/jpeg");
     }

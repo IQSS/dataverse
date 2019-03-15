@@ -110,12 +110,16 @@ Persistent Identifiers and Publishing Datasets
 
 Persistent identifiers are a required and integral part of the Dataverse platform. They provide a URL that is guaranteed to resolve to the datasets or files they represent. Dataverse currently supports creating identifiers using DOI and Handle.
 
-By default, the installer configures a test DOI namespace (10.5072) with DataCite as the registration provider. Please note that as of the release 4.9.3, we can no longer use EZID as the provider. Unlike EZID, DataCite requires that you register for a test account (please contact support@datacite.org). Once you receive the login name and password for the account, configure it in your domain.xml, as the following two JVM options::
+By default, the installer configures a default DOI namespace (10.5072) with DataCite as the registration provider. Please note that as of the release 4.9.3, we can no longer use EZID as the provider. Unlike EZID, DataCite requires that you register for a test account, configured with your own prefix (please contact support@datacite.org). Once you receive the login name, password, and prefix for the account, configure the credentials in your domain.xml, as the following two JVM options::
 
       <jvm-options>-Ddoi.username=...</jvm-options>
       <jvm-options>-Ddoi.password=...</jvm-options>
 
-and restart Glassfish. Once this is done, you will be able to publish datasets and files, but the persistent identifiers will not be citable or guaranteed to be preserved. Note that any datasets or files created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured. 
+and restart Glassfish. The prefix can be configured via the API (where it is referred to as "Authority"):
+
+``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
+
+Once this is done, you will be able to publish datasets and files, but the persistent identifiers will not be citable, and they will only resolve from the DataCite test environment (and then only if the Dataverse from which you published them is accessible - DOIs minted from your laptop will not resolve). Note that any datasets or files created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured.
 
 To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider. **DataCite** (https://www.datacite.org) is the recommended DOI provider (see https://dataverse.org/global-dataverse-community-consortium for more on joining DataCite) but **EZID** (http://ezid.cdlib.org) is an option for the University of California according to https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/ . **Handle.Net** (https://www.handle.net) is the HDL provider.
 
@@ -161,6 +165,7 @@ Here are the configuration options for handles:
 - :ref:`:Authority <:Authority>`
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
+- :ref:`:IndependentHandleService <:IndependentHandleService>` (optional)
 
 Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <http://handle.net/hnr_documentation.html>`_.
 
@@ -602,7 +607,7 @@ In the Chronopolis case, since the transfer from the DuraCloud front-end to arch
 
 **PostPublication Workflow**
 
-To automate the submission of archival copies to an archive as part of publication, one can setup a Dataverse Workflow using the "archiver" workflow step - see the :doc:`developers/workflows` guide.
+To automate the submission of archival copies to an archive as part of publication, one can setup a Dataverse Workflow using the "archiver" workflow step - see the :doc:`/developers/workflows` guide.
 . The archiver step uses the configuration information discussed above including the :ArchiverClassName setting. The workflow step definition should include the set of properties defined in \:ArchiverSettings in the workflow definition.
 
 To active this workflow, one must first install a workflow using the archiver step. A simple workflow that invokes the archiver step configured to submit to DuraCloud as its only action is included in dataverse at /scripts/api/data/workflows/internal-archiver-workflow.json.
@@ -980,7 +985,7 @@ By default the footer says "Copyright © [YYYY]" but you can add text after the 
 :DoiProvider
 ++++++++++++
 
-As of this writing "DataCite" and "EZID" are the only valid options for production installations. Developers are welcome to use "FAKE". ``:DoiProvider`` is only needed if you are using DOI.
+As of this writing "DataCite" and "EZID" are the only valid options for production installations. Developers using version 4.10 and above are welcome to use the keyword "FAKE" to configure a non-production installation with an non-resolving, in-code provider, which will basically short-circuit the DOI publishing process. ``:DoiProvider`` is only needed if you are using DOI.
 
 ``curl -X PUT -d DataCite http://localhost:8080/api/admin/settings/:DoiProvider``
 
@@ -1083,6 +1088,14 @@ If you don't want to register file-based PIDs for your installation, set:
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
 Note: File-level PID registration was added in 4.9 and is required until version 4.9.3.
+
+:IndependentHandleService
++++++++++++++++++++++++++++
+
+Specific for Handle PIDs. Set this setting to true if you want to use a Handle service which is setup to work 'independently' (No communication with the Global Handle Registry). 
+By default this setting is absent and Dataverse assumes it to be false.
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:IndependentHandleService``
 
 :ApplicationTermsOfUse
 ++++++++++++++++++++++

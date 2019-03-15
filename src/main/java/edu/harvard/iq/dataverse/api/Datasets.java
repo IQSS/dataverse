@@ -38,10 +38,12 @@ import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.AddLockCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CuratePublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetLinkingDataverseCommand;
@@ -73,9 +75,13 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDvObjectPIDMetadataCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -88,8 +94,11 @@ import java.io.StringReader;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -167,6 +176,9 @@ public class Datasets extends AbstractApiBean {
     @EJB
     S3PackageImporter s3PackageImporter;
      
+    @EJB
+    SettingsServiceBean settingsService;
+
     /**
      * Used to consolidate the way we parse and handle dataset versions.
      * @param <T> 
@@ -225,22 +237,122 @@ public class Datasets extends AbstractApiBean {
     @DELETE
     @Path("{id}")
     public Response deleteDataset( @PathParam("id") String id) {
+        // Internally, "DeleteDatasetCommand" simply redirects to "DeleteDatasetVersionCommand"
+        // (and there's a comment that says "TODO: remove this command")
+        // do we need an exposed API call for it? 
+        // And DeleteDatasetVersionCommand further redirects to DestroyDatasetCommand, 
+        // if the dataset only has 1 version... In other words, the functionality 
+        // currently provided by this API is covered between the "deleteDraftVersion" and
+        // "destroyDataset" API calls.  
+        // (The logic below follows the current implementation of the underlying 
+        // commands!)
+        
         return response( req -> {
+            Dataset doomed = findDatasetOrDie(id);
+            DatasetVersion doomedVersion = doomed.getLatestVersion();
+            User u = findUserOrDie();
+            boolean destroy = false;
+            
+            if (doomed.getVersions().size() == 1) {
+                if (doomed.isReleased() && (!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
+                    throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can delete published datasets"));
+                }
+                destroy = true;
+            } else {
+                if (!doomedVersion.isDraft()) {
+                    throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "This is a published dataset with multiple versions. This API can only delete the latest version if it is a DRAFT"));
+                }
+            }
+            
+            // Gather the locations of the physical files that will need to be 
+            // deleted once the destroy command execution has been finalized:
+            Map<Long, String> deleteStorageLocations = fileService.getPhysicalFilesToDelete(doomedVersion, destroy);
+            
             execCommand( new DeleteDatasetCommand(req, findDatasetOrDie(id)));
+            
+            // If we have gotten this far, the destroy command has succeeded, 
+            // so we can finalize it by permanently deleting the physical files:
+            // (DataFileService will double-check that the datafiles no 
+            // longer exist in the database, before attempting to delete 
+            // the physical files)
+            if (!deleteStorageLocations.isEmpty()) {
+                fileService.finalizeFileDeletes(deleteStorageLocations);
+            }
+            
             return ok("Dataset " + id + " deleted");
         });
     }
         
     @DELETE
     @Path("{id}/destroy")
-    public Response destroyDataset( @PathParam("id") String id) {
-        return response( req -> {
-            execCommand( new DestroyDatasetCommand(findDatasetOrDie(id), req) );
+    public Response destroyDataset(@PathParam("id") String id) {
+
+        return response(req -> {
+            // first check if dataset is released, and if so, if user is a superuser
+            Dataset doomed = findDatasetOrDie(id);
+            User u = findUserOrDie();
+
+            if (doomed.isReleased() && (!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
+                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Destroy can only be called by superusers."));
+            }
+
+            // Gather the locations of the physical files that will need to be 
+            // deleted once the destroy command execution has been finalized:
+            Map<Long, String> deleteStorageLocations = fileService.getPhysicalFilesToDelete(doomed);
+
+            execCommand(new DestroyDatasetCommand(doomed, req));
+
+            // If we have gotten this far, the destroy command has succeeded, 
+            // so we can finalize permanently deleting the physical files:
+            // (DataFileService will double-check that the datafiles no 
+            // longer exist in the database, before attempting to delete 
+            // the physical files)
+            if (!deleteStorageLocations.isEmpty()) {
+                fileService.finalizeFileDeletes(deleteStorageLocations);
+            }
+
             return ok("Dataset " + id + " destroyed");
         });
     }
+    
+    @DELETE
+    @Path("{id}/versions/{versionId}")
+    public Response deleteDraftVersion( @PathParam("id") String id,  @PathParam("versionId") String versionId ){
+        if ( ! ":draft".equals(versionId) ) {
+            return badRequest("Only the :draft version can be deleted");
+        }
+
+        return response( req -> {
+            Dataset dataset = findDatasetOrDie(id);
+            DatasetVersion doomed = dataset.getLatestVersion();
+            
+            if (!doomed.isDraft()) {
+                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "This is NOT a DRAFT version"));
+            }
+            
+            // Gather the locations of the physical files that will need to be 
+            // deleted once the destroy command execution has been finalized:
+            
+            Map<Long, String> deleteStorageLocations = fileService.getPhysicalFilesToDelete(doomed);
+            
+            execCommand( new DeleteDatasetVersionCommand(req, dataset));
+            
+            // If we have gotten this far, the delete command has succeeded - 
+            // by either deleting the Draft version of a published dataset, 
+            // or destroying an unpublished one. 
+            // This means we can finalize permanently deleting the physical files:
+            // (DataFileService will double-check that the datafiles no 
+            // longer exist in the database, before attempting to delete 
+            // the physical files)
+            if (!deleteStorageLocations.isEmpty()) {
+                fileService.finalizeFileDeletes(deleteStorageLocations);
+            }
+            
+            return ok("Draft version of dataset " + id + " deleted");
+        });
+    }
         
-        @DELETE
+    @DELETE
     @Path("{datasetId}/deleteLink/{linkedDataverseId}")
     public Response deleteDatasetLinkingDataverse( @PathParam("datasetId") String datasetId, @PathParam("linkedDataverseId") String linkedDataverseId) {
                 boolean index = true;
@@ -333,20 +445,6 @@ public class Datasets extends AbstractApiBean {
             return notFound("metadata block named " + blockName + " not found");
         }));
     }
-    
-    @DELETE
-    @Path("{id}/versions/{versionId}")
-    public Response deleteDraftVersion( @PathParam("id") String id,  @PathParam("versionId") String versionId ){
-        if ( ! ":draft".equals(versionId) ) {
-            return badRequest("Only the :draft version can be deleted");
-        }
-
-        return response( req -> {
-            execCommand( new DeleteDatasetVersionCommand(req, findDatasetOrDie(id)) );
-            return ok("Draft version of dataset " + id + " deleted");
-        });
-    }
-        
     
     @GET
     @Path("{id}/modifyRegistration")
@@ -775,11 +873,12 @@ public class Datasets extends AbstractApiBean {
     public Response publishDataset(@PathParam("id") String id, @QueryParam("type") String type) {
         try {
             if (type == null) {
-                return error(Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major' or 'minor').");
+                return error(Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major','minor', or 'updatecurrent').");
             }
-
+            boolean updateCurrent=false;
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
             type = type.toLowerCase();
-            boolean isMinor;
+            boolean isMinor=false;
             switch (type) {
                 case "minor":
                     isMinor = true;
@@ -787,16 +886,80 @@ public class Datasets extends AbstractApiBean {
                 case "major":
                     isMinor = false;
                     break;
+            case "updatecurrent":
+                if(user.isSuperuser()) {
+                  updateCurrent=true;
+                } else {
+                    return error(Response.Status.FORBIDDEN, "Only superusers can update the current version"); 
+                }
+                break;
                 default:
-                    return error(Response.Status.BAD_REQUEST, "Illegal 'type' parameter value '" + type + "'. It needs to be either 'major' or 'minor'.");
+                return error(Response.Status.BAD_REQUEST, "Illegal 'type' parameter value '" + type + "'. It needs to be either 'major', 'minor', or 'updatecurrent'.");
             }
 
             Dataset ds = findDatasetOrDie(id);
+            if (updateCurrent) {
+                /*
+                 * Note: The code here mirrors that in the
+                 * edu.harvard.iq.dataverse.DatasetPage:updateCurrentVersion method. Any changes
+                 * to the core logic (i.e. beyond updating the messaging about results) should
+                 * be applied to the code there as well.
+                 */
+                String errorMsg = null;
+                String successMsg = null;
+                try {
+                    CuratePublishedDatasetVersionCommand cmd = new CuratePublishedDatasetVersionCommand(ds, createDataverseRequest(user));
+                    ds = commandEngine.submit(cmd);
+                    successMsg = BundleUtil.getStringFromBundle("datasetversion.update.success");
+
+                    // If configured, update archive copy as well
+                    String className = settingsService.get(SettingsServiceBean.Key.ArchiverClassName.toString());
+                    DatasetVersion updateVersion = ds.getLatestVersion();
+                    AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, createDataverseRequest(user), updateVersion);
+                    if (archiveCommand != null) {
+                        // Delete the record of any existing copy since it is now out of date/incorrect
+                        updateVersion.setArchivalCopyLocation(null);
+                        /*
+                         * Then try to generate and submit an archival copy. Note that running this
+                         * command within the CuratePublishedDatasetVersionCommand was causing an error:
+                         * "The attribute [id] of class
+                         * [edu.harvard.iq.dataverse.DatasetFieldCompoundValue] is mapped to a primary
+                         * key column in the database. Updates are not allowed." To avoid that, and to
+                         * simplify reporting back to the GUI whether this optional step succeeded, I've
+                         * pulled this out as a separate submit().
+                         */
+                        try {
+                            updateVersion = commandEngine.submit(archiveCommand);
+                            if (updateVersion.getArchivalCopyLocation() != null) {
+                                successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
+                            } else {
+                                successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
+                            }
+                        } catch (CommandException ex) {
+                            successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure") + " - " + ex.toString();
+                            logger.severe(ex.getMessage());
+                        }
+                    }
+                } catch (CommandException ex) {
+                    errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.failure") + " - " + ex.toString();
+                    logger.severe(ex.getMessage());
+                }
+                if (errorMsg != null) {
+                    return error(Response.Status.INTERNAL_SERVER_ERROR, errorMsg);
+                } else {
+                    return Response.ok(Json.createObjectBuilder()
+                            .add("status", STATUS_OK)
+                            .add("status_details", successMsg)
+                            .add("data", json(ds)).build())
+                            .type(MediaType.APPLICATION_JSON)
+                            .build();
+                }
+            } else {
             PublishDatasetResult res = execCommand(new PublishDatasetCommand(ds,
-                    createDataverseRequest(findAuthenticatedUserOrDie()),
+                        createDataverseRequest(user),
                     isMinor));
             return res.isCompleted() ? ok(json(res.getDataset())) : accepted(json(res.getDataset()));
-
+            }
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }

@@ -2,10 +2,10 @@ package edu.harvard.iq.dataverse.bannersandmessages.messages;
 
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseMessagesMapper;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseTextMessageDto;
 import edu.harvard.iq.dataverse.bannersandmessages.validation.DataverseTextMessageValidator;
-import edu.harvard.iq.dataverse.locale.DataverseLocaleBean;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -32,6 +32,7 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
+    
     public DataverseTextMessageServiceBean() {
     }
 
@@ -83,12 +84,11 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
         em.merge(textMessage);
     }
 
-    public List<String> getTextMessagesForDataverse(Long dataverseId) {
+    public List<String> getTextMessagesForDataverse(Long dataverseId, String localeCode) {
         if (dataverseId == null) {
             return Lists.newArrayList();
         }
         logger.info("Getting text messages for dataverse: " + dataverseId);
-        DataverseLocaleBean locale = new DataverseLocaleBean();
         List<String> messages = em.createNativeQuery("select r.message from (select distinct dvtml.message, dvtm.totime  from\n" +
                 "  dataversetextmessage dvtm\n" +
                 "  join dataverselocalizedmessage dvtml on dvtml.dataversetextmessage_id = dvtm.id\n" +
@@ -115,7 +115,7 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
                 "               join dv_roots on dv_roots.owner_id = dv2.id\n" +
                 "    )\n" +
                 "    select id from dv_roots dr where dr.allowmessagesbanners = true) order by dvtm.totime asc) r")
-                .setParameter(1, locale.getLocaleCode())
+                .setParameter(1, localeCode)
                 .setParameter(2, LocalDateTime.now())
                 .setParameter(3, dataverseId)
                 .getResultList();

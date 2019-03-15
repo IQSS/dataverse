@@ -6,7 +6,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:p="http://primefaces.org/ui">
-<f:view locale="#{dataverseLocaleBean.localeCode}"/>
+<f:view locale="#{dataverseSession.localeCode}"/>
 
 <h:body>
     <f:metadata>
@@ -53,7 +53,7 @@
                                 <p:calendar id="message-fromtime"
                                             tabindex="#{EditTextMessagePage.dto.dataverseLocalizedMessage.size() + 1}"
                                             value="#{EditTextMessagePage.dto.fromTime}"
-                                            locale="#{dataverseLocaleBean.localeCode}"
+                                            locale="#{dataverseSession.localeCode}"
                                             pattern="yyyy-MM-dd HH:mm"
                                             mask="true"
                                             binding="#{EditTextMessagePage.fromTimeInput}"
@@ -76,7 +76,7 @@
                             <p:calendar id="message-totime"
                                         tabindex="#{EditTextMessagePage.dto.dataverseLocalizedMessage.size() + 2}"
                                         value="#{EditTextMessagePage.dto.toTime}"
-                                        locale="#{dataverseLocaleBean.localeCode}"
+                                        locale="#{dataverseSession.localeCode}"
                                         pattern="yyyy-MM-dd HH:mm"
                                         mask="true"
                                         binding="#{EditTextMessagePage.toTimeInput}"
