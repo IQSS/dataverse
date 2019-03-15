@@ -296,6 +296,7 @@
                 <!-- TODO: ADDED filesCounts id to commandButtons above in Line 291-292, is there a better way to do this other than listing out 5-6 elements to update? -->
                 
                 <!-- Files Table -->
+                <p:outputPanel autoUpdate="true">
                 <p:dataTable id="filesTable" 
                              value="#{EditDatafilesPage.fileMetadatas}"
                              rendered="#{!empty EditDatafilesPage.fileMetadatas or !EditDatafilesPage.showFileUploadFragment()}"
@@ -352,17 +353,23 @@
                             </p:inputText>
                             <p:message for="fileName"/>
                         </ui:fragment>
-                        <ui:fragment>
-                            <label class="control-label" for="fileDirectoryLabel" style="margin-right:1em;margin-bottom:.5em;">
+
+
+                            <ui:fragment>
+                                <label class="control-label" for="fileDirectoryLabel" style="margin-right:1em;margin-bottom:.5em;">
                                 #{bundle['file.metadataTab.fileMetadata.hierarchy.label']}
-                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.metadataTab.fileMetadata.hierarchy.tip']}"></span>
-                            </label>
-                            <p:inputText id="fileDirectoryName" value="#{fileMetadata.directoryLabel}" style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}">
-                            <p:ajax event="change" listener="#{EditDatafilesPage.handleFileDirectoryChange}" update="fileName" />
-                            </p:inputText>
-                            <p:message for="fileDirectoryName"/>
-                        </ui:fragment>
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.metadataTab.fileMetadata.hierarchy.tip']}"></span>
+                                </label>
+                                <p:inputText id="fileDirectoryName" value="#{fileMetadata.directoryLabel}" onchange="#{EditDatafilesPage.handleFileDirectoryChange(event)}"                                            
+                                             style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}" widgetVar="fileDirectoryName"> 
+                                    <p:ajax event="change"  immediate="true" update="fileDirectoryName" process="@this"  />
+
+                                </p:inputText>
+                                <p:message for="fileDirectoryName"/>
+                            </ui:fragment>
+
+
                         <!-- TYPE + SIZE + DATE + CHECKSUM -->
                         <div class="text-muted small">
                             <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
@@ -512,7 +519,7 @@
                         </div>
                     </p:column>
                 </p:dataTable>
-                
+</p:outputPanel>
                 </div>
                 
             </div>
