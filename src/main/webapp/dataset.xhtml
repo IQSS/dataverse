@@ -43,9 +43,9 @@
                 <meta property="og:title" content="#{DatasetPage.title}" />
                 <meta property="og:type" content="article" />
                 <meta property="og:url" content="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" />
-                <meta property="og:image" content="#{resource['images/dataverse-icon-80.png']}" />
+                <meta property="og:image" content="#{DatasetPage.dataset.getDatasetThumbnail() == null ? DatasetPage.dataverseSiteUrl.concat(resource['images/dataverse-icon-80.png']) : DatasetPage.dataverseSiteUrl.concat('/api/datasets/:persistentId/thumbnail?persistentId=').concat(dataset.globalId).concat('&#38;imageThumb=400')}" />
                 <meta property="og:site_name" content="#{DatasetPage.publisher}" />
-                <meta property="og:description" content="#{(DatasetPage.description.length()>150 ? DatasetPage.description.substring(0,147).concat('...'): DatasetPage.description)}" />
+                <meta property="og:description" content="#{(DatasetPage.description.length()>150 ? DatasetPage.description.substring(0,147).concat('...') : DatasetPage.description)}" />
                 <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
                     <meta property="article:author" content="#{author}" />
                 </ui:repeat>
