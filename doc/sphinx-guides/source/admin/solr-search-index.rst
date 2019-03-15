@@ -45,44 +45,39 @@ If indexing stops, this command should pick up where it left off based on which 
 
 ``curl http://localhost:8080/api/admin/index/continue``
 
-Manual Reindex
---------------
+Manual Reindexing
+-----------------
 
-When in the course of Dataverse events you may make manual changes to a dataset, or wish to reindex a dataset that solr didn't want to index properly, or maybe you've used the super-secret "destroy" API endpoint and wish to clear evidence from the web interface... it is possible to manually reindex dataverses and datasets.
-
-To manually index, you'll need the database ID of the dataverse or dataset in question. There are two ways to get this:
-
-1) In the web interface, you may choose to edit a dataverse or dataset by selecting the "Edit" drop-down. Watch the links generated as you mouse over each entry, and note the ID at the end of the URL.
-
-2) If you have access to your database, a query like:
-
-```
-dvntest=> select id from dvobject where identifier='S3/12233';
- id  
------
- 629
-(1 row)
-```
-will return the value you need.
+If you have made manual changes to a dataset in the database or wish to reindex a dataset that solr didn't want to index properly, it is possible to manually reindex dataverses and datasets.
 
 To reindex dataverses:
 ~~~~~~~~~~~~~~~~~~~~~~
 
+Dataverses must be referenced by database object ID. If you have direct database access an SQL query such as
+
+``select id from dataverse where alias='datavarsealias';``
+
+should work, or you may click the Dataverse's "Edit" menu and look for dataverseId= in the URLs produced by the drop-down. Then, to re-index:
+
 ``curl http://localhost:8080/api/admin/index/dataverses/135``
 
-should return: _{"status":"OK","data":{"message":"starting reindex of dataverse 135"}}_
+which should return: _{"status":"OK","data":{"message":"starting reindex of dataverse 135"}}_
 
 To reindex datasets:
 ~~~~~~~~~~~~~~~~~~~~
 
-``curl http://localhost:8080/api/admin/index/datasets/7504557``
+Datasets may be referenced by persistent ID or by database object ID. To re-index by persistent ID:
 
-should return: _{"status":"OK","data":{"message":"starting reindex of dataset 7504557"}}_
+``curl http://localhost:8080/api/admin/index/dataset?persistentId=doi:10.5072/FK2/AAA000``
+
+To re-index a dataset by its database ID:
+
+``curl http://localhost:8080/api/admin/index/datasets/7504557``
 
 Manually Querying Solr
 ----------------------
 
-If you suspect something isn't indexed properly in solr, you may bypass the Dataverse web interface and query the command line directly:
+If you suspect something isn't indexed properly in solr, you may bypass the Dataverse web interface and query the command line directly to verify what solr returns:
 
 ``curl "http://localhost:8983/solr/collection1/select?q=dsPersistentId:doi:10.15139/S3/HFV0AO"``
 
