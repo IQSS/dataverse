@@ -1,15 +1,11 @@
 <ui:composition
-    xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:h="http://java.sun.com/jsf/html"
-    xmlns:f="http://java.sun.com/jsf/core"
-    xmlns:ui="http://java.sun.com/jsf/facelets"
-    xmlns:p="http://primefaces.org/ui"
-    xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
-    xmlns:jsf="http://xmlns.jcp.org/jsf"
-    xmlns:pt="http://java.sun.com/jsf/passthrough"
-    xmlns:cc="http://java.sun.com/jsf/composite"
-    xmlns:o="http://omnifaces.org/ui"
-    xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:ui="http://java.sun.com/jsf/facelets"
+        xmlns:p="http://primefaces.org/ui"
+        xmlns:jsf="http://xmlns.jcp.org/jsf"
+>
 
     <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem and canUpdateDataset}">
         <!-- Ingest Problem - this is the infamous "red triangle" error. As of 4.2, we only want to show it to the owner of the dataset: -->
@@ -253,17 +249,19 @@
                 </p:commandLink>
             </li>
             <li>
-                <p:commandLink id="fileDowloadDataSubsetButton" rendered="#{!(downloadPopupRequired)}"
+                <p:commandLink id="fileDowloadDataSubsetButton" rendered="#{!(downloadPopupRequired)
+                 and DatasetPage.isTwoRavenAmongExternalTools(exploreTools)}"
                                process="@this"
-                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload or empty fileMetadata.dataFile.id) ? 'disabled' : ''}" 
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload or empty fileMetadata.dataFile.id) ? 'disabled' : ''}"
                                actionListener="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse,fileMetadata, 'subset')}"
                                update="@widgetVar(downloadDataSubsetPopup)"
                                oncomplete="PF('downloadDataSubsetPopup').show();bind_bsui_components();"
                                value="#{bundle['file.downloadBtn.format.datasubset']}"
                                />
-                <p:commandLink id="fileDowloadDataSubsetButtonPopupReq" rendered="#{downloadPopupRequired}"
+                <p:commandLink id="fileDowloadDataSubsetButtonPopupReq" rendered="#{downloadPopupRequired
+                and DatasetPage.isTwoRavenAmongExternalTools(exploreTools)}"
                                process="@this"
-                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload or empty fileMetadata.dataFile.id) ? 'disabled' : ''}" 
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload or empty fileMetadata.dataFile.id) ? 'disabled' : ''}"
                                actionListener="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse,fileMetadata, 'subset')}"
                                update="@widgetVar(downloadPopup)"
                                oncomplete="PF('downloadPopup').show()"
