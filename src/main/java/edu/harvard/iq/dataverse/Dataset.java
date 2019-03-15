@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
+import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -99,6 +101,12 @@ public class Dataset extends DvObjectContainer {
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "thumbnailfile_id")
     private DataFile thumbnailFile;
+    
+    @OneToMany(mappedBy = "dataset", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DatasetMetrics> datasetMetrics = new ArrayList<>(); 
+    
+    @OneToMany(mappedBy = "dataset", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DatasetExternalCitations> datasetExternalCitations = new ArrayList<>(); 
     
     /**
      * By default, Dataverse will attempt to show unique thumbnails for datasets
@@ -625,6 +633,22 @@ public class Dataset extends DvObjectContainer {
 
     public void setUseGenericThumbnail(boolean useGenericThumbnail) {
         this.useGenericThumbnail = useGenericThumbnail;
+    }
+    
+    public List<DatasetMetrics> getDatasetMetrics() {
+        return datasetMetrics;
+    }
+
+    public void setDatasetMetrics(List<DatasetMetrics> datasetMetrics) {
+        this.datasetMetrics = datasetMetrics;
+    }
+    
+    public List<DatasetExternalCitations> getDatasetExternalCitations() {
+        return datasetExternalCitations;
+    }
+
+    public void setDatasetExternalCitations(List<DatasetExternalCitations> datasetExternalCitations) {
+        this.datasetExternalCitations = datasetExternalCitations;
     }
 
     @ManyToOne

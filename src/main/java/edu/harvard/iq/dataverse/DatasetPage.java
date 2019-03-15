@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CuratePublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePrivateUrlCommand;
@@ -95,6 +96,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewComman
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import java.util.Collections;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
@@ -110,6 +113,10 @@ import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.CloseEvent;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.event.data.PageEvent;
+
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
+import java.util.TimeZone;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -200,6 +207,8 @@ public class DatasetPage implements java.io.Serializable {
     SettingsWrapper settingsWrapper; 
     @Inject 
     ProvPopupFragmentBean provPopupFragmentBean;
+    @Inject
+    MakeDataCountLoggingServiceBean mdcLogService;
 
     private Dataset dataset = new Dataset();
     private EditMode editMode;
@@ -1357,6 +1366,7 @@ public class DatasetPage implements java.io.Serializable {
     }     
     
     private String init(boolean initFull) {
+  
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
@@ -1457,6 +1467,10 @@ public class DatasetPage implements java.io.Serializable {
             // init the citation
             displayCitation = dataset.getCitation(true, workingVersion);
             
+            if(workingVersion.isPublished()) {
+                MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, workingVersion);
+                mdcLogService.logEntry(entry);
+            }
 
             if (initFull) {
                 // init the list of FileMetadatas
@@ -1794,8 +1808,12 @@ public class DatasetPage implements java.io.Serializable {
     public String releaseDraft() {
         if (releaseRadio == 1) {
             return releaseDataset(true);
-        } else {
+        } else if(releaseRadio ==2) {
             return releaseDataset(false);
+        } else if(releaseRadio ==3) {
+            return updateCurrentVersion();
+        } else {
+            return "Invalid Choice";
         }
     }
 
@@ -1980,6 +1998,7 @@ public class DatasetPage implements java.io.Serializable {
         return returnToDatasetOnly();
     }
 
+    @Deprecated
     public String registerDataset() {
         try {
             UpdateDatasetVersionCommand cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest());
@@ -1993,6 +2012,61 @@ public class DatasetPage implements java.io.Serializable {
         FacesContext.getCurrentInstance().addMessage(null, message);
         return returnToDatasetOnly();
     }
+    
+    public String updateCurrentVersion() {
+        /*
+         * Note: The code here mirrors that in the
+         * edu.harvard.iq.dataverse.api.Datasets:publishDataset method (case
+         * "updatecurrent"). Any changes to the core logic (i.e. beyond updating the
+         * messaging about results) should be applied to the code there as well.
+         */
+        String errorMsg = null;
+        String successMsg = BundleUtil.getStringFromBundle("datasetversion.update.success");
+        try {
+            CuratePublishedDatasetVersionCommand cmd = new CuratePublishedDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest());
+            dataset = commandEngine.submit(cmd);
+            // If configured, and currently published version is archived, try to update archive copy as well
+            DatasetVersion updateVersion = dataset.getLatestVersion();
+            if (updateVersion.getArchivalCopyLocation() != null) {
+                String className = settingsService.get(SettingsServiceBean.Key.ArchiverClassName.toString());
+                AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), updateVersion);
+                if (archiveCommand != null) {
+                    // Delete the record of any existing copy since it is now out of date/incorrect
+                    updateVersion.setArchivalCopyLocation(null);
+                    /*
+                     * Then try to generate and submit an archival copy. Note that running this
+                     * command within the CuratePublishedDatasetVersionCommand was causing an error:
+                     * "The attribute [id] of class
+                     * [edu.harvard.iq.dataverse.DatasetFieldCompoundValue] is mapped to a primary
+                     * key column in the database. Updates are not allowed." To avoid that, and to
+                     * simplify reporting back to the GUI whether this optional step succeeded, I've
+                     * pulled this out as a separate submit().
+                     */
+                    try {
+                        updateVersion = commandEngine.submit(archiveCommand);
+                        if (updateVersion.getArchivalCopyLocation() != null) {
+                            successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
+                        } else {
+                            errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
+                        }
+                    } catch (CommandException ex) {
+                        errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure") + " - " + ex.toString();
+                        logger.severe(ex.getMessage());
+                    }
+                }
+            }
+        } catch (CommandException ex) {
+            errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.failure") + " - " + ex.toString();
+            logger.severe(ex.getMessage());
+        }
+        if (errorMsg != null) {
+            JsfHelper.addErrorMessage(errorMsg);
+        } else {
+            JsfHelper.addSuccessMessage(successMsg);
+        }
+        return returnToDatasetOnly();
+    }
+
 
     public void refresh(ActionEvent e) {
         refresh();
@@ -2057,9 +2131,13 @@ public class DatasetPage implements java.io.Serializable {
     public String deleteDataset() {
 
         DestroyDatasetCommand cmd;
+        boolean deleteCommandSuccess = false;
+        Map<Long,String> deleteStorageLocations = datafileService.getPhysicalFilesToDelete(dataset); 
+        
         try {
             cmd = new DestroyDatasetCommand(dataset, dvRequestService.getDataverseRequest());
             commandEngine.submit(cmd);
+            deleteCommandSuccess = true;
             /* - need to figure out what to do 
              Update notification in Delete Dataset Method
              for (UserNotification und : userNotificationService.findByDvObject(dataset.getId())){
@@ -2069,7 +2147,12 @@ public class DatasetPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.message.deleteFailure"));
             logger.severe(ex.getMessage());
         }
+        
+        if (deleteCommandSuccess) {
+            datafileService.finalizeFileDeletes(deleteStorageLocations);
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.deleteSuccess"));
+        }
+        
         return "/dataverse.xhtml?alias=" + dataset.getOwner().getAlias() + "&faces-redirect=true";
     }
     
@@ -2525,6 +2608,9 @@ public class DatasetPage implements java.io.Serializable {
                         if (fmd.getDataFile().equals(dataset.getThumbnailFile())) {
                             dataset.setThumbnailFile(null);
                         }
+                        /* It should not be possible to get here if this file 
+                           is not in fact released! - so the code block below 
+                           is not needed.
                         //if not published then delete identifier
                         if (!fmd.getDataFile().isReleased()){
                             try{
@@ -2533,7 +2619,7 @@ public class DatasetPage implements java.io.Serializable {
                                  //this command is here to delete the identifier of unreleased files
                                  //if it fails then a reserved identifier may still be present on the remote provider
                             }                           
-                        }
+                        } */
                         fmit.remove();
                         break;
                     }
@@ -2644,7 +2730,9 @@ public class DatasetPage implements java.io.Serializable {
         
         // Use the Create or Update command to save the dataset: 
         Command<Dataset> cmd;
-        try {
+        Map<Long, String> deleteStorageLocations = null;
+        
+        try { 
             if (editMode == EditMode.CREATE) {                
                 if ( selectedTemplate != null ) {
                     if ( isSessionUserAuthenticated() ) {
@@ -2658,6 +2746,9 @@ public class DatasetPage implements java.io.Serializable {
                 }
                 
             } else {
+                if (!filesToBeDeleted.isEmpty()) {
+                    deleteStorageLocations = datafileService.getPhysicalFilesToDelete(filesToBeDeleted);
+                }
                 cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, clone );
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);  
             }
@@ -2686,6 +2777,16 @@ public class DatasetPage implements java.io.Serializable {
             logger.log(Level.SEVERE, "CommandException, when attempting to update the dataset: " + ex.getMessage(), ex);
             populateDatasetUpdateFailureMessage();
             return returnToDraftVersion();
+        }
+        
+        // Have we just deleted some draft datafiles (successfully)? 
+        // finalize the physical file deletes:
+        // (DataFileService will double-check that the datafiles no 
+        // longer exist in the database, before attempting to delete 
+        // the physical files)
+        
+        if (deleteStorageLocations != null) {
+            datafileService.finalizeFileDeletes(deleteStorageLocations);
         }
         
         if (editMode != null) {
