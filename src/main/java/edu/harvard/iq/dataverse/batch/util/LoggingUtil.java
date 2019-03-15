@@ -60,7 +60,23 @@ public class LoggingUtil {
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error saving log report: " + fileName + " " + e.getMessage());
         }
-
+    }
+     
+    public static void saveLogFileAppendWithHeader(String fileContent, String logDir, String fileName, String logHeader) {
+        try {
+            checkCreateLogDirectory(logDir);
+            File dir = new File(logDir);
+            if (!dir.exists() && !dir.mkdirs()) {
+                logger.log(Level.SEVERE, "Couldn't create directory: " + dir.getAbsolutePath());
+            }
+            File logFile = new File(dir.getAbsolutePath() +"/"+ fileName);
+            if(!logFile.exists() && null != logHeader) {
+                FileUtils.writeStringToFile(logFile, logHeader);
+            }
+            FileUtils.writeStringToFile(logFile, fileContent, true);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error saving log report: " + fileName + " " + e.getMessage());
+        }
     }
 
     public static ActionLogRecord getActionLogRecord(String userId, JobExecution jobExec, String jobInfo, String jobId) {
@@ -131,7 +147,7 @@ public class LoggingUtil {
 		    return null;
 	    }
     }
-
+    
     public static class JobLogFormatter extends Formatter {
         @Override
         public String format(LogRecord record) {
@@ -139,3 +155,4 @@ public class LoggingUtil {
         }
     }
 }
+ 
