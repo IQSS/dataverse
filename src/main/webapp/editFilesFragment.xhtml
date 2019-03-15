@@ -355,19 +355,18 @@
                         </ui:fragment>
 
 
-                            <ui:fragment>
-                                <label class="control-label" for="fileDirectoryLabel" style="margin-right:1em;margin-bottom:.5em;">
+                        <ui:fragment>
+                            <label class="control-label" for="fileDirectoryLabel" style="margin-right:1em;margin-bottom:.5em;">
                                 #{bundle['file.metadataTab.fileMetadata.hierarchy.label']}
-                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.metadataTab.fileMetadata.hierarchy.tip']}"></span>
-                                </label>
-                                <p:inputText id="fileDirectoryName" value="#{fileMetadata.directoryLabel}" onchange="#{EditDatafilesPage.handleFileDirectoryChange(event)}"                                            
-                                             style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}" widgetVar="fileDirectoryName"> 
-                                    <p:ajax event="change"  immediate="true" update="fileDirectoryName" process="@this"  />
-
-                                </p:inputText>
-                                <p:message for="fileDirectoryName"/>
-                            </ui:fragment>
+                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.metadataTab.fileMetadata.hierarchy.tip']}"></span>
+                            </label>
+                            <p:inputText id="fileDirectoryName" value="#{fileMetadata.directoryLabel}" onchange="#{EditDatafilesPage.handleFileDirectoryChange(event)}"                                            
+                                         style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}" widgetVar="fileDirectoryName"> 
+                                <p:ajax event="change" update="fileDirectoryName" process="@this"  />
+                            </p:inputText>
+                            <p:message for="fileDirectoryName"/>
+                        </ui:fragment>
 
 
                         <!-- TYPE + SIZE + DATE + CHECKSUM -->
