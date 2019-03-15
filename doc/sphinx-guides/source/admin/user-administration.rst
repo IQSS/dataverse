@@ -34,15 +34,15 @@ With the ``list-users`` form you can include the following optional query parame
 * ``itemsPerPage`` The number of detailed results to return.  The default is 25.  This number has no limit. e.g. You could set it to 1000 to return 1,000 results
 * ``selectedPage`` The page of results to return.  The default is 1.
 
-Changing a userIdentifier
--------------------------
-
-See :ref:`renaming-accounts-label`
-
-Merging user accounts
+Merge User Accounts
 ---------------------
 
-See :ref:`combining-accounts-label`
+See :ref:`merge-accounts-label`
+
+Change User Identifier
+-------------------------
+
+See :ref:`change-identifier-label`
 
 Confirm Email
 -------------
