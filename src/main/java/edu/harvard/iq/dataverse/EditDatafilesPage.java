@@ -2786,28 +2786,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public void handleFileDirectoryChange(final ValueChangeEvent event) {  
-        /*
-        
-
-      System.out.print("in handle change");
-      if (event != null && event.getNewValue() != null ){
-                System.out.println("New value: " + event.getNewValue());
-      } else { 
-                System.out.println("NULL event or value: " );
-      }
-
-               Set<ConstraintViolation> constraintViolations = workingVersion.validate();
-        System.out.print("constraintViolations: " + constraintViolations.toString());
-        
-        if (!constraintViolations.isEmpty()) {
-             //JsfHelper.addFlashMessage(getBundleString("dataset.message.validationError"));
-            logger.fine("Constraint violation detected on SAVE: "+constraintViolations.toString());
-             JH.addMessage(FacesMessage.SEVERITY_ERROR, getBundleString("dataset.message.validationError"));
-             
-            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
-
-        }
-               */
         datasetUpdateRequired = true;
     }
         
