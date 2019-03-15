@@ -1344,3 +1344,18 @@ Recursively applies the role assignments of the specified dataverse, for the rol
   GET http://$SERVER/api/admin/dataverse/{dataverse alias}/addRoleAssignmentsToChildren
   
 Note: setting ``:InheritParentRoleAssignments`` will automatically trigger inheritance of the parent dataverse's role assignments for a newly created dataverse. Hence this API call is intended as a way to update existing child dataverses or to update children after a change in role assignments has been made on a parent dataverse.
+
+Delete Published Dataverses or Datasets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Normally published dataverses or datasets may not be deleted, but there exists a "destroy" API endpoint which may be called against a dataverse or dataset by persistent ID or by the dvobject database ID:
+
+  DELETE http://$SERVER/api/dataverses/:persistentId/destroy/?persistentId=doi:10.5072/FK2/AAA000
+  
+  DELETE http://$SERVER/api/dataverses/999/destroy
+
+  DELETE http://$SERVER/api/datasets/:persistentId/destroy/?persistentId=doi:10.5072/FK2/AAA000
+  
+  DELETE http://$SERVER/api/datasets/999/destroy
+  
+Calling the destroy endpoint is permanent and irreversible. It will remove the dataverse or dataset and all files in question, then re-index the parent object in solr. You must first destroy the datasets as the endpoint won't act on a dataverse that isn't empty. This endpoint requires that the user whose API token is passed be a superuser.
