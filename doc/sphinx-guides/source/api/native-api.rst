@@ -1231,7 +1231,7 @@ Changes identifier for user in ``AuthenticatedUser``, ``BuiltinUser``, ``Authent
 
 Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST  https://demo.dataverse.org/api/users/johnsmith/changeIdentifier/jsmith``
 
-This action changes the idnetifier of johnsmith to jsmith.
+This action changes the identifier of user johnsmith to jsmith.
 
 Make User a SuperUser
 ~~~~~~~~~~~~~~~~~~~~~
