@@ -1207,9 +1207,9 @@ POSTed JSON example::
       "email": "pete@mailinator.com"
     }
 
-.. _combining-accounts-label:
+.. _merge-accounts-label:
 
-Combining Accounts
+Merge User Accounts
 ~~~~~~~~~~~~~~~~~~
 
 If a user has created multiple accounts and has been performed actions under both accounts that need to be preserved, these accounts can be combined.  One account can be merged into another account and all data associated with both accounts will be combined in the surviving account. Only accessible to superusers.::
@@ -1220,7 +1220,7 @@ Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://demo.dataverse.o
 
 This action moves account data from jsmith2 into the account jsmith and deletes the account of jsmith2.
 
-.. _renaming-accounts-label:
+.. _change-identifier-label:
 
 Change User Identifier
 ~~~~~~~~~~~~~~~~~~~~~~
