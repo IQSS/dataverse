@@ -15,9 +15,9 @@ import java.util.List;
 import java.util.Set;
 
 import static edu.harvard.iq.dataverse.util.DateUtil.convertToDate;
+import static org.junit.Assert.assertSame;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -34,17 +34,21 @@ public class DataverseTextMessageServiceBeanTest {
     @Before
     public void setUp() {
         em = mock(EntityManager.class);
-        mapper = new DataverseMessagesMapper();
+        mapper = mock(DataverseMessagesMapper.class);
         service = new DataverseTextMessageServiceBean(em, mapper);
     }
 
     @Test
     public void shouldReturnNewTextMessageDto() {
+        // given
+        DataverseTextMessageDto textMessageDto = mock(DataverseTextMessageDto.class);
+        when(mapper.mapToNewTextMessage(1L)).thenReturn(textMessageDto);
+        
         // when
-        DataverseTextMessageDto dto = service.newTextMessage(1L);
+        DataverseTextMessageDto retTextMessageDto = service.newTextMessage(1L);
 
         // then
-        verifyNewDto(dto);
+        assertSame(textMessageDto, retTextMessageDto);
     }
 
     @Test
@@ -52,18 +56,17 @@ public class DataverseTextMessageServiceBeanTest {
         // given
         DataverseTextMessage message = new DataverseTextMessage();
         message.setId(1L);
-        Dataverse dataverse = new Dataverse();
-        dataverse.setId(100L);
-        message.setDataverse(dataverse);
+        
+        DataverseTextMessageDto textMessageDto = mock(DataverseTextMessageDto.class);
 
-        // and
         when(em.find(DataverseTextMessage.class, 1L)).thenReturn(message);
+        when(mapper.mapToDto(message)).thenReturn(textMessageDto);
 
         // when
-        DataverseTextMessageDto dto = service.getTextMessage(1L);
+        DataverseTextMessageDto retTextMessageDto = service.getTextMessage(1L);
 
         // then
-        assertEquals(new Long(1L), dto.getId());
+        assertSame(textMessageDto, retTextMessageDto);
         verify(em).find(DataverseTextMessage.class, 1L);
         verifyNoMoreInteractions(em);
     }
@@ -173,15 +176,5 @@ public class DataverseTextMessageServiceBeanTest {
                     lm.getLanguage().equals(language) &&
                     lm.getMessage().equals("")
                 ));
-    }
-
-    private void verifyNewDto(DataverseTextMessageDto dto) {
-        assertEquals(new Long(1L), dto.getDataverseId());
-        assertNotNull(dto);
-        assertNull(dto.getId());
-        assertNull(dto.getFromTime());
-        assertNull(dto.getToTime());
-        assertFalse(dto.isActive());
-        verifyDefaultLocales(dto);
     }
 }

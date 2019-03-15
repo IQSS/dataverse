@@ -1,10 +1,16 @@
 package edu.harvard.iq.dataverse.bannersandmessages.messages.dto;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.DataverseLocalizedMessage;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.DataverseTextMessage;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import com.google.common.collect.ImmutableMap;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -16,7 +22,10 @@ import static edu.harvard.iq.dataverse.util.DateUtil.convertToDate;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
+
+@RunWith(MockitoJUnitRunner.class)
 public class DataverseMessagesMapperTest {
 
     private static final Date FROM_TIME = convertToDate(
@@ -25,10 +34,16 @@ public class DataverseMessagesMapperTest {
             LocalDateTime.of(2018, 11, 2, 10, 25, 55));
 
     private DataverseMessagesMapper mapper;
+    
+    @Mock
+    private SettingsWrapper settingsWrapper;
+
 
     @Before
     public void setUp() {
-        mapper = new DataverseMessagesMapper();
+        mapper = new DataverseMessagesMapper(settingsWrapper);
+        
+        when(settingsWrapper.getConfiguredLocales()).thenReturn(ImmutableMap.of("en", "English", "pl", "Polski"));
     }
 
     @Test

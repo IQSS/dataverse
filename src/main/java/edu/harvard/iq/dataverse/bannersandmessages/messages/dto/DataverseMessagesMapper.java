@@ -24,6 +24,14 @@ public class DataverseMessagesMapper {
     private SettingsWrapper settingsWrapper;
     
     
+    public DataverseMessagesMapper() { }
+    
+    
+    public DataverseMessagesMapper(SettingsWrapper settingsWrapper) {
+        this.settingsWrapper = settingsWrapper;
+    }
+    
+    
     public DataverseTextMessageDto mapToDto(DataverseTextMessage textMessage) {
         DataverseTextMessageDto dto = new DataverseTextMessageDto();
 
