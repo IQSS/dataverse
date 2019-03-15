@@ -8,7 +8,7 @@ and tweaked for Dataverse.  See also:
 https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPConfiguration
 -->
 
-<SPConfig xmlns="urn:mace:shibboleth:2.0:native:sp:config" xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
+<SPConfig xmlns="urn:mace:shibboleth:3.0:native:sp:config" xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
     xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
     clockSkew="1800">
 
@@ -55,7 +55,7 @@ https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPConfiguration
 
         <!-- Loads and trusts a metadata file that describes only the Testshib IdP and how to communicate with it. -->
         <!-- IdPs we want allow go in /etc/shibboleth/dataverse-idp-metadata.xml -->
-        <MetadataProvider type="XML" file="dataverse-idp-metadata.xml" backingFilePath="local-idp-metadata.xml" legacyOrgNames="true" reloadInterval="7200"/>
+        <MetadataProvider type="XML" path="dataverse-idp-metadata.xml" backingFilePath="local-idp-metadata.xml" legacyOrgNames="true" reloadInterval="7200"/>
         <!-- Uncomment to enable all the Research & Scholarship IdPs from InCommon -->
         <!--
         <MetadataProvider type="XML" url="http://md.incommon.org/InCommon/InCommon-metadata.xml" backingFilePath="InCommon-metadata.xml" maxRefreshDelay="3600">
