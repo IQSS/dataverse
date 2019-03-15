@@ -96,22 +96,32 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(AuthenticatedUser authenticatedUser) {
-        return jsonObjectBuilder()
-                .add("id", authenticatedUser.getId())
-                .add("identifier", authenticatedUser.getIdentifier())
-                .add("displayName", authenticatedUser.getDisplayInfo().getTitle())
-                .add("firstName", authenticatedUser.getFirstName())
-                .add("lastName", authenticatedUser.getLastName())
-                .add("email", authenticatedUser.getEmail())
-                .add("superuser", authenticatedUser.isSuperuser())
-                .add("affiliation", authenticatedUser.getAffiliation())
-                .add("position", authenticatedUser.getPosition())
-                .add("persistentUserId", authenticatedUser.getAuthenticatedUserLookup().getPersistentUserId())
-                .add("emailLastConfirmed", authenticatedUser.getEmailConfirmed())
-                .add("createdTime", authenticatedUser.getCreatedTime())
-                .add("lastLoginTime", authenticatedUser.getLastLoginTime())
-                .add("lastApiUseTime", authenticatedUser.getLastApiUseTime())
-                .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
+        return json(authenticatedUser, false);
+    }
+    
+    //TODO: Once we upgrade to Java EE 8 we can remove objects from the builder, and this email removal can be done in a better place.
+    public static JsonObjectBuilder json(AuthenticatedUser authenticatedUser, Boolean hideEmail) {
+        NullSafeJsonBuilder builder = jsonObjectBuilder()
+            .add("id", authenticatedUser.getId())
+            .add("identifier", authenticatedUser.getIdentifier())
+            .add("displayName", authenticatedUser.getDisplayInfo().getTitle())
+            .add("firstName", authenticatedUser.getFirstName())
+            .add("lastName", authenticatedUser.getLastName());
+        
+        if(!hideEmail) {
+            builder.add("email", authenticatedUser.getEmail());
+        }
+        
+        builder.add("superuser", authenticatedUser.isSuperuser())
+            .add("affiliation", authenticatedUser.getAffiliation())
+            .add("position", authenticatedUser.getPosition())
+            .add("persistentUserId", authenticatedUser.getAuthenticatedUserLookup().getPersistentUserId())
+            .add("emailLastConfirmed", authenticatedUser.getEmailConfirmed())
+            .add("createdTime", authenticatedUser.getCreatedTime())
+            .add("lastLoginTime", authenticatedUser.getLastLoginTime())
+            .add("lastApiUseTime", authenticatedUser.getLastApiUseTime())
+            .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
+        return builder;
     }
     
     public static JsonObjectBuilder json(RoleAssignment ra) {
@@ -228,8 +238,13 @@ public class JsonPrinter {
         
         return bld;
     }
-
+    
     public static JsonObjectBuilder json(Dataverse dv) {
+        return json(dv, false);
+    }
+
+    //TODO: Once we upgrade to Java EE 8 we can remove objects from the builder, and this email removal can be done in a better place.
+    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dv.getId())
                 .add("alias", dv.getAlias())
@@ -246,7 +261,7 @@ public class JsonPrinter {
             bld.add("creationDate", Util.getDateTimeFormat().format(dv.getCreateDate()));
         }
         if (dv.getCreator() != null) {
-            bld.add("creator", JsonPrinter.json(dv.getCreator()));
+            bld.add("creator", JsonPrinter.json(dv.getCreator(), hideEmail));
         }
         if (dv.getDataverseTheme() != null) {
             bld.add("theme", JsonPrinter.json(dv.getDataverseTheme()));
