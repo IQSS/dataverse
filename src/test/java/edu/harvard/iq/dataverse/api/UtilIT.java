@@ -1699,75 +1699,128 @@ public class UtilIT {
                 .delete("/api/admin/storageSites/" + storageSiteId);
     }
 
-    static Response metricsDataversesToMonth(String yyyymm) {
+    static Response metricsDataversesToMonth(String yyyymm, String queryParams) {
         String optionalYyyyMm = "";
         if (yyyymm != null) {
             optionalYyyyMm = "/" + yyyymm;
         }
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/dataverses/toMonth" + optionalYyyyMm);
+        return requestSpecification.get("/api/info/metrics/dataverses/toMonth" + optionalYyyyMm + optionalQueryParams);
     }
 
-    static Response metricsDatasetsToMonth(String yyyymm) {
+    static Response metricsDatasetsToMonth(String yyyymm, String queryParams) {
         String optionalYyyyMm = "";
         if (yyyymm != null) {
             optionalYyyyMm = "/" + yyyymm;
         }
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/datasets/toMonth" + optionalYyyyMm);
+        return requestSpecification.get("/api/info/metrics/datasets/toMonth" + optionalYyyyMm + optionalQueryParams);
     }
 
-    static Response metricsFilesToMonth(String yyyymm) {
+    static Response metricsFilesToMonth(String yyyymm, String queryParams) {
         String optionalYyyyMm = "";
         if (yyyymm != null) {
             optionalYyyyMm = "/" + yyyymm;
         }
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/files/toMonth" + optionalYyyyMm);
+        return requestSpecification.get("/api/info/metrics/files/toMonth" + optionalYyyyMm + optionalQueryParams);
     }
 
-    static Response metricsDownloadsToMonth(String yyyymm) {
+    static Response metricsDownloadsToMonth(String yyyymm, String queryParams) {
         String optionalYyyyMm = "";
         if (yyyymm != null) {
             optionalYyyyMm = "/" + yyyymm;
         }
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/downloads/toMonth" + optionalYyyyMm);
+        return requestSpecification.get("/api/info/metrics/downloads/toMonth" + optionalYyyyMm + optionalQueryParams);
     }
     
-    static Response metricsDataversesPastDays(String days) {
+    static Response metricsDataversesPastDays(String days, String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/dataverses/pastDays/" + days);
+        return requestSpecification.get("/api/info/metrics/dataverses/pastDays/" + days + optionalQueryParams);
     }
     
-    static Response metricsDatasetsPastDays(String days) {
+    static Response metricsDatasetsPastDays(String days, String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/datasets/pastDays/" + days);
+        return requestSpecification.get("/api/info/metrics/datasets/pastDays/" + days + optionalQueryParams);
     }
         
-    static Response metricsFilesPastDays(String days) {
+    static Response metricsFilesPastDays(String days, String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/files/pastDays/" + days);
+        return requestSpecification.get("/api/info/metrics/files/pastDays/" + days + optionalQueryParams);
     }
             
-    static Response metricsDownloadsPastDays(String days) {
+    static Response metricsDownloadsPastDays(String days, String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/downloads/pastDays/" + days);
+        return requestSpecification.get("/api/info/metrics/downloads/pastDays/" + days + optionalQueryParams);
     }
 
-    static Response metricsDataversesByCategory() {
+    static Response metricsDataversesByCategory(String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/dataverses/byCategory");
+        return requestSpecification.get("/api/info/metrics/dataverses/byCategory" + optionalQueryParams);
     }
     
-    static Response metricsDataversesBySubject() {
+    static Response metricsDataversesBySubject(String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/dataverses/bySubject");
+        return requestSpecification.get("/api/info/metrics/dataverses/bySubject" + optionalQueryParams);
     }
 
-    static Response metricsDatasetsBySubject() {
+    static Response metricsDatasetsBySubject(String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/datasets/bySubject");
+        return requestSpecification.get("/api/info/metrics/datasets/bySubject" + optionalQueryParams);
+    }
+    
+    static Response metricsDatasetsBySubjectToMonth(String month, String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/datasets/bySubject/toMonth/" + month + optionalQueryParams);
     }
     
     static Response clearMetricCache() {
@@ -1866,4 +1919,88 @@ public class UtilIT {
         String apiPath = String.format("/oai?verb=ListIdentifiers&set=%s&metadataPrefix=%s", setName, metadataFormat);
         return given().get(apiPath);
     }
+
+    static Response makeDataCountSendDataToHub() {
+        return given().post("/api/admin/makeDataCount/sendToHub");
+    }
+
+    // TODO: Think more about if we really need this makeDataCountDownloadFromHub endpoint since we're parsing our own SUSHI reports and inserting rows into our datasetmetrics table.
+    static Response makeDataCountDownloadFromHub(String metric) {
+        return given().post("/api/admin/makeDataCount/downloadFromHub/" + metric);
+    }
+
+    static Response makeDataCountGetMetricForDataset(String idOrPersistentIdOfDataset, String metric, String apiToken) {
+        System.out.println("metric: " + metric);
+        String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/datasets/" + idInPath + "/makeDataCount/" + metric + optionalQueryParam);
+    }
+
+    static Response makeDataCountGetMetricForDataset(String idOrPersistentIdOfDataset, String metric, String country, String apiToken) {
+        System.out.println("metric: " + metric);
+        String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/datasets/" + idInPath + "/makeDataCount/" + metric + "?country=" + country + optionalQueryParam);
+    }
+
+    static Response makeDataCountGetMetricForDataset(String idOrPersistentIdOfDataset, String metric, String yyyymm, String country, String apiToken) {
+        System.out.println("metric: " + metric);
+        String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/datasets/" + idInPath + "/makeDataCount/" + metric + "/" + yyyymm + "?country=" + country + optionalQueryParam);
+    }
+    
+    static Response makeDataCountAddUsageMetricsFromSushiReport(String idOrPersistentIdOfDataset, String reportOnDisk) {
+
+        String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
+        }
+        RequestSpecification requestSpecification = given();
+        System.out.print("/api/admin/makeDataCount/" + idInPath + "/addUsageMetricsFromSushiReport?reportOnDisk=" + reportOnDisk + optionalQueryParam);
+        return requestSpecification.post("/api/admin/makeDataCount/" + idInPath + "/addUsageMetricsFromSushiReport?reportOnDisk=" + reportOnDisk + optionalQueryParam);
+    }
+
+    static Response makeDataCountUpdateCitationsForDataset(String idOrPersistentIdOfDataset) {
+
+        String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentIdOfDataset;
+        }
+        RequestSpecification requestSpecification = given();
+
+        return requestSpecification.post("/api/admin/makeDataCount/" + idInPath + "/updateCitationsForDataset"+ optionalQueryParam);
+    }
+
 }

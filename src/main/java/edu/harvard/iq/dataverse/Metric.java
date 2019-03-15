@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -17,7 +18,6 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 
 /**
  *
@@ -34,34 +34,36 @@ public class Metric implements Serializable {
     @Column(nullable = false)
     private int id;
 
-    @Column(nullable = false, unique = true)
-    private String metricName;
+    @Column(nullable = false)
+    private String name;
 
     @Column(columnDefinition = "TEXT", nullable = false)
-    private String metricValue;
+    private String valueJson;
+        
+    @Column(columnDefinition = "TEXT", nullable = true)
+    private String dataLocation;
+    
+    @Column(columnDefinition = "TEXT", nullable = true)
+    private String dayString;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @Column(nullable = false)
     private Date lastCalledDate;
-
-    @Transient
-    private static final String separator = "_";
 
     @Deprecated
     public Metric() {
     }
 
     //For monthly and day metrics
-    public Metric(String metricTitle, String dayString, String metricValue) {
-        this.metricName = generateMetricName(metricTitle, dayString);
-        this.metricValue = metricValue;
-        this.lastCalledDate = new Timestamp(new Date().getTime());
-    }
-
-    //For all-time metrics
-    public Metric(String metricName, String metricValue) {
-        this.metricName = metricName;
-        this.metricValue = metricValue;
+    
+    public Metric(String name, String dayString, String dataLocation, String value) throws IOException {
+        if(null == name || null == value) {
+            throw new IOException("A created metric must have a metricName and metricValue");
+        }
+        this.name = name;
+        this.valueJson = value;
+        this.dataLocation = dataLocation;
+        this.dayString = dayString;
         this.lastCalledDate = new Timestamp(new Date().getTime());
     }
 
@@ -79,30 +81,30 @@ public class Metric implements Serializable {
         this.id = id;
     }
 
-    public String getMetricDateString() {
-        return metricName.substring(metricName.indexOf(separator) + 1);
+    public String getDateString() {
+        return dayString;
     }
 
-    public String getMetricTitle() {
-        int monthSeperatorIndex = metricName.indexOf(separator);
-        if (monthSeperatorIndex >= 0) {
-            return metricName.substring(0, monthSeperatorIndex);
-        }
-        return metricName;
+    public String getDataLocation() {
+        return dataLocation;
     }
-
-    /**
-     * @return the metricValue
-     */
-    public String getMetricValue() {
-        return metricValue;
+    
+    public String getName() {
+        return name;
     }
 
     /**
-     * @param metricValue the metricValue to set
+     * @return the valueJson
      */
-    public void setMetricValue(String metricValue) {
-        this.metricValue = metricValue;
+    public String getValueJson() {
+        return valueJson;
+    }
+
+    /**
+     * @param metricValue the valueJson to set
+     */
+    public void setValueJson(String metricValue) {
+        this.valueJson = metricValue;
     }
 
     /**
@@ -117,16 +119,6 @@ public class Metric implements Serializable {
      */
     public void setLastCalledDate(Date calledDate) {
         this.lastCalledDate = calledDate;
-    }
-
-    public static String generateMetricName(String title, String dateString) {
-        if (title.contains(separator) || dateString.contains(separator)) {
-            throw new IllegalArgumentException("Metric title or date contains character reserved for seperator");
-        }
-        if (separator.contains("-")) {
-            throw new IllegalArgumentException("Metric seperator cannot be '-', value reserved for dates");
-        }
-        return title + separator + dateString;
     }
 
 }

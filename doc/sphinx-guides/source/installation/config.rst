@@ -165,6 +165,7 @@ Here are the configuration options for handles:
 - :ref:`:Authority <:Authority>`
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
+- :ref:`:IndependentHandleService <:IndependentHandleService>` (optional)
 
 Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <http://handle.net/hnr_documentation.html>`_.
 
@@ -606,7 +607,7 @@ In the Chronopolis case, since the transfer from the DuraCloud front-end to arch
 
 **PostPublication Workflow**
 
-To automate the submission of archival copies to an archive as part of publication, one can setup a Dataverse Workflow using the "archiver" workflow step - see the :doc:`developers/workflows` guide.
+To automate the submission of archival copies to an archive as part of publication, one can setup a Dataverse Workflow using the "archiver" workflow step - see the :doc:`/developers/workflows` guide.
 . The archiver step uses the configuration information discussed above including the :ArchiverClassName setting. The workflow step definition should include the set of properties defined in \:ArchiverSettings in the workflow definition.
 
 To active this workflow, one must first install a workflow using the archiver step. A simple workflow that invokes the archiver step configured to submit to DuraCloud as its only action is included in dataverse at /scripts/api/data/workflows/internal-archiver-workflow.json.
@@ -1087,6 +1088,14 @@ If you don't want to register file-based PIDs for your installation, set:
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
 Note: File-level PID registration was added in 4.9 and is required until version 4.9.3.
+
+:IndependentHandleService
++++++++++++++++++++++++++++
+
+Specific for Handle PIDs. Set this setting to true if you want to use a Handle service which is setup to work 'independently' (No communication with the Global Handle Registry). 
+By default this setting is absent and Dataverse assumes it to be false.
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:IndependentHandleService``
 
 :ApplicationTermsOfUse
 ++++++++++++++++++++++
@@ -1570,6 +1579,15 @@ Enable the collection of provenance metadata on Dataverse via the provenance pop
 Sets how long a cached metrics result is used before re-running the query for a request. This timeout is only applied to some of the metrics that query the current state of the system, previous months queries are cached indefinitely. See :doc:`/api/metrics` for more info. The default timeout value is 7 days (10080 minutes). 
 
 ``curl -X PUT -d 10080 http://localhost:8080/api/admin/settings/:MetricsCacheTimeoutMinutes``
+
+.. _MDCLogPath:
+
+:MDCLogPath
++++++++++++
+
+Sets the path where the raw Make Data Count logs are stored before being processed. If not set, no logs will be created for Make Data Count. See also the :doc:`/admin/make-data-count` section of the Admin Guide.
+
+``curl -X PUT -d '/usr/local/glassfish4/glassfish/domains/domain1/logs' http://localhost:8080/api/admin/settings/:MDCLogPath``
 
 :Languages
 ++++++++++

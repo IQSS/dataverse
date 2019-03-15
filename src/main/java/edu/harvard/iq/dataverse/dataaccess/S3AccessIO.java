@@ -13,7 +13,6 @@ import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
@@ -64,7 +63,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.S3AccessIO");
 
     public S3AccessIO() {
-        this(null);
+        this((T)null);
     }
 
     public S3AccessIO(T dvObject) {
@@ -88,9 +87,17 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             this.s3 = s3CB.build();
         } catch (Exception e) {
             throw new AmazonClientException(
-                        "Cannot instantiate a S3 client using; check your AWS credentials and region",
+                        "Cannot instantiate a S3 client; check your AWS credentials and region",
                         e);
         }
+    }
+    
+    public S3AccessIO(String storageLocation) {
+        this((T)null);
+        
+        // TODO: validate the storage location supplied
+        bucketName = storageLocation.substring(0,storageLocation.indexOf('/'));
+        key = storageLocation.substring(storageLocation.indexOf('/')+1);
     }
     
     public S3AccessIO(T dvObject, DataAccessRequest req, @NotNull AmazonS3 s3client) {
@@ -202,7 +209,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             key = dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage();
             dataset.setStorageIdentifier(S3_IDENTIFIER_PREFIX + "://" + key);
         } else if (dvObject instanceof Dataverse) {
-            throw new IOException("Data Access: Invalid DvObject type : Dataverse");
+            throw new IOException("Data Access: Storage driver does not support dvObject type Dataverse yet");
         } else {
             throw new IOException("Data Access: Invalid DvObject type");
         }
@@ -346,20 +353,28 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             setSize(objectMetadata.getContentLength());
         }
     }
-
+    
     @Override
     public void delete() throws IOException {
-        open();
+        if (!isDirectAccess()) {
+            throw new IOException("Direct Access IO must be used to permanently delete stored file objects");
+        }
         if (key == null) {
             throw new IOException("Delete called with null key");
-        }
+        }        
+        // Verify that it exists, before we attempt to delete it?
+        // (probably unnecessary - attempting to delete it will fail if it doesn't exist - ?)
         try {
             DeleteObjectRequest deleteObjRequest = new DeleteObjectRequest(bucketName, key);
             s3.deleteObject(deleteObjRequest);
         } catch (AmazonClientException ase) {
             logger.warning("Caught an AmazonClientException in S3AccessIO.delete(): " + ase.getMessage());
-            throw new IOException("Failed to delete object" + dvObject.getId());
+            throw new IOException("Failed to delete storage location " + getStorageLocation());
         }
+        
+        // Delete all the cached aux files as well:
+        deleteAllAuxObjects();
+
     }
 
     @Override
@@ -593,9 +608,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     @Override
     public void deleteAllAuxObjects() throws IOException {
-        if (!this.canWrite()) {
+        if (!isDirectAccess() && !this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
+        
         String prefix = getDestinationKey("");
 
         List<S3ObjectSummary> storedAuxFilesSummary = null;
@@ -639,10 +655,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
 
-    //TODO: Do we need this?
+    //TODO: Do we need this? - Answer: yes! 
     @Override
-    public String getStorageLocation() {
-        return null;
+    public String getStorageLocation() throws IOException {
+        String locationKey = getMainFileKey(); 
+        
+        if (locationKey == null) {
+            throw new IOException("Failed to obtain the S3 key for the file");
+        }
+        
+        return S3_IDENTIFIER_PREFIX + "://" + bucketName + "/" + locationKey; 
     }
 
     @Override
@@ -692,7 +714,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     String getDestinationKey(String auxItemTag) throws IOException {
-        if (dvObject instanceof DataFile) {
+        if (isDirectAccess() || dvObject instanceof DataFile) {
             return getMainFileKey() + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {
             if (key == null) {
@@ -715,6 +737,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
      */
     String getMainFileKey() throws IOException {
         if (key == null) {
+            // TODO: (?) - should we worry here about the datafile having null for the owner here? 
+            // or about the owner dataset having null for the authority and/or identifier?
+            // we should probably check for that and throw an exception. (unless we are 
+            // super positive that this condition would have been intercepted by now)
             String baseKey = this.getDataFile().getOwner().getAuthorityForFileStorage() + "/" + this.getDataFile().getOwner().getIdentifierForFileStorage();
             String storageIdentifier = dvObject.getStorageIdentifier();
 

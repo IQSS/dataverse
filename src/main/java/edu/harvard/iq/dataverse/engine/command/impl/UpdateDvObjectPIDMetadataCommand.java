@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.sql.Timestamp;
 import java.util.Collections;
@@ -52,12 +53,29 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
                 target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                 ctxt.em().merge(target);
                 ctxt.em().flush();
+                // When updating, we want to traverse through files even if the dataset itself
+                // didn't need updating.
+                String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
+                String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+                boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabled();
+                // We will skip trying to update the global identifiers for datafiles if they
+                // aren't being used.
+                // If they are, we need to assure that there's an existing PID or, as when
+                // creating PIDs, that the protocol matches that of the dataset DOI if
+                // we're going to create a DEPENDENT file PID.
+                String protocol = target.getProtocol();
                 for (DataFile df : target.getFiles()) {
-                    doiRetString = idServiceBean.updateIdentifier(df);
-                    if (doiRetString) {
-                        df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                        ctxt.em().merge(df);
-                        ctxt.em().flush();
+                    if (isFilePIDsEnabled && // using file PIDs and
+                            (!(df.getIdentifier() == null || df.getIdentifier().isEmpty()) || // identifier exists, or
+                                    currentGlobalIdProtocol.equals(protocol) || // right protocol to create dependent DOIs, or
+                                    dataFilePIDFormat.equals("INDEPENDENT"))// or independent. TODO(pm) - check authority too
+                    ) {
+                        doiRetString = idServiceBean.updateIdentifier(df);
+                        if (doiRetString) {
+                            df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                            ctxt.em().merge(df);
+                            ctxt.em().flush();
+                        }
                     }
                 }
             } else {
