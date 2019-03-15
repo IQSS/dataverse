@@ -1358,4 +1358,4 @@ Normally published dataverses or datasets may not be deleted, but there exists a
   
   DELETE http://$SERVER/api/datasets/999/destroy
   
-Calling the destroy endpoint is permanent and irreversible. It will remove the dataverse or dataset and all files in question, then re-index the parent object in solr. You must first destroy the datasets as the endpoint won't act on a dataverse that isn't empty. This endpoint requires that the user whose API token is passed be a superuser.
+Calling the destroy endpoint is permanent and irreversible. It will remove the dataverse or dataset and all files in question, then re-index the parent object in Solr. You must first destroy the datasets as the endpoint won't act on a dataverse that isn't empty. This endpoint requires that the user whose API token is passed be a superuser.
