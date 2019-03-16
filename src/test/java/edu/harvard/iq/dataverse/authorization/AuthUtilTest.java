@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GoogleOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -36,8 +35,14 @@ public class AuthUtilTest {
         @Parameters
         public static Collection<String[]> data() {
             return Arrays.asList(
-                    new String[][] { { null, null, null }, { "Homer", "Homer", null }, { "Simpson", null, "Simpson" },
-                            { "Homer Simpson", "Homer", "Simpson" }, { "Homer Simpson", " Homer", "Simpson" } });
+                    new String[][] {
+                        { null, null, null },
+                        { "Homer", "Homer", null },
+                        { "Simpson", null, "Simpson" },
+                        { "Homer Simpson", "Homer", "Simpson" },
+                        { "Homer Simpson", " Homer", "Simpson" }
+                    }
+                );
         }
 
         @Parameter
@@ -55,7 +60,7 @@ public class AuthUtilTest {
         }
     }
 
-    public static class AuthUtilSingleTests {
+    public static class AuthUtilNoParamTests {
 
         /**
          * Test of isNonLocalLoginEnabled method, of class AuthUtil.

@@ -33,16 +33,16 @@ public class FileUtilTest {
         @Parameters
         public static Collection data() {
             return Arrays.asList(new Object[][] {
-                {null, null, null},
+                { null, null, null },
 
-                {"trees.png-endnote.xml", "trees.png", FileUtil.FileCitationExtension.ENDNOTE},
-                {"trees.png.ris", "trees.png", FileUtil.FileCitationExtension.RIS},
-                {"trees.png.bib", "trees.png", FileUtil.FileCitationExtension.BIBTEX},
-                {null, "trees.png", null},
+                { "trees.png-endnote.xml", "trees.png", FileUtil.FileCitationExtension.ENDNOTE },
+                { "trees.png.ris", "trees.png", FileUtil.FileCitationExtension.RIS },
+                { "trees.png.bib", "trees.png", FileUtil.FileCitationExtension.BIBTEX },
+                { null, "trees.png", null },
 
-                {"50by1000-endnote.xml", "50by1000.tab", FileUtil.FileCitationExtension.ENDNOTE},
-                {"50by1000.ris", "50by1000.tab", FileUtil.FileCitationExtension.RIS},
-                {"50by1000.bib", "50by1000.tab", FileUtil.FileCitationExtension.BIBTEX},
+                { "50by1000-endnote.xml", "50by1000.tab", FileUtil.FileCitationExtension.ENDNOTE },
+                { "50by1000.ris", "50by1000.tab", FileUtil.FileCitationExtension.RIS },
+                { "50by1000.bib", "50by1000.tab", FileUtil.FileCitationExtension.BIBTEX }
             });
         }
 
@@ -61,7 +61,7 @@ public class FileUtilTest {
         }
     }
 
-    public static class FileUtilSingleTest {
+    public static class FileUtilNoParamTest {
         @Test
         public void testIsDownloadPopupRequiredNull() {
             assertEquals(false, FileUtil.isDownloadPopupRequired(null));
@@ -246,6 +246,4 @@ public class FileUtilTest {
             assertFalse(FileUtil.isThumbnailSupported(filewBogusContentType));
         }
     }
-
-
 }

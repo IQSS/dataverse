@@ -10,11 +10,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
-import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -67,14 +63,13 @@ public class ShibUtilTest {
         public void testFindBestFirstAndLastName() {
 
             // ShibUserNameFields expected1 = new ShibUserNameFields("John", "Harvard");
-            ShibUserNameFields actualValues = ShibUtil.findBestFirstAndLastName(actualFirstName, actualLastName,
-                    actualDisplayName);
+            ShibUserNameFields actualValues = ShibUtil.findBestFirstAndLastName(actualFirstName, actualLastName, actualDisplayName);
             assertEquals(expectedFirstName, actualValues.getFirstName());
             assertEquals(expectedLastName, actualValues.getLastName());
         }
     }
 
-    public static class ShibUtilSingleTest {
+    public static class ShibUtilNoParamTest {
 
         private HttpServletRequest request = mock(HttpServletRequest.class);
 
@@ -87,26 +82,22 @@ public class ShibUtilTest {
 
             String discoFeedExample = null;
             try {
-                discoFeedExample = new String(
-                        Files.readAllBytes(Paths.get("src/main/webapp/resources/dev/sample-shib-identities.json")));
+                discoFeedExample = new String(Files.readAllBytes(Paths.get("src/main/webapp/resources/dev/sample-shib-identities.json")));
             } catch (IOException ex) {
                 Logger.getLogger(ShibUtilTest.class.getName()).log(Level.SEVERE, null, ex);
             }
             ShibUtil shibUtil = new ShibUtil();
 
-            String testShib = shibUtil.getDisplayNameFromDiscoFeed("https://idp.testshib.org/idp/shibboleth",
-                    discoFeedExample);
+            String testShib = shibUtil.getDisplayNameFromDiscoFeed("https://idp.testshib.org/idp/shibboleth", discoFeedExample);
             assertEquals("TestShib Test IdP", testShib);
 
-            String harvardStage = shibUtil
-                    .getDisplayNameFromDiscoFeed("https://stage.fed.huit.harvard.edu/idp/shibboleth", discoFeedExample);
+            String harvardStage = shibUtil.getDisplayNameFromDiscoFeed("https://stage.fed.huit.harvard.edu/idp/shibboleth", discoFeedExample);
             assertEquals("Harvard Test IdP", harvardStage);
 
             String minimal = shibUtil.getDisplayNameFromDiscoFeed("https://minimal.com/shibboleth", discoFeedExample);
             assertEquals(null, minimal);
 
-            String unknown = shibUtil.getDisplayNameFromDiscoFeed("https://nosuchdomain.com/idp/shibboleth",
-                    discoFeedExample);
+            String unknown = shibUtil.getDisplayNameFromDiscoFeed("https://nosuchdomain.com/idp/shibboleth", discoFeedExample);
             assertEquals(null, unknown);
 
             String searchForNull = shibUtil.getDisplayNameFromDiscoFeed(null, discoFeedExample);
@@ -139,15 +130,13 @@ public class ShibUtilTest {
         public void testGenerateFriendlyLookingUserIdentifer() {
             int lengthOfUuid = UUID.randomUUID().toString().length();
             assertEquals("uid1", ShibUtil.generateFriendlyLookingUserIdentifer("uid1", null));
-            assertEquals(" leadingWhiteSpace",
-                    ShibUtil.generateFriendlyLookingUserIdentifer(" leadingWhiteSpace", null));
+            assertEquals(" leadingWhiteSpace", ShibUtil.generateFriendlyLookingUserIdentifer(" leadingWhiteSpace", null));
             assertEquals("uid1", ShibUtil.generateFriendlyLookingUserIdentifer("uid1", "email1@example.com"));
             assertEquals("email1", ShibUtil.generateFriendlyLookingUserIdentifer(null, "email1@example.com"));
             assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifer(null, null).length());
             assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifer(null, "").length());
             assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifer("", null).length());
-            assertEquals(lengthOfUuid,
-                    ShibUtil.generateFriendlyLookingUserIdentifer(null, "junkEmailAddress").length());
+            assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifer(null, "junkEmailAddress").length());
         }
 
         @Test
