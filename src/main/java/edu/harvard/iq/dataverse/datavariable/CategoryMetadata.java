@@ -28,8 +28,9 @@ public class CategoryMetadata {
 
     public CategoryMetadata() {}
 
-    public CategoryMetadata(VariableMetadata variableMetadata) {
+    public CategoryMetadata(VariableMetadata variableMetadata, VariableCategory category) {
         this.variableMetadata = variableMetadata;
+        this.category = category;
     }
 
     public Double getWfreq() {

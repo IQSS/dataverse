@@ -20,15 +20,6 @@
 
 package edu.harvard.iq.dataverse.dataaccess;
 
-import edu.harvard.iq.dataverse.DataFile;
-import java.io.IOException;
-
-// javaswift imports
-import org.javaswift.joss.model.Container;
-import org.javaswift.joss.model.StoredObject;
-
-
-
 import edu.harvard.iq.dataverse.DvObject;
 import java.io.IOException;
 /**
@@ -72,7 +63,6 @@ public class DataAccess {
             throw new IOException("DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
         }
         
-        // No other storage methods are supported as of now! -- 4.0.1
         // TODO: 
         // This code will need to be extended with a system of looking up 
         // available storage plugins by the storage tag embedded in the 
@@ -81,6 +71,21 @@ public class DataAccess {
         
 
         throw new IOException("getDataAccessObject: Unsupported storage method.");
+    }
+    
+    // Experimental extension of the StorageIO system allowing direct access to 
+    // stored physical files that may not be associated with any DvObjects
+    
+    public static StorageIO getDirectStorageIO(String storageLocation) throws IOException {
+        if (storageLocation.startsWith("file://")) {
+            return new FileAccessIO(storageLocation.substring(7));
+        } else if (storageLocation.startsWith("swift://")){
+            return new SwiftAccessIO<>(storageLocation.substring(8));
+        } else if (storageLocation.startsWith("s3://")){ 
+            return new S3AccessIO<>(storageLocation.substring(5));
+        }
+        
+        throw new IOException("getDirectStorageIO: Unsupported storage method.");
     }
 
     // createDataAccessObject() methods create a *new*, empty DataAccess objects,

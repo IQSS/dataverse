@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -60,6 +61,8 @@ public class ContainerManagerImpl implements ContainerManager {
     ImportGenericServiceBean importGenericService;
     @EJB
     PermissionServiceBean permissionService;
+    @EJB
+    DataFileServiceBean datafileService;
     @Inject
     SwordAuth swordAuth;
     @Inject
@@ -221,6 +224,7 @@ public class ContainerManagerImpl implements ContainerManager {
                         if (!permissionService.isUserAllowedOn(user, deleteDatasetVersionCommand, dataset)) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify " + dvThatOwnsDataset.getAlias());
                         }
+                        Map<Long, String> deleteStorageLocations = datafileService.getPhysicalFilesToDelete(dataset.getLatestVersion());
                         DatasetVersion.VersionState datasetVersionState = dataset.getLatestVersion().getVersionState();
                         if (dataset.isReleased()) {
                             if (datasetVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
@@ -261,6 +265,16 @@ public class ContainerManagerImpl implements ContainerManager {
                                 // we should never get here. throw an error explaining why
                                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "dataset is in illegal state (not published yet not in draft)");
                             }
+                        }
+                        // If we have gotten this far, the delete command has succeeded - 
+                        // by either deleting the Draft version of a published dataset, 
+                        // or destroying an unpublished one. 
+                        // This means we can finalize permanently deleting the physical files:
+                        // (DataFileService will double-check that the datafiles no 
+                        // longer exist in the database, before attempting to delete 
+                        // the physical files)
+                        if (!deleteStorageLocations.isEmpty()) {
+                            datafileService.finalizeFileDeletes(deleteStorageLocations);
                         }
                     } else {
                         throw new SwordError(404);
