@@ -69,6 +69,8 @@ public class AuthUtilTest {
         public void testIsNonLocalLoginEnabled() {
             System.out.println("isNonLocalLoginEnabled");
 
+            AuthUtil authUtil = new AuthUtil();
+
             assertEquals(false, AuthUtil.isNonLocalLoginEnabled(null));
 
             Collection<AuthenticationProvider> shibOnly = new HashSet<>();
