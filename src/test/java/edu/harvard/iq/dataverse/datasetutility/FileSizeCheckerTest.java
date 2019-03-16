@@ -15,8 +15,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -31,7 +33,7 @@ public class FileSizeCheckerTest {
 
     private FileSizeChecker fileSizeChecker;
 
-    @BeforeAll
+    @BeforeEach
     public void setUp() {
         // initialize a system config and instantiate a file size checker
         // override the max file upload side to allow for testing
@@ -66,21 +68,17 @@ public class FileSizeCheckerTest {
         });
     }
 
-    @Test
-    public void testIsAllowedFileSize_allowsSmallerFileSize() {
-        FileSizeResponse response = fileSizeChecker.isAllowedFileSize(999L);
+    @ParameterizedTest
+    @ValueSource(longs = { 0L, 999L, 1000L })
+    public void testIsAllowedFileSize_allowsSmallerOrEqualFileSize(Long fileSize) {
+        FileSizeResponse response = fileSizeChecker.isAllowedFileSize(fileSize);
         assertTrue(response.fileSizeOK);
     }
 
-    @Test
-    public void testIsAllowedFileSize_allowsEqualFileSize() {
-        FileSizeResponse response = fileSizeChecker.isAllowedFileSize(1000L);
-        assertTrue(response.fileSizeOK);
-    }
-
-    @Test
-    public void testIsAllowedFileSize_rejectsBiggerFileSize() {
-        FileSizeResponse response = fileSizeChecker.isAllowedFileSize(1001L);
+    @ParameterizedTest
+    @ValueSource(longs = { 1001L, Long.MAX_VALUE })
+    public void testIsAllowedFileSize_rejectsBiggerFileSize(Long fileSize) {
+        FileSizeResponse response = fileSizeChecker.isAllowedFileSize(fileSize);
         assertFalse(response.fileSizeOK);
     }
 
@@ -94,7 +92,7 @@ public class FileSizeCheckerTest {
                 return null;
             }
         });
-        FileSizeResponse response = unboundedFileSizeChecker.isAllowedFileSize(Long.MAX_VALUE);
+        FileSizeResponse response = unboundedFileSizeChecker.isAllowedFileSize(1000L);
         assertTrue(response.fileSizeOK);
     }
 }
