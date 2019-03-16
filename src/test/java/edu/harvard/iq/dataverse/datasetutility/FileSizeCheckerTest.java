@@ -15,9 +15,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -28,7 +31,7 @@ public class FileSizeCheckerTest {
 
     private FileSizeChecker fileSizeChecker;
 
-    @Before
+    @BeforeAll
     public void setUp() {
         // initialize a system config and instantiate a file size checker
         // override the max file upload side to allow for testing
@@ -56,9 +59,11 @@ public class FileSizeCheckerTest {
         assertEquals(expLongAns, longAns);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testIsAllowedFileSize_throwsOnNull() {
-        fileSizeChecker.isAllowedFileSize(null);
+        assertThrows(NullPointerException.class, () -> {
+            fileSizeChecker.isAllowedFileSize(null);
+        });
     }
 
     @Test
@@ -79,7 +84,7 @@ public class FileSizeCheckerTest {
         assertFalse(response.fileSizeOK);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testIsAllowedFileSize_allowsOnUnboundedFileSize() {
         // initialize a system config and instantiate a file size checker
         // ensure that a max filesize is not set
