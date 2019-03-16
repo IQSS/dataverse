@@ -28,20 +28,23 @@ public class ShibUtilTest {
 
         @Parameters
         public static Collection<String[]> data() {
-            return Arrays.asList(new String[][] { { "John", "Harvard", "John", "Harvard", null },
-                    { "Guido", "van Rossum", "Guido", "van Rossum", null },
-                    { "Philip Seymour", "Hoffman", "Philip Seymour", "Hoffman", "Philip Seymour Hoffman" },
-                    { "Edward", "Cummings", "Edward;e e", "Cummings", null },
-                    { "Edward", "Cummings", "Edward;e e", "Cummings", "e e cummings" },
-                    { "Anthony", "Stark", "Tony;Anthony", "Stark", null },
-                    { "Anthony", "Stark", "Anthony;Tony", "Stark", null },
-                    { "Antoni", "Gaudí", "Antoni", "Gaudí i Cornet;Gaudí", null },
-                    { "Jane", "Doe", null, null, "Jane Doe" },
-                    /**
-                     * @todo Make findBestFirstAndLastName smart enough to know that the last name
-                     *       should be "Hoffman" rather than "Seymour".
-                     */
-                    { "Philip", "Seymour", null, null, "Philip Seymour Hoffman" }, { null, null, null, null, "" } });
+            return Arrays.asList(new String[][] {
+                { "John", "Harvard", "John", "Harvard", null },
+                { "Guido", "van Rossum", "Guido", "van Rossum", null },
+                { "Philip Seymour", "Hoffman", "Philip Seymour", "Hoffman", "Philip Seymour Hoffman" },
+                { "Edward", "Cummings", "Edward;e e", "Cummings", null },
+                { "Edward", "Cummings", "Edward;e e", "Cummings", "e e cummings" },
+                { "Anthony", "Stark", "Tony;Anthony", "Stark", null },
+                { "Anthony", "Stark", "Anthony;Tony", "Stark", null },
+                { "Antoni", "Gaudí", "Antoni", "Gaudí i Cornet;Gaudí", null },
+                { "Jane", "Doe", null, null, "Jane Doe" },
+                /**
+                * @todo Make findBestFirstAndLastName smart enough to know that the last name
+                *       should be "Hoffman" rather than "Seymour".
+                */
+                { "Philip", "Seymour", null, null, "Philip Seymour Hoffman" },
+                { null, null, null, null, "" }
+            });
         }
 
         @Parameter
