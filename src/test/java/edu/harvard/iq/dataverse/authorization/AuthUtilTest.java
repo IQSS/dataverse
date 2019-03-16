@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -21,13 +20,6 @@ import static org.junit.Assert.*;
 
 @RunWith(Enclosed.class)
 public class AuthUtilTest {
-
-    private AuthUtil authUtil;
-
-    @Before
-    public void initializeAuthUtil() {
-        this.authUtil = new AuthUtil();
-    }
 
     @RunWith(Parameterized.class)
     public static class AuthUtilParamTests {
