@@ -8,6 +8,20 @@ import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 
+/**
+ * Theories allows to add more formal tests to our code. In a way JUnit Theories behave 
+ * much like mathematical theories that hold for every element of a large (infinite) set. 
+ * JUnit will combine every possible combination (cartesian product) of datapoints and 
+ * pass these to the tests annotated with @Theory. The assume statements make sure, only 
+ * valid datapoints are tested in each Theory.
+ * 
+ * @Datapoints - defines an array of values to test on
+ * @Datapoint - stores one single value
+ * 
+ * JUnit will no longer maintain a JUnit 4 Theories equivalent in the JUnit 5 codebase, as 
+ * mentioned in a discussion here: https://github.com/junit-team/junit5/pull/1422#issuecomment-389644868
+ */
+
 @RunWith(Theories.class)
 public class MyDataUtilTest {
 
