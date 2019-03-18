@@ -1066,44 +1066,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public String save() {
         
-        
-         // Validate
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
-        Set<ConstraintViolation> fileMetadataViolations = new HashSet<>();
-        for (FileMetadata test : fileMetadatas) {
-            Set<ConstraintViolation<FileMetadata>> constraintViolations = validator.validate(test);
-            if (constraintViolations.size() > 0) {
-                // currently only support one message
-                ConstraintViolation<FileMetadata> violation = constraintViolations.iterator().next();
-                String message = "Constraint violation found in FileMetadata. "
-                        + violation.getMessage() + " "
-                        + "The invalid value is \"" + violation.getInvalidValue().toString() + "\".";
-                logger.info(message);
-                fileMetadataViolations.add(violation);
-                break; // currently only support one message, so we can break out of the loop after the first constraint violation
-            }
-        }
-
-        if (!fileMetadataViolations.isEmpty()) {
-            logger.fine("Constraint violation detected on SAVE: " + fileMetadataViolations.toString());
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, getBundleString("dataset.message.validationError"));
-            return "";
-        }
-        
-        Set<ConstraintViolation> constraintViolations = workingVersion.validate();
-        if (!constraintViolations.isEmpty()) {
-            logger.fine("Constraint violation detected on SAVE: "+constraintViolations.toString());
-             JH.addMessage(FacesMessage.SEVERITY_ERROR, getBundleString("dataset.message.validationError"));
-            return "";
-        }     
-
-        // Once all the filemetadatas pass the validation, we'll only allow the user 
-        // to try to save once; (this it to prevent them from creating multiple
-        // DRAFT versions, if the page gets stuck in that state where it 
-        // successfully creates a new version, but can't complete the remaining
-        // tasks. -- L.A. 4.2
-        
         if (!saveEnabled) {
             return "";
         }
