@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -174,8 +175,8 @@ public class DataversesIT {
                 .statusCode(OK.getStatusCode());
         RestAssured.unregisterParser("text/plain");
 
-        String dataverseEmailNotAllowed = with(exportDataverseAsJson.body().asString())
-                .getJsonObject("data.creator.email");
+        List dataverseEmailNotAllowed = with(exportDataverseAsJson.body().asString())
+                .getJsonObject("data.dataverseContacts");
         assertNull(dataverseEmailNotAllowed);
         
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
@@ -187,8 +188,8 @@ public class DataversesIT {
         exportDataverseAsJson2.then().assertThat()
                 .statusCode(OK.getStatusCode());
         RestAssured.unregisterParser("text/plain");
-        String dataverseEmailAllowed = with(exportDataverseAsJson2.body().asString())
-                .getJsonObject("data.creator.email");
+        List dataverseEmailAllowed = with(exportDataverseAsJson2.body().asString())
+                .getJsonObject("data.dataverseContacts");
         assertNotNull(dataverseEmailAllowed);
         
         Response deleteDataverse2 = UtilIT.deleteDataverse(dataverseAlias, apiToken);

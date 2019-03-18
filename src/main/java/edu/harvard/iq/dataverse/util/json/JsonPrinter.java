@@ -106,13 +106,9 @@ public class JsonPrinter {
             .add("identifier", authenticatedUser.getIdentifier())
             .add("displayName", authenticatedUser.getDisplayInfo().getTitle())
             .add("firstName", authenticatedUser.getFirstName())
-            .add("lastName", authenticatedUser.getLastName());
-        
-        if(!hideEmail) {
-            builder.add("email", authenticatedUser.getEmail());
-        }
-        
-        builder.add("superuser", authenticatedUser.isSuperuser())
+            .add("lastName", authenticatedUser.getLastName())
+            .add("email", authenticatedUser.getEmail())
+            .add("superuser", authenticatedUser.isSuperuser())
             .add("affiliation", authenticatedUser.getAffiliation())
             .add("position", authenticatedUser.getPosition())
             .add("persistentUserId", authenticatedUser.getAuthenticatedUserLookup().getPersistentUserId())
@@ -239,19 +235,23 @@ public class JsonPrinter {
         return bld;
     }
     
+    //MAD: Maybe delete this entirely so folks have to make the decision about public/private
     public static JsonObjectBuilder json(Dataverse dv) {
-        return json(dv, false);
+        return json(dv, true, false);
     }
 
     //TODO: Once we upgrade to Java EE 8 we can remove objects from the builder, and this email removal can be done in a better place.
-    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail) {
+    public static JsonObjectBuilder json(Dataverse dv, Boolean privateData, Boolean hideEmail) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dv.getId())
                 .add("alias", dv.getAlias())
                 .add("name", dv.getName())
-                .add("affiliation", dv.getAffiliation())
-                .add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()))
-                .add("permissionRoot", dv.isPermissionRoot())
+                .add("affiliation", dv.getAffiliation());
+        if(!hideEmail) { 
+            bld.add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()));
+        }
+        
+        bld.add("permissionRoot", dv.isPermissionRoot())
                 .add("description", dv.getDescription())
                 .add("dataverseType", dv.getDataverseType().name());
         if (dv.getOwner() != null) {
@@ -261,7 +261,9 @@ public class JsonPrinter {
             bld.add("creationDate", Util.getDateTimeFormat().format(dv.getCreateDate()));
         }
         if (dv.getCreator() != null) {
-            bld.add("creator", JsonPrinter.json(dv.getCreator(), hideEmail));
+            if(privateData) { //Dataverse creation responds with creator section
+                bld.add("creator", JsonPrinter.json(dv.getCreator(), hideEmail));
+            }
         }
         if (dv.getDataverseTheme() != null) {
             bld.add("theme", JsonPrinter.json(dv.getDataverseTheme()));
@@ -271,11 +273,12 @@ public class JsonPrinter {
     }
 
     public static JsonArrayBuilder json(List<DataverseContact> dataverseContacts) {
-        return dataverseContacts.stream()
-                .map( dc -> jsonObjectBuilder()
-                        .add("displayOrder", dc.getDisplayOrder())
-                        .add("contactEmail", dc.getContactEmail())
-                ).collect( toJsonArray() );
+        JsonArrayBuilder bld = Json.createArrayBuilder();
+        for(DataverseContact dc : dataverseContacts) {
+            bld.add(dc.getContactEmail()); 
+        }
+        
+        return bld;
     }
     
     public static JsonObjectBuilder json( DataverseTheme theme ) {
