@@ -23,14 +23,38 @@
             <ui:param name="pageTitle" value="#{bundle['dashboard.card.datamove.header']} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
-<!-- TODO move all text to bundle properties-->
-                <h2>Move data to another 'owning' Dataverse</h2>
+
+                <!-- TODO move all text to bundle properties-->
+                <h2>Move data to another Dataverse</h2>
                 <!-- <h:messages style = "color:red;margin:8px;" /> -->
 
                 <h:form id="datamove-form">
                     <p:panel id="src-panel" header="Source">
+                        <!-- direct input
                         <h:outputLabel for="datasetId" value="Dataset persistentId" />
                         <p:inputText id="datasetId" value="#{DashboardDatamovePage.datasetId}" />
+                        <hr/>
+                        -->
+                        <h:outputLabel for="srcAlias" value="Dataverse alias" />
+                        <h:selectOneMenu id="srcAlias"
+                                         immediate="true"
+                                         value="#{DashboardDatamovePage.srcAlias}"
+                                         valueChangeListener="#{DashboardDatamovePage.handleSrcChange}">
+                            <f:selectItem itemValue="#{null}" itemLabel="--select--" />
+                            <f:selectItems value="#{DashboardDatamovePage.aliases}" />
+                            <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move-msg,:datamove-form:dsPersistentIds"/>
+                        </h:selectOneMenu>
+
+                        <h:outputLabel for="dsPersistentIds" value="Dataset persistentID" />
+                        <h:selectOneMenu id="dsPersistentIds"
+                                         immediate="true"
+                                         value="#{DashboardDatamovePage.dsPersistentId}"
+                                         valueChangeListener="#{DashboardDatamovePage.handleDsPersistentIdChange}">
+                            <f:selectItem itemValue="#{null}" itemLabel="--select--" />
+                            <f:selectItems value="#{DashboardDatamovePage.dsPersistentIds}" />
+                            <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move-msg"/>
+                        </h:selectOneMenu>
+
                     </p:panel>
 
                     <p:panel id="dst-panel" header="Destination">
@@ -47,10 +71,8 @@
                             <f:selectItem itemValue="#{null}" itemLabel="--select--" />
                             <f:selectItems value="#{DashboardDatamovePage.aliases}" />
                             <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move-msg"/>
-
                         </h:selectOneMenu>
-
-
+                        
                     </p:panel>
 
                     <p:messages id="move-msg" closable="true" />
