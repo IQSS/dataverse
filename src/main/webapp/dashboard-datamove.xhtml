@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <h:head>
+    </h:head>
+
+    <h:body>
+        <f:metadata>
+            <f:viewParam name="dataverseId" value="#{dataverseServiceBean.findRootDataverse().id}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
+            <f:viewAction action="#{DashboardDatamovePage.init}"/>
+            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
+            <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverse.id), bundle['dashboard.title'])}"/> 
+            <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dashboard.card.datamove.manage'])}"/>
+        </f:metadata>
+
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="#{bundle['dashboard.card.datamove.header']} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
+            <ui:param name="showDataverseHeader" value="false"/>
+            <ui:define name="body">
+<!-- TODO move all text to bundle properties-->
+                <h2>Move data to another 'owning' Dataverse</h2>
+                <!-- <h:messages style = "color:red;margin:8px;" /> -->
+
+                <h:form id="datamove-form">
+                    <p:panel id="src-panel" header="Source">
+                        <h:outputLabel for="datasetId" value="Dataset persistentId" />
+                        <p:inputText id="datasetId" value="#{DashboardDatamovePage.datasetId}" />
+                    </p:panel>
+
+                    <p:panel id="dst-panel" header="Destination">
+                        <!-- direct input 
+                        <h:outputLabel for="dataverseAlias" value="Dataverse alias" />
+                        <p:inputText id="dataverseAlias" value="#{DashboardDatamovePage.dataverseAlias}" />
+                        <hr/>
+                        -->
+                        <h:outputLabel for="dstAlias" value="Dataverse alias" />
+                        <h:selectOneMenu id="dstAlias"
+                                         immediate="true"
+                                         value="#{DashboardDatamovePage.dstAlias}"
+                                         valueChangeListener="#{DashboardDatamovePage.handleDstChange}">
+                            <f:selectItem itemValue="#{null}" itemLabel="--select--" />
+                            <f:selectItems value="#{DashboardDatamovePage.aliases}" />
+                            <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move-msg"/>
+
+                        </h:selectOneMenu>
+
+
+                    </p:panel>
+
+                    <p:messages id="move-msg" closable="true" />
+
+                    <!-- action -->
+                    <hr/>
+                    <p:commandButton styleClass="btn btn-default" value="Move" action="#{DashboardDatamovePage.move()}">
+                        <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-alert" />
+                    </p:commandButton>
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                    </p:confirmDialog>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
