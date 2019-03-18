@@ -1067,6 +1067,9 @@ Show data about an authentication provider::
 
   GET http://$SERVER/api/admin/authenticationProviders/$id
 
+
+.. _api_toggle_auth_provider:
+
 Enable or Disable an Authentication Provider
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
