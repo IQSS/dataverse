@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
@@ -110,6 +111,10 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         //GuestbookResponse
         for (GuestbookResponse gbr : ctxt.responses().findByAuthenticatedUserId(consumedAU)) {
             gbr.setAuthenticatedUser(ongoingAU);
+            gbr.setEmail(ongoingAU.getEmail());
+            gbr.setName(ongoingAU.getFirstName() + " " +  ongoingAU.getLastName());
+            gbr.setInstitution(ongoingAU.getAffiliation());
+            gbr.setPosition(ongoingAU.getPosition());
             ctxt.em().merge(gbr);
         }
         
@@ -118,6 +123,15 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
             note.setUser(ongoingAU);
             ctxt.em().merge(note);
         }
+        
+        //UserNotification
+        for (UserNotification note : ctxt.notifications().findByRequestor(consumedAU.getId())) {
+            note.setRequestor(ongoingAU);
+            ctxt.em().merge(note);
+        }
+        
+        // Set<ExplicitGroup>
+        //for () 
         
         //SavedSearch
         for (SavedSearch search : ctxt.savedSearches().findByAuthenticatedUser(consumedAU)) {
@@ -131,6 +145,8 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
             ctxt.em().merge(wc);
         }
         
+
+        
         //ConfirmEmailData  
         
         ConfirmEmailData confirmEmailData = ctxt.confirmEmail().findSingleConfirmEmailDataByUser(consumedAU);       
@@ -139,6 +155,10 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         //Access Request is not an entity. have to update with native query
         
         ctxt.em().createNativeQuery("UPDATE fileaccessrequests SET authenticated_user_id="+ongoingAU.getId()+" WHERE authenticated_user_id="+consumedAU.getId()).executeUpdate();
+        
+        ctxt.em().createNativeQuery("Delete from OAuth2TokenData where user_id ="+consumedAU.getId()).executeUpdate();
+        
+        ctxt.em().createNativeQuery("UPDATE explicitgroup_authenticateduser SET containedauthenticatedusers_id="+ongoingAU.getId()+" WHERE containedauthenticatedusers_id="+consumedAU.getId()).executeUpdate();
         
         ctxt.actionLog().changeUserIdentifierInHistory(consumedAU.getIdentifier(), ongoingAU.getIdentifier());
         

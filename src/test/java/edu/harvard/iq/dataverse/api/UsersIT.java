@@ -6,12 +6,15 @@ import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
@@ -118,6 +121,13 @@ public class UsersIT {
                 .statusCode(CREATED.getStatusCode());
 
         String dataverseAlias = JsonPath.from(createDataverse.body().asString()).getString("data.alias");
+        
+        Response createDataverseSuper = UtilIT.createRandomDataverse(superuserApiToken);
+        createDataverseSuper.prettyPrint();
+        createDataverseSuper.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAliasSuper = JsonPath.from(createDataverseSuper.body().asString()).getString("data.alias");
 
         String pathToJsonFile = "src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-hdl.json";
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, normalApiToken);
@@ -138,6 +148,82 @@ public class UsersIT {
         String targetname = UtilIT.getUsernameFromResponse(targetUser);
         String targetToken = UtilIT.getApiTokenFromResponse(targetUser);
         
+        pathToJsonFile = "scripts/api/data/dataset-create-new.json";
+        Response createDatasetResponseSuper = UtilIT.createDatasetViaNativeApi(dataverseAliasSuper, pathToJsonFile, superuserApiToken);
+        createDatasetResponseSuper.prettyPrint();
+        Integer datasetIdNew = JsonPath.from(createDatasetResponseSuper.body().asString()).getInt("data.id");
+
+        String tabFile3NameRestrictedNew = "stata13-auto-withstrls.dta";
+        String tab3PathToFile = "scripts/search/data/tabular/" + tabFile3NameRestrictedNew;
+        try {
+            Thread.sleep(1000); //Added because tests are failing during setup, test is probably going too fast. Especially between first and second file
+        } catch (InterruptedException ex) {
+            Logger.getLogger(UsersIT.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        Response tab3AddResponse = UtilIT.uploadFileViaNative(datasetIdNew.toString(), tab3PathToFile, superuserApiToken);
+        Integer tabFile3IdRestrictedNew = JsonPath.from(tab3AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        try {
+            Thread.sleep(3000); //Dataverse needs more time...
+        } catch (InterruptedException ex) {
+            Logger.getLogger(UsersIT.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        Response restrictResponse = UtilIT.restrictFile(tabFile3IdRestrictedNew.toString(), true, superuserApiToken);
+        restrictResponse.prettyPrint();
+        restrictResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+
+        //Update Dataset to allow requests
+        Response allowAccessRequestsResponse = UtilIT.allowAccessRequests(datasetIdNew.toString(), true, superuserApiToken);
+        assertEquals(200, allowAccessRequestsResponse.getStatusCode());
+        
+        Response publishDataverseResponseSuper =  UtilIT.publishDataverseViaNativeApi(dataverseAliasSuper, superuserApiToken);
+        assertEquals(200, publishDataverseResponseSuper.getStatusCode());
+        publishDataverseResponseSuper.prettyPrint();
+        
+        //Meanwhile add another file to be downloaded
+        
+        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+
+        JsonObjectBuilder json = Json.createObjectBuilder()
+                .add("description", "my description")
+                .add("categories", Json.createArrayBuilder()
+                        .add("Data")
+                );
+
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, json.build(), superuserApiToken);
+        
+        Integer downloadableFileId = JsonPath.from(addResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        
+        //Must republish to get it to work
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetIdNew, "major", superuserApiToken);
+        assertEquals(200, publishDataset.getStatusCode());
+
+        Response requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), normalApiToken);
+        assertEquals(200, requestFileAccessResponse.getStatusCode());
+        
+        Response downloadThatFile = UtilIT.downloadFile(downloadableFileId, normalApiToken);
+        assertEquals(200, downloadThatFile.getStatusCode());
+        
+        
+        String aliasInOwner = "groupFor" + dataverseAlias;
+        String displayName = "Group for " + dataverseAlias;
+        String user2identifier = "@" + usernameConsumed;
+        Response createGroup = UtilIT.createGroup(dataverseAlias, aliasInOwner, displayName, superuserApiToken);
+        createGroup.prettyPrint();
+        createGroup.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String groupIdentifier = JsonPath.from(createGroup.asString()).getString("data.identifier");
+
+        List<String> roleAssigneesToAdd = new ArrayList<>();
+        roleAssigneesToAdd.add(user2identifier);
+        Response addToGroup = UtilIT.addToGroup(dataverseAlias, aliasInOwner, roleAssigneesToAdd, superuserApiToken);
+        addToGroup.prettyPrint();
+        addToGroup.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+              
         mergeAccounts = UtilIT.mergeAccounts(targetname, usernameConsumed, superuserApiToken);
         assertEquals(200, mergeAccounts.getStatusCode());
         mergeAccounts.prettyPrint();
@@ -170,6 +256,8 @@ public class UsersIT {
         Response publishDatasetResponse =  UtilIT.publishDatasetViaNativeApi(datasetId, "major", targetToken);
         assertEquals(200, publishDatasetResponse.getStatusCode());
         publishDatasetResponse.prettyPrint();
+        
+        
         
     }
     
