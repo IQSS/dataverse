@@ -35,7 +35,7 @@ public class DataAccess {
 
 
     public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id");
-    
+
     // The getStorageIO() methods initialize StorageIO objects for
     // datafiles that are already saved using one of the supported Dataverse
     // DataAccess IO drivers.
@@ -45,7 +45,7 @@ public class DataAccess {
 
     //passing DVObject instead of a datafile to accomodate for use of datafiles as well as datasets
     public static <T extends DvObject> StorageIO<T> getStorageIO(T dvObject, DataAccessRequest req) throws IOException {
-        
+
         if (dvObject == null
                 || dvObject.getStorageIdentifier() == null
             || dvObject.getStorageIdentifier().isEmpty()) {
@@ -57,34 +57,34 @@ public class DataAccess {
             return new FileAccessIO<>(dvObject, req);
         } else if (dvObject.getStorageIdentifier().startsWith("swift://")){
             return new SwiftAccessIO<>(dvObject, req);
-        } else if (dvObject.getStorageIdentifier().startsWith("s3://")){ 
+        } else if (dvObject.getStorageIdentifier().startsWith("s3://")){
             return new S3AccessIO<>(dvObject, req);
         } else if (dvObject.getStorageIdentifier().startsWith("tmp://")) {
             throw new IOException("DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
         }
-        
-        // TODO: 
-        // This code will need to be extended with a system of looking up 
-        // available storage plugins by the storage tag embedded in the 
-        // "storage identifier". 
+
+        // TODO:
+        // This code will need to be extended with a system of looking up
+        // available storage plugins by the storage tag embedded in the
+        // "storage identifier".
         // -- L.A. 4.0.2
-        
+
 
         throw new IOException("getDataAccessObject: Unsupported storage method.");
     }
-    
-    // Experimental extension of the StorageIO system allowing direct access to 
+
+    // Experimental extension of the StorageIO system allowing direct access to
     // stored physical files that may not be associated with any DvObjects
-    
+
     public static StorageIO getDirectStorageIO(String storageLocation) throws IOException {
         if (storageLocation.startsWith("file://")) {
             return new FileAccessIO(storageLocation.substring(7));
         } else if (storageLocation.startsWith("swift://")){
             return new SwiftAccessIO<>(storageLocation.substring(8));
-        } else if (storageLocation.startsWith("s3://")){ 
+        } else if (storageLocation.startsWith("s3://")){
             return new S3AccessIO<>(storageLocation.substring(5));
         }
-        
+
         throw new IOException("getDirectStorageIO: Unsupported storage method.");
     }
 
@@ -123,6 +123,6 @@ public class DataAccess {
         storageIO.open(DataAccessOption.WRITE_ACCESS);
         return storageIO;
     }
-    
+
 
 }
