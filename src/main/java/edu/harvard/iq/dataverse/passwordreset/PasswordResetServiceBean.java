@@ -42,6 +42,9 @@ public class PasswordResetServiceBean {
     @EJB
     AuthenticationServiceBean authService;
 
+    @EJB
+    SystemConfig systemConfig;
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -81,7 +84,7 @@ public class PasswordResetServiceBean {
             em.persist(passwordResetData);
             PasswordResetInitResponse passwordResetInitResponse = new PasswordResetInitResponse(true, passwordResetData);
             if ( sendEmail ) {
-                sendPasswordResetEmail(aUser, passwordResetInitResponse.getResetUrl());
+                sendPasswordResetEmail(aUser, passwordResetInitResponse.getResetUrl(systemConfig.getDataverseSiteUrl()));
             }
 
             return passwordResetInitResponse;
