@@ -149,8 +149,11 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         
         //ConfirmEmailData  
         
-        ConfirmEmailData confirmEmailData = ctxt.confirmEmail().findSingleConfirmEmailDataByUser(consumedAU);       
-        ctxt.em().remove(confirmEmailData);
+        ConfirmEmailData confirmEmailData = ctxt.confirmEmail().findSingleConfirmEmailDataByUser(consumedAU); 
+        if (confirmEmailData != null){
+            ctxt.em().remove(confirmEmailData);
+        }
+
         
         //Access Request is not an entity. have to update with native query
         
