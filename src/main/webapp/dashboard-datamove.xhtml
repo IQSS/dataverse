@@ -32,7 +32,7 @@
                     <p:panel id="src-panel" header="Source">
                         <!-- direct input
                         <h:outputLabel for="datasetId" value="Dataset persistentId" />
-                        <p:inputText id="datasetId" value="#{DashboardDatamovePage.datasetId}" />
+                        <p:inputText id="datasetId" value="#{DashboardDatamovePage.dsPersistentId}" />
                         <hr/>
                         -->
                         <h:outputLabel for="srcAlias" value="Dataverse alias" />
@@ -42,7 +42,7 @@
                                          valueChangeListener="#{DashboardDatamovePage.handleSrcChange}">
                             <f:selectItem itemValue="#{null}" itemLabel="--select--" />
                             <f:selectItems value="#{DashboardDatamovePage.aliases}" />
-                            <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move-msg,:datamove-form:dsPersistentIds"/>
+                            <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move-msg,:datamove-form:dsPersistentIds,:datamove-form:move"/>
                         </h:selectOneMenu>
 
                         <h:outputLabel for="dsPersistentIds" value="Dataset persistentID" />
@@ -52,7 +52,7 @@
                                          valueChangeListener="#{DashboardDatamovePage.handleDsPersistentIdChange}">
                             <f:selectItem itemValue="#{null}" itemLabel="--select--" />
                             <f:selectItems value="#{DashboardDatamovePage.dsPersistentIds}" />
-                            <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move-msg"/>
+                            <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move-msg,:datamove-form:move"/>
                         </h:selectOneMenu>
 
                     </p:panel>
@@ -60,7 +60,7 @@
                     <p:panel id="dst-panel" header="Destination">
                         <!-- direct input 
                         <h:outputLabel for="dataverseAlias" value="Dataverse alias" />
-                        <p:inputText id="dataverseAlias" value="#{DashboardDatamovePage.dataverseAlias}" />
+                        <p:inputText id="dataverseAlias" value="#{DashboardDatamovePage.dstAlias}" />
                         <hr/>
                         -->
                         <h:outputLabel for="dstAlias" value="Dataverse alias" />
@@ -70,18 +70,19 @@
                                          valueChangeListener="#{DashboardDatamovePage.handleDstChange}">
                             <f:selectItem itemValue="#{null}" itemLabel="--select--" />
                             <f:selectItems value="#{DashboardDatamovePage.aliases}" />
-                            <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move-msg"/>
+                            <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move-msg,:datamove-form:move"/>
                         </h:selectOneMenu>
                         
                     </p:panel>
 
-                    <p:messages id="move-msg" closable="true" />
-
-                    <!-- action -->
+                    <!-- move action -->
                     <hr/>
-                    <p:commandButton styleClass="btn btn-default" value="Move" action="#{DashboardDatamovePage.move()}">
+                    
+                    <p:commandButton id="move" styleClass="btn btn-default" value="Move" disabled="#{DashboardDatamovePage.disable}" action="#{DashboardDatamovePage.move()}" update=":datamove-form:move-msg,:datamove-form:dsPersistentIds,:datamove-form:move">
                         <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-alert" />
                     </p:commandButton>
+                    <p:messages id="move-msg" closable="true" />
+                    
                     <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
                         <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
                         <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />

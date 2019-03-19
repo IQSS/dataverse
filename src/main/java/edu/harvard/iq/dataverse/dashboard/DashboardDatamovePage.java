@@ -35,6 +35,8 @@ import javax.faces.event.ValueChangeEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 import java.text.NumberFormat;
@@ -65,32 +67,23 @@ public class DashboardDatamovePage implements java.io.Serializable {
     @EJB DatasetServiceBean datasetService;
     @EJB DataverseServiceBean dataverseService;
 
+    @PersistenceContext(unitName = "VDCNet-ejbPU")
+    private EntityManager em;
+    
     private static final Logger logger = Logger.getLogger(DashboardDatamovePage.class.getCanonicalName());
 
     private AuthenticatedUser authUser = null;
 
-    public String getDatasetId() {
-        return datasetId;
+    public boolean isDisable() {
+        return disable;
     }
-
-    public void setDatasetId(String datasetId) {
-        this.datasetId = datasetId;
+    
+    public void setDisable(boolean disable) {
+        this.disable = disable;
     }
-
-    private String datasetId;
-
-    public String getDataverseAlias() {
-        return dataverseAlias;
-    }
-
-    public void setDataverseAlias(String dataverseAlias) {
-        this.dataverseAlias = dataverseAlias;
-    }
-
-    private String dataverseAlias;
-   
-    // TODO use alias selection...
-
+    
+    private boolean disable=true;
+    
     public String getSrcAlias() {
       return srcAlias;
     }
@@ -145,7 +138,7 @@ public class DashboardDatamovePage implements java.io.Serializable {
 
         if ((session.getUser() != null) && (session.getUser().isAuthenticated()) && (session.getUser().isSuperuser())) {
            authUser = (AuthenticatedUser) session.getUser();
-            // initialize components here
+            // initialize components
             for (Dataverse dataverse : dataverseService.findAll()) {
                 aliases.add(dataverse.getAlias());
             }
@@ -168,8 +161,6 @@ public class DashboardDatamovePage implements java.io.Serializable {
         // copied logic from Datasets API move
         Dataset ds = datasetService.findByGlobalId(dsPersistentId);//datasetId);
         Dataverse target = dataverseService.findByAlias(dstAlias);//dataverseAlias);
-        
-        //ds.getDisplayName()
 
         //Command requires Super user - it will be tested by the command
         try {
@@ -179,29 +170,39 @@ public class DashboardDatamovePage implements java.io.Serializable {
             ));
             
             logger.info("Moved " + dsPersistentId + " from " + srcAlias + " to " + dstAlias);
-            dsPersistentId = null;
+            
             updateDsPersistentIds(); // moved ds should not be in list anymore
+            updateDisabled();
         }
         catch (CommandException e) {
-            logger.log(Level.SEVERE,"Unable to move", e);
-            //e.printStackTrace();
+            logger.log(Level.SEVERE,"Unable to move "+ dsPersistentId + " from " + srcAlias + " to " + dstAlias, e);
         }
+    }
+
+    public void handleSrcChange(final ValueChangeEvent event){
+        srcAlias = (String)event.getNewValue();
+
+        //infoMsg("Selected source verse: " + srcAlias);
+
+        updateDsPersistentIds();
+        updateDisabled();
+    }
+
+    public void handleDsPersistentIdChange(final ValueChangeEvent event){
+        dsPersistentId = (String)event.getNewValue();
+        updateDisabled();
+        
+        //infoMsg("Selected dataset: " + dsPersistentId);
     }
 
     public void handleDstChange(final ValueChangeEvent event){
         dstAlias = (String)event.getNewValue();
-        infoMsg("Selected destination verse: " + dstAlias);
-    }
-
-    public void handleSrcChange(final ValueChangeEvent event){
-      srcAlias = (String)event.getNewValue();
-
-      infoMsg("Selected source verse: " + srcAlias);
-
-      updateDsPersistentIds();
+        updateDisabled();
+        //infoMsg("Selected destination verse: " + dstAlias + " move disable=" + isDisable());
     }
     
     private void updateDsPersistentIds() {
+        dsPersistentId = null;
         dsPersistentIds.clear();
         Dataverse srcDv = dataverseService.findByAlias(srcAlias);
         for(Dataset dataset: datasetService.findByOwnerId(srcDv.getId())) {
@@ -209,33 +210,28 @@ public class DashboardDatamovePage implements java.io.Serializable {
         }
     }
     
-    public void handleDsPersistentIdChange(final ValueChangeEvent event){
-      dsPersistentId = (String)event.getNewValue();
-  
-      infoMsg("Selected dataset: " + dsPersistentId);
+    private void updateDisabled() {
+        setDisable (dsPersistentId==null || srcAlias==null || dstAlias==null // some required info is missing
+            || srcAlias.equals(dstAlias) // moving to the same verse makes no sense
+        );
+        if(!isDisable()) infoMsg("move "+ dsPersistentId + " from " + srcAlias + " to " + dstAlias);
+        else infoMsg("select source and destination in order to move");
     }
+    
 
     private void infoMsg(String msg) {
         FacesContext
             .getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, msg, ""));
     }
 
-    /** 
-     * Number of total users
-     * @return 
-     */
-    public String getUserCount() {
-
-        return NumberFormat.getInstance().format(userService.getTotalUserCount());
+    public String getDataverseCount() {
+        long count = em.createQuery("SELECT count(dv) FROM Dataverse dv", Long.class).getSingleResult();
+        return NumberFormat.getInstance().format(count);
     }
 
-    /** 
-     * Number of total Superusers
-     * @return 
-     */
-    public Long getSuperUserCount() {
-        
-        return userService.getSuperUserCount();
+    public String getDatasetCount() {
+        long count = em.createQuery("SELECT count(ds) FROM Dataset ds", Long.class).getSingleResult();
+        return NumberFormat.getInstance().format(count);
     }
 
 }
