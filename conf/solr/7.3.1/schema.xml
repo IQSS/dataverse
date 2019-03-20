@@ -162,7 +162,7 @@
 
     <field name="publicationStatus" type="string" stored="true" indexed="true" multiValued="true"/>
 
-    <field name="dateFriendly" type="text_en" stored="true" indexed="true" multiValued="false"/>
+    <field name="dateFriendly" type="string" stored="true" indexed="true" multiValued="false"/>
 
     <field name="subtreePaths" type="string" stored="true" indexed="true" multiValued="true"/>
 

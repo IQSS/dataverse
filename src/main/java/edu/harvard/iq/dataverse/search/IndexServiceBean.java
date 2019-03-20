@@ -1322,12 +1322,20 @@ public class IndexServiceBean {
     }
 
     public String convertToFriendlyDate(Date dateAsDate) {
+        System.out.println(" =========== STEP ! =============="+dateAsDate);
         if (dateAsDate == null) {
             dateAsDate = new Date();
         }
         // using DateFormat.MEDIUM for May 5, 2014 to match what's in DVN 3.x
-        DateFormat format = DateFormat.getDateInstance(DateFormat.MEDIUM);
-        String friendlyDate = format.format(dateAsDate);
+        //DateFormat format = DateFormat.getDateInstance(DateFormat.MEDIUM);
+        //String friendlyDate = format.format(dateAsDate);
+
+
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        String friendlyDate = simpleDateFormat.format(dateAsDate);
+
+        System.out.println(" ============= The friendly date is ================ " + friendlyDate);
         return friendlyDate;
     }
 
