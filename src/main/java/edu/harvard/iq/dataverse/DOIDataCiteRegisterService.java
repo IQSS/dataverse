@@ -162,7 +162,7 @@ public class DOIDataCiteRegisterService {
 
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
-        String title = dvObject.getDisplayName();
+        String title = dvObject.getCurrentName();
         if(dvObject.isInstanceofDataFile()) {
             //Note file title is not currently escaped the way the dataset title is, so adding it here.
             title = StringEscapeUtils.escapeXml(title);

@@ -359,6 +359,8 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     
     public abstract String getDisplayName();
     
+    public abstract String getCurrentName();
+    
     // helper method used to mimic instanceof on JSF pge
     public boolean isInstanceofDataverse() {
         return this instanceof Dataverse;
