@@ -1127,7 +1127,7 @@ API users can retrieve this URL from the SWORD Service Document or the "info" se
 :ExcludeEmailFromExport
 +++++++++++++++++++++++
 
-Set ``:ExcludeEmailFromExport`` to prevent email addresses for dataset contacts from being exposed in XML or JSON representations of dataset metadata. For a list exported formats such as DDI, see the :doc:`/admin/metadataexport` section of the Admin Guide.
+Set ``:ExcludeEmailFromExport`` to prevent email addresses for dataset contacts from being exposed in XML or JSON representations of dataset and dataverse metadata. For a list exported formats such as DDI, see the :doc:`/admin/metadataexport` section of the Admin Guide.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ExcludeEmailFromExport``
 
