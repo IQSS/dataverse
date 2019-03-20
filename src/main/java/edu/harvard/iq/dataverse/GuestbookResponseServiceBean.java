@@ -559,7 +559,7 @@ public class GuestbookResponseServiceBean {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
             return authUser.getName();
         }
-        return "Guest";
+        return "";
     }
 
     public String getUserEMail(User user) {

@@ -3,19 +3,17 @@
     <modelVersion>4.0.0</modelVersion>
     <!--
     If you are doing more than bumping the version number, please read
-    doc/sphinx-guides/source/developers/dependencies.rst	
+    doc/sphinx-guides/source/developers/dependencies.rst
     -->
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
     <version>4.11</version>
     <packaging>war</packaging>
-
     <name>dataverse</name>
-
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
-	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	<additionalparam>-Xdoclint:none</additionalparam>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <additionalparam>-Xdoclint:none</additionalparam>
         <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
         <compilerArgument></compilerArgument>
         <project.timezone>UTC</project.timezone>
@@ -26,12 +24,10 @@
             This seems to play well with NetBeans 8.2, IDEA 2018.1 and mvn including compatibility with JaCoCo.
         -->
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
-    
         <aws.version>1.11.172</aws.version>
         <jackson.version>2.9.6</jackson.version>
         <commons.logging.version>1.2</commons.logging.version>
         <httpcomponents.client.version>4.5.5</httpcomponents.client.version>
-        
         <junit.version>4.12</junit.version>
         <junit.jupiter.version>5.3.1</junit.jupiter.version>
         <junit.vintage.version>5.3.1</junit.vintage.version>
@@ -44,7 +40,6 @@
         -->
         <jacoco.version>0.8.1</jacoco.version>
     </properties>
-
     <!--Maven checks for dependendies from these repos in the order shown in the pom.xml
         This isn't well documented and seems to change between maven versions -MAD 4.9.4 -->
     <repositories>
@@ -76,7 +71,6 @@
             <url>file://${project.basedir}/local_lib</url>
         </repository>
     </repositories>
-    
     <!-- Transitive dependencies, bigger library "bill of materials" (BOM) and
          versions of dependencies used both directly and transitive are managed here. -->
     <dependencyManagement>
@@ -107,7 +101,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-    
     <!-- Declare any DIRECT dependencies here.
          In case the depency is both transitive and direct (e. g. some common lib for logging),
          manage the version above and add the direct dependency here WITHOUT version tag, too.
@@ -134,6 +127,12 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
@@ -180,10 +179,10 @@
             <version>1.1-SNAPSHOT</version>
             <type>war</type>
             <exclusions>
-              <exclusion>
-                 <groupId>xerces</groupId>  
-                 <artifactId>xercesImpl</artifactId> 
-              </exclusion>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -471,7 +470,7 @@
             <artifactId>commons-codec</artifactId>
             <version>1.9</version>
         </dependency>
-	<!-- JavaSwift/JOSS: for accessing OpenStack cloud storage -->
+        <!-- JavaSwift/JOSS: for accessing OpenStack cloud storage -->
         <dependency>
             <groupId>org.javaswift</groupId>
             <artifactId>joss</artifactId>
@@ -503,27 +502,27 @@
             <artifactId>scribejava-apis</artifactId>
             <version>3.1.0</version>
         </dependency>
-	<!-- EXPERIMENTAL: -->
-	<!-- lyncode xoai OAI-PMH implementation: -->
-	<!-- unfortunately, their 4.10 version -->
-	<!-- is still buggy. As an experiment, I'm using -->
-	<!-- a patched version I built locally. -->
-	<!-- (pull requests pending - L.A. -->
-	<dependency>
-	  <groupId>com.lyncode</groupId>
-	  <artifactId>xoai-common</artifactId>
-	  <version>4.1.0-header-patch</version>
-	</dependency>
-	<dependency>
-	  <groupId>com.lyncode</groupId>
-	  <artifactId>xoai-data-provider</artifactId>
-	  <version>4.1.0-header-patch</version>
-	</dependency>
+        <!-- EXPERIMENTAL: -->
+        <!-- lyncode xoai OAI-PMH implementation: -->
+        <!-- unfortunately, their 4.10 version -->
+        <!-- is still buggy. As an experiment, I'm using -->
+        <!-- a patched version I built locally. -->
+        <!-- (pull requests pending - L.A. -->
         <dependency>
-	  <groupId>com.lyncode</groupId>
-	  <artifactId>xoai-service-provider</artifactId>
-	  <version>4.1.0-header-patch</version>
-	</dependency>
+            <groupId>com.lyncode</groupId>
+            <artifactId>xoai-common</artifactId>
+            <version>4.1.0-header-patch</version>
+        </dependency>
+        <dependency>
+            <groupId>com.lyncode</groupId>
+            <artifactId>xoai-data-provider</artifactId>
+            <version>4.1.0-header-patch</version>
+        </dependency>
+        <dependency>
+            <groupId>com.lyncode</groupId>
+            <artifactId>xoai-service-provider</artifactId>
+            <version>4.1.0-header-patch</version>
+        </dependency>
         <!-- Added for AutoService -->
         <dependency>
             <groupId>com.google.auto.service</groupId>
@@ -534,16 +533,16 @@
         </dependency>
         <!-- For API File Upload: 1 of 2 -->
         <dependency>
-           <groupId>org.glassfish.jersey.containers</groupId>
-           <artifactId>jersey-container-servlet</artifactId>
-           <version>2.23.2</version>
-       </dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet</artifactId>
+            <version>2.23.2</version>
+        </dependency>
         <!-- For API File Upload: 2 of 2 -->
-       <dependency>
-           <groupId>org.glassfish.jersey.media</groupId>
-           <artifactId>jersey-media-multipart</artifactId>
-           <version>2.23.2</version>
-       </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-multipart</artifactId>
+            <version>2.23.2</version>
+        </dependency>
         <dependency>
             <groupId>com.mashape.unirest</groupId>
             <artifactId>unirest-java</artifactId>
@@ -551,23 +550,23 @@
         </dependency>
         <!-- BagIt export -->
         <dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-compress</artifactId>
-			<version>1.18</version>
-		</dependency>
-	    <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.18</version>
+        </dependency>
+        <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>common</artifactId>
             <version>4.4.6</version>
             <exclusions>
-              <exclusion>
-                <groupId>org.slf4j</groupId>
-                <artifactId>log4j-over-slf4j</artifactId>
-              </exclusion>
-              <exclusion>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-              </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>log4j-over-slf4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -575,20 +574,19 @@
             <artifactId>storeclient</artifactId>
             <version>4.4.6</version>
             <exclusions>
-              <exclusion>
-                <groupId>org.slf4j</groupId>
-                <artifactId>log4j-over-slf4j</artifactId>
-              </exclusion>
-              <exclusion>
-                <groupId>com.amazonaws</groupId>
-                <artifactId>aws-java-sdk-sqs</artifactId>
-              </exclusion>
-              <exclusion>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-              </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>log4j-over-slf4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.amazonaws</groupId>
+                    <artifactId>aws-java-sdk-sqs</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
             </exclusions>
-            
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>
@@ -602,14 +600,13 @@
             <version>1.19</version>
         </dependency>
     </dependencies>
-
     <build>
-<!--        <testResources>
+        <!--        <testResources>
             <testResource>
                 <directory>${project.basedir}/src/main/resources</directory>
             </testResource>
         </testResources>-->
-<!--        <testResources>
+        <!--        <testResources>
             <testResource>
               <directory>${project.basedir}/src/test/java</directory>
               <excludes>
@@ -670,7 +667,7 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.3</version>
                 <configuration>
-		    <attachClasses>true</attachClasses>
+                    <attachClasses>true</attachClasses>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                     <archive>
                         <manifest>
@@ -796,20 +793,20 @@
         </plugins>
     </build>
     <profiles>
-      <profile>
-        <id>dev</id>
-        <activation>
-            <!-- https://stackoverflow.com/questions/11824328/default-build-profile-for-maven -->
-            <!-- We set dev to true to developers don't have to run non-essential tests over and over. -->
-          <activeByDefault>true</activeByDefault>
-        </activation>
-        <properties>
-            <testsToExclude>edu.harvard.iq.dataverse.NonEssentialTests</testsToExclude>
-        </properties>
-      </profile>
-      <profile>
-        <id>all-unit-tests</id>
-      </profile>
-      <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
+        <profile>
+            <id>dev</id>
+            <activation>
+                <!-- https://stackoverflow.com/questions/11824328/default-build-profile-for-maven -->
+                <!-- We set dev to true to developers don't have to run non-essential tests over and over. -->
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <testsToExclude>edu.harvard.iq.dataverse.NonEssentialTests</testsToExclude>
+            </properties>
+        </profile>
+        <profile>
+            <id>all-unit-tests</id>
+        </profile>
+        <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
     </profiles>
 </project>
