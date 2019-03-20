@@ -96,11 +96,6 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(AuthenticatedUser authenticatedUser) {
-        return json(authenticatedUser, false);
-    }
-    
-    //TODO: Once we upgrade to Java EE 8 we can remove objects from the builder, and this email removal can be done in a better place.
-    public static JsonObjectBuilder json(AuthenticatedUser authenticatedUser, Boolean hideEmail) {
         NullSafeJsonBuilder builder = jsonObjectBuilder()
             .add("id", authenticatedUser.getId())
             .add("identifier", authenticatedUser.getIdentifier())
@@ -237,11 +232,11 @@ public class JsonPrinter {
     
     //MAD: Maybe delete this entirely so folks have to make the decision about public/private
     public static JsonObjectBuilder json(Dataverse dv) {
-        return json(dv, true, false);
+        return json(dv, false);
     }
 
     //TODO: Once we upgrade to Java EE 8 we can remove objects from the builder, and this email removal can be done in a better place.
-    public static JsonObjectBuilder json(Dataverse dv, Boolean privateData, Boolean hideEmail) {
+    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dv.getId())
                 .add("alias", dv.getAlias())
@@ -259,11 +254,6 @@ public class JsonPrinter {
         }
         if (dv.getCreateDate() != null) {
             bld.add("creationDate", Util.getDateTimeFormat().format(dv.getCreateDate()));
-        }
-        if (dv.getCreator() != null) {
-            if(privateData) { //Dataverse creation responds with creator section
-                bld.add("creator", JsonPrinter.json(dv.getCreator(), hideEmail));
-            }
         }
         if (dv.getDataverseTheme() != null) {
             bld.add("theme", JsonPrinter.json(dv.getDataverseTheme()));

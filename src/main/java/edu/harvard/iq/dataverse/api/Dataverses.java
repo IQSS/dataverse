@@ -395,7 +395,6 @@ public class Dataverses extends AbstractApiBean {
     public Response viewDataverse(@PathParam("identifier") String idtf) {
         return allowCors(response(req -> ok(
             json(execCommand(new GetDataverseCommand(req, findDataverseOrDie(idtf))),
-                false,
                 settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false)
             ))));
     }
