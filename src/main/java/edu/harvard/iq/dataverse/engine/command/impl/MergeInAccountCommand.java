@@ -111,10 +111,6 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         //GuestbookResponse
         for (GuestbookResponse gbr : ctxt.responses().findByAuthenticatedUserId(consumedAU)) {
             gbr.setAuthenticatedUser(ongoingAU);
-            gbr.setEmail(ongoingAU.getEmail());
-            gbr.setName(ongoingAU.getFirstName() + " " +  ongoingAU.getLastName());
-            gbr.setInstitution(ongoingAU.getAffiliation());
-            gbr.setPosition(ongoingAU.getPosition());
             ctxt.em().merge(gbr);
         }
         
@@ -187,7 +183,9 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
     
     @Override
     public String describe() {
-        return "User " + consumedAU.getUserIdentifier() + " ( type: " + consumedAU.getAuthenticatedUserLookup().getAuthenticationProviderId() + " | persistentUserId: "+ consumedAU.getAuthenticatedUserLookup().getPersistentUserId() + " ) merged into " +ongoingAU.getUserIdentifier();
+        return "User " + consumedAU.getUserIdentifier() + " (type: " + consumedAU.getAuthenticatedUserLookup().getAuthenticationProviderId() + " | persistentUserId: "
+                + consumedAU.getAuthenticatedUserLookup().getPersistentUserId() +
+                "; Name: "+ consumedAU.getFirstName() + " " + consumedAU.getLastName() +"; Institution: "  + consumedAU.getAffiliation() + "; Email: " + consumedAU.getEmail() + ") merged into " +ongoingAU.getUserIdentifier();
     }
     
 }
