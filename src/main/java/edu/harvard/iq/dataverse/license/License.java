@@ -1,10 +1,6 @@
 package edu.harvard.iq.dataverse.license;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
+import com.google.common.base.Preconditions;
 
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
@@ -15,8 +11,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
-
-import com.google.common.base.Preconditions;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Entity class representing license.
@@ -177,7 +176,8 @@ public class License implements Serializable {
         this.position = position;
     }
 
-    @SuppressWarnings("unused") /** for jpa only */
+    @SuppressWarnings("unused")
+    /** for jpa only */
     private void setLocalizedNames(List<LocaleText> localizedNames) {
         this.localizedNames = localizedNames;
     }

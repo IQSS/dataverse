@@ -1,14 +1,13 @@
 package edu.harvard.iq.dataverse.license;
 
-import java.io.Serializable;
-import java.util.Locale;
-import java.util.Objects;
+import edu.harvard.iq.dataverse.util.jpa.LocaleConverter;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Embeddable;
-
-import edu.harvard.iq.dataverse.util.jpa.LocaleConverter;
+import java.io.Serializable;
+import java.util.Locale;
+import java.util.Objects;
 
 /**
  * JPA embeddable model class representing some
@@ -33,7 +32,8 @@ public class LocaleText implements Serializable {
     //-------------------- CONSTRUCTORS --------------------
     
     @SuppressWarnings("unused") /** for jpa only **/
-    private LocaleText() {}
+    protected LocaleText() {
+    }
     
     
     public LocaleText(Locale locale, String text) {

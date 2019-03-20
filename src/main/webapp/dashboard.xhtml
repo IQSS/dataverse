@@ -4,7 +4,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
-      xmlns:p="http://primefaces.org/ui">
+>
     <h:head>
     </h:head>
 
@@ -16,7 +16,7 @@
                 <f:metadata>
                     <f:viewParam name="dataverseId" value="#{dashboardPage.dataverseId}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
-                    <f:viewAction action="#{dashboardPage.init}"/>
+                    <f:viewAction action="#{LicenseListingPage.init}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), bundle['dashboard.title'])}"/>
                 </f:metadata>
                
@@ -118,6 +118,31 @@
                                         <div  class="col-xs-12">
                                             <p>
                                                 <a href="/dashboard-users.xhtml" class="btn btn-primary" role="button">#{bundle['dashboard.card.users.manage']}</a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card-box">
+                                    <h4 class="header-title">#{bundle['dashboard.card.licenses']}</h4>
+                                    <div class="row text-center">
+                                        <div class="col-xs-6">
+                                            <h:outputText
+                                                    value="#{dashboardPage.activeAndInactiveLicensesCount._1()}"/>
+                                            <p class="small text-muted">#{bundle['dashboard.card.licenses.active']}</p>
+                                        </div>
+                                        <div class="col-xs-6">
+                                            <h:outputText
+                                                    value="#{dashboardPage.activeAndInactiveLicensesCount._2()}"/>
+                                            <p class="small text-muted">#{bundle['dashboard.card.licenses.inactive']}</p>
+                                        </div>
+                                    </div>
+                                    <div class="row text-center">
+                                        <div class="col-xs-12">
+                                            <p>
+                                                <a href="${pageContext.request.contextPath}/dashboard-licenses.xhtml"
+                                                   class="btn btn-primary">#{bundle['dashboard.card.licenses.button']}</a>
                                             </p>
                                         </div>
                                     </div>

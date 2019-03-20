@@ -5,23 +5,22 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-
+import edu.harvard.iq.dataverse.license.LicenseDAO;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.util.List;
-import java.util.logging.Logger;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+
 import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  *
@@ -44,6 +43,8 @@ public class DashboardPage implements java.io.Serializable {
     DataverseSession session;
     @Inject
     NavigationWrapper navigationWrapper;
+    @Inject
+    private LicenseDAO licenseDAO;
 
     /*
      in breadcrumbs the dashboard page always appears as if it belongs to the 
@@ -187,6 +188,15 @@ public class DashboardPage implements java.io.Serializable {
 
     public boolean isSuperUser() {
         return session.getUser().isSuperuser();
+    }
+
+    /**
+     * Calculates and returns count of active and inactive licenses in the whole Dataverse.
+     *
+     * @return active and inactive licenses count
+     */
+    public Tuple2<Long, Long> getActiveAndInactiveLicensesCount() {
+        return Tuple.of(licenseDAO.countActiveLicenses(), licenseDAO.countInactiveLicenses());
     }
 
 }
