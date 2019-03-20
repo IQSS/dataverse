@@ -559,7 +559,7 @@ public class GuestbookResponseServiceBean {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
             return authUser.getName();
         }
-        return "Guest";
+        return "";
     }
 
     public String getUserEMail(User user) {
@@ -816,20 +816,11 @@ public class GuestbookResponseServiceBean {
         return true;
     }
     
-    public GuestbookResponse modifyDatafile(GuestbookResponse in, FileMetadata fm) {
-        if (in != null && fm.getDataFile() != null) {
-            in.setDataFile(fm.getDataFile());
-        }
-        if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft() ) {
-            in.setWriteResponse(false);
-        } 
-        return in;
-    }
-    
     public GuestbookResponse modifyDatafileAndFormat(GuestbookResponse in, FileMetadata fm, String format) {
         if (in != null && fm.getDataFile() != null) {
             in.setFileFormat(format);
             in.setDataFile(fm.getDataFile());
+            in.setDatasetVersion(fm.getDatasetVersion());
         }
         if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft() ) {
             in.setWriteResponse(false);

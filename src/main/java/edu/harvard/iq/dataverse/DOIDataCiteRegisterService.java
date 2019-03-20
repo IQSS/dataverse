@@ -23,6 +23,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -149,7 +150,9 @@ public class DOIDataCiteRegisterService {
         }
         if (dvObject.isInstanceofDataFile()) {
             DataFile df = (DataFile) dvObject;
-            String fileDescription = df.getDescription();
+            //Note: File metadata is not escaped like dataset metadata is, so adding an xml escape here.
+            //This could/should be removed if the datafile methods add escaping
+            String fileDescription = StringEscapeUtils.escapeXml(df.getDescription());
             metadataTemplate.setDescription(fileDescription == null ? "" : fileDescription);
             String datasetPid = df.getOwner().getGlobalId().asString();
             metadataTemplate.setDatasetIdentifier(datasetPid);
@@ -159,7 +162,12 @@ public class DOIDataCiteRegisterService {
 
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
-        metadataTemplate.setTitle(dvObject.getCurrentName());
+        String title = dvObject.getCurrentName();
+        if(dvObject.isInstanceofDataFile()) {
+            //Note file title is not currently escaped the way the dataset title is, so adding it here.
+            title = StringEscapeUtils.escapeXml(title);
+        }
+        metadataTemplate.setTitle(title);
         String producerString = dataset.getLatestVersion().getRootDataverseNameforCitation();
         if (producerString.isEmpty()) {
             producerString = ":unav";
