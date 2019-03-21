@@ -123,6 +123,7 @@ public class FileMetadata implements Serializable {
 
     public void setDirectoryLabel(String directoryLabel) {
         //Strip off beginning and ending \ // - .
+        // and replace any sequences/combinations of / and \ with a single /
         if (directoryLabel != null) {
             directoryLabel = StringUtil.sanitizeFileDirectory(directoryLabel);
         }

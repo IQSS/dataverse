@@ -182,15 +182,6 @@ public class StringUtil {
     
     public static String sanitizeFileDirectory(String value){
         
-        /*
-        while (value.contains("\\\\")){
-            value = value.replace("\\\\", "\\");
-        }
-        
-        while (value.contains("//")){
-            value = value.replace("//", "/");
-        }
-        */
         // Replace all the combinations of slashes and backslashes with one single 
         // backslash:
         value = value.replaceAll("[\\\\/][\\\\/]*", "/");
