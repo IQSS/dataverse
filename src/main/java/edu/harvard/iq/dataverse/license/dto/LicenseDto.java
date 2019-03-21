@@ -70,4 +70,11 @@ public class LicenseDto {
     public List<LocaleTextDto> getLocalizedNames() {
         return localizedNames;
     }
+
+    // -------------------- SETTERS --------------------
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+  
 }

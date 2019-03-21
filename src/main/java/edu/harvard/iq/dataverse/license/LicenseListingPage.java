@@ -4,8 +4,11 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.license.dto.LicenseDto;
 import edu.harvard.iq.dataverse.license.dto.LicenseMapper;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang.StringUtils;
 
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -53,6 +56,29 @@ public class LicenseListingPage implements Serializable {
         licenses = licenseMapper.mapToDtos(licenseDAO.findAll());
 
         return StringUtils.EMPTY;
+    }
+
+    public void saveLicenseActiveStatus(LicenseDto licenseDto) {
+
+        if (licenseDAO.countActiveLicenses() <= 1 && !licenseDto.isActive()) {
+            licenseDto.setActive(true);
+            displayNoLicensesActiveWarningMessage();
+            return;
+        }
+
+        License license = licenseDAO.find(licenseDto.getId());
+        license.setActive(licenseDto.isActive());
+        licenseDAO.saveChanges(license);
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    private void displayNoLicensesActiveWarningMessage() {
+        FacesContext.getCurrentInstance().
+                addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                        StringUtils.EMPTY,
+                        BundleUtil.getStringFromBundle("dashboard.license.noActiveLicensesWarning")));
+        ;
     }
 
 }

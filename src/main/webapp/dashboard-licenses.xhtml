@@ -20,37 +20,34 @@
         <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dashboard.license.header'])}"/>
     </f:metadata>
     <ui:composition template="/dataverse_template.xhtml">
-        <ui:param name="showDataverseHeader" value="false"/>
         <ui:define name="body">
 
+            <p:messages id="warningMessages" showDetail="true" closable="true" style="width: 80%">
+                <p:autoUpdate/>
+            </p:messages>
 
             <h:form>
-                <p:dataTable var="license" value="#{LicenseListingPage.licenses}" style="width: 85%">
-                    <p:column headerText="#{bundle['dashboard.license.displayOrder']}" style="width: 10%">
+                <p:dataTable var="license" value="#{LicenseListingPage.licenses}" style="width: 80%">
+                    <p:column headerText="#{bundle['dashboard.license.displayOrder']}" style="width: 15%">
                         <h:outputText value="#{license.position}"/>
                     </p:column>
-                    <p:column headerText="#{bundle['dashboard.license.universalLicenseName']}">
+                    <p:column headerText="#{bundle['dashboard.license.universalLicenseName']}" style="width: 30%">
                         <h:outputText value="#{license.name}"/>
                     </p:column>
                     <p:column headerText="#{bundle['dashboard.license.licenseURL']}" style="width: 30%">
-                        <h:outputText value="#{license.url}"/>
+                        <h:outputLink value="#{license.url}">#{license.url}</h:outputLink>
                     </p:column>
-                    <p:column headerText="#{bundle['dashboard.license.icon']}" style="width: 10%">
+                    <p:column headerText="#{bundle['dashboard.license.icon']}" style="width: 15%">
                         <p:graphicImage value="#{license.icon.content}" stream="false"
                                         rendered="#{license.icon.content.contentLength>0}" width="81" height="31"/>
                     </p:column>
-                    <p:column headerText="#{bundle['dashboard.license.activeByDefault']}" style="width: 10%">
-                        <p:selectBooleanCheckbox value="#{license.active}" style="position: relative; left: 50%;"/>
+                    <p:column headerText="#{bundle['dashboard.license.activeByDefault']}"
+                              style="width: 10%; text-align: center; vertical-align: middle">
+                        <p:selectBooleanCheckbox value="#{license.active}">
+                            <p:ajax update="@this" listener="#{LicenseListingPage.saveLicenseActiveStatus(license)}"/>
+                        </p:selectBooleanCheckbox>
                     </p:column>
                 </p:dataTable>
-                <div class="row text-left">
-                    <div class="col-xs-1" style="margin-top: 20px">
-                        <p>
-                            <a href="${pageContext.request.contextPath}/dashboard.xhtml?dataverseId=1"
-                               class="btn btn-primary">#{bundle.ok}</a>
-                        </p>
-                    </div>
-                </div>
             </h:form>
         </ui:define>
     </ui:composition>

@@ -23,7 +23,11 @@ public class LicenseDAO {
     public List<License> findAll() {
         return em.createQuery("SELECT l FROM License l ORDER BY l.position ASC", License.class).getResultList();
     }
-
+  
+    public License saveChanges(License license) {
+        return em.merge(license);
+    }
+  
     public Long countActiveLicenses() {
         return em.createQuery("SELECT count(l) FROM License l where l.active = true", Long.class).getSingleResult();
     }
