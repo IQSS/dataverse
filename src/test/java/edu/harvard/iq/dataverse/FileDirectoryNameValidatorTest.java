@@ -26,11 +26,14 @@ public class FileDirectoryNameValidatorTest {
             {true, "-foobar"},
             {true, "_foobar"},
             {true, "foobar_"},
+            {true, "folder/sub"},
+            {true, "folder///sub"},
+            {true, "folder///sub/third"},
             {false, "f**bar"},});
     }
 
     @Test
-    public void testIsEmailValid() {
+    public void testIsFileDirectoryNameValid() {
         assertEquals(isValid, FileDirectoryNameValidator.isFileDirectoryNameValid(fileDirectoryName, null));
     }
 

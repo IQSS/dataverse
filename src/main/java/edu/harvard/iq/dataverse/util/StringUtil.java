@@ -182,6 +182,15 @@ public class StringUtil {
     
     public static String sanitizeFileDirectory(String value){
         
+
+        while (value.contains("\\\\")){
+            value = value.replace("\\\\", "\\");
+        }
+        
+        while (value.contains("//")){
+            value = value.replace("//", "/");
+        }
+
         while (value.startsWith("\\") || value.startsWith("/") || value.startsWith("-") || value.startsWith(".")){
             value = value.substring(1);
         }
