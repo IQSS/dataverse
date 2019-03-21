@@ -33,9 +33,7 @@ public class FileDirectoryNameValidator implements ConstraintValidator<ValidateD
         if (value == null || value.isEmpty()) {
             return true;
         }
-        value = StringUtil.sanitizeFileDirectory(value);
-        String validCharacters = "([\\w-]*\\\\*/)*\\w*([\\w-.])+";
-        validCharacters += "{1,60}";
+        String validCharacters = "[\\w/. -]+";
         Pattern p = Pattern.compile(validCharacters);
         Matcher m = p.matcher(value);
         return m.matches();

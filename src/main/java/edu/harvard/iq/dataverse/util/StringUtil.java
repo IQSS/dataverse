@@ -186,10 +186,12 @@ public class StringUtil {
         // backslash:
         value = value.replaceAll("[\\\\/][\\\\/]*", "/");
 
-        while (value.startsWith("/") || value.startsWith("-") || value.startsWith(".")){
+        
+        // Strip any leading or trailing slashes, whitespaces, '-' or '.':
+        while (value.startsWith("/") || value.startsWith("-") || value.startsWith(".") || value.startsWith(" ")){
             value = value.substring(1);
         }
-        while (value.endsWith("/") || value.endsWith("-") || value.endsWith(".")){
+        while (value.endsWith("/") || value.endsWith("-") || value.endsWith(".") || value.endsWith(" ")){
             value = value.substring(0, value.length() - 1);
         }
         
