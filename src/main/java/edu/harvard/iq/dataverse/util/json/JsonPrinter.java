@@ -526,6 +526,7 @@ public class JsonPrinter {
         return fieldsBld;
     }
 
+    //MAD: Will likely need to update this
     public static JsonObjectBuilder json(FileMetadata fmd) {
         return jsonObjectBuilder()
                 // deprecated: .add("category", fmd.getCategory())
@@ -600,6 +601,7 @@ public class JsonPrinter {
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
                 .add("tabularTags", getTabularFileTags(df))
+                .add("datasetPid", df.getOwner().getGlobalId().toString())
                 ;
     }
     

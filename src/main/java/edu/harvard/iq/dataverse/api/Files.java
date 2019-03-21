@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
@@ -21,6 +22,9 @@ import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteMapLayerMetadataCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDataFileCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
@@ -28,11 +32,13 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,18 +47,26 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.json.JsonObjectBuilder;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import javax.ws.rs.core.UriInfo;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.math.BigDecimal;
 
 @Path("files")
 public class Files extends AbstractApiBean {
@@ -75,6 +89,8 @@ public class Files extends AbstractApiBean {
     SystemConfig systemConfig;
     @EJB
     SettingsServiceBean settingsService;
+    @Inject
+    MakeDataCountLoggingServiceBean mdcLogService;
     
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
@@ -285,8 +301,34 @@ public class Files extends AbstractApiBean {
         }
             
     } // end: replaceFileInDataset
+    
+    @GET
+    @Path("{id}/metadata")
+    public Response getDataFile(@PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
+        return response( req -> {
+            final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+            
+            //final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
+            final JsonObjectBuilder jsonBuilder = json(df.getLatestPublishedFileMetadata());
+            
+            MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
+            mdcLogService.logEntry(entry);
+            
+            return allowCors(ok(jsonBuilder));
+        });
+    }
+    
+    @PUT
+    @Path("{id}/metadata")
+    public Response persistFileMetadata(@PathParam("id") Long idSupplied) {
+        //similar to datasets editVersionMetadata
+        
+        return null;
+    }
+    
 
     // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
+            // MAD: I think all that needs to be changed is using findDataFileOrDie()
     // TODO: Rename this start with "delete" rather than "get".
     @DELETE
     @Path("{id}/map")
@@ -334,7 +376,7 @@ public class Files extends AbstractApiBean {
             Long dataFileId = dataFile.getId();
             dataFile = fileService.find(dataFileId);
             Dataset theDataset = dataFile.getOwner();
-            exportMetadata(settingsService, theDataset);
+            exportDatasetMetadata(settingsService, theDataset);
             return ok("Datafile " + dataFileId + " uningested.");
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -423,7 +465,7 @@ public class Files extends AbstractApiBean {
      * Attempting to run metadata export, for all the formats for which we have
      * metadata Exporters.
      */
-    private void exportMetadata(SettingsServiceBean settingsServiceBean, Dataset theDataset) {
+    private void exportDatasetMetadata(SettingsServiceBean settingsServiceBean, Dataset theDataset) {
 
         try {
             ExportService instance = ExportService.getInstance(settingsServiceBean);
