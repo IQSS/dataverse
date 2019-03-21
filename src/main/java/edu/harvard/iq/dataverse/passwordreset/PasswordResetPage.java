@@ -56,6 +56,9 @@ public class PasswordResetPage implements java.io.Serializable {
     @EJB
     PasswordValidatorServiceBean passwordValidatorService;
     
+    @EJB
+    SystemConfig systemConfig;
+
     /**
      * The unique string used to look up a user and continue the password reset
      * process.
@@ -113,7 +116,7 @@ public class PasswordResetPage implements java.io.Serializable {
             PasswordResetData passwordResetData = passwordResetInitResponse.getPasswordResetData();
             if (passwordResetData != null) {
                 BuiltinUser foundUser = passwordResetData.getBuiltinUser();
-                passwordResetUrl = passwordResetInitResponse.getResetUrl();
+                passwordResetUrl = passwordResetInitResponse.getResetUrl(systemConfig.getDataverseSiteUrl());
                 actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "passwordResetSent")
                             .setInfo("Email Address: " + emailAddress) );
             } else {

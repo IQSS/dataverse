@@ -96,6 +96,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewComman
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import java.util.Collections;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
@@ -111,6 +113,10 @@ import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.CloseEvent;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.event.data.PageEvent;
+
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
+import java.util.TimeZone;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -201,6 +207,8 @@ public class DatasetPage implements java.io.Serializable {
     SettingsWrapper settingsWrapper; 
     @Inject 
     ProvPopupFragmentBean provPopupFragmentBean;
+    @Inject
+    MakeDataCountLoggingServiceBean mdcLogService;
 
     private Dataset dataset = new Dataset();
     private EditMode editMode;
@@ -1358,6 +1366,7 @@ public class DatasetPage implements java.io.Serializable {
     }     
     
     private String init(boolean initFull) {
+  
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
@@ -1458,6 +1467,10 @@ public class DatasetPage implements java.io.Serializable {
             // init the citation
             displayCitation = dataset.getCitation(true, workingVersion);
             
+            if(workingVersion.isPublished()) {
+                MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, workingVersion);
+                mdcLogService.logEntry(entry);
+            }
 
             if (initFull) {
                 // init the list of FileMetadatas
