@@ -128,13 +128,13 @@ function sharrre(){
         share: {
             facebook: true,
             twitter: true,
-            googlePlus: true
+            linkedin: true
         },
         template: '<div id="sharrre-block" class="clearfix">\n\
                     <input type="hidden" id="sharrre-total" name="sharrre-total" value="{total}"/> \n\
                     <a href="#" class="sharrre-facebook"><span class="socicon socicon-facebook"/></a> \n\
                     <a href="#" class="sharrre-twitter"><span class="socicon socicon-twitter"/></a> \n\
-                    <a href="#" class="sharrre-google"><span class="socicon socicon-google"/></a>\n\
+                    <a href="#" class="sharrre-linkedin"><span class="socicon socicon-linkedin"/></a>\n\
                     </div>',
         enableHover: false,
         enableTracking: true,
@@ -146,8 +146,8 @@ function sharrre(){
             $(api.element).on('click', '.sharrre-facebook', function() {
                 api.openPopup('facebook');
             });
-            $(api.element).on('click', '.sharrre-google', function() {
-                api.openPopup('googlePlus');
+            $(api.element).on('click', '.sharrre-linkedin', function() {
+                api.openPopup('linkedin');
             });
             
             // Count not working... Coming soon...
