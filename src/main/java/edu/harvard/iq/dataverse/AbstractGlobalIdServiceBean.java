@@ -56,23 +56,28 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     protected Map<String, String> addBasicMetadata(DvObject dvObjectIn, Map<String, String> metadata) {
 
         String authorString = dvObjectIn.getAuthorString();
-
-        if (authorString.isEmpty()) {
+        if (authorString.isEmpty() || authorString.contains(DatasetField.NA_VALUE)) {
             authorString = ":unav";
         }
 
         String producerString = dataverseService.findRootDataverse().getName();
 
-        if (producerString.isEmpty()) {
+        if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {
             producerString = ":unav";
         }
-        
+
+        String titleString = dvObjectIn.getCurrentName();
+
+        if (titleString.isEmpty() || titleString.equals(DatasetField.NA_VALUE)) {
+            titleString = ":unav";
+        }
+
         metadata.put("datacite.creator", authorString);
-        metadata.put("datacite.title", dvObjectIn.getCurrentName());
+        metadata.put("datacite.title", titleString);
         metadata.put("datacite.publisher", producerString);
-        metadata.put("datacite.publicationyear", generateYear(dvObjectIn));        
+        metadata.put("datacite.publicationyear", generateYear(dvObjectIn));
         return metadata;
-    }   
+    }  
 
     protected String getTargetUrl(DvObject dvObjectIn) {
         logger.log(Level.FINE,"getTargetUrl");

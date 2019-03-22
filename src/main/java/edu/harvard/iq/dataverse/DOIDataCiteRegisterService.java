@@ -410,28 +410,34 @@ class DataCiteMetadataTemplate {
                 .replace("${publisherYear}", publisherYearFinal)
                 .replace("${description}", this.description);
         StringBuilder creatorsElement = new StringBuilder();
-        for (DatasetAuthor author : authors) {
-            creatorsElement.append("<creator><creatorName>");
-            creatorsElement.append(author.getName().getDisplayValue());
-            creatorsElement.append("</creatorName>");
+        if (!authors.isEmpty()) {
+            for (DatasetAuthor author : authors) {
+                creatorsElement.append("<creator><creatorName>");
+                creatorsElement.append(author.getName().getDisplayValue());
+                creatorsElement.append("</creatorName>");
 
-            if (author.getIdType() != null && author.getIdValue() != null && !author.getIdType().isEmpty() && !author.getIdValue().isEmpty() && author.getAffiliation() != null && !author.getAffiliation().getDisplayValue().isEmpty()) {
+                if (author.getIdType() != null && author.getIdValue() != null && !author.getIdType().isEmpty() && !author.getIdValue().isEmpty() && author.getAffiliation() != null && !author.getAffiliation().getDisplayValue().isEmpty()) {
 
-                if (author.getIdType().equals("ORCID")) {
-                    creatorsElement.append("<nameIdentifier schemeURI=\"https://orcid.org/\" nameIdentifierScheme=\"ORCID\">" + author.getIdValue() + "</nameIdentifier>");
+                    if (author.getIdType().equals("ORCID")) {
+                        creatorsElement.append("<nameIdentifier schemeURI=\"https://orcid.org/\" nameIdentifierScheme=\"ORCID\">" + author.getIdValue() + "</nameIdentifier>");
+                    }
+                    if (author.getIdType().equals("ISNI")) {
+                        creatorsElement.append("<nameIdentifier schemeURI=\"http://isni.org/isni/\" nameIdentifierScheme=\"ISNI\">" + author.getIdValue() + "</nameIdentifier>");
+                    }
+                    if (author.getIdType().equals("LCNA")) {
+                        creatorsElement.append("<nameIdentifier schemeURI=\"http://id.loc.gov/authorities/names/\" nameIdentifierScheme=\"LCNA\">" + author.getIdValue() + "</nameIdentifier>");
+                    }
                 }
-                if (author.getIdType().equals("ISNI")) {
-                    creatorsElement.append("<nameIdentifier schemeURI=\"http://isni.org/isni/\" nameIdentifierScheme=\"ISNI\">" + author.getIdValue() + "</nameIdentifier>");
+                if (author.getAffiliation() != null && !author.getAffiliation().getDisplayValue().isEmpty()) {
+                    creatorsElement.append("<affiliation>" + author.getAffiliation().getDisplayValue() + "</affiliation>");
                 }
-                if (author.getIdType().equals("LCNA")) {
-                    creatorsElement.append("<nameIdentifier schemeURI=\"http://id.loc.gov/authorities/names/\" nameIdentifierScheme=\"LCNA\">" + author.getIdValue() + "</nameIdentifier>");
-                }
+                creatorsElement.append("</creator>");
             }
-            if (author.getAffiliation() != null && !author.getAffiliation().getDisplayValue().isEmpty()) {
-                creatorsElement.append("<affiliation>" + author.getAffiliation().getDisplayValue() + "</affiliation>");
-            }
-            creatorsElement.append("</creator>");
+
+        } else {
+            creatorsElement.append("<creator><creatorName>:unav</creatorName></creator>");
         }
+
         xmlMetadata = xmlMetadata.replace("${creators}", creatorsElement.toString());
 
         StringBuilder contributorsElement = new StringBuilder();
