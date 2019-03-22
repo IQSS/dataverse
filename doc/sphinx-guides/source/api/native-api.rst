@@ -1348,14 +1348,10 @@ Note: setting ``:InheritParentRoleAssignments`` will automatically trigger inher
 Delete Published Dataverses or Datasets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Normally published dataverses or datasets may not be deleted, but there exists a "destroy" API endpoint which may be called against a dataverse or dataset by persistent ID or by the dvobject database ID:
-
-  DELETE http://$SERVER/api/dataverses/:persistentId/destroy/?persistentId=doi:10.5072/FK2/AAA000
-  
-  DELETE http://$SERVER/api/dataverses/999/destroy
+Normally published datasets should not be deleted, but there exists a "destroy" API endpoint which will act on a dataset given a persistent ID or dvobject database ID:
 
   DELETE http://$SERVER/api/datasets/:persistentId/destroy/?persistentId=doi:10.5072/FK2/AAA000
   
   DELETE http://$SERVER/api/datasets/999/destroy
   
-Calling the destroy endpoint is permanent and irreversible. It will remove the dataverse or dataset and all files in question, then re-index the parent object in Solr. You must first destroy the datasets as the endpoint won't act on a dataverse that isn't empty. This endpoint requires that the user whose API token is passed be a superuser.
+Calling the destroy endpoint is permanent and irreversible. It will remove the dataset and its datafiles, then re-index the parent dataverse in Solr. This endpoint requires the API token of a superuser.
