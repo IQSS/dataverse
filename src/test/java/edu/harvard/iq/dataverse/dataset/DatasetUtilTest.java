@@ -103,4 +103,9 @@ public class DatasetUtilTest {
         assertEquals(false, DatasetUtil.isDatasetLogoPresent(dataset));
     }
 
+    @Test
+    public void testGetDatasetSummaryField() {
+        // TODO:
+    }
+
 }
