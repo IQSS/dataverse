@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ public class FileMetadata implements Serializable {
     @Expose
     @Column ( nullable=true )
     private String directoryLabel;
+    @Expose
     @Column(columnDefinition = "TEXT")
     private String description = "";
     
@@ -86,6 +88,7 @@ public class FileMetadata implements Serializable {
      * represented in the GUI as text box the user can type into. The other type
      * is based on PROV-JSON from the W3C.
      */
+    @Expose
     @Column(columnDefinition = "TEXT", nullable = true, name="prov_freeform")
     private String provFreeForm;
         
@@ -144,6 +147,8 @@ public class FileMetadata implements Serializable {
     /* 
      * File Categories to which this version of the DataFile belongs: 
      */
+    @Expose //Used for OptionalFileParams serialization
+    @SerializedName("categories") //Used for OptionalFileParams serialization
     @ManyToMany
     @JoinTable(indexes = {@Index(columnList="filecategories_id"),@Index(columnList="filemetadatas_id")})
     @OrderBy("name")
@@ -511,32 +516,6 @@ public class FileMetadata implements Serializable {
         }
     };
     
-    
-    
-    public String toPrettyJSON(){
-        
-        return serializeAsJSON(true);
-    }
-
-    public String toJSON(){
-        
-        return serializeAsJSON(false);
-    }
-    
-     /**
-     * 
-     * @param prettyPrint
-     * @return 
-     */
-    private String serializeAsJSON(boolean prettyPrint){
-        
-        JsonObject jsonObj = asGsonObject(prettyPrint);
-                
-        return jsonObj.toString();
-       
-    }
-
-    
     public JsonObject asGsonObject(boolean prettyPrint){
 
         
@@ -547,7 +526,6 @@ public class FileMetadata implements Serializable {
             builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation();                        
         }
         
-        builder.serializeNulls();   // correctly capture nulls
         Gson gson = builder.create();
 
         // serialize this object

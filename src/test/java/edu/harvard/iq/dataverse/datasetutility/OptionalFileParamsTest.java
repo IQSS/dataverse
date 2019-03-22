@@ -5,6 +5,10 @@
  */
 package edu.harvard.iq.dataverse.datasetutility;
 
+import com.google.gson.JsonObject;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.FileMetadata;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -218,6 +222,19 @@ public class OptionalFileParamsTest {
         assertNull(instance.getDataFileTags());
         assertFalse(instance.hasFileDataTags());
 
+    }
+    
+    @Test
+    public void testGetFileMetadataFromJson() throws DataFileTagException {
+        FileMetadata fm = new FileMetadata();
+        fm.setDescription("description");
+        fm.setDirectoryLabel("/foo/bar");
+        
+        JsonObject fmJson = fm.asGsonObject(true);
+        
+        OptionalFileParams instance = new OptionalFileParams(fmJson.toString());
+        assertEquals(fm.getDescription(), instance.getDescription());
+        assertEquals(fm.getDirectoryLabel(), instance.getDirectoryLabel());
     }
 
     private void msg(String s){

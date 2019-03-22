@@ -791,6 +791,14 @@ public class UtilIT {
                 .post("/api/files/" + fileId + "/uningest/?key=" + apiToken);
         return uningestFileResponse;
     }
+    
+    //MAD: Add ability to spec version
+    //Also I don't understand why this blows up when I remove the key
+    public static Response getDataFileMetadata(Long fileId, String apiToken) {
+        Response fileResponse = given()
+                .get("api/files/" + fileId + "/metadata/?key=" + apiToken);
+        return fileResponse;
+    }
 
     public static Response deleteDataverse(String doomed, String apiToken) {
         return given().delete("/api/dataverses/" + doomed + "?key=" + apiToken);

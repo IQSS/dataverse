@@ -1149,6 +1149,60 @@ public class FilesIT {
         assertEquals(200, uningestFileResponse.getStatusCode());       
     }
     
+    @Test
+    public void testFileMetaDataGetUpdateRoundTrip() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        assertEquals(200, createUser.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);   
+
+        assertEquals(200, makeSuperUser.getStatusCode());
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        
+        // -------------------------
+        // Add initial file
+        // -------------------------
+        String pathToFile = "scripts/search/data/replace_test/003.txt";
+        
+        String description = "My description.";
+        String category = "A category";
+        
+        String jsonString = "{\"description\":\""+description+"\",\"categories\":[\""+category+"\"],\"forceReplace\":false}";
+        
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, jsonString, apiToken);
+        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        
+        msg("Publish dataverse and dataset");
+        Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataversetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        //msg(publishDatasetResp.body().asString());
+        publishDatasetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response getMetadataResponse = UtilIT.getDataFileMetadata(origFileId, apiToken);
+        String metadataResponseString = getMetadataResponse.body().asString();
+        msg(metadataResponseString);
+        assertEquals(200, getMetadataResponse.getStatusCode());  
+        
+        
+        assertEquals(description, JsonPath.from(metadataResponseString).getString("description"));
+        assertEquals(category, JsonPath.from(metadataResponseString).getString("categories[0].name"));
+        
+        //MAD: This still needs to test new update code
+        //MAD: This also needs to test more attributes. If anything I'm sure tags won't work atm (can "fix" the same way as categories).
+        
+    }
     
     private void msg(String m){
         System.out.println(m);
@@ -1159,6 +1213,5 @@ public class FilesIT {
     private void msgt(String m){
         dashes(); msg(m); dashes();
     }
-    
     
 }

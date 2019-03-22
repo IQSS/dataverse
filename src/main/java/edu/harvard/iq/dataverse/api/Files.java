@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
@@ -11,6 +13,7 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -159,7 +162,7 @@ public class Files extends AbstractApiBean {
      * 
      * @param datasetId
      * @param testFileInputStream
-     * @param contentDispositionHeader
+     * @param contentDispositionHeaderI'd like to move forward on improving our file access via API, allowing a direct
      * @param formDataBodyPart
      * @return 
      */
@@ -302,27 +305,43 @@ public class Files extends AbstractApiBean {
             
     } // end: replaceFileInDataset
     
+    
     @GET
-    @Path("{id}/metadata")
-    public Response getDataFile(@PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
-        return response( req -> {
+    @Path("{id}/metadata{versionId:(/versionId/[^/]+?)?}") //Allows both {id}/metadata and {id}/metadata/versionId/{versionId}, see https://nakov.com/blog/2009/07/15/jax-rs-path-pathparam-and-optional-parameters/
+    public String getDataFileMetadata(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WrappedResponse {
+            DataverseRequest req = createDataverseRequest(findUserOrDie());
             final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+            FileMetadata fm;
             
-            //final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
-            final JsonObjectBuilder jsonBuilder = json(df.getLatestPublishedFileMetadata());
+            if(versionId.equals("/versionId/draft")) { 
+                fm = df.getLatestFileMetadata();
+                //There is no way on df I can see to get an arbitrary version of metadata... 
+            } else {
+                fm = df.getLatestPublishedFileMetadata();
+            }
+            
+            //String jsonString = OptionalFileParams.printJsonStringForDataFileMetadata(fm);
+            String jsonString = fm.asGsonObject(true).toString();
             
             MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
             mdcLogService.logEntry(entry);
             
-            return allowCors(ok(jsonBuilder));
-        });
+            //final JsonParser parser = new JsonParser();
+            Gson gson = new Gson();
+            //JsonElement json = parser.parse(jsonString);
+            
+            return jsonString;//allowCors(ok(gson.toJson(fm.asGsonObject(true))));
+
     }
-    
-    @PUT
+
+    @POST
     @Path("{id}/metadata")
     public Response persistFileMetadata(@PathParam("id") Long idSupplied) {
+        //Should I bet checking http upload
+        
         //similar to datasets editVersionMetadata
         
+        //At the end this will need to create a dataset draft if there isn't one
         return null;
     }
     

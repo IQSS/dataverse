@@ -41,7 +41,10 @@ public class OptionalFileParams {
 
     private String description;
     public static final String DESCRIPTION_ATTR_NAME = "description";
-
+    
+    private String directoryLabel;
+    public static final String DIRECTORY_LABEL_ATTR_NAME = "directoryLabel";
+    
     private List<String> categories;
     public static final String CATEGORIES_ATTR_NAME = "categories";
     
@@ -100,6 +103,14 @@ public class OptionalFileParams {
         return this.description;
     }
     
+    public String getDirectoryLabel() {
+        return directoryLabel;
+    }
+
+    public void setDirectoryLabel(String directoryLabel) {
+        this.directoryLabel = directoryLabel;
+    }
+    
     public void setRestriction(boolean restrict){
         this.restrict = restrict;
     }
@@ -124,6 +135,13 @@ public class OptionalFileParams {
  
     public boolean hasDescription(){
         if ((description == null)||(this.description.isEmpty())){
+            return false;
+        }
+        return true;
+    }
+    
+    public boolean hasDirectoryLabel(){
+        if ((directoryLabel == null)||(this.directoryLabel.isEmpty())){
             return false;
         }
         return true;
@@ -194,6 +212,14 @@ public class OptionalFileParams {
         }
         
         // -------------------------------
+        // get directory label as string
+        // -------------------------------
+        if ((jsonObj.has(DIRECTORY_LABEL_ATTR_NAME)) && (!jsonObj.get(DIRECTORY_LABEL_ATTR_NAME).isJsonNull())){
+
+            this.directoryLabel = jsonObj.get(DIRECTORY_LABEL_ATTR_NAME).getAsString();
+        }
+        
+        // -------------------------------
         // get restriction as boolean
         // -------------------------------
         if ((jsonObj.has(RESTRICT_ATTR_NAME)) && (!jsonObj.get(RESTRICT_ATTR_NAME).isJsonNull())){
@@ -236,6 +262,16 @@ public class OptionalFileParams {
         }
        
     }
+    
+//    public static String printJsonStringForDataFileMetadata(FileMetadata fm) {
+//        JsonObject jsonObj = new JsonObject();
+//        jsonObj.addProperty(DESCRIPTION_ATTR_NAME, "test");
+//        jsonObj.addProperty(RESTRICT_ATTR_NAME, "test2");
+//        jsonObj.addProperty(CATEGORIES_ATTR_NAME, "test3"); //should be a list
+//        jsonObj.addProperty(FILE_DATA_TAGS_ATTR_NAME, "test4"); //should be a list
+//        
+//        return "";
+//    }
   
     private void addFileDataTags(List<String> potentialTags) throws DataFileTagException{
         
@@ -267,7 +303,6 @@ public class OptionalFileParams {
         }
     }
     
-    
     private void msg(String s){
             System.out.println(s);
     }
@@ -296,6 +331,12 @@ public class OptionalFileParams {
             fm.setDescription(this.getDescription());
         }
         
+        // ---------------------------
+        // Add directory label (path)
+        // ---------------------------
+        if (hasDirectoryLabel()){
+            fm.setDirectoryLabel(this.getDirectoryLabel());
+        }
         
         // ---------------------------
         // Add categories
