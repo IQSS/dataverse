@@ -79,7 +79,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     
     //TODO: should this be dynamically generated based on size of file?
     //Also, this is in seconds
-    private static int TEMP_URL_EXPIRES = Integer.parseInt(System.getProperty("dataverse.files.temp_url_expire", "60"));
+    private static int TEMP_URL_EXPIRES = Integer.parseInt(System.getProperty("dataverse.files.swift-temporary-url-expiry-time", "60"));
 
     private static int LIST_PAGE_LIMIT = 100;
 
