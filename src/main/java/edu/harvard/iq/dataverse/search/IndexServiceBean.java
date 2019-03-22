@@ -302,6 +302,17 @@ public class IndexServiceBean {
         }
     }
     
+    public Future<String> indexDvObject(DvObject objectIn){
+        
+        if (objectIn.isInstanceofDataset() ){
+            return (indexDataset((Dataset)objectIn, true));
+        }
+        if (objectIn.isInstanceofDataverse() ){
+            return (indexDataverse((Dataverse)objectIn));
+        }
+        return null;
+    }
+    
     public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         logger.fine("indexing dataset " + dataset.getId());
         /**

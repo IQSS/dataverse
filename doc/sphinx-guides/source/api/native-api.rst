@@ -1259,6 +1259,32 @@ POSTed JSON example::
       "email": "pete@mailinator.com"
     }
 
+.. _merge-accounts-label:
+
+Merge User Accounts
+~~~~~~~~~~~~~~~~~~
+
+If a user has created multiple accounts and has been performed actions under both accounts that need to be preserved, these accounts can be combined.  One account can be merged into another account and all data associated with both accounts will be combined in the surviving account. Only accessible to superusers.::
+
+    POST https://$SERVER/api/users/$toMergeIdentifier/mergeIntoUser/$continuingIdentifier
+
+Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://demo.dataverse.org/api/users/jsmith2/mergeIntoUser/jsmith``
+
+This action moves account data from jsmith2 into the account jsmith and deletes the account of jsmith2.
+
+.. _change-identifier-label:
+
+Change User Identifier
+~~~~~~~~~~~~~~~~~~~~~~
+
+Changes identifier for user in ``AuthenticatedUser``, ``BuiltinUser``, ``AuthenticatedUserLookup`` & ``RoleAssignment``. Allows them to log in with the new identifier. Only accessible to superusers.::
+
+    PUT http://$SERVER/api/users/$oldIdentifier/changeIdentifier/$newIdentifier
+
+Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST  https://demo.dataverse.org/api/users/johnsmith/changeIdentifier/jsmith``
+
+This action changes the identifier of user johnsmith to jsmith.
+
 Make User a SuperUser
 ~~~~~~~~~~~~~~~~~~~~~
 
