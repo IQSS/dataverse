@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,12 +61,12 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         this.setIsLocalFile(false);
     }
 
-    private Properties swiftProperties = null;
     private Account account = null;
     private StoredObject swiftFileObject = null;
     private Container swiftContainer = null;
     private boolean isPublicContainer = Boolean.parseBoolean(System.getProperty("dataverse.file.swift-is-public-container", "true"));
     private String swiftFolderPathSeparator = System.getProperty("dataverse.files.swift-folder-path-separator", "_");
+    private String swiftDefaultEndpoint = System.getProperty("dataverse.file.swift-default-endpoint");
 
     //for hash
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
@@ -76,7 +75,9 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     //Also, this is in seconds
     private static int TEMP_URL_EXPIRES = Integer.parseInt(System.getProperty("dataverse.files.temp_url_expire", "60"));
 
-    private static int LIST_PAGE_LIMIT = 100;  
+    private static int LIST_PAGE_LIMIT = 100;
+
+    public static String SWIFT_IDENTIFIER_PREFIX = "swift";
 
     @Override
     public void open(DataAccessOption... options) throws IOException {
@@ -91,13 +92,14 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         }
 
         if (dvObject instanceof DataFile) {
+            String storageIdentifier = dvObject.getStorageIdentifier();
             DataFile dataFile = this.getDataFile();
 
             if (req != null && req.getParameter("noVarHeader") != null) {
                 this.setNoVarHeader(true);
             }
 
-            if (dataFile.getStorageIdentifier() == null || "".equals(dataFile.getStorageIdentifier())) {
+            if (storageIdentifier == null || "".equals(storageIdentifier)) {
                 throw new IOException("Data Access: No local storage identifier defined for this datafile.");
             }
 
@@ -251,7 +253,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     @Override
-    public boolean isAuxObjectCached(String auxItemTag) throws IOException {
+    public boolean isAuxObjectCached(String auxItemTag) {
         StoredObject swiftAuxObject;
         try {
             swiftAuxObject = openSwiftAuxFile(auxItemTag);
@@ -484,7 +486,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         if (dvObject instanceof DataFile) {
             Dataset owner = this.getDataFile().getOwner();
 
-            if (storageIdentifier.startsWith("swift://")) {
+            if (storageIdentifier.startsWith(SWIFT_IDENTIFIER_PREFIX + "://")) {
                 // This is a call on an already existing swift object. 
 
                 String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);    
@@ -512,8 +514,6 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 // object!
                 throw new IOException("IO driver mismatch: SwiftAccessIO called on a non-swift stored object.");
             } else if (this.isWriteAccess) {
-                swiftEndPoint = System.getProperty("dataverse.file.swift-default-endpoint");
-
                 // Swift uses this to create pseudo-hierarchical folders
                 String swiftPseudoFolderPathSeparator = "/";
 
@@ -528,18 +528,18 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 //setSwiftContainerName(swiftFolderPath);
                 //swiftFileName = dataFile.getDisplayName();
                 //Storage Identifier is now updated after the object is uploaded on Swift.
-                dvObject.setStorageIdentifier("swift://" + swiftEndPoint + ":" + swiftFolderPath + ":" + swiftFileName);
+                dvObject.setStorageIdentifier(SWIFT_IDENTIFIER_PREFIX + "://" + swiftDefaultEndpoint + ":" + swiftFolderPath + ":" + swiftFileName);
             } else {
                 throw new IOException("SwiftAccessIO: unknown access mode.");
             }
         } else if (dvObject instanceof Dataset) {
             Dataset dataset = this.getDataset();
 
-            if (storageIdentifier.startsWith("swift://")) {
+            if (storageIdentifier.startsWith(SWIFT_IDENTIFIER_PREFIX + "://")) {
                 // This is a call on an already existing swift object. 
 
                 //TODO: determine how storage identifer will give us info
-                String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);    
+                String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);
                 //number of tokens should be two because there is not main file
                 if (swiftStorageTokens.length != 2) {
                     // bad storage identifier
@@ -577,7 +577,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                     swiftPseudoFolderPathSeparator + dataset.getIdentifierForFileStorage();
 
                 swiftFileName = auxItemTag;
-                dvObject.setStorageIdentifier("swift://" + swiftEndPoint + ":" + swiftFolderPath);
+                dvObject.setStorageIdentifier(SWIFT_IDENTIFIER_PREFIX + "://" + swiftEndPoint + ":" + swiftFolderPath);
             } else {
                 throw new IOException("SwiftAccessIO: unknown access mode.");
             }
@@ -604,7 +604,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         other swiftContainerName Object Store pseudo-folder can be created, which is
         not provide by the joss Java swift library as of yet.
          */
-        if (storageIdentifier.startsWith("swift://")) {
+        if (storageIdentifier.startsWith(SWIFT_IDENTIFIER_PREFIX + "://")) {
             // An existing swift object; the container must already exist as well.
             this.swiftContainer = account.getContainer(swiftContainerName);
         } else {
