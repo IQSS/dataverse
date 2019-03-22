@@ -1,6 +1,26 @@
 User-agent: *
+# Note: In its current form, this sample robots.txt makes the site
+# accessible to all the crawler bots (specified as "User-agent: *")
+# It further instructs the bots to access and index the dataverse and dataset pages;
+# it also tells them to stay away from all other pages (the "Disallow: /" line); 
+# and also not to follow any search links on a dataverse page. 
+# It is possible to specify different access rules for different bots. 
+# For example, if you only want to make the site accessed by Googlebot, but 
+# keep all the other bots away, un-comment out the following two lines:
+#Disallow: /
+#User-agent: Googlebot
 Allow: /$
-Allow: /dataverse.xhtml
 Allow: /dataset.xhtml
+Allow: /dataverse/
+Allow: /sitemap/
+# The following lines are for the facebook, twitter and linkedin preview bots:
+Allow: /api/datasets/:persistentId/thumbnail
+Allow: /javax.faces.resource/images/
+# Comment out the following TWO lines if you DON'T MIND the bots crawling the search API links on dataverse pages:
+Disallow: /dataverse/*?q
+Disallow: /dataverse/*/search
 Disallow: /
+# Crawl-delay specification *may* be honored by *some* bots. 
+# It is *definitely* ignored by Googlebot (they never promise to 
+# recognize it either - it's never mentioned in their documentation)
 Crawl-delay: 20
