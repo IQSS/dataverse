@@ -180,12 +180,19 @@ public class StringUtil {
         }
     }
     
-    public static String sanitizeFileDirectory(String value){
-        
+    public static String sanitizeFileDirectory(String value) {
+        return sanitizeFileDirectory(value, false);
+    }
+    
+    public static String sanitizeFileDirectory(String value, boolean aggressively){        
         // Replace all the combinations of slashes and backslashes with one single 
         // backslash:
         value = value.replaceAll("[\\\\/][\\\\/]*", "/");
 
+        if (aggressively) {
+            value = value.replaceAll("[^A-Za-z0-9_ ./\\-]+", ".");
+            value = value.replaceAll("\\.\\.+", ".");
+        }
         
         // Strip any leading or trailing slashes, whitespaces, '-' or '.':
         while (value.startsWith("/") || value.startsWith("-") || value.startsWith(".") || value.startsWith(" ")){
@@ -193,6 +200,10 @@ public class StringUtil {
         }
         while (value.endsWith("/") || value.endsWith("-") || value.endsWith(".") || value.endsWith(" ")){
             value = value.substring(0, value.length() - 1);
+        }
+        
+        if ("".equals(value)) {
+            return null;
         }
         
         return value;
