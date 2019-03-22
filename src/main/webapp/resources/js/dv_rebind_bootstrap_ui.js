@@ -33,6 +33,14 @@ function bind_bsui_components(){
     // Sharrre
     sharrre();
     
+    
+    
+    // REBIND ANALYTICS FIX
+    buttonEvents();
+    
+    
+    
+    
     // Custom Popover with HTML content
     popoverHTML();
     
