@@ -202,19 +202,19 @@ Swift Storage
 
 Rather than storing data files on the filesystem, you can opt for an experimental setup with a `Swift Object Storage <http://swift.openstack.org>`_ backend. Each dataset that users create gets a corresponding "container" on the Swift side, and each data file is saved as a file within that container.
 
-**In order to configure a Swift installation,** there are two steps you need to complete:
+**In order to configure a Swift installation,** you need to complete these steps to properly modify the JVM options:
 
-First, create a file named ``swift.properties`` as follows in the ``config`` directory for your installation of Glassfish (by default, this would be ``/usr/local/glassfish4/glassfish/domains/domain1/config/swift.properties``):
+First, run all the following create commands with your Swift endpoint information and credentials:
 
 .. code-block:: none
 
-    swift.default.endpoint=endpoint1
-    swift.auth_type.endpoint1=your-authentication-type
-    swift.auth_url.endpoint1=your-auth-url
-    swift.tenant.endpoint1=your-tenant-name
-    swift.username.endpoint1=your-username
-    swift.password.endpoint1=your-password
-    swift.swift_endpoint.endpoint1=your-swift-endpoint
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.file.swift-default-endpoint=endpoint1"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.file.swift-auth-type.endpoint1=your-auth-type"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.file.swift-auth-url.endpoint1=your-auth-url"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.file.swift-tenant.endpoint1=your-tenant-name"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.file.swift-username.endpoint1=your-username"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.file.swift-password.endpoint1='${ALIAS=your-password}'"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.file.swift-endpoint.endpoint1=your-swift-endpoint"
 
 ``auth_type`` can either be ``keystone``, ``keystone_v3``, or it will assumed to be ``basic``. ``auth_url`` should be your keystone authentication URL which includes the tokens (e.g. for keystone, ``https://openstack.example.edu:35357/v2.0/tokens`` and for keystone_v3, ``https://openstack.example.edu:35357/v3/auth/tokens``). ``swift_endpoint`` is a URL that look something like ``http://rdgw.swift.example.org/swift/v1``.
 
@@ -232,17 +232,13 @@ You also have the option to set a **custom container name separator.** It is ini
 
 By default, your Swift installation will be public-only, meaning users will be unable to put access restrictions on their data. If you are comfortable with this level of privacy, the final step in your setup is to set the  :ref:`:PublicInstall` setting to `true`.
 
-In order to **enable file access restrictions**, you must enable Swift to use temporary URLs for file access. To enable usage of temporary URLs, set a hash key both on your swift endpoint and in your swift.properties file. You can do so by adding 
+In order to **enable file access restrictions**, you must enable Swift to use temporary URLs for file access. To enable usage of temporary URLs, set a hash key both on your swift endpoint and in your swift.properties file. You can do so by running the create command:
 
-.. code-block:: none
+``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.file.swift-hash-key.endpoint1=your-hash-key"``
 
-    swift.hash_key.endpoint1=your-hash-key
+You also have the option to set a custom expiration length, in seconds, for a generated temporary URL. It is initialized to 60 seconds, but you can change it by running the create command:
 
-to your swift.properties file.
-
-You also have the option to set a custom expiration length for a generated temporary URL. It is initialized to 60 seconds, but you can change it by running the create command:
-
-``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.temp_url_expire=3600"``
+``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift-temporary-url-expiry-time=3600"``
 
 In this example, you would be setting the expiration length for one hour.
 
