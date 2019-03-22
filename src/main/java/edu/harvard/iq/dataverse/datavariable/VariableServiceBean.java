@@ -51,6 +51,15 @@ public class VariableServiceBean {
          query.setParameter("dtId", dtId);
          return query.getResultList();
     }
+
+    public List<VariableMetadata> findByDataVarIdAndFileMetaId(Long datVarId, Long metaId) {
+        TypedQuery<VariableMetadata> query = em.createQuery("SELECT object(o) FROM VariableMetadata as o where o.dataVariable.id =:dvId and o.fileMetadata.id =:fmId", VariableMetadata.class);
+
+        query.setParameter("dvId", datVarId);
+        query.setParameter("fmId", metaId);
+        return query.getResultList();
+
+    }
     
     /* 
      * This is awful!

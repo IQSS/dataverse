@@ -242,10 +242,11 @@ public class FileAccessIOTest {
      *
      * @throws java.io.IOException if test is broken
      */
+    /* dataAccess no longer supports deleting of the main physical file.
     @Test
     public void testDelete() throws IOException {
         datasetAccess.delete();
-    }
+    }*/
 
     /**
      * Test of openLocalFileAsInputStream and openLocalFileAsOutputStream method, of class

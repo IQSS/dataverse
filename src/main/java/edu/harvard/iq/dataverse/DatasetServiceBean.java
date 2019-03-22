@@ -337,6 +337,17 @@ public class DatasetServiceBean implements java.io.Serializable {
         return lock.size()>0;
     }
     
+    public List<DatasetLock> getDatasetLocksByUser( AuthenticatedUser user) {
+
+        TypedQuery<DatasetLock> query = em.createNamedQuery("DatasetLock.getLocksByAuthenticatedUserId", DatasetLock.class);
+        query.setParameter("authenticatedUserId", user.getId());
+        try {
+            return query.getResultList();
+        } catch (javax.persistence.NoResultException e) {
+            return null;
+        }
+    }
+    
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public DatasetLock addDatasetLock(Dataset dataset, DatasetLock lock) {
         lock.setDataset(dataset);

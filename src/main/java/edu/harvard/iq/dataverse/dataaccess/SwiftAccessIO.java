@@ -44,11 +44,12 @@ import org.javaswift.joss.model.StoredObject;
 public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
 
     private String swiftFolderPath;
+    private String swiftLocation; 
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO");
 
     public SwiftAccessIO() {
-        this(null);
+        this((T)null);
     }
 
     public SwiftAccessIO(T dvObject) {
@@ -59,6 +60,11 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         super(dvObject, req);
 
         this.setIsLocalFile(false);
+    }
+    
+    public SwiftAccessIO(String swiftLocation) {
+        this((T)null);
+        this.swiftLocation = swiftLocation;
     }
 
     private Account account = null;
@@ -220,7 +226,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         setSize(swiftFileObject.getContentLength());
     }
 
-    @Override
+    /*@Override
     public void delete() throws IOException {
         if (swiftFileObject == null) {
             try {
@@ -233,7 +239,18 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         if (swiftFileObject != null) {
             swiftFileObject.delete();
         }
+    }*/
+    
+    @Override
+    public void delete() throws IOException {
+        if (!isDirectAccess()) {
+            throw new IOException("Direct Access IO must be used to permanently delete stored file objects");
+        }
+        
+        swiftFileObject = initializeSwiftFileDirectAccess();
+        swiftFileObject.delete();
     }
+    
 
     @Override
     public Channel openAuxChannel(String auxItemTag, DataAccessOption... options) throws IOException {
@@ -436,10 +453,11 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
 
     @Override
     public String getStorageLocation() {
-        // What should this be, for a Swift file? 
-        // A Swift URL? 
-        // Or a Swift URL with an authenticated Auth token? 
-        return null;
+        if (isDirectAccess()) {
+            return "swift://" + swiftLocation; 
+        }
+        // For Swift, the "storageLocation" and "storageIdentifier" of the DvObject are the same thing.
+        return dvObject.getStorageIdentifier();
     }
 
     @Override
@@ -480,7 +498,6 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         String swiftFileName = null;
 
         StoredObject fileObject;
-        List<String> auxFiles = null; 
         String storageIdentifier = dvObject.getStorageIdentifier();
 
         if (dvObject instanceof DataFile) {
@@ -655,10 +672,44 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             throw new FileNotFoundException("SwiftAccessIO: DvObject " + swiftFileName + " does not exist (Dataverse dvObject id: " + dvObject.getId());
         }
 
-        auxFiles = null; 
         return fileObject;
     }
 
+    private StoredObject initializeSwiftFileDirectAccess() throws IOException {
+        if (!isDirectAccess()) {
+            throw new IOException("Direct access attempted on a SwiftAccessIO associated with a DvObject");
+        }
+        
+        String swiftEndPoint = null;
+        String swiftContainerName = null;
+        String swiftFileName = null;
+
+        String[] swiftStorageTokens = swiftLocation.split(":", 3);
+
+        if (swiftStorageTokens.length != 3) {
+            throw new IOException("SwiftAccessIO: invalid storage location: " + swiftLocation);
+        }
+
+        swiftEndPoint = swiftStorageTokens[0];
+        swiftContainerName = swiftStorageTokens[1];
+        swiftFileName = swiftStorageTokens[2];
+        
+        if (this.account == null) {
+            account = authenticateWithSwift(swiftEndPoint);
+        }
+        
+        this.swiftContainer = account.getContainer(swiftContainerName);
+        
+        StoredObject fileObject = this.swiftContainer.getObject(swiftFileName);
+
+        if (!fileObject.exists()) {
+            throw new FileNotFoundException("SwiftAccessIO/Direct Access: " + swiftLocation + " does not exist");
+        }
+
+        return fileObject;
+
+    }
+    
     private InputStream openSwiftFileAsInputStream() throws IOException {
         swiftFileObject = initializeSwiftFileObject(false);
         this.setSize(swiftFileObject.getContentLength());

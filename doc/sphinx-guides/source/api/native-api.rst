@@ -292,7 +292,7 @@ Export Metadata of a Dataset in Various Formats
 
     GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
 
-.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , and ``dataverse_json``.
+.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , ``OAI_ORE`` , ``Datacite`` and ``dataverse_json``.
 
 Schema.org JSON-LD
 ^^^^^^^^^^^^^^^^^^
@@ -618,6 +618,55 @@ If the dataset is not locked (or if there is no lock of the specified type), the
 
 (Note that the API calls above all support both the database id and persistent identifier notation for referencing the dataset)
 
+.. _dataset-metrics-api:
+
+Dataset Metrics
+~~~~~~~~~~~~~~~
+
+Please note that these dataset level metrics are only available if support for Make Data Count has been enabled in your installation of Dataverse. See the :ref:`Dataset Metrics <dataset-metrics-user>` in the :doc:`/user/dataset-management` section of the User Guide and the :doc:`/admin/make-data-count` section of the Admin Guide for details.
+
+Please note that in the curl examples, Bash environment variables are used with the idea that you can set a few environment variables and copy and paste the examples as is. For example, "$DV_BASE_URL" could become "https://demo.dataverse.org" by issuing the following ``export`` command from Bash:
+
+``export DV_BASE_URL=https://demo.dataverse.org``
+
+To confirm that the environment variable was set properly, you can use ``echo`` like this:
+
+``echo $DV_BASE_URL``
+
+Please note that for each of these endpoints except the "citations" endpoint, you can optionally pass the query parameter "country" with a two letter code (e.g. "country=us") and you can specify a particular month by adding it in yyyy-mm format after the requested metric (e.g. "viewsTotal/2019-02").
+
+Retrieving Total Views for a Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Please note that "viewsTotal" is a combination of "viewsTotalRegular" and "viewsTotalMachine" which can be requested separately.
+
+``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/viewsTotal?persistentId=$DOI"``
+
+Retrieving Unique Views for a Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Please note that "viewsUnique" is a combination of "viewsUniqueRegular" and "viewsUniqueMachine" which can be requested separately.
+
+``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/viewsUnique?persistentId=$DOI"``
+
+Retrieving Total Downloads for a Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Please note that "downloadsTotal" is a combination of "downloadsTotalRegular" and "downloadsTotalMachine" which can be requested separately.
+
+``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/downloadsTotal?persistentId=$DOI"``
+
+Retrieving Unique Downloads for a Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Please note that "downloadsUnique" is a combination of "downloadsUniqueRegular" and "downloadsUniqueMachine" which can be requested separately.
+
+``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/downloadsUnique?persistentId=$DOI"``
+
+Retrieving Citations for a Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/citations?persistentId=$DOI"``
 
 Files
 -----
@@ -1018,6 +1067,9 @@ Show data about an authentication provider::
 
   GET http://$SERVER/api/admin/authenticationProviders/$id
 
+
+.. _api_toggle_auth_provider:
+
 Enable or Disable an Authentication Provider
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1206,6 +1258,32 @@ POSTed JSON example::
       "lastName": "Dataversky",
       "email": "pete@mailinator.com"
     }
+
+.. _merge-accounts-label:
+
+Merge User Accounts
+~~~~~~~~~~~~~~~~~~
+
+If a user has created multiple accounts and has been performed actions under both accounts that need to be preserved, these accounts can be combined.  One account can be merged into another account and all data associated with both accounts will be combined in the surviving account. Only accessible to superusers.::
+
+    POST https://$SERVER/api/users/$toMergeIdentifier/mergeIntoUser/$continuingIdentifier
+
+Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://demo.dataverse.org/api/users/jsmith2/mergeIntoUser/jsmith``
+
+This action moves account data from jsmith2 into the account jsmith and deletes the account of jsmith2.
+
+.. _change-identifier-label:
+
+Change User Identifier
+~~~~~~~~~~~~~~~~~~~~~~
+
+Changes identifier for user in ``AuthenticatedUser``, ``BuiltinUser``, ``AuthenticatedUserLookup`` & ``RoleAssignment``. Allows them to log in with the new identifier. Only accessible to superusers.::
+
+    PUT http://$SERVER/api/users/$oldIdentifier/changeIdentifier/$newIdentifier
+
+Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST  https://demo.dataverse.org/api/users/johnsmith/changeIdentifier/jsmith``
+
+This action changes the identifier of user johnsmith to jsmith.
 
 Make User a SuperUser
 ~~~~~~~~~~~~~~~~~~~~~
