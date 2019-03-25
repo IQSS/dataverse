@@ -51,6 +51,9 @@ public class OptionalFileParams {
     private List<String> dataFileTags;
     public static final String FILE_DATA_TAGS_ATTR_NAME = "dataFileTags";
     
+    private String provFreeform;
+    public static final String PROVENANCE_FREEFORM_ATTR_NAME = "provFreeform";
+    
     private boolean restrict = false;
     public static final String RESTRICT_ATTR_NAME = "restrict";
 
@@ -111,6 +114,15 @@ public class OptionalFileParams {
         this.directoryLabel = directoryLabel;
     }
     
+    public String getProvFreeform() {
+        return provFreeform;
+    }
+
+    public void setProvFreeform(String provFreeform) {
+        this.provFreeform = provFreeform;
+    }
+    
+    
     public void setRestriction(boolean restrict){
         this.restrict = restrict;
     }
@@ -142,6 +154,13 @@ public class OptionalFileParams {
     
     public boolean hasDirectoryLabel(){
         if ((directoryLabel == null)||(this.directoryLabel.isEmpty())){
+            return false;
+        }
+        return true;
+    }
+    
+    public boolean hasProvFreeform(){
+        if ((provFreeform == null)||(this.provFreeform.isEmpty())){
             return false;
         }
         return true;
@@ -217,6 +236,14 @@ public class OptionalFileParams {
         if ((jsonObj.has(DIRECTORY_LABEL_ATTR_NAME)) && (!jsonObj.get(DIRECTORY_LABEL_ATTR_NAME).isJsonNull())){
 
             this.directoryLabel = jsonObj.get(DIRECTORY_LABEL_ATTR_NAME).getAsString();
+        }
+        
+        // -------------------------------
+        // get freeform provenance as string
+        // -------------------------------
+        if ((jsonObj.has(PROVENANCE_FREEFORM_ATTR_NAME)) && (!jsonObj.get(PROVENANCE_FREEFORM_ATTR_NAME).isJsonNull())){
+
+            this.provFreeform = jsonObj.get(PROVENANCE_FREEFORM_ATTR_NAME).getAsString();
         }
         
         // -------------------------------
@@ -336,6 +363,13 @@ public class OptionalFileParams {
         // ---------------------------
         if (hasDirectoryLabel()){
             fm.setDirectoryLabel(this.getDirectoryLabel());
+        }
+        
+        // ---------------------------
+        // Add freeform provenance
+        // ---------------------------
+        if (hasProvFreeform()){
+            fm.setProvFreeForm(this.getProvFreeform());
         }
         
         // ---------------------------
