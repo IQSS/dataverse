@@ -264,13 +264,6 @@ Get JSON Representation of a Dataset
 
   GET http://$SERVER/api/datasets/$id?key=$apiKey
 
-Delete Dataset
-~~~~~~~~~~~~~~
-
-Delete the dataset whose id is passed::
-
-  DELETE http://$SERVER/api/datasets/$id?key=$apiKey
-
 List Versions of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -618,6 +611,23 @@ If the dataset is not locked (or if there is no lock of the specified type), the
 
 (Note that the API calls above all support both the database id and persistent identifier notation for referencing the dataset)
 
+Delete Unpublished Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Delete the dataset whose id is passed::
+
+  curl -X DELETE http://$SERVER/api/datasets/$id?key=$apiKey
+
+Delete Published Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Normally published datasets should not be deleted, but there exists a "destroy" API endpoint which will act on a dataset given a persistent ID or dvobject database ID:
+
+  curl -X DELETE http://$SERVER/api/datasets/:persistentId/destroy/?persistentId=doi:10.5072/FK2/AAA000
+  
+  curl -X DELETE http://$SERVER/api/datasets/999/destroy
+  
+Calling the destroy endpoint is permanent and irreversible. It will remove the dataset and its datafiles, then re-index the parent dataverse in Solr. This endpoint requires the API token of a superuser.
 
 Files
 -----
@@ -1344,14 +1354,3 @@ Recursively applies the role assignments of the specified dataverse, for the rol
   GET http://$SERVER/api/admin/dataverse/{dataverse alias}/addRoleAssignmentsToChildren
   
 Note: setting ``:InheritParentRoleAssignments`` will automatically trigger inheritance of the parent dataverse's role assignments for a newly created dataverse. Hence this API call is intended as a way to update existing child dataverses or to update children after a change in role assignments has been made on a parent dataverse.
-
-Delete Published Dataverses or Datasets
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Normally published datasets should not be deleted, but there exists a "destroy" API endpoint which will act on a dataset given a persistent ID or dvobject database ID:
-
-  DELETE http://$SERVER/api/datasets/:persistentId/destroy/?persistentId=doi:10.5072/FK2/AAA000
-  
-  DELETE http://$SERVER/api/datasets/999/destroy
-  
-Calling the destroy endpoint is permanent and irreversible. It will remove the dataset and its datafiles, then re-index the parent dataverse in Solr. This endpoint requires the API token of a superuser.
