@@ -124,9 +124,9 @@ PostgreSQL
 Installing PostgreSQL
 =======================
 
-Version 9.x is required. Previous versions have not been tested.
+Version 9.3 is required. Previous versions have not been tested.
 
-Version 9.6 is anticipated as an "LTS" release in RHEL and on other platforms::
+Version 9.6 is strongly recommended::
 
 	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
 	# yum makecache fast
