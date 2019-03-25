@@ -1,4 +1,13 @@
 /*--------- BODY --------- */
+html {
+  /* Sticky footer */
+  position:relative;
+  min-height:100%;
+}
+body {
+  /* Sticky footer Margin bottom by footer height */
+  margin-bottom:160px;
+}
 body.widget-view {margin-bottom:54px;}
 body .ui-widget {font-size: inherit;}
 .ui-widget-content a {color: #337AB7;}
@@ -40,8 +49,8 @@ body .ui-widget {font-size: inherit;}
 #status-alert {margin-top:0; margin-bottom:0;}
 #status-alert div.alert {border:0; box-shadow:none;}
 
-#footer {margin-top:3em; padding-bottom:4em; color:#808080;}
-#footer.widget-view {position:fixed; left:0px; bottom:0px; margin:0; padding:4px 0 0 0; min-height:44px; width:100%; background:#fff;}
+#footer {position:absolute; bottom:0; margin-top:3em; padding-bottom:100px; width:100%; height:60px; color:#808080;}
+#footer.widget-view {position:fixed; left:0; bottom:0; margin:0; padding:4px 0 0 0; min-height:44px; background:#fff;}
 #footer .poweredbylogo {text-align:right;}
 #footer .poweredbylogo span {font-size:.85em;margin-right:.3em;}
 #footer .version {vertical-align:bottom;white-space:nowrap;}
@@ -112,7 +121,8 @@ table.selectManyCheckboxBlock label {font-weight:normal;}
 hr {border-color: #ddd;}
 
 span.glyphicon[data-toggle='tooltip'] {cursor: default;}
-.tooltip {z-index:999999 !important;}
+span.glyphicon-question-sign.tooltip-icon {color: #99bcdb !important;}
+span.glyphicon-question-sign.tooltip-icon:hover {color: #337AB7 !important;}
 
 /* Dropdown submenu */
 .dropdown-submenu {
@@ -676,7 +686,7 @@ div.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
 
 div.popover.fade.top.in {max-width: none;}
 div.popover.fade.top.in div.popover-content {text-align:center; vertical-align: middle; display:table-cell; width:428px; height:418px;}
-span.text-info.popoverHTML {display:inline-block;}
+a.popoverHTML {display:inline-block;}
 
 /*div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}*/
 /*div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}*/
@@ -836,7 +846,7 @@ div.ui-dialog.ui-widget-content {z-index:100001 !important;}
 
 /* POPUP DROPDOWN MENUS + TOOLTIPS + BLOCK UI */
 div.ui-selectcheckboxmenu-panel, div.ui-selectonemenu-panel, div.ui-autocomplete-panel,
-.ui-selectonemenu-list, .ui-selectcheckboxmenu-list, div.tooltip {z-index:100002 !important;}
+.ui-selectonemenu-list, .ui-selectcheckboxmenu-list, div.tooltip, div.popover {z-index:100002 !important;}
 
 /* Overwrite Primefaces */
 .ui-tabs.ui-widget-content .ui-tabs-nav li.ui-tabs-selected a {color: #555555;}

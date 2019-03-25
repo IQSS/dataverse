@@ -24,6 +24,10 @@ import javax.persistence.*;
         @Index(columnList = "datafile_id"),
         @Index(columnList = "dataset_id")
 })
+@NamedQueries(
+            @NamedQuery(name = "GuestbookResponse.findByAuthenticatedUserId",
+            query = "SELECT gbr FROM GuestbookResponse gbr WHERE gbr.authenticatedUser.id=:authenticatedUserId")
+)
 public class GuestbookResponse implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id

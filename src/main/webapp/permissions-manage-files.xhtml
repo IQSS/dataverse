@@ -13,6 +13,7 @@
     <h:body>
         <f:metadata>
             <f:viewParam name="id" value="#{manageFilePermissionsPage.dataset.id}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{manageFilePermissionsPage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(manageFilePermissionsPage.dataset, bundle['dataverse.permissionsFiles.title'])}"/>
         </f:metadata>
@@ -30,7 +31,7 @@
                             <div data-toggle="collapse" data-target="#panelCollapseUsersGroups" class="panel-heading text-info">
                                 #{bundle['dataverse.permissionsFiles.usersOrGroups']} <span class="glyphicon glyphicon-chevron-up"/>
                                 
-                                <span class="text-muted small pull-right"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.permissionsFiles.usersOrGroups.description']}</span>
+                                <span class="text-muted small pull-right">#{bundle['dataverse.permissionsFiles.usersOrGroups.description']}</span>
                             </div>
                             <div id="panelCollapseUsersGroups" class="collapse in">
                                 <div class="panel-body">
@@ -136,7 +137,7 @@
                             <div data-toggle="collapse" data-target="#panelCollapseFiles" class="panel-heading text-info">
                                 #{bundle['dataverse.permissionsFiles.files']} <span class="glyphicon glyphicon-chevron-down"/>
                                 
-                                <span class="text-muted small pull-right"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.permissionsFiles.files.description']}</span>
+                                <span class="text-muted small pull-right">#{bundle['dataverse.permissionsFiles.files.description']}</span>
                             </div>
                             <div id="panelCollapseFiles" class="collapse">
                                 <div class="panel-body">
@@ -244,7 +245,7 @@
                         </p:fragment>
                         <p:fragment id="assignRoleContent">
                             <div class="form-horizontal">
-                                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.permissionsFiles.assignDialog.description']}</p>
+                                <p class="help-block">#{bundle['dataverse.permissionsFiles.assignDialog.description']}</p>
                                 <div class="form-group" jsf:rendered="#{empty manageFilePermissionsPage.fileRequester}">
                                     <label for="userGroupAccessInput" class="col-sm-3 control-label">
                                         #{bundle['dataverse.permissionsFiles.assignDialog.userOrGroup']}

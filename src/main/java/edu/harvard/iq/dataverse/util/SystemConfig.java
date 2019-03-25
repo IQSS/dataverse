@@ -1058,4 +1058,14 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, safeDefaultIfKeyNotFound);
     }
     
+    public boolean isIndependentHandleService() {
+        boolean safeDefaultIfKeyNotFound = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.IndependentHandleService, safeDefaultIfKeyNotFound);
+    
+    }
+    
+    public String getMDCLogPath() {
+        String mDCLogPath = settingsService.getValueForKey(SettingsServiceBean.Key.MDCLogPath, null);
+        return mDCLogPath;
+    }
 }
