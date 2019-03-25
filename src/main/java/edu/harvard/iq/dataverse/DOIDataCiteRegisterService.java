@@ -146,14 +146,18 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));
         metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
         if (dvObject.isInstanceofDataset()) {
-            metadataTemplate.setDescription(dataset.getLatestVersion().getDescriptionPlainText());
+            String description = dataset.getLatestVersion().getDescriptionPlainText();
+            if (description.isEmpty() || description.equals(DatasetField.NA_VALUE)) {
+                description = ":unav";
+            }
+            metadataTemplate.setDescription(description);
         }
         if (dvObject.isInstanceofDataFile()) {
             DataFile df = (DataFile) dvObject;
             //Note: File metadata is not escaped like dataset metadata is, so adding an xml escape here.
             //This could/should be removed if the datafile methods add escaping
             String fileDescription = StringEscapeUtils.escapeXml(df.getDescription());
-            metadataTemplate.setDescription(fileDescription == null ? "" : fileDescription);
+            metadataTemplate.setDescription(fileDescription == null ? ":unav" : fileDescription);
             String datasetPid = df.getOwner().getGlobalId().asString();
             metadataTemplate.setDatasetIdentifier(datasetPid);
         } else {
@@ -167,9 +171,14 @@ public class DOIDataCiteRegisterService {
             //Note file title is not currently escaped the way the dataset title is, so adding it here.
             title = StringEscapeUtils.escapeXml(title);
         }
+        
+        if (title.isEmpty() || title.equals(DatasetField.NA_VALUE)) {
+            title = ":unav";
+        }
+        
         metadataTemplate.setTitle(title);
         String producerString = dataset.getLatestVersion().getRootDataverseNameforCitation();
-        if (producerString.isEmpty()) {
+        if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {
             producerString = ":unav";
         }
         metadataTemplate.setPublisher(producerString);

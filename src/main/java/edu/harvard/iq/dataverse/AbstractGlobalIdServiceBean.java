@@ -423,7 +423,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
         metadataTemplate.setTitle(dvObject.getCurrentName());
         String producerString = dataverseService.findRootDataverse().getName();
-        if (producerString.isEmpty()) {
+        if (producerString.isEmpty()  || producerString.equals(DatasetField.NA_VALUE) ) {
             producerString = ":unav";
         }
         metadataTemplate.setPublisher(producerString);
