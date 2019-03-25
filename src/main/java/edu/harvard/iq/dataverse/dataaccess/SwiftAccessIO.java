@@ -70,16 +70,16 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     private Account account = null;
     private StoredObject swiftFileObject = null;
     private Container swiftContainer = null;
-    private boolean isPublicContainer = Boolean.parseBoolean(System.getProperty("dataverse.file.swift-is-public-container", "true"));
-    private String swiftFolderPathSeparator = System.getProperty("dataverse.files.swift-folder-path-separator", "_");
-    private String swiftDefaultEndpoint = System.getProperty("dataverse.file.swift-default-endpoint");
+    private boolean isPublicContainer = Boolean.parseBoolean(System.getProperty("dataverse.files.swift.isPublicContainer", "true"));
+    private String swiftFolderPathSeparator = System.getProperty("dataverse.files.swift.folderPathSeparator", "_");
+    private String swiftDefaultEndpoint = System.getProperty("dataverse.files.swift.defaultEndpoint");
 
     //for hash
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
     
     //TODO: should this be dynamically generated based on size of file?
     //Also, this is in seconds
-    private static int TEMP_URL_EXPIRES = Integer.parseInt(System.getProperty("dataverse.files.swift-temporary-url-expiry-time", "60"));
+    private static int TEMP_URL_EXPIRES = Integer.parseInt(System.getProperty("dataverse.files.swift.temporaryUrlExpiryTime", "60"));
 
     private static int LIST_PAGE_LIMIT = 100;
 
@@ -531,6 +531,8 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 // object!
                 throw new IOException("IO driver mismatch: SwiftAccessIO called on a non-swift stored object.");
             } else if (this.isWriteAccess) {
+                swiftEndPoint = swiftDefaultEndpoint;
+
                 // Swift uses this to create pseudo-hierarchical folders
                 String swiftPseudoFolderPathSeparator = "/";
 
@@ -583,7 +585,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 // object!
                 throw new IOException("IO driver mismatch: SwiftAccessIO called on a non-swift stored object.");
             } else if (this.isWriteAccess) {
-                swiftEndPoint = System.getProperty("dataverse.file.swift-default-endpoint");
+                swiftEndPoint = swiftDefaultEndpoint;
 
                 // Swift uses this to create pseudo-hierarchical folders
                 String swiftPseudoFolderPathSeparator = "/";
@@ -730,12 +732,12 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     Account authenticateWithSwift(String swiftEndPoint) throws IOException {
-        String swiftEndPointAuthUrl = System.getProperty("dataverse.file.swift-auth-url." + swiftEndPoint);
-        String swiftEndPointUsername = System.getProperty("dataverse.file.swift-username." + swiftEndPoint);
-        String swiftEndPointSecretKey = System.getProperty("dataverse.file.swift-password." + swiftEndPoint);
-        String swiftEndPointTenantName = System.getProperty("dataverse.file.swift-tenant." + swiftEndPoint);
-        String swiftEndPointAuthMethod = System.getProperty("dataverse.file.swift-auth-type." + swiftEndPoint);
-        String swiftEndPointTenantId = System.getProperty("dataverse.file.swift-tenant-id." + swiftEndPoint);
+        String swiftEndPointAuthUrl = System.getProperty("dataverse.files.swift.authUrl." + swiftEndPoint);
+        String swiftEndPointUsername = System.getProperty("dataverse.files.swift.username." + swiftEndPoint);
+        String swiftEndPointSecretKey = System.getProperty("dataverse.files.swift.password." + swiftEndPoint);
+        String swiftEndPointTenantName = System.getProperty("dataverse.files.swift.tenant." + swiftEndPoint);
+        String swiftEndPointAuthMethod = System.getProperty("dataverse.files.swift.authType." + swiftEndPoint);
+        String swiftEndPointTenantId = System.getProperty("dataverse.files.swift.tenant." + swiftEndPoint);
 
         if (swiftEndPointAuthUrl == null || swiftEndPointUsername == null || swiftEndPointSecretKey == null
                 || "".equals(swiftEndPointAuthUrl) || "".equals(swiftEndPointUsername) || "".equals(swiftEndPointSecretKey)) {
@@ -804,9 +806,9 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     private String hmac = null;
     public String generateTempUrlSignature(String swiftEndPoint, String containerName, String objectName, int duration) throws IOException {
         if (hmac == null || isExpiryExpired(generateTempUrlExpiry(duration, System.currentTimeMillis()), duration, System.currentTimeMillis())) {
-            String secretKey = System.getProperty("dataverse.file.swift-hash-key." + swiftEndPoint);
+            String secretKey = System.getProperty("dataverse.files.swift.hashKey." + swiftEndPoint);
             if (secretKey == null) {
-                throw new IOException("Please input a hash key under dataverse.file.swift-hash-key." + swiftEndPoint);
+                throw new IOException("Please input a hash key under dataverse.files.swift.hashKey." + swiftEndPoint);
             }
             String path = "/v1/" + containerName + "/" + objectName;
             Long expires = generateTempUrlExpiry(duration, System.currentTimeMillis());
@@ -831,7 +833,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
 
     private String temporaryUrl = null;
     private String generateTemporarySwiftUrl(String swiftEndPoint, String containerName, String objectName, int duration) throws IOException {
-        String baseUrl = System.getProperty("dataverse.file.swift-endpoint." + swiftEndPoint);
+        String baseUrl = System.getProperty("dataverse.files.swift.endpoint." + swiftEndPoint);
         String path = "/v1/" + containerName + "/" + objectName;
         
         if (temporaryUrl == null || isExpiryExpired(generateTempUrlExpiry(duration, System.currentTimeMillis()), duration, System.currentTimeMillis())) {
