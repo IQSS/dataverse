@@ -554,7 +554,7 @@ Create your own ``analytics-code.html`` file using the analytics code snippet pr
 	gtag('config', 'YOUR-ACCOUNT-CODE');
     </script>
 
-**IMPORTANT:** Note the "async" attribute in the first script line above. In the documentation provided by Google, its value is left blank (as in ``<script async src="...">``). It must be set as in the example above (``<script async="async" src="...">``), otherwise it may cause problemw with some browsers.
+**IMPORTANT:** Note the "async" attribute in the first script line above. In the documentation provided by Google, its value is left blank (as in ``<script async src="...">``). It must be set as in the example above (``<script async="async" src="...">``), otherwise it may cause problems with some browsers.
 
 Once you have created the analytics file, run this curl command to add it to your settings (using the same file location as in the example above):
 
