@@ -215,7 +215,7 @@ First, run all the following create commands with your Swift endpoint informatio
     ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.file.swift.username.endpoint1=your-username"
     ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.file.swift.endpoint.endpoint1=your-swift-endpoint"
 
-``auth_type`` can either be ``keystone``, ``keystone_v3``, or it will assumed to be ``basic``. ``auth_url`` should be your keystone authentication URL which includes the tokens (e.g. for keystone, ``https://openstack.example.edu:35357/v2.0/tokens`` and for keystone_v3, ``https://openstack.example.edu:35357/v3/auth/tokens``). ``swift_endpoint`` is a URL that look something like ``http://rdgw.swift.example.org/swift/v1``.
+``auth_type`` can either be ``keystone``, ``keystone_v3``, or it will assumed to be ``basic``. ``auth_url`` should be your keystone authentication URL which includes the tokens (e.g. for keystone, ``https://openstack.example.edu:35357/v2.0/tokens`` and for keystone_v3, ``https://openstack.example.edu:35357/v3/auth/tokens``). ``swift_endpoint`` is a URL that looks something like ``http://rdgw.swift.example.org/swift/v1``.
 
 Then create a password alias by running (without changes):
 
