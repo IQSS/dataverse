@@ -361,19 +361,22 @@ public class Files extends AbstractApiBean {
     
     @GET                    //For some reason this version regex below was telling/confusing jaxrs(?) that there was no post for this endpoint               
     @Path("{id}/metadata")  //{versionId:(/versionId/[^/]+?)?}") //Allows both {id}/metadata and {id}/metadata/versionId/{versionId}, see https://nakov.com/blog/2009/07/15/jax-rs-path-pathparam-and-optional-parameters/
-    public String getFileMetadata(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
+    public Response getFileMetadata(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
             FileMetadata fm;
             
             if(null != getDraft && getDraft) { 
                 //MAD: Fix this to catch the permissions exception and throw a real error
-                fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+                try {
+                    fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+                } catch (WrappedResponse w) {
+                    return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset." );
+                }
                 if(null == fm) {
                     //MAD: Fix this by figure out why we couldn't get the gson json to return cleanly in a response (remove the throws Exception too)
                     //maybe refer to: https://www.baeldung.com/jax-rs-response
-                    throw new Exception("No draft availabile for this dataset"); 
-                    //return error(BAD_REQUEST, "No draft availabile for this dataset");
+                    return error(BAD_REQUEST, "No draft availabile for this dataset");
                 }
             } else {
                 fm = df.getLatestPublishedFileMetadata();
@@ -385,16 +388,22 @@ public class Files extends AbstractApiBean {
             MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
             mdcLogService.logEntry(entry);
             
+            return Response
+                .status(Response.Status.OK)
+                .entity(jsonString)
+                .type(MediaType.TEXT_PLAIN) //Our plain text string is already json
+                .build();
+            
             //final JsonParser parser = new JsonParser();
-            Gson gson = new Gson();
+            //Gson gson = new Gson();
             //JsonElement json = parser.parse(jsonString);
             
-            return jsonString;//allowCors(ok(gson.toJson(fm.asGsonObject(true))));
+            //return jsonString;//allowCors(ok(gson.toJson(fm.asGsonObject(true))));
 
     }
     @GET                    
     @Path("{id}/metadata/draft")
-    public String getFileMetadataDraft(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
+    public Response getFileMetadataDraft(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
         return getFileMetadata(fileIdOrPersistentId, versionId, uriInfo, headers, response, true);
     }
     
