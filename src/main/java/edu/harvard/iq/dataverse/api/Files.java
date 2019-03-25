@@ -180,9 +180,7 @@ public class Files extends AbstractApiBean {
         if (!systemConfig.isHTTPUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
         }
-        // -------------------------------------
         // (1) Get the user from the API key
-        // -------------------------------------
         User authUser;
         try {
             authUser = findUserOrDie();
@@ -192,9 +190,7 @@ public class Files extends AbstractApiBean {
                     );
         }
 
-        // -------------------------------------
-        // (2) Check/Parse the JSON (if uploaded)
-        // -------------------------------------        
+        // (2) Check/Parse the JSON (if uploaded)  
         Boolean forceReplace = false;
         OptionalFileParams optionalFileParams = null;
         if (jsonData != null) {
@@ -202,7 +198,6 @@ public class Files extends AbstractApiBean {
             try {
                 jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
                 // (2a) Check for optional "forceReplace"
-                // -------------------------------------
                 if ((jsonObj.has("forceReplace")) && (!jsonObj.get("forceReplace").isJsonNull())) {
                     forceReplace = jsonObj.get("forceReplace").getAsBoolean();
                     if (forceReplace == null) {
@@ -212,7 +207,6 @@ public class Files extends AbstractApiBean {
                 try {
                     // (2b) Load up optional params via JSON
                     //  - Will skip extra attributes which includes fileToReplaceId and forceReplace
-                    //---------------------------------------
                     optionalFileParams = new OptionalFileParams(jsonData);
                 } catch (DataFileTagException ex) {
                     return error(Response.Status.BAD_REQUEST, ex.getMessage());
@@ -222,16 +216,14 @@ public class Files extends AbstractApiBean {
             }
         }
 
-        // -------------------------------------
         // (3) Get the file name and content type
-        // -------------------------------------
+        if(null == contentDispositionHeader) {
+             return error(BAD_REQUEST, "You must upload a file.");
+        }
         String newFilename = contentDispositionHeader.getFileName();
         String newFileContentType = formDataBodyPart.getMediaType().toString();
         
-        
-        //-------------------
         // (4) Create the AddReplaceFileHelper object
-        //-------------------
         msg("REPLACE!");
 
         DataverseRequest dvRequest2 = createDataverseRequest(authUser);
@@ -243,9 +235,7 @@ public class Files extends AbstractApiBean {
                                                 this.commandEngine,
                                                 this.systemConfig);
 
-        //-------------------
         // (5) Run "runReplaceFileByDatasetId"
-        //-------------------
         long fileToReplaceId = 0;
         try {
             DataFile dataFile = findDataFileOrDie(fileIdOrPersistentId);
@@ -305,6 +295,18 @@ public class Files extends AbstractApiBean {
             
     } // end: replaceFileInDataset
     
+//    @POST
+//    @Path("{id}/replace")
+//    @Consumes(MediaType.MULTIPART_FORM_DATA)
+//    public Response updateFileMetadata(
+//                    @PathParam("id") String fileIdOrPersistentId,
+//                    @FormDataParam("jsonData") String jsonData,
+//                    @FormDataParam("file") InputStream testFileInputStream,
+//                    @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+//                    @FormDataParam("file") final FormDataBodyPart formDataBodyPart
+//                    ){
+//    
+//    }
     
     @GET
     @Path("{id}/metadata{versionId:(/versionId/[^/]+?)?}") //Allows both {id}/metadata and {id}/metadata/versionId/{versionId}, see https://nakov.com/blog/2009/07/15/jax-rs-path-pathparam-and-optional-parameters/

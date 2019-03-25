@@ -225,7 +225,7 @@ public class OptionalFileParamsTest {
     }
     
     @Test
-    public void testGetFileMetadataFromJson() throws DataFileTagException {
+    public void testGetOptionalFileParamsFromJson() throws DataFileTagException {
         FileMetadata fm = new FileMetadata();
         fm.setDescription("description");
         fm.setDirectoryLabel("/foo/bar");
