@@ -443,7 +443,7 @@ Add a file to an existing Dataset. Description and tags are optional::
 
 A more detailed "add" example using curl::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"], "restrict":"true"}' "https://example.dataverse.edu/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"true"}' "https://example.dataverse.edu/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
 
 Example python code to add a file. This may be run by changing these parameters in the sample code:
 
@@ -704,12 +704,12 @@ A curl example using a ``pid``::
 Replacing Files
 ~~~~~~~~~~~~~~~
 
-Replace an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Note that metadata such as description and tags are not carried over from the file being replaced
+Replace an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Note that metadata such as description, directoryLabel (File Path) and tags are not carried over from the file being replaced
 
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' \
-  -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}'\
+  -F 'jsonData={"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"],"forceReplace":false}'\
   "https://demo.dataverse.org/api/files/$FILE_ID/replace"
 
 Example python code to replace a file.  This may be run by changing these parameters in the sample code:
