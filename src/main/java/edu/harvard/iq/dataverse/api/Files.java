@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
@@ -27,6 +28,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteMapLayerMetadataCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDraftFileMetadataIfAvailableCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -314,6 +316,9 @@ public class Files extends AbstractApiBean {
                     );
         }
         
+        //MAD: What additional params need to be added to OptionalFileParams?
+        // - Prov
+        
         // (2) Check/Parse the JSON (if uploaded)  
         Boolean forceReplace = false;
         OptionalFileParams optionalFileParams = null;
@@ -343,7 +348,7 @@ public class Files extends AbstractApiBean {
         try {
             optionalFileParams.addOptionalParams(df);
         } catch (Exception e) {
-            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile" +e);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile" + e);
         }
 
         execCommand(new UpdateDatasetVersionCommand(df.getOwner(), req));
@@ -356,14 +361,20 @@ public class Files extends AbstractApiBean {
     
     @GET                    //For some reason this version regex below was telling/confusing jaxrs(?) that there was no post for this endpoint               
     @Path("{id}/metadata")  //{versionId:(/versionId/[^/]+?)?}") //Allows both {id}/metadata and {id}/metadata/versionId/{versionId}, see https://nakov.com/blog/2009/07/15/jax-rs-path-pathparam-and-optional-parameters/
-    public String getFileMetadata(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WrappedResponse {
+    public String getFileMetadata(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
             FileMetadata fm;
             
-            if(versionId != null && versionId.equals("/versionId/draft")) { 
-                fm = df.getLatestFileMetadata();
-                //There is no way on df I can see to get an arbitrary version of metadata... 
+            if(null != getDraft && getDraft) { 
+                //MAD: Fix this to catch the permissions exception and throw a real error
+                fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+                if(null == fm) {
+                    //MAD: Fix this by figure out why we couldn't get the gson json to return cleanly in a response (remove the throws Exception too)
+                    //maybe refer to: https://www.baeldung.com/jax-rs-response
+                    throw new Exception("No draft availabile for this dataset"); 
+                    //return error(BAD_REQUEST, "No draft availabile for this dataset");
+                }
             } else {
                 fm = df.getLatestPublishedFileMetadata();
             }
@@ -381,8 +392,12 @@ public class Files extends AbstractApiBean {
             return jsonString;//allowCors(ok(gson.toJson(fm.asGsonObject(true))));
 
     }
+    @GET                    
+    @Path("{id}/metadata/draft")
+    public String getFileMetadataDraft(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
+        return getFileMetadata(fileIdOrPersistentId, versionId, uriInfo, headers, response, true);
+    }
     
-
     // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
             // MAD: I think all that needs to be changed is using findDataFileOrDie()
     // TODO: Rename this start with "delete" rather than "get".
