@@ -295,27 +295,73 @@ public class Files extends AbstractApiBean {
             
     } // end: replaceFileInDataset
     
-//    @POST
-//    @Path("{id}/replace")
-//    @Consumes(MediaType.MULTIPART_FORM_DATA)
-//    public Response updateFileMetadata(
-//                    @PathParam("id") String fileIdOrPersistentId,
-//                    @FormDataParam("jsonData") String jsonData,
-//                    @FormDataParam("file") InputStream testFileInputStream,
-//                    @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-//                    @FormDataParam("file") final FormDataBodyPart formDataBodyPart
-//                    ){
-//    
-//    }
+    @POST
+    @Path("{id}/metadata")
+    public Response updateFileMetadata(@FormDataParam("jsonData") String jsonData,
+                    @PathParam("id") String fileIdOrPersistentId
+        ) throws WrappedResponse, DataFileTagException { //MAD: should catch these?
+        DataverseRequest req = createDataverseRequest(findUserOrDie());
+        final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+        
+        
+        //Much of this code is taken from the replace command, simplified as we aren't actually switching files
+        User authUser;
+        try {
+            authUser = findUserOrDie();
+        } catch (AbstractApiBean.WrappedResponse ex) {
+            return error(Response.Status.FORBIDDEN, 
+                    BundleUtil.getStringFromBundle("file.addreplace.error.auth")
+                    );
+        }
+        
+        // (2) Check/Parse the JSON (if uploaded)  
+        Boolean forceReplace = false;
+        OptionalFileParams optionalFileParams = null;
+        if (jsonData != null) {
+            JsonObject jsonObj = null;
+            try {
+                jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
+                // (2a) Check for optional "forceReplace"
+                if ((jsonObj.has("forceReplace")) && (!jsonObj.get("forceReplace").isJsonNull())) { //MAD this blows up when the payload is blank
+                    forceReplace = jsonObj.get("forceReplace").getAsBoolean();
+                    if (forceReplace == null) {
+                        forceReplace = false;
+                    }
+                }
+                try {
+                    // (2b) Load up optional params via JSON
+                    //  - Will skip extra attributes which includes fileToReplaceId and forceReplace
+                    optionalFileParams = new OptionalFileParams(jsonData);
+                } catch (DataFileTagException ex) {
+                    return error(Response.Status.BAD_REQUEST, ex.getMessage());
+                }
+            } catch (ClassCastException ex) {
+                logger.info("Exception parsing string '" + jsonData + "': " + ex);
+            }
+        }
+        
+        try {
+            optionalFileParams.addOptionalParams(df);
+        } catch (Exception e) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile" +e);
+        }
+
+        execCommand(new UpdateDatasetVersionCommand(df.getOwner(), req));
+
+//                if (restrict != df.getFileMetadata().isRestricted()) {
+//                    commandEngine.submit(new RestrictFileCommand(df, dvRequest, restrict));
+//                }
+        return ok("OK?");
+    }
     
-    @GET
-    @Path("{id}/metadata{versionId:(/versionId/[^/]+?)?}") //Allows both {id}/metadata and {id}/metadata/versionId/{versionId}, see https://nakov.com/blog/2009/07/15/jax-rs-path-pathparam-and-optional-parameters/
-    public String getDataFileMetadata(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WrappedResponse {
+    @GET                    //For some reason this version regex below was telling/confusing jaxrs(?) that there was no post for this endpoint               
+    @Path("{id}/metadata")  //{versionId:(/versionId/[^/]+?)?}") //Allows both {id}/metadata and {id}/metadata/versionId/{versionId}, see https://nakov.com/blog/2009/07/15/jax-rs-path-pathparam-and-optional-parameters/
+    public String getFileMetadata(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WrappedResponse {
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
             FileMetadata fm;
             
-            if(versionId.equals("/versionId/draft")) { 
+            if(versionId != null && versionId.equals("/versionId/draft")) { 
                 fm = df.getLatestFileMetadata();
                 //There is no way on df I can see to get an arbitrary version of metadata... 
             } else {
@@ -334,17 +380,6 @@ public class Files extends AbstractApiBean {
             
             return jsonString;//allowCors(ok(gson.toJson(fm.asGsonObject(true))));
 
-    }
-
-    @POST
-    @Path("{id}/metadata")
-    public Response persistFileMetadata(@PathParam("id") Long idSupplied) {
-        //Should I bet checking http upload
-        
-        //similar to datasets editVersionMetadata
-        
-        //At the end this will need to create a dataset draft if there isn't one
-        return null;
     }
     
 
