@@ -5,10 +5,9 @@ import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 
 
-import edu.harvard.iq.dataverse.datavariable.*;
-//import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
-//import edu.harvard.iq.dataverse.datavariable.VariableMetadataDDIParser;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadataDDIParser;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -72,6 +71,8 @@ public class EditDDIIT {
         assertNotEquals("",origFileId);
 
         Response origXml = UtilIT.getFileMetadata(origFileId, null, apiToken);
+        assertEquals(200, origXml.getStatusCode());
+
 
         String stringOrigXml = origXml.getBody().prettyPrint();
 
