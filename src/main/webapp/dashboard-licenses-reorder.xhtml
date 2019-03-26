@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+>
+<h:head>
+</h:head>
+
+<h:body>
+    <f:metadata>
+        <f:viewParam name="dataverseId" value="#{dashboardPage.dataverseId}"/>
+        <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
+        <f:viewAction action="#{LicenseReorderPage.init}"/>
+        <f:viewAction
+                action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
+        <f:viewAction
+                action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverse.id), bundle['dashboard.title'])}"/>
+        <f:viewAction
+                action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard-licenses.xhtml',bundle['dashboard.license.header'])}"/>
+        <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['license.reorder.header'])}"/>
+    </f:metadata>
+    <ui:composition template="/dataverse_template.xhtml">
+        <ui:define name="body">
+
+            <h:form>
+                <p:dataTable var="license" value="#{LicenseReorderPage.licenses}" draggableRows="true"
+                             style="width: 80%">
+                    <p:column headerText="#{bundle['dashboard.license.header']}">
+                        <h:outputText value="#{license.localizedText}"/>
+                    </p:column>
+                </p:dataTable>
+                <div class="container">
+                    <div class="row text-left">
+                        <div class="col" style="margin-top: 20px">
+                            <p:commandButton styleClass="btn btn-primary"
+                                             value="#{bundle.save}"
+                                             action="#{LicenseReorderPage.saveChanges()}"/>
+                            <p:commandButton styleClass="btn btn-primary"
+                                             value="#{bundle.cancel}"
+                                             action="#{LicenseReorderPage.cancel()}"/>
+                        </div>
+                    </div>
+                </div>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

@@ -39,6 +39,19 @@ public class LicenseMapperTest {
 
     }
 
+    @Test
+    public void shouldCorrectlyMapToSimpleDto() {
+        //given
+        License license = createTestLicense();
+
+        //when
+        LicenseSimpleDto simpleDto = licenseMapper.mapToSimpleDto(license, Locale.forLanguageTag("en"));
+
+        //then
+        Assert.assertEquals(license.getId(), simpleDto.getLicenseId());
+        Assert.assertEquals(license.getLocalizedName(Locale.forLanguageTag("en")), simpleDto.getLocalizedText());
+    }
+
     // -------------------- PRIVATE --------------------
 
     private License createTestLicense() {

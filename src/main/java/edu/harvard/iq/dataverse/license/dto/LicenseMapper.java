@@ -8,6 +8,7 @@ import org.primefaces.model.ByteArrayContent;
 import javax.ejb.Stateless;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Stateless
@@ -34,6 +35,21 @@ public class LicenseMapper {
 
     public List<LicenseDto> mapToDtos(List<License> licenses) {
         return licenses.stream().map(this::mapToDto).collect(Collectors.toList());
+    }
+
+    public LicenseSimpleDto mapToSimpleDto(License license, Locale textLocale) {
+
+        return new LicenseSimpleDto(license.getId(), license.getLocalizedName(textLocale));
+    }
+
+    public List<LicenseSimpleDto> mapToSimpleDtos(List<License> licenses, Locale textLocale) {
+        List<LicenseSimpleDto> licenseSimpleDtos = new ArrayList<>();
+
+        for (License license : licenses) {
+            licenseSimpleDtos.add(this.mapToSimpleDto(license, textLocale));
+        }
+
+        return licenseSimpleDtos;
     }
 
     // -------------------- PRIVATE --------------------

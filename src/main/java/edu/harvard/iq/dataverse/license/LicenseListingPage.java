@@ -71,6 +71,10 @@ public class LicenseListingPage implements Serializable {
         licenseDAO.saveChanges(license);
     }
 
+    public String redirectToLicenseReorderPage() {
+        return "/dashboard-licenses-reorder.xhtml?&faces-redirect=true";
+    }
+
     // -------------------- PRIVATE --------------------
 
     private void displayNoLicensesActiveWarningMessage() {

@@ -27,6 +27,16 @@
             </p:messages>
 
             <h:form>
+                <div class="container">
+                    <div class="row">
+                        <div class="col" style="text-align: right; width: 78%; margin-bottom: 5px">
+                            <p:commandButton action="#{LicenseListingPage.redirectToLicenseReorderPage()}"
+                                             value="#{bundle['dashboard.license.reorderButton']}"
+                                             styleClass="btn btn-primary"/>
+
+                        </div>
+                    </div>
+                </div>
                 <p:dataTable var="license" value="#{LicenseListingPage.licenses}" style="width: 80%">
                     <p:column headerText="#{bundle['dashboard.license.displayOrder']}" style="width: 15%">
                         <h:outputText value="#{license.position}"/>
