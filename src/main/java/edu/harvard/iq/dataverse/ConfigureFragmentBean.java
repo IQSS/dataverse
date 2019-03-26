@@ -13,6 +13,9 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+
+import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -78,6 +81,16 @@ public class ConfigureFragmentBean implements java.io.Serializable{
         User user = session.getUser();
         if (user instanceof AuthenticatedUser) {
             apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+            if (apiToken == null) {
+                apiToken = new ApiToken();
+                apiToken.setTokenString(java.util.UUID.randomUUID().toString());
+                apiToken.setAuthenticatedUser((AuthenticatedUser) user);
+                Calendar c = Calendar.getInstance();
+                apiToken.setCreateTime(new Timestamp(c.getTimeInMillis()));
+                c.roll(Calendar.YEAR, 1);
+                apiToken.setExpireTime(new Timestamp(c.getTimeInMillis()));
+                authService.save(apiToken);
+            }
         }
         
         toolHandler = new ExternalToolHandler(tool, datafileService.find(fileId), apiToken);

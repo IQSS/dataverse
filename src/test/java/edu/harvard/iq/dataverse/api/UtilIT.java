@@ -2045,4 +2045,19 @@ public class UtilIT {
         return requestSpecification.post("/api/admin/makeDataCount/" + idInPath + "/updateCitationsForDataset"+ optionalQueryParam);
     }
 
+    static Response editDDI(String body, String fileId, String apiToken) {
+        if (apiToken == null) {
+            apiToken = "";
+        }
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType(ContentType.XML)
+                .accept(ContentType.XML)
+                .body(body)
+                .when()
+                .put("/api/edit/" + fileId);
+        return response;
+
+    }
+
 }
