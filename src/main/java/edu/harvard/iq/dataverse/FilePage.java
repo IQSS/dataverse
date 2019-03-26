@@ -188,6 +188,12 @@ public class FilePage implements java.io.Serializable {
            
             this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
            
+            if(fileMetadata.getDatasetVersion().isPublished()) {
+                MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, fileMetadata.getDatasetVersion());
+                mdcLogService.logEntry(entry);
+            }
+
+           
             // Find external tools based on their type, the file content type, and whether
             // ingest has created a derived file for that type
             // Currently, tabular data files are the only type of derived file created, so
@@ -537,9 +543,20 @@ public class FilePage implements java.io.Serializable {
                
 
         Command<Dataset> cmd;
+        boolean updateCommandSuccess = false;
+        Long deleteFileId = null;
+        String deleteStorageLocation = null;
+
+        if (!filesToBeDeleted.isEmpty()) { 
+            // We want to delete the file (there's always only one file with this page)
+            
+            deleteStorageLocation = datafileService.getPhysicalFileToDelete(filesToBeDeleted.get(0).getDataFile());
+        }
+        
         try {
             cmd = new UpdateDatasetVersionCommand(editDataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
             commandEngine.submit(cmd);
+            updateCommandSuccess = true;
 
         } catch (EJBException ex) {
             
@@ -563,6 +580,22 @@ public class FilePage implements java.io.Serializable {
 
 
         if (fileDeleteInProgress) {
+            
+            if (updateCommandSuccess) {
+                if (deleteStorageLocation != null) {
+                    // Finalize the delete of the physical file 
+                    // (File service will double-check that the datafile no 
+                    // longer exists in the database, before proceeding to 
+                    // delete the physical file)
+                    try {
+                        datafileService.finalizeFileDelete(deleteFileId, deleteStorageLocation);
+                    } catch (IOException ioex) {
+                        logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                                + deleteFileId + ", storage location: " + deleteStorageLocation);
+                    }
+                }
+            }
+            
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.message.deleteSuccess"));
             fileDeleteInProgress = false;
         } else {

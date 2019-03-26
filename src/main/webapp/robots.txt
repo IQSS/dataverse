@@ -1,3 +1,6 @@
+# Consult the guide on how to open your Dataverse installation to crawling by 
+# search engine bots: 
+# /guides/installation/config.html#letting-search-engines-crawl-your-installation 
 User-agent: *
 Allow: /$
 Allow: /dataverse.xhtml

@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
-import static edu.harvard.iq.dataverse.api.UtilIT.getRandomString;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
@@ -19,6 +18,7 @@ import org.junit.BeforeClass;
 import java.util.UUID;
 import javax.validation.constraints.AssertTrue;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
@@ -463,6 +463,7 @@ public class AdminIT {
         assertEquals(200, deleteSuperuser.getStatusCode());
 
     }
+    
 
     @Test
     public void testCreateNonBuiltinUserViaApi() {
@@ -510,6 +511,7 @@ public class AdminIT {
         Response deleteSuperuser = UtilIT.deleteUser(username);
         assertEquals(200, deleteSuperuser.getStatusCode());
     }
+    
     
     @Test
     @Ignore

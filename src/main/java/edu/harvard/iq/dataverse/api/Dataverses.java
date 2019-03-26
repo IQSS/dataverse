@@ -118,6 +118,9 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     ImportServiceBean importService;
+    
+    @EJB
+    SettingsServiceBean settingsService;
 
     @POST
     public Response addRoot(String body) {
@@ -390,8 +393,10 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @Path("{identifier}")
     public Response viewDataverse(@PathParam("identifier") String idtf) {
-        return allowCors(response(req -> ok(json(execCommand(
-                new GetDataverseCommand(req, findDataverseOrDie(idtf)))))));
+        return allowCors(response(req -> ok(
+            json(execCommand(new GetDataverseCommand(req, findDataverseOrDie(idtf))),
+                settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false)
+            ))));
     }
 
     @DELETE

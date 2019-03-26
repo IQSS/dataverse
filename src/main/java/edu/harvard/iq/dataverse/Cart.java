@@ -18,10 +18,10 @@ public class Cart {
     }
     
     public void addItem(String title, String persistentId) throws Exception{
-        if (!contents.contains(createEntry(title, persistentId))) {
+        if (!checkCartForItem(title, persistentId)) {
             contents.add(createEntry(title, persistentId));
         } else {
-            throw new Exception(title + "already in cart.");
+            throw new Exception(title + " already in cart.");
         }
     }
 

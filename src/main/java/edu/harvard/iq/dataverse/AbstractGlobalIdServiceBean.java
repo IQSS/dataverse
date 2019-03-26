@@ -56,23 +56,28 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     protected Map<String, String> addBasicMetadata(DvObject dvObjectIn, Map<String, String> metadata) {
 
         String authorString = dvObjectIn.getAuthorString();
-
-        if (authorString.isEmpty()) {
+        if (authorString.isEmpty() || authorString.contains(DatasetField.NA_VALUE)) {
             authorString = ":unav";
         }
         //QDR - use institution name
         String producerString = ResourceBundle.getBundle("Bundle").getString("institution.name");
 
-        if (producerString.isEmpty()) {
+        if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {
             producerString = ":unav";
         }
-        
+
+        String titleString = dvObjectIn.getCurrentName();
+
+        if (titleString.isEmpty() || titleString.equals(DatasetField.NA_VALUE)) {
+            titleString = ":unav";
+        }
+
         metadata.put("datacite.creator", authorString);
-        metadata.put("datacite.title", dvObjectIn.getDisplayName());
+        metadata.put("datacite.title", titleString);
         metadata.put("datacite.publisher", producerString);
-        metadata.put("datacite.publicationyear", generateYear(dvObjectIn));        
+        metadata.put("datacite.publicationyear", generateYear(dvObjectIn));
         return metadata;
-    }   
+    }  
 
     protected String getTargetUrl(DvObject dvObjectIn) {
         logger.log(Level.FINE,"getTargetUrl");
@@ -416,9 +421,9 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
 
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
-        metadataTemplate.setTitle(dvObject.getDisplayName());
+        metadataTemplate.setTitle(dvObject.getCurrentName());
         String producerString = dataverseService.findRootDataverse().getName();
-        if (producerString.isEmpty()) {
+        if (producerString.isEmpty()  || producerString.equals(DatasetField.NA_VALUE) ) {
             producerString = ":unav";
         }
         metadataTemplate.setPublisher(producerString);
