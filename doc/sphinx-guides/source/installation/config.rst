@@ -208,12 +208,12 @@ First, run all the following create commands with your Swift endpoint informatio
 
 .. code-block:: none
 
-    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.file.swift.defaultEndpoint=endpoint1"
-    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.file.swift.authType.endpoint1=your-auth-type"
-    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.file.swift.authUrl.endpoint1=your-auth-url"
-    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.file.swift.tenant.endpoint1=your-tenant-name"
-    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.file.swift.username.endpoint1=your-username"
-    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.file.swift.endpoint.endpoint1=your-swift-endpoint"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.defaultEndpoint=endpoint1"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.authType.endpoint1=your-auth-type"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.authUrl.endpoint1=your-auth-url"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.tenant.endpoint1=your-tenant-name"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.username.endpoint1=your-username"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.endpoint.endpoint1=your-swift-endpoint"
 
 ``auth_type`` can either be ``keystone``, ``keystone_v3``, or it will assumed to be ``basic``. ``auth_url`` should be your keystone authentication URL which includes the tokens (e.g. for keystone, ``https://openstack.example.edu:35357/v2.0/tokens`` and for keystone_v3, ``https://openstack.example.edu:35357/v3/auth/tokens``). ``swift_endpoint`` is a URL that looks something like ``http://rdgw.swift.example.org/swift/v1``.
 
@@ -221,7 +221,7 @@ Then create a password alias by running (without changes):
 
 .. code-block:: none
 
-    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.file.swift.password.endpoint1='${ALIAS=swiftpassword-alias}'"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.password.endpoint1='${ALIAS=swiftpassword-alias}'"
     ./asadmin $ASADMIN_OPTS create-password-alias swiftpassword-alias
 
 The second command will trigger an interactive prompt asking you to input your Swift password.
@@ -242,7 +242,7 @@ By default, your Swift installation will be public-only, meaning users will be u
 
 In order to **enable file access restrictions**, you must enable Swift to use temporary URLs for file access. To enable usage of temporary URLs, set a hash key both on your swift endpoint and in your swift.properties file. You can do so by running the create command:
 
-``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.file.swift.hashKey.endpoint1=your-hash-key"``
+``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.hashKey.endpoint1=your-hash-key"``
 
 You also have the option to set a custom expiration length, in seconds, for a generated temporary URL. It is initialized to 60 seconds, but you can change it by running the create command:
 
