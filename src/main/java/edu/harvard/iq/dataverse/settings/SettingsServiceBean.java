@@ -366,7 +366,12 @@ public class SettingsServiceBean {
          * 
          */
         FilePIDsEnabled,
-        
+
+        /**
+         * Indicates if the Handle service is setup to work 'independently' (No communication with the Global Handle Registry)
+         */
+        IndependentHandleService,
+
         /**
          * Archiving can be configured by providing an Archiver class name (class must extend AstractSubmitToArchiverCommand)
          * and a list of settings that should be passed to the Archiver.
@@ -394,8 +399,11 @@ public class SettingsServiceBean {
          * /api/admin/dataverse/{alias}/addRolesToChildren. Default is "", no
          * inheritance. "*" means inherit assignments for all roles
          */
-        InheritParentRoleAssignments
-        
+        InheritParentRoleAssignments,
+        /*
+        *
+        */
+        MDCLogPath
         ;
 
         @Override

@@ -65,7 +65,7 @@ public class DataVariable implements Serializable {
      */
     @Column(columnDefinition="TEXT")
     private String label;
-    
+
     /*
      * weighted: indicates if this variable is weighted.
      */
@@ -178,12 +178,6 @@ public class DataVariable implements Serializable {
      * variable is a factor in R. See also "orderedFactor" above.
      */
     private boolean factor;
-    
-    /*
-     * the "Universe" of the variable. (see the DDI documentation for the 
-     * explanation)
-     */
-    private String universe;
 
   
     
@@ -207,6 +201,9 @@ public class DataVariable implements Serializable {
      * number of decimal points, where applicable.
      */
     private Long numberOfDecimalPoints;
+
+    @OneToMany (mappedBy="dataVariable", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    private Collection<VariableMetadata> variableMetadatas;
     
     public DataVariable() {
     }
@@ -220,6 +217,7 @@ public class DataVariable implements Serializable {
         invalidRanges = new ArrayList<>();
         summaryStatistics=new ArrayList<>();
         categories = new ArrayList<>();
+        variableMetadatas = new ArrayList<>();
     }
     
     /*
@@ -265,7 +263,6 @@ public class DataVariable implements Serializable {
         this.weighted = weighted;
     }
 
-    
     public java.lang.Long getFileStartPosition() {
         return this.fileStartPosition;
     }
@@ -466,14 +463,6 @@ public class DataVariable implements Serializable {
     }
     */
     
-    public String getUniverse() {
-        return this.universe;
-    }
-    
-    public void setUniverse(String universe) {
-        this.universe = universe;
-    }
-    
     public int getFileOrder() {
         return fileOrder;
     }
@@ -497,9 +486,16 @@ public class DataVariable implements Serializable {
     public void setNumberOfDecimalPoints(Long numberOfDecimalPoints) {
         this.numberOfDecimalPoints = numberOfDecimalPoints;
     }
-    
-    
-    /* 
+
+    public void setVariableMetadatas(List<VariableMetadata> variableMetadatas) {
+        this.variableMetadatas = variableMetadatas;
+    }
+
+    public Collection<VariableMetadata> getVariableMetadatas() {
+        return variableMetadatas;
+    }
+
+    /*
      * Custom overrides for hashCode(), equals() and toString() methods:
      */
     
