@@ -5,6 +5,8 @@ Dataverse 4 exposes most of its GUI functionality via a REST-based API. This sec
 
 .. note:: |CORS| Some API endpoint allow CORS_ (cross-origin resource sharing), which makes them usable from scripts runing in web browsers. These endpoints are marked with a *CORS* badge.
 
+.. note:: Bash environment variables shown below. The idea is that you can "export" these environment variables before copying and pasting the commands that use them. For example, you can set ``$SERVER_URL`` by running ``export SERVER_URL="https://demo.dataverse.org"`` in your Bash shell. To check if the environment variable was set properly, you can "echo" it (e.g. ``echo $SERVER_URL``).
+
 .. _CORS: https://www.w3.org/TR/cors/
 
 .. warning:: Dataverse 4's API is versioned at the URI - all API calls may include the version number like so: ``http://server-address/api/v1/...``. Omitting the ``v1`` part would default to the latest API version (currently 1). When writing scripts/applications that will be used for a long time, make sure to specify the API version, so they don't break when the API is upgraded.
@@ -47,9 +49,11 @@ View a Dataverse
 Delete a Dataverse
 ~~~~~~~~~~~~~~~~~~
 
-Deletes the dataverse whose ID is given::
+In order to delete a dataverse you must first delete or move all of its contents elsewhere.
 
-    DELETE http://$SERVER/api/dataverses/$id?key=$apiKey
+Deletes the dataverse whose ID is given:
+
+``curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE $SERVER_URL/api/dataverses/$id``
 
 Show Contents of a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -263,13 +267,6 @@ Get JSON Representation of a Dataset
 |CORS| Show the dataset whose id is passed::
 
   GET http://$SERVER/api/datasets/$id?key=$apiKey
-
-Delete Dataset
-~~~~~~~~~~~~~~
-
-Delete the dataset whose id is passed::
-
-  DELETE http://$SERVER/api/datasets/$id?key=$apiKey
 
 List Versions of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -667,6 +664,24 @@ Retrieving Citations for a Dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/citations?persistentId=$DOI"``
+
+Delete Unpublished Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Delete the dataset whose id is passed:
+
+``curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE http://$SERVER/api/datasets/$id``
+
+Delete Published Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Normally published datasets should not be deleted, but there exists a "destroy" API endpoint for superusers which will act on a dataset given a persistent ID or dataset database ID:
+
+``curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE http://$SERVER/api/datasets/:persistentId/destroy/?persistentId=doi:10.5072/FK2/AAA000``
+  
+``curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE http://$SERVER/api/datasets/999/destroy``
+  
+Calling the destroy endpoint is permanent and irreversible. It will remove the dataset and its datafiles, then re-index the parent dataverse in Solr. This endpoint requires the API token of a superuser.
 
 Files
 -----
