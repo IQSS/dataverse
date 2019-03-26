@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteMapLayerMetadataCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetCommand;
@@ -72,6 +73,7 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Path("files")
 public class Files extends AbstractApiBean {
@@ -158,6 +160,8 @@ public class Files extends AbstractApiBean {
         return ok("File " + dataFile.getDisplayName() + " " + text);
     }
         
+    
+    //TODO: This api would be improved by reporting the new fileId after replace
     
     /**
      * Replace an Existing File 
@@ -301,88 +305,97 @@ public class Files extends AbstractApiBean {
     @Path("{id}/metadata")
     public Response updateFileMetadata(@FormDataParam("jsonData") String jsonData,
                     @PathParam("id") String fileIdOrPersistentId
-        ) throws WrappedResponse, DataFileTagException { //MAD: should catch these?
-        DataverseRequest req = createDataverseRequest(findUserOrDie());
-        final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+        ) throws DataFileTagException, CommandException { //MAD: should catch these?
         
-        
-        //Much of this code is taken from the replace command, simplified as we aren't actually switching files
-        User authUser;
         try {
-            authUser = findUserOrDie();
-        } catch (AbstractApiBean.WrappedResponse ex) {
-            return error(Response.Status.FORBIDDEN, 
-                    BundleUtil.getStringFromBundle("file.addreplace.error.auth")
-                    );
-        }
-        
-        //MAD: What additional params need to be added to OptionalFileParams?
-        // - Prov
-        
-        // (2) Check/Parse the JSON (if uploaded)  
-        Boolean forceReplace = false;
-        OptionalFileParams optionalFileParams = null;
-        if (jsonData != null) {
-            JsonObject jsonObj = null;
+            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+
+            //Much of this code is taken from the replace command, simplified as we aren't actually switching files
+            User authUser;
             try {
-                jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
-                // (2a) Check for optional "forceReplace"
-                if ((jsonObj.has("forceReplace")) && (!jsonObj.get("forceReplace").isJsonNull())) { //MAD this blows up when the payload is blank
-                    forceReplace = jsonObj.get("forceReplace").getAsBoolean();
-                    if (forceReplace == null) {
-                        forceReplace = false;
-                    }
-                }
-                try {
-                    // (2b) Load up optional params via JSON
-                    //  - Will skip extra attributes which includes fileToReplaceId and forceReplace
-                    optionalFileParams = new OptionalFileParams(jsonData);
-                } catch (DataFileTagException ex) {
-                    return error(Response.Status.BAD_REQUEST, ex.getMessage());
-                }
-            } catch (ClassCastException ex) {
-                logger.info("Exception parsing string '" + jsonData + "': " + ex);
+                authUser = findUserOrDie();
+            } catch (AbstractApiBean.WrappedResponse ex) {
+                return error(Response.Status.FORBIDDEN, 
+                        BundleUtil.getStringFromBundle("file.addreplace.error.auth")
+                        );
             }
+
+            //You shouldn't be trying to edit a datafile that has been replaced
+            //We get the data file with a previousDataFileId of the user passed to update
+            List<Long> result = em.createNamedQuery("DataFile.findDataFileThatReplacedId", Long.class)
+            .setParameter("identifier", df.getId())
+                    .getResultList();
+
+            //There will be either 0 or 1 returned dataFile Id. If there is 1 this file is replaced and we need to error.
+            if(null != result && result.size() > 0) {
+                //we get the data file to do a permissions check, if this fails it'll go to the WrappedResponse below
+                execCommand(new GetDataFileCommand(req, findDataFileOrDie(result.get(0).toString())));
+
+                //If you are permitted we return a nicer message about the metadata error
+                return error(Response.Status.BAD_REQUEST, "You cannot edit metadata on a dataFile that has been replaced. Please try again with the newest file id.");
+            }
+
+            // (2) Check/Parse the JSON (if uploaded)  
+            OptionalFileParams optionalFileParams = null;
+
+            if (jsonData != null) {
+                JsonObject jsonObj = null;
+                try {
+                    jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
+                    if ((jsonObj.has("restrict")) && (!jsonObj.get("restrict").isJsonNull())) { //MAD this blows up when the payload is blank
+                        Boolean restrict = jsonObj.get("restrict").getAsBoolean();
+
+                        if (restrict != df.getFileMetadata().isRestricted()) {
+                            commandEngine.submit(new RestrictFileCommand(df, req, restrict));
+                        }
+                    }
+                    try {
+                        // (2b) Load up optional params via JSON
+                        //  - Will skip extra attributes which includes fileToReplaceId and forceReplace
+                        optionalFileParams = new OptionalFileParams(jsonData);
+                    } catch (DataFileTagException ex) {
+                        return error(Response.Status.BAD_REQUEST, ex.getMessage());
+                    }
+                } catch (ClassCastException ex) {
+                    logger.info("Exception parsing string '" + jsonData + "': " + ex);
+                }
+            }
+
+            try {
+                optionalFileParams.addOptionalParams(df);
+            } catch (Exception e) {
+                return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile" + e);
+            }
+
+            execCommand(new UpdateDatasetVersionCommand(df.getOwner(), req));
+        } catch (WrappedResponse wr) {
+            return error(Response.Status.BAD_REQUEST, "An error has occurred attempting to update the requested DataFile, likely related to permissions.");
         }
         
-        try {
-            optionalFileParams.addOptionalParams(df);
-        } catch (Exception e) {
-            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile" + e);
-        }
-
-        execCommand(new UpdateDatasetVersionCommand(df.getOwner(), req));
-
-//                if (restrict != df.getFileMetadata().isRestricted()) {
-//                    commandEngine.submit(new RestrictFileCommand(df, dvRequest, restrict));
-//                }
         return ok("OK?");
     }
     
-    @GET                    //For some reason this version regex below was telling/confusing jaxrs(?) that there was no post for this endpoint               
-    @Path("{id}/metadata")  //{versionId:(/versionId/[^/]+?)?}") //Allows both {id}/metadata and {id}/metadata/versionId/{versionId}, see https://nakov.com/blog/2009/07/15/jax-rs-path-pathparam-and-optional-parameters/
+    @GET                             
+    @Path("{id}/metadata")
     public Response getFileMetadata(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
             FileMetadata fm;
             
             if(null != getDraft && getDraft) { 
-                //MAD: Fix this to catch the permissions exception and throw a real error
                 try {
                     fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
                 } catch (WrappedResponse w) {
                     return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset." );
                 }
                 if(null == fm) {
-                    //MAD: Fix this by figure out why we couldn't get the gson json to return cleanly in a response (remove the throws Exception too)
-                    //maybe refer to: https://www.baeldung.com/jax-rs-response
                     return error(BAD_REQUEST, "No draft availabile for this dataset");
                 }
             } else {
                 fm = df.getLatestPublishedFileMetadata();
             }
             
-            //String jsonString = OptionalFileParams.printJsonStringForDataFileMetadata(fm);
             String jsonString = fm.asGsonObject(true).toString();
             
             MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
@@ -393,13 +406,6 @@ public class Files extends AbstractApiBean {
                 .entity(jsonString)
                 .type(MediaType.TEXT_PLAIN) //Our plain text string is already json
                 .build();
-            
-            //final JsonParser parser = new JsonParser();
-            //Gson gson = new Gson();
-            //JsonElement json = parser.parse(jsonString);
-            
-            //return jsonString;//allowCors(ok(gson.toJson(fm.asGsonObject(true))));
-
     }
     @GET                    
     @Path("{id}/metadata/draft")
