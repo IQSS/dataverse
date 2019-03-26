@@ -23,91 +23,89 @@
             <ui:param name="pageTitle" value="#{bundle['dashboard.card.datamove.header']} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
-
-                <!-- TODO move all text to bundle properties-->
-                <h2>Move data to another Dataverse</h2>
-                <!-- <h:messages style = "color:red;margin:8px;" /> -->
-
                 <h:form id="datamove-form" class="form-horizontal">
-                    <div class="panel-group">
- 
-                    <div class="panel panel-default">
-                    <div class="panel-heading text-info">Source</div>
-                    <div class="panel-body">
-                    
-                        <!-- direct input
-                        <h:outputLabel for="datasetId" value="Dataset persistentId" />
-                        <p:inputText id="datasetId" value="#{DashboardDatamovePage.dsPersistentId}" />
-                        <hr/>
-                        -->
-                        <div class="form-group">
-                        <label for="srcAlias" class="col-sm-3 control-label">Dataverse</label>
-                        <div class="col-sm-9">
-                        <p:selectOneMenu id="srcAlias" styleClass="form-control" 
-                                         immediate="true"
-                                         value="#{DashboardDatamovePage.srcAlias}"
-                                         valueChangeListener="#{DashboardDatamovePage.handleSrcChange}">
-                            <f:selectItem itemValue="#{null}" itemLabel="--select--" />
-                            <f:selectItems value="#{DashboardDatamovePage.aliases}" />
-                            <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move-msg,:datamove-form:dsPersistentIds,:datamove-form:move"/>
-                        </p:selectOneMenu>
-                        </div>
-                            
-                        <label for="dsPersistentIds" class="col-sm-3 control-label" >Dataset</label>
-                        <div class="col-sm-9">
-                        <p:selectOneMenu id="dsPersistentIds" styleClass="form-control"
-                                         immediate="true"
-                                         value="#{DashboardDatamovePage.dsPersistentId}"
-                                         valueChangeListener="#{DashboardDatamovePage.handleDsPersistentIdChange}">
-                            <f:selectItem itemValue="#{null}" itemLabel="--select--" />
-                            <f:selectItems value="#{DashboardDatamovePage.dsPersistentIds}" />
-                            <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move-msg,:datamove-form:move"/>
-                        </p:selectOneMenu>
-                        </div>
-                        </div>
-                    </div>
-                    </div>
-                    
-
-                    <div class="panel panel-default">
-                    <div class="panel-heading text-info">Destination</div>
-                    <div class="panel-body">
-                        <!-- direct input 
-                        <h:outputLabel for="dataverseAlias" value="Dataverse alias" />
-                        <p:inputText id="dataverseAlias" value="#{DashboardDatamovePage.dstAlias}" />
-                        <hr/>
-                        -->
-                        <div class="form-group">
-                        <label for="dstAlias" class="col-sm-3 control-label" >Dataverse</label>
-                        <div class="col-sm-9">
-                        <p:selectOneMenu id="dstAlias" styleClass="form-control"
-                                         immediate="true"
-                                         value="#{DashboardDatamovePage.dstAlias}"
-                                         valueChangeListener="#{DashboardDatamovePage.handleDstChange}">
-                            <f:selectItem itemValue="#{null}" itemLabel="--select--" />
-                            <f:selectItems value="#{DashboardDatamovePage.aliases}" />
-                            <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move-msg,:datamove-form:move"/>
-                        </p:selectOneMenu>
-                        </div>
+                    <div class="col-sm-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading text-info">#{bundle['dashboard.card.datamove.selectdataset.header']}</div>
+                            <div class="panel-body">
+                                <!-- direct input
+                                <h:outputLabel for="datasetId" value="Dataset persistentId" />
+                                <p:inputText id="datasetId" value="#{DashboardDatamovePage.dsPersistentId}" />
+                                <hr/>
+                                -->
+                                <div class="form-group">
+                                    <label for="srcAlias" class="col-sm-3 control-label">#{bundle['dataverse']}</label>
+                                    <div class="col-sm-9">
+                                        <p:selectOneMenu id="srcAlias" styleClass="form-control" 
+                                                         immediate="true"
+                                                         value="#{DashboardDatamovePage.srcAlias}"
+                                                         valueChangeListener="#{DashboardDatamovePage.handleSrcChange}">
+                                            <f:selectItem itemValue="#{null}" itemLabel="#{bundle['dashboard.card.datamove.dataverseid']}" />
+                                            <f:selectItems value="#{DashboardDatamovePage.aliases}" />
+                                            <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move-msg,:datamove-form:dsPersistentIds,:datamove-form:move"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="dsPersistentIds" class="col-sm-3 control-label">#{bundle['dataset']}</label>
+                                    <div class="col-sm-9">
+                                        <p:selectOneMenu id="dsPersistentIds" styleClass="form-control"
+                                                         immediate="true"
+                                                         value="#{DashboardDatamovePage.dsPersistentId}"
+                                                         valueChangeListener="#{DashboardDatamovePage.handleDsPersistentIdChange}">
+                                            <f:selectItem itemValue="#{null}" itemLabel="#{bundle['dashboard.card.datamove.datasetid']}" />
+                                            <f:selectItems value="#{DashboardDatamovePage.dsPersistentIds}" />
+                                            <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move-msg,:datamove-form:move"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    <div class="col-sm-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading text-info">#{bundle['dashboard.card.datamove.newdataverse.header']}</div>
+                            <div class="panel-body">
+                                <!-- direct input 
+                                <h:outputLabel for="dataverseAlias" value="Dataverse alias" />
+                                <p:inputText id="dataverseAlias" value="#{DashboardDatamovePage.dstAlias}" />
+                                <hr/>
+                                -->
+                                <div class="form-group">
+                                    <label for="dstAlias" class="col-sm-3 control-label">#{bundle['dataverse']}</label>
+                                    <div class="col-sm-9">
+                                        <p:selectOneMenu id="dstAlias" styleClass="form-control"
+                                                         immediate="true"
+                                                         value="#{DashboardDatamovePage.dstAlias}"
+                                                         valueChangeListener="#{DashboardDatamovePage.handleDstChange}">
+                                            <f:selectItem itemValue="#{null}" itemLabel="#{bundle['dashboard.card.datamove.dataverseid']}" />
+                                            <f:selectItems value="#{DashboardDatamovePage.aliases}" />
+                                            <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move-msg,:datamove-form:move"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
+                    <div class="col-sm-12 button-block">
+                        <p:commandLink id="move" styleClass="btn btn-default" value="#{bundle['saveChanges']}" 
+                                       disabled="#{DashboardDatamovePage.disable}" action="#{DashboardDatamovePage.move()}" 
+                                       update=":datamove-form:move-msg,:datamove-form:dsPersistentIds,:datamove-form:move"
+                                       oncomplete="PF('deaccessionConfirmation').show();">
+                            <f:param name="DO_DATAMOVE_VALIDATION" value="true"/>
+                        </p:commandLink>
+                        <button type="button" class="btn btn-default">#{bundle['cancel']}</button>
+                        <p:messages id="move-msg" closable="true" />
                     </div>
                     
-                    <!-- move action -->
-                    <hr/>
-                    <div class="button-block">
-                    <p:commandButton id="move" styleClass="btn btn-default" value="Move" disabled="#{DashboardDatamovePage.disable}" action="#{DashboardDatamovePage.move()}" update=":datamove-form:move-msg,:datamove-form:dsPersistentIds,:datamove-form:move">
-                        <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-alert" />
-                    </p:commandButton>
-                    <p:messages id="move-msg" closable="true" />
-                    </div>
-                    
-                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
-                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
-                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
-                    </p:confirmDialog>
+                    <p:dialog id="datamoveConfirmation" header="#{bundle['dashboard.card.datamove.manage']}" widgetVar="datamoveConfirmation" modal="true">
+                        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dashboard.card.datamove.confim.dialog']}</p>
+                        <div class="button-block">
+                            <h:commandButton styleClass="btn btn-default" value="#{bundle['dashboard.card.datamove.confim.yes']}" onclick="PF('datamoveConfirmation').hide();" action="#{DashboardDatamovePage.move()}" />
+                            <button type="button" class="btn btn-default" value="#{bundle['no']}" onclick="PF('datamoveConfirmation').hide();">#{bundle.no}</button>
+                        </div>
+                    </p:dialog>
                 </h:form>
             </ui:define>
         </ui:composition>
