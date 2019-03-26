@@ -10,7 +10,6 @@ cp ../jhove/jhove.conf testdata/
 cp ../jhove/jhoveConfig.xsd testdata/
 cd ../../
 cp -r scripts conf/docker-aio/testdata/
-cp doc/sphinx-guides/source/_static/util/pg8-createsequence-prep.sql conf/docker-aio/testdata/doc/sphinx-guides/source/_static/util/
 cp doc/sphinx-guides/source/_static/util/createsequence.sql conf/docker-aio/testdata/doc/sphinx-guides/source/_static/util/
 
 # not using dvinstall.zip for setupIT.bash; but still used in install.bash for normal ops

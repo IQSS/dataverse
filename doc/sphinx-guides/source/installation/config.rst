@@ -1065,9 +1065,6 @@ in any other SQL flavor - the standard JPA code in the application simply expect
 the database to have a saved function ("stored procedure") named ``generateIdentifierAsSequentialNumber``
 with the single return argument ``identifier``. 
 
-For systems using Postgresql 8.4 or older, the procedural language `plpgsql` should be enabled first.
-We have provided an example :download:`here </_static/util/pg8-createsequence-prep.sql>`.
-
 Please note that ``:IdentifierGenerationStyle`` also plays a role for the "identifier" for files. See the section on ``:DataFilePIDFormat`` below for more details.
 
 .. _:DataFilePIDFormat:
