@@ -33,14 +33,6 @@ function bind_bsui_components(){
     // Sharrre
     sharrre();
     
-    
-    
-    // REBIND ANALYTICS FIX
-    buttonEvents();
-    
-    
-    
-    
     // Custom Popover with HTML content
     popoverHTML();
     
@@ -48,6 +40,14 @@ function bind_bsui_components(){
     PrimeFaces.widget.Dialog.prototype.postShow = function() {
         var dialog_id = this.jq.attr('id').split(/[:]+/).pop();
         handleResizeDialog(dialog_id);
+    }
+    
+    // REBIND CUSTOM EVENTS
+    if (typeof customEvents === 'function') {
+        customEvents();
+        console.log('YUP');
+    } else {
+        console.log('NOPE');
     }
 }
 

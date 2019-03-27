@@ -14,9 +14,7 @@
     <h:head>
 	<o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <f:facet name="first">
-            
-            
-            
+            <o:resourceInclude path="/CustomizationFilesServlet?customFileType=analytics" />
             <title><h:outputText value="#{pageTitle}"/></title>
 	    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
             <ui:remove><!-- We might want dc_meta_header or jsonld_header at the file level some day.--></ui:remove>
@@ -113,14 +111,8 @@
                 // Rebind bootstrap UI components
                 bind_bsui_components();
             });
-
-            
             //]]>
         </script>
-        
-        <!-- WORKAROUND FOR BUG #5589 -->
-        <o:resourceInclude path="/CustomizationFilesServlet?customFileType=analytics" />
-        
     </h:body>
     </f:view>
 </html>
