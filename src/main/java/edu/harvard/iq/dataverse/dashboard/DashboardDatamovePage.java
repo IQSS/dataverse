@@ -150,6 +150,7 @@ public class DashboardDatamovePage implements java.io.Serializable {
             // redirect to login OR give some type ‘you must be logged in message'
         }
 
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dashboard.card.datamove.manage"), BundleUtil.getStringFromBundle("dashboard.card.datamove.message")));
         return null;
     }
 
