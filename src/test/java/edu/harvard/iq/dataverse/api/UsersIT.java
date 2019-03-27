@@ -183,7 +183,7 @@ public class UsersIT {
         
         //Meanwhile add another file to be downloaded
         
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
 
         JsonObjectBuilder json = Json.createObjectBuilder()
                 .add("description", "my description")
