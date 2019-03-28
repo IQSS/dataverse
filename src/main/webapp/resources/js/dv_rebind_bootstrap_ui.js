@@ -41,14 +41,6 @@ function bind_bsui_components(){
         var dialog_id = this.jq.attr('id').split(/[:]+/).pop();
         handleResizeDialog(dialog_id);
     }
-    
-    // REBIND CUSTOM EVENTS
-    if (typeof customEvents === 'function') {
-        customEvents();
-        console.log('YUP');
-    } else {
-        console.log('NOPE');
-    }
 }
 
 function bind_tooltip_popover(){
