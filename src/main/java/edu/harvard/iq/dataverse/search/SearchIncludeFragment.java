@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
@@ -427,9 +428,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
             }
 
             // populate preview counts: https://redmine.hmdc.harvard.edu/issues/3560
-            previewCountbyType.put("dataverses", 0L);
-            previewCountbyType.put("datasets", 0L);
-            previewCountbyType.put("files", 0L);
+            previewCountbyType.put(BundleUtil.getStringFromBundle("dataverses"), 0L);
+            previewCountbyType.put(BundleUtil.getStringFromBundle("datasets"), 0L);
+            previewCountbyType.put(BundleUtil.getStringFromBundle("files"), 0L);
             if (solrQueryResponseAllTypes != null) {
                 for (FacetCategory facetCategory : solrQueryResponseAllTypes.getTypeFacetCategories()) {
                     for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
@@ -764,15 +765,15 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public Long getFacetCountDatasets() {
-        return findFacetCountByType("datasets");
+        return findFacetCountByType(BundleUtil.getStringFromBundle("datasets"));
     }
 
     public Long getFacetCountDataverses() {
-        return findFacetCountByType("dataverses");
+        return findFacetCountByType(BundleUtil.getStringFromBundle("dataverses"));
     }
 
     public Long getFacetCountFiles() {
-        return findFacetCountByType("files");
+        return findFacetCountByType(BundleUtil.getStringFromBundle("files"));
     }
 
     public String getSearchFieldRelevance() {
