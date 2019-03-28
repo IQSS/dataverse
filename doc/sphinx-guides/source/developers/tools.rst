@@ -13,6 +13,8 @@ Netbeans Connector Chrome Extension
 The `Netbeans Connector <https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa?hl=en>`_ extension for Chrome allows you to see changes you've made to HTML pages the moment you save the file without having to refresh your browser. See also 
 http://wiki.netbeans.org/ChromeExtensionInstallation
 
+Unfortunately, while the Netbeans Connector Chrome Extension used to "just work", these days a workaround described at https://www.youtube.com/watch?v=J6lOQS2rWK0&t=130 seems to be necessary. For now, under "Run" (under project properties), choose "Chrome" as the browser rather than "Chrome with NetBeans Connector". After you run the project, click the Netbeans logo in Chrome and then "Debug in NetBeans". For more information, please see the "workaround for Netbeans Connector Chrome Extension" post at https://groups.google.com/d/msg/dataverse-dev/agJZilD1l0Q/cMBkt5KDBQAJ
+
 pgAdmin
 +++++++
 

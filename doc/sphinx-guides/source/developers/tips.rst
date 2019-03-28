@@ -34,7 +34,7 @@ Add Glassfish 4.1 as a Server in Netbeans
 
 Dataverse only works with a specific version of Glassfish (see https://github.com/IQSS/dataverse/issues/2628 ) so you need to make sure Netbeans is deploying to that version rather than a newer version of Glassfish that may have come bundled with Netbeans.
 
-Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Glassfish Server" and set the installation location to ``/usr/local/glassfish4``. The default are fine so you can click "Next" and "Finish". To avoid confusing, click "Remove Server" on the newer version of Glassfish that came bundled with Glassfish.
+Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Glassfish Server" and set the installation location to ``/usr/local/glassfish4``. The default are fine so you can click "Next" and "Finish". If you are running Netbeans 8.2 and there is already a bundled version of Glassfish, you should probably remove it because (again) you need a specific version of Glassfish (4.1 as of this writing).
 
 Please note that if you are on a Mac, Netbeans may be unable to start Glassfish due to proxy settings in Netbeans. Go to the "General" tab in Netbeans preferences and click "Test connection" to see if you are affected. If you get a green checkmark, you're all set. If you get a red exclamation mark, change "Proxy Settings" to "No Proxy" and retest. A more complicated answer having to do with changing network settings is available at https://discussions.apple.com/thread/7680039?answerId=30715103022#30715103022 and the bug is also described at https://netbeans.org/bugzilla/show_bug.cgi?id=268076
 
