@@ -4,9 +4,6 @@
 
 # hard-codes several assumptions: image is named dv0, container is named dv, port is 8084
 
-# setupIT.bash retries
-n_retries=10
-
 # glassfish healthy/ready retries
 n_wait=5
 
