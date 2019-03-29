@@ -264,10 +264,10 @@ There are over 250 glyphs in font format from the Glyphicon Halflings set provid
 .. raw:: html
 
 	<div class="panel panel-default code-example">
-	  <div class="panel-body">
-        <span class="glyphicon glyphicon-search h1"></span>
-        <span class="glyphicon glyphicon-user h1"></span>
-        <span class="glyphicon glyphicon-lock h1"></span>
+	  <div class="panel-body h1">
+        <span class="glyphicon glyphicon-search"></span>
+        <span class="glyphicon glyphicon-user"></span>
+        <span class="glyphicon glyphicon-lock"></span>
 	  </div>
 	</div>
 

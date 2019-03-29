@@ -4,6 +4,8 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -13,6 +15,8 @@ import java.util.TimeZone;
  * @author jchengan
  */
 public class DateUtil {
+
+    public static String YEAR_DASH_MONTH_PATTERN = "yyyy-MM";
 
     public static String formatDate(Date dateToformat) {
         String formattedDate;
@@ -58,4 +62,5 @@ public class DateUtil {
              return null;
          }
     }
+
 }

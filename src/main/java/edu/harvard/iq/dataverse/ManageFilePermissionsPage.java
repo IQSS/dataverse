@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -138,7 +139,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                 for (RoleAssignment ra : ras) {
                     // for files, only show role assignments which can download
                     if (ra.getRole().permissions().contains(Permission.DownloadFile)) {
-                        raList.add(new RoleAssignmentRow(ra, roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo()));                   
+                        raList.add(new RoleAssignmentRow(ra, roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier(), true).getDisplayInfo()));                   
                         addFileToRoleAssignee(ra);                    
                     }
                 }
@@ -150,15 +151,19 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                         List<DataFile> requestedFiles = fileAccessRequestMap.get(au);
                         if (requestedFiles == null) {
                             requestedFiles = new ArrayList<>();
-                            fileAccessRequestMap.put(au, requestedFiles);
+                            AuthenticatedUser withProvider = authenticationService.getAuthenticatedUserWithProvider(au.getUserIdentifier());                           
+                            fileAccessRequestMap.put(withProvider, requestedFiles);
                         }
-
-                        requestedFiles.add(file);                    
-                    
+                        requestedFiles.add(file);                                       
                 }
             }  
         }
         
+    }
+    
+    public String getAuthProviderFriendlyName(String authProviderId){
+        
+        return AuthenticationProvider.getFriendlyName(authProviderId);
     }
     
     private void addFileToRoleAssignee(RoleAssignment assignment) {

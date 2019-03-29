@@ -104,10 +104,11 @@ public class FilesIT {
         Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
        
         
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
 
         JsonObjectBuilder json = Json.createObjectBuilder()
                 .add("description", "my description")
+                .add("directoryLabel", "data/subdir1")
                 .add("categories", Json.createArrayBuilder()
                         .add("Data")
                 );
@@ -129,9 +130,10 @@ public class FilesIT {
                 .body("data.files[0].categories[0]", equalTo("Data"))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
                 .body("data.files[0].dataFile.description", equalTo("my description"))
+                .body("data.files[0].directoryLabel", equalTo("data/subdir1"))
 //                .body("data.files[0].dataFile.tags", nullValue())
                 .body("data.files[0].dataFile.tabularTags", nullValue())
-                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 // not sure why description appears in two places
                 .body("data.files[0].description", equalTo("my description"))
                 .statusCode(OK.getStatusCode());
@@ -163,7 +165,7 @@ public class FilesIT {
         String datasetId = "cat"; //createDatasetGetId(dataverseAlias, apiToken);
        
         
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative("cat", pathToFile, apiToken);
         //msgt("Here it is: " + addResponse.prettyPrint());
 
@@ -184,7 +186,7 @@ public class FilesIT {
         String datasetId = "9999"; //createDatasetGetId(dataverseAlias, apiToken);
        
         
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId, pathToFile, apiToken);
 
 
@@ -210,7 +212,7 @@ public class FilesIT {
         String datasetId = "1"; //createDatasetGetId(dataverseAlias, apiToken);
        
         
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId, pathToFile, apiToken);
 
         msgt("Here it is: " + addResponse.prettyPrint());
@@ -235,7 +237,7 @@ public class FilesIT {
         // Create Dataset
         Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
 
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
 
         String junkJson = "thisIsNotJson";
 
@@ -247,7 +249,7 @@ public class FilesIT {
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
                 .body("data.files[0].dataFile.description", equalTo(""))
                 .body("data.files[0].dataFile.tabularTags", nullValue())
-                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 // not sure why description appears in two places
                 .body("data.files[0].description", equalTo(""))
                 .statusCode(OK.getStatusCode());
@@ -270,7 +272,7 @@ public class FilesIT {
         String apiTokenUnauthorizedUser = createUserGetToken();
 
         
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiTokenUnauthorizedUser);
 
         //addResponse.prettyPrint();
@@ -368,6 +370,7 @@ public class FilesIT {
         String pathToFile2 = "scripts/search/data/replace_test/004.txt";
         JsonObjectBuilder json = Json.createObjectBuilder()
                 .add("description", "My Text File")
+                .add("directoryLabel", "data/subdir1")
                 .add("categories", Json.createArrayBuilder()
                         .add("Data")
                 );
@@ -386,6 +389,7 @@ public class FilesIT {
                 .body("data.files[0].label", equalTo("004.txt"))
                 .body("data.files[0].dataFile.contentType", startsWith("text/plain"))
                 .body("data.files[0].description", equalTo("My Text File"))
+                .body("data.files[0].directoryLabel", equalTo("data/subdir1"))
                 .body("data.files[0].categories[0]", equalTo("Data"))
                 //.body("data.rootDataFileId", equalTo(origFileId))              
                 .statusCode(OK.getStatusCode());
@@ -645,7 +649,7 @@ public class FilesIT {
         // -------------------------
         // Add initial file
         // -------------------------
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
         String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
@@ -657,7 +661,7 @@ public class FilesIT {
                  */
                 //                .body("message", equalTo(successMsgAdd))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
         
         
@@ -732,7 +736,7 @@ public class FilesIT {
         // -------------------------
         // Add initial file
         // -------------------------
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
         String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
@@ -744,7 +748,7 @@ public class FilesIT {
                  */
                 //                .body("message", equalTo(successMsgAdd))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
         
         
@@ -816,14 +820,14 @@ public class FilesIT {
         // -------------------------
         // Add initial file
         // -------------------------
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
         String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
 
         addResponse.then().assertThat()
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
 
         Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
@@ -916,14 +920,14 @@ public class FilesIT {
         // Add initial file
         // -------------------------
         System.out.println("Add initial file");
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
         String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
 
         addResponse.then().assertThat()
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
 
         Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
@@ -936,14 +940,14 @@ public class FilesIT {
         Response restrictResponse = UtilIT.restrictFile(origFileId.toString(), restrict, apiToken);
         restrictResponse.prettyPrint();
         restrictResponse.then().assertThat()
-                .body("data.message", equalTo("File favicondataverse.png restricted."))
+                .body("data.message", equalTo("File dataverseproject.png restricted."))
                 .statusCode(OK.getStatusCode());
 
         //restrict already restricted file bad
         Response restrictResponseBad = UtilIT.restrictFile(origFileId.toString(), restrict, apiToken);
         restrictResponseBad.prettyPrint();
         restrictResponseBad.then().assertThat()
-                .body("message", equalTo("Problem trying to update restriction status on favicondataverse.png: File favicondataverse.png is already restricted"))
+                .body("message", equalTo("Problem trying to update restriction status on dataverseproject.png: File dataverseproject.png is already restricted"))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         //unrestrict file
@@ -951,7 +955,7 @@ public class FilesIT {
         Response unrestrictResponse = UtilIT.restrictFile(origFileId.toString(), restrict, apiToken);
         unrestrictResponse.prettyPrint();
         unrestrictResponse.then().assertThat()
-                .body("data.message", equalTo("File favicondataverse.png unrestricted."))
+                .body("data.message", equalTo("File dataverseproject.png unrestricted."))
                 .statusCode(OK.getStatusCode());
 
         //reset public install
@@ -983,7 +987,7 @@ public class FilesIT {
         // Add initial file
         // -------------------------
         msg("Add initial file");
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
 
         JsonObjectBuilder json = Json.createObjectBuilder()
                 .add("description", "my description")
@@ -1000,7 +1004,7 @@ public class FilesIT {
         
         addResponse.then().assertThat()
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode()); 
 
         //reset public install
@@ -1026,14 +1030,14 @@ public class FilesIT {
         // Add initial file
         // -------------------------
         msg("Add initial file");
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
         String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
 
         addResponse.then().assertThat()
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
 
         long fileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
@@ -1055,7 +1059,7 @@ public class FilesIT {
                 // Now we can search unpublished data. Just for testing!                
                 // FIXME - SEK (9/20/17) the checksum type test was failing previously - commenting out for now 
                 .body("data.total_count", equalTo(1))
-                .body("data.items[0].name", equalTo("favicondataverse.png"))
+                .body("data.items[0].name", equalTo("dataverseproject.png"))
  //               .body("data.items[0].checksum.type", equalTo("SHA-1"))
                 .body("data.facets", CoreMatchers.not(equalTo(null)))
                 // No "fileAccess" facet because :PublicInstall is set to true.
@@ -1097,7 +1101,7 @@ public class FilesIT {
             // Create Dataset
             Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
 
-            String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+            String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
             Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
             //msgt("Here it is: " + addResponse.prettyPrint());
 
