@@ -63,9 +63,10 @@ public class DashboardDatamovePage implements java.io.Serializable {
     @Inject
     DataverseRequestServiceBean dvRequestService;
 
-    // I need those, but not sure this is the way to do it
-    @EJB DatasetServiceBean datasetService;
-    @EJB DataverseServiceBean dataverseService;
+    @EJB
+    DatasetServiceBean datasetService;
+    @EJB
+    DataverseServiceBean dataverseService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -73,17 +74,7 @@ public class DashboardDatamovePage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DashboardDatamovePage.class.getCanonicalName());
 
     private AuthenticatedUser authUser = null;
-
-    public boolean isDisable() {
-        return disable;
-    }
-    
-    public void setDisable(boolean disable) {
-        this.disable = disable;
-    }
-    
-    private boolean disable=true;
-    
+   
     public String getSrcAlias() {
       return srcAlias;
     }
@@ -147,21 +138,37 @@ public class DashboardDatamovePage implements java.io.Serializable {
             // Dataset selection should also be improved!
         } else {
             return permissionsWrapper.notAuthorized();
-            // redirect to login OR give some type ‘you must be logged in message'
+            // redirect to login OR give some type of ‘you must be logged in' message
         }
 
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dashboard.card.datamove.manage"), BundleUtil.getStringFromBundle("dashboard.card.datamove.message")));
+        FacesContext.getCurrentInstance().addMessage(null, 
+            new FacesMessage(FacesMessage.SEVERITY_INFO, 
+                BundleUtil.getStringFromBundle("dashboard.card.datamove.manage"), 
+                BundleUtil.getStringFromBundle("dashboard.card.datamove.message")));
         return null;
     }
 
-    /** Move button should only be enables if both inputs are correct and Datset is not aalredy in target 
-     */
     public void move(){
-        //JsfHelper.addSuccessMessage("Move called for id: " + datasetId + " To: " + dataverseAlias);
-
         // copied logic from Datasets API move
-        Dataset ds = datasetService.findByGlobalId(dsPersistentId);//datasetId);
-        Dataverse target = dataverseService.findByAlias(dstAlias);//dataverseAlias);
+        Dataset ds = datasetService.findByGlobalId(dsPersistentId);
+        Dataverse target = dataverseService.findByAlias(dstAlias);
+
+        if (ds == null || target == null) {
+            // Move only works if both inputs are correct 
+            // But if these inputs are require, we should never get here
+            // TODO use validation?
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage("Please specify all fields"));
+            return;
+        }
+        // Note that we do not check if the Dataset is already in target verse!
+        //srcAlias.equals(dstAlias) // moving to the same verse makes no sense
+
+        // construct arguments for message
+        List<String> arguments = new ArrayList<>();
+        arguments.add(ds.getDisplayName());
+        arguments.add(dsPersistentId);
+        arguments.add(target.getName());
 
         //Command requires Super user - it will be tested by the command
         try {
@@ -172,34 +179,34 @@ public class DashboardDatamovePage implements java.io.Serializable {
             
             logger.info("Moved " + dsPersistentId + " from " + srcAlias + " to " + dstAlias);
             
+            FacesContext.getCurrentInstance().addMessage(null, 
+                new FacesMessage(FacesMessage.SEVERITY_INFO, 
+                    "Moved dataset", 
+                    BundleUtil.getStringFromBundle("dashboard.card.datamove.message.success", arguments)));
+            
+            
             updateDsPersistentIds(); // moved ds should not be in list anymore
-            updateDisabled();
         }
         catch (CommandException e) {
             logger.log(Level.SEVERE,"Unable to move "+ dsPersistentId + " from " + srcAlias + " to " + dstAlias, e);
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Failed to moved dataset",
+                    BundleUtil.getStringFromBundle("dashboard.card.datamove.message.failure", arguments)));
         }
     }
 
     public void handleSrcChange(final ValueChangeEvent event){
         srcAlias = (String)event.getNewValue();
-
-        //infoMsg("Selected source verse: " + srcAlias);
-
         updateDsPersistentIds();
-        updateDisabled();
     }
 
     public void handleDsPersistentIdChange(final ValueChangeEvent event){
         dsPersistentId = (String)event.getNewValue();
-        updateDisabled();
-        
-        //infoMsg("Selected dataset: " + dsPersistentId);
     }
 
     public void handleDstChange(final ValueChangeEvent event){
         dstAlias = (String)event.getNewValue();
-        updateDisabled();
-        //infoMsg("Selected destination verse: " + dstAlias + " move disable=" + isDisable());
     }
     
     private void updateDsPersistentIds() {
@@ -209,20 +216,6 @@ public class DashboardDatamovePage implements java.io.Serializable {
         for(Dataset dataset: datasetService.findByOwnerId(srcDv.getId())) {
           dsPersistentIds.add(dataset.getGlobalId().asString());
         }
-    }
-    
-    private void updateDisabled() {
-        setDisable (dsPersistentId==null || srcAlias==null || dstAlias==null // some required info is missing
-            || srcAlias.equals(dstAlias) // moving to the same verse makes no sense
-        );
-        if(!isDisable()) infoMsg("move "+ dsPersistentId + " from " + srcAlias + " to " + dstAlias);
-        else infoMsg("select source and destination in order to move");
-    }
-    
-
-    private void infoMsg(String msg) {
-        FacesContext
-            .getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, msg, ""));
     }
 
     public String getDataverseCount() {
