@@ -375,22 +375,25 @@ public class OptionalFileParams {
         // ---------------------------
         // Add categories
         // ---------------------------
-        addCategoriesToDataFile(fm);
+        replaceCategoriesInDataFile(fm);
        
 
         // ---------------------------
         // Add DataFileTags
         // ---------------------------
-        addFileDataTagsToFile(df);
+        replaceFileDataTagsInFile(df);
        
     }
     
 
     /**
-     *  Add Tags to the DataFile
+     *  Replace Categories in the DataFile.
+     *  
+     * This previously added the categories to what previously existed on the file metadata, but was switched to replace.
+     * This was because the add-to functionality was never utilized and replace was needed for file metadata update
      * 
      */
-    private void addCategoriesToDataFile(FileMetadata fileMetadata){
+    private void replaceCategoriesInDataFile(FileMetadata fileMetadata){
         
         if (fileMetadata == null){            
             throw new NullPointerException("The fileMetadata cannot be null!");
@@ -402,10 +405,12 @@ public class OptionalFileParams {
             return;
         }
         
-        List<String> currentCategories = fileMetadata.getCategoriesByName();
+        //List<String> currentCategories = fileMetadata.getCategoriesByName();
 
         // Add categories to the file metadata object
         //
+        fileMetadata.setCategories(new ArrayList()); //clear categories
+        
         this.getCategories().stream().forEach((catText) -> {               
             fileMetadata.addCategoryByName(catText);  // fyi: "addCategoryByName" checks for dupes
         });
@@ -413,6 +418,11 @@ public class OptionalFileParams {
 
     
     /**
+     * Replace File Data Tags in Tabular File.
+     * 
+     * This previously added the tags to what previously existed on the file metadata, but was switched to replace.
+     * This was because the add-to functionality was never utilized and replace was needed for file metadata update
+     * 
      * NOTE: DataFile tags can only be added to tabular files
      * 
      *      - e.g. The file must already be ingested.
@@ -422,7 +432,7 @@ public class OptionalFileParams {
      * 
      * @param df 
      */
-    private void addFileDataTagsToFile(DataFile df) throws DataFileTagException{
+    private void replaceFileDataTagsInFile(DataFile df) throws DataFileTagException{
         if (df == null){
             throw new NullPointerException("The DataFile (df) cannot be null!");
         }
@@ -446,38 +456,23 @@ public class OptionalFileParams {
         // --------------------------------------------------
         // Get existing tag list and convert it to list of strings (labels)
         // --------------------------------------------------
-        List<DataFileTag> existingDataFileTags = df.getTags();
-        List<String> currentLabels;
-
-        if (existingDataFileTags == null){
-            // nothing, just make an empty list
-            currentLabels = new ArrayList<>();
-        }else{            
-            // Yes, get the labels in a list
-            currentLabels = df.getTags().stream()
-                                        .map(x -> x.getTypeLabel())
-                                        .collect(Collectors.toList())
-                                       ;
-        }
+        
+        df.setTags(new ArrayList<DataFileTag>()); //MAD: TEST CLEARING TAGS
+        
+        
 
         // --------------------------------------------------
         // Iterate through and add any new labels
         // --------------------------------------------------
         DataFileTag newTagObj;
         for (String tagLabel : this.getDataFileTags()){    
+            if (DataFileTag.isDataFileTag(tagLabel)){
 
-            if (!currentLabels.contains(tagLabel)){     // not  already there!
+                newTagObj = new DataFileTag();
+                newTagObj.setDataFile(df);
+                newTagObj.setTypeByLabel(tagLabel);
+                df.addTag(newTagObj);
 
-                // redundant "if" check here.  Also done in constructor
-                //
-                if (DataFileTag.isDataFileTag(tagLabel)){
-
-                    newTagObj = new DataFileTag();
-                    newTagObj.setDataFile(df);
-                    newTagObj.setTypeByLabel(tagLabel);
-                    df.addTag(newTagObj);
-
-                }
             }
         }                
         

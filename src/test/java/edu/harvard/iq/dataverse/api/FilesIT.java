@@ -47,7 +47,6 @@ public class FilesIT {
                 .statusCode(200);
 
     }
-    
 
     /**
      * Create user and get apiToken
@@ -1178,7 +1177,7 @@ public class FilesIT {
         String jsonString = "{\"description\":\""+description+"\",\"categories\":[\""+category+"\"],\"forceReplace\":false}";
         
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, jsonString, apiToken);
-        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
         
         msg("Publish dataverse and dataset");
         Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
@@ -1190,17 +1189,28 @@ public class FilesIT {
         publishDatasetResp.then().assertThat()
                 .statusCode(OK.getStatusCode());
         
+        //Confirm metadata
         Response getMetadataResponse = UtilIT.getDataFileMetadata(origFileId, apiToken);
         String metadataResponseString = getMetadataResponse.body().asString();
         msg(metadataResponseString);
         assertEquals(200, getMetadataResponse.getStatusCode());  
-        
-        
         assertEquals(description, JsonPath.from(metadataResponseString).getString("description"));
         assertEquals(category, JsonPath.from(metadataResponseString).getString("categories[0].name"));
         
-        //MAD: This still needs to test new update code
-        //MAD: This also needs to test more attributes. If anything I'm sure tags won't work atm (can "fix" the same way as categories).
+        //Update fileMetadata and get to confirm again
+        msg("Update file metadata");
+        String updateDescription = "New description.";
+        String updateCategory = "New category";
+        String updateJsonString = "{\"description\":\""+updateDescription+"\",\"categories\":[\""+updateCategory+"\"],\"forceReplace\":false}";
+        Response updateMetadataResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateJsonString, apiToken);
+        assertEquals(200, updateMetadataResponse.getStatusCode());  
+        //String updateMetadataResponseString = updateMetadataResponse.body().asString();
+        Response getUpdatedMetadataResponse = UtilIT.getDataFileMetadata(origFileId, apiToken);
+        String getUpMetadataResponseString = getUpdatedMetadataResponse.body().asString();
+        msg(getUpMetadataResponseString);
+        assertEquals(updateDescription, JsonPath.from(getUpMetadataResponseString).getString("description"));
+        assertEquals(updateCategory, JsonPath.from(getUpMetadataResponseString).getString("categories[0].name"));
+        
         
     }
     
