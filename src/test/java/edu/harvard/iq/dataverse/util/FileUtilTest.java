@@ -76,6 +76,15 @@ public class FileUtilTest {
 
                 // replace extension x with another extension y
                 { "extension.y", "extension.x", "y" },
+
+                // interface approach: what are possible inputs
+                { null, null, null },
+                { null, null, "" },
+                { null, null, "y" },
+
+                { "", "", null },
+                { "", "", "" },
+                { "", "", "y" },
             });
         }
 
