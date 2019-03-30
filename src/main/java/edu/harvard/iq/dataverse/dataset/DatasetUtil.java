@@ -113,14 +113,14 @@ public class DatasetUtil {
         }
 
         StorageIO<Dataset> dataAccess = null;
-                
+
         try{
             dataAccess = DataAccess.getStorageIO(dataset);
         }
         catch(IOException ioex){
             logger.warning("getThumbnail(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
         }
-        
+
         InputStream in = null;
         try {
             if (dataAccess == null) {
@@ -132,7 +132,7 @@ public class DatasetUtil {
             logger.fine("Dataset-level thumbnail file does not exist, or failed to open; will try to find an image file that can be used as the thumbnail.");
         }
 
-        
+
         if (in != null) {
             try {
                 byte[] bytes = IOUtils.toByteArray(in);
@@ -206,8 +206,8 @@ public class DatasetUtil {
             return false;
         }
         return true;
-                
-        //TODO: Is this required? 
+
+        //TODO: Is this required?
 //        File originalFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameFinal);
 //        boolean originalFileDeleted = originalFile.delete();
 //        File thumb48 = new File(dataset.getFileSystemDirectory().toString(), File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
@@ -239,14 +239,14 @@ public class DatasetUtil {
 
         if (datasetVersion == null) {
             logger.fine("getting a published version of the dataset");
-            // We want to use published files only when automatically selecting 
+            // We want to use published files only when automatically selecting
             // dataset thumbnails.
-            datasetVersion = dataset.getReleasedVersion(); 
+            datasetVersion = dataset.getReleasedVersion();
         }
-        
+
         // No published version? - No [auto-selected] thumbnail for you.
         if (datasetVersion == null) {
-            return null; 
+            return null;
         }
 
         for (FileMetadata fmd : datasetVersion.getFileMetadatas()) {
@@ -272,7 +272,7 @@ public class DatasetUtil {
         }
 
         StorageIO<Dataset> dataAccess = null;
-                
+
         try{
              dataAccess = DataAccess.createNewStorageIO(dataset,"placeholder");
         }
@@ -280,7 +280,7 @@ public class DatasetUtil {
             //TODO: Add a suitable waing message
             logger.warning("Failed to save the file, storage id " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
         }
-        
+
         //File originalFile = new File(datasetDirectory.toString(), datasetLogoFilenameFinal);
         try {
             //this goes through Swift API/local storage/s3 to write the dataset thumbnail into a container
@@ -332,7 +332,7 @@ public class DatasetUtil {
         String thumbFileLocation = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, tmpFileForResize.toPath().toString());
         logger.fine("thumbFileLocation = " + thumbFileLocation);
         logger.fine("tmpFileLocation=" + tmpFileForResize.toPath().toString());
-        //now we must save the updated thumbnail 
+        //now we must save the updated thumbnail
         try {
             dataAccess.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail+thumb48addedByImageThumbConverter);
         } catch (IOException ex) {
@@ -346,7 +346,7 @@ public class DatasetUtil {
         } catch (IOException ioex) {
             logger.fine("Failed to delete temporary thumbnail file");
         }
-        
+
         logger.fine("Thumbnail saved to " + thumbFileLocation + ". Temporary file deleted : " + tmpFileWasDeleted + ". Original file deleted : " + originalTempFileWasDeleted);
         return dataset;
     }
@@ -380,7 +380,7 @@ public class DatasetUtil {
      * The dataset logo is the file that a user uploads which is *not* one of
      * the data files. Compare to the datavese logo. We do not save the original
      * file that is uploaded. Rather, we delete it after first creating at least
-     * one thumbnail from it. 
+     * one thumbnail from it.
      */
     public static boolean isDatasetLogoPresent(Dataset dataset) {
         if (dataset == null) {
@@ -398,28 +398,28 @@ public class DatasetUtil {
     }
 
     public static List<DatasetField> getDatasetSummaryFields(DatasetVersion datasetVersion, String customFields) {
-        
+
         List<DatasetField> datasetFields = new ArrayList<>();
-        
-        //if customFields are empty, go with default fields. 
+
+        //if customFields are empty, go with default fields.
         if(customFields==null || customFields.isEmpty()){
                customFields="dsDescription,subject,keyword,publication,notesText";
         }
-        
+
         String[] customFieldList= customFields.split(",");
-        Map<String,DatasetField> DatasetFieldsSet=new HashMap<>(); 
-        
+        Map<String,DatasetField> DatasetFieldsSet=new HashMap<>();
+
         for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
-            DatasetFieldsSet.put(dsf.getDatasetFieldType().getName(),dsf); 
+            DatasetFieldsSet.put(dsf.getDatasetFieldType().getName(),dsf);
         }
-        
+
         for(String cfl : customFieldList)
         {
                 DatasetField df = DatasetFieldsSet.get(cfl);
                 if(df!=null)
                 datasetFields.add(df);
         }
-            
+
         return datasetFields;
     }
 

@@ -1,9 +1,13 @@
 package edu.harvard.iq.dataverse.dataset;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import java.io.InputStream;
@@ -104,8 +108,42 @@ public class DatasetUtilTest {
     }
 
     @Test
-    public void testGetDatasetSummaryField() {
-        // TODO:
+    public void testGetDatasetSummaryField_134546789610() {
+        DatasetVersion version = new DatasetVersion();
+
+        DatasetField field = DatasetField.createNewEmptyDatasetField(new DatasetFieldType("subject", FieldType.TEXT, false), version);
+        field.setId(1l);
+
+        List<DatasetField> fields = new ArrayList<DatasetField>();
+        fields.add(field);
+
+        version.setDatasetFields(fields);
+
+        assertEquals(1, DatasetUtil.getDatasetSummaryFields(version, "subject").size());
+    }
+
+    @Test
+    public void testGetDatasetSummaryField_13454679610() {
+        DatasetVersion version = new DatasetVersion();
+
+        DatasetField field = DatasetField.createNewEmptyDatasetField(new DatasetFieldType("subject", FieldType.TEXT, false), version);
+        field.setId(1l);
+
+        List<DatasetField> fields = new ArrayList<DatasetField>();
+        fields.add(field);
+
+        version.setDatasetFields(fields);
+
+        assertEquals(0, DatasetUtil.getDatasetSummaryFields(version, "object").size());
+    }
+
+    @Test
+    public void testGetDatasetSummaryField_134679610() {
+        DatasetVersion version = new DatasetVersion();
+        List<DatasetField> fields = new ArrayList<DatasetField>();
+        version.setDatasetFields(fields);
+
+        assertEquals(0, DatasetUtil.getDatasetSummaryFields(version, "subject").size());
     }
 
 }
