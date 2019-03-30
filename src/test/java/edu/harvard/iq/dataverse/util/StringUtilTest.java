@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Stream;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -17,6 +18,7 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 
@@ -152,44 +154,46 @@ public class StringUtilTest {
     }
 
     @RunWith(Parameterized.class)
-    public static class TestTruncateStringInterface {
+    public static class TestTruncateString {
+
+        @Parameter
+        public String originalString;
+
+        @Parameter(1)
+        public int maxLength;
+
+        @Parameter(2)
+        public String expectedOutput;
 
         @Parameters
         public static Collection<Object[]> parameters() {
             return Arrays.asList(
                 new Object[][] {
-                    {null, null},
-                    {"", ""},
-                    {"abcd", "abcd"},
-                    {"abcd", "1234"}
+                    // interface-based partitioning
+                    // pair-wise test cases
+                    {null, -10, null},
+                    {null, 0, null},
+                    {null, 10, null},
+                    {"", -10, ""},
+                    {"", 0, ""},
+                    {"", 10, ""},
+                    {"abcd", -10, "abcd"},
+                    {"abcd", 0, "abcd"},
+                    {"abcd", 10, "abcd"},
+
+                    // functionality-based partitioning
+                    // pair-wise test cases
+                    {"abcd", 6, "abcd"},
+                    {"a cd", 6, "a cd"},
+                    {"abcdabcd", 4, "abcdabcd"},
+                    {"abcda cd", 4, "abcda <span class='dvn_threedots'>...</span>"}
                 }
             );
         }
 
         @Test
-        public void testTruncateStringInterface() {
-            fail();
-        }
-    }
-
-    @RunWith(Parameterized.class)
-    public static class TestTruncateStringFunctional {
-
-        @Parameters
-        public static Collection<Object[]> parameters() {
-            return Arrays.asList(
-                new Object[][] {
-                    {null, null},
-                    {"", ""},
-                    {"abcd", "abcd"},
-                    {"abcd", "1234"}
-                }
-            );
-        }
-
-        @Test
-        public void testTruncateStringFunctional() {
-            fail();
+        public void testTruncateString() {
+            assertEquals(expectedOutput, StringUtil.truncateString(originalString, maxLength));
         }
     }
 
