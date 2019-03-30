@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -75,6 +76,8 @@ import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -118,14 +121,14 @@ public class Admin extends AbstractApiBean {
 	DatasetServiceBean datasetService;
 	@EJB
 	DatasetVersionServiceBean datasetversionService;
-    @Inject
-    DataverseRequestServiceBean dvRequestService;
-    @EJB
-    EjbDataverseEngine commandEngine;
-    @EJB
-    GroupServiceBean groupService;
-    @EJB
-    SettingsServiceBean settingsService;
+        @Inject
+        DataverseRequestServiceBean dvRequestService;
+        @EJB
+        EjbDataverseEngine commandEngine;
+        @EJB
+        GroupServiceBean groupService;
+        @EJB
+        SettingsServiceBean settingsService;
 
 	// Make the session available
 	@Inject
@@ -310,7 +313,9 @@ public class Admin extends AbstractApiBean {
 		}
 		return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
 	}
-
+        
+        
+        
 	@POST
 	@Path("publishDataverseAsCreator/{id}")
 	public Response publishDataverseAsCreator(@PathParam("id") long id) {
@@ -1390,4 +1395,6 @@ public class Admin extends AbstractApiBean {
         return error(Response.Status.BAD_REQUEST,
                 "InheritParentRoleAssignments does not list any roles on this instance");
     }
+    
+
 }

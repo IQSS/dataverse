@@ -540,17 +540,26 @@ Your analytics code can be added to your Dataverse installation in a similar fas
 
 Popular analytics providers Google Analytics (https://www.google.com/analytics/) and Matomo (formerly "Piwik"; https://matomo.org/) have been set up with Dataverse. Use the documentation they provide to add the analytics code to your custom HTML file. This allows for more control of your analytics, making it easier to customize what you prefer to track.
 
-Create your own ``analytics-code.html`` file using the analytics code snippet provided by Google or Matomo and place it at ``/var/www/dataverse/branding/analytics-code.html``. Here is an example of what your HTML file should like like:
+Create your own ``analytics-code.html`` file using the analytics code snippet provided by Google or Matomo and place it somewhere on the server, outside the application deployment directory; for example: ``/var/www/dataverse/branding/analytics-code.html``. Here is an *example* of what your HTML file will look like:
 
 .. code-block:: none
 
+    <!-- Global Site Tag (gtag.js) - Google Analytics -->
+    <script async="async" src="https://www.googletagmanager.com/gtag/js?id=YOUR-ACCOUNT-CODE"></script>
     <script>
-        // Analytics code here...
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+
+	gtag('config', 'YOUR-ACCOUNT-CODE');
     </script>
 
-Once you have the location of your analytics file, run this curl command to add it to your settings:
+**IMPORTANT:** Note the "async" attribute in the first script line above. In the documentation provided by Google, its value is left blank (as in ``<script async src="...">``). It must be set as in the example above (``<script async="async" src="...">``), otherwise it may cause problems with some browsers.
+
+Once you have created the analytics file, run this curl command to add it to your settings (using the same file location as in the example above):
 
 ``curl -X PUT -d '/var/www/dataverse/branding/analytics-code.html' http://localhost:8080/api/admin/settings/:WebAnalyticsCode``
+
 
 DuraCloud/Chronopolis Integration
 ---------------------------------
@@ -640,6 +649,14 @@ Ensure robots.txt Is Not Blocking Search Engines
 For a public production Dataverse installation, it is probably desired that search agents be able to index published pages (AKA - pages that are visible to an unauthenticated user).
 Polite crawlers usually respect the `Robots Exclusion Standard <https://en.wikipedia.org/wiki/Robots_exclusion_standard>`_; we have provided an example of a production robots.txt :download:`here </_static/util/robots.txt>`).
 
+We **strongly recommend** using the crawler rules in the sample robots.txt linked above. Note that they make the dataverse and dataset pages accessible to the search engine bots; but discourage them from actually crawling the site, by following any search links - facets and such - on the dataverse pages. Such crawling is very inefficient in terms of system resources, and often results in confusing search results for the end users of the search engines (for example, when partial search results are indexed as individual pages).
+
+The recommended solution instead is to directly point the bots to the dataset and dataverse pages that need to be indexed, by advertising them via an explicit sitemap (please see the next section for details on how to generate the sitemap). 
+
+You can of course modify your own robots.txt to suit your specific needs as necessary. If you don't want your datasets to be indexed at all, you can tell the bots to stay away from your site completely. But, as noted above, keep in mind that only the good, "polite" bots honor these rules! You are not really blocking anyone from accessing your site by adding a "Disallow" rule in robots.txt - it is a suggestion only. A rogue bot can and will violate it. If you are having trouble with the site being overloaded with what looks like heavy automated crawling, you may have to resort to blocking this traffic by other means - for example, via rewrite rules in Apache, or even by a Firewall. 
+
+(See the sample robots.txt file linked above for some comments on how to set up different "Allow" and "Disallow" rules for different crawler bots)
+
 You have a couple of options for putting an updated robots.txt file into production. If you are fronting Glassfish with Apache as recommended above, you can place robots.txt in the root of the directory specified in your ``VirtualHost`` and to your Apache config a ``ProxyPassMatch`` line like the one below to prevent Glassfish from serving the version of robots.txt that is embedded in the Dataverse war file:
 
 .. code-block:: text
@@ -666,9 +683,14 @@ This will create or update a file in the following location unless you have cust
 
 On an installation of Dataverse with many datasets, the creation or updating of the sitemap can take a while. You can check Glassfish's server.log file for "BEGIN updateSiteMap" and "END updateSiteMap" lines to know when the process started and stopped and any errors in between.
 
-https://demo.dataverse.org/sitemap.xml is the sitemap URL for the Dataverse Demo site and yours should be similar. Submit your sitemap URL to Google by following `Google's "submit a sitemap" instructions`_ or similar instructions for other search engines.
+https://demo.dataverse.org/sitemap.xml is the sitemap URL for the Dataverse Demo site and yours should be similar. 
+
+Once the sitemap has been generated and placed in the domain docroot directory, it will become available to the outside callers at <YOUR_SITE_URL>/sitemap/sitemap.xml; it will also be accessible at <YOUR_SITE_URL>/sitemap.xml (via a *pretty-faces* rewrite rule). Some search engines will be able to find it at this default location. Some, **including Google**, need to be **specifically instructed** to retrieve it. 
+
+One way to submit your sitemap URL to Google is by using their "Search Console" (https://search.google.com/search-console). In order to use the console, you will need to authenticate yourself as the owner of your Dataverse site. Various authentication methods are provided; but if you are already using Google Analytics, the easiest way is to use that account. Make sure you are logged in on Google with the account that has the edit permission on your Google Analytics property; go to the search console and enter the root URL of your Dataverse server, then choose Google Analytics as the authentication method. Once logged in, click on "Sitemaps" in the menu on the left. (todo: add a screenshot?) Consult `Google's "submit a sitemap" instructions`_ for more information; and/or similar instructions for other search engines.
 
 .. _Google's "submit a sitemap" instructions: https://support.google.com/webmasters/answer/183668
+
 
 Putting Your Dataverse Installation on the Map at dataverse.org
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1043,9 +1065,6 @@ in any other SQL flavor - the standard JPA code in the application simply expect
 the database to have a saved function ("stored procedure") named ``generateIdentifierAsSequentialNumber``
 with the single return argument ``identifier``. 
 
-For systems using Postgresql 8.4 or older, the procedural language `plpgsql` should be enabled first.
-We have provided an example :download:`here </_static/util/pg8-createsequence-prep.sql>`.
-
 Please note that ``:IdentifierGenerationStyle`` also plays a role for the "identifier" for files. See the section on ``:DataFilePIDFormat`` below for more details.
 
 .. _:DataFilePIDFormat:
@@ -1088,6 +1107,8 @@ If you don't want to register file-based PIDs for your installation, set:
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
 Note: File-level PID registration was added in 4.9 and is required until version 4.9.3.
+
+.. _:IndependentHandleService:
 
 :IndependentHandleService
 +++++++++++++++++++++++++++

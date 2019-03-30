@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
@@ -62,6 +63,16 @@ public class SavedSearchServiceBean {
         typedQuery.setParameter("id", id);
         try {
             return typedQuery.getSingleResult();
+        } catch (NoResultException | NonUniqueResultException ex) {
+            return null;
+        }
+    }
+    
+    public  List<SavedSearch> findByAuthenticatedUser(AuthenticatedUser user) {
+        TypedQuery<SavedSearch> typedQuery = em.createQuery("SELECT OBJECT(o) FROM SavedSearch AS o WHERE o.creator.id = :id", SavedSearch.class);
+        typedQuery.setParameter("id", user.getId());
+        try {
+            return typedQuery.getResultList();
         } catch (NoResultException | NonUniqueResultException ex) {
             return null;
         }
