@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.mydata;
+/* package edu.harvard.iq.dataverse.mydata;
 
 import static org.junit.Assert.assertEquals;
 
@@ -47,4 +47,4 @@ public class DataRetrieverAPITest {
     assertEquals(itemsPerPage, randomPager.getDocsPerPage());
     assertEquals(chosenPage, randomPager.getSelectedPageNumber());
   }
-}
+} */

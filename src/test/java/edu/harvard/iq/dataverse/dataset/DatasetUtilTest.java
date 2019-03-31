@@ -108,42 +108,54 @@ public class DatasetUtilTest {
     }
 
     @Test
-    public void testGetDatasetSummaryField_134546789610() {
+    public void testGetDatasetSummaryField_defaultSelectionWithAndWithoutMatches() {
         DatasetVersion version = new DatasetVersion();
-
-        DatasetField field = DatasetField.createNewEmptyDatasetField(new DatasetFieldType("subject", FieldType.TEXT, false), version);
-        field.setId(1l);
-
         List<DatasetField> fields = new ArrayList<DatasetField>();
-        fields.add(field);
 
+        String[] fieldNames = {"subject", "keyword", "random-notInDefault"};
+        for (String fieldName : fieldNames) {
+            DatasetField field = DatasetField.createNewEmptyDatasetField(new DatasetFieldType(fieldName, FieldType.TEXT, false), version);
+            field.setId(1l);
+            fields.add(field);
+        }
         version.setDatasetFields(fields);
 
-        assertEquals(1, DatasetUtil.getDatasetSummaryFields(version, "subject").size());
+        assertEquals(2, DatasetUtil.getDatasetSummaryFields(version, null).size());
+        assertEquals(2, DatasetUtil.getDatasetSummaryFields(version, "").size());
     }
 
     @Test
-    public void testGetDatasetSummaryField_13454679610() {
+    public void testGetDatasetSummaryField_defaultSelectionWithoutDatasetFields() {
         DatasetVersion version = new DatasetVersion();
-
-        DatasetField field = DatasetField.createNewEmptyDatasetField(new DatasetFieldType("subject", FieldType.TEXT, false), version);
-        field.setId(1l);
-
         List<DatasetField> fields = new ArrayList<DatasetField>();
-        fields.add(field);
+        version.setDatasetFields(fields);
 
+        assertEquals(0, DatasetUtil.getDatasetSummaryFields(version, null).size());
+        assertEquals(0, DatasetUtil.getDatasetSummaryFields(version, "").size());
+    }
+
+    @Test
+    public void testGetDatasetSummaryField_withSelectionWithoutDatasetFields() {
+        DatasetVersion version = new DatasetVersion();
+        List<DatasetField> fields = new ArrayList<DatasetField>();
+        version.setDatasetFields(fields);
+
+        assertEquals(0, DatasetUtil.getDatasetSummaryFields(version, "subject,randomSelector").size());
+    }
+
+    @Test
+    public void testGetDatasetSummaryField_withSelectionWithoutMatches() {
+        DatasetVersion version = new DatasetVersion();
+        List<DatasetField> fields = new ArrayList<DatasetField>();
+
+        String[] fieldNames = {"subject"};
+        for (String fieldName : fieldNames) {
+            DatasetField field = DatasetField.createNewEmptyDatasetField(new DatasetFieldType(fieldName, FieldType.TEXT, false), version);
+            field.setId(1l);
+            fields.add(field);
+        }
         version.setDatasetFields(fields);
 
         assertEquals(0, DatasetUtil.getDatasetSummaryFields(version, "object").size());
     }
-
-    @Test
-    public void testGetDatasetSummaryField_134679610() {
-        DatasetVersion version = new DatasetVersion();
-        List<DatasetField> fields = new ArrayList<DatasetField>();
-        version.setDatasetFields(fields);
-
-        assertEquals(0, DatasetUtil.getDatasetSummaryFields(version, "subject").size());
-    }
-
 }
