@@ -1,6 +1,9 @@
 package edu.harvard.iq.dataverse.metrics;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
@@ -160,6 +163,13 @@ public class MetricsUtilTest {
         @Test(expected = Exception.class)
         public void testSanitizeYearMonthUserInputIsAfterCurrentDate() throws Exception {
             MetricsUtil.sanitizeYearMonthUserInput("2099-01");
+        }
+
+        @Test
+        public void testGetCurrentMonth() {
+            String expectedMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            String currentMonth = MetricsUtil.getCurrentMonth();
+            assertEquals(expectedMonth, currentMonth);
         }
 
         // Create JsonArray, turn into string and back into array to confirm data
