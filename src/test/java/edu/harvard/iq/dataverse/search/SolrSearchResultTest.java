@@ -3,10 +3,227 @@ package edu.harvard.iq.dataverse.search;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
+// ****************************************************************************************
+// The following tests test the setPublicationStatuses method aiming for 100% prime path coverage.
+// The following tool [1] was used to calculate the needed test paths.
+// 14 test paths (= 14 test methods) are needed.
+//
+// [1] https://cs.gmu.edu:8443/offutt/coverage/GraphCoverage
+// ****************************************************************************************
+
 public class SolrSearchResultTest {
+
+    String unpublishedFlag;
+    String publishedFlag;
+    String draftFlag;
+    String inReviewFlag;
+    String deaccessionedFlag;
+    String invalidFlag;
+
+    List<String> statuses;
+
+    SolrSearchResult solrSearchResult;
+
+    @Before
+    public void before() {
+        this.unpublishedFlag = IndexServiceBean.getUNPUBLISHED_STRING();
+        this.publishedFlag = IndexServiceBean.getPUBLISHED_STRING();
+        this.draftFlag = IndexServiceBean.getDRAFT_STRING();
+        this.inReviewFlag = IndexServiceBean.getIN_REVIEW_STRING();
+        this.deaccessionedFlag = IndexServiceBean.getDEACCESSIONED_STRING();
+        this.invalidFlag = "abc";
+        this.statuses = new ArrayList<String>();
+        this.solrSearchResult = new SolrSearchResult("myQuery", "myName");
+    }
+
+    @After
+    public void after() {
+        this.unpublishedFlag = null;
+        this.publishedFlag = null;
+        this.draftFlag = null;
+        this.inReviewFlag = null;
+        this.deaccessionedFlag = null;
+        this.invalidFlag = null;
+        this.statuses = null;
+        this.solrSearchResult = null;
+    }
+
+    @Test
+    public void testSetPublicationStatuses1() {
+        // path [1,4,5,6,8,12,14,6,8,13,14,6,8,11,14,6,8,12,14,6,7]
+        this.statuses.add(this.inReviewFlag);
+        this.statuses.add(this.deaccessionedFlag);
+        this.statuses.add(this.draftFlag);
+        this.statuses.add(this.inReviewFlag);
+
+        this.solrSearchResult.setPublicationStatuses(this.statuses);
+
+        assertEquals(this.statuses, solrSearchResult.getPublicationStatuses());
+        assertTrue(this.solrSearchResult.isInReviewState());
+        assertTrue(this.solrSearchResult.isDeaccessionedState());
+        assertTrue(this.solrSearchResult.isDraftState());
+    }
+
+    @Test
+    public void testSetPublicationStatuses2() {
+        // path [1,4,5,6,8,9,14,6,8,10,14,6,8,9,14,6,7]
+        this.statuses.add(this.unpublishedFlag);
+        this.statuses.add(this.publishedFlag);
+        this.statuses.add(this.unpublishedFlag);
+
+        this.solrSearchResult.setPublicationStatuses(this.statuses);
+
+        assertEquals(this.statuses, solrSearchResult.getPublicationStatuses());
+        assertTrue(this.solrSearchResult.isUnpublishedState());
+        assertTrue(this.solrSearchResult.isPublishedState());
+    }
+
+    @Test
+    public void testSetPublicationStatuses3() {
+        // path [1,4,5,6,8,14,6,8,14,6,7]
+        this.statuses.add(this.invalidFlag);
+        this.statuses.add(this.invalidFlag);
+
+        this.solrSearchResult.setPublicationStatuses(this.statuses);
+
+        assertEquals(this.statuses, solrSearchResult.getPublicationStatuses());
+    }
+
+    @Test
+    public void testSetPublicationStatuses4() {
+        // path [1,2,3]
+        this.statuses = null;
+
+        this.solrSearchResult.setPublicationStatuses(this.statuses);
+
+        assertEquals(new ArrayList<>(), solrSearchResult.getPublicationStatuses());
+    }
+
+    @Test
+    public void testSetPublicationStatuses5() {
+        // path [1,4,5,6,8,14,6,7]
+        this.statuses.add(this.invalidFlag);
+
+        this.solrSearchResult.setPublicationStatuses(this.statuses);
+
+        assertEquals(this.statuses, solrSearchResult.getPublicationStatuses());
+    }
+
+    @Test
+    public void testSetPublicationStatuses6() {
+        // path [1,4,5,6,8,11,14,6,7]
+        this.statuses.add(this.draftFlag);
+
+        this.solrSearchResult.setPublicationStatuses(this.statuses);
+
+        assertEquals(this.statuses, solrSearchResult.getPublicationStatuses());
+        assertTrue(this.solrSearchResult.isDraftState());
+    }
+
+    @Test
+    public void testSetPublicationStatuses7() {
+        // path [1,4,5,6,8,10,14,6,7]
+        this.statuses.add(this.publishedFlag);
+
+        this.solrSearchResult.setPublicationStatuses(this.statuses);
+
+        assertEquals(this.statuses, solrSearchResult.getPublicationStatuses());
+        assertTrue(this.solrSearchResult.isPublishedState());
+    }
+
+    @Test
+    public void testSetPublicationStatuses8() {
+        // path [1,4,5,6,8,13,14,6,7]
+        this.statuses.add(this.deaccessionedFlag);
+
+        this.solrSearchResult.setPublicationStatuses(this.statuses);
+
+        assertEquals(this.statuses, solrSearchResult.getPublicationStatuses());
+        assertTrue(this.solrSearchResult.isDeaccessionedState());
+    }
+
+    @Test
+    public void testSetPublicationStatuses9() {
+        // path [1,4,5,6,7]
+        this.solrSearchResult.setPublicationStatuses(this.statuses);
+
+        assertEquals(this.statuses, solrSearchResult.getPublicationStatuses());
+    }
+
+    @Test
+    public void testSetPublicationStatuses10() {
+        // path [1,4,5,6,8,13,14,6,8,10,14,6,7]
+        this.statuses.add(this.deaccessionedFlag);
+        this.statuses.add(this.publishedFlag);
+
+        this.solrSearchResult.setPublicationStatuses(this.statuses);
+
+        assertEquals(this.statuses, solrSearchResult.getPublicationStatuses());
+        assertTrue(this.solrSearchResult.isDeaccessionedState());
+        assertTrue(this.solrSearchResult.isPublishedState());
+    }
+
+    @Test
+    public void testSetPublicationStatuses11() {
+        // path [1,4,5,6,8,13,14,6,8,9,14,6,7]
+        this.statuses.add(this.deaccessionedFlag);
+        this.statuses.add(this.unpublishedFlag);
+
+        this.solrSearchResult.setPublicationStatuses(this.statuses);
+
+        assertEquals(this.statuses, solrSearchResult.getPublicationStatuses());
+        assertTrue(this.solrSearchResult.isDeaccessionedState());
+        assertTrue(this.solrSearchResult.isUnpublishedState());
+    }
+
+    @Test
+    public void testSetPublicationStatuses12() {
+        // path [1,4,5,6,8,10,14,6,8,13,14,6,7]
+        this.statuses.add(this.publishedFlag);
+        this.statuses.add(this.deaccessionedFlag);
+
+        this.solrSearchResult.setPublicationStatuses(this.statuses);
+
+        assertEquals(this.statuses, solrSearchResult.getPublicationStatuses());
+        assertTrue(this.solrSearchResult.isPublishedState());
+        assertTrue(this.solrSearchResult.isDeaccessionedState());
+    }
+
+    @Test
+    public void testSetPublicationStatuses13() {
+        // path [1,4,5,6,8,10,14,6,8,10,14,6,7]
+        this.statuses.add(this.publishedFlag);
+        this.statuses.add(this.publishedFlag);
+
+        this.solrSearchResult.setPublicationStatuses(this.statuses);
+
+        assertEquals(this.statuses, solrSearchResult.getPublicationStatuses());
+        assertTrue(this.solrSearchResult.isPublishedState());
+    }
+
+    @Test
+    public void testSetPublicationStatuses14() {
+        // path [1,4,5,6,8,9,14,6,8,13,14,6,7]
+        this.statuses.add(this.unpublishedFlag);
+        this.statuses.add(this.deaccessionedFlag);
+
+        this.solrSearchResult.setPublicationStatuses(this.statuses);
+
+        assertEquals(this.statuses, solrSearchResult.getPublicationStatuses());
+        assertTrue(this.solrSearchResult.isUnpublishedState());
+        assertTrue(this.solrSearchResult.isDeaccessionedState());
+    }
 
     @Test
     public void testJson() {
