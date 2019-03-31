@@ -157,6 +157,11 @@ public class MetricsUtilTest {
             MetricsUtil.sanitizeYearMonthUserInput("2018-01-01");
         }
 
+        @Test(expected = Exception.class)
+        public void testSanitizeYearMonthUserInputIsAfterCurrentDate() throws Exception {
+            MetricsUtil.sanitizeYearMonthUserInput("2099-01");
+        }
+
         // Create JsonArray, turn into string and back into array to confirm data
         // integrity
         @Test
