@@ -108,6 +108,7 @@ public class FilesIT {
 
         JsonObjectBuilder json = Json.createObjectBuilder()
                 .add("description", "my description")
+                .add("directoryLabel", "data/subdir1")
                 .add("categories", Json.createArrayBuilder()
                         .add("Data")
                 );
@@ -129,6 +130,7 @@ public class FilesIT {
                 .body("data.files[0].categories[0]", equalTo("Data"))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
                 .body("data.files[0].dataFile.description", equalTo("my description"))
+                .body("data.files[0].directoryLabel", equalTo("data/subdir1"))
 //                .body("data.files[0].dataFile.tags", nullValue())
                 .body("data.files[0].dataFile.tabularTags", nullValue())
                 .body("data.files[0].label", equalTo("dataverseproject.png"))
@@ -368,6 +370,7 @@ public class FilesIT {
         String pathToFile2 = "scripts/search/data/replace_test/004.txt";
         JsonObjectBuilder json = Json.createObjectBuilder()
                 .add("description", "My Text File")
+                .add("directoryLabel", "data/subdir1")
                 .add("categories", Json.createArrayBuilder()
                         .add("Data")
                 );
@@ -386,6 +389,7 @@ public class FilesIT {
                 .body("data.files[0].label", equalTo("004.txt"))
                 .body("data.files[0].dataFile.contentType", startsWith("text/plain"))
                 .body("data.files[0].description", equalTo("My Text File"))
+                .body("data.files[0].directoryLabel", equalTo("data/subdir1"))
                 .body("data.files[0].categories[0]", equalTo("Data"))
                 //.body("data.rootDataFileId", equalTo(origFileId))              
                 .statusCode(OK.getStatusCode());
