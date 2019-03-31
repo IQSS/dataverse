@@ -1,8 +1,15 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -48,6 +55,186 @@ public class DatasetTest {
         sut.removeLock(dlInReview);
         assertFalse( sut.isLocked() );
         
+    }
+
+    // ****************************************************************************************
+    // The following tests test the isDeaccessioned method aiming for 100% prime path coverage.
+    // The following tool [1] was used to calculate the needed test paths.
+    // 11 test paths (= 11 test methods) are needed.
+    // 4 different dataset versions are needed:
+    // - DEACCESSIONED
+    // - DRAFT
+    // - RELEASED
+    // - non of the above (= ARCHIVED)
+    //
+    // [1] https://cs.gmu.edu:8443/offutt/coverage/GraphCoverage
+    // ****************************************************************************************
+
+    private DatasetVersion archivedVersion;
+    private DatasetVersion deaccessionedVersion;
+    private DatasetVersion draftVersion;
+    private DatasetVersion releasedVersion;
+
+    @Before
+    public void before() {
+        this.archivedVersion = new DatasetVersion();
+        this.archivedVersion.setVersionState(VersionState.ARCHIVED);
+
+        this.deaccessionedVersion = new DatasetVersion();
+        this.deaccessionedVersion.setVersionState(VersionState.DEACCESSIONED);
+
+        this.draftVersion = new DatasetVersion();
+        this.draftVersion.setVersionState(VersionState.DRAFT);
+
+        this.releasedVersion = new DatasetVersion();
+        this.releasedVersion.setVersionState(VersionState.RELEASED);
+    }
+
+    @After
+    public void after() {
+        this.archivedVersion = null;
+        this.deaccessionedVersion = null;
+        this.draftVersion = null;
+        this.releasedVersion = null;
+    }
+
+    @Test
+    public void testIsDeaccessionedWithNoVersions() {
+        // path [1,2,3,4]
+        List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
+
+        Dataset dataset = new Dataset();
+        dataset.setVersions(versionList);
+
+        assertFalse(dataset.isDeaccessioned());
+    }
+
+    @Test
+    public void testIsDeaccessionedWithOneReleasedVersion() {
+        // path [1,2,3,5,6]
+        List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
+        versionList.add(this.releasedVersion);
+
+        Dataset dataset = new Dataset();
+        dataset.setVersions(versionList);
+
+        assertFalse(dataset.isDeaccessioned());
+    }
+
+    @Test
+    public void testIsDeaccessionedWithOneDraftVersion() {
+        // path [1,2,3,5,7,8]
+        List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
+        versionList.add(this.draftVersion);
+
+        Dataset dataset = new Dataset();
+        dataset.setVersions(versionList);
+
+        assertFalse(dataset.isDeaccessioned());
+    }
+
+    @Test
+    public void testIsDeaccessionedWithArchivedAndDraftVersions() {
+        // path [1,2,3,5,7,9,11,3,5,7,8]
+        List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
+        versionList.add(this.archivedVersion);
+        versionList.add(this.draftVersion);
+
+        Dataset dataset = new Dataset();
+        dataset.setVersions(versionList);
+
+        assertFalse(dataset.isDeaccessioned());
+    }
+
+    @Test
+    public void testIsDeaccessionedWithDeaccessionedAndReleasedVersions() {
+        // path [1,2,3,5,7,9,10,11,3,5,6]
+        List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
+        versionList.add(this.deaccessionedVersion);
+        versionList.add(this.releasedVersion);
+
+        Dataset dataset = new Dataset();
+        dataset.setVersions(versionList);
+
+        assertFalse(dataset.isDeaccessioned());
+    }
+
+    @Test
+    public void testIsDeaccessionedWithArchivedAndReleasedVersions() {
+        // path [1,2,3,5,7,9,11,3,5,6]
+        List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
+        versionList.add(this.archivedVersion);
+        versionList.add(this.releasedVersion);
+
+        Dataset dataset = new Dataset();
+        dataset.setVersions(versionList);
+
+        assertFalse(dataset.isDeaccessioned());
+    }
+
+    @Test
+    public void testIsDeaccessionedWithDeaccessionedAndDraftVersions() {
+        // path [1,2,3,5,7,9,10,11,3,5,7,8]
+        List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
+        versionList.add(this.deaccessionedVersion);
+        versionList.add(this.draftVersion);
+
+        Dataset dataset = new Dataset();
+        dataset.setVersions(versionList);
+
+        assertFalse(dataset.isDeaccessioned());
+    }
+
+    @Test
+    public void testIsDeaccessionedWithArchivedAndArchivedVersions() {
+        // path [1,2,3,5,7,9,11,3,5,7,9,11,3,4]
+        List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
+        versionList.add(this.archivedVersion);
+        versionList.add(this.archivedVersion);
+
+        Dataset dataset = new Dataset();
+        dataset.setVersions(versionList);
+
+        assertFalse(dataset.isDeaccessioned());
+    }
+
+    @Test
+    public void testIsDeaccessionedWithArchivedAndDeaccessedVersions() {
+        // path [1,2,3,5,7,9,11,3,5,7,9,10,11,3,4]
+        List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
+        versionList.add(this.archivedVersion);
+        versionList.add(this.deaccessionedVersion);
+
+        Dataset dataset = new Dataset();
+        dataset.setVersions(versionList);
+
+        assertTrue(dataset.isDeaccessioned());
+    }
+
+    @Test
+    public void testIsDeaccessionedWithDeaccessionedAndArchivedVersions() {
+        // path [1,2,3,5,7,9,10,11,3,5,7,9,11,3,4]
+        List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
+        versionList.add(this.deaccessionedVersion);
+        versionList.add(this.archivedVersion);
+
+        Dataset dataset = new Dataset();
+        dataset.setVersions(versionList);
+
+        assertTrue(dataset.isDeaccessioned());
+    }
+
+    @Test
+    public void testIsDeaccessionedWithDeaccessionedAndDeaccessionedVersions() {
+        // path [1,2,3,5,7,9,10,11,3,5,7,9,10,11,3,4]
+        List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
+        versionList.add(this.deaccessionedVersion);
+        versionList.add(this.deaccessionedVersion);
+
+        Dataset dataset = new Dataset();
+        dataset.setVersions(versionList);
+
+        assertTrue(dataset.isDeaccessioned());
     }
  
 }
