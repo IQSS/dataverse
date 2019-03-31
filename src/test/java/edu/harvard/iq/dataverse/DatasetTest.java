@@ -67,6 +67,8 @@ public class DatasetTest {
     // - RELEASED
     // - non of the above (= ARCHIVED)
     //
+    // See details here: https://github.com/IQSS/dataverse/pull/5703
+    //
     // [1] https://cs.gmu.edu:8443/offutt/coverage/GraphCoverage
     // ****************************************************************************************
 
