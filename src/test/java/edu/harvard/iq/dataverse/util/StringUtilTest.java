@@ -179,6 +179,11 @@ public class StringUtilTest {
                         {"abcdfg", null, ""},
                         {"abcdfg", "", ""},
                         {"abcdfg", "d", "dfg"},
+
+                        // functionality-based partitioning
+                        {"abcdfg" , null, ""},
+                        {"abcdfg", "h", ""},
+                        {"abcdfg", "b", "bcdfg"},
                     }
             );
         }
