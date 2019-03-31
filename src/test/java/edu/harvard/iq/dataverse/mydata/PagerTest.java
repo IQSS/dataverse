@@ -44,9 +44,9 @@ public class PagerTest {
 
     Pager pager = new Pager(numResults, docsPerPage, selectedPageNumber);
 
-    assertEquals(pager.numResults, numResults);
-    assertEquals(pager.docsPerPage, docsPerPage);
-    assertEquals(pager.selectedPageNumber, 0);
+    assertEquals(numResults, pager.numResults);
+    assertEquals(docsPerPage, pager.docsPerPage);
+    assertEquals(0, pager.selectedPageNumber);
   }
 
   @Test
@@ -57,9 +57,9 @@ public class PagerTest {
 
     Pager pager = new Pager(numResults, docsPerPage, selectedPageNumber);
 
-    assertEquals(pager.numResults, numResults);
-    assertEquals(pager.docsPerPage, docsPerPage);
-    assertEquals(pager.selectedPageNumber, 1);
+    assertEquals(numResults, pager.numResults);
+    assertEquals(docsPerPage, pager.docsPerPage);
+    assertEquals(1, pager.selectedPageNumber);
   }
 
   @Test
@@ -70,9 +70,9 @@ public class PagerTest {
 
     Pager pager = new Pager(numResults, docsPerPage, selectedPageNumber);
 
-    assertEquals(pager.numResults, numResults);
-    assertEquals(pager.docsPerPage, docsPerPage);
-    assertEquals(pager.selectedPageNumber, selectedPageNumber);
+    assertEquals(numResults, pager.numResults);
+    assertEquals(docsPerPage, pager.docsPerPage);
+    assertEquals(selectedPageNumber, pager.selectedPageNumber);
   }
 
   @ParameterizedTest
