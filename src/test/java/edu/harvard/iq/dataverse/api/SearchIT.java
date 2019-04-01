@@ -389,6 +389,18 @@ public class SearchIT {
                 .contentType("image/png")
                 .statusCode(OK.getStatusCode());
 
+        // A width of "true" is 3375 bytes. 64 pixels wide is the default.
+        // A width of "500" is 20155 bytes. 500 pixels wide.
+        String trueOrWidthInPixels = "true";
+//        String trueOrWidthInPixels = "500";
+        Response getFileThumbnailImageA = UtilIT.getFileThumbnail(dataFileId1.toString(), trueOrWidthInPixels, apiToken);
+        getFileThumbnailImageA.prettyPrint();
+        getFileThumbnailImageA.then().assertThat()
+                .contentType("image/png")
+                .statusCode(OK.getStatusCode());
+
+        assertEquals(3375, getFileThumbnailImageA.asByteArray().length);
+
         InputStream inputStream2creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
         assertEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream2creator));
 

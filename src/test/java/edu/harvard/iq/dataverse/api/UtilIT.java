@@ -1231,6 +1231,15 @@ public class UtilIT {
                 .get("/api/admin/datasets/thumbnailMetadata/" + datasetId);
     }
 
+    /**
+     * @param trueOrWidthInPixels Passing "true" will result in the default width in pixels (64).
+     */
+    static Response getFileThumbnail(String fileDatabaseId, String trueOrWidthInPixels, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + fileDatabaseId + "?imageThumb=" + trueOrWidthInPixels);
+    }
+
     static Response useThumbnailFromDataFile(String datasetPersistentId, long dataFileId1, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
