@@ -7,6 +7,8 @@ package edu.harvard.iq.dataverse.datasetutility;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileTag;
@@ -261,24 +263,33 @@ public class OptionalFileParams {
         
         //Type objType = new TypeToken<List<String[]>>() {}.getType();
         Type listType = new TypeToken<List<String>>() {}.getType();
-        
+        Type treeType = new TypeToken<List<LinkedTreeMap>>() {}.getType();
         //----------------------
         // Load tags
         //----------------------
         if ((jsonObj.has(CATEGORIES_ATTR_NAME)) && (!jsonObj.get(CATEGORIES_ATTR_NAME).isJsonNull())){
 
-            /**
-             * @todo Use JsonParser.getCategories somehow instead (refactoring
-             * required). This code is exercised by FilesIT.
-             */
-            setCategories(this.categories = gson.fromJson(jsonObj.get(CATEGORIES_ATTR_NAME), listType));
+            List<String> catList = new ArrayList();
+            
+            try {
+                //We try to parse this as a treeMap if the syntax passed was "categories":[{"name","A Category"}]
+                List<LinkedTreeMap> testLinked = gson.fromJson(jsonObj.get(CATEGORIES_ATTR_NAME), treeType);
+                for(LinkedTreeMap ltm : testLinked) {
+                    catList.add((String) ltm.get("name"));
+                }
+            } catch (JsonSyntaxException je){
+                //If parsing a treeMap failed we try again with the syntax "categories":["A Category"]
+                catList = gson.fromJson(jsonObj.get(CATEGORIES_ATTR_NAME), listType);
+            }
+
+            this.categories = catList;
+            setCategories(this.categories);
         }
 
         //----------------------
         // Load tabular tags
         //----------------------
         if ((jsonObj.has(FILE_DATA_TAGS_ATTR_NAME)) && (!jsonObj.get(FILE_DATA_TAGS_ATTR_NAME).isJsonNull())){
-            
             
             // Get potential tags from JSON
             List<String> potentialTags = gson.fromJson(jsonObj.get(FILE_DATA_TAGS_ATTR_NAME), listType); 

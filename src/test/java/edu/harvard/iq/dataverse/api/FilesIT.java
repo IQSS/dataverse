@@ -1177,7 +1177,14 @@ public class FilesIT {
         String category = "A category";
         //String dataFileTag = "Event"; //you can't set dataFileTags on create. Seems like something that should be fixed, but not in this work
 
-        String jsonString = "{\"description\":\""+description+"\",\"categories\":[\"name\":\""+category+"\"],\"forceReplace\":false}";
+        
+        //We want to take in what we spit out: {"label":"dv-birds1.tab","description":"New description.","restricted":false,"categories":[{"name":"New category"}],"id":260}
+        
+        //String jsonString = "{\"description\":\""+description+"\",\"categories\":[\""+category+"\"],\"forceReplace\":false}";
+        
+        //There are two different ways categories can be passed, either with/without "name".
+        //Here tests the verbose way, later is the shortened syntax.
+        String jsonString = "{\"description\":\""+description+"\",\"categories\":[{\"name\":\""+category+"\"}],\"forceReplace\":false}";
         
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, jsonString, apiToken);
         Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
