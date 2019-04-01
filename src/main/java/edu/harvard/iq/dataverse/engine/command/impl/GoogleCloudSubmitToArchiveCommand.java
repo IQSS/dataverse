@@ -58,16 +58,20 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
         logger.info("In GoogleCloudSubmitToArchiveCommand...");
         String bucketName = requestedSettings.get(GOOGLECLOUD_BUCKET);
         String projectName = requestedSettings.get(GOOGLECLOUD_PROJECT);
+        logger.info("Project: " + projectName + " Bucket: " + bucketName);
         if (bucketName != null && projectName != null) {
             Storage storage;
             try {
+                FileInputStream fis = new FileInputStream(System.getProperty("dataverse.files.directory") + System.getProperty("file.separator")+ "googlecloudkey.json");
+                logger.info("Have stream");
                 storage = StorageOptions.newBuilder()
-                        .setCredentials(ServiceAccountCredentials.fromStream(new FileInputStream(System.getProperty("dataverse.files.directory") + System.getProperty("file.separator")+ "googlecloudkey.json")))
+                        .setCredentials(ServiceAccountCredentials.fromStream(fis))
                         .setProjectId(projectName)
                         .build()
                         .getService();
-
+                logger.info("Have storage");
                 Bucket bucket = storage.get(bucketName);
+                logger.info("Have bucket");
 
                 Dataset dataset = dv.getDataset();
                 if (dataset.getLockFor(Reason.pidRegister) == null) {
@@ -98,6 +102,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                                 }
                             }
                         }).start();
+                        logger.info("Writing dc.xml");
                         Blob dcXml = bucket.create(spaceName + "/datacite.xml", digestInputStream, "text/xml", Bucket.BlobWriteOption.doesNotExist());
                         String checksum = dcXml.getMd5ToHexString();
                         logger.info("Content: datacite.xml added with checksum: " + checksum);
@@ -167,14 +172,23 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                     return new Failure("Dataset locked");
                 }
             } catch (FileNotFoundException e1) {
+                logger.warning(e1.getLocalizedMessage());
+
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
             } catch (IOException e1) {
                 // TODO Auto-generated catch block
+                logger.warning(e1.getLocalizedMessage());
+
                 e1.printStackTrace();
             } catch (NoSuchAlgorithmException e1) {
                 // TODO Auto-generated catch block
+                logger.warning(e1.getLocalizedMessage());
+
                 e1.printStackTrace();
+                
+            } catch (Exception e) {
+                logger.warning(e.getLocalizedMessage());
             }
             logger.info("Successfully leaving GCSTAC");
             return WorkflowStepResult.OK;
