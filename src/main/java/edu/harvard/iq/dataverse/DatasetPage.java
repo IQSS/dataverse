@@ -117,6 +117,8 @@ import org.primefaces.event.data.PageEvent;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import java.util.TimeZone;
 import javax.servlet.http.HttpServletRequest;
+import org.primefaces.model.DefaultTreeNode;
+import org.primefaces.model.TreeNode;
 
 /**
  *
@@ -1620,6 +1622,59 @@ public class DatasetPage implements java.io.Serializable {
         configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
         exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
+        
+        TreeNode root = new DefaultTreeNode("root", null);
+        TreeNode currentNode = root;
+        Set<String> treeNodes = new HashSet<>(); 
+        Map<String, TreeNode> folderMap = new HashMap<>();
+        
+        for ( FileMetadata fileMetadata :workingVersion.getFileMetadatasSortedByLabelAndFolder()) {
+            String folder = fileMetadata.getDirectoryLabel();
+            
+            if (StringUtil.isEmpty(folder)) {
+                root.getChildren().add(new DefaultTreeNode(fileMetadata.getLabel()));
+            } else {
+                if (treeNodes.contains(folder)) {
+                    if (currentNode.getData().toString().equals(folder)) {
+                        currentNode.getChildren().add(new DefaultTreeNode(fileMetadata.getLabel()));
+                    } else {
+                        // error! shouldn't happen!
+                    }
+                } else {
+                    // need to create the node!
+                    if (folder.indexOf('/') < 0) {
+                        // the folder is 1 level deep - simple: 
+                        currentNode = new DefaultTreeNode(folder, root);
+                        treeNodes.add(folder);
+                        folderMap.put(folder, currentNode);                                
+                        currentNode.getChildren().add(new DefaultTreeNode(fileMetadata.getLabel()));
+                    } else {
+                        String[] subfolders = folder.split("/");
+                        int level = 0;
+                        currentNode = root;
+
+                        while (level < subfolders.length) {
+                            String ancestorFolder = subfolders[0];
+                            for (int i = 1; i < level + 1; i++) {
+                                ancestorFolder = ancestorFolder.concat("/").concat(subfolders[i]);
+                            }
+
+                            if (folderMap.containsKey(ancestorFolder)) {
+                                currentNode = folderMap.get(ancestorFolder);
+                            } else {
+                                currentNode = new DefaultTreeNode(subfolders[level], currentNode);
+                                folderMap.put(ancestorFolder, currentNode);
+                            }
+                            level++;
+                        }
+                        currentNode.getChildren().add(new DefaultTreeNode(fileMetadata.getLabel()));
+                    }
+                }
+            }
+        }
+        
+        
+        
         return null;
     }
     

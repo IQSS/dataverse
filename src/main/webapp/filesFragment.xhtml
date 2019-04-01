@@ -429,17 +429,17 @@
     </p:dataTable>
     
     <!-- Files Tree -->
-    <ui:remove>
+    <!--ui:remove-->
     <p:tree id="filesTree"
-            rendered="false"
+            rendered="true"
             widgetVar="filesTree">
         
         <p:treeNode expandedIcon="pi pi-folder-open" collapsedIcon="pi pi-folder">
             <h:outputText value="#{filesTree.name}"/>
         </p:treeNode>
         
-        ...
+      
         
     </p:tree>
-    </ui:remove>
+    <!--/ui:remove-->
 </ui:composition>

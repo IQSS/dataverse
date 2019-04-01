@@ -511,6 +511,18 @@ public class FileMetadata implements Serializable {
         }
     };
     
+    public static final Comparator<FileMetadata> compareByLabelAndFolder = new Comparator<FileMetadata>() {
+        @Override
+        public int compare(FileMetadata o1, FileMetadata o2) {
+            String folder1 = o1.getDirectoryLabel() == null ? "" : o1.getDirectoryLabel().toUpperCase();
+            String folder2 = o2.getDirectoryLabel() == null ? "" : o2.getDirectoryLabel().toUpperCase();
+            int comp = folder1.compareTo(folder2); 
+            if (comp != 0) {
+                return comp;
+            }
+            return o1.getLabel().toUpperCase().compareTo(o2.getLabel().toUpperCase());
+        }
+    };
     
     
     public String toPrettyJSON(){
