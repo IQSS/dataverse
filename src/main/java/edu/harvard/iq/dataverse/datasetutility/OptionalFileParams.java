@@ -343,13 +343,19 @@ public class OptionalFileParams {
     /** 
      * Add parameters to a DataFile object
      * 
+     * Note that this call may have issues seeing fileMetadata generated before it by Dataset.getEditVersion()
      */
-    public void addOptionalParams(DataFile df) throws DataFileTagException{
+    public void addOptionalParams(DataFile df) throws DataFileTagException {
         if (df == null){            
             throw new NullPointerException("The datafile cannot be null!");
         }
         
         FileMetadata fm = df.getFileMetadata();
+        
+        addOptionalParams(fm);
+    }
+    
+    public void addOptionalParams(FileMetadata fm) throws DataFileTagException{
         
         // ---------------------------
         // Add description
@@ -381,7 +387,7 @@ public class OptionalFileParams {
         // ---------------------------
         // Add DataFileTags
         // ---------------------------
-        replaceFileDataTagsInFile(df);
+        replaceFileDataTagsInFile(fm.getDataFile());
        
     }
     

@@ -32,6 +32,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class FilesIT {
 
@@ -1149,7 +1150,7 @@ public class FilesIT {
     }
     
     @Test
-    public void testFileMetaDataGetUpdateRoundTrip() {
+    public void testFileMetaDataGetUpdateRoundTrip() throws InterruptedException {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         assertEquals(200, createUser.getStatusCode());
@@ -1169,15 +1170,19 @@ public class FilesIT {
         // -------------------------
         // Add initial file
         // -------------------------
-        String pathToFile = "scripts/search/data/replace_test/003.txt";
+        //String pathToFile = "scripts/search/data/replace_test/003.txt";
+        String pathToFile = "scripts/search/data/dv-birds1.tsv";
         
-        String description = "My description.";
+        String description = "A description.";
         String category = "A category";
-        
-        String jsonString = "{\"description\":\""+description+"\",\"categories\":[\""+category+"\"],\"forceReplace\":false}";
+        //String dataFileTag = "Event"; //you can't set dataFileTags on create. Seems like something that should be fixed, but not in this work
+
+        String jsonString = "{\"description\":\""+description+"\",\"categories\":[\"name\":\""+category+"\"],\"forceReplace\":false}";
         
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, jsonString, apiToken);
         Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        
+        sleep(2000); //ensure tsv is consumed
         
         msg("Publish dataverse and dataset");
         Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
@@ -1196,22 +1201,36 @@ public class FilesIT {
         assertEquals(200, getMetadataResponse.getStatusCode());  
         assertEquals(description, JsonPath.from(metadataResponseString).getString("description"));
         assertEquals(category, JsonPath.from(metadataResponseString).getString("categories[0].name"));
+        assertNull(JsonPath.from(metadataResponseString).getString("dataFileTags"));
         
         //Update fileMetadata and get to confirm again
         msg("Update file metadata");
         String updateDescription = "New description.";
         String updateCategory = "New category";
-        String updateJsonString = "{\"description\":\""+updateDescription+"\",\"categories\":[\""+updateCategory+"\"],\"forceReplace\":false}";
+        String updateDataFileTag = "Survey";
+        String updateJsonString = "{\"description\":\""+updateDescription+"\",\"categories\":[\""+updateCategory+"\"],\"dataFileTags\":[\""+updateDataFileTag+"\"],\"forceReplace\":false}";
         Response updateMetadataResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateJsonString, apiToken);
         assertEquals(200, updateMetadataResponse.getStatusCode());  
         //String updateMetadataResponseString = updateMetadataResponse.body().asString();
-        Response getUpdatedMetadataResponse = UtilIT.getDataFileMetadata(origFileId, apiToken);
+        Response getUpdatedMetadataResponse = UtilIT.getDataFileMetadataDraft(origFileId, apiToken);
         String getUpMetadataResponseString = getUpdatedMetadataResponse.body().asString();
+        msg("Draft (should be updated):");
         msg(getUpMetadataResponseString);
         assertEquals(updateDescription, JsonPath.from(getUpMetadataResponseString).getString("description"));
-        assertEquals(updateCategory, JsonPath.from(getUpMetadataResponseString).getString("categories[0].name"));
+        assertEquals(updateCategory, JsonPath.from(getUpMetadataResponseString).getString("categories[0].name")); //MAD: Is this indicative of bad code, its not the same output as input...
         
+        //assertEquals(updateDataFileTag, JsonPath.from(getUpMetadataResponseString).getString("dataFileTags[0].name"));
         
+        //We haven't published so the non-draft call should still give the pre-edit metadata
+        Response getOldMetadataResponse = UtilIT.getDataFileMetadata(origFileId, apiToken);
+        String getOldMetadataResponseString = getOldMetadataResponse.body().asString();
+        msg("Old Published (shouldn't be updated):");
+        msg(getOldMetadataResponseString);
+        assertEquals(description, JsonPath.from(getOldMetadataResponseString).getString("description"));
+        assertEquals(category, JsonPath.from(getOldMetadataResponseString).getString("categories[0].name")); //MAD: Is this indicative of bad code, its not the same output as input...
+        //assertEquals(updateDataFileTag, JsonPath.from(getUpMetadataResponseString).getString("dataFileTags[0].name"));
+        
+        //check on id in json?
     }
     
     private void msg(String m){

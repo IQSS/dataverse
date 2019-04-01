@@ -363,12 +363,28 @@ public class Files extends AbstractApiBean {
             }
 
             try {
-                optionalFileParams.addOptionalParams(df);
+                DatasetVersion editVersion = df.getOwner().getEditVersion();
+
+                //We get the new fileMetadata from the new version
+                FileMetadata upFmd = null;
+                List<FileMetadata> fmdList = editVersion.getFileMetadatas();
+                for(FileMetadata testFmd : fmdList) {
+                    DataFile daf = testFmd.getDataFile();
+                    if(daf.getChecksumType().equals(df.getChecksumType())
+                        && daf.getChecksumValue().equals(df.getChecksumValue())) {
+                        upFmd = testFmd;
+                    }
+                }
+                
+                optionalFileParams.addOptionalParams(upFmd);
+
+                Dataset upDS = execCommand(new UpdateDatasetVersionCommand(upFmd.getDataFile().getOwner(), req));
+
             } catch (Exception e) {
+                logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", e);
                 return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile" + e);
             }
 
-            execCommand(new UpdateDatasetVersionCommand(df.getOwner(), req));
         } catch (WrappedResponse wr) {
             return error(Response.Status.BAD_REQUEST, "An error has occurred attempting to update the requested DataFile, likely related to permissions.");
         }
