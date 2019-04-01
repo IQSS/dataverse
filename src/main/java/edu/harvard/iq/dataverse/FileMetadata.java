@@ -37,6 +37,7 @@ import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import edu.harvard.iq.dataverse.util.DateUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import org.hibernate.validator.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
@@ -59,10 +60,11 @@ public class FileMetadata implements Serializable {
     @Column( nullable=false )
     private String label = "";
     
-    @Pattern(regexp="|[^/\\\\]|^[^/\\\\]+.*[^/\\\\]+$",
-            message = "{directoryname.illegalCharacters}")
+    
+    @ValidateDataFileDirectoryName(message = "{directoryname.illegalCharacters}")
     @Expose
     @Column ( nullable=true )
+
     private String directoryLabel;
     @Expose
     @Column(columnDefinition = "TEXT")
@@ -126,6 +128,12 @@ public class FileMetadata implements Serializable {
     }
 
     public void setDirectoryLabel(String directoryLabel) {
+        //Strip off beginning and ending \ // - .
+        // and replace any sequences/combinations of / and \ with a single /
+        if (directoryLabel != null) {
+            directoryLabel = StringUtil.sanitizeFileDirectory(directoryLabel);
+        }
+
         this.directoryLabel = directoryLabel;
     }
 

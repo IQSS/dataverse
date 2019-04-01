@@ -115,46 +115,48 @@ public class MailServiceBean implements java.io.Serializable {
 
     public boolean sendSystemEmail(String to, String subject, String messageText) {
 
-        boolean sent = false;
-        String rootDataverseName = dataverseService.findRootDataverse().getName();
-        InternetAddress systemAddress = getSystemAddress();
-        String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName)));
-        logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
-        try {
-            MimeMessage msg = new MimeMessage(session);
-            if (systemAddress != null) {
-                msg.setFrom(systemAddress);
-                msg.setSentDate(new Date());
-                String[] recipientStrings = to.split(",");
-                InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
-                for (int i = 0; i < recipients.length; i++) {
-                    try {
-                        recipients[i] = new InternetAddress(recipientStrings[i], "", charset);
-                    } catch (UnsupportedEncodingException ex) {
-                        logger.severe(ex.getMessage());
-                    }
-                }
-                msg.setRecipients(Message.RecipientType.TO, recipients);
-                msg.setSubject(subject, charset);
-                msg.setText(body, charset);
-                try {
-                    Transport.send(msg, recipients);
-                    sent = true;
-                } catch (SMTPSendFailedException ssfe) {
-                    logger.warning("Failed to send mail to: " + to);
-                    logger.warning("SMTPSendFailedException Message: " + ssfe);
-                }
-            } else {
-                logger.fine("Skipping sending mail to " + to + ", because the \"no-reply\" address not set (" + Key.SystemEmail + " setting).");
-            }
-        } catch (AddressException ae) {
-            logger.warning("Failed to send mail to " + to);
-            ae.printStackTrace(System.out);
-        } catch (MessagingException me) {
-            logger.warning("Failed to send mail to " + to);
-            me.printStackTrace(System.out);
-        }
-        return sent;
+        return true;
+        
+//        boolean sent = false;
+//        String rootDataverseName = dataverseService.findRootDataverse().getName();
+//        InternetAddress systemAddress = getSystemAddress();
+//        String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName)));
+//        logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
+//        try {
+//            MimeMessage msg = new MimeMessage(session);
+//            if (systemAddress != null) {
+//                msg.setFrom(systemAddress);
+//                msg.setSentDate(new Date());
+//                String[] recipientStrings = to.split(",");
+//                InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
+//                for (int i = 0; i < recipients.length; i++) {
+//                    try {
+//                        recipients[i] = new InternetAddress(recipientStrings[i], "", charset);
+//                    } catch (UnsupportedEncodingException ex) {
+//                        logger.severe(ex.getMessage());
+//                    }
+//                }
+//                msg.setRecipients(Message.RecipientType.TO, recipients);
+//                msg.setSubject(subject, charset);
+//                msg.setText(body, charset);
+//                try {
+//                    Transport.send(msg, recipients);
+//                    sent = true;
+//                } catch (SMTPSendFailedException ssfe) {
+//                    logger.warning("Failed to send mail to: " + to);
+//                    logger.warning("SMTPSendFailedException Message: " + ssfe);
+//                }
+//            } else {
+//                logger.fine("Skipping sending mail to " + to + ", because the \"no-reply\" address not set (" + Key.SystemEmail + " setting).");
+//            }
+//        } catch (AddressException ae) {
+//            logger.warning("Failed to send mail to " + to);
+//            ae.printStackTrace(System.out);
+//        } catch (MessagingException me) {
+//            logger.warning("Failed to send mail to " + to);
+//            me.printStackTrace(System.out);
+//        }
+//        return sent;
     }
     
     private InternetAddress getSystemAddress() {

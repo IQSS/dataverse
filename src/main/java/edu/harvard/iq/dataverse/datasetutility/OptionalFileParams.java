@@ -46,7 +46,7 @@ public class OptionalFileParams {
     
     private String directoryLabel;
     public static final String DIRECTORY_LABEL_ATTR_NAME = "directoryLabel";
-    
+
     private List<String> categories;
     public static final String CATEGORIES_ATTR_NAME = "categories";
     
@@ -107,7 +107,6 @@ public class OptionalFileParams {
     public String getDescription(){
         return this.description;
     }
-    
     public String getDirectoryLabel() {
         return directoryLabel;
     }
@@ -123,8 +122,7 @@ public class OptionalFileParams {
     public void setProvFreeform(String provFreeForm) {
         this.provFreeForm = provFreeForm;
     }
-    
-    
+
     public void setRestriction(boolean restrict){
         this.restrict = restrict;
     }
@@ -153,7 +151,7 @@ public class OptionalFileParams {
         }
         return true;
     }
-    
+
     public boolean hasDirectoryLabel(){
         if ((directoryLabel == null)||(this.directoryLabel.isEmpty())){
             return false;
@@ -231,7 +229,15 @@ public class OptionalFileParams {
             
             this.description = jsonObj.get(DESCRIPTION_ATTR_NAME).getAsString();
         }
-        
+
+        // -------------------------------
+        // get directory label as string
+        // -------------------------------
+        if ((jsonObj.has(DIRECTORY_LABEL_ATTR_NAME)) && (!jsonObj.get(DIRECTORY_LABEL_ATTR_NAME).isJsonNull())){
+
+            this.directoryLabel = jsonObj.get(DIRECTORY_LABEL_ATTR_NAME).getAsString();
+        }
+
         // -------------------------------
         // get directory label as string
         // -------------------------------
@@ -374,7 +380,7 @@ public class OptionalFileParams {
         if (hasDescription()){
             fm.setDescription(this.getDescription());
         }
-        
+
         // ---------------------------
         // Add directory label (path)
         // ---------------------------

@@ -1,0 +1,872 @@
+#
+# There is insufficient memory for the Java Runtime Environment to continue.
+# Native memory allocation (mmap) failed to map 71827456 bytes for committing reserved memory.
+# Possible reasons:
+#   The system is out of physical RAM or swap space
+#   In 32 bit mode, the process size limit was hit
+# Possible solutions:
+#   Reduce memory load on the system
+#   Increase physical memory or swap space
+#   Check if swap backing store is full
+#   Use 64 bit Java on a 64 bit OS
+#   Decrease Java heap size (-Xmx/-Xms)
+#   Decrease number of Java threads
+#   Decrease Java thread stack sizes (-Xss)
+#   Set larger code cache with -XX:ReservedCodeCacheSize=
+# This output file may be truncated or incomplete.
+#
+#  Out of Memory Error (os_linux.cpp:2640), pid=5635, tid=0x00007ff978d5b700
+#
+# JRE version: Java(TM) SE Runtime Environment (8.0_151-b12) (build 1.8.0_151-b12)
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (25.151-b12 mixed mode linux-amd64 compressed oops)
+# Failed to write core dump. Core dumps have been disabled. To enable core dumping, try "ulimit -c unlimited" before starting Java again
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x00007ff9900fc000):  VMThread [stack: 0x00007ff978c5b000,0x00007ff978d5c000] [id=5641]
+
+Stack: [0x00007ff978c5b000,0x00007ff978d5c000],  sp=0x00007ff978d5a2a0,  free space=1020k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [libjvm.so+0xacb58a]  VMError::report_and_die()+0x2ba
+V  [libjvm.so+0x4ff4ab]  report_vm_out_of_memory(char const*, int, unsigned long, VMErrorType, char const*)+0x8b
+V  [libjvm.so+0x928113]  os::Linux::commit_memory_impl(char*, unsigned long, bool)+0x103
+V  [libjvm.so+0x928669]  os::pd_commit_memory(char*, unsigned long, unsigned long, bool)+0x29
+V  [libjvm.so+0x92288a]  os::commit_memory(char*, unsigned long, unsigned long, bool)+0x2a
+V  [libjvm.so+0x9973e3]  PSVirtualSpace::expand_by(unsigned long)+0x53
+V  [libjvm.so+0x9987e8]  PSYoungGen::resize_generation(unsigned long, unsigned long)+0xf8
+V  [libjvm.so+0x997942]  PSYoungGen::resize(unsigned long, unsigned long)+0x22
+V  [libjvm.so+0x994c1b]  PSScavenge::invoke_no_policy()+0xf3b
+V  [libjvm.so+0x9953a1]  PSScavenge::invoke()+0x41
+V  [libjvm.so+0x94c0d0]  ParallelScavengeHeap::failed_mem_allocate(unsigned long)+0x70
+V  [libjvm.so+0xaccfa7]  VM_ParallelGCFailedAllocation::doit()+0x97
+V  [libjvm.so+0xad4a85]  VM_Operation::evaluate()+0x55
+V  [libjvm.so+0xad2e5a]  VMThread::evaluate_operation(VM_Operation*)+0xba
+V  [libjvm.so+0xad31de]  VMThread::loop()+0x1ce
+V  [libjvm.so+0xad3650]  VMThread::run()+0x70
+V  [libjvm.so+0x92a728]  java_start(Thread*)+0x108
+
+VM_Operation (0x00007ff997f54d60): ParallelGCFailedAllocation, mode: safepoint, requested by thread 0x00007ff99000b000
+
+
+---------------  P R O C E S S  ---------------
+
+Java Threads: ( => current thread )
+  0x00007ff940033000 JavaThread "process reaper" daemon [_thread_blocked, id=5655, stack(0x00007ff96001c000,0x00007ff960055000)]
+  0x00007ff990e55000 JavaThread "surefire-forkedjvm-ping-30s" daemon [_thread_blocked, id=5653, stack(0x00007ff953bf5000,0x00007ff953cf6000)]
+  0x00007ff990e72000 JavaThread "surefire-forkedjvm-command-thread" daemon [_thread_in_native, id=5652, stack(0x00007ff953eff000,0x00007ff954000000)]
+  0x00007ff990e33800 JavaThread "Service Thread" daemon [_thread_blocked, id=5650, stack(0x00007ff960156000,0x00007ff960257000)]
+  0x00007ff990e7f000 JavaThread "C1 CompilerThread1" daemon [_thread_blocked, id=5649, stack(0x00007ff960257000,0x00007ff960358000)]
+  0x00007ff990e7d000 JavaThread "C2 CompilerThread0" daemon [_thread_blocked, id=5648, stack(0x00007ff960358000,0x00007ff960459000)]
+  0x00007ff99013b800 JavaThread "Signal Dispatcher" daemon [_thread_blocked, id=5644, stack(0x00007ff97867d000,0x00007ff97877e000)]
+  0x00007ff990108000 JavaThread "Finalizer" daemon [_thread_blocked, id=5643, stack(0x00007ff978a59000,0x00007ff978b5a000)]
+  0x00007ff990103800 JavaThread "Reference Handler" daemon [_thread_blocked, id=5642, stack(0x00007ff978b5a000,0x00007ff978c5b000)]
+  0x00007ff99000b000 JavaThread "main" [_thread_blocked, id=5638, stack(0x00007ff997e59000,0x00007ff997f5a000)]
+
+Other Threads:
+=>0x00007ff9900fc000 VMThread [stack: 0x00007ff978c5b000,0x00007ff978d5c000] [id=5641]
+  0x00007ff990e9e800 WatcherThread [stack: 0x00007ff960055000,0x00007ff960156000] [id=5651]
+
+VM state:at safepoint (normal execution)
+
+VM Mutex/Monitor currently owned by a thread:  ([mutex/lock_event])
+[0x00007ff9900075f0] Threads_lock - owner thread: 0x00007ff9900fc000
+[0x00007ff990007af0] Heap_lock - owner thread: 0x00007ff99000b000
+
+Heap:
+ PSYoungGen      total 163328K, used 4152K [0x00000000e0f00000, 0x00000000eb700000, 0x0000000100000000)
+  eden space 156160K, 0% used [0x00000000e0f00000,0x00000000e0f00000,0x00000000ea780000)
+  from space 7168K, 57% used [0x00000000ea780000,0x00000000eab8e348,0x00000000eae80000)
+  to   space 5632K, 0% used [0x00000000eae80000,0x00000000eae80000,0x00000000eb400000)
+ ParOldGen       total 41984K, used 10293K [0x00000000a2c00000, 0x00000000a5500000, 0x00000000e0f00000)
+  object space 41984K, 24% used [0x00000000a2c00000,0x00000000a360d608,0x00000000a5500000)
+ Metaspace       used 24994K, capacity 26333K, committed 26624K, reserved 1073152K
+  class space    used 3022K, capacity 3268K, committed 3328K, reserved 1048576K
+
+Card table byte_map: [0x00007ff994711000,0x00007ff9949fc000] byte_map_base: 0x00007ff9941fb000
+
+Marking Bits: (ParMarkBitMap*) 0x00007ff997337f80
+ Begin Bits: [0x00007ff979160000, 0x00007ff97a8b0000)
+ End Bits:   [0x00007ff97a8b0000, 0x00007ff97c000000)
+
+Polling page: 0x00007ff997f85000
+
+CodeCache: size=245760Kb used=12092Kb max_used=12106Kb free=233667Kb
+ bounds [0x00007ff981000000, 0x00007ff981be0000, 0x00007ff990000000]
+ total_blobs=4486 nmethods=4070 adapters=328
+ compilation: enabled
+
+Compilation events (10 events):
+Event: 12.962 Thread 0x00007ff990e7d000 nmethod 4266 0x00007ff981bc6850 code [0x00007ff981bc6aa0, 0x00007ff981bc73a0]
+Event: 12.962 Thread 0x00007ff990e7d000 4255       4       org.jacoco.agent.rt.internal_c13123e.asm.MethodWriter::<init> (247 bytes)
+Event: 12.969 Thread 0x00007ff990e7d000 nmethod 4255 0x00007ff981bc5b10 code [0x00007ff981bc5cc0, 0x00007ff981bc6388]
+Event: 12.969 Thread 0x00007ff990e7d000 4257       4       org.jacoco.agent.rt.internal_c13123e.asm.MethodWriter::getSize (864 bytes)
+Event: 12.984 Thread 0x00007ff990e7f000 4280       2       java.lang.ThreadLocal::get (38 bytes)
+Event: 12.984 Thread 0x00007ff990e7f000 nmethod 4280 0x00007ff981bc5550 code [0x00007ff981bc56e0, 0x00007ff981bc58e8]
+Event: 12.995 Thread 0x00007ff990e7f000 4281       2       org.jacoco.agent.rt.internal_c13123e.asm.tree.AnnotationNode::<init> (12 bytes)
+Event: 12.995 Thread 0x00007ff990e7f000 nmethod 4281 0x00007ff981bcb110 code [0x00007ff981bcb280, 0x00007ff981bcb428]
+Event: 13.011 Thread 0x00007ff990e7d000 nmethod 4257 0x00007ff981bc81d0 code [0x00007ff981bc84a0, 0x00007ff981bc9038]
+Event: 13.011 Thread 0x00007ff990e7d000 4207       4       java.util.regex.Pattern$Dot::isSatisfiedBy (34 bytes)
+
+GC Heap History (10 events):
+Event: 7.092 GC heap after
+Heap after GC invocations=7 (full 0):
+ PSYoungGen      total 53248K, used 1993K [0x00000000e0f00000, 0x00000000e7800000, 0x0000000100000000)
+  eden space 49152K, 0% used [0x00000000e0f00000,0x00000000e0f00000,0x00000000e3f00000)
+  from space 4096K, 48% used [0x00000000e3f00000,0x00000000e40f2408,0x00000000e4300000)
+  to   space 4608K, 0% used [0x00000000e7380000,0x00000000e7380000,0x00000000e7800000)
+ ParOldGen       total 64512K, used 2664K [0x00000000a2c00000, 0x00000000a6b00000, 0x00000000e0f00000)
+  object space 64512K, 4% used [0x00000000a2c00000,0x00000000a2e9a368,0x00000000a6b00000)
+ Metaspace       used 12811K, capacity 13548K, committed 13696K, reserved 1060864K
+  class space    used 1416K, capacity 1574K, committed 1664K, reserved 1048576K
+}
+Event: 7.551 GC heap before
+{Heap before GC invocations=8 (full 0):
+ PSYoungGen      total 53248K, used 51145K [0x00000000e0f00000, 0x00000000e7800000, 0x0000000100000000)
+  eden space 49152K, 100% used [0x00000000e0f00000,0x00000000e3f00000,0x00000000e3f00000)
+  from space 4096K, 48% used [0x00000000e3f00000,0x00000000e40f2408,0x00000000e4300000)
+  to   space 4608K, 0% used [0x00000000e7380000,0x00000000e7380000,0x00000000e7800000)
+ ParOldGen       total 64512K, used 2664K [0x00000000a2c00000, 0x00000000a6b00000, 0x00000000e0f00000)
+  object space 64512K, 4% used [0x00000000a2c00000,0x00000000a2e9a368,0x00000000a6b00000)
+ Metaspace       used 13994K, capacity 14768K, committed 15104K, reserved 1062912K
+  class space    used 1532K, capacity 1710K, committed 1792K, reserved 1048576K
+Event: 7.559 GC heap after
+Heap after GC invocations=8 (full 0):
+ PSYoungGen      total 102912K, used 1683K [0x00000000e0f00000, 0x00000000e7800000, 0x0000000100000000)
+  eden space 98304K, 0% used [0x00000000e0f00000,0x00000000e0f00000,0x00000000e6f00000)
+  from space 4608K, 36% used [0x00000000e7380000,0x00000000e7524c80,0x00000000e7800000)
+  to   space 4608K, 0% used [0x00000000e6f00000,0x00000000e6f00000,0x00000000e7380000)
+ ParOldGen       total 64512K, used 3440K [0x00000000a2c00000, 0x00000000a6b00000, 0x00000000e0f00000)
+  object space 64512K, 5% used [0x00000000a2c00000,0x00000000a2f5c368,0x00000000a6b00000)
+ Metaspace       used 13994K, capacity 14768K, committed 15104K, reserved 1062912K
+  class space    used 1532K, capacity 1710K, committed 1792K, reserved 1048576K
+}
+Event: 8.526 GC heap before
+{Heap before GC invocations=9 (full 0):
+ PSYoungGen      total 102912K, used 99987K [0x00000000e0f00000, 0x00000000e7800000, 0x0000000100000000)
+  eden space 98304K, 100% used [0x00000000e0f00000,0x00000000e6f00000,0x00000000e6f00000)
+  from space 4608K, 36% used [0x00000000e7380000,0x00000000e7524c80,0x00000000e7800000)
+  to   space 4608K, 0% used [0x00000000e6f00000,0x00000000e6f00000,0x00000000e7380000)
+ ParOldGen       total 64512K, used 3440K [0x00000000a2c00000, 0x00000000a6b00000, 0x00000000e0f00000)
+  object space 64512K, 5% used [0x00000000a2c00000,0x00000000a2f5c368,0x00000000a6b00000)
+ Metaspace       used 17387K, capacity 18680K, committed 18944K, reserved 1067008K
+  class space    used 1970K, capacity 2237K, committed 2304K, reserved 1048576K
+Event: 8.541 GC heap after
+Heap after GC invocations=9 (full 0):
+ PSYoungGen      total 102912K, used 4579K [0x00000000e0f00000, 0x00000000eb400000, 0x0000000100000000)
+  eden space 98304K, 0% used [0x00000000e0f00000,0x00000000e0f00000,0x00000000e6f00000)
+  from space 4608K, 99% used [0x00000000e6f00000,0x00000000e7378c70,0x00000000e7380000)
+  to   space 5632K, 0% used [0x00000000eae80000,0x00000000eae80000,0x00000000eb400000)
+ ParOldGen       total 64512K, used 5040K [0x00000000a2c00000, 0x00000000a6b00000, 0x00000000e0f00000)
+  object space 64512K, 7% used [0x00000000a2c00000,0x00000000a30ec078,0x00000000a6b00000)
+ Metaspace       used 17387K, capacity 18680K, committed 18944K, reserved 1067008K
+  class space    used 1970K, capacity 2237K, committed 2304K, reserved 1048576K
+}
+Event: 9.091 GC heap before
+{Heap before GC invocations=10 (full 0):
+ PSYoungGen      total 102912K, used 86880K [0x00000000e0f00000, 0x00000000eb400000, 0x0000000100000000)
+  eden space 98304K, 83% used [0x00000000e0f00000,0x00000000e5f5f658,0x00000000e6f00000)
+  from space 4608K, 99% used [0x00000000e6f00000,0x00000000e7378c70,0x00000000e7380000)
+  to   space 5632K, 0% used [0x00000000eae80000,0x00000000eae80000,0x00000000eb400000)
+ ParOldGen       total 64512K, used 5040K [0x00000000a2c00000, 0x00000000a6b00000, 0x00000000e0f00000)
+  object space 64512K, 7% used [0x00000000a2c00000,0x00000000a30ec078,0x00000000a6b00000)
+ Metaspace       used 20013K, capacity 21199K, committed 21296K, reserved 1069056K
+  class space    used 2463K, capacity 2688K, committed 2688K, reserved 1048576K
+Event: 9.121 GC heap after
+Heap after GC invocations=10 (full 0):
+ PSYoungGen      total 161792K, used 5601K [0x00000000e0f00000, 0x00000000eb700000, 0x0000000100000000)
+  eden space 156160K, 0% used [0x00000000e0f00000,0x00000000e0f00000,0x00000000ea780000)
+  from space 5632K, 99% used [0x00000000eae80000,0x00000000eb3f8568,0x00000000eb400000)
+  to   space 7168K, 0% used [0x00000000ea780000,0x00000000ea780000,0x00000000eae80000)
+ ParOldGen       total 64512K, used 6766K [0x00000000a2c00000, 0x00000000a6b00000, 0x00000000e0f00000)
+  object space 64512K, 10% used [0x00000000a2c00000,0x00000000a329b860,0x00000000a6b00000)
+ Metaspace       used 20013K, capacity 21199K, committed 21296K, reserved 1069056K
+  class space    used 2463K, capacity 2688K, committed 2688K, reserved 1048576K
+}
+Event: 9.122 GC heap before
+{Heap before GC invocations=11 (full 1):
+ PSYoungGen      total 161792K, used 5601K [0x00000000e0f00000, 0x00000000eb700000, 0x0000000100000000)
+  eden space 156160K, 0% used [0x00000000e0f00000,0x00000000e0f00000,0x00000000ea780000)
+  from space 5632K, 99% used [0x00000000eae80000,0x00000000eb3f8568,0x00000000eb400000)
+  to   space 7168K, 0% used [0x00000000ea780000,0x00000000ea780000,0x00000000eae80000)
+ ParOldGen       total 64512K, used 6766K [0x00000000a2c00000, 0x00000000a6b00000, 0x00000000e0f00000)
+  object space 64512K, 10% used [0x00000000a2c00000,0x00000000a329b860,0x00000000a6b00000)
+ Metaspace       used 20013K, capacity 21199K, committed 21296K, reserved 1069056K
+  class space    used 2463K, capacity 2688K, committed 2688K, reserved 1048576K
+Event: 9.242 GC heap after
+Heap after GC invocations=11 (full 1):
+ PSYoungGen      total 161792K, used 0K [0x00000000e0f00000, 0x00000000eb700000, 0x0000000100000000)
+  eden space 156160K, 0% used [0x00000000e0f00000,0x00000000e0f00000,0x00000000ea780000)
+  from space 5632K, 0% used [0x00000000eae80000,0x00000000eae80000,0x00000000eb400000)
+  to   space 7168K, 0% used [0x00000000ea780000,0x00000000ea780000,0x00000000eae80000)
+ ParOldGen       total 41984K, used 10285K [0x00000000a2c00000, 0x00000000a5500000, 0x00000000e0f00000)
+  object space 41984K, 24% used [0x00000000a2c00000,0x00000000a360b608,0x00000000a5500000)
+ Metaspace       used 20013K, capacity 21199K, committed 21296K, reserved 1069056K
+  class space    used 2463K, capacity 2688K, committed 2688K, reserved 1048576K
+}
+Event: 13.027 GC heap before
+{Heap before GC invocations=12 (full 1):
+ PSYoungGen      total 161792K, used 156160K [0x00000000e0f00000, 0x00000000eb700000, 0x0000000100000000)
+  eden space 156160K, 100% used [0x00000000e0f00000,0x00000000ea780000,0x00000000ea780000)
+  from space 5632K, 0% used [0x00000000eae80000,0x00000000eae80000,0x00000000eb400000)
+  to   space 7168K, 0% used [0x00000000ea780000,0x00000000ea780000,0x00000000eae80000)
+ ParOldGen       total 41984K, used 10285K [0x00000000a2c00000, 0x00000000a5500000, 0x00000000e0f00000)
+  object space 41984K, 24% used [0x00000000a2c00000,0x00000000a360b608,0x00000000a5500000)
+ Metaspace       used 24994K, capacity 26333K, committed 26624K, reserved 1073152K
+  class space    used 3022K, capacity 3268K, committed 3328K, reserved 1048576K
+
+Deoptimization events (10 events):
+Event: 10.992 Thread 0x00007ff99000b000 Uncommon trap: reason=class_check action=maybe_recompile pc=0x00007ff981b3f484 method=org.apache.commons.lang.text.StrBuilder.append(Ljava/lang/Object;)Lorg/apache/commons/lang/text/StrBuilder; @ 25
+Event: 10.992 Thread 0x00007ff99000b000 Uncommon trap: reason=class_check action=maybe_recompile pc=0x00007ff981b3f484 method=org.apache.commons.lang.text.StrBuilder.append(Ljava/lang/Object;)Lorg/apache/commons/lang/text/StrBuilder; @ 25
+Event: 10.992 Thread 0x00007ff99000b000 Uncommon trap: reason=class_check action=maybe_recompile pc=0x00007ff981b3f484 method=org.apache.commons.lang.text.StrBuilder.append(Ljava/lang/Object;)Lorg/apache/commons/lang/text/StrBuilder; @ 25
+Event: 10.992 Thread 0x00007ff99000b000 Uncommon trap: reason=class_check action=maybe_recompile pc=0x00007ff981b3f484 method=org.apache.commons.lang.text.StrBuilder.append(Ljava/lang/Object;)Lorg/apache/commons/lang/text/StrBuilder; @ 25
+Event: 10.999 Thread 0x00007ff99000b000 Uncommon trap: reason=unstable_if action=reinterpret pc=0x00007ff981a02020 method=org.jacoco.agent.rt.internal_c13123e.asm.Item.isEqualTo(Lorg/jacoco/agent/rt/internal_c13123e/asm/Item;)Z @ 169
+Event: 11.041 Thread 0x00007ff99000b000 Uncommon trap: reason=unstable_if action=reinterpret pc=0x00007ff9818b891c method=java.util.HashMap.getNode(ILjava/lang/Object;)Ljava/util/HashMap$Node; @ 84
+Event: 11.050 Thread 0x00007ff99000b000 Uncommon trap: reason=unstable_if action=reinterpret pc=0x00007ff981b3c664 method=org.apache.commons.lang.text.StrBuilder.append(Ljava/lang/String;)Lorg/apache/commons/lang/text/StrBuilder; @ 29
+Event: 11.447 Thread 0x00007ff99000b000 Uncommon trap: reason=unstable_if action=reinterpret pc=0x00007ff981ae51a8 method=java.util.regex.Pattern$CharProperty.match(Ljava/util/regex/Matcher;ILjava/lang/CharSequence;)Z @ 40
+Event: 12.312 Thread 0x00007ff99000b000 Uncommon trap: reason=unstable_if action=reinterpret pc=0x00007ff981acd568 method=org.jacoco.agent.rt.internal_c13123e.asm.ClassReader.readMethod(Lorg/jacoco/agent/rt/internal_c13123e/asm/ClassVisitor;Lorg/jacoco/agent/rt/internal_c13123e/asm/Context;I)I 
+Event: 12.783 Thread 0x00007ff99000b000 Uncommon trap: reason=unstable_if action=reinterpret pc=0x00007ff981a61128 method=java.lang.ThreadLocal$ThreadLocalMap.getEntry(Ljava/lang/ThreadLocal;)Ljava/lang/ThreadLocal$ThreadLocalMap$Entry; @ 21
+
+Internal exceptions (10 events):
+Event: 12.962 Thread 0x00007ff99000b000 Exception <a 'java/security/PrivilegedActionException'> (0x00000000ea1ac708) thrown at [/HUDSON/workspace/8-2-build-linux-amd64/jdk8u151/9699/hotspot/src/share/vm/prims/jvm.cpp, line 1390]
+Event: 12.962 Thread 0x00007ff99000b000 Exception <a 'java/security/PrivilegedActionException'> (0x00000000ea1acce8) thrown at [/HUDSON/workspace/8-2-build-linux-amd64/jdk8u151/9699/hotspot/src/share/vm/prims/jvm.cpp, line 1390]
+Event: 12.996 Thread 0x00007ff99000b000 Exception <a 'java/security/PrivilegedActionException'> (0x00000000ea5a0a58) thrown at [/HUDSON/workspace/8-2-build-linux-amd64/jdk8u151/9699/hotspot/src/share/vm/prims/jvm.cpp, line 1390]
+Event: 12.996 Thread 0x00007ff99000b000 Exception <a 'java/security/PrivilegedActionException'> (0x00000000ea5a1038) thrown at [/HUDSON/workspace/8-2-build-linux-amd64/jdk8u151/9699/hotspot/src/share/vm/prims/jvm.cpp, line 1390]
+Event: 12.997 Thread 0x00007ff99000b000 Exception <a 'java/security/PrivilegedActionException'> (0x00000000ea5a2ab0) thrown at [/HUDSON/workspace/8-2-build-linux-amd64/jdk8u151/9699/hotspot/src/share/vm/prims/jvm.cpp, line 1390]
+Event: 12.997 Thread 0x00007ff99000b000 Exception <a 'java/security/PrivilegedActionException'> (0x00000000ea5a3090) thrown at [/HUDSON/workspace/8-2-build-linux-amd64/jdk8u151/9699/hotspot/src/share/vm/prims/jvm.cpp, line 1390]
+Event: 12.997 Thread 0x00007ff99000b000 Exception <a 'java/security/PrivilegedActionException'> (0x00000000ea5a4d10) thrown at [/HUDSON/workspace/8-2-build-linux-amd64/jdk8u151/9699/hotspot/src/share/vm/prims/jvm.cpp, line 1390]
+Event: 12.997 Thread 0x00007ff99000b000 Exception <a 'java/security/PrivilegedActionException'> (0x00000000ea5a52f0) thrown at [/HUDSON/workspace/8-2-build-linux-amd64/jdk8u151/9699/hotspot/src/share/vm/prims/jvm.cpp, line 1390]
+Event: 12.997 Thread 0x00007ff99000b000 Exception <a 'java/security/PrivilegedActionException'> (0x00000000ea5a6cb8) thrown at [/HUDSON/workspace/8-2-build-linux-amd64/jdk8u151/9699/hotspot/src/share/vm/prims/jvm.cpp, line 1390]
+Event: 12.997 Thread 0x00007ff99000b000 Exception <a 'java/security/PrivilegedActionException'> (0x00000000ea5a7298) thrown at [/HUDSON/workspace/8-2-build-linux-amd64/jdk8u151/9699/hotspot/src/share/vm/prims/jvm.cpp, line 1390]
+
+Events (10 events):
+Event: 13.014 loading class org/hibernate/validator/internal/constraintvalidators/PastValidatorForReadablePartial done
+Event: 13.015 loading class javax/validation/constraints/Past
+Event: 13.015 loading class javax/validation/constraints/Past done
+Event: 13.016 loading class org/hibernate/validator/internal/constraintvalidators/PatternValidator
+Event: 13.016 loading class org/hibernate/validator/internal/constraintvalidators/PatternValidator done
+Event: 13.017 loading class javax/validation/constraints/Pattern
+Event: 13.017 loading class javax/validation/constraints/Pattern done
+Event: 13.020 loading class org/hibernate/validator/internal/constraintvalidators/SizeValidatorForCharSequence
+Event: 13.020 loading class org/hibernate/validator/internal/constraintvalidators/SizeValidatorForCharSequence done
+Event: 13.024 Executing VM operation: ParallelGCFailedAllocation
+
+
+Dynamic libraries:
+00400000-00401000 r-xp 00000000 08:01 2233027                            /usr/lib/jvm/java-8-oracle/jre/bin/java
+00600000-00601000 rw-p 00000000 08:01 2233027                            /usr/lib/jvm/java-8-oracle/jre/bin/java
+025a6000-025c7000 rw-p 00000000 00:00 0                                  [heap]
+a2c00000-a5500000 rw-p 00000000 00:00 0 
+a5500000-e0f00000 ---p 00000000 00:00 0 
+e0f00000-eb700000 rw-p 00000000 00:00 0 
+efb80000-100000000 ---p 00000000 00:00 0 
+100000000-100340000 rw-p 00000000 00:00 0 
+100340000-140000000 ---p 00000000 00:00 0 
+7ff940000000-7ff940080000 rw-p 00000000 00:00 0 
+7ff940080000-7ff944000000 ---p 00000000 00:00 0 
+7ff944000000-7ff944021000 rw-p 00000000 00:00 0 
+7ff944021000-7ff948000000 ---p 00000000 00:00 0 
+7ff948000000-7ff948021000 rw-p 00000000 00:00 0 
+7ff948021000-7ff94c000000 ---p 00000000 00:00 0 
+7ff94c000000-7ff94c021000 rw-p 00000000 00:00 0 
+7ff94c021000-7ff950000000 ---p 00000000 00:00 0 
+7ff952bb3000-7ff952c73000 rw-p 00000000 00:00 0 
+7ff952c73000-7ff952db3000 ---p 00000000 00:00 0 
+7ff952db3000-7ff952dc6000 r--s 00345000 08:01 2233175                    /usr/lib/jvm/java-8-oracle/jre/lib/resources.jar
+7ff952dc6000-7ff952dc7000 r--s 00000000 08:01 1324064                    /tmp/junit7813497681788165745/testNotSAV-string.txt (deleted)
+7ff952dc7000-7ff952dc8000 r--s 00000000 08:01 1324062                    /tmp/junit7813497681788165745/testSAV.txt (deleted)
+7ff952dc8000-7ff952dc9000 r--s 00000000 08:01 1324060                    /tmp/junit4808713599212274633/testDTA2.txt (deleted)
+7ff952dc9000-7ff952dca000 r--s 00000000 08:01 1324059                    /tmp/junit4808713599212274633/notDTA2.txt (deleted)
+7ff952dca000-7ff952de6000 r--s 00393000 08:01 2233198                    /usr/lib/jvm/java-8-oracle/jre/lib/ext/cldrdata.jar
+7ff952de6000-7ff952df0000 r--s 00116000 08:01 2233205                    /usr/lib/jvm/java-8-oracle/jre/lib/ext/localedata.jar
+7ff952df0000-7ff952ff0000 rw-p 00000000 00:00 0 
+7ff952ff0000-7ff952ff5000 r--s 0009a000 08:01 2233194                    /usr/lib/jvm/java-8-oracle/jre/lib/jsse.jar
+7ff952ff5000-7ff9531f5000 rw-p 00000000 00:00 0 
+7ff9531f5000-7ff9533f5000 rw-p 00000000 00:00 0 
+7ff9533f5000-7ff9535f5000 rw-p 00000000 00:00 0 
+7ff9535f5000-7ff9537f5000 rw-p 00000000 00:00 0 
+7ff9537f5000-7ff9539f5000 rw-p 00000000 00:00 0 
+7ff9539f5000-7ff953bf5000 rw-p 00000000 00:00 0 
+7ff953bf5000-7ff953bf8000 ---p 00000000 00:00 0 
+7ff953bf8000-7ff953cf6000 rw-p 00000000 00:00 0 
+7ff953cf6000-7ff953cff000 r-xp 00000000 08:01 2233359                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libmanagement.so
+7ff953cff000-7ff953efe000 ---p 00009000 08:01 2233359                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libmanagement.so
+7ff953efe000-7ff953eff000 rw-p 00008000 08:01 2233359                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libmanagement.so
+7ff953eff000-7ff953f02000 ---p 00000000 00:00 0 
+7ff953f02000-7ff954000000 rw-p 00000000 00:00 0 
+7ff954000000-7ff954aac000 rw-p 00000000 00:00 0 
+7ff954aac000-7ff958000000 ---p 00000000 00:00 0 
+7ff958000000-7ff958021000 rw-p 00000000 00:00 0 
+7ff958021000-7ff95c000000 ---p 00000000 00:00 0 
+7ff95c000000-7ff95d8fd000 rw-p 00000000 00:00 0 
+7ff95d8fd000-7ff960000000 ---p 00000000 00:00 0 
+7ff960000000-7ff960001000 r--s 00000000 08:01 1324057                    /tmp/junit4808713599212274633/testDTA.txt (deleted)
+7ff960001000-7ff96001c000 r--s 001d3000 08:01 2233201                    /usr/lib/jvm/java-8-oracle/jre/lib/ext/nashorn.jar
+7ff96001c000-7ff96001f000 ---p 00000000 00:00 0 
+7ff96001f000-7ff960055000 rw-p 00000000 00:00 0 
+7ff960055000-7ff960056000 ---p 00000000 00:00 0 
+7ff960056000-7ff960156000 rw-p 00000000 00:00 0 
+7ff960156000-7ff960159000 ---p 00000000 00:00 0 
+7ff960159000-7ff960257000 rw-p 00000000 00:00 0 
+7ff960257000-7ff96025a000 ---p 00000000 00:00 0 
+7ff96025a000-7ff960358000 rw-p 00000000 00:00 0 
+7ff960358000-7ff96035b000 ---p 00000000 00:00 0 
+7ff96035b000-7ff960459000 rw-p 00000000 00:00 0 
+7ff960459000-7ff96046a000 r-xp 00000000 08:01 2233354                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libnio.so
+7ff96046a000-7ff960669000 ---p 00011000 08:01 2233354                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libnio.so
+7ff960669000-7ff96066a000 rw-p 00010000 08:01 2233354                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libnio.so
+7ff96066a000-7ff96366b000 rw-p 00000000 00:00 0 
+7ff96366b000-7ff963682000 r-xp 00000000 08:01 2233351                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libnet.so
+7ff963682000-7ff963881000 ---p 00017000 08:01 2233351                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libnet.so
+7ff963881000-7ff963882000 rw-p 00016000 08:01 2233351                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libnet.so
+7ff963882000-7ff963887000 r--s 00038000 08:01 926529                     /home/madunlap/.m2/repository/org/jacoco/org.jacoco.agent/0.8.1/org.jacoco.agent-0.8.1-runtime.jar
+7ff963887000-7ff963888000 r--s 00001000 08:01 1322967                    /home/madunlap/.m2/repository/org/opentest4j/opentest4j/1.1.0/opentest4j-1.1.0.jar
+7ff963888000-7ff96388b000 r--s 00011000 08:01 1071264                    /home/madunlap/.m2/repository/org/junit/platform/junit-platform-commons/1.2.0/junit-platform-commons-1.2.0.jar
+7ff96388b000-7ff96388d000 r--s 00014000 08:01 1071268                    /home/madunlap/.m2/repository/org/junit/platform/junit-platform-engine/1.2.0/junit-platform-engine-1.2.0.jar
+7ff96388d000-7ff96388f000 r--s 00012000 08:01 808260                     /home/madunlap/.m2/repository/org/junit/platform/junit-platform-launcher/1.2.0/junit-platform-launcher-1.2.0.jar
+7ff96388f000-7ff963892000 r--s 0000e000 08:01 926837                     /home/madunlap/.m2/repository/org/apache/maven/surefire/surefire-junit-platform/2.22.0/surefire-junit-platform-2.22.0.jar
+7ff963892000-7ff963896000 r--s 00022000 08:01 3277821                    /home/madunlap/.m2/repository/org/apache/pdfbox/jbig2-imageio/3.0.1/jbig2-imageio-3.0.1.jar
+7ff963896000-7ff96389c000 r--s 00045000 08:01 3277818                    /home/madunlap/.m2/repository/org/jdom/jdom2/2.0.6/jdom2-2.0.6.jar
+7ff96389c000-7ff9638b5000 r--s 0016c000 08:01 3277815                    /home/madunlap/.m2/repository/org/apache/uima/uimaj-core/2.9.0/uimaj-core-2.9.0.jar
+7ff9638b5000-7ff9638b8000 r--s 00027000 08:01 3277814                    /home/madunlap/.m2/repository/org/apache/uima/uimafit-core/2.2.0/uimafit-core-2.2.0.jar
+7ff9638b8000-7ff9638ba000 r--s 00006000 08:01 3277811                    /home/madunlap/.m2/repository/edu/usc/ir/sentiment-analysis-parser/0.1/sentiment-analysis-parser-0.1.jar
+7ff9638ba000-7ff9638c1000 r--s 0002e000 08:01 3277810                    /home/madunlap/.m2/repository/org/opengis/geoapi/3.0.1/geoapi-3.0.1.jar
+7ff9638c1000-7ff9638cd000 r--s 00091000 08:01 3277808                    /home/madunlap/.m2/repository/org/apache/sis/core/sis-metadata/0.8/sis-metadata-0.8.jar
+7ff9638cd000-7ff9638df000 r--s 00100000 08:01 3277806                    /home/madunlap/.m2/repository/org/apache/sis/core/sis-referencing/0.8/sis-referencing-0.8.jar
+7ff9638df000-7ff9638e2000 r--s 00021000 08:01 3277804                    /home/madunlap/.m2/repository/org/apache/sis/core/sis-feature/0.8/sis-feature-0.8.jar
+7ff9638e2000-7ff9638e7000 r--s 0002b000 08:01 3277801                    /home/madunlap/.m2/repository/org/apache/sis/storage/sis-storage/0.8/sis-storage-0.8.jar
+7ff9638e7000-7ff9638e9000 r--s 00010000 08:01 3277799                    /home/madunlap/.m2/repository/org/apache/sis/storage/sis-netcdf/0.8/sis-netcdf-0.8.jar
+7ff9638e9000-7ff9638eb000 r--s 00005000 08:01 3277797                    /home/madunlap/.m2/repository/javax/measure/unit-api/1.0/unit-api-1.0.jar
+7ff9638eb000-7ff9638fa000 r--s 000bd000 08:01 3277795                    /home/madunlap/.m2/repository/org/apache/sis/core/sis-utility/0.8/sis-utility-0.8.jar
+7ff9638fa000-7ff9638fc000 r--s 0000e000 08:01 3277793                    /home/madunlap/.m2/repository/edu/ucar/httpservices/4.5.5/httpservices-4.5.5.jar
+7ff9638fc000-7ff9638fe000 r--s 0000d000 08:01 3277791                    /home/madunlap/.m2/repository/com/beust/jcommander/1.35/jcommander-1.35.jar
+7ff9638fe000-7ff963919000 r--s 0012c000 08:01 3277790                    /home/madunlap/.m2/repository/net/sf/ehcache/ehcache-core/2.6.2/ehcache-core-2.6.2.jar
+7ff963919000-7ff963924000 r--s 0008a000 08:01 3277787                    /home/madunlap/.m2/repository/c3p0/c3p0/0.9.1.1/c3p0-0.9.1.1.jar
+7ff963924000-7ff96392e000 r--s 00096000 08:01 3277785                    /home/madunlap/.m2/repository/org/quartz-scheduler/quartz/2.2.0/quartz-2.2.0.jar
+7ff96392e000-7ff96393e000 r--s 0007d000 08:01 3277781                    /home/madunlap/.m2/repository/joda-time/joda-time/2.2/joda-time-2.2.jar
+7ff96393e000-7ff963941000 r--s 0001c000 08:01 3277783                    /home/madunlap/.m2/repository/edu/ucar/udunits/4.5.5/udunits-4.5.5.jar
+7ff963941000-7ff96396f000 r--s 003cf000 08:01 3277779                    /home/madunlap/.m2/repository/edu/ucar/cdm/4.5.5/cdm-4.5.5.jar
+7ff96396f000-7ff963972000 r--s 000e4000 08:01 663654                     /home/madunlap/.m2/repository/net/java/dev/jna/jna/4.3.0/jna-4.3.0.jar
+7ff963972000-7ff963974000 r--s 0000b000 08:01 3277773                    /home/madunlap/.m2/repository/org/itadaki/bzip2/0.9.1/bzip2-0.9.1.jar
+7ff963974000-7ff96397c000 r--s 0007b000 08:01 2653586                    /home/madunlap/.m2/repository/com/google/protobuf/protobuf-java/2.5.0/protobuf-java-2.5.0.jar
+7ff96397c000-7ff96398d000 r--s 004d3000 08:01 3277778                    /home/madunlap/.m2/repository/edu/ucar/grib/4.5.5/grib-4.5.5.jar
+7ff96398d000-7ff96398e000 r--s 00000000 08:01 3277774                    /home/madunlap/.m2/repository/net/jcip/jcip-annotations/1.0/jcip-annotations-1.0.jar
+7ff96398e000-7ff963990000 r--s 0000e000 08:01 3277772                    /home/madunlap/.m2/repository/edu/ucar/netcdf4/4.5.5/netcdf4-4.5.5.jar
+7ff963990000-7ff963992000 r--s 00000000 08:01 3277769                    /home/madunlap/.m2/repository/org/slf4j/jul-to-slf4j/1.7.25/jul-to-slf4j-1.7.25.jar
+7ff963992000-7ff963993000 r--s 00006000 08:01 3277767                    /home/madunlap/.m2/repository/com/github/openjson/openjson/1.0.10/openjson-1.0.10.jar
+7ff963993000-7ff963994000 r--s 00005000 08:01 3277765                    /home/madunlap/.m2/repository/com/googlecode/json-simple/json-simple/1.1.1/json-simple-1.1.1.jar
+7ff963994000-7ff9639ac000 r--s 00119000 08:01 3277760                    /home/madunlap/.m2/repository/org/apache/opennlp/opennlp-tools/1.9.0/opennlp-tools-1.9.0.jar
+7ff9639ac000-7ff9639ae000 r--s 0000c000 08:01 3277761                    /home/madunlap/.m2/repository/org/apache/commons/commons-exec/1.3/commons-exec-1.3.jar
+7ff9639ae000-7ff9639b8000 r--s 0009d000 08:01 3277759                    /home/madunlap/.m2/repository/org/apache/cxf/cxf-rt-frontend-jaxrs/3.2.6/cxf-rt-frontend-jaxrs-3.2.6.jar
+7ff9639b8000-7ff9639bd000 r--s 00026000 08:01 1068827                    /home/madunlap/.m2/repository/org/apache/ws/xmlschema/xmlschema-core/2.2.3/xmlschema-core-2.2.3.jar
+7ff9639bd000-7ff9639c3000 r--s 00078000 08:01 3277758                    /home/madunlap/.m2/repository/com/fasterxml/woodstox/woodstox-core/5.1.0/woodstox-core-5.1.0.jar
+7ff9639c3000-7ff9639db000 r--s 0013e000 08:01 3277756                    /home/madunlap/.m2/repository/org/apache/cxf/cxf-core/3.2.6/cxf-core-3.2.6.jar
+7ff9639db000-7ff9639e1000 r--s 00053000 08:01 3277753                    /home/madunlap/.m2/repository/org/apache/cxf/cxf-rt-transports-http/3.2.6/cxf-rt-transports-http-3.2.6.jar
+7ff9639e1000-7ff9639e4000 r--s 00029000 08:01 3277752                    /home/madunlap/.m2/repository/org/apache/cxf/cxf-rt-rs-client/3.2.6/cxf-rt-rs-client-3.2.6.jar
+7ff9639e4000-7ff9639e7000 r--s 00025000 08:01 3277751                    /home/madunlap/.m2/repository/com/github/junrar/junrar/2.0.0/junrar-2.0.0.jar
+7ff9639e7000-7ff9639e8000 r--s 00014000 08:01 3277748                    /home/madunlap/.m2/repository/com/pff/java-libpst/0.8.1/java-libpst-0.8.1.jar
+7ff9639e8000-7ff9639ed000 r--s 00035000 08:01 3277745                    /home/madunlap/.m2/repository/org/codelibs/jhighlight/1.0.3/jhighlight-1.0.3.jar
+7ff9639ed000-7ff9639f0000 r--s 00033000 08:01 3277744                    /home/madunlap/.m2/repository/com/googlecode/juniversalchardet/juniversalchardet/1.0.3/juniversalchardet-1.0.3.jar
+7ff9639f0000-7ff9639f3000 r--s 0001b000 08:01 3277741                    /home/madunlap/.m2/repository/org/gagravarr/vorbis-java-core/0.8/vorbis-java-core-0.8.jar
+7ff9639f3000-7ff9639f4000 r--s 00001000 08:01 3277740                    /home/madunlap/.m2/repository/com/rometools/rome-utils/1.5.1/rome-utils-1.5.1.jar
+7ff9639f4000-7ff9639f8000 r--s 00038000 08:01 3277737                    /home/madunlap/.m2/repository/com/rometools/rome/1.5.1/rome-1.5.1.jar
+7ff9639f8000-7ff9639fb000 r--s 00014000 08:01 3277735                    /home/madunlap/.m2/repository/de/l3s/boilerpipe/boilerpipe/1.1.0/boilerpipe-1.1.0.jar
+7ff9639fb000-7ff9639fd000 r--s 00015000 08:01 3277733                    /home/madunlap/.m2/repository/com/adobe/xmp/xmpcore/5.1.3/xmpcore-5.1.3.jar
+7ff9639fd000-7ff963a08000 r--s 0009a000 08:01 3277732                    /home/madunlap/.m2/repository/com/drewnoakes/metadata-extractor/2.11.0/metadata-extractor-2.11.0.jar
+7ff963a08000-7ff963a1b000 r--s 000f1000 08:01 3277729                    /home/madunlap/.m2/repository/com/googlecode/mp4parser/isoparser/1.1.22/isoparser-1.1.22.jar
+7ff963a1b000-7ff963a1d000 r--s 0001a000 08:01 3277727                    /home/madunlap/.m2/repository/org/ow2/asm/asm/6.2/asm-6.2.jar
+7ff963a1d000-7ff963a75000 r--s 003a7000 08:01 663648                     /home/madunlap/.m2/repository/org/bouncycastle/bcprov-jdk15on/1.60/bcprov-jdk15on-1.60.jar
+7ff963a75000-7ff963a88000 r--s 000b0000 08:01 805271                     /home/madunlap/.m2/repository/org/bouncycastle/bcpkix-jdk15on/1.60/bcpkix-jdk15on-1.60.jar
+7ff963a88000-7ff963a8b000 r--s 00018000 08:01 663645                     /home/madunlap/.m2/repository/org/bouncycastle/bcmail-jdk15on/1.60/bcmail-jdk15on-1.60.jar
+7ff963a8b000-7ff963a8d000 r--s 0000b000 08:01 3277725                    /home/madunlap/.m2/repository/org/apache/pdfbox/jempbox/1.8.15/jempbox-1.8.15.jar
+7ff963a8d000-7ff963a8f000 r--s 00010000 08:01 3277723                    /home/madunlap/.m2/repository/org/apache/pdfbox/pdfbox-tools/2.0.11/pdfbox-tools-2.0.11.jar
+7ff963a8f000-7ff963a96000 r--s 00176000 08:01 3277722                    /home/madunlap/.m2/repository/org/apache/pdfbox/fontbox/2.0.11/fontbox-2.0.11.jar
+7ff963a96000-7ff963aac000 r--s 00253000 08:01 3277721                    /home/madunlap/.m2/repository/org/apache/pdfbox/pdfbox/2.0.11/pdfbox-2.0.11.jar
+7ff963aac000-7ff963aad000 r--s 00017000 08:01 3277717                    /home/madunlap/.m2/repository/org/brotli/dec/0.1.2/dec-0.1.2.jar
+7ff963aad000-7ff963aaf000 r--s 0000c000 08:01 3277679                    /home/madunlap/.m2/repository/com/epam/parso/2.0.9/parso-2.0.9.jar
+7ff963aaf000-7ff963ab3000 r--s 00017000 08:01 3277713                    /home/madunlap/.m2/repository/org/tukaani/xz/1.8/xz-1.8.jar
+7ff963ab3000-7ff963aba000 r--s 0004a000 08:01 3023065                    /home/madunlap/.m2/repository/org/apache/james/apache-mime4j-dom/0.8.2/apache-mime4j-dom-0.8.2.jar
+7ff963aba000-7ff963abd000 r--s 00017000 08:01 1068825                    /home/madunlap/.m2/repository/org/apache/james/apache-mime4j-core/0.8.2/apache-mime4j-core-0.8.2.jar
+7ff963abd000-7ff963abf000 r--s 00011000 08:01 3277711                    /home/madunlap/.m2/repository/org/tallison/jmatio/1.4/jmatio-1.4.jar
+7ff963abf000-7ff963ac3000 r--s 00012000 08:01 3277709                    /home/madunlap/.m2/repository/com/healthmarketscience/jackcess/jackcess-encrypt/2.1.4/jackcess-encrypt-2.1.4.jar
+7ff963ac3000-7ff963ad0000 r--s 000cd000 08:01 3277708                    /home/madunlap/.m2/repository/com/healthmarketscience/jackcess/jackcess/2.1.12/jackcess-2.1.12.jar
+7ff963ad0000-7ff963ad2000 r--s 00005000 08:01 3277705                    /home/madunlap/.m2/repository/org/gagravarr/vorbis-java-tika/0.8/vorbis-java-tika-0.8.jar
+7ff963ad2000-7ff963ad4000 r--s 0000f000 08:01 3277703                    /home/madunlap/.m2/repository/javax/activation/activation/1.1.1/activation-1.1.1.jar
+7ff963ad4000-7ff963ae6000 r--s 000da000 08:01 3277702                    /home/madunlap/.m2/repository/com/sun/xml/bind/jaxb-impl/2.3.0/jaxb-impl-2.3.0.jar
+7ff963ae6000-7ff963aed000 r--s 00038000 08:01 3277699                    /home/madunlap/.m2/repository/com/sun/xml/bind/jaxb-core/2.3.0/jaxb-core-2.3.0.jar
+7ff963aed000-7ff963af1000 r--s 0001b000 08:01 3277697                    /home/madunlap/.m2/repository/javax/xml/bind/jaxb-api/2.3.0/jaxb-api-2.3.0.jar
+7ff963af1000-7ff963afb000 r--s 0009f000 08:01 3277695                    /home/madunlap/.m2/repository/org/apache/tika/tika-core/1.19/tika-core-1.19.jar
+7ff963afb000-7ff963b0c000 r--s 0010a000 08:01 3277694                    /home/madunlap/.m2/repository/org/apache/tika/tika-parsers/1.19/tika-parsers-1.19.jar
+7ff963b0c000-7ff963b0e000 r--s 00009000 08:01 3285809                    /home/madunlap/.m2/repository/commons-cli/commons-cli/1.2/commons-cli-1.2.jar
+7ff963b0e000-7ff963b11000 r--s 00023000 08:01 3285807                    /home/madunlap/.m2/repository/org/jdom/jdom/1.1/jdom-1.1.jar
+7ff963b11000-7ff963b16000 r--s 0003c000 08:01 822991                     /home/madunlap/.m2/repository/org/springframework/spring-expression/4.2.5.RELEASE/spring-expression-4.2.5.RELEASE.jar
+7ff963b16000-7ff963b2f000 r--s 000f3000 08:01 822980                     /home/madunlap/.m2/repository/org/springframework/spring-context/4.2.5.RELEASE/spring-context-4.2.5.RELEASE.jar
+7ff963b2f000-7ff963b3c000 r--s 000a6000 08:01 822971                     /home/madunlap/.m2/repository/org/springframework/spring-beans/4.2.5.RELEASE/spring-beans-4.2.5.RELEASE.jar
+7ff963b3c000-7ff963b45000 r--s 00052000 08:01 822957                     /home/madunlap/.m2/repository/org/springframework/spring-aop/4.2.5.RELEASE/spring-aop-4.2.5.RELEASE.jar
+7ff963b45000-7ff963b47000 r--s 00000000 08:01 822924                     /home/madunlap/.m2/repository/aopalliance/aopalliance/1.0/aopalliance-1.0.jar
+7ff963b47000-7ff963b53000 r--s 0004c000 08:01 822923                     /home/madunlap/.m2/repository/org/springframework/security/spring-security-core/4.0.4.RELEASE/spring-security-core-4.0.4.RELEASE.jar
+7ff963b53000-7ff963b58000 r--s 00017000 08:01 3152446                    /home/madunlap/.m2/repository/org/hibernate/javax/persistence/hibernate-jpa-2.1-api/1.0.0.Final/hibernate-jpa-2.1-api-1.0.0.Final.jar
+7ff963b58000-7ff963b5a000 r--s 00005000 08:01 822919                     /home/madunlap/.m2/repository/org/duracloud/db/account-management-db-model/4.1.1/account-management-db-model-4.1.1.jar
+7ff963b5a000-7ff963b5d000 r--s 0000e000 08:01 822911                     /home/madunlap/.m2/repository/org/duracloud/snapshotdata/4.4.6/snapshotdata-4.4.6.jar
+7ff963b5d000-7ff963b5e000 r--s 00001000 08:01 822900                     /home/madunlap/.m2/repository/org/duracloud/common-xml/4.4.6/common-xml-4.4.6.jar
+7ff963b5e000-7ff963b60000 r--s 00003000 08:01 822896                     /home/madunlap/.m2/repository/org/duracloud/reportdata/4.4.6/reportdata-4.4.6.jar
+7ff963b60000-7ff963b61000 r--s 00006000 08:01 3285805                    /home/madunlap/.m2/repository/org/codehaus/jackson/jackson-xc/1.9.5/jackson-xc-1.9.5.jar
+7ff963b61000-7ff963b63000 r--s 00001000 08:01 822888                     /home/madunlap/.m2/repository/org/duracloud/common-json/4.4.6/common-json-4.4.6.jar
+7ff963b63000-7ff963b65000 r--s 00003000 08:01 822884                     /home/madunlap/.m2/repository/org/duracloud/storageproviderdata/4.4.6/storageproviderdata-4.4.6.jar
+7ff963b65000-7ff963b66000 r--s 00005000 08:01 664266                     /home/madunlap/.m2/repository/org/duracloud/common-queue/4.4.6/common-queue-4.4.6.jar
+7ff963b66000-7ff963b68000 r--s 0000c000 08:01 664261                     /home/madunlap/.m2/repository/org/duracloud/storageprovider/4.4.6/storageprovider-4.4.6.jar
+7ff963b68000-7ff963b6a000 r--s 0000d000 08:01 664260                     /home/madunlap/.m2/repository/org/duracloud/storeclient/4.4.6/storeclient-4.4.6.jar
+7ff963b6a000-7ff963b80000 r--s 000f2000 08:01 664243                     /home/madunlap/.m2/repository/org/springframework/spring-core/4.2.5.RELEASE/spring-core-4.2.5.RELEASE.jar
+7ff963b80000-7ff963b82000 r--s 00005000 08:01 3285485                    /home/madunlap/.m2/repository/xpp3/xpp3_min/1.1.4c/xpp3_min-1.1.4c.jar
+7ff963b82000-7ff963b83000 r--s 00001000 08:01 3285484                    /home/madunlap/.m2/repository/xmlpull/xmlpull/1.1.3.1/xmlpull-1.1.3.1.jar
+7ff963b83000-7ff963b90000 r--s 00075000 08:01 3285803                    /home/madunlap/.m2/repository/com/thoughtworks/xstream/xstream/1.4.7/xstream-1.4.7.jar
+7ff963b90000-7ff963b93000 r--s 00012000 08:01 664247                     /home/madunlap/.m2/repository/org/duracloud/common/4.4.6/common-4.4.6.jar
+7ff963b93000-7ff963b9e000 r--s 00086000 08:01 2653578                    /home/madunlap/.m2/repository/org/apache/commons/commons-compress/1.18/commons-compress-1.18.jar
+7ff963b9e000-7ff963ba0000 r--s 00009000 08:01 3277688                    /home/madunlap/.m2/repository/com/mashape/unirest/unirest-java/1.4.9/unirest-java-1.4.9.jar
+7ff963ba0000-7ff963ba2000 r--s 0000e000 08:01 3277689                    /home/madunlap/.m2/repository/org/jvnet/mimepull/mimepull/1.9.6/mimepull-1.9.6.jar
+7ff963ba2000-7ff963ba5000 r--s 0000e000 08:01 3277663                    /home/madunlap/.m2/repository/org/glassfish/jersey/media/jersey-media-multipart/2.23.2/jersey-media-multipart-2.23.2.jar
+7ff963ba5000-7ff963ba9000 r--s 00019000 08:01 3277685                    /home/madunlap/.m2/repository/javax/ws/rs/javax.ws.rs-api/2.0.1/javax.ws.rs-api-2.0.1.jar
+7ff963ba9000-7ff963bab000 r--s 00010000 08:01 3277683                    /home/madunlap/.m2/repository/org/glassfish/jersey/media/jersey-media-jaxb/2.23.2/jersey-media-jaxb-2.23.2.jar
+7ff963bab000-7ff963bb0000 r--s 00025000 08:01 3277682                    /home/madunlap/.m2/repository/org/glassfish/jersey/core/jersey-client/2.23.2/jersey-client-2.23.2.jar
+7ff963bb0000-7ff963bc6000 r--s 000d3000 08:01 3277680                    /home/madunlap/.m2/repository/org/glassfish/jersey/core/jersey-server/2.23.2/jersey-server-2.23.2.jar
+7ff963bc6000-7ff963bc7000 r--s 00004000 08:01 3277678                    /home/madunlap/.m2/repository/org/glassfish/hk2/osgi-resource-locator/1.0.1/osgi-resource-locator-1.0.1.jar
+7ff963bc7000-7ff963bd1000 r--s 000ae000 08:01 3277675                    /home/madunlap/.m2/repository/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar
+7ff963bd1000-7ff963bd4000 r--s 0002a000 08:01 3277674                    /home/madunlap/.m2/repository/org/glassfish/hk2/hk2-locator/2.5.0-b05/hk2-locator-2.5.0-b05.jar
+7ff963bd4000-7ff963bd6000 r--s 00002000 08:01 3277671                    /home/madunlap/.m2/repository/org/glassfish/hk2/external/aopalliance-repackaged/2.5.0-b05/aopalliance-repackaged-2.5.0-b05.jar
+7ff963bd6000-7ff963bda000 r--s 0001a000 08:01 3277670                    /home/madunlap/.m2/repository/org/glassfish/hk2/hk2-utils/2.5.0-b05/hk2-utils-2.5.0-b05.jar
+7ff963bda000-7ff963bdf000 r--s 00027000 08:01 3277667                    /home/madunlap/.m2/repository/org/glassfish/hk2/hk2-api/2.5.0-b05/hk2-api-2.5.0-b05.jar
+7ff963bdf000-7ff963bf7000 r--s 000d6000 08:01 3277665                    /home/madunlap/.m2/repository/org/glassfish/jersey/bundles/repackaged/jersey-guava/2.23.2/jersey-guava-2.23.2.jar
+7ff963bf7000-7ff963bf9000 r--s 00005000 08:01 3277664                    /home/madunlap/.m2/repository/javax/annotation/javax.annotation-api/1.2/javax.annotation-api-1.2.jar
+7ff963bf9000-7ff963c08000 r--s 000a0000 08:01 3277661                    /home/madunlap/.m2/repository/org/glassfish/jersey/core/jersey-common/2.23.2/jersey-common-2.23.2.jar
+7ff963c08000-7ff963c09000 r--s 00001000 08:01 3277659                    /home/madunlap/.m2/repository/org/glassfish/hk2/external/javax.inject/2.5.0-b05/javax.inject-2.5.0-b05.jar
+7ff963c09000-7ff963c0c000 r--s 0000e000 08:01 3151774                    /home/madunlap/.m2/repository/org/glassfish/jersey/containers/jersey-container-servlet-core/2.23.2/jersey-container-servlet-core-2.23.2.jar
+7ff963c0c000-7ff963c0e000 r--s 00003000 08:01 805239                     /home/madunlap/.m2/repository/org/glassfish/jersey/containers/jersey-container-servlet/2.23.2/jersey-container-servlet-2.23.2.jar
+7ff963c0e000-7ff963c10000 r--s 00008000 08:01 3151760                    /home/madunlap/.m2/repository/com/google/auto/auto-common/0.3/auto-common-0.3.jar
+7ff963c10000-7ff963c11000 r--s 00002000 08:01 3151767                    /home/madunlap/.m2/repository/com/google/auto/service/auto-service/1.0-rc2/auto-service-1.0-rc2.jar
+7ff963c11000-7ff963c13000 r--s 0000c000 08:01 3151798                    /home/madunlap/.m2/repository/com/lyncode/xoai-service-provider/4.1.0-header-patch/xoai-service-provider-4.1.0-header-patch.jar
+7ff963c13000-7ff963c14000 r--s 00001000 08:01 3151765                    /home/madunlap/.m2/repository/com/lyncode/builder-commons/1.0.2/builder-commons-1.0.2.jar
+7ff963c14000-7ff963c17000 r--s 00012000 08:01 3151805                    /home/madunlap/.m2/repository/com/lyncode/xoai-data-provider/4.1.0-header-patch/xoai-data-provider-4.1.0-header-patch.jar
+7ff963c17000-7ff963c19000 r--s 00005000 08:01 3151761                    /home/madunlap/.m2/repository/stax/stax-api/1.0.1/stax-api-1.0.1.jar
+7ff963c19000-7ff963c1f000 r--s 00048000 08:01 3151758                    /home/madunlap/.m2/repository/org/apache/commons/commons-lang3/3.1/commons-lang3-3.1.jar
+7ff963c1f000-7ff963c21000 r--s 00004000 08:01 3151752                    /home/madunlap/.m2/repository/javax/xml/stream/stax-api/1.0-2/stax-api-1.0-2.jar
+7ff963c21000-7ff963c27000 r--s 00045000 08:01 663624                     /home/madunlap/.m2/repository/org/hamcrest/hamcrest-all/1.3/hamcrest-all-1.3.jar
+7ff963c27000-7ff963c2c000 r--s 00048000 08:01 1068823                    /home/madunlap/.m2/repository/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar
+7ff963c2c000-7ff963c2d000 r--s 00003000 08:01 3151753                    /home/madunlap/.m2/repository/com/lyncode/test-support/1.0.4/test-support-1.0.4.jar
+7ff963c2d000-7ff963c2f000 r--s 00004000 08:01 3151755                    /home/madunlap/.m2/repository/com/lyncode/xml-io/1.0.3/xml-io-1.0.3.jar
+7ff963c2f000-7ff963c31000 r--s 0000d000 08:01 3151803                    /home/madunlap/.m2/repository/com/lyncode/xoai-common/4.1.0-header-patch/xoai-common-4.1.0-header-patch.jar
+7ff963c31000-7ff963c34000 r--s 00011000 08:01 3151750                    /home/madunlap/.m2/repository/com/github/scribejava/scribejava-core/3.1.0/scribejava-core-3.1.0.jar
+7ff963c34000-7ff963c37000 r--s 00010000 08:01 3151748                    /home/madunlap/.m2/repository/com/github/scribejava/scribejava-apis/3.1.0/scribejava-apis-3.1.0.jar
+7ff963c37000-7ff963c40000 r--s 0006f000 08:01 1068821                    /home/madunlap/.m2/repository/log4j/log4j/1.2.17/log4j-1.2.17.jar
+7ff963c40000-7ff963d17000 r--s 007aa000 08:01 3151746                    /home/madunlap/.m2/repository/net/sf/ehcache/ehcache/2.10.1/ehcache-2.10.1.jar
+7ff963d17000-7ff963d19000 r--s 00008000 08:01 3151744                    /home/madunlap/.m2/repository/org/apache/commons/commons-csv/1.2/commons-csv-1.2.jar
+7ff963d19000-7ff963d1c000 r--s 00006000 08:01 2653582                    /home/madunlap/.m2/repository/com/google/code/findbugs/jsr305/1.3.9/jsr305-1.3.9.jar
+7ff963d1c000-7ff963d22000 r--s 00040000 08:01 1068811                    /home/madunlap/.m2/repository/com/google/http-client/google-http-client/1.20.0/google-http-client-1.20.0.jar
+7ff963d22000-7ff963d23000 r--s 00004000 08:01 3151684                    /home/madunlap/.m2/repository/com/maxmind/db/maxmind-db/1.0.0/maxmind-db-1.0.0.jar
+7ff963d23000-7ff963d25000 r--s 00007000 08:01 3151735                    /home/madunlap/.m2/repository/com/maxmind/geoip2/geoip2/2.3.1/geoip2-2.3.1.jar
+7ff963d25000-7ff963d29000 r--s 00034000 08:01 3151728                    /home/madunlap/.m2/repository/org/codehaus/jackson/jackson-core-asl/1.9.7/jackson-core-asl-1.9.7.jar
+7ff963d29000-7ff963d38000 r--s 000b0000 08:01 3151727                    /home/madunlap/.m2/repository/org/codehaus/jackson/jackson-mapper-asl/1.9.7/jackson-mapper-asl-1.9.7.jar
+7ff963d38000-7ff963d42000 r--s 00040000 08:01 3151725                    /home/madunlap/.m2/repository/org/javaswift/joss/0.10.0/joss-0.10.0.jar
+7ff963d42000-7ff963d49000 r--s 0003a000 08:01 3151720                    /home/madunlap/.m2/repository/commons-codec/commons-codec/1.9/commons-codec-1.9.jar
+7ff963d49000-7ff963d4d000 r--s 00028000 08:01 3151718                    /home/madunlap/.m2/repository/org/apache/httpcomponents/httpasyncclient/4.1/httpasyncclient-4.1.jar
+7ff963d4d000-7ff963d54000 r--s 00050000 08:01 3151716                    /home/madunlap/.m2/repository/org/apache/httpcomponents/httpcore-nio/4.4.1/httpcore-nio-4.4.1.jar
+7ff963d54000-7ff963d5a000 r--s 00033000 08:01 3151713                    /home/madunlap/.m2/repository/io/searchbox/jest-common/0.1.7/jest-common-0.1.7.jar
+7ff963d5a000-7ff963d5b000 r--s 00004000 08:01 3151708                    /home/madunlap/.m2/repository/io/searchbox/jest/0.1.7/jest-0.1.7.jar
+7ff963d5b000-7ff963d5e000 r--s 0000f000 08:01 3151705                    /home/madunlap/.m2/repository/commons-discovery/commons-discovery/0.2/commons-discovery-0.2.jar
+7ff963d5e000-7ff963d61000 r--s 0001c000 08:01 3151704                    /home/madunlap/.m2/repository/axis/axis-wsdl4j/1.5.1/axis-wsdl4j-1.5.1.jar
+7ff963d61000-7ff963d62000 r--s 00004000 08:01 3151701                    /home/madunlap/.m2/repository/org/apache/axis/axis-saaj/1.4/axis-saaj-1.4.jar
+7ff963d62000-7ff963d64000 r--s 00006000 08:01 3151699                    /home/madunlap/.m2/repository/org/apache/axis/axis-jaxrpc/1.4/axis-jaxrpc-1.4.jar
+7ff963d64000-7ff963d78000 r--s 00173000 08:01 3151698                    /home/madunlap/.m2/repository/axis/axis/1.4/axis-1.4.jar
+7ff963d78000-7ff963d7a000 r--s 00000000 08:01 3151692                    /home/madunlap/.m2/repository/org/mockito/mockito-junit-jupiter/2.22.0/mockito-junit-jupiter-2.22.0.jar
+7ff963d7a000-7ff963d7c000 r--s 0000c000 08:01 3151691                    /home/madunlap/.m2/repository/org/objenesis/objenesis/2.6/objenesis-2.6.jar
+7ff963d7c000-7ff963d7e000 r--s 00009000 08:01 3151688                    /home/madunlap/.m2/repository/net/bytebuddy/byte-buddy-agent/1.8.21/byte-buddy-agent-1.8.21.jar
+7ff963d7e000-7ff963dc0000 r--s 002ae000 08:01 3151685                    /home/madunlap/.m2/repository/net/bytebuddy/byte-buddy/1.8.21/byte-buddy-1.8.21.jar
+7ff963dc0000-7ff963dd0000 r--s 0007a000 08:01 3151683                    /home/madunlap/.m2/repository/org/mockito/mockito-core/2.22.0/mockito-core-2.22.0.jar
+7ff963dd0000-7ff963dd2000 r--s 00001000 08:01 1068812                    /home/madunlap/.m2/repository/org/slf4j/slf4j-log4j12/1.7.7/slf4j-log4j12-1.7.7.jar
+7ff963dd2000-7ff963dd4000 r--s 00006000 08:01 1068810                    /home/madunlap/.m2/repository/org/slf4j/slf4j-api/1.7.7/slf4j-api-1.7.7.jar
+7ff963dd4000-7ff963dd6000 r--s 00013000 08:01 3151497                    /home/madunlap/.m2/repository/com/jayway/restassured/xml-path/2.4.0/xml-path-2.4.0.jar
+7ff963dd6000-7ff963dd8000 r--s 00007000 08:01 3151492                    /home/madunlap/.m2/repository/com/jayway/restassured/rest-assured-common/2.4.0/rest-assured-common-2.4.0.jar
+7ff963dd8000-7ff963dda000 r--s 0001e000 08:01 3151491                    /home/madunlap/.m2/repository/org/codehaus/groovy/groovy-json/2.3.7/groovy-json-2.3.7.jar
+7ff963dda000-7ff963ddc000 r--s 0000d000 08:01 3151481                    /home/madunlap/.m2/repository/com/jayway/restassured/json-path/2.4.0/json-path-2.4.0.jar
+7ff963ddc000-7ff963dde000 r--s 00015000 08:01 3151475                    /home/madunlap/.m2/repository/org/ccil/cowan/tagsoup/tagsoup/1.2.1/tagsoup-1.2.1.jar
+7ff963dde000-7ff963ddf000 r--s 0000c000 08:01 3150244                    /home/madunlap/.m2/repository/org/hamcrest/hamcrest-library/1.3/hamcrest-library-1.3.jar
+7ff963ddf000-7ff963de4000 r--s 00034000 08:01 3023063                    /home/madunlap/.m2/repository/org/codehaus/groovy/groovy-xml/2.3.7/groovy-xml-2.3.7.jar
+7ff963de4000-7ff963e2d000 r--s 003fb000 08:01 3023054                    /home/madunlap/.m2/repository/org/codehaus/groovy/groovy/2.3.7/groovy-2.3.7.jar
+7ff963e2d000-7ff963e37000 r--s 0008c000 08:01 3151468                    /home/madunlap/.m2/repository/com/jayway/restassured/rest-assured/2.4.0/rest-assured-2.4.0.jar
+7ff963e37000-7ff963e3d000 r--s 0005b000 08:01 3285801                    /home/madunlap/.m2/repository/org/jsoup/jsoup/1.11.3/jsoup-1.11.3.jar
+7ff963e3d000-7ff963e3f000 r--s 00004000 08:01 3151795                    /home/madunlap/.m2/repository/edu/ucsb/nceas/ezid/1.0.0/ezid-1.0.0.jar
+7ff963e3f000-7ff963e42000 r--s 0000c000 08:01 3151454                    /home/madunlap/.m2/repository/org/ocpsoft/rewrite/rewrite-integration-faces/3.4.2.Final/rewrite-integration-faces-3.4.2.Final.jar
+7ff963e42000-7ff963e50000 r--s 00092000 08:01 3151452                    /home/madunlap/.m2/repository/org/ocpsoft/rewrite/rewrite-config-prettyfaces/3.4.2.Final/rewrite-config-prettyfaces-3.4.2.Final.jar
+7ff963e50000-7ff963e5e000 r--s 0006f000 08:01 3151450                    /home/madunlap/.m2/repository/org/ocpsoft/rewrite/rewrite-servlet/3.4.2.Final/rewrite-servlet-3.4.2.Final.jar
+7ff963e5e000-7ff963e69000 r--s 00088000 08:01 3151448                    /home/madunlap/.m2/repository/com/github/jai-imageio/jai-imageio-core/1.3.1/jai-imageio-core-1.3.1.jar
+7ff963e69000-7ff963e6b000 r--s 00009000 08:01 3151802                    /home/madunlap/.m2/repository/edu/harvard/hul/ois/jhove/jhove-handler/1.11.0/jhove-handler-1.11.0.jar
+7ff963e6b000-7ff963e74000 r--s 00079000 08:01 3151801                    /home/madunlap/.m2/repository/edu/harvard/hul/ois/jhove/jhove-module/1.11.0/jhove-module-1.11.0.jar
+7ff963e74000-7ff963e77000 r--s 00011000 08:01 3151799                    /home/madunlap/.m2/repository/edu/harvard/hul/ois/jhove/jhove/1.11.0/jhove-1.11.0.jar
+7ff963e77000-7ff963e8a000 r--s 0013f000 08:01 3151445                    /home/madunlap/.m2/repository/org/apache/poi/poi-scratchpad/4.0.0/poi-scratchpad-4.0.0.jar
+7ff963e8a000-7ff963e91000 r--s 0005f000 08:01 3151443                    /home/madunlap/.m2/repository/org/apache/poi/poi-examples/4.0.0/poi-examples-4.0.0.jar
+7ff963e91000-7ff963e95000 r--s 00015000 08:01 3150305                    /home/madunlap/.m2/repository/com/github/virtuald/curvesapi/1.04/curvesapi-1.04.jar
+7ff963e95000-7ff963ecf000 r--s 0023d000 08:01 3150303                    /home/madunlap/.m2/repository/org/apache/xmlbeans/xmlbeans/3.0.1/xmlbeans-3.0.1.jar
+7ff963ecf000-7ff963f91000 r--s 0056c000 08:01 3150301                    /home/madunlap/.m2/repository/org/apache/poi/poi-ooxml-schemas/4.0.0/poi-ooxml-schemas-4.0.0.jar
+7ff963f91000-7ff963fa8000 r--s 00197000 08:01 3150245                    /home/madunlap/.m2/repository/org/apache/poi/poi-ooxml/4.0.0/poi-ooxml-4.0.0.jar
+7ff963fa8000-7ff963fb7000 r--s 000a9000 08:01 804999                     /home/madunlap/.m2/repository/org/apache/commons/commons-collections4/4.2/commons-collections4-4.2.jar
+7ff963fb7000-7ff963fe3000 r--s 0026c000 08:01 3150246                    /home/madunlap/.m2/repository/org/apache/poi/poi/4.0.0/poi-4.0.0.jar
+7ff963fe3000-7ff963fe5000 r--s 00006000 08:01 3150300                    /home/madunlap/.m2/repository/org/nuiton/thirdparty/Rserve/0.6-1/Rserve-0.6-1.jar
+7ff963fe5000-7ff963fe7000 r--s 00006000 08:01 3150298                    /home/madunlap/.m2/repository/org/nuiton/thirdparty/REngine/0.6-1/REngine-0.6-1.jar
+7ff963fe7000-7ff963fef000 r--s 00090000 08:01 3152455                    /home/madunlap/.m2/repository/net/handle/handle/8.1.1/handle-8.1.1.jar
+7ff963fef000-7ff963ff2000 r--s 00035000 08:01 3151790                    /home/madunlap/.m2/repository/nom/tam/fits/fits/2012-10-25-generated/fits-2012-10-25-generated.jar
+7ff963ff2000-7ff964000000 r--s 00081000 08:01 3150240                    /home/madunlap/.m2/repository/colt/colt/1.2.0/colt-1.2.0.jar
+7ff964000000-7ff964021000 rw-p 00000000 00:00 0 
+7ff964021000-7ff968000000 ---p 00000000 00:00 0 
+7ff968000000-7ff968021000 rw-p 00000000 00:00 0 
+7ff968021000-7ff96c000000 ---p 00000000 00:00 0 
+7ff96c000000-7ff96c2c0000 rw-p 00000000 00:00 0 
+7ff96c2c0000-7ff970000000 ---p 00000000 00:00 0 
+7ff970000000-7ff970021000 rw-p 00000000 00:00 0 
+7ff970021000-7ff974000000 ---p 00000000 00:00 0 
+7ff974000000-7ff97403f000 rw-p 00000000 00:00 0 
+7ff97403f000-7ff978000000 ---p 00000000 00:00 0 
+7ff978000000-7ff978001000 r--s 0000c000 08:01 3151794                    /home/madunlap/.m2/repository/org/dataverse/unf/6.0/unf-6.0.jar
+7ff978001000-7ff978002000 r--s 00018000 08:01 3151792                    /home/madunlap/.m2/repository/edu/harvard/iq/dvn/unf5/5.0/unf5-5.0.jar
+7ff978002000-7ff978009000 r--s 00028000 08:01 3150242                    /home/madunlap/.m2/repository/concurrent/concurrent/1.3.4/concurrent-1.3.4.jar
+7ff978009000-7ff978016000 r--s 00083000 08:01 3023059                    /home/madunlap/.m2/repository/commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.jar
+7ff978016000-7ff97801a000 r--s 00020000 08:01 3023046                    /home/madunlap/.m2/repository/commons-digester/commons-digester/1.8.1/commons-digester-1.8.1.jar
+7ff97801a000-7ff97801f000 r--s 00035000 08:01 2653574                    /home/madunlap/.m2/repository/commons-beanutils/commons-beanutils/1.9.2/commons-beanutils-1.9.2.jar
+7ff97801f000-7ff978023000 r--s 0002a000 08:01 3150239                    /home/madunlap/.m2/repository/commons-validator/commons-validator/1.6/commons-validator-1.6.jar
+7ff978023000-7ff978036000 r--s 000df000 08:01 804950                     /home/madunlap/.m2/repository/org/apache/commons/commons-math/2.2/commons-math-2.2.jar
+7ff978036000-7ff978038000 r--s 00003000 08:01 3150223                    /home/madunlap/.m2/repository/org/slf4j/jcl-over-slf4j/1.7.24/jcl-over-slf4j-1.7.24.jar
+7ff978038000-7ff978039000 r--s 00006000 08:01 3150235                    /home/madunlap/.m2/repository/org/noggit/noggit/0.8/noggit-0.8.jar
+7ff978039000-7ff97803f000 r--s 00071000 08:01 2653570                    /home/madunlap/.m2/repository/org/codehaus/woodstox/woodstox-core-asl/4.4.1/woodstox-core-asl-4.4.1.jar
+7ff97803f000-7ff978043000 r--s 00024000 08:01 1068759                    /home/madunlap/.m2/repository/org/codehaus/woodstox/stax2-api/3.1.4/stax2-api-3.1.4.jar
+7ff978043000-7ff978050000 r--s 000cc000 08:01 3150232                    /home/madunlap/.m2/repository/org/apache/zookeeper/zookeeper/3.4.11/zookeeper-3.4.11.jar
+7ff978050000-7ff978052000 r--s 00009000 08:01 3150230                    /home/madunlap/.m2/repository/org/apache/httpcomponents/httpmime/4.5.3/httpmime-4.5.3.jar
+7ff978052000-7ff978079000 r--s 001f6000 08:01 663612                     /home/madunlap/.m2/repository/org/apache/commons/commons-math3/3.6.1/commons-math3-3.6.1.jar
+7ff978079000-7ff978096000 r--s 0018d000 08:01 3152250                    /home/madunlap/.m2/repository/org/apache/solr/solr-solrj/7.3.1/solr-solrj-7.3.1.jar
+7ff978096000-7ff97809b000 r--s 00041000 08:01 3150227                    /home/madunlap/.m2/repository/commons-lang/commons-lang/2.6/commons-lang-2.6.jar
+7ff97809b000-7ff97809d000 r--s 0000d000 08:01 3150224                    /home/madunlap/.m2/repository/com/fasterxml/classmate/1.0.0/classmate-1.0.0.jar
+7ff97809d000-7ff97809f000 r--s 0000d000 08:01 3150222                    /home/madunlap/.m2/repository/org/jboss/logging/jboss-logging/3.1.1.GA/jboss-logging-3.1.1.GA.jar
+7ff97809f000-7ff9780a3000 r--s 0000c000 08:01 3150220                    /home/madunlap/.m2/repository/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final.jar
+7ff9780a3000-7ff9780b0000 r--s 00080000 08:01 3023055                    /home/madunlap/.m2/repository/org/hibernate/hibernate-validator/5.0.3.Final/hibernate-validator-5.0.3.Final.jar
+7ff9780b0000-7ff9780ba000 r--s 0006b000 08:01 3023053                    /home/madunlap/.m2/repository/org/omnifaces/omnifaces/1.7/omnifaces-1.7.jar
+7ff9780ba000-7ff9780c9000 r--s 000c4000 08:01 3023051                    /home/madunlap/.m2/repository/org/atmosphere/atmosphere-runtime/2.4.2/atmosphere-runtime-2.4.2.jar
+7ff9780c9000-7ff9780dd000 r--s 0013a000 08:01 3023068                    /home/madunlap/.m2/repository/org/primefaces/themes/all-themes/1.0.10/all-themes-1.0.10.jar
+7ff9780dd000-7ff97810c000 r--s 003e4000 08:01 3023049                    /home/madunlap/.m2/repository/org/primefaces/primefaces/6.2/primefaces-6.2.jar
+7ff97810c000-7ff97812e000 r--s 00120000 08:01 3023047                    /home/madunlap/.m2/repository/javax/javaee-web-api/7.0/javaee-web-api-7.0.jar
+7ff97812e000-7ff978136000 r--s 00078000 08:01 3023045                    /home/madunlap/.m2/repository/com/sun/mail/javax.mail/1.5.0/javax.mail-1.5.0.jar
+7ff978136000-7ff97816a000 r--s 001a4000 08:01 804898                     /home/madunlap/.m2/repository/javax/javaee-api/7.0/javaee-api-7.0.jar
+7ff97816a000-7ff978195000 r--s 001f5000 08:01 3023043                    /home/madunlap/.m2/repository/com/google/guava/guava/16.0.1/guava-16.0.1.jar
+7ff978195000-7ff9781a1000 r--s 00071000 08:01 664355                     /home/madunlap/.m2/repository/org/flywaydb/flyway-core/5.2.4/flyway-core-5.2.4.jar
+7ff9781a1000-7ff9781a3000 r--s 0000c000 08:01 1068800                    /home/madunlap/.m2/repository/org/json/json/20160810/json-20160810.jar
+7ff9781a3000-7ff9781c1000 r--s 0027d000 08:01 1068795                    /home/madunlap/.m2/repository/xalan/xalan/2.7.0/xalan-2.7.0.jar
+7ff9781c1000-7ff9781d8000 r--s 00110000 08:01 1068794                    /home/madunlap/.m2/repository/xerces/xercesImpl/2.8.0/xercesImpl-2.8.0.jar
+7ff9781d8000-7ff9781e0000 r--s 00028000 08:01 1068791                    /home/madunlap/.m2/repository/xml-apis/xml-apis/1.3.03/xml-apis-1.3.03.jar
+7ff9781e0000-7ff9781e7000 r--s 00046000 08:01 1068786                    /home/madunlap/.m2/repository/com/io7m/xom/xom/1.2.10/xom-1.2.10.jar
+7ff9781e7000-7ff9781ea000 r--s 0000e000 08:01 3150098                    /home/madunlap/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.9.0/jackson-annotations-2.9.0.jar
+7ff9781ea000-7ff978271000 rw-p 00000000 00:00 0 
+7ff978271000-7ff97867d000 r--s 03c80000 08:01 1068724                    /home/madunlap/.m2/repository/com/amazonaws/aws-java-sdk-bundle/1.11.172/aws-java-sdk-bundle-1.11.172.jar
+7ff97867d000-7ff978680000 ---p 00000000 00:00 0 
+7ff978680000-7ff97877e000 rw-p 00000000 00:00 0 
+7ff97877e000-7ff978a59000 r--p 00000000 08:01 1441812                    /usr/lib/locale/locale-archive
+7ff978a59000-7ff978a5c000 ---p 00000000 00:00 0 
+7ff978a5c000-7ff978b5a000 rw-p 00000000 00:00 0 
+7ff978b5a000-7ff978b5d000 ---p 00000000 00:00 0 
+7ff978b5d000-7ff978c5b000 rw-p 00000000 00:00 0 
+7ff978c5b000-7ff978c5c000 ---p 00000000 00:00 0 
+7ff978c5c000-7ff97c000000 rw-p 00000000 00:00 0 
+7ff97c000000-7ff97c021000 rw-p 00000000 00:00 0 
+7ff97c021000-7ff980000000 ---p 00000000 00:00 0 
+7ff980000000-7ff980002000 r--s 00017000 08:01 1068799                    /home/madunlap/.m2/repository/org/everit/json/org.everit.json.schema/1.5.1/org.everit.json.schema-1.5.1.jar
+7ff980002000-7ff980015000 r--s 00137000 08:01 3288115                    /home/madunlap/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.9.6/jackson-databind-2.9.6.jar
+7ff980015000-7ff98001a000 r--s 0004b000 08:01 3151775                    /home/madunlap/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.9.6/jackson-core-2.9.6.jar
+7ff98001a000-7ff98001f000 r--s 0002a000 08:01 1068784                    /home/madunlap/.m2/repository/com/google/code/gson/gson/2.2.4/gson-2.2.4.jar
+7ff98001f000-7ff980023000 r--s 00031000 08:01 1068782                    /home/madunlap/.m2/repository/commons-io/commons-io/2.6/commons-io-2.6.jar
+7ff980023000-7ff980026000 r--s 0000f000 08:01 1068780                    /home/madunlap/.m2/repository/commons-fileupload/commons-fileupload/1.3.3/commons-fileupload-1.3.3.jar
+7ff980026000-7ff98002c000 r--s 00032000 08:01 1068779                    /home/madunlap/.m2/repository/jaxen/jaxen/1.1.1/jaxen-1.1.1.jar
+7ff98002c000-7ff980033000 r--s 00079000 08:01 1068768                    /home/madunlap/.m2/repository/org/codehaus/woodstox/wstx-asl/3.2.6/wstx-asl-3.2.6.jar
+7ff980033000-7ff980037000 r--s 00026000 08:01 1068767                    /home/madunlap/.m2/repository/org/apache/ws/commons/axiom/axiom-impl/1.2.14/axiom-impl-1.2.14.jar
+7ff980037000-7ff98003c000 r--s 00032000 08:01 1068762                    /home/madunlap/.m2/repository/org/apache/geronimo/specs/geronimo-javamail_1.4_spec/1.7.1/geronimo-javamail_1.4_spec-1.7.1.jar
+7ff98003c000-7ff980046000 r--s 0005d000 08:01 1068761                    /home/madunlap/.m2/repository/org/apache/ws/commons/axiom/axiom-api/1.2.14/axiom-api-1.2.14.jar
+7ff980046000-7ff980049000 r--s 0014e000 08:01 1068747                    /home/madunlap/.m2/repository/org/apache/abdera/abdera-parser/1.1.3/abdera-parser-1.1.3.jar
+7ff980049000-7ff98004b000 r--s 00006000 08:01 663559                     /home/madunlap/.m2/repository/org/apache/geronimo/specs/geronimo-stax-api_1.0_spec/1.0.1/geronimo-stax-api_1.0_spec-1.0.1.jar
+7ff98004b000-7ff98004d000 r--s 0000a000 08:01 1068741                    /home/madunlap/.m2/repository/org/apache/geronimo/specs/geronimo-activation_1.1_spec/1.1/geronimo-activation_1.1_spec-1.1.jar
+7ff98004d000-7ff980051000 r--s 00094000 08:01 1068734                    /home/madunlap/.m2/repository/org/apache/abdera/abdera-i18n/1.1.3/abdera-i18n-1.1.3.jar
+7ff980051000-7ff980055000 r--s 00024000 08:01 1068719                    /home/madunlap/.m2/repository/org/apache/abdera/abdera-core/1.1.3/abdera-core-1.1.3.jar
+7ff980055000-7ff98005b000 r--s 00019000 08:01 1068722                    /home/madunlap/.m2/repository/xerces/xmlParserAPIs/2.6.2/xmlParserAPIs-2.6.2.jar
+7ff98005b000-7ff980062000 r--s 00063000 08:01 1068718                    /home/madunlap/.m2/repository/xom/xom/1.1/xom-1.1.jar
+7ff980062000-7ff98007b000 r--s 002fd000 08:01 1068717                    /home/madunlap/.m2/repository/com/ibm/icu/icu4j/3.4.4/icu4j-3.4.4.jar
+7ff98007b000-7ff98007e000 r--s 00023000 08:01 1068715                    /home/madunlap/.m2/repository/com/hp/hpl/jena/iri/0.8/iri-0.8.jar
+7ff98007e000-7ff9800a1000 r--s 001ae000 08:01 1068712                    /home/madunlap/.m2/repository/com/hp/hpl/jena/jena/2.6.4/jena-2.6.4.jar
+7ff9800a1000-7ff9800a7000 r--s 00045000 08:01 1068710                    /home/madunlap/.m2/repository/commons-httpclient/commons-httpclient/3.1/commons-httpclient-3.1.jar
+7ff9800a7000-7ff9800a9000 r--s 0000d000 08:01 663609                     /home/madunlap/.m2/repository/org/apache/abdera/abdera-client/1.1.1/abdera-client-1.1.1.jar
+7ff9800a9000-7ff9800ac000 r--s 0000f000 08:01 663604                     /home/madunlap/.m2/repository/org/swordapp/sword2-server/1.0/sword2-server-1.0-classes.jar
+7ff9800ac000-7ff9805b1000 rw-p 00000000 00:00 0 
+7ff9805b1000-7ff98078a000 r--s 03d5a000 08:01 2233137                    /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar
+7ff98078a000-7ff981000000 rw-p 00000000 00:00 0 
+7ff981000000-7ff981be0000 rwxp 00000000 00:00 0 
+7ff981be0000-7ff990000000 ---p 00000000 00:00 0 
+7ff990000000-7ff991a30000 rw-p 00000000 00:00 0 
+7ff991a30000-7ff994000000 ---p 00000000 00:00 0 
+7ff994000000-7ff994002000 r--s 00016000 08:01 663605                     /home/madunlap/.m2/repository/javax/servlet/servlet-api/2.4/servlet-api-2.4.jar
+7ff994002000-7ff994009000 r--s 00049000 08:01 663603                     /home/madunlap/.m2/repository/org/apache/httpcomponents/httpcore/4.4.9/httpcore-4.4.9.jar
+7ff994009000-7ff99400b000 r--s 0000e000 08:01 663602                     /home/madunlap/.m2/repository/commons-logging/commons-logging/1.2/commons-logging-1.2.jar
+7ff99400b000-7ff994019000 r--s 000ae000 08:01 663552                     /home/madunlap/.m2/repository/org/apache/httpcomponents/httpclient/4.5.5/httpclient-4.5.5.jar
+7ff994019000-7ff99401c000 r--s 00012000 08:01 663585                     /home/madunlap/.m2/repository/org/glassfish/javax.json/1.0.4/javax.json-1.0.4.jar
+7ff99401c000-7ff99401f000 r--s 0000d000 08:01 663584                     /home/madunlap/.m2/repository/org/junit/vintage/junit-vintage-engine/5.3.1/junit-vintage-engine-5.3.1.jar
+7ff99401f000-7ff99402b000 r--s 0006f000 08:01 664364                     /home/madunlap/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.3.1/junit-jupiter-params-5.3.1.jar
+7ff99402b000-7ff99402f000 r--s 0001d000 08:01 663583                     /home/madunlap/.m2/repository/org/junit/platform/junit-platform-engine/1.3.1/junit-platform-engine-1.3.1.jar
+7ff99402f000-7ff994033000 r--s 00021000 08:01 663579                     /home/madunlap/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.3.1/junit-jupiter-engine-5.3.1.jar
+7ff994033000-7ff99431d000 rw-p 00000000 00:00 0 
+7ff99431d000-7ff99431e000 ---p 00000000 00:00 0 
+7ff99431e000-7ff99441e000 rw-p 00000000 00:00 0 
+7ff99441e000-7ff99441f000 ---p 00000000 00:00 0 
+7ff99441f000-7ff994534000 rw-p 00000000 00:00 0 
+7ff994534000-7ff994711000 ---p 00000000 00:00 0 
+7ff994711000-7ff994726000 rw-p 00000000 00:00 0 
+7ff994726000-7ff994902000 ---p 00000000 00:00 0 
+7ff994902000-7ff994957000 rw-p 00000000 00:00 0 
+7ff994957000-7ff9949fb000 ---p 00000000 00:00 0 
+7ff9949fb000-7ff994a2c000 rw-p 00000000 00:00 0 
+7ff994a2c000-7ff994dbc000 ---p 00000000 00:00 0 
+7ff994dbc000-7ff994dd7000 r-xp 00000000 08:01 2233347                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libzip.so
+7ff994dd7000-7ff994fd7000 ---p 0001b000 08:01 2233347                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libzip.so
+7ff994fd7000-7ff994fd8000 rw-p 0001b000 08:01 2233347                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libzip.so
+7ff994fd8000-7ff994fe3000 r-xp 00000000 08:01 663303                     /lib/x86_64-linux-gnu/libnss_files-2.24.so
+7ff994fe3000-7ff9951e2000 ---p 0000b000 08:01 663303                     /lib/x86_64-linux-gnu/libnss_files-2.24.so
+7ff9951e2000-7ff9951e3000 r--p 0000a000 08:01 663303                     /lib/x86_64-linux-gnu/libnss_files-2.24.so
+7ff9951e3000-7ff9951e4000 rw-p 0000b000 08:01 663303                     /lib/x86_64-linux-gnu/libnss_files-2.24.so
+7ff9951e4000-7ff9951ea000 rw-p 00000000 00:00 0 
+7ff9951ea000-7ff9951f5000 r-xp 00000000 08:01 663305                     /lib/x86_64-linux-gnu/libnss_nis-2.24.so
+7ff9951f5000-7ff9953f4000 ---p 0000b000 08:01 663305                     /lib/x86_64-linux-gnu/libnss_nis-2.24.so
+7ff9953f4000-7ff9953f5000 r--p 0000a000 08:01 663305                     /lib/x86_64-linux-gnu/libnss_nis-2.24.so
+7ff9953f5000-7ff9953f6000 rw-p 0000b000 08:01 663305                     /lib/x86_64-linux-gnu/libnss_nis-2.24.so
+7ff9953f6000-7ff99540c000 r-xp 00000000 08:01 663300                     /lib/x86_64-linux-gnu/libnsl-2.24.so
+7ff99540c000-7ff99560b000 ---p 00016000 08:01 663300                     /lib/x86_64-linux-gnu/libnsl-2.24.so
+7ff99560b000-7ff99560c000 r--p 00015000 08:01 663300                     /lib/x86_64-linux-gnu/libnsl-2.24.so
+7ff99560c000-7ff99560d000 rw-p 00016000 08:01 663300                     /lib/x86_64-linux-gnu/libnsl-2.24.so
+7ff99560d000-7ff99560f000 rw-p 00000000 00:00 0 
+7ff99560f000-7ff995617000 r-xp 00000000 08:01 663301                     /lib/x86_64-linux-gnu/libnss_compat-2.24.so
+7ff995617000-7ff995816000 ---p 00008000 08:01 663301                     /lib/x86_64-linux-gnu/libnss_compat-2.24.so
+7ff995816000-7ff995817000 r--p 00007000 08:01 663301                     /lib/x86_64-linux-gnu/libnss_compat-2.24.so
+7ff995817000-7ff995818000 rw-p 00008000 08:01 663301                     /lib/x86_64-linux-gnu/libnss_compat-2.24.so
+7ff995818000-7ff995822000 r-xp 00000000 08:01 2233356                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libinstrument.so
+7ff995822000-7ff995a21000 ---p 0000a000 08:01 2233356                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libinstrument.so
+7ff995a21000-7ff995a22000 rw-p 00009000 08:01 2233356                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libinstrument.so
+7ff995a22000-7ff995a4d000 r-xp 00000000 08:01 2233341                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libjava.so
+7ff995a4d000-7ff995c4c000 ---p 0002b000 08:01 2233341                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libjava.so
+7ff995c4c000-7ff995c4e000 rw-p 0002a000 08:01 2233341                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libjava.so
+7ff995c4e000-7ff995c5b000 r-xp 00000000 08:01 2233346                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libverify.so
+7ff995c5b000-7ff995e5b000 ---p 0000d000 08:01 2233346                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libverify.so
+7ff995e5b000-7ff995e5d000 rw-p 0000d000 08:01 2233346                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/libverify.so
+7ff995e5d000-7ff995e64000 r-xp 00000000 08:01 663310                     /lib/x86_64-linux-gnu/librt-2.24.so
+7ff995e64000-7ff996063000 ---p 00007000 08:01 663310                     /lib/x86_64-linux-gnu/librt-2.24.so
+7ff996063000-7ff996064000 r--p 00006000 08:01 663310                     /lib/x86_64-linux-gnu/librt-2.24.so
+7ff996064000-7ff996065000 rw-p 00007000 08:01 663310                     /lib/x86_64-linux-gnu/librt-2.24.so
+7ff996065000-7ff99616d000 r-xp 00000000 08:01 663297                     /lib/x86_64-linux-gnu/libm-2.24.so
+7ff99616d000-7ff99636c000 ---p 00108000 08:01 663297                     /lib/x86_64-linux-gnu/libm-2.24.so
+7ff99636c000-7ff99636d000 r--p 00107000 08:01 663297                     /lib/x86_64-linux-gnu/libm-2.24.so
+7ff99636d000-7ff99636e000 rw-p 00108000 08:01 663297                     /lib/x86_64-linux-gnu/libm-2.24.so
+7ff99636e000-7ff997041000 r-xp 00000000 08:01 2233324                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/server/libjvm.so
+7ff997041000-7ff997240000 ---p 00cd3000 08:01 2233324                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/server/libjvm.so
+7ff997240000-7ff99731a000 rw-p 00cd2000 08:01 2233324                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/server/libjvm.so
+7ff99731a000-7ff997365000 rw-p 00000000 00:00 0 
+7ff997365000-7ff997523000 r-xp 00000000 08:01 663293                     /lib/x86_64-linux-gnu/libc-2.24.so
+7ff997523000-7ff997722000 ---p 001be000 08:01 663293                     /lib/x86_64-linux-gnu/libc-2.24.so
+7ff997722000-7ff997726000 r--p 001bd000 08:01 663293                     /lib/x86_64-linux-gnu/libc-2.24.so
+7ff997726000-7ff997728000 rw-p 001c1000 08:01 663293                     /lib/x86_64-linux-gnu/libc-2.24.so
+7ff997728000-7ff99772c000 rw-p 00000000 00:00 0 
+7ff99772c000-7ff99772f000 r-xp 00000000 08:01 663296                     /lib/x86_64-linux-gnu/libdl-2.24.so
+7ff99772f000-7ff99792e000 ---p 00003000 08:01 663296                     /lib/x86_64-linux-gnu/libdl-2.24.so
+7ff99792e000-7ff99792f000 r--p 00002000 08:01 663296                     /lib/x86_64-linux-gnu/libdl-2.24.so
+7ff99792f000-7ff997930000 rw-p 00003000 08:01 663296                     /lib/x86_64-linux-gnu/libdl-2.24.so
+7ff997930000-7ff997946000 r-xp 00000000 08:01 2233319                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/jli/libjli.so
+7ff997946000-7ff997b45000 ---p 00016000 08:01 2233319                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/jli/libjli.so
+7ff997b45000-7ff997b46000 rw-p 00015000 08:01 2233319                    /usr/lib/jvm/java-8-oracle/jre/lib/amd64/jli/libjli.so
+7ff997b46000-7ff997b5e000 r-xp 00000000 08:01 663308                     /lib/x86_64-linux-gnu/libpthread-2.24.so
+7ff997b5e000-7ff997d5e000 ---p 00018000 08:01 663308                     /lib/x86_64-linux-gnu/libpthread-2.24.so
+7ff997d5e000-7ff997d5f000 r--p 00018000 08:01 663308                     /lib/x86_64-linux-gnu/libpthread-2.24.so
+7ff997d5f000-7ff997d60000 rw-p 00019000 08:01 663308                     /lib/x86_64-linux-gnu/libpthread-2.24.so
+7ff997d60000-7ff997d64000 rw-p 00000000 00:00 0 
+7ff997d64000-7ff997d8a000 r-xp 00000000 08:01 663288                     /lib/x86_64-linux-gnu/ld-2.24.so
+7ff997d8a000-7ff997d8b000 r--s 00004000 08:01 3023041                    /home/madunlap/.m2/repository/org/mindrot/jbcrypt/0.3m/jbcrypt-0.3m.jar
+7ff997d8b000-7ff997d8d000 r--s 00009000 08:01 663573                     /home/madunlap/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar
+7ff997d8d000-7ff997d95000 r--s 00045000 08:01 663572                     /home/madunlap/.m2/repository/junit/junit/4.12/junit-4.12.jar
+7ff997d95000-7ff997d98000 r--s 00011000 08:01 663570                     /home/madunlap/.m2/repository/org/junit/platform/junit-platform-commons/1.3.1/junit-platform-commons-1.3.1.jar
+7ff997d98000-7ff997d99000 r--s 00001000 08:01 663564                     /home/madunlap/.m2/repository/org/opentest4j/opentest4j/1.1.1/opentest4j-1.1.1.jar
+7ff997d99000-7ff997d9d000 r--s 00019000 08:01 663558                     /home/madunlap/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.3.1/junit-jupiter-api-5.3.1.jar
+7ff997d9d000-7ff997da1000 r--s 00021000 08:01 663550                     /home/madunlap/.m2/repository/org/cryptacular/cryptacular/1.1.0/cryptacular-1.1.0.jar
+7ff997da1000-7ff997da4000 r--s 00011000 08:01 663547                     /home/madunlap/.m2/repository/org/passay/passay/1.1.0/passay-1.1.0.jar
+7ff997da4000-7ff997da6000 r--s 00002000 08:01 808142                     /home/madunlap/.m2/repository/org/apache/maven/surefire/surefire-logger-api/2.22.0/surefire-logger-api-2.22.0.jar
+7ff997da6000-7ff997dab000 r--s 00029000 08:01 808026                     /home/madunlap/.m2/repository/org/apache/maven/surefire/surefire-api/2.22.0/surefire-api-2.22.0.jar
+7ff997dab000-7ff997daf000 r--s 0003f000 08:01 926824                     /home/madunlap/.m2/repository/org/apache/maven/surefire/surefire-booter/2.22.0/surefire-booter-2.22.0.jar
+7ff997daf000-7ff997e59000 rw-p 00000000 00:00 0 
+7ff997e59000-7ff997e5c000 ---p 00000000 00:00 0 
+7ff997e5c000-7ff997f5c000 rw-p 00000000 00:00 0 
+7ff997f5c000-7ff997f5d000 r--s 00000000 08:01 663561                     /home/madunlap/.m2/repository/org/apiguardian/apiguardian-api/1.0.0/apiguardian-api-1.0.0.jar
+7ff997f5d000-7ff997f5e000 r--s 00006000 08:01 1190175                    /home/madunlap/Documents/github/dataverse/target/surefire/surefirebooter3496679110369253912.jar
+7ff997f5e000-7ff997f7c000 rw-p 00000000 00:00 0 
+7ff997f7c000-7ff997f84000 rw-s 00000000 08:01 1324026                    /tmp/hsperfdata_madunlap/5635
+7ff997f84000-7ff997f85000 rw-p 00000000 00:00 0 
+7ff997f85000-7ff997f86000 ---p 00000000 00:00 0 
+7ff997f86000-7ff997f89000 rw-p 00000000 00:00 0 
+7ff997f89000-7ff997f8a000 r--p 00025000 08:01 663288                     /lib/x86_64-linux-gnu/ld-2.24.so
+7ff997f8a000-7ff997f8b000 rw-p 00026000 08:01 663288                     /lib/x86_64-linux-gnu/ld-2.24.so
+7ff997f8b000-7ff997f8c000 rw-p 00000000 00:00 0 
+7ffeb47e8000-7ffeb4809000 rw-p 00000000 00:00 0                          [stack]
+7ffeb48ba000-7ffeb48bc000 r--p 00000000 00:00 0                          [vvar]
+7ffeb48bc000-7ffeb48be000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+
+VM Arguments:
+jvm_args: -javaagent:/home/madunlap/.m2/repository/org/jacoco/org.jacoco.agent/0.8.1/org.jacoco.agent-0.8.1-runtime.jar=destfile=/home/madunlap/Documents/github/dataverse/target/jacoco.exec -Duser.timezone=UTC -Dfile.encoding=UTF-8 -Duser.language=en -Duser.region=US 
+java_command: /home/madunlap/Documents/github/dataverse/target/surefire/surefirebooter3496679110369253912.jar /home/madunlap/Documents/github/dataverse/target/surefire 2019-04-01T14-52-26_917-jvmRun1 surefire3179484902844806848tmp surefire_04996113808884622120tmp
+java_class_path (initial): /home/madunlap/Documents/github/dataverse/target/surefire/surefirebooter3496679110369253912.jar:/home/madunlap/.m2/repository/org/jacoco/org.jacoco.agent/0.8.1/org.jacoco.agent-0.8.1-runtime.jar
+Launcher Type: SUN_STANDARD
+
+Environment Variables:
+JAVA_HOME=/usr/lib/jvm/java-8-oracle
+PATH=/home/madunlap/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/lib/jvm/java-8-oracle/bin:/usr/lib/jvm/java-8-oracle/db/bin:/usr/lib/jvm/java-8-oracle/jre/bin
+LD_LIBRARY_PATH=/usr/lib/jvm/java-8-oracle/jre/lib/amd64:/usr/lib/jvm/java-8-oracle/jre/lib/i386:
+SHELL=/bin/bash
+DISPLAY=:0
+
+Signal Handlers:
+SIGSEGV: [libjvm.so+0xacbe10], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGBUS: [libjvm.so+0xacbe10], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGFPE: [libjvm.so+0x924f90], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGPIPE: [libjvm.so+0x924f90], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGXFSZ: [libjvm.so+0x924f90], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGILL: [libjvm.so+0x924f90], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGUSR1: SIG_DFL, sa_mask[0]=00000000000000000000000000000000, sa_flags=none
+SIGUSR2: [libjvm.so+0x9267d0], sa_mask[0]=00100000000000000000000000000000, sa_flags=SA_RESTART|SA_SIGINFO
+SIGHUP: [libjvm.so+0x927bd0], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGINT: SIG_IGN, sa_mask[0]=00000000000000000000000000000000, sa_flags=none
+SIGTERM: [libjvm.so+0x927bd0], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGQUIT: [libjvm.so+0x927bd0], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+
+
+---------------  S Y S T E M  ---------------
+
+OS:DISTRIB_ID=Ubuntu
+DISTRIB_RELEASE=17.04
+DISTRIB_CODENAME=zesty
+DISTRIB_DESCRIPTION="Ubuntu 17.04"
+
+uname:Linux 4.10.0-42-generic #46-Ubuntu SMP Mon Dec 4 14:38:01 UTC 2017 x86_64
+libc:glibc 2.24 NPTL 2.24 
+rlimit: STACK 8192k, CORE 0k, NPROC 23666, NOFILE 1048576, AS infinity
+load average:4.97 2.67 2.02
+
+/proc/meminfo:
+MemTotal:        6104256 kB
+MemFree:          120560 kB
+MemAvailable:      34460 kB
+Buffers:            1204 kB
+Cached:            70444 kB
+SwapCached:          672 kB
+Active:          5235668 kB
+Inactive:         496028 kB
+Active(anon):    5216016 kB
+Inactive(anon):   476424 kB
+Active(file):      19652 kB
+Inactive(file):    19604 kB
+Unevictable:          32 kB
+Mlocked:              32 kB
+SwapTotal:       2097148 kB
+SwapFree:              0 kB
+Dirty:               200 kB
+Writeback:           444 kB
+AnonPages:       5659940 kB
+Mapped:            32688 kB
+Shmem:             32176 kB
+Slab:             102536 kB
+SReclaimable:      48368 kB
+SUnreclaim:        54168 kB
+KernelStack:       16584 kB
+PageTables:        85496 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:     5149276 kB
+Committed_AS:   13254384 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:           0 kB
+VmallocChunk:          0 kB
+HardwareCorrupted:     0 kB
+AnonHugePages:   2772992 kB
+ShmemHugePages:        0 kB
+ShmemPmdMapped:        0 kB
+CmaTotal:              0 kB
+CmaFree:               0 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+DirectMap4k:      192432 kB
+DirectMap2M:     6098944 kB
+
+
+CPU:total 2 (initial active 2) (2 cores per cpu, 1 threads per core) family 6 model 70 stepping 1, cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3, sse4.1, sse4.2, popcnt, avx, avx2, aes, clmul, erms, lzcnt, tsc, tscinvbit, bmi1, bmi2
+
+/proc/cpuinfo:
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 70
+model name	: Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz
+stepping	: 1
+microcode	: 0x19
+cpu MHz		: 2494.226
+cache size	: 6144 KB
+physical id	: 0
+siblings	: 2
+core id		: 0
+cpu cores	: 2
+apicid		: 0
+initial apicid	: 0
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx rdtscp lm constant_tsc nopl xtopology nonstop_tsc pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm fsgsbase tsc_adjust bmi1 avx2 smep bmi2 invpcid xsaveopt dtherm arat pln pts
+bugs		:
+bogomips	: 4988.45
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+processor	: 1
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 70
+model name	: Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz
+stepping	: 1
+microcode	: 0x19
+cpu MHz		: 2494.226
+cache size	: 6144 KB
+physical id	: 0
+siblings	: 2
+core id		: 1
+cpu cores	: 2
+apicid		: 1
+initial apicid	: 1
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx rdtscp lm constant_tsc nopl xtopology nonstop_tsc pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm fsgsbase tsc_adjust bmi1 avx2 smep bmi2 invpcid xsaveopt dtherm arat pln pts
+bugs		:
+bogomips	: 4988.45
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+
+
+Memory: 4k page, physical 6104256k(120188k free), swap 2097148k(0k free)
+
+vm_info: Java HotSpot(TM) 64-Bit Server VM (25.151-b12) for linux-amd64 JRE (1.8.0_151-b12), built on Sep  5 2017 19:20:58 by "java_re" with gcc 4.3.0 20080428 (Red Hat 4.3.0-8)
+
+time: Mon Apr  1 14:52:41 2019
+elapsed time: 13 seconds (0d 0h 0m 13s)
+
