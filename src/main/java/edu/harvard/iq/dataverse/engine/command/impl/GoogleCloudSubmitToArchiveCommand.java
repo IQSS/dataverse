@@ -55,7 +55,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
 
     @Override
     public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token, Map<String, String> requestedSettings) {
-
+        logger.info("In GoogleCloudSubmitToArchiveCommand...");
         String bucketName = requestedSettings.get(GOOGLECLOUD_BUCKET);
         String projectName = requestedSettings.get(GOOGLECLOUD_PROJECT);
         if (bucketName != null && projectName != null) {
@@ -176,9 +176,10 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
+            logger.info("Successfully leaving GCSTAC");
             return WorkflowStepResult.OK;
         } else {
-            return new Failure("DuraCloud Submission not configured - no \":DuraCloudHost\".");
+            return new Failure("GoogleCloud Submission not configured - no \":GoogleCloudBucket\"  and/or \":GoogleCloudProject\".");
         }
     }
 
