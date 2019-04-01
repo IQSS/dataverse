@@ -700,83 +700,6 @@ A curl example using an ``id``::
 A curl example using a ``pid``::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/files/:persistentId/restrict?persistentId={pid}
-
-Replacing Files
-~~~~~~~~~~~~~~~
-
-Replace an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Note that metadata such as description and tags are not carried over from the file being replaced
-
-.. code-block:: bash
-
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' \
-  -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}'\
-  "https://demo.dataverse.org/api/files/$FILE_ID/replace"
-
-Example python code to replace a file.  This may be run by changing these parameters in the sample code:
-
-* ``dataverse_server`` - e.g. https://demo.dataverse.org
-* ``api_key`` - See the top of this document for a description
-* ``file_id`` - Database id of the file to replace (returned in the GET API for a Dataset)
-
-.. code-block:: python
-
-    from datetime import datetime
-    import json
-    import requests  # http://docs.python-requests.org/en/master/
-
-    # --------------------------------------------------
-    # Update params below to run code
-    # --------------------------------------------------
-    dataverse_server = 'http://127.0.0.1:8080' # no trailing slash
-    api_key = 'some key'
-    file_id = 1401  # id of the file to replace
-
-    # --------------------------------------------------
-    # Prepare replacement "file"
-    # --------------------------------------------------
-    file_content = 'content: %s' % datetime.now()
-    files = {'file': ('replacement_file.txt', file_content)}
-
-    # --------------------------------------------------
-    # Using a "jsonData" parameter, add optional description + file tags
-    # --------------------------------------------------
-    params = dict(description='Sunset',
-                categories=['One', 'More', 'Cup of Coffee'])
-
-    # -------------------
-    # IMPORTANT: If the mimetype of the replacement file differs
-    #   from the origina file, the replace will fail
-    #
-    #  e.g. if you try to replace a ".csv" with a ".png" or something similar
-    #
-    #  You can override this with a "forceReplace" parameter
-    # -------------------
-    params['forceReplace'] = True
-
-
-    params_as_json_string = json.dumps(params)
-
-    payload = dict(jsonData=params_as_json_string)
-
-    print 'payload', payload
-    # --------------------------------------------------
-    # Replace file using the id of the file to replace
-    # --------------------------------------------------
-    url_replace = '%s/api/v1/files/%s/replace?key=%s' % (dataverse_server, file_id, api_key)
-
-    # -------------------
-    # Make the request
-    # -------------------
-    print '-' * 40
-    print 'making request: %s' % url_replace
-    r = requests.post(url_replace, data=payload, files=files)
-
-    # -------------------
-    # Print the response
-    # -------------------
-    print '-' * 40
-    print r.json()
-    print r.status_code
     
 Uningest a File
 ~~~~~~~~~~~~~~~
@@ -798,6 +721,43 @@ Note that this requires "super user" credentials::
 (``{id}`` is the database id of the file to process)
 
 Also, note that, at present the API cannot be used on a file that's already ingested as tabular.
+
+Replacing Files
+~~~~~~~~~~~~~~~
+
+Replace an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Requires the ``file`` to be passed as well as a ``jsonString`` expressing the new metadata.  Note that metadata such as description and tags are not carried over from the file being replaced::
+
+    POST -F 'file=@file.extension' -F 'jsonData={json}' http://$SERVER/api/files/{id}/metadata?key={apiKey}
+
+Example::
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' \
+  -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}'\
+  "https://demo.dataverse.org/api/files/$FILE_ID/replace"
+
+Getting File Metadata
+~~~~~~~~~~~~~~~~~~~~~
+
+Provides a json representation of the file metadata for an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file::
+
+    GET http://$SERVER/api/files/{id}/metadata
+
+The current draft can also be viewed if you have permissions and pass your ``apiKey``::
+
+    GET http://$SERVER/api/files/{id}/metadata/draft?key={apiKey}
+
+Updating File Metadata
+~~~~~~~~~~~~~~~~~~~~~~
+
+Updates the file metadata for an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Requires a ``jsonString`` expressing the new metadata. No metadata from the previous version of this file will be persisted, so if you want to update a specific field first get the json with the above command and alter the fields you want::
+
+    POST -F 'jsonData={json}' http://$SERVER/api/files/{id}/metadata?key={apiKey}
+
+Example::
+
+    curl -H "X-Dataverse-key:a942187f-caf4-4c08-915b-168196800d1f" -X POST -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"restrict":false}' 'http://localhost:8080/api/files/264/metadata'
+
+Also note that dataFileTags are not versioned and changes to these will update the published version of the file.
 
 Provenance
 ~~~~~~~~~~

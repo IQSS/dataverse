@@ -1167,26 +1167,12 @@ public class FilesIT {
         createDatasetResponse.prettyPrint();
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
         
-        // -------------------------
         // Add initial file
-        // -------------------------
-        //String pathToFile = "scripts/search/data/replace_test/003.txt";
         String pathToFile = "scripts/search/data/dv-birds1.tsv";
-        
         String description = "A description.";
         String category = "A category";
         String provFreeForm = "provenance is great";
-        //String dataFileTag = "Event"; //you can't set dataFileTags on create. Seems like something that should be fixed, but not in this work
-
-        
-        //We want to take in what we spit out: {"label":"dv-birds1.tab","description":"New description.","restricted":false,"categories":[{"name":"New category"}],"id":260}
-        
-        //String jsonString = "{\"description\":\""+description+"\",\"categories\":[\""+category+"\"],\"forceReplace\":false}";
-        
-        //There are two different ways categories can be passed, either with/without "name".
-        //Here tests the verbose way, later is the shortened syntax.[\""+updateDataFileTag+"\"]
         String jsonString = "{\"description\":\""+description+"\",\"provFreeForm\":\""+provFreeForm+"\",\"categories\":[{\"name\":\""+category+"\"}],\"forceReplace\":false}";
-        
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, jsonString, apiToken);
         Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
         
@@ -1217,7 +1203,7 @@ public class FilesIT {
         String updateDescription = "New description.";
         String updateCategory = "New category";
         String updateDataFileTag = "Survey";
-        //junk passed below to test that it is discarded
+        //"junk" passed below is to test that it is discarded
         String updateJsonString = "{\"description\":\""+updateDescription+"\",\"categories\":[\""+updateCategory+"\"],\"dataFileTags\":[\""+updateDataFileTag+"\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
         Response updateMetadataResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateJsonString, apiToken);
         assertEquals(200, updateMetadataResponse.getStatusCode());  
