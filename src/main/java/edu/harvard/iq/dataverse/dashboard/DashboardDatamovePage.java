@@ -147,7 +147,7 @@ public class DashboardDatamovePage implements java.io.Serializable {
                 BundleUtil.getStringFromBundle("dashboard.card.datamove.message")));
         return null;
     }
-
+    
     public void move(){
         // copied logic from Datasets API move
         Dataset ds = datasetService.findByGlobalId(dsPersistentId);
@@ -166,9 +166,9 @@ public class DashboardDatamovePage implements java.io.Serializable {
 
         // construct arguments for message
         List<String> arguments = new ArrayList<>();
-        arguments.add(ds.getDisplayName());
-        arguments.add(dsPersistentId);
-        arguments.add(target.getName());
+        arguments.add(ds!=null?ds.getDisplayName():"-");
+        arguments.add(dsPersistentId!=null?dsPersistentId:"-");
+        arguments.add(target!=null?target.getName():"-");
 
         //Command requires Super user - it will be tested by the command
         try {

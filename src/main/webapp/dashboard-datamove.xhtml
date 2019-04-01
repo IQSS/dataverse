@@ -84,7 +84,10 @@
                     <div class="col-sm-12 button-block">
                         <p:commandLink id="move" styleClass="btn btn-default" 
                                        value="#{bundle['saveChanges']}"
-                                       oncomplete="PF('datamoveConfirmation').show();">
+                                       oncomplete="if (args &amp;&amp; !args.validationFailed) PF('datamoveConfirmation').show();">
+                            <!-- if (args &amp;&amp; !args.validationFailed) 
+                             prevents the confirm dialog to pop up (client side) if validation fails, 
+                             but we don't get validation messages, just nothing is not helpful for the user -->
                             <f:param name="DO_DATAMOVE_VALIDATION" value="true"/>
                         </p:commandLink>
                         <p:button styleClass="btn btn-default" outcome="dashboard" value="#{bundle['cancel']}">
