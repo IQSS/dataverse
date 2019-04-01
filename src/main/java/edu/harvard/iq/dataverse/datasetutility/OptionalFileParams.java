@@ -53,8 +53,8 @@ public class OptionalFileParams {
     private List<String> dataFileTags;
     public static final String FILE_DATA_TAGS_ATTR_NAME = "dataFileTags";
     
-    private String provFreeform;
-    public static final String PROVENANCE_FREEFORM_ATTR_NAME = "provFreeform";
+    private String provFreeForm;
+    public static final String PROVENANCE_FREEFORM_ATTR_NAME = "provFreeForm";
     
     private boolean restrict = false;
     public static final String RESTRICT_ATTR_NAME = "restrict";
@@ -117,11 +117,11 @@ public class OptionalFileParams {
     }
     
     public String getProvFreeform() {
-        return provFreeform;
+        return provFreeForm;
     }
 
-    public void setProvFreeform(String provFreeform) {
-        this.provFreeform = provFreeform;
+    public void setProvFreeform(String provFreeForm) {
+        this.provFreeForm = provFreeForm;
     }
     
     
@@ -162,7 +162,7 @@ public class OptionalFileParams {
     }
     
     public boolean hasProvFreeform(){
-        if ((provFreeform == null)||(this.provFreeform.isEmpty())){
+        if ((provFreeForm == null)||(this.provFreeForm.isEmpty())){
             return false;
         }
         return true;
@@ -245,7 +245,7 @@ public class OptionalFileParams {
         // -------------------------------
         if ((jsonObj.has(PROVENANCE_FREEFORM_ATTR_NAME)) && (!jsonObj.get(PROVENANCE_FREEFORM_ATTR_NAME).isJsonNull())){
 
-            this.provFreeform = jsonObj.get(PROVENANCE_FREEFORM_ATTR_NAME).getAsString();
+            this.provFreeForm = jsonObj.get(PROVENANCE_FREEFORM_ATTR_NAME).getAsString();
         }
         
         // -------------------------------

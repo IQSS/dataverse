@@ -1175,6 +1175,7 @@ public class FilesIT {
         
         String description = "A description.";
         String category = "A category";
+        String provFreeForm = "provenance is great";
         //String dataFileTag = "Event"; //you can't set dataFileTags on create. Seems like something that should be fixed, but not in this work
 
         
@@ -1183,8 +1184,8 @@ public class FilesIT {
         //String jsonString = "{\"description\":\""+description+"\",\"categories\":[\""+category+"\"],\"forceReplace\":false}";
         
         //There are two different ways categories can be passed, either with/without "name".
-        //Here tests the verbose way, later is the shortened syntax.
-        String jsonString = "{\"description\":\""+description+"\",\"categories\":[{\"name\":\""+category+"\"}],\"forceReplace\":false}";
+        //Here tests the verbose way, later is the shortened syntax.[\""+updateDataFileTag+"\"]
+        String jsonString = "{\"description\":\""+description+"\",\"provFreeForm\":\""+provFreeForm+"\",\"categories\":[{\"name\":\""+category+"\"}],\"forceReplace\":false}";
         
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, jsonString, apiToken);
         Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
@@ -1207,6 +1208,7 @@ public class FilesIT {
         msg(metadataResponseString);
         assertEquals(200, getMetadataResponse.getStatusCode());  
         assertEquals(description, JsonPath.from(metadataResponseString).getString("description"));
+        assertEquals(provFreeForm, JsonPath.from(metadataResponseString).getString("provFreeForm"));
         assertEquals(category, JsonPath.from(metadataResponseString).getString("categories[0]"));
         assertNull(JsonPath.from(metadataResponseString).getString("dataFileTags"));
         
@@ -1215,7 +1217,8 @@ public class FilesIT {
         String updateDescription = "New description.";
         String updateCategory = "New category";
         String updateDataFileTag = "Survey";
-        String updateJsonString = "{\"description\":\""+updateDescription+"\",\"categories\":[\""+updateCategory+"\"],\"dataFileTags\":[\""+updateDataFileTag+"\"],\"forceReplace\":false}";
+        //junk passed below to test that it is discarded
+        String updateJsonString = "{\"description\":\""+updateDescription+"\",\"categories\":[\""+updateCategory+"\"],\"dataFileTags\":[\""+updateDataFileTag+"\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
         Response updateMetadataResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateJsonString, apiToken);
         assertEquals(200, updateMetadataResponse.getStatusCode());  
         //String updateMetadataResponseString = updateMetadataResponse.body().asString();
@@ -1225,7 +1228,7 @@ public class FilesIT {
         msg(getUpMetadataResponseString);
         assertEquals(updateDescription, JsonPath.from(getUpMetadataResponseString).getString("description"));
         assertEquals(updateCategory, JsonPath.from(getUpMetadataResponseString).getString("categories[0]"));
-        
+        assertNull(JsonPath.from(getUpMetadataResponseString).getString("provFreeform")); //unupdated fields are not persisted
         assertEquals(updateDataFileTag, JsonPath.from(getUpMetadataResponseString).getString("dataFileTags[0]"));
         
         //We haven't published so the non-draft call should still give the pre-edit metadata
@@ -1237,7 +1240,11 @@ public class FilesIT {
         assertEquals(category, JsonPath.from(getOldMetadataResponseString).getString("categories[0]"));
         assertEquals(updateDataFileTag, JsonPath.from(getOldMetadataResponseString).getString("dataFileTags[0]")); //tags are not versioned, so the old version will have the tags
         
-        //check on id in json?
+        //extra test for invalid data for tags returning a pretty error
+        String updateInvalidJsonString = "{\"dataFileTags\":false}";
+        Response updateInvalidMetadataResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateInvalidJsonString, apiToken);
+        assertEquals(BAD_REQUEST.getStatusCode(), updateInvalidMetadataResponse.getStatusCode());  
+
     }
     
     private void msg(String m){
