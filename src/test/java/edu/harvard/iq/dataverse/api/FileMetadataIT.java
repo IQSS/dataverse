@@ -30,6 +30,7 @@ public class FileMetadataIT {
 
     // dataset properties
     private static int dsId;
+    private static int dsIdFirst;
 
     @BeforeClass
     public static void setUpClass() {
@@ -91,6 +92,9 @@ public class FileMetadataIT {
         try {
             // delete dataset
             given().header(keyString, token)
+                    .delete("/api/datasets/" + dsIdFirst)
+                    .then().assertThat().statusCode(200);
+            given().header(keyString, token)
                     .delete("/api/datasets/" + dsId)
                     .then().assertThat().statusCode(200);
             // delete dataverse
@@ -116,18 +120,17 @@ public class FileMetadataIT {
         try {
 
             // try to create a dataset with directory labels that contain both leading and trailing file separators
-            Response shouldFailDueToLeadingAndTrailingSeparators = given()
+            //Should work now
+            Response shouldNotFailDueToLeadingAndTrailingSeparators = given()
                     .header(keyString, token)
                     .body(IOUtils.toString(classLoader.getResourceAsStream(
                             "json/complete-dataset-with-files-invalid-directory-labels.json")))
                     .contentType("application/json")
                     .post("/api/dataverses/" + testName + "/datasets");
-            shouldFailDueToLeadingAndTrailingSeparators.prettyPrint();
-            shouldFailDueToLeadingAndTrailingSeparators.then().assertThat()
+            shouldNotFailDueToLeadingAndTrailingSeparators.prettyPrint();
+            dsIdFirst = shouldNotFailDueToLeadingAndTrailingSeparators.then().assertThat()
                     // Note that the JSON under test actually exercises leading too but only the first (trailing) is exercised here.
-                    .body("message", equalTo("Validation Failed: Directory Name cannot contain leading or trailing file separators. (Invalid value:data/subdir1/)."))
-                    // not sure why this changed from BAD_REQUEST to FORBIDDEN, perhaps the "API cleanup" at https://github.com/IQSS/dataverse/pull/3381
-                    .statusCode(FORBIDDEN.getStatusCode());
+                    .statusCode(201).extract().jsonPath().getInt("data.id");
 
             // create dataset and set id
             System.out.println("Creating dataset....");
