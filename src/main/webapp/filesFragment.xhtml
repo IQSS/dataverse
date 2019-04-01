@@ -73,7 +73,7 @@
                 </div>
             </div>
             <div jsf:id="filesHeaderBlock" class="row" jsf:rendered="#{DatasetPage.workingVersion.fileMetadatas.size() gt 1}">
-                <div class="col-xs-6">
+                <div class="col-xs-5">
                     <!-- dataset file search -->
                     <div class="input-group">
                         <p:inputText id="searchFiles" styleClass="form-control" value="#{DatasetPage.fileLabelSearchTerm}" widgetVar="inputSearchTerm"
@@ -89,6 +89,86 @@
                         </span>
                     </div>
                 </div>
+                
+                <!-- File Facets -->
+                <div class="col-xs-5 text-left">
+                    
+                    <div style="font-weight:normal;">Filter by:</div>
+
+                    <!-- TYPE -->
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Type: All <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" class="highlightBold">All</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="#">Application</a></li>
+                            <li><a href="#">Audio</a></li>
+                            <li><a href="#">Data</a></li>
+                            <li><a href="#">Documentation</a></li>
+                            <li><a href="#">Image</a></li>
+                            <li><a href="#">Tabular Data</a></li>
+                            <li><a href="#">Text</a></li>
+                            <li><a href="#">Video</a></li>
+                            <li><a href="#">Unknown</a></li>
+                            <li><a href="#">ZIP</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- ACCESS -->
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Access: All <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" class="highlightBold">All</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="#">Public</a></li>
+                            <li><a href="#">Restricted</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- TAG -->
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            File Tag: All <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" class="highlightBold">All</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="#">Code</a></li>
+                            <li><a href="#">{CUSTOM TAG HERE}</a></li>
+                            <li><a href="#">Data</a></li>
+                            <li><a href="#">Documentation</a></li>
+                            <li><a href="#">Geospatial</a></li>
+                            <li><a href="#">Network</a></li>
+                            <li><a href="#">Survey</a></li>
+                        </ul>
+                    </div>
+                    
+                </div>
+                
+                <!-- File Sort -->
+                <div class="col-xs-2 text-left">
+                    
+                    <div style="font-weight:normal;">Sort by:</div>
+
+                    <!-- OPTIONS -->
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Name (A-Z) <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" class="highlightBold">Name (A-Z)</a></li>
+                            <li><a href="#">Name (Z-A)</a></li>
+                            <li><a href="#">Newest</a></li>
+                            <li><a href="#">Oldest</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                
             </div>
             <div class="row" style="margin-bottom:6px;">
                 <div jsf:id="filesHeaderCount" class="col-xs-3 text-left">
