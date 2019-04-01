@@ -1207,7 +1207,7 @@ public class FilesIT {
         msg(metadataResponseString);
         assertEquals(200, getMetadataResponse.getStatusCode());  
         assertEquals(description, JsonPath.from(metadataResponseString).getString("description"));
-        assertEquals(category, JsonPath.from(metadataResponseString).getString("categories[0].name"));
+        assertEquals(category, JsonPath.from(metadataResponseString).getString("categories[0]"));
         assertNull(JsonPath.from(metadataResponseString).getString("dataFileTags"));
         
         //Update fileMetadata and get to confirm again
@@ -1224,9 +1224,9 @@ public class FilesIT {
         msg("Draft (should be updated):");
         msg(getUpMetadataResponseString);
         assertEquals(updateDescription, JsonPath.from(getUpMetadataResponseString).getString("description"));
-        assertEquals(updateCategory, JsonPath.from(getUpMetadataResponseString).getString("categories[0].name")); //MAD: Is this indicative of bad code, its not the same output as input...
+        assertEquals(updateCategory, JsonPath.from(getUpMetadataResponseString).getString("categories[0]"));
         
-        //assertEquals(updateDataFileTag, JsonPath.from(getUpMetadataResponseString).getString("dataFileTags[0].name"));
+        assertEquals(updateDataFileTag, JsonPath.from(getUpMetadataResponseString).getString("dataFileTags[0]"));
         
         //We haven't published so the non-draft call should still give the pre-edit metadata
         Response getOldMetadataResponse = UtilIT.getDataFileMetadata(origFileId, apiToken);
@@ -1234,8 +1234,8 @@ public class FilesIT {
         msg("Old Published (shouldn't be updated):");
         msg(getOldMetadataResponseString);
         assertEquals(description, JsonPath.from(getOldMetadataResponseString).getString("description"));
-        assertEquals(category, JsonPath.from(getOldMetadataResponseString).getString("categories[0].name")); //MAD: Is this indicative of bad code, its not the same output as input...
-        //assertEquals(updateDataFileTag, JsonPath.from(getUpMetadataResponseString).getString("dataFileTags[0].name"));
+        assertEquals(category, JsonPath.from(getOldMetadataResponseString).getString("categories[0]"));
+        assertEquals(updateDataFileTag, JsonPath.from(getOldMetadataResponseString).getString("dataFileTags[0]")); //tags are not versioned, so the old version will have the tags
         
         //check on id in json?
     }

@@ -7,6 +7,8 @@ package edu.harvard.iq.dataverse.datasetutility;
 
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileCategory;
+import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.FileMetadata;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -227,14 +229,24 @@ public class OptionalFileParamsTest {
     @Test
     public void testGetOptionalFileParamsFromJson() throws DataFileTagException {
         FileMetadata fm = new FileMetadata();
+        DataFile df = new DataFile();
+        DataFileTag dft = new DataFileTag();
+        dft.setType(DataFileTag.TagType.Panel);
+        df.addTag(dft);
+        fm.setDataFile(df);
         fm.setDescription("description");
         fm.setDirectoryLabel("/foo/bar");
+        DataFileCategory fmc = new DataFileCategory();
+        fmc.setName("category");
+        fm.addCategory(fmc);
         
         JsonObject fmJson = fm.asGsonObject(true);
         
         OptionalFileParams instance = new OptionalFileParams(fmJson.toString());
         assertEquals(fm.getDescription(), instance.getDescription());
         assertEquals(fm.getDirectoryLabel(), instance.getDirectoryLabel());
+        assertEquals(dft.getTypeLabel(), instance.getDataFileTags().get(0));
+        assertEquals(fmc.getName(), instance.getCategories().get(0));
     }
 
     private void msg(String s){
