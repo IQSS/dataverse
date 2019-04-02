@@ -439,20 +439,22 @@
         <p:treeNode expandedIcon="pi pi-folder-open" collapsedIcon="pi pi-folder">
             <!-- if it's a folder: simply display its name -->
             <h:outputText rendered="#{node.folder}" value="#{node.folderName}" />
-            
+
             <!-- if it's a file: render a link to the file page -->
             <p:fragment rendered="#{node.file}">
+                <!-- same approach to rendering file page links, as in the file table above: -->
+                <!-- if the file has the global id, we use that; if not, we use the database id in the url. -->
                 
                 <ui:fragment rendered="#{!empty node.dataFileGlobalId}">
-                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFileGlobalId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFileGlobalId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
                     #{node.fileName}
-                </a>
-            </ui:fragment>
-            <ui:fragment rendered="#{empty node.dataFileGlobalId}">
-                <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(node.dataFileId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    </a>
+                </ui:fragment>
+                <ui:fragment rendered="#{empty node.dataFileGlobalId}">
+                    <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(node.dataFileId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
                     #{node.fileName}
-                </a>
-            </ui:fragment>
+                    </a>
+                </ui:fragment>
             </p:fragment>
         </p:treeNode>
         
