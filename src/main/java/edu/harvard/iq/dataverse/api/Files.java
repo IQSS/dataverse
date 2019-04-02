@@ -326,12 +326,10 @@ public class Files extends AbstractApiBean {
             List<Long> result = em.createNamedQuery("DataFile.findDataFileThatReplacedId", Long.class)
             .setParameter("identifier", df.getId())
                     .getResultList();
-
             //There will be either 0 or 1 returned dataFile Id. If there is 1 this file is replaced and we need to error.
             if(null != result && result.size() > 0) {
                 //we get the data file to do a permissions check, if this fails it'll go to the WrappedResponse below
                 execCommand(new GetDataFileCommand(req, findDataFileOrDie(result.get(0).toString())));
-
                 //If you are permitted we return a nicer message about the metadata error
                 return error(Response.Status.BAD_REQUEST, "You cannot edit metadata on a dataFile that has been replaced. Please try again with the newest file id.");
             }
@@ -430,7 +428,6 @@ public class Files extends AbstractApiBean {
     }
     
     // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
-            // MAD: I think all that needs to be changed is using findDataFileOrDie()
     // TODO: Rename this start with "delete" rather than "get".
     @DELETE
     @Path("{id}/map")

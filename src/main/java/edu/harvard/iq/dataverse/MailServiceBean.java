@@ -114,6 +114,7 @@ public class MailServiceBean implements java.io.Serializable {
     private Session session;
 
     public boolean sendSystemEmail(String to, String subject, String messageText) {
+        
         boolean sent = false;
         String rootDataverseName = dataverseService.findRootDataverse().getName();
         InternetAddress systemAddress = getSystemAddress();

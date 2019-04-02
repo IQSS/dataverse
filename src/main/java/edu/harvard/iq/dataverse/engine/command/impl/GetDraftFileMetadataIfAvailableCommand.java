@@ -13,7 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 /**
  *
- * @author Naomi
+ * @author Matthew
  */
 @RequiredPermissions( Permission.ViewUnpublishedDataset )
 public class GetDraftFileMetadataIfAvailableCommand extends AbstractCommand<FileMetadata>{

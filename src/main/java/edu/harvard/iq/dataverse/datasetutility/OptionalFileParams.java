@@ -306,16 +306,6 @@ public class OptionalFileParams {
         }
        
     }
-    
-//    public static String printJsonStringForDataFileMetadata(FileMetadata fm) {
-//        JsonObject jsonObj = new JsonObject();
-//        jsonObj.addProperty(DESCRIPTION_ATTR_NAME, "test");
-//        jsonObj.addProperty(RESTRICT_ATTR_NAME, "test2");
-//        jsonObj.addProperty(CATEGORIES_ATTR_NAME, "test3"); //should be a list
-//        jsonObj.addProperty(FILE_DATA_TAGS_ATTR_NAME, "test4"); //should be a list
-//        
-//        return "";
-//    }
   
     private void addFileDataTags(List<String> potentialTags) throws DataFileTagException{
         
