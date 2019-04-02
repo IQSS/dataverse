@@ -16,18 +16,17 @@
     <!-- Toggle Files Display Components -->
     <div jsf:id="filesDisplayToggleBlock" jsf:rendered="true" class="row">
         <div class="form-group col-xs-12">
-            <label class="col-sm-3 control-label">
+            <label class="col-sm-2 control-label">
                 Change View
             </label>
-            <div class="col-xs-6 input-group">
-                <p:selectBooleanButton id="displayValue" styleClass="form-control" value="#{DatasetPage.fileDisplayTable}"
-                                       onLabel="Tree" 
-                                       offLabel="Table">
-                    <p:ajax update=":datasetForm" process="@this" listener="#{DatasetPage.toggleFileDisplayMode}"/>
+            <div class="col-xs-4 input-group">
+                <p:selectOneButton id="displayValue" styleClass="form-control" value="#{DatasetPage.fileDisplayTable}" style="border:0;box-shadow:none;">
+                    <f:selectItem itemLabel="Table" itemValue="Table" />
+                    <f:selectItem itemLabel="Tree" itemValue="Tree" />
 
                     <!-- AJAX UPDATES TO TOGGLE p:dataTable widgetVar="filesTable" AND p:tree widgetVar="filesTree" COMPONENTS BELOW -->
-
-                </p:selectBooleanButton>
+                    <p:ajax update=":datasetForm" process="@this" listener="#{DatasetPage.toggleFileDisplayMode}"/>
+                </p:selectOneButton>
             </div>
         </div>
     </div>
@@ -430,7 +429,7 @@
     </p:dataTable>
     
     <!-- Files Tree -->
-    <p:tree id="filesTree"
+    <p:tree id="filesTree" style="width:100%;"
             rendered="#{DatasetPage.fileDisplayTree}"
             widgetVar="filesTree"
             value="#{DatasetPage.filesTreeRoot}"
@@ -457,8 +456,6 @@
                 </ui:fragment>
             </p:fragment>
         </p:treeNode>
-        
-      
         
     </p:tree>
 </ui:composition>
