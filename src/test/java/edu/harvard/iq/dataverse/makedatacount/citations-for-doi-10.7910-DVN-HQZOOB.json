@@ -1,0 +1,134 @@
+{
+  "data": [
+    {
+      "id": "03eb6e2c-9e18-4b1f-8850-20325bf8be40",
+      "type": "events",
+      "attributes": {
+        "subj-id": "https://doi.org/10.1007/s12520-017-0578-2",
+        "obj-id": "https://doi.org/10.7910/dvn/hqzoob",
+        "source-id": "crossref",
+        "relation-type-id": "references",
+        "total": 1,
+        "message-action": "create",
+        "source-token": "8676e950-8ac5-4074-8ac3-c0a18ada7e99",
+        "license": "https://doi.org/10.13003/CED-terms-of-use",
+        "occurred-at": "2017-12-08T00:00:00.000Z",
+        "timestamp": "2018-09-07T14:36:26.293Z"
+      },
+      "relationships": {
+        "subj": {
+          "data": {
+            "id": "https://doi.org/10.1007/s12520-017-0578-2",
+            "type": "objects"
+          }
+        },
+        "obj": {
+          "data": {
+            "id": "https://doi.org/10.7910/dvn/hqzoob",
+            "type": "objects"
+          }
+        }
+      }
+    },
+    {
+      "id": "44954a19-c327-4522-aef9-afeef9b87c51",
+      "type": "events",
+      "attributes": {
+        "subj-id": "https://doi.org/10.1080/00934690.2018.1479085",
+        "obj-id": "https://doi.org/10.7910/dvn/hqzoob",
+        "source-id": "crossref",
+        "relation-type-id": "references",
+        "total": 1,
+        "message-action": "create",
+        "source-token": "8676e950-8ac5-4074-8ac3-c0a18ada7e99",
+        "license": "https://doi.org/10.13003/CED-terms-of-use",
+        "occurred-at": "2018-06-25T00:00:00.000Z",
+        "timestamp": "2018-10-07T14:41:53.299Z"
+      },
+      "relationships": {
+        "subj": {
+          "data": {
+            "id": "https://doi.org/10.1080/00934690.2018.1479085",
+            "type": "objects"
+          }
+        },
+        "obj": {
+          "data": {
+            "id": "https://doi.org/10.7910/dvn/hqzoob",
+            "type": "objects"
+          }
+        }
+      }
+    }
+  ],
+  "meta": {
+    "total": 2,
+    "total-pages": 1,
+    "sources": [
+      {
+        "id": "crossref",
+        "title": "Crossref to DataCite",
+        "count": 2
+      }
+    ],
+    "prefixes": [
+      {
+        "id": "10.7910",
+        "title": "10.7910",
+        "count": 2
+      },
+      {
+        "id": "10.1007",
+        "title": "10.1007",
+        "count": 1
+      },
+      {
+        "id": "10.1080",
+        "title": "10.1080",
+        "count": 1
+      }
+    ],
+    "citation-types": [
+      {
+        "id": "dataset-scholarly-article",
+        "title": "dataset-scholarly-article",
+        "count": 2,
+        "year-months": [
+          {
+            "id": "2017-12",
+            "title": "December 2017",
+            "sum": 1
+          },
+          {
+            "id": "2018-06",
+            "title": "June 2018",
+            "sum": 1
+          }
+        ]
+      }
+    ],
+    "relation-types": [
+      {
+        "id": "references",
+        "title": "references",
+        "count": 2,
+        "year-months": [
+          {
+            "id": "2017-12",
+            "title": "December 2017",
+            "sum": 1
+          },
+          {
+            "id": "2018-06",
+            "title": "June 2018",
+            "sum": 1
+          }
+        ]
+      }
+    ]
+  },
+  "links": {
+    "self": "https://api.datacite.org/events?doi=10.7910/dvn/hqzoob&source=crossref",
+    "next": "https://api.datacite.org/events?doi=10.7910%2Fdvn%2Fhqzoob&page%5Bcursor%5D=1538923313299"
+  }
+}

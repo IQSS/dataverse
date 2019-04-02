@@ -15,6 +15,7 @@
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="token" value="#{PrivateUrlPage.token}"/>
+                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{PrivateUrlPage.init}" />
                 </f:metadata>
             </ui:define>

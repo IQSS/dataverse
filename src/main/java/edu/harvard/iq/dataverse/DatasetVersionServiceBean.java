@@ -153,7 +153,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     }
 
     public DatasetVersion findByFriendlyVersionNumber(Long datasetId, String friendlyVersionNumber) {
-        //FIXME: this logic doesn't work
         Long majorVersionNumber = null;
         Long minorVersionNumber = null;
 
@@ -170,7 +169,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         } catch (NumberFormatException n) {
             return null;
         }
-
         if (minorVersionNumber != null) {
             String queryStr = "SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber and v.minorVersionNumber= :minorVersionNumber";
             DatasetVersion foundDatasetVersion = null;
@@ -185,17 +183,13 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 // DO nothing, just return null.
             }
             return foundDatasetVersion;
-
         }
-        
+
         if (majorVersionNumber == null && minorVersionNumber == null) {
-
             return null;
-
         }
 
         if (majorVersionNumber != null && minorVersionNumber == null) {
-
             try {
                 TypedQuery<DatasetVersion> typedQuery = em.createQuery("SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber", DatasetVersion.class);
                 typedQuery.setParameter("datasetId", datasetId);
@@ -211,18 +205,16 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                         }
                     }
                 }
-
                 return retVal;
-
             } catch (javax.persistence.NoResultException e) {
                 logger.warning("no ds version found: " + datasetId + " " + friendlyVersionNumber);
                 // DO nothing, just return null.
             }
 
         }
-
         return null;
     }
+
     
     /** 
      *   Parse a Persistent Id and return as 3 strings.        
@@ -321,7 +313,15 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             }
         }
         return contNames;
-    }   
+    } 
+    
+    public List<DatasetVersionUser> getDatasetVersionUsersByAuthenticatedUser(AuthenticatedUser user){
+        
+        TypedQuery<DatasetVersionUser> typedQuery = em.createQuery("SELECT u from DatasetVersionUser u where u.authenticatedUser.id = :authenticatedUserId", DatasetVersionUser.class);
+                typedQuery.setParameter("authenticatedUserId", user.getId());
+                return typedQuery.getResultList();        
+
+    }
 
     /**
      * Query to return the last Released DatasetVersion by Persistent ID

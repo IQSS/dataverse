@@ -6,8 +6,10 @@ Dataverse Guides Versions
 
 This list provides a way to refer to previous versions of the Dataverse guides, which we still host. In order to learn more about the updates delivered from one version to another, visit the `Releases <https://github.com/IQSS/dataverse/releases>`__ page in our GitHub repo.
 
-- 4.10.1
+- 4.12
 
+- `4.11 </en/4.11/>`__
+- `4.10.1 </en/4.10/>`__
 - `4.10 </en/4.10/>`__
 - `4.9.4 </en/4.9.4/>`__
 - `4.9.3 </en/4.9.3/>`__

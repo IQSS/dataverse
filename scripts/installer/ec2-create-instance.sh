@@ -7,14 +7,14 @@ REPO_URL='https://github.com/IQSS/dataverse.git'
 BRANCH='develop'
 
 usage() {
-  echo "Usage: $0 -b <branch> -r <repo> -e <environment file>" 1>&2
+  echo "Usage: $0 -b <branch> -r <repo> -g <group_vars>" 1>&2
   echo "default branch is develop"
   echo "default repo is https://github.com/IQSS/dataverse"
-  echo "default conf file is ~/.dataverse/ec2.env"
+  echo "example group_vars may be retrieved from https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/defaults/main.yml"
   exit 1
 }
 
-while getopts ":r:b:e:" o; do
+while getopts ":r:b:g:" o; do
   case "${o}" in
   r)
     REPO_URL=${OPTARG}
@@ -22,8 +22,8 @@ while getopts ":r:b:e:" o; do
   b)
     BRANCH=${OPTARG}
     ;;
-  e)
-    EC2ENV=${OPTARG}
+  g)
+    GRPVRS=${OPTARG}
     ;;
   *)
     usage
@@ -32,35 +32,21 @@ while getopts ":r:b:e:" o; do
 done
 
 # test for user-supplied conf files
-if [ ! -z "$EC2ENV" ]; then
-   CONF=$EC2ENV
-elif [ -f ~/.dataverse/ec2.env ]; then
-   echo "using environment variables specified in ~/.dataverse/ec2.env."
-   echo "override with -e <conf file>"
-   CONF="$HOME/.dataverse/ec2.env"
-else
-   echo "no conf file supplied (-e <file>) or found at ~/.dataverse/ec2.env."
-   echo "running script with defaults. this may or may not be what you want."
-fi
-   
-# read environment variables from conf file
-if [ ! -z "$CONF" ];then
-   set -a
-   echo "reading $CONF"
-   source $CONF
-   set +a
+if [ ! -z "$GRPVRS" ]; then
+   GVFILE=$(basename "$GRPVRS")
+   GVARG="-e @$GVFILE"
+   echo "using $GRPVRS for extra vars"
 fi
 
-# now build extra-vars string from doi_* env variables
-NL=$'\n'
-extra_vars="dataverse_branch=$BRANCH dataverse_repo=$REPO_URL"
-while IFS='=' read -r name value; do
-  if [[ $name == *'doi_'* ]]; then
-    extra_var="$name"=${!name}
-    extra_var=${extra_var%$NL}
-    extra_vars="$extra_vars $extra_var"
-  fi
-done < <(env)
+if [ ! -z "$REPO_URL" ]; then
+   GVARG+=" -e dataverse_repo=$REPO_URL"
+   echo "using $REPO_URL"
+fi
+
+if [ ! -z "$BRANCH" ]; then
+   GVARG+=" -e dataverse_branch=$BRANCH"
+   echo "building $BRANCH"
+fi
 
 AWS_CLI_VERSION=$(aws --version)
 if [[ "$?" -ne 0 ]]; then
@@ -113,8 +99,8 @@ echo "Creating EC2 instance"
 # TODO: Add some error checking for "ec2 run-instances".
 INSTANCE_ID=$(aws ec2 run-instances --image-id $AMI_ID --security-groups $SECURITY_GROUP --count 1 --instance-type $SIZE --key-name $KEY_NAME --query 'Instances[0].InstanceId' --block-device-mappings '[ { "DeviceName": "/dev/sda1", "Ebs": { "DeleteOnTermination": true } } ]' | tr -d \")
 echo "Instance ID: "$INSTANCE_ID
-echo "giving instance 15 seconds to wake up..."
-sleep 15
+echo "giving instance 30 seconds to wake up..."
+sleep 30
 echo "End creating EC2 instance"
 
 PUBLIC_DNS=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[*].Instances[*].[PublicDnsName]" --output text)
@@ -126,6 +112,10 @@ echo "ssh -i $PEM_FILE $USER_AT_HOST"
 
 echo "Please wait at least 15 minutes while the branch \"$BRANCH\" from $REPO_URL is being deployed."
 
+if [ ! -z "$GRPVRS" ]; then
+   scp -i $PEM_FILE -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' -o 'ConnectTimeout=300' $GRPVRS $USER_AT_HOST:$GVFILE
+fi
+
 # epel-release is installed first to ensure the latest ansible is installed after
 # TODO: Add some error checking for this ssh command.
 ssh -T -i $PEM_FILE -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' -o 'ConnectTimeout=300' $USER_AT_HOST <<EOF
@@ -134,7 +124,7 @@ sudo yum -y install git nano ansible
 git clone https://github.com/IQSS/dataverse-ansible.git dataverse
 export ANSIBLE_ROLES_PATH=.
 echo $extra_vars
-ansible-playbook -v -i dataverse/inventory dataverse/dataverse.pb --connection=local --extra-vars "$extra_vars"
+ansible-playbook -v -i dataverse/inventory dataverse/dataverse.pb --connection=local $GVARG
 EOF
 
 # Port 8080 has been added because Ansible puts a redirect in place

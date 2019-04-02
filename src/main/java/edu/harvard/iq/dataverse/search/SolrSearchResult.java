@@ -112,6 +112,8 @@ public class SolrSearchResult {
     private String identifierOfDataverse = null;
     private String nameOfDataverse = null;
     
+    private String filePersistentId = null;
+    
     public String getDvTree() {
         return dvTree;
     }
@@ -415,7 +417,7 @@ public class SolrSearchResult {
                 .add("is_unpublished_state", this.isUnpublishedState())
                 .add("is_published", this.isPublishedState())
                 .add("is_deaccesioned", this.isDeaccessionedState())
-                .add("date_to_display_on_card", this.dateToDisplayOnCard);
+                .add("date_to_display_on_card", getDateToDisplayOnCard());
 
         // Add is_deaccessioned attribute, even though MyData currently screens any deaccessioned info out
         //
@@ -449,8 +451,13 @@ public class SolrSearchResult {
 
         String identifierLabel = null;
         String datasetCitation = null;
+        String datasetName = null;
+        String datasetId = null;
+        String datasetPersistentId = null;  
+        String filePersistentId = null;
         String preferredUrl = null;
         String apiUrl = null;
+
         if (this.type.equals(SearchConstants.DATAVERSES)) {
             displayName = this.name;
             identifierLabel = "identifier";
@@ -471,6 +478,9 @@ public class SolrSearchResult {
              * title of the dataset it belongs to.
              */
             datasetCitation = parent.get("citation");
+            datasetName = parent.get("name");
+            datasetId = parent.get("id");
+            datasetPersistentId = parent.get(SolrSearchResult.PARENT_IDENTIFIER);
         }
 
         //displayName = null; // testing NullSafeJsonBuilder
@@ -521,6 +531,10 @@ public class SolrSearchResult {
                 .add("md5", getFileMd5())
                 .add("checksum", JsonPrinter.getChecksumTypeAndValue(getFileChecksumType(), getFileChecksumValue()))
                 .add("unf", getUnf())
+                .add("file_persistent_id", this.filePersistentId)
+                .add("dataset_name", datasetName)
+                .add("dataset_id", datasetId)
+                .add("dataset_persistent_id", datasetPersistentId)
                 .add("dataset_citation", datasetCitation)
                 .add("deaccession_reason", this.deaccessionReason)
                 .add("citationHtml", this.citationHtml)
@@ -537,6 +551,7 @@ public class SolrSearchResult {
                 nullSafeJsonBuilder.add("entity_id", this.entityId);
             }
         }
+        
         if (showApiUrls) {
             /**
              * @todo We should probably have a metadata_url or api_url concept
@@ -886,11 +901,7 @@ public class SolrSearchResult {
     }
 
     public String getDateToDisplayOnCard() {
-        return DateUtil.formatDate(dateToDisplayOnCard,"MMM dd, yyyy");
-    }
-
-    public void setDateToDisplayOnCard(String dateToDisplayOnCard) {
-        this.dateToDisplayOnCard = dateToDisplayOnCard;
+        return DateUtil.formatDate(this.releaseOrCreateDate);
     }
 
     public long getDatasetVersionId() {
@@ -954,7 +965,14 @@ public class SolrSearchResult {
         return null;
         //if (entity)
     }
+    
+    public String getFilePersistentId() {
+        return filePersistentId;
+    }
 
+    public void setFilePersistentId(String pid) {
+        filePersistentId = pid;
+    }
     public String getFileUrl() {
         // Nothing special needs to be done for harvested file URLs: 
         // simply directing these to the local dataset.xhtml for this dataset

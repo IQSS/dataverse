@@ -18,6 +18,7 @@ This guide documents the functionality only available to superusers (such as "da
    metadatacustomization
    metadataexport
    timers
+   make-data-count
    integrations
    geoconnect-worldmap
    user-administration
