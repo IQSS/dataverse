@@ -719,22 +719,22 @@ A curl example using a ``pid``::
 Uningest a File
 ~~~~~~~~~~~~~~~
 
-Reverse the tabular data ingest process performed on a file where ``{id}`` is the database id of the file to process. Note that this requires "super user" credentials::
+Reverse the tabular data ingest process performed on a file where ``{id}`` is the database id of the file to process. Note that this requires "superuser" credentials::
 
     POST http://$SERVER/api/files/{id}/uningest?key={apiKey}
 
 Reingest a File
 ~~~~~~~~~~~~~~~
 
-Attempt to ingest an existing datafile as tabular data. This API can be used on a file that was not ingested as tabular back when it was uploaded. For example, a Stata v.14 file that was uploaded before ingest support for Stata 14 was added (in Dataverse v.4.9). It can also be used on a file that failed to ingest due to a bug in the ingest plugin that has since been fixed (hence the name "re-ingest").
+Attempt to ingest an existing datafile as tabular data. This API can be used on a file that was not ingested as tabular back when it was uploaded. For example, a Stata v.14 file that was uploaded before ingest support for Stata 14 was added (in Dataverse v.4.9). It can also be used on a file that failed to ingest due to a bug in the ingest plugin that has since been fixed (hence the name "reingest").
 
-Note that this requires "super user" credentials:: 
+Note that this requires "superuser" credentials:: 
 
     POST http://$SERVER/api/files/{id}/reingest?key={apiKey}
 
 (``{id}`` is the database id of the file to process)
 
-Also, note that, at present the API cannot be used on a file that's already ingested as tabular.
+Note: at present, the API cannot be used on a file that's already successfully ingested as tabular.
 
 Replacing Files
 ~~~~~~~~~~~~~~~
