@@ -207,8 +207,10 @@ public class DatasetVersion implements Serializable {
     }
     
     public List<FileMetadata> getFileMetadatasSortedByLabelAndFolder() {
-        Collections.sort(fileMetadatas, FileMetadata.compareByLabelAndFolder);
-        return fileMetadatas;
+        ArrayList<FileMetadata> fileMetadatasCopy = new ArrayList<>();
+        fileMetadatasCopy.addAll(fileMetadatas);
+        Collections.sort(fileMetadatasCopy, FileMetadata.compareByLabelAndFolder);
+        return fileMetadatasCopy;
     }
 
     public void setFileMetadatas(List<FileMetadata> fileMetadatas) {

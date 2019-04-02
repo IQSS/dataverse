@@ -1623,59 +1623,137 @@ public class DatasetPage implements java.io.Serializable {
         exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
         
-        TreeNode root = new DefaultTreeNode("root", null);
-        TreeNode currentNode = root;
-        Set<String> treeNodes = new HashSet<>(); 
+        
+        
+        return null;
+    }
+    
+    public enum FileDisplayStyle {
+
+        TABLE, TREE
+    };
+    
+    private FileDisplayStyle fileDisplayMode = FileDisplayStyle.TABLE; 
+    
+    public boolean isFileDisplayTable() {
+        return fileDisplayMode == FileDisplayStyle.TABLE;
+    }
+    
+    // the setter method - so that we can use "fileDisplayTable" as the value 
+    // for a p:selectBooleanButton on the files fragment page. 
+    // it doesn't do anything - because the actual toggling of the display mode 
+    // is done by a p:ajax tied to the button; which in turn calls the next
+    // method, toggleFileDisplayMode() (why?)
+    public void setFileDisplayTable(boolean fileDisplayModeTable) {
+    }
+    
+    public void toggleFileDisplayMode() {
+        if (fileDisplayMode == FileDisplayStyle.TABLE) {
+            fileDisplayMode = FileDisplayStyle.TREE;
+        } else {
+            fileDisplayMode = FileDisplayStyle.TABLE;
+        }
+    }
+    public boolean isFileDisplayTree() {
+        return fileDisplayMode == FileDisplayStyle.TREE;
+    }
+    
+    private TreeNode filesTreeRoot = null; 
+    
+    public TreeNode getFilesTreeRoot() {
+        if (filesTreeRoot == null) {
+            initFilesTree();
+        }
+        return filesTreeRoot;
+    }
+    
+    private void initFilesTree() {
+        filesTreeRoot = createFolderTreeNode("root", null, null); //new DefaultTreeNode("root", null);
+        TreeNode currentNode = filesTreeRoot;
+        // this is a temporary map, that we keep while we are building 
+        // the tree - in order to have direct access to the ancestor tree
+        // nodes that have already been created:
         Map<String, TreeNode> folderMap = new HashMap<>();
         
         for ( FileMetadata fileMetadata :workingVersion.getFileMetadatasSortedByLabelAndFolder()) {
             String folder = fileMetadata.getDirectoryLabel();
             
+            logger.fine("current folder: "+folder+"; current label: "+fileMetadata.getLabel());
+            
             if (StringUtil.isEmpty(folder)) {
-                root.getChildren().add(new DefaultTreeNode(fileMetadata.getLabel()));
+                filesTreeRoot.getChildren().add(createFileTreeNode(fileMetadata));
             } else {
-                if (treeNodes.contains(folder)) {
-                    if (currentNode.getData().toString().equals(folder)) {
-                        currentNode.getChildren().add(new DefaultTreeNode(fileMetadata.getLabel()));
-                    } else {
+                if (folderMap.containsKey(folder)) {
+                    /*if (currentNode.getData().getFolderPath().equals(folder)) {*/
+                    currentNode.getChildren().add(createFileTreeNode(fileMetadata));
+                    if (currentNode.getChildCount() > 10) {
+                        currentNode.setExpanded(false);
+                    }
+                    /*} else {
                         // error! shouldn't happen!
-                    }
+                        logger.severe("filemetadatas out of sorted order (should be sorted by folder-label)");
+                    }*/
                 } else {
-                    // need to create the node!
-                    if (folder.indexOf('/') < 0) {
-                        // the folder is 1 level deep - simple: 
-                        currentNode = new DefaultTreeNode(folder, root);
-                        treeNodes.add(folder);
-                        folderMap.put(folder, currentNode);                                
-                        currentNode.getChildren().add(new DefaultTreeNode(fileMetadata.getLabel()));
-                    } else {
-                        String[] subfolders = folder.split("/");
-                        int level = 0;
-                        currentNode = root;
+                    // no node for this folder yet - need to create!
 
-                        while (level < subfolders.length) {
-                            String ancestorFolder = subfolders[0];
-                            for (int i = 1; i < level + 1; i++) {
-                                ancestorFolder = ancestorFolder.concat("/").concat(subfolders[i]);
-                            }
+                    String[] subfolders = folder.split("/");
+                    int level = 0;
+                    currentNode = filesTreeRoot;
 
-                            if (folderMap.containsKey(ancestorFolder)) {
-                                currentNode = folderMap.get(ancestorFolder);
-                            } else {
-                                currentNode = new DefaultTreeNode(subfolders[level], currentNode);
-                                folderMap.put(ancestorFolder, currentNode);
-                            }
-                            level++;
+                    while (level < subfolders.length) {
+                        String folderPath = subfolders[0];
+                        for (int i = 1; i < level + 1; i++) {
+                            folderPath = folderPath.concat("/").concat(subfolders[i]);
                         }
-                        currentNode.getChildren().add(new DefaultTreeNode(fileMetadata.getLabel()));
+
+                        if (folderMap.containsKey(folderPath)) {
+                            logger.fine("folder " + folderPath + " already exists;");
+                            // jump directly to that ancestor folder node:
+                            currentNode = folderMap.get(folderPath);
+                        } else {
+                            // create a new folder node:
+                            logger.fine("creating folder " + folderPath);
+                            currentNode = createFolderTreeNode(subfolders[level], folderPath, currentNode);
+                            folderMap.put(folderPath, currentNode);
+                            currentNode.setExpanded(true);
+
+                        }
+                        level++;
                     }
+                    currentNode.getChildren().add(createFileTreeNode(fileMetadata));
                 }
             }
         }
         
+        folderMap = null; 
+
+    }
+    
+    private DefaultTreeNode createFolderTreeNode(String name, String path, TreeNode parent) {
+        
+        FileTreeNodeData data = new FileTreeNodeData();
+        
+        data.setIsFolder(true);
+        data.setFolderName(name);
+        data.setFolderPath(path);
         
         
-        return null;
+        DefaultTreeNode folderNode = new DefaultTreeNode(data, parent); 
+        
+        return folderNode; 
+    }
+    
+    private DefaultTreeNode createFileTreeNode(FileMetadata fileMetadata) {
+        FileTreeNodeData data = new FileTreeNodeData();
+        
+        data.setIsFolder(false);
+        data.setFileName(fileMetadata.getLabel());
+        data.setDataFileId(fileMetadata.getDataFile().getId());
+        data.setDataFileGlobalId(fileMetadata.getDataFile().getGlobalId().asString());
+        
+        DefaultTreeNode fileNode = new DefaultTreeNode(data);         
+        
+        return fileNode; 
     }
     
     public boolean isHasTabular() {
@@ -4610,6 +4688,73 @@ public class DatasetPage implements java.io.Serializable {
                 JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
 
             }
+        }
+    }
+    
+    public class FileTreeNodeData {
+        
+        private boolean isFolder = false; 
+        
+        public boolean isFile() {
+            return !isFolder;
+        }
+        
+        public boolean isFolder() {
+            return isFolder;
+        }
+        
+        public void setIsFolder(boolean isFolder) {
+            this.isFolder = isFolder; 
+        }
+        
+        private Long dataFileId = null; 
+        
+        public void setDataFileId(Long dataFileId) {
+            this.dataFileId = dataFileId; 
+        }
+        
+        public Long getDataFileId() {
+            return dataFileId; 
+        }
+        
+        private String dataFileGlobalId = null; 
+        
+        public void setDataFileGlobalId(String dataFileGlobalId) {
+            this.dataFileGlobalId = dataFileGlobalId;
+        }
+        
+        public String getDataFileGlobalId() {
+            return dataFileGlobalId; 
+        }
+        
+        private String fileName = null; 
+        
+        public String getFileName() {
+            return fileName; 
+        }
+        
+        public void setFileName(String fileName) {
+            this.fileName = fileName;
+        }
+        
+        private String folderName = null; 
+        
+        public String getFolderName() {
+            return folderName; 
+        }
+        
+        public void setFolderName(String folderName) {
+            this.folderName = folderName;
+        }
+        
+        private String folderPath = null; 
+        
+        public String getFolderPath() {
+            return folderPath;  
+        }
+        
+        public void setFolderPath(String folderPath) {
+            this.folderPath = folderPath;
         }
     }
 }

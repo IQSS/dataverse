@@ -524,6 +524,18 @@ public class FileMetadata implements Serializable {
         public int compare(FileMetadata o1, FileMetadata o2) {
             String folder1 = o1.getDirectoryLabel() == null ? "" : o1.getDirectoryLabel().toUpperCase();
             String folder2 = o2.getDirectoryLabel() == null ? "" : o2.getDirectoryLabel().toUpperCase();
+            
+            
+            // We want to the files w/ no folders appear *after* all the folders
+            // on the sorted list:
+            if ("".equals(folder1) && !"".equals(folder2)) {
+                return 1;
+            }
+            
+            if ("".equals(folder2) && !"".equals(folder1)) {
+                return -1;
+            }
+            
             int comp = folder1.compareTo(folder2); 
             if (comp != 0) {
                 return comp;

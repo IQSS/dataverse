@@ -17,19 +17,17 @@
     <div jsf:id="filesDisplayToggleBlock" jsf:rendered="true" class="row">
         <div class="form-group col-xs-12">
             <label class="col-sm-3 control-label">
-                Display View
+                Change View
             </label>
             <div class="col-xs-6 input-group">
-                <ui:remove>
-                <p:selectBooleanButton id="displayValue" styleClass="form-control" value="#{DatasetPage.displayValue}" 
-                                       onLabel="List" 
-                                       offLabel="Tree">
-                    <p:ajax update="SOMETHING" listener="#{DatasetPage.toggleDisplays}"/>
+                <p:selectBooleanButton id="displayValue" styleClass="form-control" value="#{DatasetPage.fileDisplayTable}"
+                                       onLabel="Tree" 
+                                       offLabel="Table">
+                    <p:ajax update=":datasetForm" process="@this" listener="#{DatasetPage.toggleFileDisplayMode}"/>
 
                     <!-- AJAX UPDATES TO TOGGLE p:dataTable widgetVar="filesTable" AND p:tree widgetVar="filesTree" COMPONENTS BELOW -->
 
                 </p:selectBooleanButton>
-                </ui:remove>
             </div>
         </div>
     </div>
@@ -43,7 +41,7 @@
                  value="#{DatasetPage.fileMetadatasSearch}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
-                 rendered="#{empty DatasetPage.editMode and (DatasetPage.workingVersion != null)}"
+                 rendered="#{DatasetPage.fileDisplayTable and empty DatasetPage.editMode and (DatasetPage.workingVersion != null)}"
                  emptyMessage="#{bundle['file.notFound.tip']}">
         <p:ajax event="page" listener="#{DatasetPage.fileListingPaginatorListener}" update="filesTable" process="@this"  oncomplete="refreshPaginator()"  immediate="true"/>
         <p:ajax event="toggleSelect" listener="#{DatasetPage.toggleAllSelected()}" update="filesTable" /> 
@@ -432,17 +430,33 @@
     </p:dataTable>
     
     <!-- Files Tree -->
-    <!--ui:remove-->
     <p:tree id="filesTree"
-            rendered="true"
-            widgetVar="filesTree">
+            rendered="#{DatasetPage.fileDisplayTree}"
+            widgetVar="filesTree"
+            value="#{DatasetPage.filesTreeRoot}"
+            var="node">
         
         <p:treeNode expandedIcon="pi pi-folder-open" collapsedIcon="pi pi-folder">
-            <h:outputText value="#{filesTree.name}"/>
+            <!-- if it's a folder: simply display its name -->
+            <h:outputText rendered="#{node.folder}" value="#{node.folderName}" />
+            
+            <!-- if it's a file: render a link to the file page -->
+            <p:fragment rendered="#{node.file}">
+                
+                <ui:fragment rendered="#{!empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFileGlobalId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+            <ui:fragment rendered="#{empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(node.dataFileId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+            </p:fragment>
         </p:treeNode>
         
       
         
     </p:tree>
-    <!--/ui:remove-->
 </ui:composition>
