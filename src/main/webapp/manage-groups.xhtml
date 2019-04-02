@@ -77,6 +77,7 @@
                                         </p:commandLink>
                                         <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                        action="#{manageGroupsPage.setSelectedGroup(explicitGroup)}"
+                                                       update="@all"
                                                        oncomplete="PF('deleteConfirmation').show()"
                                                        title="#{bundle['dataverse.manageGroups.tab.action.btn.delete']}">
                                             <span class="glyphicon glyphicon-trash"></span>
@@ -86,13 +87,13 @@
                             </p:column>
                         </p:dataTable>
                     </div>
-                    <p:dialog header="#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
+                    <p:dialog rendered="#{manageGroupsPage.showDeletePopup}" header="#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="help-block">
                             <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.tip']}</span>
                         </p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.deleteGroup()}" update="@all" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" type="button" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.unrenderDeletePopup()}" update="@all" type="button" />
                         </div>
                     </p:dialog>
                     <p:dialog id="viewGroup" styleClass="largePopUp" header="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.header']}" widgetVar="viewGroup" modal="true">
