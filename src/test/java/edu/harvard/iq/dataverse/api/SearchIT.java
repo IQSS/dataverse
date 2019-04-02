@@ -384,22 +384,24 @@ public class SearchIT {
 
         
         Response getThumbnailImageA = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken); //
-        getThumbnailImageA.prettyPrint();
         getThumbnailImageA.then().assertThat()
                 .contentType("image/png")
                 .statusCode(OK.getStatusCode());
 
-        // A width of "true" is 3375 bytes. 64 pixels wide is the default.
-        // A width of "500" is 20155 bytes. 500 pixels wide.
+        // heads up that calling prettyPrint on an image will increase the length.
+        assertEquals(1153, getThumbnailImageA.asByteArray().length);
+
+        // A width of "true" is 1893 bytes. 64 pixels wide is the default.
+        // A width of "500" is 11372 bytes. 500 pixels wide.
         String trueOrWidthInPixels = "true";
 //        String trueOrWidthInPixels = "500";
         Response getFileThumbnailImageA = UtilIT.getFileThumbnail(dataFileId1.toString(), trueOrWidthInPixels, apiToken);
-        getFileThumbnailImageA.prettyPrint();
         getFileThumbnailImageA.then().assertThat()
                 .contentType("image/png")
                 .statusCode(OK.getStatusCode());
 
-        assertEquals(3375, getFileThumbnailImageA.asByteArray().length);
+        // heads up that calling prettyPrint on an image will increase the length.
+        assertEquals(1893, getFileThumbnailImageA.asByteArray().length);
 
         InputStream inputStream2creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
         assertEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream2creator));
@@ -419,7 +421,6 @@ public class SearchIT {
         }
 
         Response getThumbnailImage2 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
-        getThumbnailImage2.prettyPrint();
         getThumbnailImage2.then().assertThat()
                 //                .body(CoreMatchers.equalTo(decodedImg))
                 .contentType("image/png")
@@ -430,6 +431,9 @@ public class SearchIT {
                  */
                 //                .content(CoreMatchers.equalTo(decodedImg))
                 .statusCode(200);
+
+        // heads up that calling prettyPrint on an image will increase the length.
+        assertEquals(1153, getThumbnailImage2.asByteArray().length);
 
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response uploadSecondImage = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
@@ -606,10 +610,12 @@ public class SearchIT {
                 .statusCode(200);
 
         Response getThumbnailImageNoSpecialAccess99 = UtilIT.getDatasetThumbnail(datasetPersistentId, noSpecialAcessApiToken);
-//        getThumbnailImageNoSpecialAccess99.prettyPrint();
         getThumbnailImageNoSpecialAccess99.then().assertThat()
                 .contentType("image/png")
                 .statusCode(OK.getStatusCode());
+
+        // heads up that calling prettyPrint on an image will increase the length.
+        assertEquals(1153, getThumbnailImage2.asByteArray().length);
 
         InputStream inputStream99creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
         assertEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream99creator));
