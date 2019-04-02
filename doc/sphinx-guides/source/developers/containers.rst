@@ -334,7 +334,6 @@ Docker
 
 From the Dataverse perspective, Docker is important for a few reasons:
 
-- We are thankful that NDS Labs did the initial work to containerize Dataverse and include it in the "workbench" we mention in the :doc:`/installation/prep` section of the Installation Guide. The workbench allows people to kick the tires on Dataverse.
 - There is interest from the community in running Dataverse on OpenShift and some initial work has been done to get Dataverse running on Minishift in Docker containers. Minishift makes use of Docker images on Docker Hub. To build new Docker images and push them to Docker Hub, you'll need to install Docker. The main issue to follow is https://github.com/IQSS/dataverse/issues/4040 .
 - Docker may aid in testing efforts if we can easily spin up Docker images based on code in pull requests and run the full integration suite against those images. See the :doc:`testing` section for more information on integration tests.
 
