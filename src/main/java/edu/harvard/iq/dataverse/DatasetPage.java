@@ -1668,7 +1668,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private void initFilesTree() {
-        filesTreeRoot = createFolderTreeNode("root", null, null); //new DefaultTreeNode("root", null);
+        filesTreeRoot = createFolderTreeNode("root", null, null);
         TreeNode currentNode = filesTreeRoot;
         // this is a temporary map, that we keep while we are building 
         // the tree - in order to have direct access to the ancestor tree
@@ -1686,9 +1686,6 @@ public class DatasetPage implements java.io.Serializable {
                 if (folderMap.containsKey(folder)) {
                     /*if (currentNode.getData().getFolderPath().equals(folder)) {*/
                     currentNode.getChildren().add(createFileTreeNode(fileMetadata));
-                    if (currentNode.getChildCount() > 10) {
-                        currentNode.setExpanded(false);
-                    }
                     /*} else {
                         // error! shouldn't happen!
                         logger.severe("filemetadatas out of sorted order (should be sorted by folder-label)");
@@ -1715,7 +1712,9 @@ public class DatasetPage implements java.io.Serializable {
                             logger.fine("creating folder " + folderPath);
                             currentNode = createFolderTreeNode(subfolders[level], folderPath, currentNode);
                             folderMap.put(folderPath, currentNode);
-                            currentNode.setExpanded(true);
+                            // all the folders, except for the top-level root node 
+                            // are collapsed by default:
+                            currentNode.setExpanded(false);
 
                         }
                         level++;
