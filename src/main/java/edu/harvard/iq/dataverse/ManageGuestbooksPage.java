@@ -314,7 +314,6 @@ public class ManageGuestbooksPage implements java.io.Serializable {
 
     public void viewSelectedGuestbook(Guestbook selectedGuestbook) {
         this.selectedGuestbook = selectedGuestbook;
-        guestbookPage.setGuestbook(selectedGuestbook);
     }
 
     public boolean isDisplayDownloadAll() {

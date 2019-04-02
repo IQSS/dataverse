@@ -11,19 +11,23 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestbookCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+
+import static javax.faces.application.FacesMessage.SEVERITY_ERROR;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
+import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -37,25 +41,19 @@ public class GuestbookPage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(GuestbookPage.class.getCanonicalName());
     
     @EJB
-    GuestbookServiceBean guestbookService;
+    private GuestbookServiceBean guestbookService;
 
     @EJB
-    DataverseServiceBean dataverseService;
+    private DataverseServiceBean dataverseService;
 
     @EJB
-    EjbDataverseEngine commandEngine;
-    
-    @EJB
-    GuestbookResponseServiceBean guestbookResponseService;
+    private EjbDataverseEngine commandEngine;
     
     @Inject
-    DataverseSession session;
-    
-    @Inject
-    DataverseRequestServiceBean dvRequestService;
+    private DataverseRequestServiceBean dvRequestService;
 
     @Inject
-    PermissionsWrapper permissionsWrapper;
+    private PermissionsWrapper permissionsWrapper;
         
     public enum EditMode {
 
@@ -69,63 +67,40 @@ public class GuestbookPage implements java.io.Serializable {
     private Long guestbookId;
     private Long sourceId;
     
-    private Guestbook sourceGB;
+    private UIInput guestbookName;
+    
+    
+    // -------------------- GETTERS --------------------
     
     public Long getSourceId() {
         return sourceId;
-    }
-
-    public void setSourceId(Long sourceId) {
-        this.sourceId = sourceId;
-    }
-
-    public Guestbook getSourceGB() {
-        return sourceGB;
-    }
-
-    public void setSourceGB(Guestbook sourceGB) {
-        this.sourceGB = sourceGB;
     }
 
     public Long getGuestbookId() {
         return guestbookId;
     }
 
-    public void setGuestbookId(Long guestbookId) {
-        this.guestbookId = guestbookId;
-    }
-
     public Guestbook getGuestbook() {
         return guestbook;
-    }
-
-    public void setGuestbook(Guestbook guestbook) {
-        this.guestbook = guestbook;
     }
 
     public Dataverse getDataverse() {
         return dataverse;
     }
 
-    public void setDataverse(Dataverse dataverse) {
-        this.dataverse = dataverse;
-    }
-
     public EditMode getEditMode() {
         return editMode;
-    }
-
-    public void setEditMode(EditMode editMode) {
-        this.editMode = editMode;
     }
 
     public Long getOwnerId() {
         return ownerId;
     }
 
-    public void setOwnerId(Long ownerId) {
-        this.ownerId = ownerId;
+    public UIInput getGuestbookName() {
+        return guestbookName;
     }
+
+    // -------------------- LOGIC --------------------
 
     public String init() {
     
@@ -143,57 +118,30 @@ public class GuestbookPage implements java.io.Serializable {
                     guestbook = dvGb;
                 }
             }
-            guestbook.setDataverse(dataverse);
-            if (guestbook.getCustomQuestions() == null || guestbook.getCustomQuestions().isEmpty()) {
-                guestbook.setCustomQuestions(new ArrayList<CustomQuestion>());
-                initCustomQuestion();
-            }
             editMode = EditMode.METADATA;
         } else if (ownerId != null && sourceId == null) {
             // create mode for a new template
             guestbook = new Guestbook();
             guestbook.setDataverse(dataverse);
-            guestbook.setCustomQuestions(new ArrayList<CustomQuestion>());
-            initCustomQuestion();
             editMode = EditMode.CREATE;
         } else if (ownerId != null && sourceId != null ) {
             // Clone mode for a new template from source
             editMode = EditMode.CLONE;
-            sourceGB = guestbookService.find(sourceId);
+            Guestbook sourceGB = guestbookService.find(sourceId);
             guestbook = sourceGB.copyGuestbook(sourceGB, dataverse);
             String name = BundleUtil.getStringFromBundle("page.copy") +" " + sourceGB.getName();
             guestbook.setName(name);
             guestbook.setUsageCount(new Long(0));
             guestbook.setCreateTime(new Timestamp(new Date().getTime()));
-            if (guestbook.getCustomQuestions() == null || guestbook.getCustomQuestions().isEmpty()) {
-                guestbook.setCustomQuestions(new ArrayList<CustomQuestion>());
-                initCustomQuestion();
-            }
 
         } else {
             throw new RuntimeException("On Guestook page without id or ownerid."); // improve error handling
         }
         
+        initCustomQuestionsForView();
+        
         return null;
         
-    }
-
-    public String removeCustomQuestion(Long index){
-        guestbook.removeCustomQuestion(index.intValue());
-        return "";
-    }
-    
-    public List<GuestbookResponse> getGuestbookResponses(){
-        return null;
-    }
-    
-    private void initCustomQuestion(){
-        CustomQuestion toAdd = new CustomQuestion();
-        toAdd.setQuestionType("text");
-        toAdd.setCustomQuestionValues(new ArrayList<CustomQuestionValue>());
-        toAdd.setGuestbook(guestbook);       
-        int index = guestbook.getCustomQuestions().size();
-        guestbook.addCustomQuestion(index, toAdd);       
     }
         
     public void addCustomQuestion(Integer indexIn){
@@ -201,38 +149,40 @@ public class GuestbookPage implements java.io.Serializable {
         toAdd.setQuestionType("text");
         toAdd.setCustomQuestionValues(new ArrayList<CustomQuestionValue>());
         toAdd.setGuestbook(guestbook);       
+        
+        addCustomQuestionValue(toAdd, 0);
+        
         guestbook.addCustomQuestion(indexIn, toAdd);
     }
+
+    public String removeCustomQuestion(Long index){
+        guestbook.removeCustomQuestion(index.intValue());
+        return "";
+    }
+    
     
     public void addCustomQuestionValue(CustomQuestion cq, int index){
         CustomQuestionValue toAdd = new CustomQuestionValue();
         toAdd.setValueString("");
         toAdd.setCustomQuestion(cq);
-        cq.addCustomQuestionValue(index, toAdd);    
+        cq.addCustomQuestionValue(index, toAdd);
     }
     
     public void removeCustomQuestionValue(CustomQuestion cq, Long index){
         cq.removeCustomQuestionValue(index.intValue());
     }
     
-    public void toggleQuestionType(CustomQuestion questionIn) {
-        if (questionIn.getCustomQuestionValues() != null && questionIn.getCustomQuestionValues().isEmpty() 
-                && questionIn.getQuestionType() !=null && questionIn.getQuestionType().equals("options")){
-            questionIn.setCustomQuestionValues(new ArrayList<CustomQuestionValue>());
-            CustomQuestionValue addCQV = new CustomQuestionValue();
-            addCQV.setCustomQuestion(questionIn);
-            questionIn.getCustomQuestionValues().add(addCQV);
-        } 
-    }
-    
-
-
-    public void edit(GuestbookPage.EditMode editMode) {
-        this.editMode = editMode;
-    }
 
     public String save() {
         boolean create = false;
+        
+        if (StringUtils.isEmpty(guestbook.getName())) {
+            FacesContext.getCurrentInstance().validationFailed();
+            FacesContext.getCurrentInstance().addMessage(guestbookName.getClientId(),
+                    new FacesMessage(SEVERITY_ERROR, StringUtils.EMPTY, BundleUtil.getStringFromBundle("guestbook.name.empty")));
+            return StringUtils.EMPTY;
+        }
+        
         if (!(guestbook.getCustomQuestions() == null)) {
             for (CustomQuestion cq : guestbook.getCustomQuestions()) {
                 if (cq.getQuestionType().equals("text")) {
@@ -330,6 +280,42 @@ public class GuestbookPage implements java.io.Serializable {
 
     public void cancel() {
         editMode = null;
+    }
+
+    // -------------------- PRIVATE --------------------
+    
+    private void initCustomQuestionsForView(){
+        if (guestbook.getCustomQuestions() == null || guestbook.getCustomQuestions().isEmpty()) {
+            guestbook.setCustomQuestions(new ArrayList<CustomQuestion>());
+            addCustomQuestion(0);
+        } else {
+            for (CustomQuestion customQuestion : guestbook.getCustomQuestions()) {
+                if (customQuestion.getCustomQuestionValues() == null) {
+                    customQuestion.setCustomQuestionValues(new ArrayList<>());
+                }
+                if (customQuestion.getCustomQuestionValues().isEmpty()) {
+                    addCustomQuestionValue(customQuestion, 0);
+                }
+            }
+        }
+    }
+    
+    // -------------------- SETTERS --------------------
+
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    public void setSourceId(Long sourceId) {
+        this.sourceId = sourceId;
+    }
+
+    public void setGuestbookId(Long guestbookId) {
+        this.guestbookId = guestbookId;
+    }
+
+    public void setGuestbookName(UIInput guestbookName) {
+        this.guestbookName = guestbookName;
     }
 
 }

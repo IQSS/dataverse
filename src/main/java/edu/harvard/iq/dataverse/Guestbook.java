@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import javax.persistence.CascadeType;
@@ -23,8 +22,6 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
 import edu.harvard.iq.dataverse.util.DateUtil;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
@@ -48,7 +45,6 @@ public class Guestbook implements Serializable {
     @OrderBy("displayOrder")
     private List<CustomQuestion> customQuestions;
     
-    @NotBlank(message="{guestbook.name}")
     private String name;
     
     private boolean enabled;

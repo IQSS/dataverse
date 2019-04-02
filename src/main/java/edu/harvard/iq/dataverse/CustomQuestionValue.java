@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
 import javax.persistence.*;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
@@ -16,7 +15,6 @@ public class CustomQuestionValue implements Serializable {
     private Long id;
     
     @Column( nullable = false )
-    @NotBlank(message = "{custom.response}")
     private String valueString;
     
     private int displayOrder;
