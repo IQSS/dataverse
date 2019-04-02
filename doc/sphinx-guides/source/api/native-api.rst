@@ -1236,7 +1236,7 @@ POSTed JSON example::
 .. _merge-accounts-label:
 
 Merge User Accounts
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 If a user has created multiple accounts and has been performed actions under both accounts that need to be preserved, these accounts can be combined.  One account can be merged into another account and all data associated with both accounts will be combined in the surviving account. Only accessible to superusers.::
 
