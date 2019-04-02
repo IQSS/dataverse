@@ -16,15 +16,20 @@ Developer Guide
    tips
    troubleshooting
    version-control
+   sql-upgrade-scripts
    testing
    documentation
+   dependencies
    debugging
    coding-style
+   deployment
    containers
    making-releases
    tools
    unf/index
+   make-data-count
    remote-users
    geospatial
    selinux
    big-data-support
+   workflows

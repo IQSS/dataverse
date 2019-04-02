@@ -45,11 +45,10 @@ ${GLASSFISH_SETUP_SCRIPT}:	glassfish-setup.sh
 	mkdir -p ${INSTALLER_ZIP_DIR}
 	/bin/cp glassfish-setup.sh ${INSTALLER_ZIP_DIR}
 
-
-${POSTGRES_DRIVERS}:	pgdriver/postgresql-8.4-703.jdbc4.jar pgdriver/postgresql-9.0-802.jdbc4.jar pgdriver/postgresql-9.1-902.jdbc4.jar pgdriver/postgresql-9.2-1004.jdbc4.jar pgdriver/postgresql-9.3-1104.jdbc4.jar pgdriver/postgresql-9.4.1212.jar pgdriver/postgresql-42.1.4.jar
-	@echo copying postgres drviers
+${POSTGRES_DRIVERS}:	 pgdriver/postgresql-42.2.2.jar
+	@echo copying postgres driver
 	@mkdir -p ${POSTGRES_DRIVERS}
-	/bin/cp pgdriver/postgresql-8.4-703.jdbc4.jar pgdriver/postgresql-9.0-802.jdbc4.jar pgdriver/postgresql-9.1-902.jdbc4.jar pgdriver/postgresql-9.2-1004.jdbc4.jar pgdriver/postgresql-9.3-1104.jdbc4.jar pgdriver/postgresql-9.4.1212.jar pgdriver/postgresql-42.1.4.jar ${INSTALLER_ZIP_DIR}/pgdriver
+	/bin/cp pgdriver/postgresql-42.2.2.jar ${INSTALLER_ZIP_DIR}/pgdriver
 
 ${API_SCRIPTS}:	../api/setup-datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api/post-install-api-block.sh ../api/setup-builtin-roles.sh ../api/data
 	@echo copying api scripts
@@ -71,12 +70,12 @@ ${JHOVE_SCHEMA}:	../../conf/jhove/jhoveConfig.xsd
 	@mkdir -p ${INSTALLER_ZIP_DIR}
 	/bin/cp ../../conf/jhove/jhoveConfig.xsd ${INSTALLER_ZIP_DIR}
 
-${SOLR_SCHEMA}:		../../conf/solr/7.3.0/schema.xml
+${SOLR_SCHEMA}:		../../conf/solr/7.3.1/schema.xml
 	@echo copying Solr schema file
 	@mkdir -p ${INSTALLER_ZIP_DIR}
-	/bin/cp ../../conf/solr/7.3.0/schema.xml ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/solr/7.3.1/schema.xml ${INSTALLER_ZIP_DIR}
 
-${SOLR_CONFIG}:		../../conf/solr/7.3.0/solrconfig.xml
+${SOLR_CONFIG}:		../../conf/solr/7.3.1/solrconfig.xml
 	@echo copying Solr config file
 	@mkdir -p ${INSTALLER_ZIP_DIR}
-	/bin/cp ../../conf/solr/7.3.0/solrconfig.xml ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/solr/7.3.1/solrconfig.xml ${INSTALLER_ZIP_DIR}

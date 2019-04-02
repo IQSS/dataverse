@@ -1,8 +1,10 @@
+.. role:: fixedwidthplain
+
 =============
 Prerequisites
 =============
 
-Before running the Dataverse installation script, you must install and configure the following software.
+Before running the Dataverse installation script, you must install and configure Linux, Java, Glassfish, PostgreSQL, Solr, and jq. The other software listed below is optional but can provide useful features.
 
 After following all the steps below, you can proceed to the :doc:`installation-main` section.
 
@@ -87,6 +89,18 @@ This recommendation comes from http://www.c2b2.co.uk/middleware-blog/glassfish-4
 	# /usr/local/glassfish4/bin/asadmin start-domain
 	# /usr/local/glassfish4/bin/asadmin osgi lb | grep 'Weld OSGi Bundle'
 
+The Certificate Authority (CA) certificate bundle file from Glassfish contains certs that expired in August 2018, causing problems with ORCID login.
+
+- The actual expiration date is August 22, 2018, which you can see with the following command::
+
+	# keytool -list -v -keystore /usr/local/glassfish4/glassfish/domains/domain1/config/cacerts.jks
+
+- Overwrite Glassfish's CA certs file with the file that ships with the operating system and restart Glassfish::
+
+	# cp /etc/pki/ca-trust/extracted/java/cacerts /usr/local/glassfish4/glassfish/domains/domain1/config/cacerts.jks
+	# /usr/local/glassfish4/bin/asadmin stop-domain
+	# /usr/local/glassfish4/bin/asadmin start-domain
+
 Launching Glassfish on system boot
 ==================================
 
@@ -100,9 +114,9 @@ It is not necessary for Glassfish to be running before you execute the Dataverse
 
 Please note that you must run Glassfish in an English locale. If you are using something like ``LANG=de_DE.UTF-8``, ingest of tabular data will fail with the message "RoundRoutines:decimal separator no in right place".
 
-Also note that Glassfish may utilize more than the default number of file descriptors, especially when running batch jobs such as harvesting. We have increased ours by adding ulimit -n 32768 to our glassfish init script. On operating systems which use systemd such as RHEL or CentOS 7, file descriptor limits may be increased by adding a line like LimitNOFILE=32768 to the systemd unit file. You may adjust the file descriptor limits on running processes by using the prlimit utility:
+Also note that Glassfish may utilize more than the default number of file descriptors, especially when running batch jobs such as harvesting. We have increased ours by adding ulimit -n 32768 to our glassfish init script. On operating systems which use systemd such as RHEL or CentOS 7, file descriptor limits may be increased by adding a line like LimitNOFILE=32768 to the systemd unit file. You may adjust the file descriptor limits on running processes by using the prlimit utility::
 
-	# sudo prlimit -p pid -n 32768:32768
+	# sudo prlimit --pid pid --nofile=32768:32768
 
 PostgreSQL
 ----------
@@ -110,17 +124,24 @@ PostgreSQL
 Installing PostgreSQL
 =======================
 
-Version 9.x is required. Previous versions have not been tested.
+Version 9.3 is required. Previous versions have not been tested.
 
-The version that ships with el7 and above is fine::
+Version 9.6 is strongly recommended::
 
-	# yum install postgresql-server
-        # service postgresql initdb
-	# service postgresql start
+	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+	# yum makecache fast
+	# yum install -y postgresql96-server
+	# /usr/pgsql-9.6/bin/postgresql96-setup initdb
+	# /usr/bin/systemctl start postgresql-9.6
+	# /usr/bin/systemctl enable postgresql-9.6
+	
+Note that the steps above are specific to RHEL/CentOS 7. For RHEL/CentOS 6 use::
 
-The standard init script that ships with el7 should work fine. Enable it with this command::
-
-        # chkconfig postgresql on
+	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-6-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+	# yum makecache fast
+	# yum install -y postgresql96-server
+	# service postgresql-9.6 initdb
+	# service postgresql-9.6 start
 
 Configuring Database Access for the Dataverse Application (and the Dataverse Installer) 
 =======================================================================================
@@ -154,9 +175,9 @@ Configuring Database Access for the Dataverse Application (and the Dataverse Ins
 
   The file ``postgresql.conf`` will be located in the same directory as the ``pg_hba.conf`` above.
 
-- **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL and similar (provided you installed Postgres as instructed above)::
-        
-        # service postgresql restart
+- **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL/CentOS 7 and similar (provided you installed Postgres as instructed above)::
+
+        # systemctl restart postgresql-9.6
 
   On MacOS X a "Reload Configuration" icon is usually supplied in the PostgreSQL application folder. Or you could look up the process id of the PostgreSQL postmaster process, and send it the SIGHUP signal:: 
 
@@ -180,29 +201,38 @@ Become the ``solr`` user and then download and configure Solr::
 
         su - solr
         cd /usr/local/solr
-        wget https://archive.apache.org/dist/lucene/solr/7.3.0/solr-7.3.0.tgz
-        tar xvzf solr-7.3.0.tgz
-        cd solr-7.3.0
+        wget https://archive.apache.org/dist/lucene/solr/7.3.1/solr-7.3.1.tgz
+        tar xvzf solr-7.3.1.tgz
+        cd solr-7.3.1
         cp -r server/solr/configsets/_default server/solr/collection1
 
 You should already have a "dvinstall.zip" file that you downloaded from https://github.com/IQSS/dataverse/releases . Unzip it into ``/tmp``. Then copy the files into place::
 
-        cp /tmp/dvinstall/schema.xml /usr/local/solr/solr-7.3.0/server/solr/collection1/conf
-        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-7.3.0/server/solr/collection1/conf
+        cp /tmp/dvinstall/schema.xml /usr/local/solr/solr-7.3.1/server/solr/collection1/conf
+        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-7.3.1/server/solr/collection1/conf
 
-Note: Dataverse has customized Solr to boost results that come from certain indexed elements inside Dataverse, for example results matching on the name of a dataset. If you would like to remove this, edit your ``solrconfig.xml`` and remove the ``<str name="qf">`` element and its contents.
+Note: Dataverse has customized Solr to boost results that come from certain indexed elements inside Dataverse, for example prioritizing results from Dataverses over Datasets. If you would like to remove this, edit your ``solrconfig.xml`` and remove the ``<str name="qf">`` element and its contents. If you have ideas about how this boosting could be improved, feel free to contact us through our Google Group https://groups.google.com/forum/#!forum/dataverse-dev .
 
-Dataverse requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-7.3.0/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
+Dataverse requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-7.3.1/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
 
-With the Dataverse-specific config in place, you can now start Solr and create the core that will be used to manage search information::
+Solr will warn about needing to increase the number of file descriptors and max processes in a production environment but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000 to the init script, and the following to ``/etc/security/limits.conf``::
 
-        cd /usr/local/solr/solr-7.3.0
+        solr soft nproc 65000
+        solr hard nproc 65000
+        solr soft nofile 65000
+        solr hard nofile 65000
+
+On operating systems which use systemd such as RHEL or CentOS 7, you may then add a line like LimitNOFILE=65000 for the number of open file descriptors and a line with LimitNPROC=65000 for the max processes to the systemd unit file, or adjust the limits on a running process using the prlimit tool::
+
+        # sudo prlimit --pid pid --nofile=65000:65000
+
+Solr launches asynchronously and attempts to use the ``lsof`` binary to watch for its own availability. Installation of this package isn't required but will prevent a warning in the log at startup.
+
+Finally, you may start Solr and create the core that will be used to manage search information::
+
+        cd /usr/local/solr/solr-7.3.1
         bin/solr start
         bin/solr create_core -c collection1 -d server/solr/collection1/conf/
-	
-Please note: Solr will warn about needing to increase the number of file descriptors and max processes in a production environment but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000 to the init script and adding solr soft nproc 65000 to /etc/security/limits.conf. On operating systems which use systemd such as RHEL or CentOS 7, you may add a line like LimitNOFILE=65000 to the systemd unit file, or adjust the limits on a running process using the prlimit tool:
-
-	# sudo prlimit -p pid -n 65000:65000
 	
 
 Solr Init Script
@@ -261,7 +291,168 @@ If the installed location of the convert executable is different from ``/usr/bin
 
 (see the :doc:`config` section for more information on the JVM options)
 
+R
+-
 
+Dataverse uses `R <https://https://cran.r-project.org/>`_ to handle
+tabular data files. The instructions below describe a **minimal** R
+installation. It will allow you to ingest R (.RData) files as tabular
+data; to export tabular data as .RData files; and to run `Data
+Explorer <https://github.com/scholarsportal/Dataverse-Data-Explorer>`_
+(specifically, R is used to generate .prep metadata files that Data
+Explorer uses).  R can be considered an optional component, meaning
+that if you don't have R installed, you will still be able to run and
+use Dataverse - but the functionality specific to tabular data
+mentioned above will not be available to your users.  **Note** that if
+you choose to also install `TwoRavens
+<https://github.com/IQSS/TwoRavens>`_, it will require some extra R
+components and libraries.  Please consult the instructions in the
+TowRavens section of the Installation Guide.
+
+
+Installing R
+============
+
+Can be installed with :fixedwidthplain:`yum`::
+
+       yum install R-core R-core-devel
+
+EPEL distribution is strongly recommended. The version of R currently available from epel6 and epel7 is 3.5; it has been tested and is known to work on RedHat and CentOS versions 6 and 7.
+
+If :fixedwidthplain:`yum` isn't configured to use EPEL repositories ( https://fedoraproject.org/wiki/EPEL ):
+
+RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 7::
+
+       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+
+RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 6::
+
+       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+
+RHEL users will want to log in to their organization's respective RHN interface, find the particular machine in question and:
+
+• click on "Subscribed Channels: Alter Channel Subscriptions"
+• enable EPEL, Server Extras, Server Optional
+
+Installing the required R libraries
+===================================
+
+The following R packages (libraries) are required::
+
+    R2HTML
+    rjson
+    DescTools
+    Rserve
+    haven
+
+Install them following the normal R package installation procedures. For example, with the following R commands::
+
+	install.packages("R2HTML", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+	install.packages("rjson", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+	install.packages("DescTools", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+	install.packages("Rserve", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+	install.packages("haven", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+
+Rserve
+======
+
+Dataverse uses `Rserve <https://rforge.net/Rserve/>`_ to communicate
+to R. Rserve is installed as a library package, as described in the
+step above. It runs as a daemon process on the server, accepting
+network connections on a dedicated port. This requires some extra 
+configuration and we provide a  script (:fixedwidthplain:`scripts/r/rserve/rserve-setup.sh`) for setting it up.  
+Run the script as follows (as root)::
+
+    cd <DATAVERSE SOURCE TREE>/scripts/r/rserve
+    ./rserve-setup.sh
+
+The setup script will create a system user :fixedwidthplain:`rserve`
+that will run the daemon process.  It will install the startup script
+for the daemon (:fixedwidthplain:`/etc/init.d/rserve`), so that it
+gets started automatically when the system boots.  This is an
+:fixedwidthplain:`init.d`-style startup file. If this is a
+RedHat/CentOS 7 system, you may want to use the
+:fixedwidthplain:`systemctl`-style file
+:fixedwidthplain:`rserve.service` instead. (Copy it into the
+:fixedwidthplain:`/usr/lib/systemd/system/` directory)
+
+
+
+Note that the setup will also set the Rserve password to
+":fixedwidthplain:`rserve`".  Rserve daemon runs under a
+non-privileged user id, so there's not much potential for security
+damage through unauthorized access. It is however still a good idea
+**to change the password**. The password is specified in
+:fixedwidthplain:`/etc/Rserv.pwd`.  You can consult `Rserve
+documentation <https://rforge.net/Rserve/doc.html>`_ for more
+information on password encryption and access security.
+
+You should already have the following 4 JVM options added to your
+:fixedwidthplain:`domain.xml` by the Dataverse installer::
+
+        <jvm-options>-Ddataverse.rserve.host=localhost</jvm-options>
+        <jvm-options>-Ddataverse.rserve.port=6311</jvm-options>
+        <jvm-options>-Ddataverse.rserve.user=rserve</jvm-options>
+        <jvm-options>-Ddataverse.rserve.password=rserve</jvm-options>
+
+If you have changed the password, make sure it is correctly specified
+in the :fixedwidthplain:`dataverse.rserve.password` option above.  If
+Rserve is running on a host that's different from your Dataverse
+server, change the :fixedwidthplain:`dataverse.rserve.host` option
+above as well (and make sure the port 6311 on the Rserve host is not
+firewalled from your Dataverse host).
+
+Counter Processor
+-----------------
+
+Counter Processor is required to enable Make Data Count metrics in Dataverse. See the :doc:`/admin/make-data-count` section of the Admin Guide for a description of this feature. Counter Processor is open source and we will be downloading it from https://github.com/CDLUC3/counter-processor
+
+Installing Counter Processor
+============================
+
+Counter Processor has only been tested on el7 (see "Linux" above). Please note that a scripted installation using Ansible is mentioned in the :doc:`/developers/make-data-count` section of the Developer Guide.
+
+As root, download and install Counter Processor::
+
+        cd /usr/local
+        wget https://github.com/CDLUC3/counter-processor/archive/v0.0.1.tar.gz
+        tar xvfz v0.0.1.tar.gz
+
+As root, change to the Counter Processor directory you just created, download the GeoLite2-Country tarball, untar it, and copy the geoip database into place::
+
+        cd /usr/local/counter-processor-0.0.1
+        wget https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz
+        tar xvfz GeoLite2-Country.tar.gz
+        cp GeoLite2-Country_*/GeoLite2-Country.mmdb maxmind_geoip
+
+As root, create a "counter" user and change ownership of Counter Processor directory to this new user::
+
+        useradd counter
+        chown -R counter:counter /usr/local/counter-processor-0.0.1
+
+Installing Counter Processor Python Requirements
+================================================
+
+Counter Processor requires Python 3.6.4 or higher. The following commands are intended to be run as root but we are aware that Pythonistas might prefer fancy virtualenv or similar setups. Pull requests are welcome to improve these steps!
+
+Enable the EPEL repo if you haven't already::
+
+        yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+
+Install Python 3.6::
+
+        yum install python36
+
+Install Counter Processor Python requirements::
+
+        python3.6 -m ensurepip
+        cd /usr/local/counter-processor-0.0.1
+        pip3 install -r requirements.txt
+
+See the :doc:`/admin/make-data-count` section of the Admin Guide for how to configure and run Counter Processor.
+
+Next Steps
+----------
 
 Now that you have all the prerequisites in place, you can proceed to the :doc:`installation-main` section.
 

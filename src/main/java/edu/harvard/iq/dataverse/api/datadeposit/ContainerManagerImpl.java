@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -15,7 +16,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.api.imports.ImportGenericServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
@@ -60,6 +61,8 @@ public class ContainerManagerImpl implements ContainerManager {
     ImportGenericServiceBean importGenericService;
     @EJB
     PermissionServiceBean permissionService;
+    @EJB
+    DataFileServiceBean datafileService;
     @Inject
     SwordAuth swordAuth;
     @Inject
@@ -83,7 +86,7 @@ public class ContainerManagerImpl implements ContainerManager {
                 Dataset dataset = datasetService.findByGlobalId(globalId);
                 if (dataset != null) {
                     if (!permissionService.isUserAllowedOn(user, new GetDraftDatasetVersionCommand(dvReq, dataset), dataset)) {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to retrieve entry for " + dataset.getGlobalId());
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to retrieve entry for " + dataset.getGlobalIdString());
                     }
                     Dataverse dvThatOwnsDataset = dataset.getOwner();
                     ReceiptGenerator receiptGenerator = new ReceiptGenerator();
@@ -130,7 +133,7 @@ public class ContainerManagerImpl implements ContainerManager {
                 Dataset dataset = datasetService.findByGlobalId(globalId);
                 if (dataset != null) {
                     Dataverse dvThatOwnsDataset = dataset.getOwner();
-                    UpdateDatasetCommand updateDatasetCommand = new UpdateDatasetCommand(dataset, dvReq);
+                    UpdateDatasetVersionCommand updateDatasetCommand = new UpdateDatasetVersionCommand(dataset, dvReq);
                     if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvThatOwnsDataset.getAlias());
                     }
@@ -221,24 +224,25 @@ public class ContainerManagerImpl implements ContainerManager {
                         if (!permissionService.isUserAllowedOn(user, deleteDatasetVersionCommand, dataset)) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify " + dvThatOwnsDataset.getAlias());
                         }
+                        Map<Long, String> deleteStorageLocations = datafileService.getPhysicalFilesToDelete(dataset.getLatestVersion());
                         DatasetVersion.VersionState datasetVersionState = dataset.getLatestVersion().getVersionState();
                         if (dataset.isReleased()) {
                             if (datasetVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
-                                logger.info("destroying working copy version of dataset " + dataset.getGlobalId());
+                                logger.info("destroying working copy version of dataset " + dataset.getGlobalIdString());
                                 try {
                                     engineSvc.submit(deleteDatasetVersionCommand);
                                 } catch (CommandException ex) {
-                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can't delete dataset version for " + dataset.getGlobalId() + ": " + ex);
+                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can't delete dataset version for " + dataset.getGlobalIdString() + ": " + ex);
                                 }
                                 logger.info("dataset version deleted for dataset id " + dataset.getId());
                             } else if (datasetVersionState.equals(DatasetVersion.VersionState.RELEASED)) {
                                 throw new SwordError(UriRegistry.ERROR_METHOD_NOT_ALLOWED, "Deaccessioning a dataset is no longer supported as of Data Deposit API version in URL (" + swordConfiguration.getBaseUrlPathV1() + ") Equivalent functionality is being developed at https://github.com/IQSS/dataverse/issues/778");
                             } else if (datasetVersionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
-                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of dataset " + dataset.getGlobalId() + " has already been deaccessioned.");
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of dataset " + dataset.getGlobalIdString() + " has already been deaccessioned.");
                             } else if (datasetVersionState.equals(DatasetVersion.VersionState.ARCHIVED)) {
-                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of dataset " + dataset.getGlobalId() + " has been archived and can not be deleted or deaccessioned.");
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of dataset " + dataset.getGlobalIdString() + " has been archived and can not be deleted or deaccessioned.");
                             } else {
-                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Operation not valid for dataset " + dataset.getGlobalId() + " in state " + datasetVersionState);
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Operation not valid for dataset " + dataset.getGlobalIdString() + " in state " + datasetVersionState);
                             }
                             /**
                              * @todo Reformat else below properly so you can
@@ -261,6 +265,16 @@ public class ContainerManagerImpl implements ContainerManager {
                                 // we should never get here. throw an error explaining why
                                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "dataset is in illegal state (not published yet not in draft)");
                             }
+                        }
+                        // If we have gotten this far, the delete command has succeeded - 
+                        // by either deleting the Draft version of a published dataset, 
+                        // or destroying an unpublished one. 
+                        // This means we can finalize permanently deleting the physical files:
+                        // (DataFileService will double-check that the datafiles no 
+                        // longer exist in the database, before attempting to delete 
+                        // the physical files)
+                        if (!deleteStorageLocations.isEmpty()) {
+                            datafileService.finalizeFileDeletes(deleteStorageLocations);
                         }
                     } else {
                         throw new SwordError(404);

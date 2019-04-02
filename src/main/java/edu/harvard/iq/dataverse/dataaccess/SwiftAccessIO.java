@@ -21,9 +21,7 @@ import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Formatter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 import javax.crypto.Mac;
@@ -47,11 +45,12 @@ import org.javaswift.joss.model.StoredObject;
 public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
 
     private String swiftFolderPath;
+    private String swiftLocation; 
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO");
 
     public SwiftAccessIO() {
-        this(null);
+        this((T)null);
     }
 
     public SwiftAccessIO(T dvObject) {
@@ -62,6 +61,11 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         super(dvObject, req);
 
         this.setIsLocalFile(false);
+    }
+    
+    public SwiftAccessIO(String swiftLocation) {
+        this((T)null);
+        this.swiftLocation = swiftLocation;
     }
 
     private Properties swiftProperties = null;
@@ -221,7 +225,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         setSize(swiftFileObject.getContentLength());
     }
 
-    @Override
+    /*@Override
     public void delete() throws IOException {
         if (swiftFileObject == null) {
             try {
@@ -234,7 +238,18 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         if (swiftFileObject != null) {
             swiftFileObject.delete();
         }
+    }*/
+    
+    @Override
+    public void delete() throws IOException {
+        if (!isDirectAccess()) {
+            throw new IOException("Direct Access IO must be used to permanently delete stored file objects");
+        }
+        
+        swiftFileObject = initializeSwiftFileDirectAccess();
+        swiftFileObject.delete();
     }
+    
 
     @Override
     public Channel openAuxChannel(String auxItemTag, DataAccessOption... options) throws IOException {
@@ -437,10 +452,11 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
 
     @Override
     public String getStorageLocation() {
-        // What should this be, for a Swift file? 
-        // A Swift URL? 
-        // Or a Swift URL with an authenticated Auth token? 
-        return null;
+        if (isDirectAccess()) {
+            return "swift://" + swiftLocation; 
+        }
+        // For Swift, the "storageLocation" and "storageIdentifier" of the DvObject are the same thing.
+        return dvObject.getStorageIdentifier();
     }
 
     @Override
@@ -481,7 +497,6 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         String swiftFileName = null;
 
         StoredObject fileObject;
-        List<String> auxFiles = null; 
         String storageIdentifier = dvObject.getStorageIdentifier();
 
         if (dvObject instanceof DataFile) {
@@ -518,14 +533,17 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 Properties p = getSwiftProperties();
                 swiftEndPoint = p.getProperty("swift.default.endpoint");
 
+                // Swift uses this to create pseudo-hierarchical folders
+                String swiftPseudoFolderPathSeparator = "/";
+
                 //swiftFolderPath = dataFile.getOwner().getDisplayName();
                 String swiftFolderPathSeparator = "-";
-                String authorityNoSlashes = owner.getAuthority().replace(owner.getDoiSeparator(), swiftFolderPathSeparator);
-                swiftFolderPath = owner.getProtocol() + swiftFolderPathSeparator
-                                  + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
-                                  + swiftFolderPathSeparator + owner.getIdentifier();
+                String authorityNoSlashes = owner.getAuthority().replace("/", swiftFolderPathSeparator);
+                swiftFolderPath = owner.getProtocolForFileStorage() + swiftFolderPathSeparator
+                                  + authorityNoSlashes.replace(".", swiftFolderPathSeparator);
 
-                swiftFileName = storageIdentifier;
+                swiftFileName = owner.getIdentifierForFileStorage() + swiftPseudoFolderPathSeparator
+                                + storageIdentifier;
                 //setSwiftContainerName(swiftFolderPath);
                 //swiftFileName = dataFile.getDisplayName();
                 //Storage Identifier is now updated after the object is uploaded on Swift.
@@ -570,10 +588,14 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 Properties p = getSwiftProperties();
                 swiftEndPoint = p.getProperty("swift.default.endpoint");
                 String swiftFolderPathSeparator = "-";
-                String authorityNoSlashes = dataset.getAuthority().replace(dataset.getDoiSeparator(), swiftFolderPathSeparator);
-                swiftFolderPath = dataset.getProtocol() + swiftFolderPathSeparator +
+
+                // Swift uses this to create pseudo-hierarchical folders
+                String swiftPseudoFolderPathSeparator = "/";
+
+                String authorityNoSlashes = dataset.getAuthorityForFileStorage().replace("/", swiftFolderPathSeparator);
+                swiftFolderPath = dataset.getProtocolForFileStorage() + swiftFolderPathSeparator +
                     authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
-                    swiftFolderPathSeparator + dataset.getIdentifier();
+                    swiftPseudoFolderPathSeparator + dataset.getIdentifierForFileStorage();
 
                 swiftFileName = auxItemTag;
                 dvObject.setStorageIdentifier("swift://" + swiftEndPoint + ":" + swiftFolderPath);
@@ -654,10 +676,44 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             throw new FileNotFoundException("SwiftAccessIO: DvObject " + swiftFileName + " does not exist (Dataverse dvObject id: " + dvObject.getId());
         }
 
-        auxFiles = null; 
         return fileObject;
     }
 
+    private StoredObject initializeSwiftFileDirectAccess() throws IOException {
+        if (!isDirectAccess()) {
+            throw new IOException("Direct access attempted on a SwiftAccessIO associated with a DvObject");
+        }
+        
+        String swiftEndPoint = null;
+        String swiftContainerName = null;
+        String swiftFileName = null;
+
+        String[] swiftStorageTokens = swiftLocation.split(":", 3);
+
+        if (swiftStorageTokens.length != 3) {
+            throw new IOException("SwiftAccessIO: invalid storage location: " + swiftLocation);
+        }
+
+        swiftEndPoint = swiftStorageTokens[0];
+        swiftContainerName = swiftStorageTokens[1];
+        swiftFileName = swiftStorageTokens[2];
+        
+        if (this.account == null) {
+            account = authenticateWithSwift(swiftEndPoint);
+        }
+        
+        this.swiftContainer = account.getContainer(swiftContainerName);
+        
+        StoredObject fileObject = this.swiftContainer.getObject(swiftFileName);
+
+        if (!fileObject.exists()) {
+            throw new FileNotFoundException("SwiftAccessIO/Direct Access: " + swiftLocation + " does not exist");
+        }
+
+        return fileObject;
+
+    }
+    
     private InputStream openSwiftFileAsInputStream() throws IOException {
         swiftFileObject = initializeSwiftFileObject(false);
         this.setSize(swiftFileObject.getContentLength());
@@ -830,10 +886,10 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             swiftFolderPathSeparator = "_";
         }
         if (dvObject instanceof DataFile) {
-            String authorityNoSlashes = this.getDataFile().getOwner().getAuthority().replace(this.getDataFile().getOwner().getDoiSeparator(), swiftFolderPathSeparator);
-            return this.getDataFile().getOwner().getProtocol() + swiftFolderPathSeparator
+            String authorityNoSlashes = this.getDataFile().getOwner().getAuthorityForFileStorage().replace("/", swiftFolderPathSeparator);
+            return this.getDataFile().getOwner().getProtocolForFileStorage() + swiftFolderPathSeparator
                    +            authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
-                swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifier();
+                swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifierForFileStorage();
         }
         return null;
      }

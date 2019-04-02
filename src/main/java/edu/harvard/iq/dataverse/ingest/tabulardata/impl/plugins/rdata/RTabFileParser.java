@@ -20,7 +20,10 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.logging.*;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang.StringUtils;
 
 import edu.harvard.iq.dataverse.DataTable;
@@ -67,12 +70,12 @@ public class RTabFileParser implements java.io.Serializable {
             varQnty = dataTable.getVarQuantity().intValue();
         } catch (Exception ex) {
             //return -1;
-            throw new IOException ("R Tab File Parser: Could not obtain varQnty from the dataset metadata.");
+            throw new IOException (BundleUtil.getStringFromBundle("rtabfileparser.ioexception.parser1"));
         }
 
         if (varQnty == 0) {
             //return -1;
-            throw new IOException ("R Tab File Parser: varQnty=0 in the dataset metadata!");
+            throw new IOException (BundleUtil.getStringFromBundle("rtabfileparser.ioexception.parser2"));
         }
 
         dbgLog.fine("CSV reader; varQnty: "+varQnty);
@@ -140,13 +143,12 @@ public class RTabFileParser implements java.io.Serializable {
             valueTokens = line.split(""+delimiterChar, -2);
 
             if (valueTokens == null) {
-                throw new IOException("Failed to read line "+(lineCounter+1)+" of the Data file.");
+                throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.failed" , Arrays.asList(Integer.toString(lineCounter + 1))));
 
             }
 
             if (valueTokens.length != varQnty) {
-                throw new IOException("Reading mismatch, line "+(lineCounter+1)+" of the Data file: " +
-                        varQnty + " delimited values expected, "+valueTokens.length+" found.");
+                throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.mismatch" , Arrays.asList(Integer.toString(lineCounter + 1),Integer.toString(varQnty),Integer.toString(valueTokens.length))));
             }
 
             //dbgLog.fine("case: "+lineCounter);
@@ -238,10 +240,10 @@ public class RTabFileParser implements java.io.Serializable {
                             // Legit case - Missing Value!
                             caseRow[i] = charToken;
                         } else {
-                            throw new IOException("Unexpected value for the Boolean variable ("+i+"): "+charToken);
+                            throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.boolean" , Arrays.asList(Integer.toString( +i)))+charToken);
                         }
                     } else {
-                        throw new IOException("Couldn't read Boolean variable ("+i+")!");
+                        throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.read" , Arrays.asList(Integer.toString(i))));
                     }
 
                     

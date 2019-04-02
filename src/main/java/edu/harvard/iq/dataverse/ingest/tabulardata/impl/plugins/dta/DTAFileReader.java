@@ -63,6 +63,9 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
  */
 
 public class DTAFileReader extends TabularDataFileReader{
+
+    private static final Logger logger = Logger.getLogger(DTAFileReader.class.getCanonicalName());
+
     //@Inject
     //VariableServiceBean varService;
     // static fields, STATA-specific constants, etc. 
@@ -254,10 +257,6 @@ public class DTAFileReader extends TabularDataFileReader{
     private static final int VALUE_LABEL_HEADER_PADDING_LENGTH = 3;
 
 
- 
-   
-    private static String unfVersionNumber = "5";
-
     private static int MISSING_VALUE_BIAS = 26;
 
     private byte BYTE_MISSING_VALUE = Byte.MAX_VALUE;
@@ -415,8 +414,6 @@ public class DTAFileReader extends TabularDataFileReader{
   
     private int value_label_table_length;
     
-    private String fileUnfValue = null;
-    
     private static final String MissingValueForTabDelimitedFile = "";
   
     // Constructor -----------------------------------------------------------//
@@ -545,8 +542,13 @@ public class DTAFileReader extends TabularDataFileReader{
                     + new String(Hex.encodeHex(magic_number)) + "<-");
         }
 
+        logger.info("magic_number[0]: " + magic_number[0]);
+        logger.info("magic_number[1]: " + magic_number[1]);
+        logger.info("magic_number[2]: " + magic_number[2]);
         if (magic_number[2] != 1) {
             dbgLog.fine("3rd byte is not 1: given file is not stata-dta type");
+            // FIXME: Figure out the magic number for Stata 14.
+            // FIXME: Figure out the magic number for Stata 15.
             throw new IllegalArgumentException("The file is not in a STATA format that we can read or support.");
         } else if ((magic_number[1] != 1) && (magic_number[1] != 2)) {
             dbgLog.fine("2nd byte is neither 0 nor 1: this file is not stata-dta type");
@@ -623,16 +625,8 @@ public class DTAFileReader extends TabularDataFileReader{
         List<DataVariable> variableList = new ArrayList<>();
 
         for (int i = 0; i < nvar; i++) {
-            DataVariable dv = new DataVariable();
-            dv.setInvalidRanges(new ArrayList<>());
-            dv.setSummaryStatistics( new ArrayList<>() );
-            dv.setUnf("UNF:6:XXX");
-            dv.setCategories(new ArrayList<>());
+            DataVariable dv = new DataVariable(i, dataTable);
             variableList.add(dv);
-
-            dv.setFileOrder(i);
-
-            dv.setDataTable(dataTable);
         }
 
         dataTable.setDataVariables(variableList);
@@ -792,7 +786,7 @@ public class DTAFileReader extends TabularDataFileReader{
         
         for (int i = 0; i < typeList.length; i++) {
             if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine(i + "-th value=" + typeList[i]);
-            
+            DataVariable dataVariable = dataTable.getDataVariables().get(i);
             /*
              * How Stata types correspond to the DVN types: 
              * "Byte", "Integer" and "Long" become Numeric, Discrete (unless date value); 
@@ -809,14 +803,14 @@ public class DTAFileReader extends TabularDataFileReader{
                 String typeLabel = variableTypes[i];
                 
                 if (typeLabel != null) {
-                    dataTable.getDataVariables().get(i).setTypeNumeric();
+                    dataVariable.setTypeNumeric();
                     if (typeLabel.equals("Byte") || typeLabel.equals("Integer") || typeLabel.equals("Long")) {
                         // these are treated as discrete:
-                        dataTable.getDataVariables().get(i).setIntervalDiscrete();
+                        dataVariable.setIntervalDiscrete();
                         
                     } else if (typeLabel.equals("Float") || typeLabel.equals("Double")) {
                         // these are treated as contiuous:
-                        dataTable.getDataVariables().get(i).setIntervalContinuous();
+                        dataVariable.setIntervalContinuous();
                         
                     } else {
                         throw new IOException("Unrecognized type label: "+typeLabel+" for Stata type value byte "+typeList[i]+".");
@@ -834,8 +828,8 @@ public class DTAFileReader extends TabularDataFileReader{
                         bytes_per_row += string_var_length;
 
                         variableTypes[i] = "String";
-                        dataTable.getDataVariables().get(i).setTypeCharacter();
-                        dataTable.getDataVariables().get(i).setIntervalDiscrete();
+                        dataVariable.setTypeCharacter();
+                        dataVariable.setIntervalDiscrete();
                         StringLengthTable.put(i, string_var_length);
 
 
@@ -861,8 +855,8 @@ public class DTAFileReader extends TabularDataFileReader{
                         bytes_per_row += string_var_length;
 
                         variableTypes[i] = "String";
-                        dataTable.getDataVariables().get(i).setTypeCharacter();
-                        dataTable.getDataVariables().get(i).setIntervalDiscrete();
+                        dataVariable.setTypeCharacter();
+                        dataVariable.setIntervalDiscrete();
                         StringLengthTable.put(i, string_var_length);
 
 
@@ -903,13 +897,13 @@ public class DTAFileReader extends TabularDataFileReader{
         }
         int offset_start = 0;
         int offset_end = 0;
-        for (int i = 0; i < nvar; i++) {
+        for (DataVariable dataVariable: dataTable.getDataVariables()) {
             offset_end += length_var_name;
             String vari = new String(Arrays.copyOfRange(variableNameBytes, offset_start,
                     offset_end), "ISO-8859-1");
             String varName = getNullStrippedString(vari);
-            dataTable.getDataVariables().get(i).setName(varName);
-            dbgLog.fine(i + "-th name=[" + varName + "]");
+            dataVariable.setName(varName);
+            dbgLog.fine("next name=[" + varName + "]");
             offset_start = offset_end;
         }
     }
@@ -996,6 +990,7 @@ public class DTAFileReader extends TabularDataFileReader{
              * -- L.A. 4.0
              */
             if (DATE_TIME_FORMAT_TABLE.containsKey(variableFormatKey)) {
+                DataVariable dataVariable = dataTable.getDataVariables().get(i);
                 // TODO: revisit the whole "formatschemaname" thing; -- L.A. 
                 // Instead of populating this field with the Stata's internal 
                 // format token (??), we should put the actual format of the 
@@ -1004,11 +999,11 @@ public class DTAFileReader extends TabularDataFileReader{
                 dateVariableFormats[i] = variableFormat; 
                 //dataTable.getDataVariables().get(i).setFormatSchemaName(variableFormat);
                 // TODO: make sure we do save the real format (as .setFormat() somewhere else!)
-                dataTable.getDataVariables().get(i).setFormatCategory(DATE_TIME_FORMAT_TABLE.get(variableFormatKey));
+                dataVariable.setFormatCategory(DATE_TIME_FORMAT_TABLE.get(variableFormatKey));
                 if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine(i + "th var: category=" +
                         DATE_TIME_FORMAT_TABLE.get(variableFormatKey));
-                dataTable.getDataVariables().get(i).setTypeCharacter();
-                dataTable.getDataVariables().get(i).setIntervalDiscrete();
+                dataVariable.setTypeCharacter();
+                dataVariable.setIntervalDiscrete();
             } 
 
             
@@ -2013,7 +2008,6 @@ public class DTAFileReader extends TabularDataFileReader{
                 Those names still work but are considered anachronisms.
 
         */
-        
         long milliSeconds;
         String decodedDateTime=null;
         String format = null;
@@ -2022,7 +2016,7 @@ public class DTAFileReader extends TabularDataFileReader{
             // tc is a relatively new format
             // datum is millisecond-wise
 
-            milliSeconds = Long.parseLong(rawDatum)+ STATA_BIAS_TO_EPOCH;
+            milliSeconds = Math.round(new Double(rawDatum)) + STATA_BIAS_TO_EPOCH;
             decodedDateTime = sdf_ymdhmsS.format(new Date(milliSeconds));
             format = sdf_ymdhmsS.toPattern();
             if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("tc: result="+decodedDateTime+", format = "+format);
@@ -2037,7 +2031,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
         } else if (FormatType.matches("^%t?w.*")){
 
-            long weekYears = Long.parseLong(rawDatum);
+            long weekYears = Math.round(new Double(rawDatum));
             long left = Math.abs(weekYears)%52L;
             long years;
             if (weekYears < 0L){
@@ -2068,7 +2062,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
         } else if (FormatType.matches("^%t?m.*")){
             // month 
-            long monthYears = Long.parseLong(rawDatum);
+            long monthYears = Math.round(new Double(rawDatum));
             long left = Math.abs(monthYears)%12L;
             long years;
             if (monthYears < 0L){
@@ -2096,7 +2090,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
         } else if (FormatType.matches("^%t?q.*")){
             // quater
-            long quaterYears = Long.parseLong(rawDatum);
+            long quaterYears = Math.round(new Double(rawDatum));
             long left = Math.abs(quaterYears)%4L;
             long years;
             if (quaterYears < 0L){

@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -74,12 +75,10 @@ public class DataFile extends DvObject implements Comparable {
     
     public static final Long ROOT_DATAFILE_ID_DEFAULT = (long) -1;
     
-    private String name;
-    
     @Expose
     @NotBlank
     @Column( nullable = false )
-    @Pattern(regexp = "^.*/.*$", message = "Content-Type must contain a slash")
+    @Pattern(regexp = "^.*/.*$", message = "{contenttype.slash}")
     private String contentType;
     
 
@@ -102,7 +101,9 @@ public class DataFile extends DvObject implements Comparable {
     public enum ChecksumType {
 
         MD5("MD5"),
-        SHA1("SHA-1");
+        SHA1("SHA-1"),
+        SHA256("SHA-256"),
+        SHA512("SHA-512");
 
         private final String text;
 
@@ -235,16 +236,6 @@ public class DataFile extends DvObject implements Comparable {
         this.previousDataFileId = null;
     }
     
-    // The dvObject field "name" should not be used in
-    // datafile objects.
-    // The file name must be stored in the file metadata.
-    @Deprecated
-    public DataFile(String name, String contentType) {
-        this.name = name;
-        this.contentType = contentType;
-        this.fileMetadatas = new ArrayList<>();
-    }    
-    
     @Override
     public boolean isEffectivelyPermissionRoot() {
         return false;
@@ -310,30 +301,6 @@ public class DataFile extends DvObject implements Comparable {
         }
         return builder;
     }
-
-    /**
-     * Return a list of Tag labels
-     * 
-     * If there are none, return an empty list
-     * 
-     * @return 
-     */
-    /*
-    public List<String> getTagsLabelsOnly() {
-        
-        List<DataFileTag> tags = this.getTags();
-        
-        if (tags == null){
-            return new ArrayList<String>();
-        }
-        
-        return tags.stream()
-                        .map(x -> x.getTypeLabel())
-                        .collect(Collectors.toList())
-                    ;
-    }
-    */
-    
     public void setTags(List<DataFileTag> dataFileTags) {
         this.dataFileTags = dataFileTags;
     }
@@ -402,6 +369,16 @@ public class DataFile extends DvObject implements Comparable {
         }
         return null;
     }
+    
+    public Long getOriginalFileSize() {
+        if (isTabularData()) {
+            DataTable dataTable = getDataTable();
+            if (dataTable != null) {
+                return dataTable.getOriginalFileSize();
+            }
+        }
+        return null;
+    }
 
     @Override
     public boolean isAncestorOf( DvObject other ) {
@@ -413,19 +390,6 @@ public class DataFile extends DvObject implements Comparable {
      */
     public String getOriginalFormatLabel() {
         return FileUtil.getUserFriendlyOriginalType(this);
-    }
-   
-    // The dvObject field "name" should not be used in
-    // datafile objects.
-    // The file name must be stored in the file metadata.
-    @Deprecated
-    public String getName() {
-        return name;
-    }
-
-    @Deprecated
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getContentType() {
@@ -449,14 +413,6 @@ public class DataFile extends DvObject implements Comparable {
         super.setOwner(dataset);
     }
     
-//    public String getStorageIdentifier() {
-//        return this.fileSystemName;
-//    }
-//
-//    public void setStorageIdentifier(String storageIdentifier) {
-//        this.fileSystemName = storageIdentifier;
-//    }
-    
     public String getDescription() {
         FileMetadata fmd = getLatestFileMetadata();
         
@@ -478,7 +434,7 @@ public class DataFile extends DvObject implements Comparable {
         return getLatestFileMetadata();
     }
     
-    private FileMetadata getLatestFileMetadata() {
+    public FileMetadata getLatestFileMetadata() {
         FileMetadata fmd = null;
 
         // for newly added or harvested, just return the one fmd
@@ -493,16 +449,43 @@ public class DataFile extends DvObject implements Comparable {
             }            
             
             // otherwise return the one with the latest version number
+            // duplicate logic in getLatestPublishedFileMetadata()
             if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
                 fmd = fileMetadata;
             } else if ((fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber())==0 )&& 
                    ( fileMetadata.getDatasetVersion().getMinorVersionNumber().compareTo( fmd.getDatasetVersion().getMinorVersionNumber()) > 0 )   ) {
                 fmd = fileMetadata;
-        }
+            }
         }
         return fmd;
     }
     
+//    //Returns null if no published version
+    public FileMetadata getLatestPublishedFileMetadata() throws UnsupportedOperationException {
+        FileMetadata fmd = null;
+        
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            // if it finds a draft, skip
+            if (fileMetadata.getDatasetVersion().getVersionState().equals(VersionState.DRAFT)) {
+                continue;
+            }            
+            
+            // otherwise return the one with the latest version number
+            // duplicate logic in getLatestFileMetadata()
+            if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
+                fmd = fileMetadata;
+            } else if ((fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber())==0 )&& 
+                   ( fileMetadata.getDatasetVersion().getMinorVersionNumber().compareTo( fmd.getDatasetVersion().getMinorVersionNumber()) > 0 )   ) {
+                fmd = fileMetadata;
+            }
+        }
+        if(fmd == null) {
+            throw new UnsupportedOperationException("No published metadata version for DataFile " + this.getId());
+        }
+        
+        return fmd;
+    }
+
     /**
      * Get property filesize, number of bytes
      * @return value of property filesize.
@@ -535,7 +518,7 @@ public class DataFile extends DvObject implements Comparable {
      * @return 
      */
     public String getFriendlySize() {
-        return FileUtil.getFriendlySize(filesize);
+        return FileSizeChecker.bytesToHumanReadable(filesize);
     }
 
     public boolean isRestricted() {
@@ -752,7 +735,8 @@ public class DataFile extends DvObject implements Comparable {
 
     @Override
     protected String toStringExtras() {
-        return "name:" + getName();
+        FileMetadata fmd = getLatestFileMetadata();
+        return "label:" + (fmd!=null? fmd.getLabel() : "[no metadata]");
     }
 	
 	@Override
@@ -760,31 +744,20 @@ public class DataFile extends DvObject implements Comparable {
 		return v.visit(this);
 	}
         
+    @Override
     public String getDisplayName() {
-        // @todo should we show the published version label instead?
-        // currently this method is not being used
        return getLatestFileMetadata().getLabel(); 
-       /*
-       Taking out null check to see if npe persists.
-       Really shouldn't need it 
-       a file should always have a latest metadata
-       
-               ////if (getLatestFileMetadata() != null) {
-           return getLatestFileMetadata().getLabel(); 
-       // }
-       // logger.fine("DataFile getLatestFileMetadata is null for DataFile id = " + this.getId());
-       // return "";
-       
-       */
-
-
+    }
+    
+    @Override 
+    public String getCurrentName(){
+        return getLatestFileMetadata().getLabel();
     }
     
     @Override
     public int compareTo(Object o) {
         DataFile other = (DataFile) o;
         return this.getDisplayName().toUpperCase().compareTo(other.getDisplayName().toUpperCase());
-
     }
     
     /**
@@ -898,7 +871,7 @@ public class DataFile extends DvObject implements Comparable {
         // https://github.com/IQSS/dataverse/issues/761, https://github.com/IQSS/dataverse/issues/2110, https://github.com/IQSS/dataverse/issues/3191
         //
         datasetMap.put("title", thisFileMetadata.getDatasetVersion().getTitle());
-        datasetMap.put("persistentId", getOwner().getGlobalId());
+        datasetMap.put("persistentId", getOwner().getGlobalIdString());
         datasetMap.put("url", getOwner().getPersistentURL());
         datasetMap.put("version", thisFileMetadata.getDatasetVersion().getSemanticVersion());
         datasetMap.put("id", getOwner().getId());

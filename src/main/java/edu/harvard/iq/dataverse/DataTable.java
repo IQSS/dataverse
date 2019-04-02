@@ -103,6 +103,12 @@ public class DataTable implements Serializable {
      */
     private String originalFormatVersion;
     
+    /* 
+     * Size of the original file:
+    */
+    
+    private Long originalFileSize; 
+    
     /*
      * Getter and Setter methods:
      */
@@ -172,6 +178,14 @@ public class DataTable implements Serializable {
         this.originalFileFormat = originalFileType;
     }
 
+    public Long getOriginalFileSize() {
+        return originalFileSize; 
+    }
+    
+    public void setOriginalFileSize(Long originalFileSize) {
+        this.originalFileSize = originalFileSize;
+    }
+    
     
     public String getOriginalFormatVersion() {
         return originalFormatVersion;

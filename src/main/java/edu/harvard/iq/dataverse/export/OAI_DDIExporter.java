@@ -6,9 +6,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.OutputStream;
-import javax.ejb.EJB;
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
 

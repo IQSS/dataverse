@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 
@@ -11,17 +10,15 @@ import edu.harvard.iq.dataverse.workflow.WorkflowContext;
  * @param <T> Command result type (as usual).
  * @author michael
  */
-public abstract class AbstractPublishDatasetCommand<T> extends AbstractCommand<T> {
+public abstract class AbstractPublishDatasetCommand<T> extends AbstractDatasetCommand<T> {
     
-    Dataset theDataset;
 
     public AbstractPublishDatasetCommand(Dataset datasetIn, DataverseRequest aRequest) {
         super(aRequest, datasetIn);
-        theDataset = datasetIn;
     }
     
-    protected WorkflowContext buildContext( String doiProvider, WorkflowContext.TriggerType triggerType) {
-        return new WorkflowContext(getRequest(), theDataset, doiProvider, triggerType);
+    protected WorkflowContext buildContext( Dataset theDataset, WorkflowContext.TriggerType triggerType, boolean datasetExternallyReleased) {
+        return new WorkflowContext(getRequest(), theDataset, triggerType, datasetExternallyReleased);
     }
     
 }

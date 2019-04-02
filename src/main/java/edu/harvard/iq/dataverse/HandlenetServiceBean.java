@@ -60,7 +60,7 @@ import org.apache.commons.lang.NotImplementedException;
  * the modifyRegistration datasets API sub-command.
  */
 @Stateless
-public class HandlenetServiceBean extends AbstractIdServiceBean {
+public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
 
     @EJB
     DataverseServiceBean dataverseService;
@@ -83,7 +83,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
     public void reRegisterHandle(DvObject dvObject) {
         logger.log(Level.FINE,"reRegisterHandle");
         if (!HANDLE_PROTOCOL_TAG.equals(dvObject.getProtocol())) {
-            logger.warning("reRegisterHandle called on a dvObject with the non-handle global id: "+dvObject.getId());
+            logger.log(Level.WARNING, "reRegisterHandle called on a dvObject with the non-handle global id: {0}", dvObject.getId());
         }
         
         String handle = getDvObjectHandle(dvObject);
@@ -93,15 +93,15 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         if (handleRegistered) {
             // Rebuild/Modify an existing handle
             
-            logger.info("Re-registering an existing handle id "+handle);
+            logger.log(Level.INFO, "Re-registering an existing handle id {0}", handle);
             
-            String authHandle = getHandleAuthority(dvObject);
+            String authHandle = getAuthenticationHandle(dvObject);
 
             HandleResolver resolver = new HandleResolver();
 
             String datasetUrl = getRegistrationUrl(dvObject);
             
-            logger.info("New registration URL: "+datasetUrl);
+            logger.log(Level.INFO, "New registration URL: {0}", datasetUrl);
 
             PublicKeyAuthenticationInfo auth = getAuthInfo(dvObject.getAuthority());
             
@@ -135,7 +135,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
             }
         } else {
             // Create a new handle from scratch:
-            logger.info("Handle " + handle + " not registered. Registering (creating) from scratch.");
+            logger.log(Level.INFO, "Handle {0} not registered. Registering (creating) from scratch.", handle);
             registerNewHandle(dvObject);
         }
     }
@@ -146,9 +146,9 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         String handle = getDvObjectHandle(dvObject);
         String datasetUrl = getRegistrationUrl(dvObject);
 
-        logger.info("Creating NEW handle " + handle);
+        logger.log(Level.INFO, "Creating NEW handle {0}", handle);
 
-        String authHandle = getHandleAuthority(dvObject);
+        String authHandle = getAuthenticationHandle(dvObject);
 
         PublicKeyAuthenticationInfo auth = getAuthInfo(handlePrefix);
         HandleResolver resolver = new HandleResolver();
@@ -175,19 +175,14 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
             resolver.traceMessages = true;
             AbstractResponse response = resolver.processRequest(req);
             if (response.responseCode == AbstractMessage.RC_SUCCESS) {
-                logger.info("Success! Response: \n" + response);
+                logger.log(Level.INFO, "Success! Response: \n{0}", response);
                 return null;
             } else {
-                logger.log(Level.WARNING, "registerNewHandle failed");
-                logger.warning("Error response: \n" + response);
+                logger.log(Level.WARNING, "RegisterNewHandle failed. Error response: {0}", response);
                 return new Exception("registerNewHandle failed: " + response);
             }
         } catch (Throwable t) {
-            logger.log(Level.WARNING, "registerNewHandle failed");
-            logger.log(Level.WARNING, "String {0}", t.toString());
-            logger.log(Level.WARNING, "localized message {0}", t.getLocalizedMessage());
-            logger.log(Level.WARNING, "cause", t.getCause());
-            logger.log(Level.WARNING, "message {0}", t.getMessage());
+            logger.log(Level.WARNING, "registerNewHandle failed", t);
             return t;
         }
     }
@@ -201,11 +196,10 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         try {
             response = resolver.processRequest(req);
         } catch (HandleException ex) {
-            logger.info("Caught exception trying to process lookup request");
-            logger.info(ex.getLocalizedMessage());
+            logger.log(Level.WARNING, "Caught exception trying to process lookup request", ex);
         }
         if((response!=null && response.responseCode==AbstractMessage.RC_SUCCESS)) {
-            logger.info("Handle "+handle+" registered.");
+            logger.log(Level.INFO, "Handle {0} registered.", handle);
             handleRegistered = true;
         } 
         return handleRegistered;
@@ -239,7 +233,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         key = readKey(adminCredFile);        
         PrivateKey privkey = null;
         privkey = readPrivKey(key, adminCredFile);
-        String authHandle =  getHandleAuthority(handlePrefix);
+        String authHandle =  getAuthenticationHandle(handlePrefix);
         PublicKeyAuthenticationInfo auth =
                 new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), handlenetIndex, privkey);
         return auth;
@@ -282,7 +276,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
                 key[n++] = (byte)fs.read();
             }
         } catch (Throwable t){
-            logger.severe("Cannot read private key " + file +": " + t);
+            logger.log(Level.SEVERE, "Cannot read private key {0}: {1}", new Object[]{file, t});
         }
         return key;
     }
@@ -294,13 +288,13 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         String secret = System.getProperty("dataverse.handlenet.admprivphrase");
         byte secKey[] = null;
         try {
-            if(Util.requiresSecretKey(key)){
+            if ( Util.requiresSecretKey(key) ) {
                 secKey = secret.getBytes();
             }
             key = Util.decrypt(key, secKey);
             privkey = Util.getPrivateKeyFromBytes(key, 0);
         } catch (Throwable t){
-            logger.severe("Can't load private key in " + file +": " + t);
+            logger.log(Level.SEVERE, "Can''t load private key in {0}: {1}", new Object[]{file, t});
         }
         return privkey;
     }
@@ -314,13 +308,17 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         return handle;
     }
     
-    private String getHandleAuthority(DvObject dvObject){
-        return getHandleAuthority(dvObject.getAuthority());
+    private String getAuthenticationHandle(DvObject dvObject){
+        return getAuthenticationHandle(dvObject.getAuthority());
     }
     
-    private String getHandleAuthority(String handlePrefix) {
-        logger.log(Level.FINE,"getHandleAuthority");
-        return "0.NA/" + handlePrefix;
+    private String getAuthenticationHandle(String handlePrefix) {
+        logger.log(Level.FINE,"getAuthenticationHandle");
+        if (systemConfig.isIndependentHandleService()) {
+            return handlePrefix + "/ADMIN";
+        } else {
+            return "0.NA/" + handlePrefix;
+        }
     }
 
     @Override
@@ -330,12 +328,18 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
     }
     
     @Override
-    public HashMap getIdentifierMetadata(DvObject dvObject) {
+    public boolean alreadyExists(GlobalId pid) throws Exception {
+        String handle = pid.getAuthority() + "/" + pid.getIdentifier();
+        return isHandleRegistered(handle);
+    }
+    
+    @Override
+    public Map<String,String> getIdentifierMetadata(DvObject dvObject) {
         throw new NotImplementedException();
     }
 
     @Override
-    public HashMap lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier)  {
+    public HashMap lookupMetadataFromIdentifier(String protocol, String authority, String identifier)  {
         throw new NotImplementedException();
     }
 
@@ -355,7 +359,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
     @Override
     public void deleteIdentifier(DvObject dvObject) throws Exception  {
         String handle = getDvObjectHandle(dvObject);
-        String authHandle = getAuthHandle(dvObject);
+        String authHandle = getAuthenticationHandle(dvObject);
 
         String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
         int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
@@ -388,11 +392,6 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         logger.log(Level.FINE,"updateIdentifierStatus");
         reRegisterHandle(dvObject); // No Need to register new - this is only called when a handle exists
         return true;
-    }
-
-    private String getAuthHandle(DvObject dvObject) {
-        // TODO hack: GNRSServiceBean retrieved this from vdcNetworkService
-        return "0.NA/" + dvObject.getAuthority();
     }
     
     @Override

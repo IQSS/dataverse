@@ -218,16 +218,35 @@ public class FileDownloadHelper implements java.io.Serializable {
          
      }
     
+     // This helper method is called from the Download terms/guestbook/etc. popup, 
+     // when the user clicks the "ok" button. We use it, instead of calling 
+     // downloadServiceBean directly, in order to differentiate between single
+     // file downloads and multiple (batch) downloads - sice both use the same 
+     // terms/etc. popup. 
      public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse) {
-        RequestContext requestContext = RequestContext.getCurrentInstance();
-        boolean valid = validateGuestbookResponse(guestbookResponse);
-                  
+         RequestContext requestContext = RequestContext.getCurrentInstance();
+         boolean valid = validateGuestbookResponse(guestbookResponse);
+
          if (!valid) {
-             JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.message.validationError"));
+             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
          } else {
-             requestContext.execute("PF('downloadPopup').hide()"); 
+             requestContext.execute("PF('downloadPopup').hide()");
              guestbookResponse.setDownloadtype("Download");
-             fileDownloadService.writeGuestbookAndStartDownload(guestbookResponse);
+
+             // Note that this method is only ever called from the file-download-popup - 
+             // meaning we know for the fact that we DO want to save this 
+             // guestbookResponse permanently in the database.
+             if (guestbookResponse.getSelectedFileIds() != null) {
+                 // this is a batch (multiple file) download.
+                 // Although here's a chance that this is not really a batch download - i.e., 
+                 // there may only be one file on the file list. But the fileDownloadService 
+                 // method below will check for that, and will redirect to the single download, if
+                 // that's the case. -- L.A.
+                 fileDownloadService.writeGuestbookAndStartBatchDownload(guestbookResponse);
+             } else if (guestbookResponse.getDataFile() != null) {
+                 // this a single file download: 
+                 fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse);
+             }
          }
 
      }
@@ -278,7 +297,22 @@ public class FileDownloadHelper implements java.io.Serializable {
          }
          fileDownloadService.explore(guestbookResponse, fmd, externalTool);
          requestContext.execute("PF('downloadPopup').hide()");
-     }
+    }
+     
+    public void writeGuestbookAndLaunchPackagePopup(GuestbookResponse guestbookResponse) {
+        RequestContext requestContext = RequestContext.getCurrentInstance();
+        boolean valid = validateGuestbookResponse(guestbookResponse);
+
+        if (!valid) {
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
+        } else {
+            requestContext.execute("PF('downloadPopup').hide()");
+            requestContext.execute("PF('downloadPackagePopup').show()");
+            requestContext.execute("handleResizeDialog('downloadPackagePopup')");
+
+            fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
+        }
+    }
 
     public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
         
@@ -317,10 +351,8 @@ public class FileDownloadHelper implements java.io.Serializable {
     public void addMultipleFilesForRequestAccess(DataFile dataFile) {
         this.filesForRequestAccess.add(dataFile);
 
-     }
+    }
         
-    
-    
     private String selectedFileId = null;
 
     public String getSelectedFileId() {
@@ -434,7 +466,7 @@ public class FileDownloadHelper implements java.io.Serializable {
              }
          }
          if ( notificationFile != null){
-             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId()); 
+             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId(), (AuthenticatedUser) session.getUser()); 
          }
      }
     
@@ -454,7 +486,7 @@ public class FileDownloadHelper implements java.io.Serializable {
              file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
              // create notification if necessary
              if (sendNotification) {
-                 fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId());
+                 fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId(), (AuthenticatedUser) session.getUser());
              }
          }
      } 

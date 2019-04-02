@@ -6,24 +6,27 @@
 Admin Guide
 ===========
 
-This guide documents the functionality only available to the Dataverse Admin ("Network Administrator") users. As of this release (4.5) such functionality includes managing Harvesting (client and server) and batch metadata export. 
-
-These "superuser" tasks are managed via the new page called the Dashboard. A user logged in as a Dataverse Admin will see the Dashboard link rendered in the upper right corner of every Dataverse page. 
+This guide documents the functionality only available to superusers (such as "dataverseAdmin") through the :doc:`dashboard` as well as command line utilities of interest to sysadmins.
 
 **Contents:**
 
 .. toctree::
 
+   dashboard
    harvestclients
    harvestserver
+   metadatacustomization
    metadataexport
    timers
+   make-data-count
+   integrations
    geoconnect-worldmap
    user-administration
    dataverses-datasets
    solr-search-index
    ip-groups
    monitoring
+   reporting-tools
    maintenance
    backups
    troubleshooting

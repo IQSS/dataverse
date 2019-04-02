@@ -1,14 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.AlternativePersistentIdentifier;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.IdServiceBean;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -17,6 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 /**
  *
@@ -26,19 +23,32 @@ import java.util.Date;
 public class RegisterDvObjectCommand extends AbstractVoidCommand {
 
     private final DvObject target;
+    private final  Boolean migrateHandle;
 
     public RegisterDvObjectCommand(DataverseRequest aRequest, DvObject target) {
         super(aRequest, target);
         this.target = target;
+        this.migrateHandle = false;
+    }
+    
+    public RegisterDvObjectCommand(DataverseRequest aRequest, DvObject target, Boolean migrateHandle) {
+        super(aRequest, target);
+        this.target = target;
+        this.migrateHandle = migrateHandle;
     }
 
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
+        
+        if(this.migrateHandle){
+            //Only continue if you can successfully migrate the handle
+            if (!processMigrateHandle(ctxt)) return;
+        }
         String nonNullDefaultIfKeyNotFound = "";
         String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        String doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
-        IdServiceBean idServiceBean = IdServiceBean.getBean(target.getProtocol(), ctxt);
+        // Get the idServiceBean that is configured to mint new IDs
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
         try {
             //Test to see if identifier already present
             //if so, leave.
@@ -55,49 +65,53 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                 if (target.getAuthority() == null) {
                     target.setAuthority(authority);
                 }
-                if (target.getDoiSeparator() == null) {
-                    target.setDoiSeparator(doiSeparator);
-                }
-
             }
-
             if (idServiceBean.alreadyExists(target)) {
                 return;
             }
             String doiRetString = idServiceBean.createIdentifier(target);
             if (doiRetString != null && doiRetString.contains(target.getIdentifier())) {
+                if (!idServiceBean.registerWhenPublished()) {
+                    // Should register ID before publicize() is called
+                    // For example, DOIEZIdServiceBean tries to recreate the id if the identifier isn't registered before
+                    // publicizeIdentifier is called
+                    target.setIdentifierRegistered(true);
+                    target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                }
                 if (target.isReleased()) {
                     idServiceBean.publicizeIdentifier(target);
                 }
-
-                if (!idServiceBean.registerWhenPublished() || target.isReleased()) {
+                if (idServiceBean.registerWhenPublished() && target.isReleased()) {
                     target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                     target.setIdentifierRegistered(true);
                 }
-
                 ctxt.em().merge(target);
                 ctxt.em().flush();
-                if (target.isInstanceofDataset()) {
+                if (target.isInstanceofDataset() && target.isReleased() && !this.migrateHandle) {
                     Dataset dataset = (Dataset) target;
                     for (DataFile df : dataset.getFiles()) {
                         if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
                             df.setIdentifier(ctxt.files().generateDataFileIdentifier(df, idServiceBean));
-                            if (df.getProtocol() == null) {
+                            if (df.getProtocol() == null || df.getProtocol().isEmpty()) {
                                 df.setProtocol(protocol);
                             }
-                            if (df.getAuthority() == null) {
+                            if (df.getAuthority() == null || df.getAuthority().isEmpty()) {
                                 df.setAuthority(authority);
-                            }
-                            if (df.getDoiSeparator() == null) {
-                                df.setDoiSeparator(doiSeparator);
                             }
                         }
                         doiRetString = idServiceBean.createIdentifier(df);
                         if (doiRetString != null && doiRetString.contains(df.getIdentifier())) {
+                            if (!idServiceBean.registerWhenPublished()) {
+                                // Should register ID before publicize() is called
+                                // For example, DOIEZIdServiceBean tries to recreate the id if the identifier isn't registered before
+                                // publicizeIdentifier is called
+                                df.setIdentifierRegistered(true);
+                                df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                            }
                             if (df.isReleased()) {
                                 idServiceBean.publicizeIdentifier(df);
                             }
-                            if (!idServiceBean.registerWhenPublished() || df.isReleased()) {
+                            if (idServiceBean.registerWhenPublished() && df.isReleased()) {
                                 df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                                 df.setIdentifierRegistered(true);
                             }
@@ -115,6 +129,34 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
         } catch (Throwable ex) {
             //do nothing - we'll know it failed because the global id create time won't have been updated.
         }
+        if (this.migrateHandle) {
+            //Only continue if you can successfully migrate the handle
+            boolean doNormalSolrDocCleanUp = true;
+            ctxt.index().indexDataset((Dataset) target, doNormalSolrDocCleanUp);
+            ctxt.solrIndex().indexPermissionsForOneDvObject((Dataset) target);
+        }
+    }
+    
+    private Boolean processMigrateHandle (CommandContext ctxt){
+        boolean retval = true;
+        if(!target.isInstanceofDataset()) return false;
+        if(!target.getProtocol().equals(GlobalId.HDL_PROTOCOL)) return false;
+        
+        AlternativePersistentIdentifier api = new AlternativePersistentIdentifier();
+        api.setProtocol(target.getProtocol());
+        api.setAuthority(target.getAuthority());
+        api.setIdentifier(target.getIdentifier());
+        api.setDvObject(target);
+        api.setIdentifierRegistered(target.isIdentifierRegistered());
+        api.setGlobalIdCreateTime(target.getGlobalIdCreateTime());
+        api.setStorageLocationDesignator(true);
+        ctxt.em().persist(api);
+        target.setProtocol(null);
+        target.setAuthority(null);
+        target.setIdentifier(null);
+        target.setIdentifierRegistered(false);
+        target.setGlobalIdCreateTime(null);
+        return retval;
     }
         
 }

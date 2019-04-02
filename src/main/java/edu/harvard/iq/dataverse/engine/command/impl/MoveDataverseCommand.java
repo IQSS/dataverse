@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFeaturedDataverse;
 import edu.harvard.iq.dataverse.DataverseLinkingDataverse;
 import edu.harvard.iq.dataverse.Guestbook;
-import static edu.harvard.iq.dataverse.IdServiceBean.logger;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -23,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A command to move a {@link Dataverse} between two {@link Dataverse}s.
@@ -41,7 +40,7 @@ import java.util.logging.Level;
 	@RequiredPermissions(dataverseName = "destination", value = Permission.AddDataverse)
 })
 public class MoveDataverseCommand extends AbstractVoidCommand {
-
+    private static final Logger logger = Logger.getLogger(MoveDataverseCommand.class.getName());
     final Dataverse moved;
     final Dataverse destination;
     final Boolean force;
@@ -248,8 +247,8 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         // its destinations owners, remove the link
         logger.info("Checking linked datasets...");
         for (DatasetLinkingDataverse dsld : linkingDatasets) {
-            for (Dataverse owner : ownersToCheck){
-                if ((dsld.getLinkingDataverse()).equals(owner)){
+            for (Dataverse owner : ownersToCheck) {
+                if ((dsld.getLinkingDataverse()).equals(owner)) {
                     if (force == null || !force) {
                         removeLinkDs = true;
                         break;
@@ -260,13 +259,12 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                 }
             }
         }
-        
-        
+
         if (removeGuestbook || removeTemplate || removeFeatDv || removeMetadataBlock || removeLinkDv || removeLinkDs) {
             StringBuilder errorString = new StringBuilder();
             if (removeGuestbook) {
                 errorString.append("Dataset guestbook is not in target dataverse. ");
-            } 
+            }
             if (removeTemplate) {
                 errorString.append("Dataverse template is not in target dataverse. ");
             } 
@@ -293,6 +291,13 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         logger.info("Dataverse move took " + (moveDvEnd - moveDvStart) + " milliseconds");
         
         ctxt.indexBatch().indexDataverseRecursively(moved);
-
+        
+        //REindex datasets linked to moved dv
+        if (moved.getDatasetLinkingDataverses() != null &&  !moved.getDatasetLinkingDataverses().isEmpty()) {
+            for (DatasetLinkingDataverse dld : moved.getDatasetLinkingDataverses()) {
+                Dataset linkedDS = ctxt.datasets().find(dld.getDataset().getId());
+                ctxt.index().indexDataset(linkedDS, true);
+            }
+        }
     }
 }

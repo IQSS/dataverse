@@ -162,13 +162,13 @@ public class LoginPage implements java.io.Serializable {
         }
         for ( FilledCredential fc : filledCredentialsList ) {
             if(fc.getValue()==null || fc.getValue().isEmpty()){
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, "Please enter a "+fc.getCredential().getTitle());
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("login."+fc.getCredential().getKey()));
             }
-            authReq.putCredential(fc.getCredential().getTitle(), fc.getValue());
+            authReq.putCredential(fc.getCredential().getKey(), fc.getValue());
         }
         authReq.setIpAddress( dvRequestService.getDataverseRequest().getSourceAddress() );
         try {
-            AuthenticatedUser r = authSvc.getCreateAuthenticatedUser(credentialsAuthProviderId, authReq);
+            AuthenticatedUser r = authSvc.getUpdateAuthenticatedUser(credentialsAuthProviderId, authReq);
             logger.log(Level.FINE, "User authenticated: {0}", r.getEmail());
             session.setUser(r);
             

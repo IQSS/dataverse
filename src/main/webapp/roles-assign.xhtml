@@ -13,7 +13,7 @@
         </p:fragment>
         <p:fragment id="assignRoleContent">
             <div class="form-horizontal">
-                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.permissions.usersOrGroups.assignDialog.description']}</p>
+                <p class="help-block">#{bundle['dataverse.permissions.usersOrGroups.assignDialog.description']}</p>
                 <div class="form-group">
                     <label for="userGroupAccessInput" class="col-sm-2 control-label">
                         #{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
@@ -71,7 +71,7 @@
                                         <div class="small" jsf:rendered="#{!empty managePermissionsPage.assignedRole.description}">#{managePermissionsPage.assignedRole.description}</div>
                                         <div class="margin-bottom">
                                             <ui:repeat value="#{managePermissionsPage.assignedRole.permissions().toArray()}" var="prm">
-                                                <span class="label label-default">#{prm}</span>
+                                                <span class="label label-default">#{bundle['permission.'.concat(prm).concat('.label')]}</span>
                                             </ui:repeat>
                                         </div>
                                         <p class="help-block">

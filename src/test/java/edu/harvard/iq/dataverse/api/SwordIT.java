@@ -174,7 +174,7 @@ public class SwordIT {
         Response createDatasetResponse = UtilIT.createDatasetViaSwordApi(dataverseAlias, initialDatasetTitle, apiToken);
         createDatasetResponse.prettyPrint();
         assertEquals(CREATED.getStatusCode(), createDatasetResponse.getStatusCode());
-        String persistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        String persistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDatasetResponse);
         logger.info("persistent id: " + persistentId);
 
         Response atomEntryUnAuth = UtilIT.getSwordAtomEntry(persistentId, apiTokenNoPrivs);
@@ -370,7 +370,7 @@ public class SwordIT {
                 .statusCode(CREATED.getStatusCode())
                 .body("entry.treatment", equalTo("no treatment information available"));
 
-        persistentId = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+        persistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDataset);
         GlobalId globalId = new GlobalId(persistentId);
         protocol = globalId.getProtocol();
         authority = globalId.getAuthority();
@@ -501,12 +501,12 @@ public class SwordIT {
                 .statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
 
-        String datasetTitle = "Publish or Perist";
+        String datasetTitle = "Publish or Perish";
         Response createDataset = UtilIT.createDatasetViaSwordApi(dataverseAlias, datasetTitle, apiToken);
         createDataset.prettyPrint();
         createDataset.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
-        String persistentId = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+        String persistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDataset);
 
         Response attemptToPublishDatasetInUnpublishedDataverse = UtilIT.publishDatasetViaSword(persistentId, apiToken);
         attemptToPublishDatasetInUnpublishedDataverse.prettyPrint();
@@ -590,7 +590,7 @@ public class SwordIT {
         thisDataverseContents.prettyPrint();
         thisDataverseContents.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        logger.info("We expect to find \"" + datasetId + "\" from the persistent ID to be present.");
+        logger.info("We expect to find the numeric id of the dataset (\"" + datasetId + "\") in the response.");
         assertTrue(thisDataverseContents.body().asString().contains(datasetId.toString()));
         
         
@@ -643,7 +643,7 @@ public class SwordIT {
 
         Response createDataset = UtilIT.createRandomDatasetViaSwordApi(dataverseAlias, apiToken);
         createDataset.prettyPrint();
-        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDataset);
 
         Response uploadZip = UtilIT.uploadFile(datasetPersistentId, "3files.zip", apiToken);
         uploadZip.prettyPrint();
@@ -760,7 +760,7 @@ public class SwordIT {
 
         Response createDataset4 = UtilIT.createRandomDatasetViaSwordApi(dataverseAlias, apiToken);
         createDataset4.prettyPrint();
-        String datasetPersistentId4 = UtilIT.getDatasetPersistentIdFromResponse(createDataset4);
+        String datasetPersistentId4 = UtilIT.getDatasetPersistentIdFromSwordResponse(createDataset4);
 
         Response uploadZipToDataset4 = UtilIT.uploadFile(datasetPersistentId4, "3files.zip", apiToken);
         uploadZipToDataset4.prettyPrint();

@@ -56,6 +56,9 @@ public class PasswordResetPage implements java.io.Serializable {
     @EJB
     PasswordValidatorServiceBean passwordValidatorService;
     
+    @EJB
+    SystemConfig systemConfig;
+
     /**
      * The unique string used to look up a user and continue the password reset
      * process.
@@ -71,8 +74,8 @@ public class PasswordResetPage implements java.io.Serializable {
      * The email address that is entered to initiate the password reset process.
      */
 
-    @NotBlank(message = "Please enter a valid email address.")
-    @ValidateEmail(message = "Password reset page default email message.")    
+    @NotBlank(message = "{user.invalidEmail}")
+    @ValidateEmail(message = "{password.validate}")
     String emailAddress;
 
     /**
@@ -113,7 +116,7 @@ public class PasswordResetPage implements java.io.Serializable {
             PasswordResetData passwordResetData = passwordResetInitResponse.getPasswordResetData();
             if (passwordResetData != null) {
                 BuiltinUser foundUser = passwordResetData.getBuiltinUser();
-                passwordResetUrl = passwordResetInitResponse.getResetUrl();
+                passwordResetUrl = passwordResetInitResponse.getResetUrl(systemConfig.getDataverseSiteUrl());
                 actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "passwordResetSent")
                             .setInfo("Email Address: " + emailAddress) );
             } else {
@@ -124,7 +127,7 @@ public class PasswordResetPage implements java.io.Serializable {
                  */
                 logger.log(Level.INFO, "Couldn''t find single account using {0}", emailAddress);
             }
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Password Reset Initiated", ""));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetInitiated"), ""));
         } catch (PasswordResetException ex) {
             /**
              * @todo do we really need a special exception for this??

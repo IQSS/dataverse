@@ -2,11 +2,10 @@ package edu.harvard.iq.dataverse.settings;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
-import java.util.Arrays;
-import java.util.Collections;
+import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -84,13 +83,6 @@ public class SettingsServiceBean {
          * https://wiki.apache.org/solr/HighlightingParameters#hl.fragsize
          */
         SearchHighlightFragmentSize,
-       /**
-        * Domain name specific code for Google Analytics
-        *//**
-        * Domain name specific code for Google Analytics
-        */
-        GoogleAnalyticsCode,
-
         /**
          * Revert to MyData *not* using the Solr "permission documents" which
          * was the behavior in Dataverse 4.2. Starting to use Solr permission
@@ -171,6 +163,9 @@ public class SettingsServiceBean {
         SearchRespectPermissionRoot,
         /** Solr hostname and port, such as "localhost:8983". */
         SolrHostColonPort,
+        /** Enable full-text indexing in solr up to max file size */
+        SolrFullTextIndexing, //true or false (default)
+        SolrMaxFileSizeForFullTextIndexing, //long - size in bytes (default unset/no limit)
         /** Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
         MaxFileUploadSizeInBytes,
         /** Key for if ScrubMigrationData is enabled or disabled. */
@@ -185,7 +180,8 @@ public class SettingsServiceBean {
         Authority,
         /** DoiProvider for global id */
         DoiProvider,
-        DoiSeparator,
+        /** Shoulder for global id - used to create a common prefix on identifiers */
+        Shoulder,
         /* Removed for now - tried to add here but DOI Service Bean didn't like it at start-up
         DoiUsername,
         DoiPassword,
@@ -287,6 +283,10 @@ public class SettingsServiceBean {
         */
         StyleCustomizationFile,
         /*
+         Location and name of analytics code file
+        */
+        WebAnalyticsCode,
+        /*
          Location and name of installation logo customization file
         */
         LogoCustomizationFile,
@@ -350,15 +350,60 @@ public class SettingsServiceBean {
          */
         PVCustomPasswordResetAlertMessage,
         /*
-        String to describe DOI format for data files. Default is INDEPENDENT. (That is independent 
-        from the Dataset DOI
-        If 'DEPENEDENT' then the DOI will be the Dataset DOI plus a file DOI with a slash in between.
+        String to describe DOI format for data files. Default is DEPENDENT. 
+        'DEPENEDENT' means the DOI will be the Dataset DOI plus a file DOI with a slash in between.
+        'INDEPENDENT' means a new global id, completely independent from the dataset-level global id.
         */
         DataFilePIDFormat, 
+        /* Json array of supported languages
+        */
+        Languages,
         /*
         Number for the minimum number of files to send PID registration to asynchronous workflow
         */
-        PIDAsynchRegFileCount
+        PIDAsynchRegFileCount,
+        /**
+         * 
+         */
+        FilePIDsEnabled,
+
+        /**
+         * Indicates if the Handle service is setup to work 'independently' (No communication with the Global Handle Registry)
+         */
+        IndependentHandleService,
+
+        /**
+         * Archiving can be configured by providing an Archiver class name (class must extend AstractSubmitToArchiverCommand)
+         * and a list of settings that should be passed to the Archiver.
+         * Note: 
+         * Configuration may also require adding Archiver-specific jvm-options (i.e. for username and password) in glassfish.
+         * 
+         * To automate the submission of an archival copy step as part of publication, a post-publication workflow must also be configured.
+         * 
+         * For example:
+         * ArchiverClassName - "edu.harvard.iq.dataverse.engine.command.impl.DPNSubmitToArchiveCommand"
+         * ArchiverSettings - "DuraCloudHost, DuraCloudPort, DuraCloudContext"
+         * 
+         * Note: Dataverse must be configured with values for these dynamically defined settings as well, e.g. 
+         * 
+         * DuraCloudHost , eg. "qdr.duracloud.org", a non-null value enables submission
+         * DuraCloudPort, default is 443
+         * DuraCloudContext, default is "durastore"
+         */
+        
+        ArchiverClassName,
+        ArchiverSettings,
+        /**
+         * A comma-separated list of roles for which new dataverses should inherit the
+         * corresponding role assignments from the parent dataverse. Also affects
+         * /api/admin/dataverse/{alias}/addRolesToChildren. Default is "", no
+         * inheritance. "*" means inherit assignments for all roles
+         */
+        InheritParentRoleAssignments,
+        /*
+        *
+        */
+        MDCLogPath
         ;
 
         @Override
@@ -372,13 +417,6 @@ public class SettingsServiceBean {
     
     @EJB
     ActionLogServiceBean actionLogSvc;
-    
-    /**
-     * Values that are considered as "true".
-     * @see #isTrue(java.lang.String, boolean) 
-     */
-    public static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(
-            new TreeSet<>( Arrays.asList("1","yes", "true","allow")));
     
     /**
      * Basic functionality - get the name, return the setting, or {@code null}.
@@ -466,7 +504,7 @@ public class SettingsServiceBean {
      */
     public boolean isTrue( String name, boolean defaultValue ) {
         String val = get(name);
-        return ( val==null ) ? defaultValue : TRUE_VALUES.contains(val.trim().toLowerCase() );
+        return ( val==null ) ? defaultValue : StringUtil.isTrue(val);
     }
     
     public boolean isTrueForKey( Key key, boolean defaultValue ) {

@@ -128,7 +128,7 @@ public class BuiltinUsersIT {
         Response createUserResponse = createUser(randomUsername, "firstName", "lastName", email);
         createUserResponse.prettyPrint();
         assertEquals(200, createUserResponse.statusCode());
-        String emailActual = JsonPath.from(createUserResponse.body().asString()).getString("data.user." + emailKey);
+        String emailActual = JsonPath.from(createUserResponse.body().asString()).getString("data.authenticatedUser." + emailKey);
         // the backend will trim the email address
         String emailExpected = email.trim();
         assertEquals(emailExpected, emailActual);
@@ -192,17 +192,22 @@ public class BuiltinUsersIT {
         String retrievedTokenUsingUsername = JsonPath.from(getApiTokenUsingUsername.asString()).getString("data.message");
         assertEquals(createdToken, retrievedTokenUsingUsername);
 
+        //TODO: This chunk was for testing email login via API, 
+        // but is disabled as it could not be used without a code change and
+        // then the code to use it was removed in https://github.com/IQSS/dataverse/pull/4993 .
+        // We should consider a better way to test email login --MAD 4.9.3
+        
+        //if (BuiltinUsers.retrievingApiTokenViaEmailEnabled) {
+        //    Response getApiTokenUsingEmail = getApiTokenUsingEmail(usernameToCreate + "@mailinator.com", usernameToCreate);
+        //    getApiTokenUsingEmail.prettyPrint();
+        //    assertEquals(200, getApiTokenUsingEmail.getStatusCode());
+        //    String retrievedTokenUsingEmail = JsonPath.from(getApiTokenUsingEmail.asString()).getString("data.message");
+        //    assertEquals(createdToken, retrievedTokenUsingEmail);
+        //}
+        
         Response failExpected = UtilIT.getApiTokenUsingUsername("junk", "junk");
         failExpected.prettyPrint();
         assertEquals(400, failExpected.getStatusCode());
-
-        if (BuiltinUsers.retrievingApiTokenViaEmailEnabled) {
-            Response getApiTokenUsingEmail = getApiTokenUsingEmail(usernameToCreate + "@mailinator.com", usernameToCreate);
-            getApiTokenUsingEmail.prettyPrint();
-            assertEquals(200, getApiTokenUsingEmail.getStatusCode());
-            String retrievedTokenUsingEmail = JsonPath.from(getApiTokenUsingEmail.asString()).getString("data.message");
-            assertEquals(createdToken, retrievedTokenUsingEmail);
-        }
 
         Response removeAllowApiTokenLookupViaApi = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
         removeAllowApiTokenLookupViaApi.then().assertThat()
@@ -292,19 +297,19 @@ public class BuiltinUsersIT {
                         "ILLEGAL_MATCH",
                         "NO_GOODSTRENGTH"
                 )),
-                new AbstractMap.SimpleEntry<>("Potat$ 1234!", Collections.emptyList()), // 4 digits in a row is ok
-                new AbstractMap.SimpleEntry<>("Potat$ 01!", Collections.emptyList()), // correct length, lowercase, special character and digit. All ok...
-                new AbstractMap.SimpleEntry<>("POTAT$ o1!", Collections.emptyList()), // correct length, uppercase, special character and digit. All ok...
-                new AbstractMap.SimpleEntry<>("Potat$ o1!", Collections.emptyList()), // correct length, uppercase, lowercase and and special character. All ok...
-                new AbstractMap.SimpleEntry<>("Potat  0!", Collections.emptyList()), // correct length, uppercase, lowercase and digit. All ok...
-                new AbstractMap.SimpleEntry<>("twentycharactershere", Collections.emptyList())) // 20 character password length. All ok...
+                new AbstractMap.SimpleEntry<>("Potat$ 1234!", Collections.<String>emptyList()), // 4 digits in a row is ok
+                new AbstractMap.SimpleEntry<>("Potat$ 01!", Collections.<String>emptyList()), // correct length, lowercase, special character and digit. All ok...
+                new AbstractMap.SimpleEntry<>("POTAT$ o1!", Collections.<String>emptyList()), // correct length, uppercase, special character and digit. All ok...
+                new AbstractMap.SimpleEntry<>("Potat$ o1!", Collections.<String>emptyList()), // correct length, uppercase, lowercase and and special character. All ok...
+                new AbstractMap.SimpleEntry<>("Potat  0!", Collections.<String>emptyList()), // correct length, uppercase, lowercase and digit. All ok...
+                new AbstractMap.SimpleEntry<>("twentycharactershere", Collections.<String>emptyList())) // 20 character password length. All ok...
                 .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue))).forEach(
                 (password, expectedErrors) -> {
                     final Response response = given().body(password).when().post("/api/admin/validatePassword");
                     response.prettyPrint();
                     final List<String> actualErrors = JsonPath.from(response.body().asString()).get("data.errors");
                     assertTrue(actualErrors.containsAll(expectedErrors));
-                    assertTrue(expectedErrors.containsAll(actualErrors)); // Should be fully reflexive.
+                    assertTrue(expectedErrors.containsAll(actualErrors)); 
                 }
         );
     }
@@ -317,33 +322,33 @@ public class BuiltinUsersIT {
                 .forEach(key -> given().delete("/api/admin/settings/" + key));
 
         Collections.unmodifiableMap(Stream.of(
-                new AbstractMap.SimpleEntry<>(" ", Arrays.asList( // All is wrong here:
+                new AbstractMap.SimpleEntry<>(" ", Arrays.<String>asList( // All is wrong here:
                         "INSUFFICIENT_CHARACTERISTICS",
                         "INSUFFICIENT_DIGIT",
                         "INSUFFICIENT_ALPHABETICAL",
                         "NO_GOODSTRENGTH",
                         "TOO_SHORT"
                 )),
-                new AbstractMap.SimpleEntry<>("potato", Arrays.asList( // Alpha ok, but:
+                new AbstractMap.SimpleEntry<>("potato", Arrays.<String>asList( // Alpha ok, but:
                         "INSUFFICIENT_CHARACTERISTICS",
                         "INSUFFICIENT_DIGIT",
                         "NO_GOODSTRENGTH"
                 )),
-                new AbstractMap.SimpleEntry<>("123456", Arrays.asList( // correct length and special character, but:
+                new AbstractMap.SimpleEntry<>("123456", Arrays.<String>asList( // correct length and special character, but:
                         "INSUFFICIENT_ALPHABETICAL",
                         "INSUFFICIENT_CHARACTERISTICS",
                         "NO_GOODSTRENGTH"
                 )),
-                new AbstractMap.SimpleEntry<>("potat1", Collections.emptyList()), // Strong enough for Dataverse 4.0.
-                new AbstractMap.SimpleEntry<>("Potat  0", Collections.emptyList()), // All ok...
-                new AbstractMap.SimpleEntry<>("                    ", Collections.emptyList())) // 20 character password length. All ok...
+                new AbstractMap.SimpleEntry<>("potat1", Collections.<String>emptyList()), // Strong enough for Dataverse 4.0.
+                new AbstractMap.SimpleEntry<>("Potat  0", Collections.<String>emptyList()), // All ok...
+                new AbstractMap.SimpleEntry<>("                    ", Collections.<String>emptyList())) // 20 character password length. All ok...
                 .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue))).forEach(
                 (password, expectedErrors) -> {
                     final Response response = given().body(password).when().post("/api/admin/validatePassword");
                     response.prettyPrint();
                     final List<String> actualErrors = JsonPath.from(response.body().asString()).get("data.errors");
                     assertTrue(actualErrors.containsAll(expectedErrors));
-                    assertTrue(expectedErrors.containsAll(actualErrors)); // Should be fully reflexive.
+                    assertTrue(expectedErrors.containsAll(actualErrors)); 
                 }
         );
     }

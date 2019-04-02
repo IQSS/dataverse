@@ -7,7 +7,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.annotations.Expose;
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -18,7 +17,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -33,9 +31,11 @@ import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.Version;
+
+import edu.harvard.iq.dataverse.util.DateUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import org.hibernate.validator.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
-import org.apache.commons.lang.StringEscapeUtils;
 
 
 /**
@@ -46,21 +46,21 @@ import org.apache.commons.lang.StringEscapeUtils;
 @Entity
 public class FileMetadata implements Serializable {
     private static final long serialVersionUID = 1L;
-    private static final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);    
     private static final Logger logger = Logger.getLogger(FileMetadata.class.getCanonicalName());
 
 
     @Expose
     @Pattern(regexp="^[^:<>;#/\"\\*\\|\\?\\\\]*$", 
-            message = "File Name cannot contain any of the following characters: \\ / : * ? \" < > | ; # .")    
-    @NotBlank(message = "Please specify a file name.")
+            message = "{filename.illegalCharacters}")
+    @NotBlank(message = "{filename.blank}")
     @Column( nullable=false )
     private String label = "";
     
-    @Pattern(regexp="|[^/\\\\]|^[^/\\\\]+.*[^/\\\\]+$",
-            message = "Directory Name cannot contain leading or trailing file separators.")    
+    
+    @ValidateDataFileDirectoryName(message = "{directoryname.illegalCharacters}")
     @Expose
     @Column ( nullable=true )
+
     private String directoryLabel;
     @Column(columnDefinition = "TEXT")
     private String description = "";
@@ -122,6 +122,12 @@ public class FileMetadata implements Serializable {
     }
 
     public void setDirectoryLabel(String directoryLabel) {
+        //Strip off beginning and ending \ // - .
+        // and replace any sequences/combinations of / and \ with a single /
+        if (directoryLabel != null) {
+            directoryLabel = StringUtil.sanitizeFileDirectory(directoryLabel);
+        }
+
         this.directoryLabel = directoryLabel;
     }
 
@@ -320,7 +326,7 @@ public class FileMetadata implements Serializable {
             }
         }
         if (fileDate != null) {
-            return displayDateFormat.format(fileDate);
+            return DateUtil.formatDate(fileDate);
         }
         return "";
     }
@@ -333,17 +339,12 @@ public class FileMetadata implements Serializable {
     
      
     public String getFileCitation(boolean html){
-         String citation = this.getDatasetVersion().getCitation(html);
-         /*
-         ", #{FilePage.fileMetadata.label} [fileName]"
-         <h:outputText value=", #{FilePage.file.unf}" rendered="#{FilePage.file.tabularData and !(empty FilePage.file.unf)}"/>
-         */
-         citation += "; " + this.getLabel() + " [fileName]" ;
-         if (this.dataFile.isTabularData() && this.dataFile.getUnf() != null && !this.dataFile.getUnf().isEmpty()){
-             citation += ", " + this.dataFile.getUnf() + " [fileUNF]";                    
-         }
-         return citation;
+         return new DataCitation(this).toString(html);
      }
+    
+    public String getDirectFileCitation(boolean html){
+    	return new DataCitation(this, true).toString(html);
+    }
     
         
     public DatasetVersion getDatasetVersion() {

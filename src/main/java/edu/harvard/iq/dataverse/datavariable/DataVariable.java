@@ -18,6 +18,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import org.hibernate.validator.constraints.NotBlank;
 import edu.harvard.iq.dataverse.DataTable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Index;
 import javax.persistence.OrderBy;
@@ -35,10 +37,6 @@ import javax.persistence.Table;
 @Entity
 @Table(indexes = {@Index(columnList="datatable_id")})
 public class DataVariable implements Serializable {
-    
-    /** Creates a new instance of DataVariable */
-    public DataVariable() {
-    }
     
     /*
      * Class property definitions: 
@@ -67,7 +65,7 @@ public class DataVariable implements Serializable {
      */
     @Column(columnDefinition="TEXT")
     private String label;
-    
+
     /*
      * weighted: indicates if this variable is weighted.
      */
@@ -84,7 +82,6 @@ public class DataVariable implements Serializable {
      * ends in the fixed-width data file.
      */
     private java.lang.Long fileEndPosition;
-
     
 
     public enum VariableInterval { DISCRETE, CONTINUOUS, NOMINAL, DICHOTOMOUS }; // former VariableIntervalType
@@ -161,7 +158,7 @@ public class DataVariable implements Serializable {
      * unf: printable representation of the UNF, Universal Numeric Fingerprint
      * of this variable.
      */
-    private String unf;
+    private String unf = "UNF:pending";
     
     /*
      * Variable Categories, for categorical variables.
@@ -170,17 +167,17 @@ public class DataVariable implements Serializable {
     @OneToMany (mappedBy="dataVariable", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
     @OrderBy("catOrder")
     private Collection<VariableCategory> categories;
-    
+
     /*
      * The boolean "ordered": identifies ordered categorical variables ("ordinals"). 
      */
     private boolean orderedFactor = false; 
-    
-    /*
-     * the "Universe" of the variable. (see the DDI documentation for the 
-     * explanation)
+
+    /**
+     * On ingest, we set "factor" to true only if the format is RData and the
+     * variable is a factor in R. See also "orderedFactor" above.
      */
-    private String universe;
+    private boolean factor;
 
   
     
@@ -205,12 +202,27 @@ public class DataVariable implements Serializable {
      */
     private Long numberOfDecimalPoints;
 
+    @OneToMany (mappedBy="dataVariable", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    private Collection<VariableMetadata> variableMetadatas;
+    
+    public DataVariable() {
+    }
+    
+    /** Creates a new instance of DataVariable
+     * @param order
+     * @param table */
+    public DataVariable(int order, DataTable table) {
+        this.fileOrder = order;
+        dataTable =table;
+        invalidRanges = new ArrayList<>();
+        summaryStatistics=new ArrayList<>();
+        categories = new ArrayList<>();
+        variableMetadatas = new ArrayList<>();
+    }
     
     /*
      * Getter and Setter functions: 
      */
-    
-     
     public DataTable getDataTable() {
         return this.dataTable;
     }
@@ -251,7 +263,6 @@ public class DataVariable implements Serializable {
         this.weighted = weighted;
     }
 
-    
     public java.lang.Long getFileStartPosition() {
         return this.fileStartPosition;
     }
@@ -343,8 +354,6 @@ public class DataVariable implements Serializable {
         return this.interval == VariableInterval.DICHOTOMOUS;
     }
     
-    
-    
     public VariableType getType() {
         return this.type;
     }
@@ -415,14 +424,19 @@ public class DataVariable implements Serializable {
         return this.categories;
     }
     
-    public void setCategories(Collection<VariableCategory> categories) {
+    public void setCategories(List<VariableCategory> categories) {
         this.categories = categories;
     }
 
+    /**
+     * In the future, when users can edit variable metadata, they may be able to
+     * specify that their variable is categorical. At that point, add `&& isFactor`.
+     */
     public boolean isCategorical () {
         return (categories != null && categories.size() > 0);
     }
     
+    // Only R supports the concept of ordered categorical.
     public boolean isOrderedCategorical () {
         return isCategorical() && orderedFactor; 
     }
@@ -430,7 +444,15 @@ public class DataVariable implements Serializable {
     public void setOrderedCategorical (boolean ordered) {
         orderedFactor = ordered; 
     }
-    
+
+    public boolean isFactor() {
+        return factor;
+    }
+
+    public void setFactor(boolean factor) {
+        this.factor = factor;
+    }
+
     /* getter and setter for weightedVariables - not yet implemented!
     public java.util.Collection<WeightedVarRelationship> getWeightedVariables() {
         return this.weightedVariables;
@@ -440,14 +462,6 @@ public class DataVariable implements Serializable {
         this.weightedVariables = weightedVariables;
     }
     */
-    
-    public String getUniverse() {
-        return this.universe;
-    }
-    
-    public void setUniverse(String universe) {
-        this.universe = universe;
-    }
     
     public int getFileOrder() {
         return fileOrder;
@@ -472,9 +486,16 @@ public class DataVariable implements Serializable {
     public void setNumberOfDecimalPoints(Long numberOfDecimalPoints) {
         this.numberOfDecimalPoints = numberOfDecimalPoints;
     }
-    
-    
-    /* 
+
+    public void setVariableMetadatas(List<VariableMetadata> variableMetadatas) {
+        this.variableMetadatas = variableMetadatas;
+    }
+
+    public Collection<VariableMetadata> getVariableMetadatas() {
+        return variableMetadatas;
+    }
+
+    /*
      * Custom overrides for hashCode(), equals() and toString() methods:
      */
     

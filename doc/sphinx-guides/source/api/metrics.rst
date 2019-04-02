@@ -1,55 +1,106 @@
 Metrics API
 ===========
 
+The Metrics API provides counts of downloads, datasets created, files uploaded, and more, as described below. Dataverse also supports Make Data Count, which is described in the :doc:`/admin/make-data-count` section of the Admin Guide.
+
 .. contents:: |toctitle|
     :local:
 
-The Metrics API
-
 .. note:: |CORS| The Metrics API can be used from scripts running in web browsers, as it allows cross-origin resource sharing (CORS).
+
+.. note:: For all metrics `besides` Past Days Count (``/pastDays/$days``), Database setting ``MetricsCacheTimeoutMinutes`` defines how long the cached value will be returned by subsequent queries.
 
 .. _CORS: https://www.w3.org/TR/cors/
 
-dataverses/toMonth
-----------------------
+Total
+-----
 
-Returns a count up to the current month or append a date in YYYY-MM format (i.e. ``/2018-01``) for a specific month.
+Returns a count of various objects in dataverse over all-time::
 
-``curl https://demo.dataverse.org/api/info/metrics/dataverses/toMonth``
+    GET https://$SERVER/api/info/metrics/$type
 
-datasets/toMonth
+``$type`` can be set to ``dataverses``, ``datasets``, ``files`` or ``downloads``.
+
+Example: ``curl https://demo.dataverse.org/api/info/metrics/downloads``
+
+To-Month
+--------
+
+Returns a count of various objects in dataverse up to a specified month ``$YYYY-DD`` in YYYY-MM format (e.g. ``2018-01``)::
+
+    GET https://$SERVER/api/info/metrics/$type/toMonth/$YYYY-DD
+
+``$type`` can be set to ``dataverses``, ``datasets``, ``files`` or ``downloads``.
+
+Example: ``curl https://demo.dataverse.org/api/info/metrics/dataverses/toMonth/2018-01``
+
+
+Past Days
+---------
+
+Returns a count of various objects in dataverse for the past ``$days`` (e.g. ``30``):: 
+
+    GET https://$SERVER/api/info/metrics/$type/pastDays/$days
+
+``$type`` can be set to ``dataverses``, ``datasets``, ``files`` or ``downloads``.
+
+Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/pastDays/30``
+
+
+Dataverse Specific Metrics
+--------------------------
+
+By Subject
+~~~~~~~~~~~~~~~
+
+Returns the number of dataverses by each subject::
+
+    GET https://$SERVER/api/info/metrics/dataverses/bySubject
+
+
+By Category
+~~~~~~~~~~~~~~~~~~~~~~
+
+Returns the number of dataverses by each category::
+
+    GET https://$SERVER/api/info/metrics/dataverses/byCategory
+
+
+Dataset Specific Metrics
 ------------------------
 
-Returns a count up to the current month or append a date in YYYY-MM format (i.e. ``/2018-01``) for a specific month.
+By Subject
+~~~~~~~~~~
 
-``curl https://demo.dataverse.org/api/info/metrics/datasets/toMonth``
+Returns the number of datasets by each subject::
 
-files/toMonth
-------------------------
+    GET https://$SERVER/api/info/metrics/datasets/bySubject
 
-Returns a count up to the current month or append a date in YYYY-MM format (i.e. ``/2018-01``) for a specific month.
 
-``curl https://demo.dataverse.org/api/info/metrics/files/toMonth``
+By Subject, and to Month
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-downloads/toMonth
-------------------------
+Returns the number of datasets by each subject, and up to a specified month ``$YYYY-DD`` in YYYY-MM format (e.g. ``2018-01``)::
 
-Returns a count up to the current month or append a date in YYYY-MM format (i.e. ``/2018-01``) for a specific month.
+    GET https://$SERVER/api/info/metrics/datasets/bySubject/toMonth/$YYYY-DD
 
-``curl https://demo.dataverse.org/api/info/metrics/downloads/toMonth``
-
-dataverses/byCategory
-------------------------
-
-``curl https://demo.dataverse.org/api/info/metrics/dataverses/byCategory``
-
-datasets/bySubject
-------------------------
-
-``curl https://demo.dataverse.org/api/info/metrics/datasets/bySubject``
+Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/bySubject/toMonth/2018-01``
 
 .. |CORS| raw:: html
 
       <span class="label label-success pull-right">
         CORS
       </span>
+
+
+Metric Query Parameters
+-----------------------
+
+To further tailor your metric, query parameters can be provided.
+
+dataLocation
+~~~~~~~~~~~~
+
+Specifies whether the metric should query ``local`` data, ``remote`` data (e.g. harvested), or ``all`` data when getting results. Only works for dataset metrics.
+
+Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/?dataLocation=remote``

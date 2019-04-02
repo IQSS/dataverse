@@ -6,13 +6,13 @@
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
-
     <h:head>
     </h:head>
 
     <h:body>
         <f:metadata>
             <f:viewParam name="dataverseId" value="#{dataverseServiceBean.findRootDataverse().id}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{harvestingClientsPage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverse.id), bundle['dashboard.title'])}"/>
@@ -75,7 +75,7 @@
                                     <ui:remove>
                                     <!-- Filter feature removed -->
                                     <div id="datatable_filter" class="dataTables_filter">
-                                        <label>Filter
+                                        <label>#{bundle.filter}
                                             <input type="search" style="display:inline !important; width:auto !important;" class="form-control input-sm" placeholder="" aria-controls="datatable"/>
                                         </label>
                                     </div>
@@ -140,6 +140,11 @@
                                     </p:commandLink>
                                 </div>
                             </div>
+                            <script type="text/javascript" jsf:rendered="#{harvestClient.harvestingNow or harvestClient.deleteInProgress}">
+                                if (window.refreshTimer === undefined){
+                                    window.refreshTimer = setTimeout(function(){window.location.reload();},5000);
+                                }
+                            </script>
                         </p:column>
                     </p:dataTable>
 
@@ -148,14 +153,13 @@
                               modal="true" width="65%"
                               header="#{bundle['harvestclients.tab.header.action.btn.delete.dialog.header']}">
                         <p class="help-block">
-                            <span class="glyphicon glyphicon-warning-sign text-danger"/>
-                            <h:outputFormat styleClass="text-danger" value=" #{bundle['harvestclients.tab.header.action.btn.delete.dialog.warning']}">
+                            <span class="glyphicon glyphicon-warning-sign text-warning"/>
+                            <h:outputFormat styleClass="text-warning" value=" #{bundle['harvestclients.tab.header.action.btn.delete.dialog.warning']}">
                                 <f:param value="#{harvestingClientsPage.getSelectedClient().name}"/>
                             </h:outputFormat>
                         </p>
                         <!-- TODO: We probably don't need this extra text anymore - let's review
                           p class="help-block">
-                            <span class="glyphicon glyphicon-info-sign"/>
                             <h:outputFormat value=" _{bundle['harvestclients.tab.header.action.btn.delete.dialog.tip']}">
                                 <f:param value="_{harvestingClientsPage.getSelectedClient().name}"/>
                             </h:outputFormat>
@@ -173,7 +177,7 @@
                         <p:fragment id="newHarvestingClientDialogContent">
                             <p:focus context="newHarvestingClientDialogContent"/>
                             <p class="help-block">
-                                <span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{bundle['harvestclients.newClientDialog.help']}"/>
+                                <h:outputText value="#{bundle['harvestclients.newClientDialog.help']}"/>
                             </p>
                             <fieldset id="addClientStepOne" class="form-horizontal" jsf:rendered="#{harvestingClientsPage.createStepOne}">
                                 <!-- STEP 1 - Info -->
@@ -220,9 +224,10 @@
                                 <!-- harvest url/server address: -->
                                 <div class="form-group">
                                     <label for="serverUrl" class="col-sm-2 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestclients.newClientDialog.url.tip']}">
-                                            #{bundle['harvestclients.newClientDialog.url']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{!harvestingClientsPage.initialSettingsValidated}" title="#{bundle.requiredField}"/>
-                                        </span>
+                                        #{bundle['harvestclients.newClientDialog.url']} 
+                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{!harvestingClientsPage.initialSettingsValidated}" title="#{bundle.requiredField}"/>
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestclients.newClientDialog.url.tip']}"></span>
                                     </label>
                                     <div class="col-sm-9">
                                         <p:inputText id="serverUrl" styleClass="form-control"
@@ -237,9 +242,10 @@
                                 <!-- dataverse to which the harvesting configuration is being added: -->
                                 <div class="form-group" jsf:rendered="#{harvestingClientsPage.createMode}">
                                     <label for="destinationDataverse" class="col-sm-2 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestclients.newClientDialog.dataverse.tip']}">
-                                            #{bundle['harvestclients.newClientDialog.dataverse']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingClientsPage.createMode}" title="#{bundle.requiredField}"/>
-                                        </span>
+                                        #{bundle['harvestclients.newClientDialog.dataverse']} 
+                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingClientsPage.createMode}" title="#{bundle.requiredField}"/>
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestclients.newClientDialog.dataverse.tip']}"></span>
                                     </label>
                                     <div class="col-sm-9">
                                         <p:autoComplete id="destinationDataverseMenu"
@@ -297,9 +303,9 @@
                                 <!-- harvesting sets (if available): these are obtained from the oai server response: -->
                                 <div class="form-group">
                                     <label for="serverOaiSets" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestclients.newClientDialog.oaiSets.tip']}">
-                                            #{bundle['harvestclients.newClientDialog.oaiSets']}
-                                        </span>
+                                        #{bundle['harvestclients.newClientDialog.oaiSets']}
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestclients.newClientDialog.oaiSets.tip']}"></span>
                                     </label>
                                     <div class="col-sm-6">
                                         <!-- select menu, in "create new client" mode, after the server has been contacted and we got the list of sets: -->
@@ -324,9 +330,10 @@
                                 <!-- metadata formats offered. this is also obtained from the oai server response: -->
                                 <div class="form-group">
                                     <label for="oaiMetadataFormat" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestclients.newClientDialog.oaiMetadataFormat.tip']}">
-                                            #{bundle['harvestclients.newClientDialog.oaiMetadataFormat']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}" jsf:rendered="#{harvestingClientsPage.initialSettingsValidated and harvestingClientsPage.createMode}"/>
-                                        </span>
+                                        #{bundle['harvestclients.newClientDialog.oaiMetadataFormat']} 
+                                        <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}" jsf:rendered="#{harvestingClientsPage.initialSettingsValidated and harvestingClientsPage.createMode}"/>
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestclients.newClientDialog.oaiMetadataFormat.tip']}"></span>
                                     </label>
                                     <div class="col-sm-6">
                                         <!-- select menu, shown in "create new client" mode, after the server has been contacted and we got the list of available metadata formats: -->
@@ -380,9 +387,9 @@
                                 <!-- scheduling; can be enabled, can be left unscheduled; harvesting can be scheduled daily or weekly -->
                                 <div class="form-group">
                                     <label for="harvestingSchedule" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestclients.newClientDialog.schedule.tip']}">
-                                            #{bundle['harvestclients.newClientDialog.schedule']}
-                                        </span>
+                                        #{bundle['harvestclients.newClientDialog.schedule']}
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestclients.newClientDialog.schedule.tip']}"></span>
                                     </label>
                                     <div class="col-sm-6">
                                         <p:panelGrid columns="2" style="width:100%;" styleClass="noBorders">
@@ -475,9 +482,9 @@
                                 <!-- harvesting "styles" - these define different rules used to format and display metadata harvested from different archives  -->
                                 <div class="form-group">
                                     <label for="harvestingStyle" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestclients.newClientDialog.harvestingStyle.tip']}">
-                                            #{bundle['harvestclients.newClientDialog.harvestingStyle']}
-                                        </span>
+                                        #{bundle['harvestclients.newClientDialog.harvestingStyle']}
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestclients.newClientDialog.harvestingStyle.tip']}"></span>
                                     </label>
                                     <div class="col-sm-6">
                                         <p:selectOneMenu id="harvestingStyle"
@@ -493,9 +500,9 @@
                                 <!-- archive url - used in search results to render links back to the archive (in case the hostname is different from the harvesting url) -->
                                 <div class="form-group" jsf:rendered="#{harvestingClientsPage.editMode}">
                                     <label for="archiveUrl" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestclients.viewEditDialog.archiveUrl.tip']}">
-                                            #{bundle['harvestclients.viewEditDialog.archiveUrl']}
-                                        </span>
+                                        #{bundle['harvestclients.viewEditDialog.archiveUrl']}
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestclients.viewEditDialog.archiveUrl.tip']}"></span>
                                     </label>
                                     <div class="col-sm-6">
                                         <p:inputText id="archiveUrl"
@@ -508,9 +515,9 @@
                                 <!-- archive description - used to display harvested metadata in search results: -->
                                 <div class="form-group" jsf:rendered="#{harvestingClientsPage.editMode}">
                                     <label for="archiveDescription" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestclients.viewEditDialog.archiveDescription.tip']}">
-                                            #{bundle['harvestclients.viewEditDialog.archiveDescription']}
-                                        </span>
+                                        #{bundle['harvestclients.viewEditDialog.archiveDescription']}
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestclients.viewEditDialog.archiveDescription.tip']}"></span>
                                     </label>
                                     <div class="col-sm-6">
                                         <p:inputTextarea id="archiveDescription" rows="3" cols="45" styleClass="form-control"

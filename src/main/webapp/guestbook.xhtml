@@ -6,7 +6,6 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
-
     <h:head>
     </h:head>
 
@@ -22,6 +21,7 @@
                     <f:viewParam name="ownerId" value="#{GuestbookPage.ownerId}"/>
                     <f:viewParam name="sourceId" value="#{GuestbookPage.sourceId}"/>
                     <f:viewParam name="editMode" value="#{GuestbookPage.editMode}"/>
+                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{GuestbookPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(GuestbookPage.dataverse, (GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : GuestbookPage.guestbook.name))}"/>
                 </f:metadata>
@@ -33,9 +33,7 @@
                         <div class="row form-horizontal">
                             <div class="col-xs-6 form-group">
                                 <label class="col-sm-3 control-label" for="guestbookNameStatic">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.guestbook.name.tip']}">
-                                        #{bundle['dataset.manageGuestbooks.guestbook.name']}
-                                    </span>
+                                    #{bundle['dataset.manageGuestbooks.guestbook.name']}
                                 </label>
                                 <div class="col-sm-9">
                                     <p class="form-control-static">
@@ -50,9 +48,10 @@
                     <div class="form-horizontal" jsf:rendered="#{!empty GuestbookPage.editMode}">
                         <div class="form-group">
                             <label class="col-sm-3 control-label" for="guestbookName">
-                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.guestbook.name.tip']}">
-                                    #{bundle['dataset.manageGuestbooks.guestbook.name']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span>
-                                </span>
+                                #{bundle['dataset.manageGuestbooks.guestbook.name']} 
+                                <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span>
+                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.manageGuestbooks.guestbook.name.tip']}"></span>
                             </label>
                             <div class="col-sm-6">
                                 <p:inputText id="guestbookName" styleClass="form-control" value="#{GuestbookPage.guestbook.name}"/>
@@ -200,4 +199,3 @@
         </ui:composition>
     </h:body>
 </html>
-

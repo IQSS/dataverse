@@ -20,17 +20,15 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.ForeignMetadataFormatMapping;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestedDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -62,20 +60,17 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import javax.ws.rs.core.Context;
 import javax.xml.stream.XMLStreamException;
 import org.apache.commons.lang.StringUtils;
 
 /**
  *
  * @author ellenk
- * TODO: Why does this bean not extend AbstractApiBean?
  */
 @Stateless
 public class ImportServiceBean {
@@ -231,7 +226,7 @@ public class ImportServiceBean {
                 // select whether you want to harvest with or without files, 
                 // ImportType.HARVEST vs. ImportType.HARVEST_WITH_FILES
                 logger.fine("importing DDI "+metadataFile.getAbsolutePath());
-                dsDTO = importDDIService.doImport(ImportType.HARVEST_WITH_FILES, xmlToParse);
+                dsDTO = importDDIService.doImport(ImportType.HARVEST, xmlToParse);
             } catch (IOException | XMLStreamException | ImportException e) {
                 throw new ImportException("Failed to process DDI XML record: "+ e.getClass() + " (" + e.getMessage() + ")");
             }
@@ -324,26 +319,26 @@ public class ImportServiceBean {
             
             // A Global ID is required, in order for us to be able to harvest and import
             // this dataset:
-            if (StringUtils.isEmpty(ds.getGlobalId())) {
+            if (StringUtils.isEmpty(ds.getGlobalIdString())) {
                 throw new ImportException("The harvested metadata record with the OAI server identifier "+harvestIdentifier+" does not contain a global unique identifier that we could recognize, skipping.");
             }
 
             ds.setHarvestedFrom(harvestingClient);
             ds.setHarvestIdentifier(harvestIdentifier);
             
-            Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId());
+            Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalIdString());
 
             if (existingDs != null) {
                 // If this dataset already exists IN ANOTHER DATAVERSE
                 // we are just going to skip it!
                 if (existingDs.getOwner() != null && !owner.getId().equals(existingDs.getOwner().getId())) {
-                    throw new ImportException("The dataset with the global id "+ds.getGlobalId()+" already exists, in the dataverse "+existingDs.getOwner().getAlias()+", skipping.");
+                    throw new ImportException("The dataset with the global id "+ds.getGlobalIdString()+" already exists, in the dataverse "+existingDs.getOwner().getAlias()+", skipping.");
                 }
                 // And if we already have a dataset with this same id, in this same
                 // dataverse, but it is  LOCAL dataset (can happen!), we're going to 
                 // skip it also: 
                 if (!existingDs.isHarvested()) {
-                    throw new ImportException("A LOCAL dataset with the global id "+ds.getGlobalId()+" already exists in this dataverse; skipping.");
+                    throw new ImportException("A LOCAL dataset with the global id "+ds.getGlobalIdString()+" already exists in this dataverse; skipping.");
                 }
                 // For harvested datasets, there should always only be one version.
                 // We will replace the current version with the imported version.
@@ -366,12 +361,11 @@ public class ImportServiceBean {
                 // are they going to be overwritten by the reindexing of the dataset?
                 existingDs.setFiles(null);
                 Dataset merged = em.merge(existingDs);
+                // harvested datasets don't have physical files - so no need to worry about that.
                 engineSvc.submit(new DestroyDatasetCommand(merged, dataverseRequest));
-                importedDataset = engineSvc.submit(new CreateDatasetCommand(ds, dataverseRequest, false, ImportType.HARVEST));
-
-            } else {
-                importedDataset = engineSvc.submit(new CreateDatasetCommand(ds, dataverseRequest, false, ImportType.HARVEST));
             }
+            
+            importedDataset = engineSvc.submit(new CreateHarvestedDatasetCommand(ds, dataverseRequest));
 
         } catch (JsonParseException | ImportException | CommandException ex) {
             logger.fine("Failed to import harvested dataset: " + ex.getClass() + ": " + ex.getMessage());
@@ -389,6 +383,23 @@ public class ImportServiceBean {
             throw new ImportException("Failed to import harvested dataset: " + ex.getClass() + " (" + ex.getMessage() + ")", ex);
         }
         return importedDataset;
+    }
+
+    public JsonObject ddiToJson(String xmlToParse) throws ImportException{
+        DatasetDTO dsDTO = null;
+
+        try {
+            dsDTO = importDDIService.doImport(ImportType.IMPORT, xmlToParse);
+        } catch (XMLStreamException e) {
+            throw new ImportException("XMLStreamException" + e);
+        }
+        // convert DTO to Json,
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String json = gson.toJson(dsDTO);
+        JsonReader jsonReader = Json.createReader(new StringReader(json));
+        JsonObject obj = jsonReader.readObject();
+
+        return obj;
     }
     
     public JsonObjectBuilder doImport(DataverseRequest dataverseRequest, Dataverse owner, String xmlToParse, String fileName, ImportType importType, PrintWriter cleanupLog) throws ImportException, IOException {
@@ -416,8 +427,8 @@ public class ImportServiceBean {
             // For ImportType.NEW, if the user supplies a global identifier, and it's not a protocol
             // we support, it will be rejected.
             if (importType.equals(ImportType.NEW)) {
-                if (ds.getGlobalId() != null && !ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, ""))) {
-                    throw new ImportException("Could not register id " + ds.getGlobalId() + ", protocol not supported");
+                if (ds.getGlobalIdString() != null && !ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, ""))) {
+                    throw new ImportException("Could not register id " + ds.getGlobalIdString() + ", protocol not supported");
                 }
             }
 
@@ -427,7 +438,7 @@ public class ImportServiceBean {
             // Check data against required contraints
             List<ConstraintViolation<DatasetField>> violations = ds.getVersions().get(0).validateRequired();
             if (!violations.isEmpty()) {
-                if (importType.equals(ImportType.MIGRATION) || importType.equals(ImportType.HARVEST)) {
+                if ( importType.equals(ImportType.HARVEST) ) {
                     // For migration and harvest, add NA for missing required values
                     for (ConstraintViolation<DatasetField> v : violations) {
                         DatasetField f = v.getRootBean();
@@ -455,7 +466,8 @@ public class ImportServiceBean {
                     DatasetFieldValue f = v.getRootBean();
                     boolean fixed = false;
                     boolean converted = false;
-                    if ((importType.equals(ImportType.MIGRATION) || importType.equals(ImportType.HARVEST)) && settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)) {
+                    if ( importType.equals(ImportType.HARVEST) && 
+                         settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)) {
                         fixed = processMigrationValidationError(f, cleanupLog, fileName);
                         converted = true;
                         if (fixed) {
@@ -485,7 +497,7 @@ public class ImportServiceBean {
             }
 
 
-            Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId());
+            Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalIdString());
 
             if (existingDs != null) {
                 if (importType.equals(ImportType.HARVEST)) {
@@ -494,24 +506,26 @@ public class ImportServiceBean {
                     if (existingDs.getVersions().size() != 1) {
                         throw new ImportException("Error importing Harvested Dataset, existing dataset has " + existingDs.getVersions().size() + " versions");
                     }
+                    // harvested datasets don't have physical files - so no need to worry about that.
                     engineSvc.submit(new DestroyDatasetCommand(existingDs, dataverseRequest));
-                    Dataset managedDs = engineSvc.submit(new CreateDatasetCommand(ds, dataverseRequest, false, importType));
+                    Dataset managedDs = engineSvc.submit(new CreateHarvestedDatasetCommand(ds, dataverseRequest));
                     status = " updated dataset, id=" + managedDs.getId() + ".";
+                    
                 } else {
                     // If we are adding a new version to an existing dataset,
                     // check that the version number isn't already in the dataset
                     for (DatasetVersion dsv : existingDs.getVersions()) {
                         if (dsv.getVersionNumber().equals(ds.getLatestVersion().getVersionNumber())) {
-                            throw new ImportException("VersionNumber " + ds.getLatestVersion().getVersionNumber() + " already exists in dataset " + existingDs.getGlobalId());
+                            throw new ImportException("VersionNumber " + ds.getLatestVersion().getVersionNumber() + " already exists in dataset " + existingDs.getGlobalIdString());
                         }
                     }
                     DatasetVersion dsv = engineSvc.submit(new CreateDatasetVersionCommand(dataverseRequest, existingDs, ds.getVersions().get(0)));
-                    status = " created datasetVersion, for dataset "+ dsv.getDataset().getGlobalId();
+                    status = " created datasetVersion, for dataset "+ dsv.getDataset().getGlobalIdString();
                     createdId = dsv.getId();
                 }
 
             } else {
-                Dataset managedDs = engineSvc.submit(new CreateDatasetCommand(ds, dataverseRequest, false, importType));
+                Dataset managedDs = engineSvc.submit(new CreateNewDatasetCommand(ds, dataverseRequest));
                 status = " created dataset, id=" + managedDs.getId() + ".";
                 createdId = managedDs.getId();
             }

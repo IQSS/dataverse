@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -52,6 +53,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -113,7 +115,7 @@ public class AuthenticationServiceBean {
         
         // First, set up the factories
         try {
-            registerProviderFactory( new BuiltinAuthenticationProviderFactory(builtinUserServiceBean, passwordValidatorService) );
+            registerProviderFactory( new BuiltinAuthenticationProviderFactory(builtinUserServiceBean, passwordValidatorService, this) );
             registerProviderFactory( new ShibAuthenticationProviderFactory() );
             registerProviderFactory( new OAuth2AuthenticationProviderFactory() );
         
@@ -301,6 +303,22 @@ public class AuthenticationServiceBean {
         }
     }
     
+    public AuthenticatedUser getAuthenticatedUserWithProvider( String identifier ) {
+        try {
+            AuthenticatedUser authenticatedUser = em.createNamedQuery("AuthenticatedUser.findByIdentifier", AuthenticatedUser.class)
+                    .setParameter("identifier", identifier)
+                    .getSingleResult();
+            AuthenticatedUserLookup aul = em.createNamedQuery("AuthenticatedUserLookup.findByAuthUser", AuthenticatedUserLookup.class)
+                    .setParameter("authUser", authenticatedUser)
+                    .getSingleResult();
+            authenticatedUser.setAuthProviderId(aul.getAuthenticationProviderId());
+            
+            return authenticatedUser;
+        } catch ( NoResultException nre ) {
+            return null;
+        }
+    }
+    
     public AuthenticatedUser getAdminUser() {
         try {
             return em.createNamedQuery("AuthenticatedUser.findAdminUser", AuthenticatedUser.class)
@@ -337,7 +355,7 @@ public class AuthenticationServiceBean {
      * @return The authenticated user for the passed provider id and authentication request.
      * @throws AuthenticationFailedException 
      */
-    public AuthenticatedUser getCreateAuthenticatedUser( String authenticationProviderId, AuthenticationRequest req ) throws AuthenticationFailedException {
+    public AuthenticatedUser getUpdateAuthenticatedUser( String authenticationProviderId, AuthenticationRequest req ) throws AuthenticationFailedException {
         AuthenticationProvider prv = getAuthenticationProvider(authenticationProviderId);
         if ( prv == null ) throw new IllegalArgumentException("No authentication provider listed under id " + authenticationProviderId );
         if ( ! (prv instanceof CredentialsAuthenticationProvider) ) {
@@ -354,8 +372,9 @@ public class AuthenticationServiceBean {
             }
             
             if ( user == null ) {
-                return createAuthenticatedUser(
-                        new UserRecordIdentifier(authenticationProviderId, resp.getUserId()), resp.getUserId(), resp.getUserDisplayInfo(), true );
+                throw new IllegalStateException("Authenticated user does not exist. The functionality to support creating one at this point in authentication has been removed.");
+                //return createAuthenticatedUser(
+                //        new UserRecordIdentifier(authenticationProviderId, resp.getUserId()), resp.getUserId(), resp.getUserDisplayInfo(), true );
             } else {
                 if (BuiltinAuthenticationProvider.PROVIDER_ID.equals(user.getAuthenticatedUserLookup().getAuthenticationProviderId())) {
                     return user;
@@ -734,10 +753,6 @@ public class AuthenticationServiceBean {
         }
         BuiltinUser builtinUser = new BuiltinUser();
         builtinUser.setUserName(authenticatedUser.getUserIdentifier());
-        builtinUser.setFirstName(authenticatedUser.getFirstName());
-        builtinUser.setLastName(authenticatedUser.getLastName());
-        // Bean Validation will check for null and invalid email addresses
-        builtinUser.setEmail(newEmailAddress);
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
         Set<ConstraintViolation<BuiltinUser>> violations = validator.validate(builtinUser);
@@ -784,11 +799,12 @@ public class AuthenticationServiceBean {
 
         AuthenticationRequest authReq = new AuthenticationRequest();
         /**
-         * @todo Should this really be coming from a bundle like this? Added
-         * because that's what BuiltinAuthenticationProvider does.
+         * @todo Should the credential key really be a Bundle key?
+         * BuiltinAuthenticationProvider.KEY_USERNAME_OR_EMAIL, for example, is
+         * "login.builtin.credential.usernameOrEmail" as of this writing.
          */
-        authReq.putCredential(BundleUtil.getStringFromBundle("login.builtin.credential.usernameOrEmail"), username);
-        authReq.putCredential(BundleUtil.getStringFromBundle("login.builtin.credential.password"), password);
+        authReq.putCredential(BuiltinAuthenticationProvider.KEY_USERNAME_OR_EMAIL, username);
+        authReq.putCredential(BuiltinAuthenticationProvider.KEY_PASSWORD, password);
         /**
          * @todo Should probably set IP address here.
          */
@@ -796,7 +812,7 @@ public class AuthenticationServiceBean {
 
         String credentialsAuthProviderId = BuiltinAuthenticationProvider.PROVIDER_ID;
         try {
-            AuthenticatedUser au = getCreateAuthenticatedUser(credentialsAuthProviderId, authReq);
+            AuthenticatedUser au = getUpdateAuthenticatedUser(credentialsAuthProviderId, authReq);
             logger.fine("User authenticated:" + au.getEmail());
             return au;
         } catch (AuthenticationFailedException ex) {
@@ -808,7 +824,7 @@ public class AuthenticationServiceBean {
                  * AuthenticationServiceBean.convertBuiltInToShib
                  */
                 logger.info("AuthenticationFailedException caught in canLogInAsBuiltinUser: The username and/or password entered is invalid: " + ex.getResponse().getMessage() + " - Maybe the user (" + username + ") hasn't upgraded their password? Checking the old password...");
-                BuiltinUser builtinUser = builtinUserServiceBean.findByUsernameOrEmail(username);
+                BuiltinUser builtinUser = builtinUserServiceBean.findByUserName(username);
                 if (builtinUser != null) {
                     boolean userAuthenticated = PasswordEncryption.getVersion(builtinUser.getPasswordEncryptionVersion()).check(password, builtinUser.getEncryptedPassword());
                     if (userAuthenticated == true) {
@@ -872,6 +888,12 @@ public class AuthenticationServiceBean {
                 github.getId(),
                 google.getId()
         );
+    }
+    
+    public List <WorkflowComment> getWorkflowCommentsByAuthenticatedUser(AuthenticatedUser user){ 
+        Query query = em.createQuery("SELECT wc FROM WorkflowComment wc WHERE wc.authenticatedUser.id = :auid");
+        query.setParameter("auid", user.getId());       
+        return query.getResultList();
     }
 
 }

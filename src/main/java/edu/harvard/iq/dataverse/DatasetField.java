@@ -257,12 +257,37 @@ public class DatasetField implements Serializable {
         }
         return returnString;
     }
+    
+    public String getRawValue() {
+        String returnString = "";
+        for (String value : getRawValuesList()) {
+            if(value == null) {
+                value="";
+            }
+            returnString += (returnString.isEmpty() ? "" : "; ") + value.trim();
+        }
+        return returnString;
+    }
 
     public String getCompoundDisplayValue() {
         String returnString = "";
         for (DatasetFieldCompoundValue dscv : datasetFieldCompoundValues) {
             for (DatasetField dsf : dscv.getChildDatasetFields()) {
                 for (String value : dsf.getValues()) {
+                    if (!(value == null)) {
+                        returnString += (returnString.isEmpty() ? "" : "; ") + value.trim();
+                    }
+                }
+            }
+        }
+        return returnString;
+    }
+    
+    public String getCompoundRawValue() {
+        String returnString = "";
+        for (DatasetFieldCompoundValue dscv : datasetFieldCompoundValues) {
+            for (DatasetField dsf : dscv.getChildDatasetFields()) {
+                for (String value : dsf.getRawValuesList()) {
                     if (!(value == null)) {
                         returnString += (returnString.isEmpty() ? "" : "; ") + value.trim();
                     }
@@ -290,6 +315,23 @@ public class DatasetField implements Serializable {
         }
         return returnList;
     }
+
+    public List<String> getRawValuesList() {
+        List<String> returnList = new ArrayList<>();
+        if (!datasetFieldValues.isEmpty()) {
+            for (DatasetFieldValue dsfv : datasetFieldValues) {
+                returnList.add(dsfv.getUnsanitizedDisplayValue());
+            }
+        } else {
+            for (ControlledVocabularyValue cvv : controlledVocabularyValues) {
+                if (cvv != null && cvv.getStrValue() != null) {
+                    returnList.add(cvv.getStrValue());
+                }
+            }
+        }
+        return returnList;
+    }
+       
     /**
      * list of values (as opposed to display values).
      * used for passing to solr for indexing
@@ -335,7 +377,8 @@ public class DatasetField implements Serializable {
 
     private boolean isEmpty(boolean forDisplay) {
         if (datasetFieldType.isPrimitive()) { // primitive
-            for (String value : getValues()) {
+        	List<String> values = forDisplay ? getValues() : getValues_nondisplay();
+            for (String value : values) {
                 if (!StringUtils.isBlank(value) && !(forDisplay && DatasetField.NA_VALUE.equals(value))) {
                     return false;
                 }
@@ -549,6 +592,22 @@ public class DatasetField implements Serializable {
             }
         }
     }
+    
+    public void trimTrailingSpaces() {
+        if (this.getDatasetFieldType().isPrimitive() && !this.getDatasetFieldType().isControlledVocabulary()) {
+            for (int i = 0; i < datasetFieldValues.size(); i++) {
+                datasetFieldValues.get(i).setValue(datasetFieldValues.get(i).getValue().trim());
+            }
+        } else if (this.getDatasetFieldType().isCompound()) {
+            for (int i = 0; i < datasetFieldCompoundValues.size(); i++) {
+                DatasetFieldCompoundValue compoundValue = datasetFieldCompoundValues.get(i);
+                for (DatasetField dsf : compoundValue.getChildDatasetFields()) {
+                    dsf.trimTrailingSpaces();
+                }
+            }
+        }
+    }
+     
 
     public void addDatasetFieldValue(int index) {
         datasetFieldValues.add(index, new DatasetFieldValue(this));

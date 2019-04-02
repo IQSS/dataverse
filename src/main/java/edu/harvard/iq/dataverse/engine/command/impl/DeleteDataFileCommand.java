@@ -1,12 +1,9 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.IdServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -16,10 +13,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionExcepti
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitResult.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,6 +23,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 /**
  * Deletes a data file, both DB entity and filesystem object.
@@ -126,7 +122,18 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 logger.info("Successfully deleted the package file "+doomed.getStorageIdentifier());
                 
             } else {
-
+                logger.info("Skipping deleting the physical file on the storage volume (will be done outside the command)");
+                /* We no longer attempt to delete the physical file from inside the command, 
+                 * since commands are executed as (potentially nested) transactions, 
+                 * and it is prudent to assume that this database transaction may 
+                 * be reversed in the end. Meaning if we delete the file here, 
+                 * we are at risk of the database entry not getting deleted, 
+                 * leaving a "ghost" DataFile with no associated physical file
+                 * on the storage medium. 
+                 * The physical file delete must happen outside the transaction, 
+                 * once the database delete has been confirmed. 
+                 */
+                /*
                 logger.log(Level.FINE, "Storage identifier for the file: {0}", doomed.getStorageIdentifier());
                 StorageIO<DataFile> storageIO = null;
 
@@ -175,6 +182,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                         physicalFileExists = false;
                     }
 
+                    
                     if (physicalFileExists) {
                         try {
                             storageIO.delete();
@@ -185,15 +193,16 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                     }
 
                     logger.log(Level.FINE, "Successfully deleted physical storage object (file) for the DataFile {0}", doomed.getId());
-
                     // Destroy the storageIO object - we will need to purge the 
                     // DataFile from the database (below), so we don't want to have any
                     // objects in this transaction that reference it:
                     storageIO = null;
+                    
                 }
+                */
             }
         }
-        IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
         try {
             if (idServiceBean.alreadyExists(doomed)) {
                 idServiceBean.deleteIdentifier(doomed);
@@ -224,6 +233,16 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
          * https://redmine.hmdc.harvard.edu/issues/3643
          */
 
+    }
+    
+    @Override 
+    public String describe() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.describe());
+        sb.append("DataFile:");
+        sb.append(doomed.getId());
+        sb.append(" ");
+        return sb.toString();
     }
 
 }

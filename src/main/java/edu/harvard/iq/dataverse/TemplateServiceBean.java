@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -46,25 +47,19 @@ public class TemplateServiceBean {
         return query.getSingleResult();
     }
 
-    
     public List<Dataverse> findDataversesByDefaultTemplateId(Long defaultTemplateId) {
         TypedQuery<Dataverse> query = em.createQuery("select object(o) from Dataverse as o where o.defaultTemplate.id =:defaultTemplateId order by o.name", Dataverse.class);
         query.setParameter("defaultTemplateId", defaultTemplateId);
         return query.getResultList();
     }
-    
+
     public void incrementUsageCount(Long templateId) {
 
-        Long usageCount = (Long) em.createNativeQuery(
-                "select usageCount from  Template  "
-                + "WHERE id=" + templateId
-        ).getSingleResult();
-        
-        usageCount++;
-        
-        em.createNativeQuery(
-                "update Template SET  usagecount = " + usageCount + " "
-                + "WHERE id=" + templateId
-        ).executeUpdate();
+        Template toUpdate = em.find(Template.class, templateId);
+        Long usage = toUpdate.getUsageCount();
+        usage++;
+        toUpdate.setUsageCount(usage);
+        em.merge(toUpdate);
+
     }
 }

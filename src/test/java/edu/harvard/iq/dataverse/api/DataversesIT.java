@@ -2,23 +2,29 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.OK;
 import javax.ws.rs.core.Response.Status;
+import static javax.ws.rs.core.Response.Status.OK;
+import static junit.framework.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
+import org.junit.AfterClass;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class DataversesIT {
@@ -28,6 +34,11 @@ public class DataversesIT {
     @BeforeClass
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+    }
+    
+    @AfterClass
+    public static void afterClass() {
+        Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
     }
 
     @Test
@@ -140,6 +151,54 @@ public class DataversesIT {
                 .statusCode(INTERNAL_SERVER_ERROR.getStatusCode());
     }
 
+    //Ensure that email is not returned when the ExcludeEmailFromExport setting is set
+    @Test 
+    public void testReturnEmail() throws FileNotFoundException {        
+        
+        Response setToExcludeEmailFromExport = UtilIT.setSetting(SettingsServiceBean.Key.ExcludeEmailFromExport, "true");
+        setToExcludeEmailFromExport.then().assertThat()
+            .statusCode(OK.getStatusCode());
+        
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        
+        Response exportDataverseAsJson = UtilIT.exportDataverse(dataverseAlias, apiToken);
+        exportDataverseAsJson.prettyPrint();
+        exportDataverseAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        RestAssured.unregisterParser("text/plain");
+
+        List dataverseEmailNotAllowed = with(exportDataverseAsJson.body().asString())
+                .getJsonObject("data.dataverseContacts");
+        assertNull(dataverseEmailNotAllowed);
+        
+        Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
+        removeExcludeEmail.then().assertThat()
+                .statusCode(200);
+        
+        Response exportDataverseAsJson2 = UtilIT.exportDataverse(dataverseAlias, apiToken);
+        exportDataverseAsJson2.prettyPrint();
+        exportDataverseAsJson2.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        RestAssured.unregisterParser("text/plain");
+        List dataverseEmailAllowed = with(exportDataverseAsJson2.body().asString())
+                .getJsonObject("data.dataverseContacts");
+        assertNotNull(dataverseEmailAllowed);
+        
+        Response deleteDataverse2 = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverse2.prettyPrint();
+        deleteDataverse2.then().assertThat().statusCode(OK.getStatusCode());        
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+    }
     
     /**
      * Test the Dataverse page error message and link 
@@ -246,13 +305,14 @@ public class DataversesIT {
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
-        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);//.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
         
         Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse2.prettyPrint();
         String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
-        Response publishDataverse2 = UtilIT.publishDataverseViaSword(dataverseAlias2, apiToken);
+        Response publishDataverse2 = UtilIT.publishDataverseViaNativeApi(dataverseAlias2, apiToken);
         assertEquals(200, publishDataverse2.getStatusCode());
         
         Response moveResponse = UtilIT.moveDataverse(dataverseAlias, dataverseAlias2, true, apiToken);
@@ -298,6 +358,61 @@ public class DataversesIT {
         deleteLinkingDataverseResponse.then().assertThat()
                 .body("data.message", equalTo("Link from Dataverse " + dataverseAlias + " to linked Dataverse " + dataverseAlias2 + " deleted"))
                 .statusCode(200);
+    }
+    
+    @Test
+    public void testUpdateDefaultContributorRole() {
+        Response createUser = UtilIT.createRandomUser();
+
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response superuserResponse = UtilIT.makeSuperUser(username);
+
+        Response createUserRando = UtilIT.createRandomUser();
+
+        createUserRando.prettyPrint();
+        String apiTokenRando = UtilIT.getApiTokenFromResponse(createUserRando);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        //Try no perms user
+        Response updateDataverseDefaultRoleNoPerms = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "curator", apiTokenRando);
+        updateDataverseDefaultRoleNoPerms.prettyPrint();
+        updateDataverseDefaultRoleNoPerms.then().assertThat()
+                .statusCode(401);
+        
+        // try role with no dataset permissions alias
+        Response updateDataverseDefaultRoleBadRolePermissions = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "dvContributor", apiToken);
+        updateDataverseDefaultRoleBadRolePermissions.prettyPrint();
+        updateDataverseDefaultRoleBadRolePermissions.then().assertThat()
+                .body("message", equalTo("Role dvContributor does not have dataset permissions."))
+                .statusCode(400);
+
+        //for test use an existing role. In practice this likely will be a custom role
+        Response updateDataverseDefaultRole = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "curator", apiToken);
+        updateDataverseDefaultRole.prettyPrint();
+        updateDataverseDefaultRole.then().assertThat()
+                .body("data.message", equalTo("Default contributor role for Dataverse " + dataverseAlias + " has been set to Curator."))
+                .statusCode(200);
+        
+        //for test use an existing role. In practice this likely will be a custom role
+        Response updateDataverseDefaultRoleNone = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "none", apiToken);
+        updateDataverseDefaultRoleNone.prettyPrint();
+        updateDataverseDefaultRoleNone.then().assertThat()
+                .body("data.message", equalTo("Default contributor role for Dataverse " + dataverseAlias + " has been set to None."))
+                .statusCode(200);
+
+        // try bad role alias
+        Response updateDataverseDefaultRoleBadRoleAlias = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "colonel", apiToken);
+        updateDataverseDefaultRoleBadRoleAlias.prettyPrint();
+        updateDataverseDefaultRoleBadRoleAlias.then().assertThat()
+                .body("message", equalTo("Role colonel not found."))
+                .statusCode(404);
+
     }
     
 }

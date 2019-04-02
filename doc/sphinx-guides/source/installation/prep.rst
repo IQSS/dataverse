@@ -38,10 +38,12 @@ Installing Dataverse involves some system configuration followed by executing an
 Advanced Installation
 +++++++++++++++++++++
 
-There are some community-lead projects to use configuration management tools such as Puppet and Ansible to automate Dataverse installation and configuration, but support for these solutions is limited to what the Dataverse community can offer as described in each project's webpage:
+There are some community-lead projects to use configuration management tools such as Ansible and Puppet to automate Dataverse installation and configuration, but support for these solutions is limited to what the Dataverse community can offer as described in each project's webpage:
 
-- https://github.com/IQSS/dataverse-puppet
 - https://github.com/IQSS/dataverse-ansible
+- https://github.com/IQSS/dataverse-puppet
+
+(Please note that the "dataverse-ansible" repo is used in a script that allows Dataverse to be installed on Amazon Web Services (AWS) from arbitrary GitHub branches as described in the :doc:`/developers/deployment` section of the Developer Guide.)
 
 The Dataverse development team is happy to "bless" additional community efforts along these lines (i.e. Docker, Chef, Salt, etc.) by creating a repo under https://github.com/IQSS and managing team access.
 
@@ -76,11 +78,13 @@ Optional Components
 There are a number of optional components you may choose to install or configure, including:
 
 - R, rApache, Zelig, and TwoRavens: :doc:`/user/data-exploration/tworavens` describes the feature and :doc:`r-rapache-tworavens` describes how to install these components. :doc:`external-tools` explains how third-party tools like TwoRavens can be added to Dataverse.
-- Dropbox integration: for uploading files from the Dropbox API.
+- Dropbox integration :ref:`dataverse.dropbox.key`: for uploading files from the Dropbox API.
 - Apache: a web server that can "reverse proxy" Glassfish applications and rewrite HTTP traffic.
 - Shibboleth: an authentication system described in :doc:`shibboleth`. Its use with Dataverse requires Apache.
 - OAuth2: an authentication system described in :doc:`oauth2`.
 - Geoconnect: a system that allows users to create maps from geospatial files, described in :doc:`geoconnect`.
+
+See also the :doc:`/admin/integrations` section of the Admin Guide.
 
 System Requirements
 -------------------

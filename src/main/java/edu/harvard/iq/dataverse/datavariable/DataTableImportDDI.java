@@ -91,10 +91,7 @@ public class DataTableImportDDI {
     }
 
     private void processVar(XMLStreamReader xmlr, Map<String, DataTable> dataTablesMap, Map<String, Integer> varsPerFileMap) throws XMLStreamException {
-        DataVariable dv = new DataVariable();
-        dv.setInvalidRanges(new ArrayList<>());
-        dv.setSummaryStatistics(new ArrayList<>());
-        dv.setCategories(new ArrayList<>());
+        DataVariable dv = new DataVariable(0,null);
         dv.setName( xmlr.getAttributeValue(null, "name") );
 
         try {
@@ -129,8 +126,8 @@ public class DataTableImportDDI {
                     if (_labl != null && !_labl.isEmpty()) {
                         dv.setLabel( _labl );
                     }
-                } else if (xmlr.getLocalName().equals("universe")) {
-                    dv.setUniverse( parseText(xmlr) );
+                //{ else if (xmlr.getLocalName().equals("universe")) {
+                    //   dv.setUniverse( parseText(xmlr) );
                 } else if (xmlr.getLocalName().equals("invalrng")) {
                     processInvalrng( xmlr, dv );
                 } else if (xmlr.getLocalName().equals("varFormat")) {

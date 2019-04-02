@@ -1,18 +1,17 @@
 package edu.harvard.iq.dataverse.workflow;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.IdServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RemoveLockCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.internalspi.InternalWorkflowStepSP;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
@@ -20,6 +19,7 @@ import edu.harvard.iq.dataverse.workflow.step.Pending;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -32,9 +32,11 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 /**
  * Service bean for managing and executing {@link Workflow}s
@@ -62,12 +64,15 @@ public class WorkflowServiceBean {
     @EJB
     EjbDataverseEngine engine;
     
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
+    
     final Map<String, WorkflowStepSPI> providers = new HashMap<>();
 
     public WorkflowServiceBean() {
         providers.put(":internal", new InternalWorkflowStepSP());
 
-        logger.log(Level.INFO, "Searching for workflow step providers...");
+//        Re-enable code below, if we allow .jars in the classpath to provide WorkflowStepProviders.
 //        ServiceLoader<WorkflowStepSPI> loader = ServiceLoader.load(WorkflowStepSPI.class);
 //        try {
 //            for ( WorkflowStepSPI wss : loader ) {
@@ -92,13 +97,46 @@ public class WorkflowServiceBean {
      */
     @Asynchronous
     public void start(Workflow wf, WorkflowContext ctxt) throws CommandException {
-        ctxt = refresh(ctxt);
+        ctxt = refresh(ctxt, retrieveRequestedSettings( wf.getRequiredSettings()), getCurrentApiToken(ctxt.getRequest().getAuthenticatedUser()));
         lockDataset(ctxt);
         forward(wf, ctxt);
     }
     
 
+    private ApiToken getCurrentApiToken(AuthenticatedUser au) {
+        if (au != null) {
+            CommandContext ctxt = engine.getContext();
+            ApiToken token = ctxt.authentication().findApiTokenByUser(au);
+            if ((token == null) || (token.getExpireTime().before(new Date()))) {
+                token = ctxt.authentication().generateApiTokenForUser(au);
+            }
+            return token;
+        }
+        return null;
+    }
 
+    private Map<String, Object> retrieveRequestedSettings(Map<String, String> requiredSettings) {
+        Map<String, Object> retrievedSettings = new HashMap<String, Object>();
+        for (String setting : requiredSettings.keySet()) {
+            String settingType = requiredSettings.get(setting);
+            switch (settingType) {
+            case "string": {
+                retrievedSettings.put(setting, settings.get(setting));
+                break;
+            }
+            case "boolean": {
+                retrievedSettings.put(setting, settings.isTrue(settingType, false));
+                break;
+            }
+            case "long": {
+                retrievedSettings.put(setting,
+                        settings.getValueForKeyAsLong(SettingsServiceBean.Key.valueOf(setting)));
+                break;
+            }
+            }
+        }
+        return retrievedSettings;
+    }
 
     /**
      * Starting the resume process for a pending workflow. We first delete the
@@ -128,8 +166,8 @@ public class WorkflowServiceBean {
         List<WorkflowStepData> stepsLeft = wf.getSteps().subList(pending.getPendingStepIdx(), wf.getSteps().size());
         
         WorkflowStep pendingStep = createStep(stepsLeft.get(0));
-        final WorkflowContext ctxt = pending.reCreateContext(roleAssignees);
-
+        WorkflowContext newCtxt = pending.reCreateContext(roleAssignees);
+        final WorkflowContext ctxt = refresh(newCtxt,retrieveRequestedSettings( wf.getRequiredSettings()), getCurrentApiToken(newCtxt.getRequest().getAuthenticatedUser()));
         WorkflowStepResult res = pendingStep.resume(ctxt, pending.getLocalData(), body);
         if (res instanceof Failure) {
             rollback(wf, ctxt, (Failure) res, pending.getPendingStepIdx() - 1);
@@ -162,14 +200,7 @@ public class WorkflowServiceBean {
         
         logger.log( Level.INFO, "Removing workflow lock");
         try {
-            engine.submit( new RemoveLockCommand(ctxt.getRequest(), ctxt.getDataset(), DatasetLock.Reason.Workflow) );
-            
-            // Corner case - delete locks generated within this same transaction.
-            Query deleteQuery = em.createQuery("DELETE from DatasetLock l WHERE l.dataset.id=:id AND l.reason=:reason");
-            deleteQuery.setParameter("id", ctxt.getDataset().getId() );
-            deleteQuery.setParameter("reason", DatasetLock.Reason.Workflow );
-            deleteQuery.executeUpdate();
-            
+            unlockDataset(ctxt);
         } catch (CommandException ex) {
             logger.log(Level.SEVERE, "Error restoring dataset locks state after rollback: " + ex.getMessage(), ex);
         }
@@ -192,7 +223,8 @@ public class WorkflowServiceBean {
             try {
                 if (res == WorkflowStepResult.OK) {
                     logger.log(Level.INFO, "Workflow {0} step {1}: OK", new Object[]{ctxt.getInvocationId(), stepIdx});
-
+                    em.merge(ctxt.getDataset());
+                    ctxt = refresh(ctxt);
                 } else if (res instanceof Failure) {
                     logger.log(Level.WARNING, "Workflow {0} failed: {1}", new Object[]{ctxt.getInvocationId(), ((Failure) res).getReason()});
                     rollback(wf, ctxt, (Failure) res, stepIdx-1 );
@@ -237,9 +269,33 @@ public class WorkflowServiceBean {
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     void lockDataset( WorkflowContext ctxt ) throws CommandException {
         final DatasetLock datasetLock = new DatasetLock(DatasetLock.Reason.Workflow, ctxt.getRequest().getAuthenticatedUser());
-//        engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
+        /* Note that this method directly adds a lock to the database rather than adding it via 
+         * engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
+         * which would update the dataset's list of locks, etc. 
+         * An em.find() for the dataset would get a Dataset that has an updated list of locks, but this copy would not have any changes
+         * made in a calling command (e.g. for a PostPublication workflow, the fact that the latest version is 'released' is not yet in the 
+         * database. 
+         */
         datasetLock.setDataset(ctxt.getDataset());
         em.persist(datasetLock);
+        em.flush();
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    void unlockDataset( WorkflowContext ctxt ) throws CommandException {
+    	/* Since the lockDataset command above directly persists a lock to the database, 
+    	 * the ctxt.getDataset() is not updated and its list of locks can't be used. Using the named query below will find the workflow
+    	 * lock and remove it (actually all workflow locks for this Dataset but only one workflow should be active). 
+    	 */
+        TypedQuery<DatasetLock> lockCounter = em.createNamedQuery("DatasetLock.getLocksByDatasetId", DatasetLock.class);
+        lockCounter.setParameter("datasetId", ctxt.getDataset().getId());
+        List<DatasetLock> locks = lockCounter.getResultList();
+        for(DatasetLock lock: locks) {
+        	if(lock.getReason() == DatasetLock.Reason.Workflow) {
+                logger.fine("Removing lock");
+        		em.remove(lock);
+        	}
+        }
         em.flush();
     }
     
@@ -255,15 +311,20 @@ public class WorkflowServiceBean {
 
     private void workflowCompleted(Workflow wf, WorkflowContext ctxt) {
         logger.log(Level.INFO, "Workflow {0} completed.", ctxt.getInvocationId());
-        if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
+        
             try {
-                engine.submit( new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getDoiProvider(), ctxt.getRequest()) );
-                                
+        if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
+                unlockDataset(ctxt);
+                engine.submit(new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest(), ctxt.getDatasetExternallyReleased()));
+            } else {
+                logger.fine("Removing workflow lock");
+                unlockDataset(ctxt);
+            }
             } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() +": " + ex.getMessage(), ex);
                 rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.steps.size()-1);
             }
-        }
+        
     }
 
     public List<Workflow> listWorkflows() {
@@ -356,9 +417,20 @@ public class WorkflowServiceBean {
     }
     
     private WorkflowContext refresh( WorkflowContext ctxt ) {
+    	return refresh(ctxt, ctxt.getSettings(), ctxt.getApiToken());
+    }
+    
+    private WorkflowContext refresh( WorkflowContext ctxt, Map<String, Object> settings, ApiToken apiToken ) {
+    	/* An earlier version of this class used em.find() to 'refresh' the Dataset in the context. 
+    	 * For a PostPublication workflow, this had the consequence of hiding/removing changes to the Dataset 
+    	 * made in the FinalizeDatasetPublicationCommand (i.e. the fact that the draft version is now released and
+    	 * has a version number). It is not clear to me if the em.merge below is needed or if it handles the case of 
+    	 * resumed workflows. (The overall method is needed to allow the context to be updated in the start() method with the
+    	 * settings and APItoken retrieved by the WorkflowServiceBean) - JM - 9/18.
+    	 */
         return new WorkflowContext( ctxt.getRequest(), 
-                       datasets.find( ctxt.getDataset().getId() ), ctxt.getNextVersionNumber(), 
-                       ctxt.getNextMinorVersionNumber(), ctxt.getType(), ctxt.getDoiProvider() );
+                       em.merge(ctxt.getDataset()), ctxt.getNextVersionNumber(), 
+                       ctxt.getNextMinorVersionNumber(), ctxt.getType(), settings, apiToken, ctxt.getDatasetExternallyReleased());
     }
 
 }

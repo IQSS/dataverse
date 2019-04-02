@@ -56,8 +56,8 @@ public class FeedbackUtil {
             } else if (recipient.isInstanceofDataset()) {
                 Dataset dataset = (Dataset) recipient;
                 String datasetTitle = dataset.getLatestVersion().getTitle();
-                String datasetPid = dataset.getGlobalId();
-                String datasetContextEnding = BundleUtil.getStringFromBundle("contact.context.dataset.ending", Arrays.asList(supportTeamName, systemEmail, dataverseSiteUrl, dataset.getGlobalId(), supportTeamName, systemEmail));
+                String datasetPid = dataset.getGlobalIdString();
+                String datasetContextEnding = BundleUtil.getStringFromBundle("contact.context.dataset.ending", Arrays.asList(supportTeamName, systemEmail, dataverseSiteUrl, dataset.getGlobalIdString(), supportTeamName, systemEmail));
                 List<DvObjectContact> datasetContacts = getDatasetContacts(dataset);
                 for (DvObjectContact datasetContact : datasetContacts) {
                     String contactFullName = getGreeting(datasetContact);
@@ -76,7 +76,7 @@ public class FeedbackUtil {
             } else {
                 DataFile datafile = (DataFile) recipient;
                 String datasetTitle = datafile.getOwner().getLatestVersion().getTitle();
-                String datasetPid = datafile.getOwner().getGlobalId();
+                String datasetPid = datafile.getOwner().getGlobalIdString();
                 String filename = datafile.getFileMetadatas().get(0).getLabel();
                 List<DvObjectContact> datasetContacts = getDatasetContacts(datafile.getOwner());
                 String fileContextEnding = BundleUtil.getStringFromBundle("contact.context.file.ending", Arrays.asList(supportTeamName, systemEmail, dataverseSiteUrl, datafile.getId().toString(), supportTeamName, systemEmail));

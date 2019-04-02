@@ -7,6 +7,7 @@
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+    <script type="text/javascript" language="javascript" src="#{resource['js/fileupload.js']}"></script>
     <p:dialog id="editProvenancePopup" styleClass="smallPopUp" header="#{bundle['file.editProvenanceDialog']}" widgetVar="editProvenancePopup" modal="true" >
         <p:fragment id="assignMessages">
             <div class="popupMessagePanel">
@@ -38,7 +39,7 @@
 
                     <ui:fragment id="provUploadFragment" >
                         <ui:fragment rendered="#{!provPopupFragmentBean.jsonUploadedState and !provPopupFragmentBean.provJsonAlreadyPublishedRendering()}">
-                            <p class="help-block">#{bundle['file.editProvenanceDialog.bundleFile.instructions']}</p>
+                            <p class="help-block"><h:outputText value="#{bundle['file.editProvenanceDialog.bundleFile.instructions']}" escape="false"/></p>
                             <p:fileUpload id="provUpload" 
                                           styleClass="margin-bottom"
                                           dragDropSupport="true"
@@ -48,19 +49,11 @@
                                           fileUploadListener="#{provPopupFragmentBean.handleFileUpload}" 
                                           update="provPopupOutput,assignMessages" 
                                           label="#{bundle['file.editProvenanceDialog.selectToAddBtn']}"
-                                          oncomplete="bind_bsui_components();PF('provUpload').hide();"
+                                          onstart="javascript:uploadStarted();"
+                                          onerror="javascript:uploadFailure();"
+                                          oncomplete="bind_bsui_components();"
                                           fileLimit="1" 
                                           invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}"/>
-                            <script>
-                                function uploadStarted() {
-                                    $('button[id$="provUploadStarted"]').trigger('click');
-                                }
-                                function uploadFinished(fileupload) {                    
-                                    if (fileupload.files.length === 0) {
-                                        $('button[id$="AllUploadsFinished"]').trigger('click');
-                                    }
-                                }
-                            </script>
                         </ui:fragment>
                         <ui:fragment rendered="#{provPopupFragmentBean.jsonUploadedState or provPopupFragmentBean.provJsonAlreadyPublishedRendering()}">
                             <div id="provFileText" class="col-sm-5 text-success">

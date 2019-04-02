@@ -74,6 +74,9 @@ public class DatasetServiceBean implements java.io.Serializable {
     DatasetVersionServiceBean versionService;
     
     @EJB
+    DvObjectServiceBean dvObjectService;
+    
+    @EJB
     AuthenticationServiceBean authentication;
     
     @EJB
@@ -110,7 +113,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     private List<Dataset> findByOwnerId(Long ownerId, boolean onlyPublished) {
         List<Dataset> retList = new ArrayList<>();
-        TypedQuery<Dataset>  query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id", Dataset.class);
+        TypedQuery<Dataset>  query = em.createNamedQuery("Dataset.findByOwnerId", Dataset.class);
         query.setParameter("ownerId", ownerId);
         if (!onlyPublished) {
             return query.getResultList();
@@ -131,13 +134,13 @@ public class DatasetServiceBean implements java.io.Serializable {
     private List<Long> findIdsByOwnerId(Long ownerId, boolean onlyPublished) {
         List<Long> retList = new ArrayList<>();
         if (!onlyPublished) {
-            TypedQuery<Long> query = em.createQuery("select o.id from Dataset as o where o.owner.id =:ownerId order by o.id", Long.class);
-            query.setParameter("ownerId", ownerId);
-            return query.getResultList();
+            return em.createNamedQuery("Dataset.findIdByOwnerId")
+                    .setParameter("ownerId", ownerId)
+                    .getResultList();
         } else {
-            TypedQuery<Dataset> query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id", Dataset.class);
-            query.setParameter("ownerId", ownerId);
-            for (Dataset ds : query.getResultList()) {
+            List<Dataset> results = em.createNamedQuery("Dataset.findByOwnerId")
+                    .setParameter("ownerId", ownerId).getResultList();
+            for (Dataset ds : results) {
                 if (ds.isReleased() && !ds.isDeaccessioned()) {
                     retList.add(ds.getId());
                 }
@@ -191,48 +194,40 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     public Dataset findByGlobalId(String globalId) {
-/*
-        Concatenate pieces of global Id for selection until more permanent fix implemented
-        */
-        String queryStr = "select s.id from dvobject s where s.protocol || ':' || s.authority || s.doiseparator || s.identifier = '" + globalId +"'";
-        Dataset foundDataset = null;
-        try {
-            Query query = em.createNativeQuery(queryStr);
-            Long datasetId = new Long((Integer) query.getSingleResult());
-            foundDataset = em.find(Dataset.class, datasetId);
-        } catch (javax.persistence.NoResultException e) {
-            // (set to .info, this can fill the log file with thousands of 
-            // these messages during a large harvest run)
-            logger.fine("no ds found: " + globalId);
-            // DO nothing, just return null.
-        }
-        return foundDataset;
+        Dataset retVal = (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset");
+        if (retVal != null){
+            return retVal;
+        } else {
+            //try to find with alternative PID
+            return (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset", true);
+        }        
     }
 
-    public String generateDatasetIdentifier(Dataset dataset, IdServiceBean idServiceBean) {
-        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
-        switch (doiIdentifierType) {
+    public String generateDatasetIdentifier(Dataset dataset, GlobalIdServiceBean idServiceBean) {
+        String identifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+        String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
+       
+        switch (identifierType) {
             case "randomString":
-                return generateIdentifierAsRandomString(dataset, idServiceBean);
+                return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
             case "sequentialNumber":
-                return generateIdentifierAsSequentialNumber(dataset, idServiceBean);
+                return generateIdentifierAsSequentialNumber(dataset, idServiceBean, shoulder);
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
-                return generateIdentifierAsRandomString(dataset, idServiceBean);
+                return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
         }
     }
     
-    private String generateIdentifierAsRandomString(Dataset dataset, IdServiceBean idServiceBean) {
-
+    private String generateIdentifierAsRandomString(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
         String identifier = null;
         do {
-            identifier = RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
-        } while (!isIdentifierUniqueInDatabase(identifier, dataset, idServiceBean));
-
+            identifier = shoulder + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
+        } while (!isIdentifierLocallyUnique(identifier, dataset));
+        
         return identifier;
     }
 
-    private String generateIdentifierAsSequentialNumber(Dataset dataset, IdServiceBean idServiceBean) {
+    private String generateIdentifierAsSequentialNumber(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
         
         String identifier; 
         do {
@@ -244,36 +239,44 @@ public class DatasetServiceBean implements java.io.Serializable {
             if (identifierNumeric == null) {
                 return null; 
             }
-            identifier = identifierNumeric.toString();
-        } while (!isIdentifierUniqueInDatabase(identifier, dataset, idServiceBean));
+            identifier = shoulder + identifierNumeric.toString();
+        } while (!isIdentifierLocallyUnique(identifier, dataset));
         
         return identifier;
     }
 
     /**
      * Check that a identifier entered by the user is unique (not currently used
-     * for any other study in this Dataverse Network) alos check for duplicate
+     * for any other study in this Dataverse Network) also check for duplicate
      * in EZID if needed
      * @param userIdentifier
      * @param dataset
-     * @param idServiceBean
-     * @return   */
-    public boolean isIdentifierUniqueInDatabase(String userIdentifier, Dataset dataset, IdServiceBean idServiceBean) {
-        String query = "SELECT d FROM Dataset d WHERE d.identifier = '" + userIdentifier + "'";
-        query += " and d.protocol ='" + dataset.getProtocol() + "'";
-        query += " and d.authority = '" + dataset.getAuthority() + "'";
-        boolean u = em.createQuery(query).getResultList().isEmpty();
-            
-        try{
-            if (idServiceBean.alreadyExists(dataset)) {
-                u = false;
-            }
+     * @param persistentIdSvc
+     * @return {@code true} if the identifier is unique, {@code false} otherwise.
+     */
+    public boolean isIdentifierUnique(String userIdentifier, Dataset dataset, GlobalIdServiceBean persistentIdSvc) {
+        if ( ! isIdentifierLocallyUnique(userIdentifier, dataset) ) return false; // duplication found in local database
+        
+        // not in local DB, look in the persistent identifier service
+        try {
+            return ! persistentIdSvc.alreadyExists(dataset);
         } catch (Exception e){
             //we can live with failure - means identifier not found remotely
         }
 
-       
-        return u;
+        return true;
+    }
+    
+    public boolean isIdentifierLocallyUnique(Dataset dataset) {
+        return isIdentifierLocallyUnique(dataset.getIdentifier(), dataset);
+    }
+    
+    public boolean isIdentifierLocallyUnique(String identifier, Dataset dataset) {
+        return em.createNamedQuery("Dataset.findByIdentifierAuthorityProtocol")
+            .setParameter("identifier", identifier)
+            .setParameter("authority", dataset.getAuthority())
+            .setParameter("protocol", dataset.getProtocol())
+            .getResultList().isEmpty();
     }
     
     public Long getMaximumExistingDatafileIdentifier(Dataset dataset) {
@@ -285,10 +288,10 @@ public class DatasetServiceBean implements java.io.Serializable {
         Long dsId = dataset.getId();
         if (dsId != null) {
             try {
-                idResults = em.createNamedQuery("Dataset.findByOwnerIdentifier")
-                                .setParameter("owner_id", dsId).getResultList();
+                idResults = em.createNamedQuery("Dataset.findIdByOwnerId")
+                                .setParameter("ownerId", dsId).getResultList();
             } catch (NoResultException ex) {
-                logger.fine("No files found in dataset id " + dsId + ". Returning a count of zero.");
+                logger.log(Level.FINE, "No files found in dataset id {0}. Returning a count of zero.", dsId);
                 return zeroFiles;
             }
             if (idResults != null) {
@@ -310,202 +313,20 @@ public class DatasetServiceBean implements java.io.Serializable {
         return dsv;
     }
       
-    public String createCitationRIS(DatasetVersion version) {
-        return createCitationRIS(version, null);
-    } 
-    
-    public String createCitationRIS(DatasetVersion version, FileMetadata fileMetadata) {
-        String publisher = version.getRootDataverseNameforCitation();
-        List<DatasetAuthor> authorList = version.getDatasetAuthors();
-        String retString = "Provider: " + publisher + "\r\n";
-        retString += "Content: text/plain; charset=\"us-ascii\"" + "\r\n";
-        // Using type "DBASE" - "Online Database", for consistency with 
-        // EndNote (see the longer comment in the EndNote section below)> 
-        
-        retString += "TY  - DBASE" + "\r\n";
-        retString += "T1  - " + version.getTitle() + "\r\n";
-        for (DatasetAuthor author : authorList) {
-            retString += "AU  - " + author.getName().getDisplayValue() + "\r\n";
-        }
-        retString += "DO  - " + version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + version.getDataset().getDoiSeparator() + version.getDataset().getIdentifier() + "\r\n";
-        retString += "PY  - " + version.getVersionYear() + "\r\n";
-        retString += "UR  - " + version.getDataset().getPersistentURL() + "\r\n";
-        retString += "PB  - " + publisher + "\r\n";
-        
-        // a DataFile citation also includes filename und UNF, if applicable:
-        if (fileMetadata != null) { 
-            retString += "C1  - " + fileMetadata.getLabel() + "\r\n";
-            
-            if (fileMetadata.getDataFile().isTabularData()) {
-                if (fileMetadata.getDataFile().getUnf() != null) {
-                    retString += "C2  - " + fileMetadata.getDataFile().getUnf() + "\r\n";
-                }
-            }
-        }
-        
-        // closing element: 
-        retString += "ER  - \r\n";
-
-        return retString;
-    }
-
-
-    private XMLOutputFactory xmlOutputFactory = null;
-
-    public String createCitationXML(DatasetVersion datasetVersion, FileMetadata fileMetadata) {
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        createEndNoteCitation(outStream, datasetVersion, fileMetadata);
-        String xml = outStream.toString();
-        return xml; 
-    } 
-    
-    public void createEndNoteCitation(OutputStream os, DatasetVersion datasetVersion, FileMetadata fileMetadata) {
-
-        xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
-        XMLStreamWriter xmlw = null;
-        try {
-            xmlw = xmlOutputFactory.createXMLStreamWriter(os);
-            xmlw.writeStartDocument();
-            createEndNoteXML(xmlw, datasetVersion, fileMetadata);
-            xmlw.writeEndDocument();
-        } catch (XMLStreamException ex) {
-            Logger.getLogger("global").log(Level.SEVERE, null, ex);
-            throw new EJBException("ERROR occurred during creating endnote xml.", ex);
-        } finally {
-            try {
-                if (xmlw != null) {
-                    xmlw.close();
-                }
-            } catch (XMLStreamException ex) {
-            }
-        }
-    }
-    
-    private void createEndNoteXML(XMLStreamWriter xmlw, DatasetVersion version, FileMetadata fileMetadata) throws XMLStreamException {
-
-        String title = version.getTitle();
-        String versionYear = version.getVersionYear();
-        String publisher = version.getRootDataverseNameforCitation();
-
-        List<DatasetAuthor> authorList = version.getDatasetAuthors();
-
-        xmlw.writeStartElement("xml");
-        xmlw.writeStartElement("records");
-
-        xmlw.writeStartElement("record");
-
-        // "Ref-type" indicates which of the (numerous!) available EndNote
-        // schemas this record will be interpreted as. 
-        // This is relatively important. Certain fields with generic 
-        // names like "custom1" and "custom2" become very specific things
-        // in specific schemas; for example, custom1 shows as "legal notice"
-        // in "Journal Article" (ref-type 84), or as "year published" in 
-        // "Government Document". 
-        // We don't want the UNF to show as a "legal notice"! 
-        // We have found a ref-type that works ok for our purposes - 
-        // "Online Database" (type 45). In this one, the fields Custom1 
-        // and Custom2 are not translated and just show as is. 
-        // And "Custom1" still beats "legal notice". 
-        // -- L.A. 12.12.2014 beta 10
-        
-        xmlw.writeStartElement("ref-type");
-        xmlw.writeAttribute("name", "Online Database");
-        xmlw.writeCharacters("45");
-        xmlw.writeEndElement(); // ref-type
-
-        xmlw.writeStartElement("contributors");
-        xmlw.writeStartElement("authors");
-        for (DatasetAuthor author : authorList) {
-            xmlw.writeStartElement("author");
-            xmlw.writeCharacters(author.getName().getDisplayValue());
-            xmlw.writeEndElement(); // author                    
-        }
-        xmlw.writeEndElement(); // authors 
-        xmlw.writeEndElement(); // contributors 
-
-        xmlw.writeStartElement("titles");
-        xmlw.writeStartElement("title");
-        xmlw.writeCharacters(title);
-        xmlw.writeEndElement(); // title
-        
-        xmlw.writeEndElement(); // titles
-
-        xmlw.writeStartElement("section");
-        String sectionString;
-        if (version.getDataset().isReleased()) {
-            sectionString = new SimpleDateFormat("yyyy-MM-dd").format(version.getDataset().getPublicationDate());
-        } else {
-            sectionString = new SimpleDateFormat("yyyy-MM-dd").format(version.getLastUpdateTime());
-        }
-
-        xmlw.writeCharacters(sectionString);
-        xmlw.writeEndElement(); // publisher
-
-        xmlw.writeStartElement("dates");
-        xmlw.writeStartElement("year");
-        xmlw.writeCharacters(versionYear);
-        xmlw.writeEndElement(); // year
-        xmlw.writeEndElement(); // dates
-
-        xmlw.writeStartElement("publisher");
-        xmlw.writeCharacters(publisher);
-        xmlw.writeEndElement(); // publisher
-
-        xmlw.writeStartElement("urls");
-        xmlw.writeStartElement("related-urls");
-        xmlw.writeStartElement("url");
-        xmlw.writeCharacters(version.getDataset().getPersistentURL());
-        xmlw.writeEndElement(); // url
-        xmlw.writeEndElement(); // related-urls
-        xmlw.writeEndElement(); // urls
-        
-        // a DataFile citation also includes the filename and (for Tabular
-        // files) the UNF signature, that we put into the custom1 and custom2 
-        // fields respectively:
-        
-        
-        if (fileMetadata != null) {
-            xmlw.writeStartElement("custom1");
-            xmlw.writeCharacters(fileMetadata.getLabel());
-            xmlw.writeEndElement(); // custom1
-            
-            if (fileMetadata.getDataFile().isTabularData()) {
-                if (fileMetadata.getDataFile().getUnf() != null) {
-                    xmlw.writeStartElement("custom2");
-                    xmlw.writeCharacters(fileMetadata.getDataFile().getUnf());
-                    xmlw.writeEndElement(); // custom2
-                }
-            }
-        }
-
-        xmlw.writeStartElement("electronic-resource-num");
-        String electResourceNum = version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + version.getDataset().getDoiSeparator() + version.getDataset().getIdentifier();
-        xmlw.writeCharacters(electResourceNum);
-        xmlw.writeEndElement();
-        //<electronic-resource-num>10.3886/ICPSR03259.v1</electronic-resource-num>                  
-        xmlw.writeEndElement(); // record
-
-        xmlw.writeEndElement(); // records
-        xmlw.writeEndElement(); // xml
-
-    }
 
     public DatasetVersionUser getDatasetVersionUser(DatasetVersion version, User user) {
 
-        DatasetVersionUser ddu = null;
-        Query query = em.createQuery("select object(o) from DatasetVersionUser as o "
-                + "where o.datasetVersion.id =:versionId and o.authenticatedUser.id =:userId");
+        TypedQuery<DatasetVersionUser> query = em.createNamedQuery("DatasetVersionUser.findByVersionIdAndUserId", DatasetVersionUser.class);
         query.setParameter("versionId", version.getId());
         String identifier = user.getIdentifier();
         identifier = identifier.startsWith("@") ? identifier.substring(1) : identifier;
         AuthenticatedUser au = authentication.getAuthenticatedUser(identifier);
         query.setParameter("userId", au.getId());
         try {
-            ddu = (DatasetVersionUser) query.getSingleResult();
+            return query.getSingleResult();
         } catch (javax.persistence.NoResultException e) {
-            // DO nothing, just return null.
+            return null;
         }
-        return ddu;
     }
 
     public boolean checkDatasetLock(Long datasetId) {
@@ -516,10 +337,22 @@ public class DatasetServiceBean implements java.io.Serializable {
         return lock.size()>0;
     }
     
+    public List<DatasetLock> getDatasetLocksByUser( AuthenticatedUser user) {
+
+        TypedQuery<DatasetLock> query = em.createNamedQuery("DatasetLock.getLocksByAuthenticatedUserId", DatasetLock.class);
+        query.setParameter("authenticatedUserId", user.getId());
+        try {
+            return query.getResultList();
+        } catch (javax.persistence.NoResultException e) {
+            return null;
+        }
+    }
+    
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public DatasetLock addDatasetLock(Dataset dataset, DatasetLock lock) {
         lock.setDataset(dataset);
         dataset.addLock(lock);
+        lock.setStartTime( new Date() );
         em.persist(lock);
         em.merge(dataset); 
         return lock;
@@ -562,22 +395,24 @@ public class DatasetServiceBean implements java.io.Serializable {
     /**
      * Removes all {@link DatasetLock}s for the dataset whose id is passed and reason
      * is {@code aReason}.
-     * @param datasetId Id of the dataset whose locks will b removed.
+     * @param dataset the dataset whose locks (for {@code aReason}) will be removed.
      * @param aReason The reason of the locks that will be removed.
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void removeDatasetLocks(Long datasetId, DatasetLock.Reason aReason) {        
-        Dataset dataset = em.find(Dataset.class, datasetId);       
-        new HashSet<>(dataset.getLocks()).stream()
-                .filter( l -> l.getReason().equals(aReason))
-                .forEach( lock -> {
-                    dataset.removeLock(lock);
-                    
-                    AuthenticatedUser user = lock.getUser();
-                    user.getDatasetLocks().remove(lock);
-                    
-                    em.remove(lock);
-                });
+    public void removeDatasetLocks(Dataset dataset, DatasetLock.Reason aReason) {
+        if ( dataset != null ) {
+            new HashSet<>(dataset.getLocks()).stream()
+                    .filter( l -> l.getReason() == aReason )
+                    .forEach( lock -> {
+                        lock = em.merge(lock);
+                        dataset.removeLock(lock);
+
+                        AuthenticatedUser user = lock.getUser();
+                        user.getDatasetLocks().remove(lock);
+
+                        em.remove(lock);
+                    });
+        }
     }
     
     /*
@@ -804,10 +639,10 @@ public class DatasetServiceBean implements java.io.Serializable {
                         countAll++;
                         try {
                             recordService.exportAllFormatsInNewTransaction(dataset);
-                            exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId());
+                            exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalIdString());
                             countSuccess++;
                         } catch (Exception ex) {
-                            exportLogger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId() + "; " + ex.getMessage());
+                            exportLogger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalIdString() + "; " + ex.getMessage());
                             countError++;
                         }
                     }
@@ -894,7 +729,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     @Asynchronous
-    public void callFinalizePublishCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request) throws CommandException {
+    public void callFinalizePublishCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request, boolean isPidPrePublished) throws CommandException {
 
         // Since we are calling the next command asynchronously anyway - sleep here 
         // for a few seconds, just in case, to make sure the database update of 
@@ -907,9 +742,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         logger.fine("Running FinalizeDatasetPublicationCommand, asynchronously");
         Dataset theDataset = find(datasetId);
-        String nonNullDefaultIfKeyNotFound = "";
-        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-        commandEngine.submit(new FinalizeDatasetPublicationCommand(theDataset, doiProvider, request));
+        commandEngine.submit(new FinalizeDatasetPublicationCommand(theDataset, request, isPidPrePublished));
     }
     
     /*
@@ -930,7 +763,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     */
     @Asynchronous
     public void obtainPersistentIdentifiersForDatafiles(Dataset dataset) {
-        IdServiceBean idServiceBean = IdServiceBean.getBean(dataset.getProtocol(), commandEngine.getContext());
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(dataset.getProtocol(), commandEngine.getContext());
 
         //If the Id type is sequential and Dependent then write file idenitifiers outside the command
         String datasetIdentifier = dataset.getIdentifier();
@@ -959,9 +792,6 @@ public class DatasetServiceBean implements java.io.Serializable {
                 }
                 if (datafile.getAuthority() == null) {
                     datafile.setAuthority(settingsService.getValueForKey(SettingsServiceBean.Key.Authority, ""));
-                }
-                if (datafile.getDoiSeparator() == null) {
-                    datafile.setDoiSeparator(settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, ""));
                 }
 
                 logger.info("identifier: " + datafile.getIdentifier());

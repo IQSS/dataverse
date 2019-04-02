@@ -12,6 +12,8 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +41,9 @@ public class OptionalFileParams {
 
     private String description;
     public static final String DESCRIPTION_ATTR_NAME = "description";
+
+    private String directoryLabel;
+    public static final String DIRECTORY_LABEL_ATTR_NAME = "directoryLabel";
 
     private List<String> categories;
     public static final String CATEGORIES_ATTR_NAME = "categories";
@@ -97,7 +102,15 @@ public class OptionalFileParams {
     public String getDescription(){
         return this.description;
     }
-    
+
+    public String getDirectoryLabel() {
+        return directoryLabel;
+    }
+
+    public void setDirectoryLabel(String directoryLabel) {
+        this.directoryLabel = directoryLabel;
+    }
+
     public void setRestriction(boolean restrict){
         this.restrict = restrict;
     }
@@ -122,6 +135,13 @@ public class OptionalFileParams {
  
     public boolean hasDescription(){
         if ((description == null)||(this.description.isEmpty())){
+            return false;
+        }
+        return true;
+    }
+
+    public boolean hasDirectoryLabel(){
+        if ((directoryLabel == null)||(this.directoryLabel.isEmpty())){
             return false;
         }
         return true;
@@ -190,7 +210,15 @@ public class OptionalFileParams {
             
             this.description = jsonObj.get(DESCRIPTION_ATTR_NAME).getAsString();
         }
-        
+
+        // -------------------------------
+        // get directory label as string
+        // -------------------------------
+        if ((jsonObj.has(DIRECTORY_LABEL_ATTR_NAME)) && (!jsonObj.get(DIRECTORY_LABEL_ATTR_NAME).isJsonNull())){
+
+            this.directoryLabel = jsonObj.get(DIRECTORY_LABEL_ATTR_NAME).getAsString();
+        }
+
         // -------------------------------
         // get restriction as boolean
         // -------------------------------
@@ -255,7 +283,7 @@ public class OptionalFileParams {
             if (DataFileTag.isDataFileTag(tagToCheck)){
                 this.dataFileTags.add(tagToCheck);
             }else{                    
-                String errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.invalid_datafile_tag");
+                String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.invalid_datafile_tag");
                 throw new DataFileTagException(errMsg + " [" + tagToCheck + "]. Please use one of the following: " + DataFileTag.getListofLabelsAsString());
             }
         }
@@ -293,8 +321,14 @@ public class OptionalFileParams {
         if (hasDescription()){
             fm.setDescription(this.getDescription());
         }
-        
-        
+
+        // ---------------------------
+        // Add directory label (path)
+        // ---------------------------
+        if (hasDirectoryLabel()){
+            fm.setDirectoryLabel(this.getDirectoryLabel());
+        }
+
         // ---------------------------
         // Add categories
         // ---------------------------
@@ -361,7 +395,7 @@ public class OptionalFileParams {
         // Is this a tabular file?
         // --------------------------------------------------
         if (!df.isTabularData()){
-            String errMsg = ResourceBundle.getBundle("Bundle").getString("file.metadata.datafiletag.not_tabular");
+            String errMsg = BundleUtil.getStringFromBundle("file.metadata.datafiletag.not_tabular");
 
             throw new DataFileTagException(errMsg);
         }

@@ -54,6 +54,7 @@ import java.io.StringReader;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -152,8 +153,8 @@ public abstract class AbstractApiBean {
         }
     }
 
-	@EJB
-	protected EjbDataverseEngine engineSvc;
+    @EJB
+    protected EjbDataverseEngine engineSvc;
 
     @EJB
     protected DatasetServiceBean datasetSvc;
@@ -305,6 +306,7 @@ public abstract class AbstractApiBean {
     protected String getRequestApiKey() {
         String headerParamApiKey = httpRequest.getHeader(DATAVERSE_KEY_HEADER_NAME);
         String queryParamApiKey = httpRequest.getParameter("key");
+                
         return headerParamApiKey!=null ? headerParamApiKey : queryParamApiKey;
     }
 
@@ -704,7 +706,7 @@ public abstract class AbstractApiBean {
     }
     
     protected Response badApiKey( String apiKey ) {
-        return error(Status.UNAUTHORIZED, (apiKey != null ) ? "Bad api key '" + apiKey +"'" : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + DATAVERSE_KEY_HEADER_NAME );
+        return error(Status.UNAUTHORIZED, (apiKey != null ) ? "Bad api key " : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + DATAVERSE_KEY_HEADER_NAME );
     }
 
     protected Response permissionError( PermissionException pe ) {

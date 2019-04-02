@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resource xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd"
+          xmlns="http://datacite.org/schema/kernel-4"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <identifier identifierType="DOI">10.5072/FK2HYIXMY</identifier>
+    <creators><creator><creatorName>Myers, Jim</creatorName></creator></creators>
+    <titles>
+        <title>OAI-ORE and BagIt demonstration</title>
+    </titles>
+    <publisher>Qualitative Data Repository</publisher>
+    <publicationYear>2018</publicationYear>
+    <resourceType resourceTypeGeneral="Dataset"/>
+    <relatedIdentifiers><relatedIdentifier relatedIdentifierType="DOI" relationType="HasPart">doi:10.5072/FK2HYIXMY/ABZMQI</relatedIdentifier><relatedIdentifier relatedIdentifierType="DOI" relationType="HasPart">doi:10.5072/FK2HYIXMY/RHMACI</relatedIdentifier><relatedIdentifier relatedIdentifierType="DOI" relationType="HasPart">doi:10.5072/FK2HYIXMY/2LRK1L</relatedIdentifier><relatedIdentifier relatedIdentifierType="DOI" relationType="HasPart">doi:10.5072/FK2HYIXMY/GNCTTN</relatedIdentifier></relatedIdentifiers>
+    <descriptions>
+        <description descriptionType="Abstract">This is a sample dataset with a few files and lots of metadata designed to show how QDR's OAI-ORE and BagIT capabilities work. The metadata is solely for demonstration purposes and does not accurately describe the content!</description>
+    </descriptions>
+    <contributors><contributor contributorType="ContactPerson"><contributorName>Myers, Jim</contributorName><affiliation>(QDR)</affiliation></contributor><contributor contributorType="Producer"><contributorName>Bagore, Locoai</contributorName></contributor></contributors>
+</resource>

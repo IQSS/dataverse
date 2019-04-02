@@ -1,13 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.AccessRequest;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
@@ -15,12 +12,14 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +52,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     private static final Logger logger = Logger.getLogger(DataFileServiceBean.class.getCanonicalName());
     @EJB
-    DatasetServiceBean datasetService;
+    DvObjectServiceBean dvObjectService;
     @EJB
     PermissionServiceBean permissionService;
     @EJB
@@ -91,6 +90,8 @@ public class DataFileServiceBean implements java.io.Serializable {
     private static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
     private static final String MIME_TYPE_CSV   = "text/csv";
     private static final String MIME_TYPE_CSV_ALT = "text/comma-separated-values";
+    private static final String MIME_TYPE_TSV   = "text/tsv";
+    public static final String MIME_TYPE_TSV_ALT   = "text/tab-separated-values";
     private static final String MIME_TYPE_XLSX  = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private static final String MIME_TYPE_SPSS_SAV = "application/x-spss-sav";
     private static final String MIME_TYPE_SPSS_POR = "application/x-spss-por";
@@ -99,7 +100,6 @@ public class DataFileServiceBean implements java.io.Serializable {
     // as "tabular data":
     // TODO: - add more to this list? -- L.A. 4.0 beta13
     
-    private static final String MIME_TYPE_TAB   = "text/tab-separated-values";
     private static final String MIME_TYPE_FIXED_FIELD = "text/x-fixed-field";
     private static final String MIME_TYPE_SAS_TRANSPORT = "application/x-sas-transport";
     private static final String MIME_TYPE_SAS_SYSTEM = "application/x-sas-system";
@@ -165,26 +165,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }*/
     
     public DataFile findByGlobalId(String globalId) {
-
-/*
-        Concatenate pieces of global Id for selection until more permanent fix implemented
-        */
-        String queryStr = "select s.id from dvobject s where s.protocol || ':' || s.authority || s.doiseparator || s.identifier = '" + globalId +"'";
-
-        DataFile file = null;
-        try {
-            Query query = em.createNativeQuery(queryStr);
-            Long fileId = new Long((Integer) query.getSingleResult());
-            file = em.find(DataFile.class, fileId);
-
-        } catch (javax.persistence.NoResultException e) {
-            // (set to .info, this can fill the log file with thousands of 
-            // these messages during a large harvest run)
-            logger.fine("no file found: " + globalId);
-            // DO nothing, just return null.
-        }
-        return file;
-
+            return (DataFile) dvObjectService.findByGlobalId(globalId, DataFile.DATAFILE_DTYPE_STRING);
     }
     
     public DataFile findReplacementFile(Long previousFileId){
@@ -344,6 +325,18 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
     }
 
+    public FileMetadata findMostRecentVersionFileIsIn(DataFile file) {
+        if (file == null) {
+            return null;
+        }
+        List<FileMetadata> fileMetadatas = file.getFileMetadatas();
+        if (fileMetadatas == null || fileMetadatas.isEmpty()) {
+            return null;
+        } else {
+            return fileMetadatas.get(0);
+        }
+    }
+
     public DataFile findCheapAndEasy(Long id) {
         DataFile dataFile;
 
@@ -500,10 +493,10 @@ public class DataFileServiceBean implements java.io.Serializable {
         // If content type indicates it's tabular data, spend 2 extra queries 
         // looking up the data table and tabular tags objects:
         
-        if (MIME_TYPE_TAB.equalsIgnoreCase(contentType)) {
+        if (MIME_TYPE_TSV.equalsIgnoreCase(contentType)) {
             Object[] dtResult;
             try {
-                dtResult = (Object[]) em.createNativeQuery("SELECT ID, UNF, CASEQUANTITY, VARQUANTITY, ORIGINALFILEFORMAT FROM dataTable WHERE DATAFILE_ID = " + id).getSingleResult();
+                dtResult = (Object[]) em.createNativeQuery("SELECT ID, UNF, CASEQUANTITY, VARQUANTITY, ORIGINALFILEFORMAT, ORIGINALFILESIZE FROM dataTable WHERE DATAFILE_ID = " + id).getSingleResult();
             } catch (Exception ex) {
                 dtResult = null;
             }
@@ -520,6 +513,8 @@ public class DataFileServiceBean implements java.io.Serializable {
                 dataTable.setVarQuantity((Long)dtResult[3]);
             
                 dataTable.setOriginalFileFormat((String)dtResult[4]);
+                
+                dataTable.setOriginalFileSize((Long)dtResult[5]);
                 
                 dataTable.setDataFile(dataFile);
                 dataFile.setDataTable(dataTable);
@@ -579,7 +574,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         int i = 0; 
         
-        List<Object[]> dataTableResults = em.createNativeQuery("SELECT t0.ID, t0.DATAFILE_ID, t0.UNF, t0.CASEQUANTITY, t0.VARQUANTITY, t0.ORIGINALFILEFORMAT FROM dataTable t0, dataFile t1, dvObject t2 WHERE ((t0.DATAFILE_ID = t1.ID) AND (t1.ID = t2.ID) AND (t2.OWNER_ID = " + owner.getId() + ")) ORDER BY t0.ID").getResultList();
+        List<Object[]> dataTableResults = em.createNativeQuery("SELECT t0.ID, t0.DATAFILE_ID, t0.UNF, t0.CASEQUANTITY, t0.VARQUANTITY, t0.ORIGINALFILEFORMAT, t0.ORIGINALFILESIZE FROM dataTable t0, dataFile t1, dvObject t2 WHERE ((t0.DATAFILE_ID = t1.ID) AND (t1.ID = t2.ID) AND (t2.OWNER_ID = " + owner.getId() + ")) ORDER BY t0.ID").getResultList();
         
         for (Object[] result : dataTableResults) {
             DataTable dataTable = new DataTable(); 
@@ -594,6 +589,8 @@ public class DataFileServiceBean implements java.io.Serializable {
             dataTable.setVarQuantity((Long)result[4]);
             
             dataTable.setOriginalFileFormat((String)result[5]);
+            
+            dataTable.setOriginalFileSize((Long)result[6]);
             
             dataTables.add(dataTable);
             datatableMap.put(fileId, i++);
@@ -1127,73 +1124,6 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
 
     
-    /*// TODO: 
-    // Document this.
-    // -- L.A. 4.0 beta14
-    
-    public boolean isTemporaryPreviewAvailable(String fileSystemId, String mimeType) {
-        
-        String filesRootDirectory = System.getProperty("dataverse.files.directory");
-        if (filesRootDirectory == null || filesRootDirectory.equals("")) {
-            filesRootDirectory = "/tmp/files";
-        }
-
-        String fileSystemName = filesRootDirectory + "/temp/" + fileSystemId;
-        
-        String imageThumbFileName = null;
-        
-        if ("application/pdf".equals(mimeType)) {
-            imageThumbFileName = ImageThumbConverter.generatePDFThumbnailFromFile(fileSystemName);
-        } else if (mimeType != null && mimeType.startsWith("image/")) {
-            imageThumbFileName = ImageThumbConverter.generateImageThumbnailFromFile(fileSystemName);
-        }
-        
-        if (imageThumbFileName != null) {
-            return true; 
-        }
-            
-        return false;
-    }*/
-    
-    /* 
-     * TODO: 
-     * similar method, but for non-default thumbnail sizes:
-    
-    
-    public boolean isThumbnailAvailableForSize (DataFile file) {
-        return false; 
-    }*/
-    
-    public boolean ingestableAsTabular(DataFile dataFile) {
-        /* 
-         * In the final 4.0 we'll be doing real-time checks, going through the 
-         * available plugins and verifying the lists of mime types that they 
-         * can handle. In 4.0 beta, the ingest plugins are still built into the 
-         * main code base, so we can just go through a hard-coded list of mime 
-         * types. -- L.A. 
-         */
-        
-        String mimeType = dataFile.getContentType();
-        
-        if (mimeType == null) {
-            return false;
-        }
-        
-        switch (mimeType) {
-            case MIME_TYPE_STATA:
-            case MIME_TYPE_STATA13:
-            case MIME_TYPE_RDATA:
-            case MIME_TYPE_CSV:
-            case MIME_TYPE_CSV_ALT:
-            case MIME_TYPE_XLSX:
-            case MIME_TYPE_SPSS_SAV:
-            case MIME_TYPE_SPSS_POR:
-            return true;
-        }
-
-        return false;
-    }
-    
     /* 
      * Methods for identifying "classes" (groupings) of files by type:
     */
@@ -1396,7 +1326,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         
         // The formats we know how to ingest: 
-        if (ingestableAsTabular(file)) {
+        if (FileUtil.canIngestAsTabular(file)) {
             return true;
         }
         
@@ -1405,7 +1335,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // And these are the formats we DON'T know how to ingest, 
         // but nevertheless recognize as "tabular data":
         
-        return (MIME_TYPE_TAB.equalsIgnoreCase(contentType)
+        return (MIME_TYPE_TSV.equalsIgnoreCase(contentType)
             || MIME_TYPE_FIXED_FIELD.equalsIgnoreCase(contentType) 
             || MIME_TYPE_SAS_TRANSPORT.equalsIgnoreCase(contentType)
             || MIME_TYPE_SAS_SYSTEM.equalsIgnoreCase(contentType));
@@ -1523,7 +1453,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }  // end: isReplacementFile
     
     public List<Long> selectFilesWithMissingOriginalTypes() {
-        Query query = em.createNativeQuery("SELECT f.id FROM datafile f, datatable t where t.datafile_id = f.id AND t.originalfileformat='" + MIME_TYPE_TAB + "' ORDER BY f.id");
+        Query query = em.createNativeQuery("SELECT f.id FROM datafile f, datatable t where t.datafile_id = f.id AND (t.originalfileformat='" + MIME_TYPE_TSV + "' OR t.originalfileformat IS NULL) ORDER BY f.id");
         
         try {
             return query.getResultList();
@@ -1532,45 +1462,55 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
     }
     
+    public List<Long> selectFilesWithMissingOriginalSizes() {
+        Query query = em.createNativeQuery("SELECT f.id FROM datafile f, datatable t where t.datafile_id = f.id AND (t.originalfilesize IS NULL ) AND (t.originalfileformat IS NOT NULL) ORDER BY f.id");
+        
+        try {
+            return query.getResultList();
+        } catch (Exception ex) {
+            return new ArrayList<>();
+        }
+    }
     
-    
-    public String generateDataFileIdentifier(DataFile datafile, IdServiceBean idServiceBean) {
+    public String generateDataFileIdentifier(DataFile datafile, GlobalIdServiceBean idServiceBean) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-        
-        String datasetIdentifer = "";
-        //If format is dependent then pre-pend the dataset identifier
-        if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())){            
-            datasetIdentifer = datafile.getOwner().getIdentifier() + "/";
+
+        String prepend = "";
+        if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())){
+            //If format is dependent then pre-pend the dataset identifier 
+            prepend = datafile.getOwner().getIdentifier() + "/";
+        } else {
+            //If there's a shoulder prepend independent identifiers with it
+        	prepend = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
         }
  
         switch (doiIdentifierType) {
             case "randomString":               
-                return datasetIdentifer + generateIdentifierAsRandomString(datafile, idServiceBean);
+                return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
             case "sequentialNumber":
                 if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString())){ 
-                    return generateIdentifierAsIndependentSequentialNumber(datafile, idServiceBean);
+                    return generateIdentifierAsIndependentSequentialNumber(datafile, idServiceBean, prepend);
                 } else {
-                    return generateIdentifierAsDependentSequentialNumber(datafile, idServiceBean);
+                    return generateIdentifierAsDependentSequentialNumber(datafile, idServiceBean, prepend);
                 }
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
-                return datasetIdentifer + generateIdentifierAsRandomString(datafile, idServiceBean);
+                return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
         }
     }
     
-    private String generateIdentifierAsRandomString(DataFile datafile, IdServiceBean idServiceBean) {
-
+    private String generateIdentifierAsRandomString(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
         String identifier = null;
         do {
-            identifier = RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
-        } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
+            identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
+        } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
 
         return identifier;
     }
 
-    private String generateIdentifierAsIndependentSequentialNumber(DataFile datafile, IdServiceBean idServiceBean) {
-        
+
+    private String generateIdentifierAsIndependentSequentialNumber(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
         String identifier; 
         do {
             StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierAsSequentialNumber");
@@ -1581,38 +1521,37 @@ public class DataFileServiceBean implements java.io.Serializable {
             if (identifierNumeric == null) {
                 return null; 
             }
-            identifier = identifierNumeric.toString();
-        } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
+            identifier = prepend + identifierNumeric.toString();
+        } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
         
         return identifier;
     }
     
-    private String generateIdentifierAsDependentSequentialNumber(DataFile datafile, IdServiceBean idServiceBean) {
-        
+    private String generateIdentifierAsDependentSequentialNumber(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
         String identifier;
         Long retVal;
 
         retVal = new Long(0);
 
-
         do {
             retVal++;
-            identifier = datafile.getOwner().getIdentifier() + "/" + retVal.toString();
+            identifier = prepend + retVal.toString();
 
-        } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
+        } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
 
         return identifier;
     }
 
     /**
      * Check that a identifier entered by the user is unique (not currently used
-     * for any other study in this Dataverse Network) alos check for duplicate
-     * in EZID if needed
+     * for any other study in this Dataverse Network). Also check for duplicate
+     * in the remote PID service if needed
      * @param userIdentifier
      * @param datafile
      * @param idServiceBean
-     * @return   */
-    public boolean isIdentifierUniqueInDatabase(String userIdentifier, DataFile datafile, IdServiceBean idServiceBean) {
+     * @return  {@code true} iff the global identifier is unique.
+     */
+    public boolean isGlobalIdUnique(String userIdentifier, DataFile datafile, GlobalIdServiceBean idServiceBean) {
         String testProtocol = "";
         String testAuthority = "";
         if (datafile.getAuthority() != null){
@@ -1625,13 +1564,15 @@ public class DataFileServiceBean implements java.io.Serializable {
         } else {
             testProtocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol);
         }
-        String query = "SELECT d FROM DvObject d WHERE d.identifier = '" + userIdentifier + "'";
-        query += " and d.protocol ='" + testProtocol + "'";
-        query += " and d.authority = '" + testAuthority + "'";
-        boolean u = em.createQuery(query).getResultList().isEmpty();
+        
+        boolean u = em.createNamedQuery("DvObject.findByProtocolIdentifierAuthority")
+            .setParameter("protocol", testProtocol)
+            .setParameter("authority", testAuthority)
+            .setParameter("identifier",userIdentifier)
+            .getResultList().isEmpty();
             
         try{
-            if (idServiceBean.alreadyExists(datafile)) {
+            if (idServiceBean.alreadyExists(new GlobalId(testProtocol, testAuthority, userIdentifier))) {
                 u = false;
             }
         } catch (Exception e){
@@ -1642,4 +1583,99 @@ public class DataFileServiceBean implements java.io.Serializable {
         return u;
     }
     
+    public void finalizeFileDelete(Long dataFileId, String storageLocation) throws IOException {
+        // Verify that the DataFile no longer exists: 
+        if (find(dataFileId) != null) {
+            throw new IOException("Attempted to permanently delete a physical file still associated with an existing DvObject "
+                    + "(id: " + dataFileId + ", location: " + storageLocation);
+        }
+        StorageIO directStorageAccess = DataAccess.getDirectStorageIO(storageLocation);
+        directStorageAccess.delete();
+    }
+    
+    public void finalizeFileDeletes(Map<Long, String> storageLocations) {
+        storageLocations.keySet().stream().forEach((dataFileId) -> {
+            String storageLocation = storageLocations.get(dataFileId);
+
+            try {
+                finalizeFileDelete(dataFileId, storageLocation);
+            } catch (IOException ioex) {
+                logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                        + dataFileId + ", storage location: " + storageLocation);
+            }
+        });
+    }
+    
+    public Map<Long, String> getPhysicalFilesToDelete(DatasetVersion datasetVersion) {
+        return getPhysicalFilesToDelete(datasetVersion, false);
+    }
+    
+    public Map<Long, String> getPhysicalFilesToDelete(DatasetVersion datasetVersion, boolean destroy) {
+        // Gather the locations of the physical files associated with DRAFT
+        // (unpublished) DataFiles (or ALL the DataFiles, if "destroy") in the 
+        // DatasetVersion, that will need to be deleted once the 
+        // DeleteDatasetVersionCommand execution has been finalized:
+
+        return getPhysicalFilesToDelete(datasetVersion.getFileMetadatas(), destroy);
+    }
+    
+    public Map<Long, String> getPhysicalFilesToDelete(List<FileMetadata> fileMetadatasToDelete) {
+        return getPhysicalFilesToDelete(fileMetadatasToDelete, false);
+    }
+    
+    public Map<Long, String> getPhysicalFilesToDelete(List<FileMetadata> fileMetadatasToDelete, boolean destroy) {
+        Map<Long, String> deleteStorageLocations = new HashMap<>();
+
+        Iterator<FileMetadata> dfIt = fileMetadatasToDelete.iterator();
+        while (dfIt.hasNext()) {
+            DataFile df = dfIt.next().getDataFile();
+
+            if (destroy || !df.isReleased()) {
+
+                String storageLocation = getPhysicalFileToDelete(df);
+                if (storageLocation != null) {
+                    deleteStorageLocations.put(df.getId(), storageLocation);
+                }
+
+            }
+        }
+
+        return deleteStorageLocations;
+    }
+  
+    public Map<Long, String> getPhysicalFilesToDelete(Dataset dataset) {
+        // Gather the locations of ALL the physical files associated with 
+        // a DATASET that is being DESTROYED, that will need to be deleted
+        // once the DestroyDataset command execution has been finalized. 
+        // Once again, note that we are selecting all the files from the dataset
+        // - not just drafts. 
+
+        Map<Long, String> deleteStorageLocations = new HashMap<>();
+
+        Iterator<DataFile> dfIt = dataset.getFiles().iterator();
+        while (dfIt.hasNext()) {
+            DataFile df = dfIt.next();
+
+            String storageLocation = getPhysicalFileToDelete(df);
+            if (storageLocation != null) {
+                deleteStorageLocations.put(df.getId(), storageLocation);
+            }
+
+        }
+
+        return deleteStorageLocations;
+    }
+    
+    public String getPhysicalFileToDelete(DataFile dataFile) {
+        try {
+            StorageIO<DataFile> storageIO = dataFile.getStorageIO();
+            return storageIO.getStorageLocation();
+
+        } catch (IOException ioex) {
+            // something potentially wrong with the physical file,
+            // or connection to the physical storage? 
+            // we don't care (?) - we'll still try to delete the datafile from the database.
+        }
+        return null;
+    }
 }

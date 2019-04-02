@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.commons.lang.StringUtils;
 import org.xml.sax.SAXException;
 import javax.xml.transform.TransformerException;
 import java.net.URLEncoder;
@@ -30,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import org.codehaus.plexus.util.StringUtils;
 
 /**
  *

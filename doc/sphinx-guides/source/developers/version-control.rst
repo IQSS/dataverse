@@ -125,6 +125,24 @@ If you'd like to resolve the merge conflicts yourself, here are some steps to do
 
 11. Leave a comment for the Dataverse team that you have resolved the merge conflicts.
 
+Adding Commits to a Pull Request from a Fork 
+--------------------------------------------
+
+By default, when a pull request is made from a fork, "Allow edits from maintainers" is checked as explained at https://help.github.com/articles/allowing-changes-to-a-pull-request-branch-created-from-a-fork/
+
+This is a nice feature of GitHub because it means that the core dev team for Dataverse can make small (or even large) changes to a pull request from a contributor to help the pull request along on its way to QA and being merged.
+
+GitHub documents how to make changes to a fork at https://help.github.com/articles/committing-changes-to-a-pull-request-branch-created-from-a-fork/ but as of this writing the steps involve making a new clone of the repo. This works but you might find it more convenient to add a "remote" to your existing clone. The example below uses the fork at https://github.com/OdumInstitute/dataverse and the branch ``4709-postgresql_96`` but the technique can be applied to any fork and branch:
+
+.. code-block:: bash
+
+        git remote add OdumInstitute git@github.com:OdumInstitute/dataverse.git
+        git fetch OdumInstitute
+        git checkout 4709-postgresql_96
+        vim path/to/file.txt
+        git commit
+        git push OdumInstitute 4709-postgresql_96
+
 ----
 
-Previous: :doc:`troubleshooting` | Next: :doc:`testing`
+Previous: :doc:`troubleshooting` | Next: :doc:`sql-upgrade-scripts`

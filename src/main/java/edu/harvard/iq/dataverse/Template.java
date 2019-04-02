@@ -26,6 +26,8 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.validation.constraints.Size;
+
+import edu.harvard.iq.dataverse.util.DateUtil;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
@@ -55,8 +57,8 @@ public class Template implements Serializable {
         return this.id;
     }
 
-    @NotBlank(message = "Please add in a name for the dataset template.")
-    @Size(max = 255, message = "Name must be at most 255 characters.")
+    @NotBlank(message = "{dataset.templatename}")
+    @Size(max = 255, message = "{dataset.nameLength}")
     @Column( nullable = false )
     private String name;
 
@@ -91,7 +93,7 @@ public class Template implements Serializable {
     }
 
     public String getCreateDate() {
-        return new SimpleDateFormat("MMMM d, yyyy").format(createTime);
+        return DateUtil.formatDate(createTime);
     }
     
     @OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval=true)
