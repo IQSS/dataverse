@@ -168,7 +168,7 @@ public class Files extends AbstractApiBean {
      * 
      * @param datasetId
      * @param testFileInputStream
-     * @param contentDispositionHeaderI'd like to move forward on improving our file access via API, allowing a direct
+     * @param contentDispositionHeader
      * @param formDataBodyPart
      * @return 
      */

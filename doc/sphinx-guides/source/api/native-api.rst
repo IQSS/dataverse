@@ -769,7 +769,7 @@ Updates the file metadata for an existing file where ``id`` is the database id o
 
 Example::
 
-    curl -H "X-Dataverse-key:a942187f-caf4-4c08-915b-168196800d1f" -X POST -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"restrict":false}' 'http://localhost:8080/api/files/264/metadata'
+    curl -H "X-Dataverse-key:{apiKey}" -X POST -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"restrict":false}' 'http://localhost:8080/api/files/264/metadata'
 
 Also note that dataFileTags are not versioned and changes to these will update the published version of the file.
 
