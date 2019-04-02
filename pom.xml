@@ -614,6 +614,7 @@
         <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-storage</artifactId>
+      <version>1.67.0</version>
     </dependency>
     </dependencies>
     <build>
