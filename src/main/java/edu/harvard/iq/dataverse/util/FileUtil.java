@@ -192,10 +192,6 @@ public class FileUtil implements java.io.Serializable  {
     }   
     
     public static String replaceExtension(String originalName, String newExtension) {
-        if (originalName == null | originalName == "") {
-            return originalName;
-        }
-
         int extensionIndex = originalName.lastIndexOf(".");
         if (extensionIndex != -1 ) {
             return originalName.substring(0, extensionIndex) + "."+newExtension ;
