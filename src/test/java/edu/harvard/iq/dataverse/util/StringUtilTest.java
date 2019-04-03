@@ -30,19 +30,19 @@ public class StringUtilTest {
 
     public StringUtilTest() {
     }
-
+    
     @BeforeClass
     public static void setUpClass() {
     }
-
+    
     @AfterClass
     public static void tearDownClass() {
     }
-
+    
     @Before
     public void setUp() {
     }
-
+    
     @After
     public void tearDown() {
     }
@@ -52,7 +52,7 @@ public class StringUtilTest {
 
         public boolean isValid;
         public String inputString;
-
+        
         public TestIsEmpty(boolean isValid, String inputString) {
             this.isValid = isValid;
             this.inputString = inputString;
@@ -61,7 +61,7 @@ public class StringUtilTest {
         @Parameters
         public static Collection<Object[]> parameters() {
             return Arrays.asList(
-                    new Object[][] {
+                    new Object[][] { 
                         { true, null },
                         { true, "" },
                         { true, " " },
@@ -86,7 +86,7 @@ public class StringUtilTest {
 
         public boolean isValid;
         public String inputString;
-
+        
         public TestIsAlphaNumeric(boolean isValid, String inputString) {
             this.isValid = isValid;
             this.inputString = inputString;
@@ -95,7 +95,7 @@ public class StringUtilTest {
         @Parameters
         public static Collection<Object[]> parameters() {
             return Arrays.asList(
-                    new Object[][] {
+                    new Object[][] { 
                         { true, "abc" },
                         { true, "1230" },
                         { true, "1230abc" },
@@ -119,7 +119,7 @@ public class StringUtilTest {
 
         public boolean isValid;
         public char inputChar;
-
+        
         public TestIsAlphaNumericChar(boolean isValid, char inputChar) {
             this.isValid = isValid;
             this.inputChar = inputChar;
@@ -128,7 +128,7 @@ public class StringUtilTest {
         @Parameters
         public static Collection<Object[]> parameters() {
             return Arrays.asList(
-                    new Object[][] {
+                    new Object[][] { 
                         { true, 'a' },
                         { true, 'f' },
                         { true, 'z' },
@@ -232,31 +232,31 @@ public class StringUtilTest {
             assertEquals(StringUtil.htmlArray2textArray(Arrays.asList("be <b>bold</b>!")), Arrays.asList("be bold!"));
             assertEquals(StringUtil.htmlArray2textArray(null), Collections.emptyList());
         }
-
+        
         @Test
         public void testNullToEmpty() {
             assertEquals( "hello", StringUtil.nullToEmpty("hello") );
             assertEquals( "", StringUtil.nullToEmpty(null) );
         }
-
+        
         @Test
         public void testSymmetricEncryption() {
             String source = "Hello, world! This is an encryption test";
             String password = "12345678";
             final String encrypted = StringUtil.encrypt(source, password);
             final String decrypted = StringUtil.decrypt(encrypted, password);
-
+            
             assertEquals(source, decrypted);
         }
-
+        
         @Test
         public void testIsTrue() {
             Stream.of("yes", "Yes", "  yes  ", "1", "allow", "tRuE")
                 .forEach( v -> assertTrue(StringUtil.isTrue(v)) );
-
+            
             Stream.of("es", "no", " 0 s  ", "0", "x", "false")
                 .forEach( v -> assertFalse(StringUtil.isTrue(v)) );
-
+            
             assertFalse( StringUtil.isTrue(null) );
         }
     }

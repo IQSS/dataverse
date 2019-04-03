@@ -178,12 +178,12 @@ public class PagerTest {
         assertEquals(2, pager1.getNextPageNumber());
         assertEquals(false, pager1.hasPreviousPageNumber());
         assertEquals(true, pager1.hasNextPageNumber());
-
+        
         msg("page list: " + Arrays.toString(pager1.getPageNumberList()));
         //assertEquals(new int[]{1, 2, 3, 4, 5}, pager1.getPageNumberList());
         assertEquals(1, pager1.getPageNumberList()[0]);
         assertEquals(5, pager1.getPageNumberList()[4]);
-
+    
         assertEquals(1, pager1.getStartCardNumber());
         assertEquals(10, pager1.getEndCardNumber());
 
@@ -221,25 +221,25 @@ public class PagerTest {
         pager1 = new Pager(102, 10, 10);
    //     assertEquals(6, pager1.getPageNumberList()[0]);
 */
-    }
+    } 
 
     /*
     @author rmp553
     */
     @Test
     public void testNoResults() {
-
+        
         System.out.println("getNumResults");
         Pager pager1 = new Pager(0, 10, 1);
 
         assertEquals(false, pager1.isPagerNecessary());
-
+        
         assertEquals(0, pager1.getNumResults());
         assertEquals(0, pager1.getPreviousPageNumber());
         assertEquals(0, pager1.getNextPageNumber());
         assertEquals(false, pager1.hasPreviousPageNumber());
         assertEquals(false, pager1.hasNextPageNumber());
-
+        
         msgt("page list: " + Arrays.toString(pager1.getPageNumberList()));
         //assertEquals(null, pager1.getPageNumberList());
         //assertEquals(1, pager1.getPageNumberList()[pager1.getPageCount()-1]);
