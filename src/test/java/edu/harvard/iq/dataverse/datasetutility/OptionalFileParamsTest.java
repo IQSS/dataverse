@@ -8,6 +8,8 @@ package edu.harvard.iq.dataverse.datasetutility;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -135,7 +137,7 @@ public class OptionalFileParamsTest {
             OptionalFileParams instance = new OptionalFileParams(jsonParams);
         }catch(DataFileTagException ex){
            // msgt("ex: " + ex.getMessage());
-            String errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.invalid_datafile_tag");
+            String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.invalid_datafile_tag");
             msgt("errMsg: " + errMsg);
             assertTrue(ex.getMessage().startsWith(errMsg));
         }
