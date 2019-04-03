@@ -152,50 +152,6 @@ public class StringUtilTest {
         }
     }
 
-    @RunWith(Parameterized.class)
-    public static class TestTruncateString {
-
-        @Parameter
-        public String originalString;
-
-        @Parameter(1)
-        public int maxLength;
-
-        @Parameter(2)
-        public String expectedOutput;
-
-        @Parameters
-        public static Collection<Object[]> parameters() {
-            return Arrays.asList(
-                new Object[][] {
-                    // interface-based partitioning
-                    // pair-wise test cases
-                    {null, -10, null},
-                    {null, 0, null},
-                    {null, 10, null},
-                    {"", -10, ""},
-                    {"", 0, ""},
-                    {"", 10, ""},
-                    {"abcd", -10, "abcd"},
-                    {"abcd", 0, "abcd"},
-                    {"abcd", 10, "abcd"},
-
-                    // functionality-based partitioning
-                    // pair-wise test cases
-                    {"abcd", 6, "abcd"},
-                    {"a cd", 6, "a cd"},
-                    {"abcdabcd", 4, "abcdabcd"},
-                    {"abcda cd", 4, "abcda <span class='dvn_threedots'>...</span>"}
-                }
-            );
-        }
-
-        @Test
-        public void testTruncateString() {
-            assertEquals(expectedOutput, StringUtil.truncateString(originalString, maxLength));
-        }
-    }
-
     public static class StringUtilNoParamTest{
 
         @Test
