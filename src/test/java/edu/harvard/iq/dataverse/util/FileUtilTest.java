@@ -64,6 +64,15 @@ public class FileUtilTest {
     @RunWith(Parameterized.class)
     public static class FileUtilParamTest2 {
 
+        @Parameter
+        public String expectedString;
+
+        @Parameter(1)
+        public String originalName;
+
+        @Parameter(2)
+        public String newExtension;
+
         @Parameters
         public static Collection data() {
             return Arrays.asList(new Object[][] {
@@ -88,15 +97,6 @@ public class FileUtilTest {
                 //{ "", "", "y" },
             });
         }
-
-        @Parameter
-        public String expectedString;
-
-        @Parameter(1)
-        public String originalName;
-
-        @Parameter(2)
-        public String newExtension;
 
         @Test
         public void testReplaceExtension() {
