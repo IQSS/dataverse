@@ -101,7 +101,7 @@ public class DatasetTest {
     }
 
     @Test
-    public void testIsDeaccessionedWithNoVersions() {
+    public void datasetShouldNotBeDeaccessionedWithNoVersions() {
         // path [1,2,3,4]
         List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
 
@@ -112,7 +112,7 @@ public class DatasetTest {
     }
 
     @Test
-    public void testIsDeaccessionedWithOneReleasedVersion() {
+    public void datasetShouldNotBeDeaccessionedWithOneReleasedVersion() {
         // path [1,2,3,5,6]
         List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
         versionList.add(this.releasedVersion);
@@ -124,7 +124,7 @@ public class DatasetTest {
     }
 
     @Test
-    public void testIsDeaccessionedWithOneDraftVersion() {
+    public void datasetShouldNotBeDeaccessionedWithOneDraftVersion() {
         // path [1,2,3,5,7,8]
         List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
         versionList.add(this.draftVersion);
@@ -136,7 +136,7 @@ public class DatasetTest {
     }
 
     @Test
-    public void testIsDeaccessionedWithArchivedAndDraftVersions() {
+    public void datasetShouldNotBeDeaccessionedWithArchivedAndDraftVersions() {
         // path [1,2,3,5,7,9,11,3,5,7,8]
         List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
         versionList.add(this.archivedVersion);
@@ -149,7 +149,7 @@ public class DatasetTest {
     }
 
     @Test
-    public void testIsDeaccessionedWithDeaccessionedAndReleasedVersions() {
+    public void datasetShouldNotBeDeaccessionedWithDeaccessionedAndReleasedVersions() {
         // path [1,2,3,5,7,9,10,11,3,5,6]
         List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
         versionList.add(this.deaccessionedVersion);
@@ -162,7 +162,7 @@ public class DatasetTest {
     }
 
     @Test
-    public void testIsDeaccessionedWithArchivedAndReleasedVersions() {
+    public void datasetShouldNotBeDeaccessionedWithArchivedAndReleasedVersions() {
         // path [1,2,3,5,7,9,11,3,5,6]
         List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
         versionList.add(this.archivedVersion);
@@ -175,7 +175,7 @@ public class DatasetTest {
     }
 
     @Test
-    public void testIsDeaccessionedWithDeaccessionedAndDraftVersions() {
+    public void datasetShouldNotBeDeaccessionedWithDeaccessionedAndDraftVersions() {
         // path [1,2,3,5,7,9,10,11,3,5,7,8]
         List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
         versionList.add(this.deaccessionedVersion);
@@ -188,7 +188,7 @@ public class DatasetTest {
     }
 
     @Test
-    public void testIsDeaccessionedWithArchivedAndArchivedVersions() {
+    public void datasetShouldNotBeDeaccessionedWithArchivedAndArchivedVersions() {
         // path [1,2,3,5,7,9,11,3,5,7,9,11,3,4]
         List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
         versionList.add(this.archivedVersion);
@@ -201,7 +201,7 @@ public class DatasetTest {
     }
 
     @Test
-    public void testIsDeaccessionedWithArchivedAndDeaccessedVersions() {
+    public void datasetShouldBeDeaccessionedWithArchivedAndDeaccessedVersions() {
         // path [1,2,3,5,7,9,11,3,5,7,9,10,11,3,4]
         List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
         versionList.add(this.archivedVersion);
@@ -214,7 +214,7 @@ public class DatasetTest {
     }
 
     @Test
-    public void testIsDeaccessionedWithDeaccessionedAndArchivedVersions() {
+    public void datasetShouldBeDeaccessionedWithDeaccessionedAndArchivedVersions() {
         // path [1,2,3,5,7,9,10,11,3,5,7,9,11,3,4]
         List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
         versionList.add(this.deaccessionedVersion);
@@ -227,7 +227,7 @@ public class DatasetTest {
     }
 
     @Test
-    public void testIsDeaccessionedWithDeaccessionedAndDeaccessionedVersions() {
+    public void datasetShouldBeDeaccessionedWithDeaccessionedAndDeaccessionedVersions() {
         // path [1,2,3,5,7,9,10,11,3,5,7,9,10,11,3,4]
         List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
         versionList.add(this.deaccessionedVersion);
