@@ -77,6 +77,7 @@ import org.apache.commons.io.FileUtils;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 
 
 /**
@@ -505,7 +506,7 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     // from MD5Checksum.java
-    public static String CalculateChecksum(String datafile, ChecksumType checksumType) {
+    public static String calculateChecksum(String datafile, ChecksumType checksumType) {
 
         FileInputStream fis = null;
         try {
@@ -514,11 +515,11 @@ public class FileUtil implements java.io.Serializable  {
             throw new RuntimeException(ex);
         }
 
-        return CalculateChecksum(fis, checksumType);
+        return FileUtil.calculateChecksum(fis, checksumType);
     }
 
     // from MD5Checksum.java
-    public static String CalculateChecksum(InputStream in, ChecksumType checksumType) {
+    public static String calculateChecksum(InputStream in, ChecksumType checksumType) {
         MessageDigest md = null;
         try {
             // Use "SHA-1" (toString) rather than "SHA1", for example.
@@ -543,10 +544,28 @@ public class FileUtil implements java.io.Serializable  {
             }
         }
 
-        byte[] mdbytes = md.digest();
+        return checksumDigestToString(md.digest());
+    }
+    
+    public static String calculateChecksum(byte[] dataBytes, ChecksumType checksumType) {
+        MessageDigest md = null;
+        try {
+            // Use "SHA-1" (toString) rather than "SHA1", for example.
+            md = MessageDigest.getInstance(checksumType.toString());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+
+        md.update(dataBytes);
+
+        return checksumDigestToString(md.digest());
+        
+    }
+    
+    private static String checksumDigestToString(byte[] digestBytes) {
         StringBuilder sb = new StringBuilder("");
-        for (int i = 0; i < mdbytes.length; i++) {
-            sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
+        for (int i = 0; i < digestBytes.length; i++) {
+            sb.append(Integer.toString((digestBytes[i] & 0xff) + 0x100, 16).substring(1));
         }
         return sb.toString();
     }
@@ -795,11 +814,13 @@ public class FileUtil implements java.io.Serializable  {
 
                                 if (!fileEntryName.equals(shortName)) {
                                     // If the filename looks like a hierarchical folder name (i.e., contains slashes and backslashes),
-                                    // we'll extract the directory name, then a) strip the leading and trailing slashes; 
-                                    // and b) replace all the back slashes with regular ones and b) replace any multiple 
-                                    // slashes with a single slash:
-                                    String directoryName = fileEntryName.replaceFirst("[\\/][\\/]*[^\\/]*$", "").replaceFirst("^[\\/]*", "").replaceAll("[\\/][\\/]*", "/");
-                                    if (!"".equals(directoryName)) {
+                                    // we'll extract the directory name; then subject it to some "aggressive sanitizing" - strip all 
+                                    // the leading, trailing and duplicate slashes; then replace all the characters that 
+                                    // don't pass our validation rules. 
+                                    String directoryName = fileEntryName.replaceFirst("[\\\\/][\\\\/]*[^\\\\/]*$", "");
+                                    directoryName = StringUtil.sanitizeFileDirectory(directoryName, true);
+                                    //if (!"".equals(directoryName)) {
+                                    if (!StringUtil.isEmpty(directoryName)) {
                                         logger.fine("setting the directory label to " + directoryName);
                                         datafile.getFileMetadata().setDirectoryLabel(directoryName);
                                     }
@@ -1034,7 +1055,7 @@ public class FileUtil implements java.io.Serializable  {
         try {
             // We persist "SHA1" rather than "SHA-1".
             datafile.setChecksumType(checksumType);
-            datafile.setChecksumValue(CalculateChecksum(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier(), datafile.getChecksumType()));
+            datafile.setChecksumValue(calculateChecksum(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier(), datafile.getChecksumType()));
         } catch (Exception cksumEx) {
             logger.warning("Could not calculate " + checksumType + " signature for the new file " + fileName);
         }
@@ -1328,11 +1349,18 @@ public class FileUtil implements java.io.Serializable  {
      * This is what the UI displays for "Download URL" on the file landing page
      * (DOIs rather than file IDs.
      */
-    public static String getPublicDownloadUrl(String dataverseSiteUrl, String persistentId) {
-        String path = "/api/access/datafile/:persistentId?persistentId=" + persistentId;
-        return dataverseSiteUrl + path;
+    public static String getPublicDownloadUrl(String dataverseSiteUrl, String persistentId, Long fileId) {
+        String path = null;
+        if(persistentId != null) {
+            path = dataverseSiteUrl + "/api/access/datafile/:persistentId?persistentId=" + persistentId;
+        } else if( fileId != null) {
+            path = dataverseSiteUrl + "/api/access/datafile/" + fileId;
+        } else {
+            logger.info("In getPublicDownloadUrl but persistentId & fileId are both null!");
+        }
+        return path;
     }
-
+    
     /**
      * The FileDownloadServiceBean operates on file IDs, not DOIs.
      */

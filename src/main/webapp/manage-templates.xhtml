@@ -10,6 +10,7 @@
     <h:body>
         <f:metadata>
             <f:viewParam name="dataverseId" value="#{manageTemplatesPage.dataverseId}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{manageTemplatesPage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(manageTemplatesPage.dataverse, bundle['dataset.manageTemplates.pageTitle'])}"/>
         </f:metadata>
@@ -165,9 +166,7 @@
                         <div class="form-horizontal">
                             <div class="form-group">
                                 <label for="select_DatasetTemplate" class="col-sm-3 control-label">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="test">
-                                        #{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate']}
-                                    </span>
+                                    #{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate']}
                                 </label>
                                 <div class="col-sm-7">
                                     <p class="form-control-static">

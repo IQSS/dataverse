@@ -1,11 +1,11 @@
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.DataverseLocaleBean;
-
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -16,12 +16,13 @@ import java.util.TimeZone;
  */
 public class DateUtil {
 
+    public static String YEAR_DASH_MONTH_PATTERN = "yyyy-MM";
+
     public static String formatDate(Date dateToformat) {
         String formattedDate;
         DateFormat dateFormatter;
         try {
-            DataverseLocaleBean d = new DataverseLocaleBean();
-            Locale currentLocale = new Locale(d.getLocaleCode());
+            Locale currentLocale = BundleUtil.getCurrentLocale();
             dateFormatter = DateFormat.getDateInstance(DateFormat.DEFAULT, currentLocale);
             formattedDate = dateFormatter.format(dateToformat);
             return formattedDate;
@@ -48,8 +49,7 @@ public class DateUtil {
         String formattedDate;
         DateFormat dateFormatter;
         try {
-             DataverseLocaleBean d = new DataverseLocaleBean();
-             Locale currentLocale = new Locale(d.getLocaleCode());
+             Locale currentLocale = BundleUtil.getCurrentLocale();
              dateFormatter = DateFormat.getDateTimeInstance(
                                                      DateFormat.DEFAULT,
                                                      DateFormat.LONG,
@@ -62,4 +62,5 @@ public class DateUtil {
              return null;
          }
     }
+
 }
