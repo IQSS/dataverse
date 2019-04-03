@@ -199,10 +199,8 @@ public class FileUtil implements java.io.Serializable  {
         int extensionIndex = originalName.lastIndexOf(".");
         if (extensionIndex != -1 ) {
             return originalName.substring(0, extensionIndex) + "."+newExtension ;
-        } else if (newExtension != "") {
-            return originalName +"."+newExtension ;
         } else {
-            return originalName ;
+            return originalName +"."+newExtension ;
         }
     }
     
