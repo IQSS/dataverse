@@ -93,8 +93,9 @@ public class EditDDI  extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
+        User apiTokenUser = checkAuth(dataFile);
 
-        if (!checkAuth(dataFile)) {
+        if (apiTokenUser == null) {
             return unauthorized("Cannot edit metadata, access denied" );
         }
 
@@ -107,12 +108,16 @@ public class EditDDI  extends AbstractApiBean {
             return error(Response.Status.NOT_ACCEPTABLE, "bad xml file" );
         }
 
-        Dataset dataset = dataFile.getOwner();
+        /*Dataset dataset = dataFile.getOwner();
         DatasetVersion newDatasetVersion = dataFile.getOwner().getEditVersion();
         List<FileMetadata> fml = newDatasetVersion.getFileMetadatas();
 
         DatasetVersion latestDatasetVersion = dataFile.getOwner().getLatestVersionForCopy();
-        List<FileMetadata> latestFml = latestDatasetVersion.getFileMetadatas();
+        List<FileMetadata> latestFml = latestDatasetVersion.getFileMetadatas();*/
+
+        DatasetVersion newDatasetVersion = dataFile.getOwner().getEditVersion();
+        Dataset dataset = dataFile.getOwner();
+
 
         ArrayList<VariableMetadata> neededToUpdateVM = new ArrayList<VariableMetadata>();
 
@@ -125,10 +130,13 @@ public class EditDDI  extends AbstractApiBean {
             dataset.setModificationTime(updateTime);
             newDatasetVersion.setLastUpdateTime(updateTime);
 
-            boolean groupUpdate = newGroups(varGroupMap, latestFml.get(0));
-            boolean varUpdate = varUpdates(mapVarToVarMet, latestFml.get(0), neededToUpdateVM, true);
+            FileMetadata latestFml = dataFile.getLatestPublishedFileMetadata();
+
+
+            boolean groupUpdate = newGroups(varGroupMap, latestFml);
+            boolean varUpdate = varUpdates(mapVarToVarMet, latestFml, neededToUpdateVM, true);
             if (varUpdate || groupUpdate) {
-                if (!createNewDraftVersion(neededToUpdateVM,  varGroupMap, dataset, newDatasetVersion)) {
+                if (!createNewDraftVersion(neededToUpdateVM,  varGroupMap, dataset, dataFile, apiTokenUser)) {
                     return error(Response.Status.INTERNAL_SERVER_ERROR, "Failed to create new draft version" );
                 }
             } else {
@@ -136,10 +144,11 @@ public class EditDDI  extends AbstractApiBean {
             }
         } else {
 
-            boolean groupUpdate = newGroups(varGroupMap, fml.get(0));
-            boolean varUpdate = varUpdates(mapVarToVarMet, fml.get(0), neededToUpdateVM, false);
+            FileMetadata fml = dataFile.getFileMetadata();
+            boolean groupUpdate = newGroups(varGroupMap, fml);
+            boolean varUpdate = varUpdates(mapVarToVarMet, fml, neededToUpdateVM, false);
             if (varUpdate || groupUpdate) {
-                if (!updateDraftVersion(neededToUpdateVM, varGroupMap, dataset, newDatasetVersion, groupUpdate)) {
+                if (!updateDraftVersion(neededToUpdateVM, varGroupMap, dataset, newDatasetVersion, groupUpdate, fml)) {
                     return error(Response.Status.INTERNAL_SERVER_ERROR, "Failed to update draft version" );
                 }
             } else {
@@ -175,15 +184,8 @@ public class EditDDI  extends AbstractApiBean {
         return updates;
     }
 
-    private boolean createNewDraftVersion(ArrayList<VariableMetadata> neededToUpdateVM, Map<Long,VarGroup> varGroupMap, Dataset dataset, DatasetVersion newDatasetVersion ) {
+    private boolean createNewDraftVersion(ArrayList<VariableMetadata> neededToUpdateVM, Map<Long,VarGroup> varGroupMap, Dataset dataset, DataFile dataFile, User apiTokenUser ) {
 
-        User apiTokenUser = null;
-        try {
-            apiTokenUser = findUserOrDie();
-        } catch (WrappedResponse wr) {
-            logger.log(Level.SEVERE, "Message from findUserOrDie(): {0}", wr.getMessage());
-            return false;
-        }
         Command<Dataset> cmd;
         try {
 
@@ -192,17 +194,24 @@ public class EditDDI  extends AbstractApiBean {
             ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
             dataset = commandEngine.submit(cmd);
 
-            List<FileMetadata> fml = newDatasetVersion.getFileMetadatas();
+            List<FileMetadata> fmlList = dataset.getLatestVersion().getFileMetadatas();
+            FileMetadata fml = null;
+            for ( FileMetadata fmlCurr : fmlList ) {
+                if (fmlCurr.getDataFile().getId() == dataFile.getId()) {
+                    fml = fmlCurr;
+                    break;
+                }
+            }
 
             for (int i=0; i< neededToUpdateVM.size(); i++) {
                 updateCategories(neededToUpdateVM.get(i));
-                neededToUpdateVM.get(i).setFileMetadata(fml.get(0));
+                neededToUpdateVM.get(i).setFileMetadata(fml);
                 em.merge(neededToUpdateVM.get(i));
             }
 
             //add New groups
             for (VarGroup varGroup : varGroupMap.values()) {
-                varGroup.setFileMetadata(fml.get(0));
+                varGroup.setFileMetadata(fml);
                 varGroup.setId(null);
                 em.merge(varGroup);
             }
@@ -251,14 +260,13 @@ public class EditDDI  extends AbstractApiBean {
 
     }
 
-    private boolean updateDraftVersion(ArrayList<VariableMetadata> neededToUpdateVM, Map<Long,VarGroup> varGroupMap, Dataset dataset, DatasetVersion newDatasetVersion, boolean groupUpdate ) {
+    private boolean updateDraftVersion(ArrayList<VariableMetadata> neededToUpdateVM, Map<Long,VarGroup> varGroupMap, Dataset dataset, DatasetVersion newDatasetVersion, boolean groupUpdate, FileMetadata fml ) {
 
 
         Timestamp updateTime = new Timestamp(new Date().getTime());
 
         newDatasetVersion.setLastUpdateTime(updateTime);
         dataset.setModificationTime(updateTime);
-        List<FileMetadata> fml = newDatasetVersion.getFileMetadatas();
 
         for (int i = 0; i < neededToUpdateVM.size(); i++)  {
             VariableMetadata vm = neededToUpdateVM.get(i);
@@ -268,7 +276,7 @@ public class EditDDI  extends AbstractApiBean {
             }
             vm.setDataVariable(dv);
             updateCategories(vm);
-            List<VariableMetadata> vmOld = variableService.findByDataVarIdAndFileMetaId(vm.getDataVariable().getId(), fml.get(0).getId());
+            List<VariableMetadata> vmOld = variableService.findByDataVarIdAndFileMetaId(vm.getDataVariable().getId(), fml.getId());
             System.out.println("Got vmOld ");
             if (vmOld.size() > 0) {
                 System.out.println("Got vmOld " + vmOld.get(0).getId());
@@ -284,7 +292,7 @@ public class EditDDI  extends AbstractApiBean {
             }
             System.out.println("Start updating vm");
             try {
-                vm.setFileMetadata(fml.get(0));
+                vm.setFileMetadata(fml);
                 em.merge(vm);
                 System.out.println("It was inserted");
             } catch (ConstraintViolationException e) {
@@ -295,14 +303,14 @@ public class EditDDI  extends AbstractApiBean {
         }
         if (groupUpdate) {
             //remove old groups
-            List<VarGroup> varGroups = variableService.findAllGroupsByFileMetadata(fml.get(0).getId());
+            List<VarGroup> varGroups = variableService.findAllGroupsByFileMetadata(fml.getId());
             for (int i = 0; i < varGroups.size(); i++) {
                 em.remove(varGroups.get(i));
             }
 
             //add new groups
             for (VarGroup varGroup : varGroupMap.values()) {
-                varGroup.setFileMetadata(fml.get(0));
+                varGroup.setFileMetadata(fml);
                 varGroup.setId(null);
                 em.merge(varGroup);
             }
@@ -422,36 +430,25 @@ public class EditDDI  extends AbstractApiBean {
     }
 
 
-    private boolean checkAuth(DataFile dataFile) {
+    private User checkAuth(DataFile dataFile) {
 
-        boolean auth = false;
+        User apiTokenUser = null;
 
-        if (permissionService.on(dataFile.getOwner()).has(Permission.EditDataset)) {
-            //return permissionsWrapper.notAuthorized();
-            auth = true;
-        } else {
+        try {
+            apiTokenUser = findUserOrDie();
+        } catch (WrappedResponse wr) {
+            apiTokenUser = null;
+            logger.log(Level.FINE, "Message from findUserOrDie(): {0}", wr.getMessage());
+        }
 
-            User apiTokenUser = null;
-            String apiToken = getRequestApiKey();
-
-            if ((apiToken != null) && (apiToken.length() != 64)) {
-
-                try {
-                    apiTokenUser = findUserOrDie();
-                } catch (WrappedResponse wr) {
-                    auth = false;
-                    logger.log(Level.FINE, "Message from findUserOrDie(): {0}", wr.getMessage());
-                }
-
-                if (apiTokenUser != null) {
-                    // used in an API context
-                    if (permissionService.requestOn(createDataverseRequest(apiTokenUser), dataFile.getOwner()).has(Permission.EditDataset)) {
-                        auth = true;
-                    }
-                }
+        if (apiTokenUser != null) {
+            // used in an API context
+            if (!permissionService.requestOn(createDataverseRequest(apiTokenUser), dataFile.getOwner()).has(Permission.EditDataset)) {
+                apiTokenUser = null;
             }
         }
-        return auth;
+
+        return apiTokenUser;
 
     }
 
