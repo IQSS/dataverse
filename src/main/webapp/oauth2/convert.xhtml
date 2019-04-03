@@ -29,7 +29,6 @@
                     <p:tab id="convertAccountTab" title="#{bundle['account.info']}">
                         <h:form id="convertAccountForm" styleClass="form-horizontal">
                             <p class="help-block">
-                                <span class="glyphicon glyphicon-info-sign"/>
                                 <h:outputFormat value="#{OAuth2FirstLoginPage.convertTip}" escape="false"/>
                             </p>
                             <div class="form-group">
@@ -45,7 +44,7 @@
                                     #{bundle['login.builtin.credential.password']}
                                 </label>
                                 <div class="col-sm-9">
-                                    <h:inputSecret value="#{OAuth2FirstLoginPage.password}" />
+					<h:inputSecret value="#{OAuth2FirstLoginPage.password}" autocomplete="off"/><!-- browsers will in general not respect autocomplete="foo", but scanners will still flag it as a potential problem -->
                                 </div>
                             </div>
                             

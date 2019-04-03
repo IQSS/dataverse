@@ -18,6 +18,7 @@
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="datasetId" value="#{DatasetWidgetsPage.datasetId}"/>
+                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DatasetWidgetsPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetWidgetsPage.dataset, bundle['dataset.thumbnailsAndWidget.breadcrumbs.title'])}"/>
                 </f:metadata>
@@ -26,13 +27,13 @@
                         <h:form id="themeWidgetsForm" styleClass="row form-horizontal">
                             <div class="form-group" jsf:rendered="#{true or themeWidgetFragment.editDv.themeRoot}">
                                 <label class="col-sm-3 control-label" for="logoFormat">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.title']}">
-                                        #{bundle['dataset.thumbnailsAndWidget.thumbnailImage']}
-                                    </span>
+                                    #{bundle['dataset.thumbnailsAndWidget.thumbnailImage']}
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.title']}"></span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/>               
-                                        <h:outputFormat value=" #{bundle['dataset.thumbnailsAndWidget.thumbnailImage.tip']}" escape="false">
+                                    <p class="help-block">
+                                        <h:outputFormat value="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.tip']}" escape="false">
                                             <f:param value="#{systemConfig.uploadLogoSizeLimit/1000}"/>
                                         </h:outputFormat>
                                     </p>
@@ -50,9 +51,9 @@
                                     <div class="col-sm-8">
                                         <div class="form-group" jsf:rendered="#{not empty DatasetWidgetsPage.datasetThumbnails}">
                                             <label for="selectThumbnail" class="control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectAvailable.title']}">
-                                                    #{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectAvailable']}
-                                                </span>
+                                                #{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectAvailable']}
+                                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectAvailable.title']}"></span>
                                             </label>
                                             <div>
                                                 <button type="button" class="btn btn-default" onclick="PF('selectFileThumbnail').show()">#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectThumbnail']}</button>
@@ -60,9 +61,9 @@
                                         </div>
                                         <div class="form-group">
                                             <label for="uploadThumbnail" class="control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.uploadNew.title']}">
-                                                    #{bundle['dataset.thumbnailsAndWidget.thumbnailImage.uploadNew']}
-                                                </span>
+                                                #{bundle['dataset.thumbnailsAndWidget.thumbnailImage.uploadNew']}
+                                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.uploadNew.title']}"></span>
                                             </label>
                                             <p:fileUpload invalidFileMessage="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update="@all" 
                                                           sizeLimit="#{systemConfig.uploadLogoSizeLimit}" 
@@ -148,8 +149,8 @@
                         </div>
 
                         <ui:fragment rendered="#{DatasetWidgetsPage.dataset.released}">
-                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> 
-                                <h:outputFormat value=" #{bundle['dataset.widgets.tip']}" escape="false">
+                            <p class="help-block">
+                                <h:outputFormat value="#{bundle['dataset.widgets.tip']}" escape="false">
                                     <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                     <f:param value="#{systemConfig.guidesVersion}"/>
                                 </h:outputFormat>

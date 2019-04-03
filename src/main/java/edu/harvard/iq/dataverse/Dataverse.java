@@ -730,6 +730,11 @@ public class Dataverse extends DvObjectContainer {
     }
     
     @Override
+    public String getCurrentName() {
+        return getName();
+    }
+    
+    @Override
     public boolean isPermissionRoot() {
         return permissionRoot;
     }

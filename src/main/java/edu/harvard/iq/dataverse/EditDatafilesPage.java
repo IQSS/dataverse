@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -68,13 +69,19 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.httpclient.methods.GetMethod;
 import java.text.DateFormat;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.FacesEvent;
+import javax.faces.event.ValueChangeEvent;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.context.RequestContext;
 
@@ -146,6 +153,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     private List<DataFile> newFiles = new ArrayList<>();;
     private List<DataFile> uploadedFiles = new ArrayList<>();; 
     private DatasetVersion workingVersion;
+    private DatasetVersion clone;
     private String dropBoxSelection = "";
     private String displayCitation;
     private boolean datasetUpdateRequired = false; 
@@ -474,7 +482,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         
         workingVersion = dataset.getEditVersion();
-
+        clone = workingVersion.cloneDatasetVersion();
         if (workingVersion == null || !workingVersion.isDraft()) {
             // Sorry, we couldn't find/obtain a draft version for this dataset!
             return permissionsWrapper.notFound();
@@ -1058,26 +1066,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public String save() {
         
-        
-        /*
-        // Validate
-        Set<ConstraintViolation> constraintViolations = workingVersion.validate();
-        if (!constraintViolations.isEmpty()) {
-             //JsfHelper.addFlashMessage(getBundleString("dataset.message.validationError"));
-            logger.fine("Constraint violation detected on SAVE: "+constraintViolations.toString());
-             JH.addMessage(FacesMessage.SEVERITY_ERROR, getBundleString("dataset.message.validationError"));
-             
-            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
-            return "";
-        }
-        }*/
-        
-        // Once all the filemetadatas pass the validation, we'll only allow the user 
-        // to try to save once; (this it to prevent them from creating multiple
-        // DRAFT versions, if the page gets stuck in that state where it 
-        // successfully creates a new version, but can't complete the remaining
-        // tasks. -- L.A. 4.2
-        
         if (!saveEnabled) {
             return "";
         }
@@ -1217,10 +1205,16 @@ public class EditDatafilesPage implements java.io.Serializable {
                     tabularDataTagsUpdated = false;
                 }
             }
-                        
+            
+            Map<Long, String> deleteStorageLocations = null;
+            
+            if (!filesToBeDeleted.isEmpty()) {
+                deleteStorageLocations = datafileService.getPhysicalFilesToDelete(filesToBeDeleted);
+            }
+
             Command<Dataset> cmd;
             try {
-                cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
+                cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, clone);
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
                 dataset = commandEngine.submit(cmd);
             
@@ -1243,6 +1237,16 @@ public class EditDatafilesPage implements java.io.Serializable {
                 populateDatasetUpdateFailureMessage();
                 return null;
             }
+            
+            // Have we just deleted some draft datafiles (successfully)? 
+            // finalize the physical file deletes:
+            // (DataFileService will double-check that the datafiles no 
+            // longer exist in the database, before attempting to delete 
+            // the physical files)
+            if (deleteStorageLocations != null) {
+                datafileService.finalizeFileDeletes(deleteStorageLocations);
+            }
+
             datasetUpdateRequired = false;
             saveEnabled = false; 
         } else {
@@ -1290,20 +1294,45 @@ public class EditDatafilesPage implements java.io.Serializable {
 
                 if (!fmd.getDataFile().isReleased()) {
                     // if file is draft (ie. new to this version, delete; otherwise just remove filemetadata object)
-                    try {
-                        commandEngine.submit(new DeleteDataFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest()));
-                        dataset.getFiles().remove(fmd.getDataFile());
-                        workingVersion.getFileMetadatas().remove(fmd);
-                        // added this check to handle issue where you could not deleter a file that shared a category with a new file
-                        // the relationship does not seem to cascade, yet somehow it was trying to merge the filemetadata
-                        // todo: clean this up some when we clean the create / update dataset methods
-                        for (DataFileCategory cat : dataset.getCategories()) {
-                            cat.getFileMetadatas().remove(fmd);
+                    boolean deleteCommandSuccess = false;
+                    Long dataFileId = fmd.getDataFile().getId();
+                    String deleteStorageLocation = null;
+
+                    if (dataFileId != null) { // is this check necessary?
+                        
+                        deleteStorageLocation = datafileService.getPhysicalFileToDelete(fmd.getDataFile());
+                        
+                        try {
+                            commandEngine.submit(new DeleteDataFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest()));
+                            dataset.getFiles().remove(fmd.getDataFile());
+                            workingVersion.getFileMetadatas().remove(fmd);
+                            // added this check to handle an issue where you could not delete a file that shared a category with a new file
+                            // the relationship does not seem to cascade, yet somehow it was trying to merge the filemetadata
+                            // todo: clean this up some when we clean the create / update dataset methods
+                            for (DataFileCategory cat : dataset.getCategories()) {
+                                cat.getFileMetadatas().remove(fmd);
+                            }
+                            deleteCommandSuccess = true;
+                        } catch (CommandException cmde) {
+                            // TODO: 
+                            // add diagnostics reporting for individual data files that 
+                            // we failed to delete.
+                            logger.warning("Failed to delete DataFile id=" + dataFileId + " from the database; " + cmde.getMessage());
                         }
-                    } catch (CommandException cmde) {
-                        // TODO: 
-                        // add diagnostics reporting for individual data files that 
-                        // we failed to delete.
+                        if (deleteCommandSuccess) {
+                            if (deleteStorageLocation != null) {
+                                // Finalize the delete of the physical file 
+                                // (File service will double-check that the datafile no 
+                                // longer exists in the database, before proceeding to 
+                                // delete the physical file)
+                                try {
+                                    datafileService.finalizeFileDelete(dataFileId, deleteStorageLocation);
+                                } catch (IOException ioex) {
+                                    logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                                            + dataFileId + ", storage location: " + deleteStorageLocation);
+                                }
+                            }
+                        }
                     }
                 } else {
                     datafileService.removeFileMetadata(fmd);
@@ -2715,6 +2744,10 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public void handleNameChange(final AjaxBehaviorEvent event) {        
+        datasetUpdateRequired = true;
+    }
+    
+    public void handleFileDirectoryChange(final ValueChangeEvent event) {  
         datasetUpdateRequired = true;
     }
         

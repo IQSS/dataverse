@@ -7,6 +7,7 @@ function bind_bsui_components(){
         $(this).hasClass('keep-open'),
         e.stopPropagation();
     });
+    
     // Collapse Header Icons
     $('div[id^="panelCollapse"]').on('shown.bs.collapse', function () {
       $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-down").addClass("glyphicon-chevron-up");
@@ -16,52 +17,58 @@ function bind_bsui_components(){
       $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
     });
     
-    // Hide open tooltips
-    $('div.tooltip').hide();
+    // Button dropdown menus 
+    $('.dropdown-toggle').dropdown();
+    
+    // Hide open tooltips + popovers
+    $('.bootstrap-button-tooltip, [data-toggle="tooltip"]').tooltip("hide");
+    $("[data-toggle='popover']").popover("hide");
 
-    // Tooltip + popover functionality
+    // Tooltips + popovers
     bind_tooltip_popover();
 
-    // Disabled
+    // Disabled pagination links
     disabledLinks();
     
     // Sharrre
     sharrre();
     
-    // Custom Popover with HTML code snippet -- from dataverse_template
+    // Custom Popover with HTML content
     popoverHTML();
-    
-    //Metrics
-    //DISABLED TOGGLE UNTIL FURTHER DEVELOPMENT ON METRICS IS COMPLETED
-    //metricsTabs();
     
     // Dialog Listener For Calling handleResizeDialog
     PrimeFaces.widget.Dialog.prototype.postShow = function() {
         var dialog_id = this.jq.attr('id').split(/[:]+/).pop();
         handleResizeDialog(dialog_id);
     }
-
-}
-
-function dataset_fileupload_rebind(){
-    //console.log('dataset_fileupload_rebind');
-    bind_bsui_components();
-    // rebind for dropdown menus on restrict button
-    $('.dropdown-toggle').dropdown();
-
-}
-
-function dataverseuser_page_rebind(){
-    bind_bsui_components();
-    // rebind for dropdown menus on dataverseuser.xhtml
-    $('.dropdown-toggle').dropdown();
-
 }
 
 function bind_tooltip_popover(){
     // rebind tooltips and popover to all necessary elements
-    $(".bootstrap-button-tooltip, [data-toggle='tooltip'], #citation span.glyphicon").tooltip({container: 'body'});
-    $("span[data-toggle='popover']").popover();
+    $(".bootstrap-button-tooltip, [data-toggle='tooltip']").tooltip({container: 'body'});
+    $("[data-toggle='popover']").popover({container: 'body'});
+    
+    // CLOSE OPEN TOOLTIPS + POPOVERS ON BODY CLICKS
+    $('body').on("touchstart", function(e){
+        $(".bootstrap-button-tooltip, [data-toggle='tooltip']").each(function () {
+            // hide any open tooltips when anywhere else in body is clicked
+            if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('div.tooltip').has(e.target).length === 0) {
+                $(this).tooltip('hide');
+            }////end if
+        });
+        $("a.popoverHTML, [data-toggle='popover']").each(function () {
+            //the 'is' for buttons that trigger popups
+            //the 'has' for icons within a button that triggers a popup
+            if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('div.popover').has(e.target).length === 0) {
+                $(this).popover('hide');
+            }
+        });
+    });
+    
+    // CLOSE OPEN TOOLTIPS ON BUTTON CLICKS
+    $('.bootstrap-button-tooltip').on('click', function () {
+        $(this).tooltip('hide');
+    });
 }
 
 function toggle_dropdown(){
@@ -77,109 +84,9 @@ function disabledLinks(){
 }
 
 /*
- * Hide notification message
- */
-function hide_info_msg(){
-    if ($('div.messagePanel').length > 0){
-        $('div.messagePanel').html('');
-    }
-}
-
-/*
- * Show notification message
- */
-function show_info_msg(mtitle, mtext){
-   if ($('div.messagePanel').length > 0){
-       edit_msg = '<div class="alert alert-dismissable alert-info"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">x</button>'
-                       + '<span class="glyphicon glyphicon-info-sign"/>'
-                       + '<strong> ' + mtitle + '</strong> &#150; ' + mtext + '</div>';
-       $('div.messagePanel').html(edit_msg );
-   }else{
-     //console.log('message panel does not exist');
-   }
-}
-
-
-/*
- * Called after "Edit Dataverse" - "General Information"
- */
-function post_edit_dv_general_info(){
-    // show_info_msg('Edit Dataverse', 'Edit your dataverse and click Save Changes. Asterisks indicate required fields.');
-    // hide_search_panels();
-    bind_bsui_components();
-}
-
-/*
- * Used after cancelling "Edit Dataverse"
- */
-function post_cancel_edit_dv(){
-   // show_search_panels()
-   // hide_info_msg();
-   bind_bsui_components();
-   initCarousel();
-}
-
-/*
- * Hide search panels when editing a dv
- * NO LONGER IN USE, INSTEAD ADDED p:fragment TO DV PG
- */
-//function hide_search_panels(){
-//    if($(".panelSearchForm").length>0){
-//       $(".panelSearchForm").hide();
-//        if($(".panelSearchForm").next().length>0){
-//            $(".panelSearchForm").next().hide();
-//        }
-//   }
-//}
-
-/*
- * Show search panels when cancel a dv edit
- * NO LONGER IN USE, INSTEAD ADDED p:fragment TO DV PG
- */
-//function show_search_panels(){
-//    if($(".panelSearchForm").length>0){
-//        if($(".panelSearchForm").next().length>0){
-//            $(".panelSearchForm").next().show();
-//        }
-//       $(".panelSearchForm").show();
-//   }
-//}
-
-
-/*
- * Called after "Upload + Edit Files"
- */
-function post_edit_files(){
-   bind_bsui_components();
-}
-
-/*
- * Called after "Edit Metadta"
- */
-function post_edit_metadata(){
-   bind_bsui_components();
-}
-
-/*
- * Called after "Edit Terms"
- */
-
-function post_edit_terms(){
-   bind_bsui_components();
-}
-
-/*
- *  Used when cancelling either "Upload + Edit Files" or "Edit Metadata"
- */
-function post_cancel_edit_files_or_metadata(){
-   bind_bsui_components();
-}
-
-/*
 * Custom Popover with HTML code snippet
 */
 function popoverHTML(popoverTitleHTML) {
-
    var popoverTemplateHTML = ['<div class="popover">',
        '<div class="arrow"></div>',
        '<h3 class="popover-title"></h3>',
@@ -192,7 +99,7 @@ function popoverHTML(popoverTitleHTML) {
        '</code>'].join('');
 
    $('body').popover({
-       selector: 'span.popoverHTML',
+       selector: 'a.popoverHTML',
        title: popoverTitleHTML,
        trigger: 'hover',
        content: popoverContentHTML,
@@ -221,13 +128,13 @@ function sharrre(){
         share: {
             facebook: true,
             twitter: true,
-            googlePlus: true
+            linkedin: true
         },
         template: '<div id="sharrre-block" class="clearfix">\n\
                     <input type="hidden" id="sharrre-total" name="sharrre-total" value="{total}"/> \n\
                     <a href="#" class="sharrre-facebook"><span class="socicon socicon-facebook"/></a> \n\
                     <a href="#" class="sharrre-twitter"><span class="socicon socicon-twitter"/></a> \n\
-                    <a href="#" class="sharrre-google"><span class="socicon socicon-google"/></a>\n\
+                    <a href="#" class="sharrre-linkedin"><span class="socicon socicon-linkedin"/></a>\n\
                     </div>',
         enableHover: false,
         enableTracking: true,
@@ -239,8 +146,8 @@ function sharrre(){
             $(api.element).on('click', '.sharrre-facebook', function() {
                 api.openPopup('facebook');
             });
-            $(api.element).on('click', '.sharrre-google', function() {
-                api.openPopup('googlePlus');
+            $(api.element).on('click', '.sharrre-linkedin', function() {
+                api.openPopup('linkedin');
             });
             
             // Count not working... Coming soon...
@@ -251,20 +158,8 @@ function sharrre(){
 }
 
 /*
- * Metrics Tabs
- * DISABLED TOGGLE UNTIL FURTHER DEVELOPMENT ON METRICS IS COMPLETED
+ * Select dataset/file citation onclick event
  */
-// function metricsTabs() {
-    // $('#metrics-tabs a[data-toggle="tab"]').on('shown', function (e) {
-        // e.target // activated tab
-        // e.relatedTarget // previous tab
-    // });
-    // $('#metrics-tabs a[data-toggle="tab"]').mouseover(function(){
-        // $(this).click();
-    // });
-    // $('#metrics-tabs a.first[data-toggle="tab"]').tab('show');
-// }
-
 function selectText(ele) {
     try {
         var div = document.createRange();
@@ -290,7 +185,6 @@ function handleResizeDialog(dialog) {
         
         function calculateResize() {
             var overlay = $('#' + dialog + '_modal');
-            
             var bodyHeight = '';
             var bodyWidth = '';
         
@@ -306,7 +200,6 @@ function handleResizeDialog(dialog) {
             el.css('position', elPos);
             doc.css('width', bodyWidth);
             doc.css('height', bodyHeight);
-            
             
             var pos = el.offset();
             if (pos.top + el.height() > doc.height()) {

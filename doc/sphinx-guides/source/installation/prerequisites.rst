@@ -4,7 +4,7 @@
 Prerequisites
 =============
 
-Before running the Dataverse installation script, you must install and configure the following software.
+Before running the Dataverse installation script, you must install and configure Linux, Java, Glassfish, PostgreSQL, Solr, and jq. The other software listed below is optional but can provide useful features.
 
 After following all the steps below, you can proceed to the :doc:`installation-main` section.
 
@@ -124,9 +124,9 @@ PostgreSQL
 Installing PostgreSQL
 =======================
 
-Version 9.x is required. Previous versions have not been tested.
+Version 9.3 is required. Previous versions have not been tested.
 
-Version 9.6 is anticipated as an "LTS" release in RHEL and on other platforms::
+Version 9.6 is strongly recommended::
 
 	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
 	# yum makecache fast
@@ -135,8 +135,11 @@ Version 9.6 is anticipated as an "LTS" release in RHEL and on other platforms::
 	# /usr/bin/systemctl start postgresql-9.6
 	# /usr/bin/systemctl enable postgresql-9.6
 	
-Note these steps are specific to RHEL/CentOS 7. For RHEL/CentOS 6 use::
+Note that the steps above are specific to RHEL/CentOS 7. For RHEL/CentOS 6 use::
 
+	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-6-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+	# yum makecache fast
+	# yum install -y postgresql96-server
 	# service postgresql-9.6 initdb
 	# service postgresql-9.6 start
 
@@ -176,10 +179,6 @@ Configuring Database Access for the Dataverse Application (and the Dataverse Ins
 
         # systemctl restart postgresql-9.6
 
-  or on RHEL/CentOS 6::
-
-        # service postgresql restart
-
   On MacOS X a "Reload Configuration" icon is usually supplied in the PostgreSQL application folder. Or you could look up the process id of the PostgreSQL postmaster process, and send it the SIGHUP signal:: 
 
       	kill -1 PROCESS_ID
@@ -202,19 +201,19 @@ Become the ``solr`` user and then download and configure Solr::
 
         su - solr
         cd /usr/local/solr
-        wget https://archive.apache.org/dist/lucene/solr/7.3.0/solr-7.3.0.tgz
-        tar xvzf solr-7.3.0.tgz
-        cd solr-7.3.0
+        wget https://archive.apache.org/dist/lucene/solr/7.3.1/solr-7.3.1.tgz
+        tar xvzf solr-7.3.1.tgz
+        cd solr-7.3.1
         cp -r server/solr/configsets/_default server/solr/collection1
 
 You should already have a "dvinstall.zip" file that you downloaded from https://github.com/IQSS/dataverse/releases . Unzip it into ``/tmp``. Then copy the files into place::
 
-        cp /tmp/dvinstall/schema.xml /usr/local/solr/solr-7.3.0/server/solr/collection1/conf
-        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-7.3.0/server/solr/collection1/conf
+        cp /tmp/dvinstall/schema.xml /usr/local/solr/solr-7.3.1/server/solr/collection1/conf
+        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-7.3.1/server/solr/collection1/conf
 
 Note: Dataverse has customized Solr to boost results that come from certain indexed elements inside Dataverse, for example prioritizing results from Dataverses over Datasets. If you would like to remove this, edit your ``solrconfig.xml`` and remove the ``<str name="qf">`` element and its contents. If you have ideas about how this boosting could be improved, feel free to contact us through our Google Group https://groups.google.com/forum/#!forum/dataverse-dev .
 
-Dataverse requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-7.3.0/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
+Dataverse requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-7.3.1/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
 
 Solr will warn about needing to increase the number of file descriptors and max processes in a production environment but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000 to the init script, and the following to ``/etc/security/limits.conf``::
 
@@ -223,7 +222,7 @@ Solr will warn about needing to increase the number of file descriptors and max 
         solr soft nofile 65000
         solr hard nofile 65000
 
-On operating systems which use systemd such as RHEL or CentOS 7, you may then add a line like LimitNOFILE=65000 to the systemd unit file, or adjust the limits on a running process using the prlimit tool::
+On operating systems which use systemd such as RHEL or CentOS 7, you may then add a line like LimitNOFILE=65000 for the number of open file descriptors and a line with LimitNPROC=65000 for the max processes to the systemd unit file, or adjust the limits on a running process using the prlimit tool::
 
         # sudo prlimit --pid pid --nofile=65000:65000
 
@@ -231,7 +230,7 @@ Solr launches asynchronously and attempts to use the ``lsof`` binary to watch fo
 
 Finally, you may start Solr and create the core that will be used to manage search information::
 
-        cd /usr/local/solr/solr-7.3.0
+        cd /usr/local/solr/solr-7.3.1
         bin/solr start
         bin/solr create_core -c collection1 -d server/solr/collection1/conf/
 	
@@ -402,6 +401,58 @@ Rserve is running on a host that's different from your Dataverse
 server, change the :fixedwidthplain:`dataverse.rserve.host` option
 above as well (and make sure the port 6311 on the Rserve host is not
 firewalled from your Dataverse host).
+
+Counter Processor
+-----------------
+
+Counter Processor is required to enable Make Data Count metrics in Dataverse. See the :doc:`/admin/make-data-count` section of the Admin Guide for a description of this feature. Counter Processor is open source and we will be downloading it from https://github.com/CDLUC3/counter-processor
+
+Installing Counter Processor
+============================
+
+Counter Processor has only been tested on el7 (see "Linux" above). Please note that a scripted installation using Ansible is mentioned in the :doc:`/developers/make-data-count` section of the Developer Guide.
+
+As root, download and install Counter Processor::
+
+        cd /usr/local
+        wget https://github.com/CDLUC3/counter-processor/archive/v0.0.1.tar.gz
+        tar xvfz v0.0.1.tar.gz
+
+As root, change to the Counter Processor directory you just created, download the GeoLite2-Country tarball, untar it, and copy the geoip database into place::
+
+        cd /usr/local/counter-processor-0.0.1
+        wget https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz
+        tar xvfz GeoLite2-Country.tar.gz
+        cp GeoLite2-Country_*/GeoLite2-Country.mmdb maxmind_geoip
+
+As root, create a "counter" user and change ownership of Counter Processor directory to this new user::
+
+        useradd counter
+        chown -R counter:counter /usr/local/counter-processor-0.0.1
+
+Installing Counter Processor Python Requirements
+================================================
+
+Counter Processor requires Python 3.6.4 or higher. The following commands are intended to be run as root but we are aware that Pythonistas might prefer fancy virtualenv or similar setups. Pull requests are welcome to improve these steps!
+
+Enable the EPEL repo if you haven't already::
+
+        yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+
+Install Python 3.6::
+
+        yum install python36
+
+Install Counter Processor Python requirements::
+
+        python3.6 -m ensurepip
+        cd /usr/local/counter-processor-0.0.1
+        pip3 install -r requirements.txt
+
+See the :doc:`/admin/make-data-count` section of the Admin Guide for how to configure and run Counter Processor.
+
+Next Steps
+----------
 
 Now that you have all the prerequisites in place, you can proceed to the :doc:`installation-main` section.
 

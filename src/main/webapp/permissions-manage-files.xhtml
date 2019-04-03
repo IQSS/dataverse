@@ -13,6 +13,7 @@
     <h:body>
         <f:metadata>
             <f:viewParam name="id" value="#{manageFilePermissionsPage.dataset.id}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{manageFilePermissionsPage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(manageFilePermissionsPage.dataset, bundle['dataverse.permissionsFiles.title'])}"/>
         </f:metadata>
@@ -30,7 +31,7 @@
                             <div data-toggle="collapse" data-target="#panelCollapseUsersGroups" class="panel-heading text-info">
                                 #{bundle['dataverse.permissionsFiles.usersOrGroups']} <span class="glyphicon glyphicon-chevron-up"/>
                                 
-                                <span class="text-muted small pull-right"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.permissionsFiles.usersOrGroups.description']}</span>
+                                <span class="text-muted small pull-right">#{bundle['dataverse.permissionsFiles.usersOrGroups.description']}</span>
                             </div>
                             <div id="panelCollapseUsersGroups" class="collapse in">
                                 <div class="panel-body">
@@ -54,14 +55,17 @@
                                             </p>
                                             
                                             <p:dataTable id="fileAccessRequests" styleClass="margin-bottom" var="access" value="#{manageFilePermissionsPage.fileAccessRequestMap.entrySet().toArray()}">
-                                                <p:column width="30%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}" >
+                                                <p:column width="25%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}" >
                                                     <h:outputText value="#{access.key.displayInfo.title}"/>
                                                     <h:outputText value=" (#{access.key.displayInfo.affiliation})" rendered="#{!empty access.key.displayInfo.affiliation}"/>
                                                 </p:column>
                                                 <p:column width="10%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.id']}">
                                                     <h:outputText value="#{access.key.identifier}"/>
                                                 </p:column>
-                                                <p:column width="20%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.email']}">
+                                                <p:column width="15%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.authentication']}">
+                                                    <h:outputText value="#{manageFilePermissionsPage.getAuthProviderFriendlyName(access.key.authProviderId)}"/>
+                                                </p:column>
+                                                <p:column width="15%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.email']}">
                                                     <h:outputText value="#{access.key.email}" rendered="#{!empty access.key.email}"/>
                                                 </p:column>
                                                 <p:column width="10%" class="text-center" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.files']}">
@@ -72,7 +76,7 @@
                                                         <h:outputText value="#{access.value.size()} #{access.value.size() eq 1 ?  bundle['dataverse.permissionsFiles.usersOrGroups.file'] : bundle['dataverse.permissionsFiles.usersOrGroups.files']}"/>
                                                     </p:commandLink>
                                                 </p:column>
-                                                <p:column width="30%" class="text-center" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.access']}">
+                                                <p:column width="25%" class="text-center" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.access']}">
                                                     <div class="btn-group" role="group" aria-label="access">
                                                         <p:commandLink type="button" styleClass="btn btn-default"
                                                                        actionListener="#{manageFilePermissionsPage.grantAccessToAllRequests(access.key)}"
@@ -136,7 +140,7 @@
                             <div data-toggle="collapse" data-target="#panelCollapseFiles" class="panel-heading text-info">
                                 #{bundle['dataverse.permissionsFiles.files']} <span class="glyphicon glyphicon-chevron-down"/>
                                 
-                                <span class="text-muted small pull-right"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.permissionsFiles.files.description']}</span>
+                                <span class="text-muted small pull-right">#{bundle['dataverse.permissionsFiles.files.description']}</span>
                             </div>
                             <div id="panelCollapseFiles" class="collapse">
                                 <div class="panel-body">
@@ -244,7 +248,7 @@
                         </p:fragment>
                         <p:fragment id="assignRoleContent">
                             <div class="form-horizontal">
-                                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.permissionsFiles.assignDialog.description']}</p>
+                                <p class="help-block">#{bundle['dataverse.permissionsFiles.assignDialog.description']}</p>
                                 <div class="form-group" jsf:rendered="#{empty manageFilePermissionsPage.fileRequester}">
                                     <label for="userGroupAccessInput" class="col-sm-3 control-label">
                                         #{bundle['dataverse.permissionsFiles.assignDialog.userOrGroup']}

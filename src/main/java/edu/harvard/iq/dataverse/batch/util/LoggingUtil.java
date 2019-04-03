@@ -25,6 +25,8 @@ import org.apache.commons.io.FileUtils;
 import javax.batch.runtime.JobExecution;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
@@ -37,17 +39,44 @@ public class LoggingUtil {
     private static final Logger logger = Logger.getLogger(LoggingUtil.class.getName());
 
     public static void saveJsonLog(String jobJson, String logDir, String jobId) {
-	    try {
-		    checkCreateLogDirectory( logDir );
-		    File dir = new File(logDir);
-		    if (!dir.exists() && !dir.mkdirs()) {
-			    logger.log(Level.SEVERE, "Couldn't create directory: " + dir.getAbsolutePath());
-		    }
-		    File reportJson = new File(dir.getAbsolutePath() + "/job-" + jobId + ".json");
-		    FileUtils.writeStringToFile(reportJson, jobJson);
-	    } catch (Exception e) {
-		    logger.log(Level.SEVERE, "Error saving json report: " + e.getMessage());
-	    }
+        try {
+            String fileName = "/job-" + jobId + ".json";
+            saveLogFile(jobJson, logDir, fileName);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error saving json report: " + e.getMessage());
+        }
+    }
+
+    public static void saveLogFile(String fileContent, String logDir, String fileName) {
+
+        try {
+            checkCreateLogDirectory(logDir);
+            File dir = new File(logDir);
+            if (!dir.exists() && !dir.mkdirs()) {
+                logger.log(Level.SEVERE, "Couldn't create directory: " + dir.getAbsolutePath());
+            }
+            File logFile = new File(dir.getAbsolutePath() + fileName);
+            FileUtils.writeStringToFile(logFile, fileContent);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error saving log report: " + fileName + " " + e.getMessage());
+        }
+    }
+     
+    public static void saveLogFileAppendWithHeader(String fileContent, String logDir, String fileName, String logHeader) {
+        try {
+            checkCreateLogDirectory(logDir);
+            File dir = new File(logDir);
+            if (!dir.exists() && !dir.mkdirs()) {
+                logger.log(Level.SEVERE, "Couldn't create directory: " + dir.getAbsolutePath());
+            }
+            File logFile = new File(dir.getAbsolutePath() +"/"+ fileName);
+            if(!logFile.exists() && null != logHeader) {
+                FileUtils.writeStringToFile(logFile, logHeader);
+            }
+            FileUtils.writeStringToFile(logFile, fileContent, true);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error saving log report: " + fileName + " " + e.getMessage());
+        }
     }
 
     public static ActionLogRecord getActionLogRecord(String userId, JobExecution jobExec, String jobInfo, String jobId) {
@@ -118,7 +147,7 @@ public class LoggingUtil {
 		    return null;
 	    }
     }
-
+    
     public static class JobLogFormatter extends Formatter {
         @Override
         public String format(LogRecord record) {
@@ -126,3 +155,4 @@ public class LoggingUtil {
         }
     }
 }
+ 

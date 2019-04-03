@@ -15,6 +15,9 @@ You should be conscious of the following when running multiple Glassfish servers
 - Only one Glassfish server can be the dedicated timer server, as explained in the :doc:`/admin/timers` section of the Admin Guide.
 - When users upload a logo for their dataverse using the "theme" feature described in the :doc:`/user/dataverse-management` section of the User Guide, these logos are stored only on the Glassfish server the user happend to be on when uploading the logo. By default these logos are written to the directory ``/usr/local/glassfish4/glassfish/domains/domain1/docroot/logos``.
 - When a sitemp is created by a Glassfish server it is written to the filesystem of just that Glassfish server. By default the sitemap is written to the directory ``/usr/local/glassfish4/glassfish/domains/domain1/docroot/sitemap``.
+- If Make Data Count is used, its raw logs must be copied from each Glassfish server to single instance of Counter Processor. See also the ``:MDCLogPath`` database setting in the :doc:`config` section of this guide and the :doc:`/admin/make-data-count` section of the Admin Guide.
+- Dataset draft version logging occurs separately on each Glassfish server. See "Edit Draft Versions Logging" in the :doc:`/admin/monitoring` section of the Admin Guide for details.
+- Password aliases (``db_password_alias``, etc.) are stored per Glassfish server.
 
 Detecting Which Glassfish Server a User Is On
 +++++++++++++++++++++++++++++++++++++++++++++

@@ -22,12 +22,13 @@ package edu.harvard.iq.dataverse.dataaccess;
 import java.io.InputStream;
 import java.io.IOException;
 
-import java.util.Iterator;
 
 import edu.harvard.iq.dataverse.DataFile;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -41,6 +42,7 @@ public class DataFileZipper {
     public static long DEFAULT_ZIPFILE_LIMIT = 100 * 1024 * 1024; // 100MB
     
     private static final Logger logger = Logger.getLogger(DataFileZipper.class.getCanonicalName());
+    private static final String MANIFEST_FILE_NAME = "MANIFEST.TXT";
     
     private OutputStream outputStream = null; 
     private ZipOutputStream zipOutputStream = null;
@@ -49,16 +51,20 @@ public class DataFileZipper {
     private List<Long> zippedFilesList = null; // list of successfully zipped files, to update guestbooks and download counts (not yet implemented)
     
     private String fileManifest = "";
+    
+    private Set<String> zippedFolders = null; 
 
     public DataFileZipper() {
         fileNameList = new ArrayList<>();
         zippedFilesList = new ArrayList<>(); 
+        zippedFolders = new HashSet<>();
     }
     
     public DataFileZipper(OutputStream outputStream) {
         this.outputStream = outputStream;
         fileNameList = new ArrayList<>();
         zippedFilesList = new ArrayList<>();
+        zippedFolders = new HashSet<>();
     }
     
     public void setOutputStream(OutputStream outputStream) {
@@ -133,12 +139,31 @@ public class DataFileZipper {
 
                 Success = false;
             } else {
+                // If any of the files have non-empty DirectoryLabels we'll 
+                // use them to re-create the folders in the Zipped bundle:
+                String folderName = dataFile.getFileMetadata().getDirectoryLabel(); 
+                if (folderName != null) {
+                    // If any of the saved folder names start with with slashes,
+                    // we want to remove them: 
+                    // (i.e., ///foo/bar will become foo/bar)
+                    while (folderName.startsWith("/")) {
+                        folderName = folderName.substring(1);
+                    }
+                    if (!"".equals(folderName)) {
+                        if (!zippedFolders.contains(folderName)) {
+                            ZipEntry d = new ZipEntry(folderName + "/");
+                            zipOutputStream.putNextEntry(d);
+                            zipOutputStream.closeEntry();
+                            zippedFolders.add(folderName);
+                        }
+                        fileName = folderName + "/" + fileName;
+                    }
+                }
+                
                 String zipEntryName = checkZipEntryName(fileName);
+                
                 ZipEntry e = new ZipEntry(zipEntryName);
                 logger.fine("created new zip entry for " + zipEntryName);
-                // support for categories: (not yet implemented)
-                //String zipEntryDirectoryName = file.getCategory(versionNum);
-                //ZipEntry e = new ZipEntry(zipEntryDirectoryName + "/" + zipEntryName);
 
                 zipOutputStream.putNextEntry(e);
 
@@ -189,7 +214,12 @@ public class DataFileZipper {
         }
         
         if (createManifest) {
-            ZipEntry e = new ZipEntry("MANIFEST.TXT");
+            String manifestEntry = MANIFEST_FILE_NAME; 
+            while (fileNameList.contains(manifestEntry)) {
+                manifestEntry = "0".concat(manifestEntry); 
+            }
+            
+            ZipEntry e = new ZipEntry(manifestEntry);
 
             zipOutputStream.putNextEntry(e);
             zipOutputStream.write(fileManifest.getBytes());
