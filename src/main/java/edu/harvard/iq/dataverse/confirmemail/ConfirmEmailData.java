@@ -79,6 +79,10 @@ public class ConfirmEmailData implements Serializable {
         return authenticatedUser;
     }
 
+    public void setAuthenticatedUser(AuthenticatedUser authenticatedUser) {
+        this.authenticatedUser = authenticatedUser;
+    }
+
     public Timestamp getCreated() {
         return created;
     }

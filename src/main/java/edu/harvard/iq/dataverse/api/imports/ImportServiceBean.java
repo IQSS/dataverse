@@ -370,6 +370,7 @@ public class ImportServiceBean {
                 // are they going to be overwritten by the reindexing of the dataset?
                 existingDs.setFiles(null);
                 Dataset merged = em.merge(existingDs);
+                // harvested datasets don't have physical files - so no need to worry about that.
                 engineSvc.submit(new DestroyDatasetCommand(merged, dataverseRequest));
             }
 
@@ -515,6 +516,7 @@ public class ImportServiceBean {
                     if (existingDs.getVersions().size() != 1) {
                         throw new ImportException("Error importing Harvested Dataset, existing dataset has " + existingDs.getVersions().size() + " versions");
                     }
+                    // harvested datasets don't have physical files - so no need to worry about that.
                     engineSvc.submit(new DestroyDatasetCommand(existingDs, dataverseRequest));
                     Dataset managedDs = engineSvc.submit(new CreateHarvestedDatasetCommand(ds, dataverseRequest));
                     status = " updated dataset, id=" + managedDs.getId() + ".";

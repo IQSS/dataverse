@@ -9,6 +9,10 @@ RUN yum install -y jq lsof awscli
 COPY dv /tmp/dv
 COPY testdata/schema.xml /tmp/dv
 COPY testdata/solrconfig.xml /tmp/dv
+
+# ITs need files
+COPY testdata/sushi_sample_logs.json /tmp/
+
 # IPv6 and localhost appears to be related to some of the intermittant connection issues
 COPY disableipv6.conf /etc/sysctl.d/
 RUN rm /etc/httpd/conf/*

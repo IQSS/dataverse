@@ -1,0 +1,167 @@
+{
+  "report-header": {
+    "report-name": "dataset report",
+    "report-id": "DSR",
+    "release": "rd1",
+    "created": "2018-05-31",
+    "created-by": "Dash",
+    "report-attributes": [],
+    "reporting-period": {
+      "begin-date": "2018-05-01",
+      "end-date": "2018-05-31"
+    },
+    "report-filters": [],
+    "exceptions": [
+      {}
+    ]
+  },
+  "report_datasets": [
+    {
+      "dataset-title": "Supporting Information: Toward learned chemical perception of force field typing rules",
+      "dataset-id": [
+        {
+          "type": "doi",
+          "value": "10.7280/D1CD4C"
+        }
+      ],
+      "dataset-contributors": [
+        {
+          "type": "name",
+          "value": "Camila Zanette"
+        },
+        {
+          "type": "name",
+          "value": "Caitlin C. Bannan"
+        },
+        {
+          "type": "name",
+          "value": "Christopher I. Bayly"
+        },
+        {
+          "type": "name",
+          "value": "Josh Fass"
+        },
+        {
+          "type": "name",
+          "value": "Michael K. Gilson"
+        },
+        {
+          "type": "name",
+          "value": "Michael R. Shirts"
+        },
+        {
+          "type": "name",
+          "value": "John D. Chodera"
+        },
+        {
+          "type": "name",
+          "value": "David L. Mobley"
+        }
+      ],
+      "dataset-dates": [
+        {
+          "type": "pub-date",
+          "value": "2018-05-08"
+        }
+      ],
+      "platform": "Dash",
+      "publisher": "UC Irvine",
+      "publisher-id": [
+        {
+          "type": "grid",
+          "value": "266093.8"
+        }
+      ],
+      "data-type": "dataset",
+      "yop": "2018",
+      "uri": "https://dash.lib.uci.edu/stash/dataset/doi:10.7280/D1CD4C",
+      "performance": [
+        {
+          "period": {
+            "begin-date": "2018-05-01",
+            "end-date": "2018-05-31"
+          },
+          "instance": [
+            {
+              "access-method": "regular",
+              "metric-type": "total-dataset-requests",
+              "count": 9,
+              "volume": 26764,              
+              "country-counts": {
+                "us": 2,
+                "ca": 2
+              }
+            },
+            {
+              "access-method": "regular",
+              "metric-type": "unique-dataset-requests",
+              "count": 5,
+              "country-counts": {
+                "us": 2,
+                "ca": 1
+              }
+            },
+            {
+              "access-method": "machine",
+              "metric-type": "total-dataset-requests",
+              "count": 8,
+              "country-counts": {
+                "us": 4,
+                "ca": 3
+              }
+            },
+            {
+              "access-method": "machine",
+              "metric-type": "unique-dataset-requests",
+              "count": 6,
+              "country-counts": {
+                "us": 3,
+                "ca": 2
+              }
+            },
+            {
+              "access-method": "regular",
+              "metric-type": "total-dataset-investigations",
+              "count": 7,
+              "country-counts": {
+                "us": 3,
+                "kr": 2
+              }
+            },
+            {
+              "access-method": "machine",
+              "metric-type": "total-dataset-investigations",
+              "count": 17,
+              "country-counts": {
+                "us": 4,
+                "de": 2,
+                "mx": 3,
+                "ca": 3                
+              }
+            },
+            {
+              "access-method": "regular",
+              "metric-type": "unique-dataset-investigations",
+              "count": 6,
+              "country-counts": {
+                "us": 2,
+                "kr": 1
+              }
+            },
+            {
+              "access-method": "machine",
+              "metric-type": "unique-dataset-investigations",
+              "count": 9,
+              "country-counts": {
+                "us": 3,
+                "de": 1,
+                "mx": 2,
+                "ca": 1               
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -91,8 +91,7 @@
                                     <div class="row text-left">
                                         <div class="col-xs-12">
                                             <p class="help-block">
-                                                <span class="glyphicon glyphicon-info-sign"/>
-                                                <h:outputFormat value=" #{bundle['dashboard.card.metadataexport.message']}" escape="false">
+                                                <h:outputFormat value="#{bundle['dashboard.card.metadataexport.message']}" escape="false">
                                                     <f:param value="#{dataverseServiceBean.findRootDataverse().displayName}"/>
                                                     <f:param value="&lt;a href=&#34;#{systemConfig.guidesBaseUrl}/#{systemConfig.guidesVersion}/api&#34; target=&#34;_blank&#34;&gt;"/>
                                                     <f:param value="&lt;/a&gt;"/>

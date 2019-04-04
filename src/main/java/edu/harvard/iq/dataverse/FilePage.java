@@ -23,6 +23,9 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -104,6 +107,8 @@ public class FilePage implements java.io.Serializable {
     @Inject
     FileDownloadHelper fileDownloadHelper;
     @Inject WorldMapPermissionHelper worldMapPermissionHelper;
+    @Inject
+    MakeDataCountLoggingServiceBean mdcLogService;
 
     public WorldMapPermissionHelper getWorldMapPermissionHelper() {
         return worldMapPermissionHelper;
@@ -119,53 +124,52 @@ public class FilePage implements java.io.Serializable {
     public String init() {
      
         
-         if ( fileId != null || persistentId != null ) { 
-           
+        if (fileId != null || persistentId != null) {
+
             // ---------------------------------------
             // Set the file and datasetVersion 
             // ---------------------------------------           
             if (fileId != null) {
-               file = datafileService.find(fileId);   
+                file = datafileService.find(fileId);
 
-            }  else if (persistentId != null){
-               file = datafileService.findByGlobalId(persistentId);
-               if (file != null){
-                                  fileId = file.getId();
-               }
+            } else if (persistentId != null) {
+                file = datafileService.findByGlobalId(persistentId);
+                if (file != null) {
+                    fileId = file.getId();
+                }
 
             }
-            
-            if (file == null || fileId == null){
-               return permissionsWrapper.notFound();
+
+            if (file == null || fileId == null) {
+                return permissionsWrapper.notFound();
             }
-            
+
             // Is the Dataset harvested?
             if (file.getOwner().isHarvested()) {
                 // if so, we'll simply forward to the remote URL for the original
                 // source of this harvested dataset:
                 String originalSourceURL = file.getOwner().getRemoteArchiveURL();
                 if (originalSourceURL != null && !originalSourceURL.equals("")) {
-                    logger.fine("redirecting to "+originalSourceURL);
+                    logger.fine("redirecting to " + originalSourceURL);
                     try {
                         FacesContext.getCurrentInstance().getExternalContext().redirect(originalSourceURL);
                     } catch (IOException ioex) {
                         // must be a bad URL...
                         // we don't need to do anything special here - we'll redirect
                         // to the local 404 page, below.
-                        logger.warning("failed to issue a redirect to "+originalSourceURL);
+                        logger.warning("failed to issue a redirect to " + originalSourceURL);
                     }
                 }
 
                 return permissionsWrapper.notFound();
             }
 
-                RetrieveDatasetVersionResponse retrieveDatasetVersionResponse;
-                retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(file.getOwner().getVersions(), version);
-                Long getDatasetVersionID = retrieveDatasetVersionResponse.getDatasetVersion().getId();
-                fileMetadata = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, fileId);
+            RetrieveDatasetVersionResponse retrieveDatasetVersionResponse;
+            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(file.getOwner().getVersions(), version);
+            Long getDatasetVersionID = retrieveDatasetVersionResponse.getDatasetVersion().getId();
+            fileMetadata = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, fileId);
 
-          
-            if (fileMetadata == null){
+            if (fileMetadata == null) {
                 logger.fine("fileMetadata is null! Checking finding most recent version file was in.");
                 fileMetadata = datafileService.findMostRecentVersionFileIsIn(file);
                 if (fileMetadata == null) {
@@ -173,27 +177,37 @@ public class FilePage implements java.io.Serializable {
                 }
             }
 
-           // If this DatasetVersion is unpublished and permission is doesn't have permissions:
-           //  > Go to the Login page
-           //
+            // If this DatasetVersion is unpublished and permission is doesn't have permissions:
+            //  > Go to the Login page
+            //
             // Check permisisons       
+            Boolean authorized = (fileMetadata.getDatasetVersion().isReleased())
+                    || (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset());
 
-            
-            Boolean authorized = (fileMetadata.getDatasetVersion().isReleased()) ||
-                    (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset());
-            
-            if (!authorized ) {
+            if (!authorized) {
                 return permissionsWrapper.notAuthorized();
-            }         
-           
-           this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
-           
-          //  this.getFileDownloadHelper().setGuestbookResponse(guestbookResponse);
-
-            if (file.isTabularData()) {
-                configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
-                exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
             }
+
+            this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
+
+            if(fileMetadata.getDatasetVersion().isPublished()) {
+                MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, fileMetadata.getDatasetVersion());
+                mdcLogService.logEntry(entry);
+            }
+
+           
+            // Find external tools based on their type, the file content type, and whether
+            // ingest has created a derived file for that type
+            // Currently, tabular data files are the only type of derived file created, so
+            // isTabularData() works - true for tabular types where a .tab file has been
+            // created and false for other mimetypes
+            String contentType = file.getContentType();
+            //For tabular data, indicate successful ingest by returning a contentType for the derived .tab file
+            if (file.isTabularData()) {
+                contentType=DataFileServiceBean.MIME_TYPE_TSV_ALT;
+            }
+            configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE, contentType);
+            exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE, contentType);
 
         } else {
 
@@ -331,43 +345,41 @@ public class FilePage implements java.io.Serializable {
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
 
     public String deleteFile() {
-        
+
         String fileNames = this.getFileMetadata().getLabel();
 
         editDataset = this.getFileMetadata().getDataFile().getOwner();
-        
+
         FileMetadata markedForDelete = null;
-        
-        for (FileMetadata fmd : editDataset.getEditVersion().getFileMetadatas() ){
-            
-            if (fmd.getDataFile().getId().equals(this.getFile().getId())){
+
+        for (FileMetadata fmd : editDataset.getEditVersion().getFileMetadatas()) {
+
+            if (fmd.getDataFile().getId().equals(this.getFile().getId())) {
                 markedForDelete = fmd;
             }
         }
 
-            if (markedForDelete.getId() != null) {
-                // the file already exists as part of this dataset
-                // so all we remove is the file from the fileMetadatas (for display)
-                // and let the delete be handled in the command (by adding it to the filesToBeDeleted list
-                editDataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
-                filesToBeDeleted.add(markedForDelete);
-                
-            } else {
-                 List<FileMetadata> filesToKeep = new ArrayList<>();
-                 for (FileMetadata fmo: editDataset.getEditVersion().getFileMetadatas()){
-                      if (!fmo.getDataFile().getId().equals(this.getFile().getId())){
-                          filesToKeep.add(fmo);
-                      }
-                 }
-                 editDataset.getEditVersion().setFileMetadatas(filesToKeep);
-            }
+        if (markedForDelete.getId() != null) {
+            // the file already exists as part of this dataset
+            // so all we remove is the file from the fileMetadatas (for display)
+            // and let the delete be handled in the command (by adding it to the filesToBeDeleted list
+            editDataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+            filesToBeDeleted.add(markedForDelete);
 
-    
+        } else {
+            List<FileMetadata> filesToKeep = new ArrayList<>();
+            for (FileMetadata fmo : editDataset.getEditVersion().getFileMetadatas()) {
+                if (!fmo.getDataFile().getId().equals(this.getFile().getId())) {
+                    filesToKeep.add(fmo);
+                }
+            }
+            editDataset.getEditVersion().setFileMetadatas(filesToKeep);
+        }
 
         fileDeleteInProgress = true;
         save();
         return returnToDatasetOnly();
-        
+
     }
     
     private int activeTabIndex;
@@ -531,9 +543,20 @@ public class FilePage implements java.io.Serializable {
                
 
         Command<Dataset> cmd;
+        boolean updateCommandSuccess = false;
+        Long deleteFileId = null;
+        String deleteStorageLocation = null;
+
+        if (!filesToBeDeleted.isEmpty()) { 
+            // We want to delete the file (there's always only one file with this page)
+            
+            deleteStorageLocation = datafileService.getPhysicalFileToDelete(filesToBeDeleted.get(0).getDataFile());
+        }
+        
         try {
             cmd = new UpdateDatasetVersionCommand(editDataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
             commandEngine.submit(cmd);
+            updateCommandSuccess = true;
 
         } catch (EJBException ex) {
             
@@ -557,6 +580,22 @@ public class FilePage implements java.io.Serializable {
 
 
         if (fileDeleteInProgress) {
+            
+            if (updateCommandSuccess) {
+                if (deleteStorageLocation != null) {
+                    // Finalize the delete of the physical file 
+                    // (File service will double-check that the datafile no 
+                    // longer exists in the database, before proceeding to 
+                    // delete the physical file)
+                    try {
+                        datafileService.finalizeFileDelete(deleteFileId, deleteStorageLocation);
+                    } catch (IOException ioex) {
+                        logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                                + deleteFileId + ", storage location: " + deleteStorageLocation);
+                    }
+                }
+            }
+            
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.message.deleteSuccess"));
             fileDeleteInProgress = false;
         } else {

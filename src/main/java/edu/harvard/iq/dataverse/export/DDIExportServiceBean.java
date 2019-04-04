@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.dataaccess.DataConverter;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
@@ -312,10 +313,17 @@ public class DDIExportServiceBean {
 
         //universe
         if (checkField("universe", excludedFieldSet, includedFieldSet)) {
-            if (!StringUtilisEmpty(dv.getUniverse())) {
-                xmlw.writeStartElement("universe");
-                xmlw.writeCharacters(dv.getUniverse());
-                xmlw.writeEndElement(); //universe
+            FileMetadata latestFm = dv.getDataTable().getDataFile().getFileMetadata();
+
+            List<VariableMetadata> vmList = variableService.findByDataVarIdAndFileMetaId(dv.getId(),latestFm.getId());
+
+            if (vmList != null && vmList.size() >0) {
+                VariableMetadata vm = vmList.get(0);
+                if (!StringUtilisEmpty(vm.getUniverse())) {
+                    xmlw.writeStartElement("universe");
+                    xmlw.writeCharacters(vm.getUniverse());
+                    xmlw.writeEndElement(); //universe
+                }
             }
         }
 
