@@ -435,6 +435,8 @@
             value="#{DatasetPage.filesTreeRoot}"
             var="node">
         
+        <!-- if it's a folder: (using the PrimeFaces-supplied icons for the "open" and "collapsed") -->
+        
         <p:treeNode expandedIcon="ui-icon ui-icon-folder-open" collapsedIcon="ui-icon ui-icon-folder-collapsed">
             <h:outputText value="#{node.folderName}" />
         </p:treeNode>
