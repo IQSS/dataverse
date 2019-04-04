@@ -1755,10 +1755,9 @@ public class DatasetPage implements java.io.Serializable {
         data.setFileName(fileMetadata.getLabel());
         data.setDataFileId(fileMetadata.getDataFile().getId());
         data.setDataFileGlobalId(fileMetadata.getDataFile().getGlobalId().asString());
+        data.setFileClass(datafileService.getFileClass(fileMetadata.getDataFile()));
         
-        String dataverseFileClass = "dataverse-" + datafileService.getFileClass(fileMetadata.getDataFile());
-        
-        DefaultTreeNode fileNode = new DefaultTreeNode(dataverseFileClass, data, parent);         
+        DefaultTreeNode fileNode = new DefaultTreeNode("customFileNode", data, parent);         
         
         return fileNode; 
     }
@@ -4732,6 +4731,16 @@ public class DatasetPage implements java.io.Serializable {
         
         public String getDataFileGlobalId() {
             return dataFileGlobalId; 
+        }
+        
+        private String fileClass = null; 
+        
+        public String getFileClass() {
+            return fileClass;
+        }
+        
+        public void setFileClass(String fileClass) {
+            this.fileClass = fileClass;
         }
         
         private String fileName = null; 
