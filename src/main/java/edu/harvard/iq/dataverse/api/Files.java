@@ -290,29 +290,32 @@ public class Files extends AbstractApiBean {
             
     } // end: replaceFileInDataset
     
+    //Much of this code is taken from the replace command, 
+    //simplified as we aren't actually switching files
     @POST
     @Path("{id}/metadata")
     public Response updateFileMetadata(@FormDataParam("jsonData") String jsonData,
                     @PathParam("id") String fileIdOrPersistentId
         ) throws DataFileTagException, CommandException {
         
+        FileMetadata upFmd = null;
+        
         try {
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
 
-            //Much of this code is taken from the replace command, simplified as we aren't actually switching files
+            
             User authUser = findUserOrDie();
 
             //You shouldn't be trying to edit a datafile that has been replaced
-            //We get the data file with a previousDataFileId of the user passed to update
             List<Long> result = em.createNamedQuery("DataFile.findDataFileThatReplacedId", Long.class)
             .setParameter("identifier", df.getId())
                     .getResultList();
             //There will be either 0 or 1 returned dataFile Id. If there is 1 this file is replaced and we need to error.
             if(null != result && result.size() > 0) {
-                //we get the data file to do a permissions check, if this fails it'll go to the WrappedResponse below
+                //we get the data file to do a permissions check, if this fails it'll go to the WrappedResponse below for an ugly unpermitted error
                 execCommand(new GetDataFileCommand(req, findDataFileOrDie(result.get(0).toString())));
-                //If you are permitted we return a nicer message about the metadata error
+
                 return error(Response.Status.BAD_REQUEST, "You cannot edit metadata on a dataFile that has been replaced. Please try again with the newest file id.");
             }
 
@@ -346,7 +349,6 @@ public class Files extends AbstractApiBean {
                 DatasetVersion editVersion = df.getOwner().getEditVersion();
 
                 //We get the new fileMetadata from the new version
-                FileMetadata upFmd = null;
                 List<FileMetadata> fmdList = editVersion.getFileMetadatas();
                 for(FileMetadata testFmd : fmdList) {
                     DataFile daf = testFmd.getDataFile();
@@ -355,7 +357,7 @@ public class Files extends AbstractApiBean {
                         upFmd = testFmd;
                     }
                 }
-                
+
                 optionalFileParams.addOptionalParams(upFmd);
 
                 Dataset upDS = execCommand(new UpdateDatasetVersionCommand(upFmd.getDataFile().getOwner(), req));
@@ -368,8 +370,14 @@ public class Files extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return error(Response.Status.BAD_REQUEST, "An error has occurred attempting to update the requested DataFile, likely related to permissions.");
         }
-        
-        return ok("OK?");
+
+        String jsonString = upFmd.asGsonObject(true).toString();
+
+        return Response
+                .status(Response.Status.OK)
+                .entity("File Metadata update has been completed: " + jsonString)
+                .type(MediaType.TEXT_PLAIN) //Our plain text string is already json
+                .build();
     }
     
     @GET                             
@@ -390,12 +398,11 @@ public class Files extends AbstractApiBean {
                 }
             } else {
                 fm = df.getLatestPublishedFileMetadata();
+                MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
+                mdcLogService.logEntry(entry);
             }
             
             String jsonString = fm.asGsonObject(true).toString();
-            
-            MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
-            mdcLogService.logEntry(entry);
             
             return Response
                 .status(Response.Status.OK)

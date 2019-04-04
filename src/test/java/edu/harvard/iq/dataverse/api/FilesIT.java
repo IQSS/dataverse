@@ -565,8 +565,9 @@ public class FilesIT {
 
     }
 
+    //This test first tests forceReplace, and after that ensures that updates only work on the latest file
     @Test
-    public void testForceReplace() {
+    public void testForceReplaceAndUpdate() {
         msgt("testForceReplace");
 
         // Create user
@@ -630,6 +631,31 @@ public class FilesIT {
                 .body("data.files[0].description", equalTo("not an image"))
                 .body("data.files[0].categories[0]", equalTo("Data"))
                 .statusCode(OK.getStatusCode());
+        
+        long newDfId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.id");
+        
+        //Adding an additional fileMetadata update tests after this to ensure updating replaced files works
+        msg("Update file metadata for old file, will error");
+        String updateDescription = "New description.";
+        String updateCategory = "New category";
+        //"junk" passed below is to test that it is discarded
+        String updateJsonString = "{\"description\":\""+updateDescription+"\",\"categories\":[\""+updateCategory+"\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
+        Response updateMetadataFailResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateJsonString, apiToken);
+        assertEquals(BAD_REQUEST.getStatusCode(), updateMetadataFailResponse.getStatusCode());  
+        
+        //Adding an additional fileMetadata update tests after this to ensure updating replaced files works
+        msg("Update file metadata for new file");
+        //"junk" passed below is to test that it is discarded
+        Response updateMetadataResponse = UtilIT.updateFileMetadata(String.valueOf(newDfId), updateJsonString, apiToken);
+        assertEquals(OK.getStatusCode(), updateMetadataResponse.getStatusCode());  
+        //String updateMetadataResponseString = updateMetadataResponse.body().asString();
+        Response getUpdatedMetadataResponse = UtilIT.getDataFileMetadataDraft(newDfId, apiToken);
+        String getUpMetadataResponseString = getUpdatedMetadataResponse.body().asString();
+        msg("Draft (should be updated):");
+        msg(getUpMetadataResponseString);
+        assertEquals(updateDescription, JsonPath.from(getUpMetadataResponseString).getString("description"));
+        assertEquals(updateCategory, JsonPath.from(getUpMetadataResponseString).getString("categories[0]"));
+        assertNull(JsonPath.from(getUpMetadataResponseString).getString("provFreeform")); //unupdated fields are not persisted
 
     }
     
@@ -1157,12 +1183,12 @@ public class FilesIT {
     public void testFileMetaDataGetUpdateRoundTrip() throws InterruptedException {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
-        assertEquals(200, createUser.getStatusCode());
+        assertEquals(OK.getStatusCode(), createUser.getStatusCode());
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         Response makeSuperUser = UtilIT.makeSuperUser(username);   
 
-        assertEquals(200, makeSuperUser.getStatusCode());
+        assertEquals(OK.getStatusCode(), makeSuperUser.getStatusCode());
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
@@ -1196,7 +1222,7 @@ public class FilesIT {
         Response getMetadataResponse = UtilIT.getDataFileMetadata(origFileId, apiToken);
         String metadataResponseString = getMetadataResponse.body().asString();
         msg(metadataResponseString);
-        assertEquals(200, getMetadataResponse.getStatusCode());  
+        assertEquals(OK.getStatusCode(), getMetadataResponse.getStatusCode());  
         assertEquals(description, JsonPath.from(metadataResponseString).getString("description"));
         assertEquals(provFreeForm, JsonPath.from(metadataResponseString).getString("provFreeForm"));
         assertEquals(category, JsonPath.from(metadataResponseString).getString("categories[0]"));
@@ -1210,7 +1236,7 @@ public class FilesIT {
         //"junk" passed below is to test that it is discarded
         String updateJsonString = "{\"description\":\""+updateDescription+"\",\"categories\":[\""+updateCategory+"\"],\"dataFileTags\":[\""+updateDataFileTag+"\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
         Response updateMetadataResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateJsonString, apiToken);
-        assertEquals(200, updateMetadataResponse.getStatusCode());  
+        assertEquals(OK.getStatusCode(), updateMetadataResponse.getStatusCode());  
         //String updateMetadataResponseString = updateMetadataResponse.body().asString();
         Response getUpdatedMetadataResponse = UtilIT.getDataFileMetadataDraft(origFileId, apiToken);
         String getUpMetadataResponseString = getUpdatedMetadataResponse.body().asString();
