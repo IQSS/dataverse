@@ -1474,7 +1474,7 @@ public class Datasets extends AbstractApiBean {
         for (DatasetVersion dv : dataset.getVersions()) {
             if (dv.isHasPackageFile()) {
                 return error(Response.Status.FORBIDDEN,
-                        ResourceBundle.getBundle("Bundle").getString("file.api.alreadyHasPackageFile")
+                        BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile")
                 );
             }
         }

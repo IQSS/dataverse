@@ -117,7 +117,7 @@ public class FilesIT {
 
         //addResponse.prettyPrint();
         msgt("Here it is: " + addResponse.prettyPrint());
-        String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
+        String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.add");
 
       
         addResponse.then().assertThat()
@@ -146,7 +146,7 @@ public class FilesIT {
 
         msgt("2nd requests: " + addTwiceResponse.prettyPrint());    //addResponse.prettyPrint();
         
-        String errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.duplicate_file");
+        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.duplicate_file");
                 
         addTwiceResponse.then().assertThat()
                 .body("message", Matchers.startsWith(errMsg))
@@ -192,7 +192,7 @@ public class FilesIT {
 
         msgt("Here it is: " + addResponse.prettyPrint());
 
-        //String errMsg Start = ResourceBundle.getBundle("Bundle").getString("find.dataset.error.dataset.not.found.id");
+        //String errMsg Start = BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id");
         String errMsg = BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(datasetId));
                 
          addResponse.then().assertThat()
@@ -217,7 +217,7 @@ public class FilesIT {
 
         msgt("Here it is: " + addResponse.prettyPrint());
 
-        String errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth");
+        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.auth");
         
         addResponse.then().assertThat()
                 .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
@@ -279,7 +279,7 @@ public class FilesIT {
         msgt("Here it is: " + addResponse.prettyPrint());
         
         
-        String errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.no_edit_dataset_permission");        
+        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.no_edit_dataset_permission");
 
       
         addResponse.then().assertThat()
@@ -309,7 +309,7 @@ public class FilesIT {
         String pathToFile = "scripts/search/data/replace_test/003.txt";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
-        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
+        String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
       
         addResponse.then().assertThat()
                 /**
@@ -378,7 +378,7 @@ public class FilesIT {
         
         msgt(replaceResp.prettyPrint());
         
-        String successMsg2 = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.replace");        
+        String successMsg2 = BundleUtil.getStringFromBundle("file.addreplace.success.replace");
 
         replaceResp.then().assertThat()
                 /**
@@ -547,7 +547,7 @@ public class FilesIT {
             return;
         }
 
-        String successMsg2 = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.replace");
+        String successMsg2 = BundleUtil.getStringFromBundle("file.addreplace.success.replace");
 
         replaceResp.then().assertThat()
                 .body("message", equalTo(successMsg2))
@@ -585,7 +585,7 @@ public class FilesIT {
         String pathToFile = "src/main/webapp/resources/images/cc0.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
-        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
+        String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
 
         addResponse.then().assertThat()
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
@@ -652,7 +652,7 @@ public class FilesIT {
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
-        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
+        String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
       
         addResponse.then().assertThat()
                 /**
@@ -684,7 +684,7 @@ public class FilesIT {
         String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
         Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, apiToken);
 
-        String errMsgUnpublished = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.unpublished_file_cannot_be_replaced");
+        String errMsgUnpublished = BundleUtil.getStringFromBundle("file.addreplace.error.unpublished_file_cannot_be_replaced");
         
         replaceResp.then().assertThat()
                .statusCode(BAD_REQUEST.getStatusCode())
@@ -739,7 +739,7 @@ public class FilesIT {
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
-        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
+        String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
       
         addResponse.then().assertThat()
                 /**
@@ -792,7 +792,7 @@ public class FilesIT {
         String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
         Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, apiToken);
 
-        String errMsgDeleted = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.existing_file_not_in_latest_published_version");
+        String errMsgDeleted = BundleUtil.getStringFromBundle("file.addreplace.error.existing_file_not_in_latest_published_version");
         
         msgt("replace resp: " + replaceResp.prettyPrint());
         
@@ -823,7 +823,7 @@ public class FilesIT {
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
-        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
+        String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
 
         addResponse.then().assertThat()
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
@@ -881,7 +881,7 @@ public class FilesIT {
         String pathToFile = "scripts/search/data/tabular/1char";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
-        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
+        String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
 
         addResponse.then().assertThat()
                 /**
@@ -923,7 +923,7 @@ public class FilesIT {
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
-        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
+        String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
 
         addResponse.then().assertThat()
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
@@ -1000,7 +1000,7 @@ public class FilesIT {
 
         //addResponse.prettyPrint();
         msgt("Here it is: " + addResponse.prettyPrint());
-        String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
+        String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.add");
         
         addResponse.then().assertThat()
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
@@ -1033,7 +1033,7 @@ public class FilesIT {
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
-        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
+        String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
 
         addResponse.then().assertThat()
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
