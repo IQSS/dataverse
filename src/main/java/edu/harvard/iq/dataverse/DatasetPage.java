@@ -1674,6 +1674,7 @@ public class DatasetPage implements java.io.Serializable {
         // the tree - in order to have direct access to the ancestor tree
         // nodes that have already been created:
         Map<String, TreeNode> folderMap = new HashMap<>();
+        boolean expandFolders = true; 
         
         for ( FileMetadata fileMetadata :workingVersion.getFileMetadatasSortedByLabelAndFolder()) {
             String folder = fileMetadata.getDirectoryLabel();
@@ -1681,11 +1682,11 @@ public class DatasetPage implements java.io.Serializable {
             logger.fine("current folder: "+folder+"; current label: "+fileMetadata.getLabel());
             
             if (StringUtil.isEmpty(folder)) {
-                filesTreeRoot.getChildren().add(createFileTreeNode(fileMetadata));
+                filesTreeRoot.getChildren().add(createFileTreeNode(fileMetadata, filesTreeRoot));
             } else {
                 if (folderMap.containsKey(folder)) {
                     /*if (currentNode.getData().getFolderPath().equals(folder)) {*/
-                    currentNode.getChildren().add(createFileTreeNode(fileMetadata));
+                    currentNode.getChildren().add(createFileTreeNode(fileMetadata, currentNode));
                     /*} else {
                         // error! shouldn't happen!
                         logger.severe("filemetadatas out of sorted order (should be sorted by folder-label)");
@@ -1714,12 +1715,17 @@ public class DatasetPage implements java.io.Serializable {
                             folderMap.put(folderPath, currentNode);
                             // all the folders, except for the top-level root node 
                             // are collapsed by default:
-                            currentNode.setExpanded(false);
+                            currentNode.setExpanded(expandFolders);
 
                         }
                         level++;
                     }
-                    currentNode.getChildren().add(createFileTreeNode(fileMetadata));
+                    currentNode.getChildren().add(createFileTreeNode(fileMetadata, currentNode));
+                    // As soon as we find the first folder containing files, we want
+                    // to have all the other folders collapsed by default:
+                    if (expandFolders) {
+                        expandFolders = false; 
+                    }
                 }
             }
         }
@@ -1742,7 +1748,7 @@ public class DatasetPage implements java.io.Serializable {
         return folderNode; 
     }
     
-    private DefaultTreeNode createFileTreeNode(FileMetadata fileMetadata) {
+    private DefaultTreeNode createFileTreeNode(FileMetadata fileMetadata, TreeNode parent) {
         FileTreeNodeData data = new FileTreeNodeData();
         
         data.setIsFolder(false);
@@ -1750,7 +1756,9 @@ public class DatasetPage implements java.io.Serializable {
         data.setDataFileId(fileMetadata.getDataFile().getId());
         data.setDataFileGlobalId(fileMetadata.getDataFile().getGlobalId().asString());
         
-        DefaultTreeNode fileNode = new DefaultTreeNode(data);         
+        String dataverseFileClass = "dataverse-" + datafileService.getFileClass(fileMetadata.getDataFile());
+        
+        DefaultTreeNode fileNode = new DefaultTreeNode(dataverseFileClass, data, parent);         
         
         return fileNode; 
     }

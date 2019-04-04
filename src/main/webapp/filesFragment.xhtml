@@ -435,26 +435,167 @@
             value="#{DatasetPage.filesTreeRoot}"
             var="node">
         
-        <p:treeNode expandedIcon="pi pi-folder-open" collapsedIcon="pi pi-folder">
-            <!-- if it's a folder: simply display its name -->
-            <h:outputText rendered="#{node.folder}" value="#{node.folderName}" />
+        <p:treeNode expandedIcon="ui-icon ui-icon-folder-open" collapsedIcon="ui-icon ui-icon-folder-collapsed">
+            <h:outputText value="#{node.folderName}" />
+        </p:treeNode>
+        
+        <!-- if it's a file: render an appropriate file type icon, then a link to the file page -->
+        <!-- same approach to rendering file page links, as in the file table above: -->
+        <!-- if the file has the global id, we use that; if not, we use the database id in the url. -->
 
-            <!-- if it's a file: render a link to the file page -->
-            <p:fragment rendered="#{node.file}">
-                <!-- same approach to rendering file page links, as in the file table above: -->
-                <!-- if the file has the global id, we use that; if not, we use the database id in the url. -->
-                
-                <ui:fragment rendered="#{!empty node.dataFileGlobalId}">
-                    <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFileGlobalId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+        <p:treeNode type="dataverse-tabular">
+            <span class="icon-tabular file-thumbnail-icon text-muted" />
+
+            <ui:fragment rendered="#{!empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFileGlobalId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
                     #{node.fileName}
-                    </a>
-                </ui:fragment>
-                <ui:fragment rendered="#{empty node.dataFileGlobalId}">
-                    <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(node.dataFileId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                </a>
+            </ui:fragment>
+            <ui:fragment rendered="#{empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(node.dataFileId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
                     #{node.fileName}
-                    </a>
-                </ui:fragment>
-            </p:fragment>
+                </a>
+            </ui:fragment>
+        </p:treeNode>
+        <p:treeNode type="dataverse-document">
+            <span class="icon-document file-thumbnail-icon text-muted" />
+
+            <ui:fragment rendered="#{!empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFileGlobalId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+            <ui:fragment rendered="#{empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(node.dataFileId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+        </p:treeNode>
+        <p:treeNode type="dataverse-package">
+            <span class="icon-package file-thumbnail-icon text-muted" />
+
+            <ui:fragment rendered="#{!empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFileGlobalId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+            <ui:fragment rendered="#{empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(node.dataFileId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+        </p:treeNode>
+        <p:treeNode type="dataverse-image">
+            <span class="icon-image file-thumbnail-icon text-muted" />
+
+            <ui:fragment rendered="#{!empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFileGlobalId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+            <ui:fragment rendered="#{empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(node.dataFileId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+        </p:treeNode>
+        <p:treeNode type="dataverse-astro">
+            <span class="icon-astro file-thumbnail-icon text-muted" />
+
+            <ui:fragment rendered="#{!empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFileGlobalId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+            <ui:fragment rendered="#{empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(node.dataFileId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+        </p:treeNode>
+        <p:treeNode type="dataverse-code">
+            <span class="icon-code file-thumbnail-icon text-muted" />
+
+            <ui:fragment rendered="#{!empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFileGlobalId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+            <ui:fragment rendered="#{empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(node.dataFileId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+        </p:treeNode>
+        <p:treeNode type="dataverse-video">
+            <span class="icon-video file-thumbnail-icon text-muted" />
+
+            <ui:fragment rendered="#{!empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFileGlobalId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+            <ui:fragment rendered="#{empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(node.dataFileId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+        </p:treeNode>
+        <p:treeNode type="dataverse-geodata">
+            <span class="icon-geodata file-thumbnail-icon text-muted" />
+
+            <ui:fragment rendered="#{!empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFileGlobalId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+            <ui:fragment rendered="#{empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(node.dataFileId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+        </p:treeNode>
+        <p:treeNode type="dataverse-audio">
+            <span class="icon-audio file-thumbnail-icon text-muted" />
+
+            <ui:fragment rendered="#{!empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFileGlobalId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+            <ui:fragment rendered="#{empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(node.dataFileId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+        </p:treeNode>
+        <p:treeNode type="dataverse-other">
+            <span class="icon-other file-thumbnail-icon text-muted" />
+
+            <ui:fragment rendered="#{!empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFileGlobalId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+            <ui:fragment rendered="#{empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(node.dataFileId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+        </p:treeNode>
+        <p:treeNode type="dataverse-network">
+            <span class="icon-network file-thumbnail-icon text-muted" />
+
+            <ui:fragment rendered="#{!empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFileGlobalId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
+            <ui:fragment rendered="#{empty node.dataFileGlobalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(node.dataFileId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.fileName}
+                </a>
+            </ui:fragment>
         </p:treeNode>
         
     </p:tree>
