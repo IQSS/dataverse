@@ -360,6 +360,10 @@ public class Files extends AbstractApiBean {
                         upFmd = testFmd;
                     }
                 }
+                
+                if (upFmd == null){
+                    return error(Response.Status.BAD_REQUEST, "An error has occurred attempting to update the requested DataFile. It is not part of the current version of the Dataset.");
+                }
 
                 optionalFileParams.addOptionalParams(upFmd);
 

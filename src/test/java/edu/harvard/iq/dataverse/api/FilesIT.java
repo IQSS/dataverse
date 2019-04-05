@@ -632,7 +632,7 @@ public class FilesIT {
                 .body("data.files[0].categories[0]", equalTo("Data"))
                 .statusCode(OK.getStatusCode());
         
-        long newDfId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.id");
+        Long newDfId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.id");
         
         //Adding an additional fileMetadata update tests after this to ensure updating replaced files works
         msg("Update file metadata for old file, will error");
@@ -656,6 +656,32 @@ public class FilesIT {
         assertEquals(updateDescription, JsonPath.from(getUpMetadataResponseString).getString("description"));
         assertEquals(updateCategory, JsonPath.from(getUpMetadataResponseString).getString("categories[0]"));
         assertNull(JsonPath.from(getUpMetadataResponseString).getString("provFreeform")); //unupdated fields are not persisted
+        
+        //what if we delete? Should get bad request since file is not part of current version
+        msg("*********************");
+        msg("Publish dataset");
+        publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResp.prettyPrint();
+        assertEquals(OK.getStatusCode(), publishDatasetResp.getStatusCode()); 
+        msg("Delete  file");
+        
+        Response deleteFile = UtilIT.deleteFile(newDfId.intValue(), apiToken);
+        deleteFile.prettyPrint();
+        assertEquals(NO_CONTENT.getStatusCode(), deleteFile.getStatusCode()); 
+        publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        msg("Publish after Delete  file");
+        publishDatasetResp.prettyPrint();
+        assertEquals(OK.getStatusCode(), publishDatasetResp.getStatusCode()); 
+        msg("Update file metadata for deleted file, will error");
+        String delDescription = "Deleted description.";
+        String deletedCategory = "Deleted category";
+        //"junk" passed below is to test that it is discarded
+        String deletedJsonString = "{\"description\":\""+delDescription+"\",\"categories\":[\""+deletedCategory+"\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
+        Response updateMetadataFailResponseDeleted = UtilIT.updateFileMetadata(newDfId.toString(), deletedJsonString, apiToken);
+        updateMetadataFailResponseDeleted.prettyPrint();
+        assertEquals(BAD_REQUEST.getStatusCode(), updateMetadataFailResponseDeleted.getStatusCode()); 
+        
+        msg("DATASET ID FOR followup: " + datasetId);
 
     }
     
