@@ -521,6 +521,14 @@
                                                     <h:outputText value="#{FilePage.file.dataTable.caseQuantity}"/>
                                                 </div>
                                             </div>
+                                            <div class="form-group" jsf:rendered="#{!empty FilePage.fileMetadata.directoryLabel}">
+                                                <label class="col-sm-3 control-label">
+                                                   #{bundle['file.metadataTab.fileMetadata.hierarchy.label']}
+                                                </label>
+                                                <div class="col-sm-9">
+                                                    <h:outputText value="#{FilePage.fileMetadata.directoryLabel}/"/>
+                                                </div>
+                                            </div>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.fileMetadata.description)}">
                                                 <label class="col-sm-3 control-label">
                                                    #{bundle['file.metadataTab.fileMetadata.description.label']}

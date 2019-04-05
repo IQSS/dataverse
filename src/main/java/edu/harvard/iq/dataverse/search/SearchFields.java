@@ -205,10 +205,7 @@ public class SearchFields {
     // PUBLICATION_YEAR used to be called PUBLICATION_DATE.
     public static final String PUBLICATION_YEAR = "publicationDate";
     public static final String RELEASE_OR_CREATE_DATE = "dateSort"; 
-    /**
-     * i.e. "Mar 17, 2015"
-     */
-    public static final String RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT = "dateFriendly";
+
 
     public static final String DEFINITION_POINT = "definitionPointDocId";
     public static final String DEFINITION_POINT_DVOBJECT_ID = "definitionPointDvObjectId";

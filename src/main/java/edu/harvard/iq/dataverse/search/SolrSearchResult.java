@@ -417,7 +417,7 @@ public class SolrSearchResult {
                 .add("is_unpublished_state", this.isUnpublishedState())
                 .add("is_published", this.isPublishedState())
                 .add("is_deaccesioned", this.isDeaccessionedState())
-                .add("date_to_display_on_card", this.dateToDisplayOnCard);
+                .add("date_to_display_on_card", getDateToDisplayOnCard());
 
         // Add is_deaccessioned attribute, even though MyData currently screens any deaccessioned info out
         //
@@ -901,11 +901,7 @@ public class SolrSearchResult {
     }
 
     public String getDateToDisplayOnCard() {
-        return DateUtil.formatDate(dateToDisplayOnCard,"MMM dd, yyyy");
-    }
-
-    public void setDateToDisplayOnCard(String dateToDisplayOnCard) {
-        this.dateToDisplayOnCard = dateToDisplayOnCard;
+        return DateUtil.formatDate(this.releaseOrCreateDate);
     }
 
     public long getDatasetVersionId() {

@@ -412,7 +412,6 @@ public class SearchServiceBean {
             String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE_FRIENDLY);
             String fileContentType = (String) solrDocument.getFieldValue(SearchFields.FILE_CONTENT_TYPE);
             Date release_or_create_date = (Date) solrDocument.getFieldValue(SearchFields.RELEASE_OR_CREATE_DATE);
-            String dateToDisplayOnCard = (String) solrDocument.getFirstValue(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT);
             String dvTree = (String) solrDocument.getFirstValue(SearchFields.SUBTREE);
             String identifierOfDataverse = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER_OF_DATAVERSE);
             String nameOfDataverse = (String) solrDocument.getFieldValue(SearchFields.DATAVERSE_NAME);
@@ -467,7 +466,6 @@ public class SearchServiceBean {
             solrSearchResult.setScore(score);
             solrSearchResult.setNameSort(nameSort);
             solrSearchResult.setReleaseOrCreateDate(release_or_create_date);
-            solrSearchResult.setDateToDisplayOnCard(dateToDisplayOnCard);
             solrSearchResult.setMatchedFields(matchedFields);
             solrSearchResult.setHighlightsAsList(highlights);
             solrSearchResult.setHighlightsMap(highlightsMap);
