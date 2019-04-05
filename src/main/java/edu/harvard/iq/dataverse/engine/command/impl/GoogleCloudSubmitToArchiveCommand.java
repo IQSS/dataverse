@@ -136,7 +136,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                                     }
                                 }
                             }).start();
-                            Blob bag = bucket.create(spaceName + "/" + fileName, digestInputStream, "application/zip", Bucket.BlobWriteOption.doesNotExist());
+                            Blob bag = bucket.create(spaceName + "/" + fileName, digestInputStream2, "application/zip", Bucket.BlobWriteOption.doesNotExist());
                             blobIdString = bag.getBlobId().toString();
                             checksum = bag.getMd5ToHexString();
                             logger.info("Content: " + fileName + " added with checksum: " + checksum);
