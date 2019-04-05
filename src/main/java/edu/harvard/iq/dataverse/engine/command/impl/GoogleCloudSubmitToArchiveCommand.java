@@ -125,7 +125,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                                 }
                             }).start();
                             Blob bag = bucket.create(spaceName + "/" + fileName, digestInputStream2, "application/zip", Bucket.BlobWriteOption.doesNotExist());
-                            blobIdString = bag.getBlobId().toString();
+                            blobIdString = bag.getBlobId().getBucket() + "/" + bag.getBlobId().getName();
                             checksum = bag.getMd5ToHexString();
                             logger.fine("Bag: " + fileName + " added with checksum: " + checksum);
                             localchecksum = Hex.encodeHexString(digestInputStream2.getMessageDigest().digest());
