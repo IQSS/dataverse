@@ -108,7 +108,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                         }
 
                         // Store BagIt file
-                        String fileName = spaceName + "v" + dv.getFriendlyVersionNumber() + ".zip";
+                        String fileName = spaceName + ".v" + dv.getFriendlyVersionNumber() + ".zip";
 
                         // Add BagIt ZIP file
                         // Google uses MD5 as one way to verify the
