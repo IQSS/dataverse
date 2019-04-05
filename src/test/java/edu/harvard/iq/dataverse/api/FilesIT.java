@@ -658,18 +658,15 @@ public class FilesIT {
         assertNull(JsonPath.from(getUpMetadataResponseString).getString("provFreeform")); //unupdated fields are not persisted
         
         //what if we delete? Should get bad request since file is not part of current version
-        msg("*********************");
-        msg("Publish dataset");
+
         publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         publishDatasetResp.prettyPrint();
         assertEquals(OK.getStatusCode(), publishDatasetResp.getStatusCode()); 
-        msg("Delete  file");
         
         Response deleteFile = UtilIT.deleteFile(newDfId.intValue(), apiToken);
         deleteFile.prettyPrint();
         assertEquals(NO_CONTENT.getStatusCode(), deleteFile.getStatusCode()); 
         publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
-        msg("Publish after Delete  file");
         publishDatasetResp.prettyPrint();
         assertEquals(OK.getStatusCode(), publishDatasetResp.getStatusCode()); 
         msg("Update file metadata for deleted file, will error");
@@ -681,7 +678,7 @@ public class FilesIT {
         updateMetadataFailResponseDeleted.prettyPrint();
         assertEquals(BAD_REQUEST.getStatusCode(), updateMetadataFailResponseDeleted.getStatusCode()); 
         
-        msg("DATASET ID FOR followup: " + datasetId);
+
 
     }
     
