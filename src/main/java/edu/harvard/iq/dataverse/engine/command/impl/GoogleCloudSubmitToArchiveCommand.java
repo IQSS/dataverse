@@ -91,6 +91,11 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                                 }
                             }
                         }).start();
+                        int i=0;
+                        while(digestInputStream.available()<=0 && i<100) {
+                            Thread.sleep(10);
+                            i++;
+                        }
                         Blob dcXml = bucket.create(spaceName + "/datacite.v" + dv.getFriendlyVersionNumber()+".xml", digestInputStream, "text/xml", Bucket.BlobWriteOption.doesNotExist());
                         String checksum = dcXml.getMd5ToHexString();
                         logger.fine("Content: datacite.xml added with checksum: " + checksum);
