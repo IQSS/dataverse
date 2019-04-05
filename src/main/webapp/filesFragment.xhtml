@@ -20,12 +20,12 @@
                 Change View
             </label>
             <div class="col-xs-4 input-group">
-                <p:selectOneButton id="displayValue" styleClass="form-control" value="#{DatasetPage.fileDisplayTable}" style="border:0;box-shadow:none;">
+                <p:selectOneButton id="displayValue" styleClass="form-control" value="#{DatasetPage.fileDisplayMode}" style="border:0;box-shadow:none;">
                     <f:selectItem itemLabel="Table" itemValue="Table" />
                     <f:selectItem itemLabel="Tree" itemValue="Tree" />
 
                     <!-- AJAX UPDATES TO TOGGLE p:dataTable widgetVar="filesTable" AND p:tree widgetVar="filesTree" COMPONENTS BELOW -->
-                    <p:ajax update=":datasetForm" process="@this" listener="#{DatasetPage.toggleFileDisplayMode}"/>
+                    <p:ajax update=":datasetForm" process="@this"/> 
                 </p:selectOneButton>
             </div>
         </div>

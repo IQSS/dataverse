@@ -1635,17 +1635,30 @@ public class DatasetPage implements java.io.Serializable {
     
     private FileDisplayStyle fileDisplayMode = FileDisplayStyle.TABLE; 
     
+    public String getFileDisplayMode() {
+        return fileDisplayMode.equals(FileDisplayStyle.TABLE) ? "Table" : "Tree";
+    }
+    
+    // the setter method - so that we can use "fileDisplayMode" as the value 
+    // for a p:selectOneButton on the files fragment page. 
+    // it doesn't do anything - because the actual toggling of the display mode 
+    // is done by a p:ajax tied to the button; which in turn calls the next
+    // method, toggleFileDisplayMode() (why?)
+    public void setFileDisplayMode(String fileDisplayMode) {
+        if ("Table".equals(fileDisplayMode)) {
+            this.fileDisplayMode = FileDisplayStyle.TABLE;
+        } else {
+            this.fileDisplayMode = FileDisplayStyle.TREE;
+        } 
+    }
+    
     public boolean isFileDisplayTable() {
         return fileDisplayMode == FileDisplayStyle.TABLE;
     }
     
-    // the setter method - so that we can use "fileDisplayTable" as the value 
-    // for a p:selectBooleanButton on the files fragment page. 
-    // it doesn't do anything - because the actual toggling of the display mode 
-    // is done by a p:ajax tied to the button; which in turn calls the next
-    // method, toggleFileDisplayMode() (why?)
-    public void setFileDisplayTable(boolean fileDisplayModeTable) {
-    }
+    
+    /*public void setFileDisplayTable(boolean fileDisplayModeTable) {
+    }*/
     
     public void toggleFileDisplayMode() {
         if (fileDisplayMode == FileDisplayStyle.TABLE) {
