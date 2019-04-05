@@ -14,7 +14,7 @@
     <p:remoteCommand name="refreshPaginator" action="#{DatasetPage.refreshPaginator()}" process="@this" update="@form" />
     
     <!-- Toggle Files Display Components -->
-    <div jsf:id="filesDisplayToggleBlock" jsf:rendered="true" class="row">
+    <div jsf:id="filesDisplayToggleBlock" jsf:rendered="#{DatasetPage.fileTreeViewRequired}" class="row">
         <div class="form-group col-xs-12">
             <label class="col-sm-2 control-label">
                 Change View
