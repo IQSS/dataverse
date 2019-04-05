@@ -149,7 +149,6 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                         StringBuffer sb = new StringBuffer("https://storage.cloud.google.com/");
                         sb.append(blobIdString);
                         dv.setArchivalCopyLocation(sb.toString());
-                        logger.info("Dataset archived: " + sb.toString());
                     } catch (RuntimeException rte) {
                         logger.severe("Error creating datacite xml file during GoogleCloud Archiving: " + rte.getMessage());
                         return new Failure("Error in generating datacite.xml file",
@@ -178,7 +177,6 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
             } catch (Exception e) {
                 logger.warning(e.getLocalizedMessage());
             }
-            logger.info("Successfully leaving GCSTAC");
             return WorkflowStepResult.OK;
         } else {
             return new Failure("GoogleCloud Submission not configured - no \":GoogleCloudBucket\"  and/or \":GoogleCloudProject\".");
