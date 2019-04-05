@@ -98,7 +98,12 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                                 }
                             }
                         }).start();
-
+                        //Have seen Pipe Closed errors for other archivers when used as a workflow without this delay loop
+                        int i=0;
+                        while(digestInputStream.available()<=0 && i<100) {
+                            Thread.sleep(10);
+                            i++;
+                        }
                         String checksum = store.addContent(spaceName, "datacite.xml", digestInputStream, -1l, null, null,
                                 null);
                         logger.fine("Content: datacite.xml added with checksum: " + checksum);
@@ -132,7 +137,11 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                                     }
                                 }
                             }).start();
-
+                            i=0;
+                            while(digestInputStream.available()<=0 && i<100) {
+                                Thread.sleep(10);
+                                i++;
+                            }
                             checksum = store.addContent(spaceName, fileName, digestInputStream2, -1l, null, null,
                                     null);
                             logger.fine("Content: " + fileName + " added with checksum: " + checksum);
@@ -173,6 +182,9 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         logger.severe(rte.getMessage());
                         return new Failure("Error in generating datacite.xml file",
                                 "DuraCloud Submission Failure: metadata file not created");
+                    } catch (InterruptedException e) {
+                        logger.warning(e.getLocalizedMessage());
+                        e.printStackTrace();
                     }
                 } catch (ContentStoreException e) {
                     logger.warning(e.getMessage());
