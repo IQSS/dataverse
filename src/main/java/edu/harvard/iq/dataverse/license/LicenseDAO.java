@@ -27,6 +27,10 @@ public class LicenseDAO {
     public License saveChanges(License license) {
         return em.merge(license);
     }
+
+    public void save(License license) {
+        em.persist(license);
+    }
   
     public Long countActiveLicenses() {
         return em.createQuery("SELECT count(l) FROM License l where l.active = true", Long.class).getSingleResult();
@@ -34,5 +38,9 @@ public class LicenseDAO {
 
     public Long countInactiveLicenses() {
         return em.createQuery("SELECT count(l) FROM License l where l.active = false ", Long.class).getSingleResult();
+    }
+
+    public Long findMaxLicensePosition() {
+        return em.createQuery("SELECT MAX(l.position) FROM License l", Long.class).getSingleResult();
     }
 }

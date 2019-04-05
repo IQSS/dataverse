@@ -23,7 +23,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CuratePublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
@@ -391,9 +390,9 @@ public class DatasetPage implements java.io.Serializable {
                 AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
                 try {
                     authUser.getCart().addItem(title, persistentId);
-                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
+                    JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
                 } catch (Exception ex){
-                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+                    JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
                 }
             }
         }
@@ -404,9 +403,9 @@ public class DatasetPage implements java.io.Serializable {
             AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
             try {
                 authUser.getCart().removeItem(title, persistentId);
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
+                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
             } catch (Exception ex){
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+                JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
             }
         }
     }
@@ -416,9 +415,9 @@ public class DatasetPage implements java.io.Serializable {
             AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
             try {
                 authUser.getCart().clear();
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
+                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
             } catch (Exception ex){
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+                JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
             }
         }
     }
@@ -1450,7 +1449,7 @@ public class DatasetPage implements java.io.Serializable {
 
             if (!retrieveDatasetVersionResponse.wasRequestedVersionRetrieved()) {
                 //msg("checkit " + retrieveDatasetVersionResponse.getDifferentVersionMessage());
-                JsfHelper.addWarningMessage(retrieveDatasetVersionResponse.getDifferentVersionMessage());//BundleUtil.getStringFromBundle("dataset.message.metadataSuccess"));
+                JsfHelper.addFlashWarningMessage(retrieveDatasetVersionResponse.getDifferentVersionMessage());//BundleUtil.getStringFromBundle("dataset.message.metadataSuccess"));
             }
             
             // init the citation
@@ -1807,11 +1806,11 @@ public class DatasetPage implements java.io.Serializable {
             //FIXME - Get Return Comment from sendBackToContributor popup
             Command<Dataset> cmd = new ReturnDatasetToAuthorCommand(dvRequestService.getDataverseRequest(), dataset, "");
             dataset = commandEngine.submit(cmd);
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.reject.success"));
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.reject.success"));
         } catch (CommandException ex) {
             String message = ex.getMessage();
             logger.log(Level.SEVERE, "sendBackToContributor: {0}", message);
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.reject.failure", Collections.singletonList(message)));
+            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.reject.failure", Collections.singletonList(message)));
         }
         
         /* 
@@ -1837,11 +1836,11 @@ public class DatasetPage implements java.io.Serializable {
         try {
             Command<Dataset> cmd = new SubmitDatasetForReviewCommand( dvRequestService.getDataverseRequest(), dataset);
             dataset = commandEngine.submit(cmd);
-            //JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.submit.success"));
+            //JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.submit.success"));
         } catch (CommandException ex) {
             String message = ex.getMessage();
             logger.log(Level.SEVERE, "submitDataset: {0}", message);
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.submit.failure", Collections.singletonList(message)));
+            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.submit.failure", Collections.singletonList(message)));
         }
         return returnToLatestVersion();
     }
@@ -1860,11 +1859,11 @@ public class DatasetPage implements java.io.Serializable {
             PublishDataverseCommand cmd = new PublishDataverseCommand(dvRequestService.getDataverseRequest(), dataset.getOwner());
             try {
                 commandEngine.submit(cmd);
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.publish.success"));
+                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.publish.success"));
 
             } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Unexpected Exception calling  publish dataverse command", ex);
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.publish.failure"));
+                JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataverse.publish.failure"));
 
             }
         } else {
@@ -1897,7 +1896,7 @@ public class DatasetPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.message.deaccessionFailure"));
         }
         setRenderDeaccessionPopup(false);
-        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetVersion.message.deaccessionSuccess"));
+        JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("datasetVersion.message.deaccessionSuccess"));
         return returnToDatasetOnly();
     }
 
@@ -1963,18 +1962,18 @@ public class DatasetPage implements java.io.Serializable {
                 // the process. So it may be premature to show the "success" message at this point. 
                 
                 if ( result.isCompleted() ) {
-                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
+                    JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
                 } else {
                     JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.locked.message.details"));
                 }
                 
             } catch (CommandException ex) {
-                JsfHelper.addErrorMessage(ex.getLocalizedMessage());
+                JsfHelper.addFlashErrorMessage(ex.getLocalizedMessage());
                 logger.severe(ex.getMessage());
             }
             
         } else {
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.only.authenticatedUsers"));
+            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.only.authenticatedUsers"));
         }
         return returnToDatasetOnly();
     }
@@ -2041,9 +2040,9 @@ public class DatasetPage implements java.io.Serializable {
             logger.severe(ex.getMessage());
         }
         if (errorMsg != null) {
-            JsfHelper.addErrorMessage(errorMsg);
+            JsfHelper.addFlashErrorMessage(errorMsg);
         } else {
-            JsfHelper.addSuccessMessage(successMsg);
+            JsfHelper.addFlashSuccessMessage(successMsg);
         }
         return returnToDatasetOnly();
     }
@@ -2131,7 +2130,7 @@ public class DatasetPage implements java.io.Serializable {
         
         if (deleteCommandSuccess) {
             datafileService.finalizeFileDeletes(deleteStorageLocations);
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.deleteSuccess"));
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.deleteSuccess"));
         }
         
         return "/dataverse.xhtml?alias=" + dataset.getOwner().getAlias() + "&faces-redirect=true";
@@ -2155,7 +2154,7 @@ public class DatasetPage implements java.io.Serializable {
         try {
             cmd = new DeleteDatasetVersionCommand(dvRequestService.getDataverseRequest(), dataset);
             commandEngine.submit(cmd);
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetVersion.message.deleteSuccess"));
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("datasetVersion.message.deleteSuccess"));
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.message.deleteFailure"));
             logger.severe(ex.getMessage());
@@ -2361,7 +2360,7 @@ public class DatasetPage implements java.io.Serializable {
     public void saveLinkingDataverses(ActionEvent evt) {
 
         if (saveLink(selectedDataverseForLinking)) {
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.linkSuccess", getSuccessMessageArguments()));
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.linkSuccess", getSuccessMessageArguments()));
         } else {
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), linkingDataverseErrorMessage);
             FacesContext.getCurrentInstance().addMessage(null, message);
@@ -2801,36 +2800,36 @@ public class DatasetPage implements java.io.Serializable {
                     }
                     if (addFilesSuccess && dataset.getFiles().size() > 0) {
                         if (nNewFiles == dataset.getFiles().size()) {
-                            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess"));
+                            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess"));
                         } else {
                             String partialSuccessMessage = BundleUtil.getStringFromBundle("dataset.message.createSuccess.partialSuccessSavingFiles");
                             partialSuccessMessage = partialSuccessMessage.replace("{0}", "" + dataset.getFiles().size() + "");
                             partialSuccessMessage = partialSuccessMessage.replace("{1}", "" + nNewFiles + "");
-                            JsfHelper.addWarningMessage(partialSuccessMessage);
+                            JsfHelper.addFlashWarningMessage(partialSuccessMessage);
                         }
                     } else {
-                        JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess.failedToSaveFiles"));
+                        JsfHelper.addFlashWarningMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess.failedToSaveFiles"));
                     }
                 } else {
-                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess"));
+                    JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess"));
                 }
             }
             if (editMode.equals(EditMode.METADATA)) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.metadataSuccess"));
+                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.metadataSuccess"));
             }
             if (editMode.equals(EditMode.LICENSE)) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.termsSuccess"));
+                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.termsSuccess"));
             }
             if (editMode.equals(EditMode.FILE)) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.filesSuccess"));
+                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.filesSuccess"));
             }
 
         } else {
             // must have been a bulk file update or delete:
             if (bulkFileDeleteInProgress) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileDeleteSuccess"));
+                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileDeleteSuccess"));
             } else {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileUpdateSuccess"));
+                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileUpdateSuccess"));
             }
         }
 
@@ -2848,7 +2847,7 @@ public class DatasetPage implements java.io.Serializable {
             try {
                 provPopupFragmentBean.saveStagedProvJson(false, dataset.getLatestVersion().getFileMetadatas());
             } catch (AbstractApiBean.WrappedResponse ex) {
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.metadataTab.provenance.error"));
+                JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("file.metadataTab.provenance.error"));
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -2862,24 +2861,24 @@ public class DatasetPage implements java.io.Serializable {
         if (editMode == null) {
             // that must have been a bulk file update or delete:
             if (bulkFileDeleteInProgress) {
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileDeleteFailure"));
+                JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileDeleteFailure"));
 
             } else {
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.filesFailure"));
+                JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.filesFailure"));
             }
         } else {
 
             if (editMode.equals(EditMode.CREATE)) {
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.createFailure"));
+                JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.createFailure"));
             }
             if (editMode.equals(EditMode.METADATA)) {
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.metadataFailure"));
+                JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.metadataFailure"));
             }
             if (editMode.equals(EditMode.LICENSE)) {
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.termsFailure"));
+                JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.termsFailure"));
             }
             if (editMode.equals(EditMode.FILE)) {
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.filesFailure"));
+                JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.filesFailure"));
             }
         }
         
@@ -4249,7 +4248,7 @@ public class DatasetPage implements java.io.Serializable {
         } catch (CommandException ex) {
             String msg = BundleUtil.getStringFromBundle("dataset.privateurl.noPermToCreate", PrivateUrlUtil.getRequiredPermissions(ex));
             logger.info("Unable to create a Private URL for dataset id " + dataset.getId() + ". Message to user: " + msg + " Exception: " + ex);
-            JH.addErrorMessage(msg);
+            JH.addFlashErrorMessage(msg);
         }
     }
 
@@ -4257,7 +4256,7 @@ public class DatasetPage implements java.io.Serializable {
         try {
             commandEngine.submit(new DeletePrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
             privateUrl = null;
-            JH.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.privateurl.disabledSuccess"));
+            JH.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.privateurl.disabledSuccess"));
         } catch (CommandException ex) {
             logger.info("CommandException caught calling DeletePrivateUrlCommand: " + ex);
         }
@@ -4540,17 +4539,17 @@ public class DatasetPage implements java.io.Serializable {
                     if (version.getArchivalCopyLocation() != null) {
                         resetVersionTabList();
                         this.setVersionTabListForPostLoad(getVersionTabList());
-                        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetversion.archive.success"));
+                        JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("datasetversion.archive.success"));
                     } else {
-                        JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
+                        JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
                     }
                 } catch (CommandException ex) {
                     logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
-                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
+                    JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
                 }
             } else {
                 logger.log(Level.SEVERE, "Could not find Archiver class: " + className);
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
+                JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
 
             }
         }

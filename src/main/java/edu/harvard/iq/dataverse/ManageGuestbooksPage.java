@@ -6,11 +6,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestbookRootCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -22,6 +18,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
  *
@@ -263,7 +265,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         }
         try {
             engineService.submit(new UpdateDataverseCommand(getDataverse(), null, null, dvRequestService.getDataverseRequest(), null));
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle(successMessage));
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle(successMessage));
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle(failureMessage));
         }

@@ -13,14 +13,7 @@ import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.logging.Logger;
+
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
@@ -30,6 +23,13 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.logging.Logger;
 
 @ViewScoped
 @Named("Shib")
@@ -307,7 +307,7 @@ public class Shib implements java.io.Serializable {
                     UserNotification.Type.CREATEACC, null);
             return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
         } else {
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("shib.createUser.fail"));
+            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("shib.createUser.fail"));
         }
         return getPrettyFacesHomePageString(true);
     }
@@ -326,7 +326,7 @@ public class Shib implements java.io.Serializable {
                 authSvc.updateAuthenticatedUser(au, displayInfo);
                 logInUserAndSetShibAttributes(au);
                 debugSummary = "Local account validated and successfully converted to a Shibboleth account. The old account username was " + builtinUsername;
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.shib.success"));
+                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.shib.success"));
                 return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
             } else {
                 debugSummary = "Local account validated but unable to convert to Shibboleth account.";

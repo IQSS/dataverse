@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.license.dto;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseIcon;
 import edu.harvard.iq.dataverse.license.LocaleText;
+import io.vavr.control.Try;
+import org.apache.commons.io.IOUtils;
 import org.primefaces.model.ByteArrayContent;
 
 import javax.ejb.Stateless;
@@ -52,15 +54,41 @@ public class LicenseMapper {
         return licenseSimpleDtos;
     }
 
+    public License mapToLicense(LicenseDto licenseDto) {
+        License license = new License();
+
+        license.setPosition(licenseDto.getPosition());
+        license.setActive(licenseDto.isActive());
+        license.setUrl(licenseDto.getUrl());
+        license.setName(licenseDto.getName());
+        license.setIcon(licenseDto.getIcon().getContent() == null ? null : mapToLicenseIcon(licenseDto, license));
+
+        licenseDto.getLocalizedNames().forEach(localeTextDto -> license.addLocalizedName(
+                new LocaleText(localeTextDto.getLocale(), localeTextDto.getText())));
+
+        return license;
+    }
+
     // -------------------- PRIVATE --------------------
+
+    private LicenseIcon mapToLicenseIcon(LicenseDto licenseDto, License license) {
+        LicenseIcon licenseIcon = new LicenseIcon();
+        licenseIcon.setContent(
+                Try.of(() -> IOUtils.toByteArray(licenseDto.getIcon().getContent().getStream()))
+                        .getOrElseThrow(throwable -> new IllegalStateException("Unable to read image", throwable)));
+
+        licenseIcon.setLicense(license);
+        licenseIcon.setContentType(licenseDto.getIcon().getContent().getContentType());
+
+        return licenseIcon;
+    }
 
     private LicenseIconDto mapToDto(LicenseIcon licenseIcon) {
         if (licenseIcon == null) {
             return new LicenseIconDto(new ByteArrayContent(new byte[0]));
         }
 
-        return new LicenseIconDto(licenseIcon.getId(),
-                new ByteArrayContent(licenseIcon.getContent(),
+        return new LicenseIconDto(new ByteArrayContent(licenseIcon.getContent(),
                         licenseIcon.getContentType(),
                         licenseIcon.getLicense().getName(),
                         licenseIcon.getContent().length));

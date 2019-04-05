@@ -17,15 +17,16 @@ import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+
+import javax.ejb.EJB;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
 
 @ViewScoped
 @Named("DashboardUsersPage")
@@ -231,11 +232,11 @@ public class DashboardUsersPage implements java.io.Serializable {
             commandEngine.submit(new RevokeAllRolesCommand(selectedUserPersistent, dvRequestService.getDataverseRequest()));
         } catch (Exception ex) {
             // error message to show on the page:
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dashboard.list_users.removeAll.message.failure", Arrays.asList(selectedUserPersistent.getUserIdentifier())));
+            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dashboard.list_users.removeAll.message.failure", Arrays.asList(selectedUserPersistent.getUserIdentifier())));
             return;
         }
         // success message: 
-        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dashboard.list_users.removeAll.message.success", Arrays.asList(selectedUserPersistent.getUserIdentifier()))); 
+        JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dashboard.list_users.removeAll.message.success", Arrays.asList(selectedUserPersistent.getUserIdentifier())));
     }
     
     public String getConfirmRemoveRolesMessage() {

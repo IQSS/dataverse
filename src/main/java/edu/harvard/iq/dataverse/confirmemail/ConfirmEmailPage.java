@@ -5,11 +5,12 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import java.util.logging.Logger;
+
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.logging.Logger;
 
 /**
  *
@@ -55,15 +56,15 @@ public class ConfirmEmailPage implements java.io.Serializable {
             if (confirmEmailData != null) {
                 user = confirmEmailData.getAuthenticatedUser();
                 session.setUser(user);
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.details.success"));
+                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.details.success"));
                 return "/dataverse.xhtml?faces-redirect=true";
             }
         }
-        JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("confirmEmail.details.failure"));
+        JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("confirmEmail.details.failure"));
         /**
          * @todo It would be nice to send a 404 response but if we enable this
          * then the user sees the contents of 404.xhtml rather than the contents
-         * of JsfHelper.addErrorMessage above!
+         * of JsfHelper.addFlashErrorMessage above!
          */
 //        try {
 //            FacesContext.getCurrentInstance().getExternalContext().responseSendError(HttpServletResponse.SC_NOT_FOUND, null);

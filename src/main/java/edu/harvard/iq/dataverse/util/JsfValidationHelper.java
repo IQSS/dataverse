@@ -54,7 +54,7 @@ public final class JsfValidationHelper {
     }
 
     private static String unknownValidation() {
-        JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("error.general.message"));
+        JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("error.general.message"));
         return null;
     }
 

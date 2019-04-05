@@ -1,18 +1,16 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
-import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
-import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
+import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
+import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -23,17 +21,40 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
+import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.search.FileView;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.EjbUtil;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.primefaces.context.RequestContext;
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.UploadedFile;
+
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
+import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.event.FacesEvent;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -43,41 +64,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.UploadedFile;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonArray;
-import javax.json.JsonReader;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.httpclient.methods.GetMethod;
-import java.text.DateFormat;
-import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
-import javax.faces.event.AjaxBehaviorEvent;
-import javax.faces.event.FacesEvent;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.lang.StringUtils;
-import org.primefaces.context.RequestContext;
+import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
  *
@@ -1044,7 +1044,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         // Run save!!
         //
         if (fileReplacePageHelper.runSaveReplacementFile_Phase2()){
-            JsfHelper.addSuccessMessage(getBundleString("file.message.replaceSuccess"));
+            JsfHelper.addFlashSuccessMessage(getBundleString("file.message.replaceSuccess"));
             // It worked!!!  Go to page of new file!!
             return returnToFileLandingPageAfterReplace(fileReplacePageHelper.getFirstNewlyAddedFile());
         }else{
@@ -1151,7 +1151,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // that are no longer valid. 
                 provJsonChanges = provPopupFragmentBean.saveStagedProvJson(false, fileMetadatas);
             } catch (AbstractApiBean.WrappedResponse ex) {
-                JsfHelper.addErrorMessage(getBundleString("file.metadataTab.provenance.error"));
+                JsfHelper.addFlashErrorMessage(getBundleString("file.metadataTab.provenance.error"));
                 Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
             }
             //Always update the whole dataset if updating prov
@@ -1392,19 +1392,19 @@ public class EditDatafilesPage implements java.io.Serializable {
         logger.fine("working version id: "+workingVersion.getId());
        
         if (mode == FileEditMode.SINGLE){
-            JsfHelper.addSuccessMessage(getBundleString("file.message.editSuccess"));
+            JsfHelper.addFlashSuccessMessage(getBundleString("file.message.editSuccess"));
             
         } else {
             int nFilesTotal = workingVersion.getFileMetadatas().size();
             if (nNewFiles == 0 || nFilesTotal == nExpectedFilesTotal) {
-                JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess"));
+                JsfHelper.addFlashSuccessMessage(getBundleString("dataset.message.filesSuccess"));
             } else if (nFilesTotal == nOldFiles) {
-                JsfHelper.addErrorMessage(getBundleString("dataset.message.addFiles.Failure"));
+                JsfHelper.addFlashErrorMessage(getBundleString("dataset.message.addFiles.Failure"));
             } else {
                 String warningMessage = getBundleString("dataset.message.addFiles.partialSuccess");
                 warningMessage = warningMessage.replace("{0}", "" + (nFilesTotal - nOldFiles));
                 warningMessage = warningMessage.replace("{1}", "" + nNewFiles);
-                JsfHelper.addWarningMessage(warningMessage);
+                JsfHelper.addFlashWarningMessage(warningMessage);
             }
         }
         

@@ -17,31 +17,39 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.UserNameValidator;
 import edu.harvard.iq.dataverse.UserNotification;
-import static edu.harvard.iq.dataverse.UserNotification.Type.CREATEDV;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthUtil;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
-import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailUtil;
 import edu.harvard.iq.dataverse.mydata.MyDataPage;
-import edu.harvard.iq.dataverse.passwordreset.PasswordValidator;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import org.apache.commons.lang.StringUtils;
+import org.hibernate.validator.constraints.NotBlank;
+import org.primefaces.event.TabChangeEvent;
+
+import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.sql.Timestamp;
@@ -53,18 +61,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import org.apache.commons.lang.StringUtils;
-import org.hibernate.validator.constraints.NotBlank;
-import org.primefaces.event.TabChangeEvent;
+
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
  *
@@ -386,7 +384,7 @@ public class DataverseUserPage implements java.io.Serializable {
                     logger.log(Level.INFO, "Unable to send email confirmation link to user id {0}", savedUser.getId());
                 }
                 session.setUser(currentUser);
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.changed", args));
+                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.changed", args));
             } else {
                 JsfHelper.addFlashMessage(msg.toString());
             }
@@ -525,7 +523,7 @@ public class DataverseUserPage implements java.io.Serializable {
             List<String> args = Arrays.asList(
                     userEmail,
                     ConfirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires()));
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.submitRequest.success", args));
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.submitRequest.success", args));
         } catch (ConfirmEmailException ex) {
             Logger.getLogger(DataverseUserPage.class.getName()).log(Level.SEVERE, null, ex);
         }

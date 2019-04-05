@@ -13,17 +13,8 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
@@ -33,6 +24,17 @@ import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
  *
@@ -194,7 +196,7 @@ public class LoginPage implements java.io.Serializable {
             AuthenticationResponse response = ex.getResponse();
             switch ( response.getStatus() ) {
                 case FAIL:
-                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("login.builtin.invalidUsernameEmailOrPassword"));
+                    JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("login.builtin.invalidUsernameEmailOrPassword"));
                     return null;
                 case ERROR:
                     /**
@@ -202,13 +204,13 @@ public class LoginPage implements java.io.Serializable {
                      * with password upgrade? See
                      * https://github.com/IQSS/dataverse/pull/2922
                      */
-                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("login.error"));
+                    JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("login.error"));
                     logger.log( Level.WARNING, "Error logging in: " + response.getMessage(), response.getError() );
                     return null;
                 case BREAKOUT:
                     return response.getMessage();
                 default:
-                    JsfHelper.addErrorMessage("INTERNAL ERROR");
+                    JsfHelper.addFlashErrorMessage("INTERNAL ERROR");
                     return null;
             }
         }

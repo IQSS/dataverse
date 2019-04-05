@@ -10,35 +10,36 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.FilePage;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import java.io.IOException;
-import java.util.logging.Logger;
-import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.UploadedFile;
-import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
 import org.apache.commons.io.IOUtils;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.UploadedFile;
+
+import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.json.JsonObject;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
  * This bean contains functionality for the provenance json pop up
@@ -274,9 +275,9 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             if (isFreeformUpdated()) {
                 message += BundleUtil.getStringFromBundle("file.provAlert.freeform");
             }
-        } 
+        }
 
-        JsfHelper.addSuccessMessage(message); //We have to call this after to ensure it is the success message shown
+        JsfHelper.addFlashSuccessMessage(message); //We have to call this after to ensure it is the success message shown
         
     }
     

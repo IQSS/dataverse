@@ -24,4 +24,10 @@ public class LocaleTextDto {
     public String getText() {
         return text;
     }
+
+    // -------------------- SETTERS --------------------
+
+    public void setText(String text) {
+        this.text = text;
+    }
 }

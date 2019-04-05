@@ -20,19 +20,9 @@ import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContributorRoleCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.lang.StringEscapeUtils;
+
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.event.ActionEvent;
@@ -41,7 +31,18 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import org.apache.commons.lang.StringEscapeUtils;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
  *
@@ -189,7 +190,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
     private void revokeRole(RoleAssignment ra) {
         try {
             commandEngine.submit(new RevokeRoleCommand(ra, dvRequestService.getDataverseRequest()));
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("permission.roleWasRemoved", Arrays.asList(ra.getRole().getName(), roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle())));
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.roleWasRemoved", Arrays.asList(ra.getRole().getName(), roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle())));
             RoleAssignee assignee = roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier());
             notifyRoleChange(assignee, UserNotification.Type.REVOKEROLE);
         } catch (PermissionException ex) {
@@ -347,7 +348,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             if (!defaultRole.equals(dv.getDefaultContributorRole())) {
                 try {
                     commandEngine.submit(new UpdateDataverseDefaultContributorRoleCommand(defaultRole, dvRequestService.getDataverseRequest(), dv));
-                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("permission.defaultPermissionDataverseUpdated"));
+                    JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.defaultPermissionDataverseUpdated"));
                 } catch (PermissionException ex) {
                     JH.addMessage(FacesMessage.SEVERITY_ERROR,  BundleUtil.getStringFromBundle("permission.CannotAssigntDefaultPermissions"),
                             BundleUtil.getStringFromBundle("permission.permissionsMissing" , Arrays.asList(ex.getRequiredPermissions().toString())));
@@ -515,7 +516,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                     ra.getDisplayInfo().getTitle(),
                     StringEscapeUtils.escapeHtml(dvObject.getDisplayName())
             );
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("permission.roleAssignedToFor", args));
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.roleAssignedToFor", args));
             // don't notify if role = file downloader and object is not released
             if (!(r.getAlias().equals(DataverseRole.FILE_DOWNLOADER) && !dvObject.isReleased()) ){
                 notifyRoleChange(ra, UserNotification.Type.ASSIGNROLE);
@@ -530,7 +531,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                     StringEscapeUtils.escapeHtml(dvObject.getDisplayName())
             );
             String message = BundleUtil.getStringFromBundle("permission.roleNotAssignedFor", args);
-            JsfHelper.addErrorMessage(message);
+            JsfHelper.addFlashErrorMessage(message);
             //JH.addMessage(FacesMessage.SEVERITY_FATAL, "The role was not able to be assigned.");
             logger.log(Level.SEVERE, "Error assiging role: " + ex.getMessage(), ex);
         }
@@ -583,7 +584,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             try {
                 String roleState = role.getId() != null ? BundleUtil.getStringFromBundle("permission.updated") : BundleUtil.getStringFromBundle("permission.created");
                 setRole(commandEngine.submit(new CreateRoleCommand(role, dvRequestService.getDataverseRequest(), (Dataverse) role.getOwner())));
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("permission.roleWas", Arrays.asList(roleState)));
+                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.roleWas", Arrays.asList(roleState)));
             } catch (PermissionException ex) {
                 JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotSaved"), BundleUtil.getStringFromBundle("permission.permissionsMissing", Arrays.asList(ex.getRequiredPermissions().toString())));
             } catch (CommandException ex) {

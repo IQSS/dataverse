@@ -641,7 +641,7 @@ public class DataversePage implements java.io.Serializable {
             } else {
                 message = (create) ? BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), systemConfig.getGuidesVersion())) : BundleUtil.getStringFromBundle("dataverse.update.success");
             }
-            JsfHelper.addSuccessMessage(message);
+            JsfHelper.addFlashSuccessMessage(message);
             
             editMode = null;
             return returnRedirect();            
@@ -740,7 +740,7 @@ public class DataversePage implements java.io.Serializable {
     public String saveLinkedDataverse() {
 
         if (linkingDataverseId == null) {
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.link.select"));
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.link.select"));
             return "";
         }
 
@@ -748,7 +748,7 @@ public class DataversePage implements java.io.Serializable {
         if (savedSearchCreator == null) {
             String msg = BundleUtil.getStringFromBundle("dataverse.link.user");
             logger.severe(msg);
-            JsfHelper.addErrorMessage(msg);
+            JsfHelper.addFlashErrorMessage(msg);
             return returnRedirect();
         }
 
@@ -762,7 +762,7 @@ public class DataversePage implements java.io.Serializable {
             List<String> args = Arrays.asList(dataverse.getDisplayName(),linkingDataverse.getDisplayName());
             String msg = BundleUtil.getStringFromBundle("dataverse.link.error", args);
             logger.log(Level.SEVERE, "{0} {1}", new Object[]{msg, ex});
-            JsfHelper.addErrorMessage(msg);
+            JsfHelper.addFlashErrorMessage(msg);
             return returnRedirect();
         }
 
@@ -774,21 +774,21 @@ public class DataversePage implements java.io.Serializable {
                 // create links (does indexing) right now (might be expensive)
                 boolean debug = false;
                 DataverseRequest dataverseRequest = new DataverseRequest(savedSearchCreator, SavedSearchServiceBean.getHttpServletRequest());
-                savedSearchService.makeLinksForSingleSavedSearch(dataverseRequest, savedSearchOfChildren, debug);              
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.linked.success", getSuccessMessageArguments()));                   
+                savedSearchService.makeLinksForSingleSavedSearch(dataverseRequest, savedSearchOfChildren, debug);
+                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.linked.success", getSuccessMessageArguments()));
                 return returnRedirect();
             } catch (SearchException | CommandException ex) {
                 // error: solr is down, etc. can't link children right now
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.linked.internalerror", getSuccessMessageArguments()));
+                JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataverse.linked.internalerror", getSuccessMessageArguments()));
                 String msg = dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName() + " but contents will not appear until an internal error has been fixed.";
                 logger.log(Level.SEVERE, "{0} {1}", new Object[]{msg, ex});
-                //JsfHelper.addErrorMessage(msg);
+                //JsfHelper.addFlashErrorMessage(msg);
                 return returnRedirect();
             }
         } else {
             // defer: please wait for the next timer/cron job
-            //JsfHelper.addSuccessMessage(dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName() + ". Please wait for its contents to appear.");
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.linked.success.wait", getSuccessMessageArguments()));
+            //JsfHelper.addFlashSuccessMessage(dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName() + ". Please wait for its contents to appear.");
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.linked.success.wait", getSuccessMessageArguments()));
             return returnRedirect();
         }
     }
@@ -827,7 +827,7 @@ public class DataversePage implements java.io.Serializable {
 
      public String saveSavedSearch() {
         if (linkingDataverseId == null) {
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.link.select"));
+            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataverse.link.select"));
             return "";
         }
         linkingDataverse = dataverseService.find(linkingDataverseId);
@@ -836,7 +836,7 @@ public class DataversePage implements java.io.Serializable {
         if (savedSearchCreator == null) {
             String msg = BundleUtil.getStringFromBundle("dataverse.search.user");
             logger.severe(msg);
-            JsfHelper.addErrorMessage(msg);
+            JsfHelper.addFlashErrorMessage(msg);
             return returnRedirect();
         }
 
@@ -860,12 +860,12 @@ public class DataversePage implements java.io.Serializable {
             String linkString = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml(linkingDataverse.getDisplayName()) + "</a>";
             arguments.add(linkString);
             String successMessageString = BundleUtil.getStringFromBundle("dataverse.saved.search.success", arguments);
-            JsfHelper.addSuccessMessage(successMessageString);
+            JsfHelper.addFlashSuccessMessage(successMessageString);
             return returnRedirect();
         } catch (CommandException ex) {
             String msg = "There was a problem linking this search to yours: " + ex;
             logger.severe(msg);
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.saved.search.failure") + " " +  ex);
+            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataverse.saved.search.failure") + " " + ex);
             return returnRedirect();
         }
     }
@@ -884,15 +884,15 @@ public class DataversePage implements java.io.Serializable {
             PublishDataverseCommand cmd = new PublishDataverseCommand(dvRequestService.getDataverseRequest(), dataverse);
             try {
                 commandEngine.submit(cmd);
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.publish.success"));
+                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.publish.success"));
 
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, "Unexpected Exception calling  publish dataverse command", ex);
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.publish.failure"));
+                JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataverse.publish.failure"));
 
             }
         } else {
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.publish.not.authorized"));            
+            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataverse.publish.not.authorized"));
         }
         return returnRedirect();
 
@@ -902,10 +902,10 @@ public class DataversePage implements java.io.Serializable {
         DeleteDataverseCommand cmd = new DeleteDataverseCommand(dvRequestService.getDataverseRequest(), dataverse);
         try {
             commandEngine.submit(cmd);
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.delete.success"));
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.delete.success"));
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Unexpected Exception calling  delete dataverse command", ex);
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.delete.failure"));
+            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataverse.delete.failure"));
         }
         return "/dataverse.xhtml?alias=" + dataverse.getOwner().getAlias() + "&faces-redirect=true";
     }

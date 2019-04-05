@@ -6,11 +6,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestingClientCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateHarvestingClientCommand;
-import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
-import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecord;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
@@ -18,14 +13,9 @@ import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OaiSetException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.apache.commons.lang.StringUtils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
@@ -35,7 +25,13 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.commons.lang.StringUtils;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
  *
@@ -173,7 +169,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             systemConfig.disableOAIServer();
         } else {
             systemConfig.enableOAIServer();
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("harvestserver.service.enable.success"));
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("harvestserver.service.enable.success"));
             checkIfDefaultSetExists();
         }
     }
@@ -255,7 +251,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             configuredHarvestingSets = oaiSetService.findAll();  
             String successMessage = BundleUtil.getStringFromBundle("harvestserver.newSetDialog.success");
             successMessage = successMessage.replace("{0}", newOaiSet.getSpec());
-            JsfHelper.addSuccessMessage(successMessage);
+            JsfHelper.addFlashSuccessMessage(successMessage);
             success = true;
 
         } catch (Exception ex) {
@@ -295,8 +291,8 @@ public class HarvestingSetsPage implements java.io.Serializable {
         
         try {
             oaiSetService.save(oaiSet);
-            configuredHarvestingSets = oaiSetService.findAll(); 
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("harvest.oaiupdate.success",   Arrays.asList(oaiSet.isDefaultSet() ? "default" : oaiSet.getSpec())));
+            configuredHarvestingSets = oaiSetService.findAll();
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("harvest.oaiupdate.success", Arrays.asList(oaiSet.isDefaultSet() ? "default" : oaiSet.getSpec())));
             success = true;
 
         } catch (Exception ex) {
@@ -326,7 +322,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
                 selectedSet = null; 
 
                 configuredHarvestingSets = oaiSetService.findAll();
-                JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("harvestserver.tab.header.action.delete.infomessage"));
+                JsfHelper.addFlashInfoMessage(BundleUtil.getStringFromBundle("harvestserver.tab.header.action.delete.infomessage"));
             } catch (Exception ex) {
                 String failMessage = BundleUtil.getStringFromBundle("harvest.delete.fail")+ex.getMessage();
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
@@ -585,7 +581,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
                 
         String successMessage = BundleUtil.getStringFromBundle("harvestserver.actions.runreexport.success");
         successMessage = successMessage.replace("{0}", oaiSet.getSpec());
-        JsfHelper.addSuccessMessage(successMessage);
+        JsfHelper.addFlashSuccessMessage(successMessage);
         configuredHarvestingSets = oaiSetService.findAll(); 
     }
     

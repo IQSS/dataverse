@@ -52,6 +52,24 @@ public class LicenseMapperTest {
         Assert.assertEquals(license.getLocalizedName(Locale.forLanguageTag("en")), simpleDto.getLocalizedText());
     }
 
+    @Test
+    public void shouldCorrectlyMapToLicense() {
+        //given
+        LicenseDto licenseDto = createTestLicenseDto();
+
+        //when
+        License license = licenseMapper.mapToLicense(licenseDto);
+
+        //then
+        Assert.assertEquals("testLicense", license.getName());
+        Assert.assertEquals("http://www.google.pl", license.getUrl());
+        Assert.assertEquals(Long.valueOf(99), license.getPosition());
+        Assert.assertEquals(Locale.ENGLISH, license.getLocalizedNames().get(0).getLocale());
+        Assert.assertEquals("English license", license.getLocalizedNames().get(0).getText());
+        Assert.assertEquals(new Locale("pl"), license.getLocalizedNames().get(1).getLocale());
+        Assert.assertEquals("Polish license", license.getLocalizedNames().get(1).getText());
+    }
+
     // -------------------- PRIVATE --------------------
 
     private License createTestLicense() {
@@ -67,6 +85,18 @@ public class LicenseMapperTest {
         return license;
     }
 
+    private LicenseDto createTestLicenseDto() {
+        LicenseDto licenseDto = new LicenseDto();
+        licenseDto.setUrl("http://www.google.pl");
+        licenseDto.setName("testLicense");
+        licenseDto.setPosition(99L);
+        licenseDto.setActive(false);
+        licenseDto.setLocalizedNames(createLocaleTextsDto());
+        licenseDto.setIcon(new LicenseIconDto());
+
+        return licenseDto;
+    }
+
     private LicenseIcon createLicenseIcon(License license) {
 
         LicenseIcon licenseIcon = new LicenseIcon();
@@ -75,6 +105,13 @@ public class LicenseMapperTest {
         licenseIcon.setLicense(license);
 
         return licenseIcon;
+    }
+
+    private List<LocaleTextDto> createLocaleTextsDto() {
+        LocaleTextDto englishText = new LocaleTextDto(Locale.ENGLISH, "English license");
+        LocaleTextDto polishText = new LocaleTextDto(new Locale("pl"), "Polish license");
+
+        return Lists.newArrayList(englishText, polishText);
     }
 
     private List<LocaleText> createLocaleTexts() {

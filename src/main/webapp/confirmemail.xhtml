@@ -3,8 +3,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:jsf="http://xmlns.jcp.org/jsf">
+>
     <h:head>
     </h:head>  
 
@@ -21,7 +20,7 @@
                     <f:viewAction action="#{ConfirmEmailPage.init}" />
                 </f:metadata>
 
-                <!--This is just the button. The error message is added via addErrorMessage in the backing bean.-->
+                <!--This is just the button. The error message is added via addFlashErrorMessage in the backing bean.-->
                 <h:form styleClass="form-horizontal" rendered="#{ConfirmEmailPage.invalidToken}">
                     <h:commandButton styleClass="btn btn-default" value="#{bundle['confirmEmail.details.goToAccountPageButton']}" action="/dataverseuser.xhtml?selectTab=accountInfo&amp;faces-redirect=true"/>
                 </h:form>

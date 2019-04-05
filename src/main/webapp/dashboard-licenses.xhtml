@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
 >
 <h:head>
 </h:head>
@@ -22,16 +22,20 @@
     <ui:composition template="/dataverse_template.xhtml">
         <ui:define name="body">
 
-            <p:messages id="warningMessages" showDetail="true" closable="true" style="width: 80%">
+            <p:messages id="warningMessages" showDetail="true" closable="true" style="width: 80%" globalOnly="true">
                 <p:autoUpdate/>
             </p:messages>
 
-            <h:form>
+            <h:form id="tableForm">
                 <div class="container">
                     <div class="row">
                         <div class="col" style="text-align: right; width: 78%; margin-bottom: 5px">
                             <p:commandButton action="#{LicenseListingPage.redirectToLicenseReorderPage()}"
                                              value="#{bundle['dashboard.license.reorderButton']}"
+                                             styleClass="btn btn-primary"/>
+
+                            <p:commandButton onclick="PF('newLicense').show();"
+                                             value="#{bundle['dashboard.license.newLicense.add']}"
                                              styleClass="btn btn-primary"/>
 
                         </div>
@@ -47,7 +51,7 @@
                     <p:column headerText="#{bundle['dashboard.license.licenseURL']}" style="width: 30%">
                         <h:outputLink value="#{license.url}">#{license.url}</h:outputLink>
                     </p:column>
-                    <p:column headerText="#{bundle['dashboard.license.icon']}" style="width: 15%">
+                    <p:column headerText="#{bundle['dashboard.license.badge']}" style="width: 15%">
                         <p:graphicImage value="#{license.icon.content}" stream="false"
                                         rendered="#{license.icon.content.contentLength>0}" width="81" height="31"/>
                     </p:column>
@@ -58,7 +62,90 @@
                         </p:selectBooleanCheckbox>
                     </p:column>
                 </p:dataTable>
+
             </h:form>
+
+
+            <p:dialog modal="true" widgetVar="newLicense" id="newLicense" styleClass="disable-scroll" width="750"
+                      draggable="false" closable="false" resizable="false"
+                      header="#{bundle['dashboard.license.newLicense.add']}">
+
+                <h:form id="dialogForm">
+                    <div style="display: grid; grid-template-columns: repeat(3, 29%);
+                     grid-row-gap: 5%; grid-auto-rows: minmax(auto, auto);">
+                        <div style="grid-column: 1;">
+                            <p:outputLabel for="universalName"
+                                           value="#{bundle['dashboard.license.newLicense.universalName']}:"
+                            />
+                        </div>
+
+                        <div style="grid-column: 2;">
+                            <p:inputText id="universalName" value="#{LicenseListingPage.freshLicense.name}"
+                                         required="true"
+                                         requiredMessage="#{bundle['dashboard.license.newLicense.missingTextField']}"/>
+                        </div>
+                        <div style="grid-column: 3;">
+                            <p:message for="universalName"
+                                       display="text"/>
+                        </div>
+
+                        <ui:repeat id="repeater" value="#{LicenseListingPage.freshLicense.localizedNames}"
+                                   var="localizedLicenses" varStatus="loopIndex">
+                            <div style="grid-column: 1;">
+                                <p:outputLabel for="locale"
+                                               value="#{bundle['language.'.concat(localizedLicenses.locale)]}:"/>
+                            </div>
+                            <div style="grid-column: 2;">
+                                <p:inputText id="locale" value="#{localizedLicenses.text}"
+                                             required="true"
+                                             requiredMessage="#{bundle['dashboard.license.newLicense.missingTextField']}"/>
+                            </div>
+                            <div style="grid-column: 3;">
+                                <p:message id="localeError" for="locale" display="text"/>
+                            </div>
+                        </ui:repeat>
+
+                        <div style="grid-column: 1;">
+                            <p:outputLabel for="url" value="#{bundle['dashboard.license.newLicense.url']}"/>
+                        </div>
+                        <div style="grid-column: 2;">
+                            <p:inputText id="url" value="#{LicenseListingPage.freshLicense.url}"
+                                         required="true"
+                                         requiredMessage="#{bundle['dashboard.license.newLicense.missingTextField']}">
+                                <f:validator validatorId="licenseValidator"/>
+                            </p:inputText>
+                        </div>
+                        <div style="grid-column: 3;">
+                            <p:message id="urlError" for="url" display="text"/>
+                        </div>
+
+                        <div style="grid-column: 1;">
+                            <p:outputLabel value="#{bundle['dashboard.license.newLicense.badgeLabel']}:"/>
+                        </div>
+
+                        <div style="grid-column: 2;">
+                            <p:fileUpload id="icon" label="#{bundle.selectFile}"
+                                          fileUploadListener="#{LicenseListingPage.uploadImageForNewLicenseEvent}"
+                                          mode="advanced" skinSimple="true" auto="true" style="width: 77%"/>
+                        </div>
+                    </div>
+
+                    <div class="container">
+                        <div class="row text-left">
+                            <div class="col" style="margin-top: 2%">
+                                <p:commandButton value="#{bundle.save}"
+                                                 update="dialogForm"
+                                                 action="#{LicenseListingPage.saveNewLicense()}"
+                                                 style="margin-right: 1%" styleClass="btn btn-default"/>
+                                <p:commandButton value="#{bundle.cancel}"
+                                                 action="#{LicenseListingPage.refreshPage}"
+                                                 process="@this"
+                                                 styleClass="btn btn-default"/>
+                            </div>
+                        </div>
+                    </div>
+                </h:form>
+            </p:dialog>
         </ui:define>
     </ui:composition>
 </h:body>

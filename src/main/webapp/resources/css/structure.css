@@ -545,6 +545,10 @@ div.ui-dialog.largePopUp {min-width:60%; max-width:80%; max-height:80%; overflow
 div.ui-dialog .ui-datatable-scrollable table {table-layout: auto !important;}
 div.ui-dialog .ui-datatable-scrollable table colgroup col {max-width:1000px;}
 
+.disable-scroll .ui-dialog-content {
+    overflow: hidden !important;
+}
+
 div.ui-dialog div.highlight {
     background-color: #f7f7f9;
     border: 1px solid #e1e1e8;

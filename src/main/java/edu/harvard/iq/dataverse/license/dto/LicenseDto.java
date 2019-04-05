@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.license.dto;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class LicenseDto {
@@ -20,19 +21,13 @@ public class LicenseDto {
 
     // -------------------- CONSTRUCTORS --------------------
 
+    public LicenseDto() {
+        localizedNames = new ArrayList<>();
+    }
+
     public LicenseDto(Long id, String name, String url, LicenseIconDto icon, boolean active,
                       Long position, List<LocaleTextDto> localizedNames) {
         this.id = id;
-        this.name = name;
-        this.url = url;
-        this.icon = icon;
-        this.active = active;
-        this.position = position;
-        this.localizedNames = localizedNames;
-    }
-
-    public LicenseDto(String name, String url, LicenseIconDto icon,
-                      boolean active, Long position, List<LocaleTextDto> localizedNames) {
         this.name = name;
         this.url = url;
         this.icon = icon;
@@ -76,5 +71,28 @@ public class LicenseDto {
     public void setActive(boolean active) {
         this.active = active;
     }
-  
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public void setIcon(LicenseIconDto icon) {
+        this.icon = icon;
+    }
+
+    public void setPosition(Long position) {
+        this.position = position;
+    }
+
+    public void setLocalizedNames(List<LocaleTextDto> localizedNames) {
+        this.localizedNames = localizedNames;
+    }
 }

@@ -4,22 +4,23 @@ import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.UploadedFile;
+
+import javax.ejb.EJB;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.UploadedFile;
 
 @ViewScoped
 @Named("DatasetWidgetsPage")
@@ -163,7 +164,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         }
         try {
             DatasetThumbnail datasetThumbnailFromCommand = commandEngine.submit(updateDatasetThumbnailCommand);
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.success"));
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.success"));
             return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&faces-redirect=true";
         } catch (CommandException ex) {
             String error = ex.getLocalizedMessage();
@@ -172,7 +173,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
              */
             // Username @dataverseAdmin experienced a problem executing UpdateDatasetThumbnailCommand on a DVObject {=[Dataset id:1377 ]} and saw this error: Just testing what an error would look like in the GUI.
             logger.info("Username " + updateDatasetThumbnailCommand.getRequest().getUser().getIdentifier() + " experienced a problem executing " + updateDatasetThumbnailCommand.getClass().getSimpleName() + " on a DVObject " + updateDatasetThumbnailCommand.getAffectedDvObjects() + " and saw this error: " + error);
-            JsfHelper.addErrorMessage(error);
+            JsfHelper.addFlashErrorMessage(error);
             return null;
         }
     }

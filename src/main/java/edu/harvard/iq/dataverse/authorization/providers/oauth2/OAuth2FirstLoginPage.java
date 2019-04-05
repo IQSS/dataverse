@@ -20,6 +20,16 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import org.hibernate.validator.constraints.NotBlank;
+
+import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.FacesContext;
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -29,15 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
-import javax.faces.context.FacesContext;
-import javax.inject.Named;
-import javax.inject.Inject;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * Backing bean for {@code oauth/welcome.xhtml}, the page that greets new users
@@ -211,7 +212,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
             session.setUser(existingUser);
             AuthenticationProvider newUserAuthProvider = authenticationSvc.getAuthenticationProvider(newUser.getServiceId());
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("oauth2.convertAccount.success", Arrays.asList(newUserAuthProvider.getInfo().getTitle())));
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("oauth2.convertAccount.success", Arrays.asList(newUserAuthProvider.getInfo().getTitle())));
 
             return "/dataverse.xhtml?faces-redirect=true";
 
