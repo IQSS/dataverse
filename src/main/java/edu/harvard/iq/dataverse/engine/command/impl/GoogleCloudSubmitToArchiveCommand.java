@@ -91,6 +91,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                                 }
                             }
                         }).start();
+                        //Have seen broken pipe in PostPublishDataset workflow without this delay
                         int i=0;
                         while(digestInputStream.available()<=0 && i<100) {
                             Thread.sleep(10);
@@ -129,6 +130,12 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                                     }
                                 }
                             }).start();
+                            //Have seen broken pipe in PostPublishDataset workflow without this delay
+                            i=0;
+                            while(digestInputStream.available()<=0 && i<100) {
+                                Thread.sleep(10);
+                                i++;
+                            }
                             Blob bag = bucket.create(spaceName + "/" + fileName, digestInputStream2, "application/zip", Bucket.BlobWriteOption.doesNotExist());
                             blobIdString = bag.getBlobId().getBucket() + "/" + bag.getBlobId().getName();
                             checksum = bag.getMd5ToHexString();
@@ -151,7 +158,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                         // where you can
                         // view it as an admin)
 
-                        StringBuffer sb = new StringBuffer("https://storage.cloud.google.com/");
+                        StringBuffer sb = new StringBuffer("https://console.cloud.google.com/storage/browser/");
                         sb.append(blobIdString);
                         dv.setArchivalCopyLocation(sb.toString());
                     } catch (RuntimeException rte) {
