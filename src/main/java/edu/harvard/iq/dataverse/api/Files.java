@@ -349,6 +349,9 @@ public class Files extends AbstractApiBean {
                 DatasetVersion editVersion = df.getOwner().getEditVersion();
 
                 //We get the new fileMetadata from the new version
+                //This is because after generating the draft with getEditVersion,
+                //the updated fileMetadata is not populated to the DataFile object where its easily accessible.
+                //Due to this we have to find the FileMetadata inside the DatasetVersion by comparing files info.
                 List<FileMetadata> fmdList = editVersion.getFileMetadatas();
                 for(FileMetadata testFmd : fmdList) {
                     DataFile daf = testFmd.getDataFile();
