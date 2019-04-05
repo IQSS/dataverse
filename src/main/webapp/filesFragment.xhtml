@@ -435,18 +435,12 @@
             value="#{DatasetPage.filesTreeRoot}"
             var="node">
         
-        <!-- if it's a folder: (using the PrimeFaces-supplied icons for the "open" and "collapsed") -->
-        
         <p:treeNode expandedIcon="ui-icon ui-icon-folder-open" collapsedIcon="ui-icon ui-icon-folder-collapsed">
             <h:outputText value="#{node.folderName}" />
         </p:treeNode>
-        
-        <!-- if it's a file: render an appropriate file type icon, then a link to the file page -->
-        <!-- same approach to rendering file page links, as in the file table above: -->
-        <!-- if the file has the global id, we use that; if not, we use the database id in the url. -->
 
         <p:treeNode type="customFileNode">
-            <span class="icon-#{node.fileClass} file-thumbnail-icon text-muted" />
+            <span class="icon-#{node.fileClass} text-muted" />
 
             <ui:fragment rendered="#{!empty node.dataFileGlobalId}">
                 <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFileGlobalId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
@@ -458,8 +452,8 @@
                     #{node.fileName}
                 </a>
             </ui:fragment>
+            
+            <span class="text-muted">(#{node.fileSize})</span>
         </p:treeNode>
-       
-        
     </p:tree>
 </ui:composition>

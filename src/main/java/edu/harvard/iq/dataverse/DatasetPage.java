@@ -1753,6 +1753,7 @@ public class DatasetPage implements java.io.Serializable {
         
         data.setIsFolder(false);
         data.setFileName(fileMetadata.getLabel());
+        data.setFileSize(fileMetadata.getDataFile().getFriendlySize());
         data.setDataFileId(fileMetadata.getDataFile().getId());
         data.setDataFileGlobalId(fileMetadata.getDataFile().getGlobalId().asString());
         data.setFileClass(datafileService.getFileClass(fileMetadata.getDataFile()));
@@ -4751,6 +4752,16 @@ public class DatasetPage implements java.io.Serializable {
         
         public void setFileName(String fileName) {
             this.fileName = fileName;
+        }
+        
+        private String fileSize = null; 
+        
+        public String getFileSize() {
+            return fileSize; 
+        }
+        
+        public void setFileSize(String fileSize) {
+            this.fileSize = fileSize;
         }
         
         private String folderName = null; 
