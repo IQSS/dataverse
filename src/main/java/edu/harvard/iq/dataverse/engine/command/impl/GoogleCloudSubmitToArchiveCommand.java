@@ -15,11 +15,9 @@ import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.nio.charset.Charset;
@@ -30,12 +28,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.apache.commons.codec.binary.Hex;
-import org.duracloud.client.ContentStore;
-import org.duracloud.client.ContentStoreManager;
-import org.duracloud.client.ContentStoreManagerImpl;
-import org.duracloud.common.model.Credential;
-import org.duracloud.error.ContentStoreException;
-
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
@@ -55,23 +47,20 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
 
     @Override
     public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token, Map<String, String> requestedSettings) {
-        logger.info("In GoogleCloudSubmitToArchiveCommand...");
+        logger.fine("In GoogleCloudSubmitToArchiveCommand...");
         String bucketName = requestedSettings.get(GOOGLECLOUD_BUCKET);
         String projectName = requestedSettings.get(GOOGLECLOUD_PROJECT);
-        logger.info("Project: " + projectName + " Bucket: " + bucketName);
+        logger.fine("Project: " + projectName + " Bucket: " + bucketName);
         if (bucketName != null && projectName != null) {
             Storage storage;
             try {
                 FileInputStream fis = new FileInputStream(System.getProperty("dataverse.files.directory") + System.getProperty("file.separator")+ "googlecloudkey.json");
-                logger.info("Have stream");
                 storage = StorageOptions.newBuilder()
                         .setCredentials(ServiceAccountCredentials.fromStream(fis))
                         .setProjectId(projectName)
                         .build()
                         .getService();
-                logger.info("Have storage");
                 Bucket bucket = storage.get(bucketName);
-                logger.info("Have bucket");
 
                 Dataset dataset = dv.getDataset();
                 if (dataset.getLockFor(Reason.pidRegister) == null) {
@@ -102,10 +91,9 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                                 }
                             }
                         }).start();
-                        logger.info("Writing dc.xml");
-                        Blob dcXml = bucket.create(spaceName + "/datacite.xml", digestInputStream, "text/xml", Bucket.BlobWriteOption.doesNotExist());
+                        Blob dcXml = bucket.create(spaceName + "/datacite.v" + dv.getFriendlyVersionNumber()+".xml", digestInputStream, "text/xml", Bucket.BlobWriteOption.doesNotExist());
                         String checksum = dcXml.getMd5ToHexString();
-                        logger.info("Content: datacite.xml added with checksum: " + checksum);
+                        logger.fine("Content: datacite.xml added with checksum: " + checksum);
                         String localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
                         if (!checksum.equals(localchecksum)) {
                             logger.severe(checksum + " not equal to " + localchecksum);
@@ -139,7 +127,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                             Blob bag = bucket.create(spaceName + "/" + fileName, digestInputStream2, "application/zip", Bucket.BlobWriteOption.doesNotExist());
                             blobIdString = bag.getBlobId().toString();
                             checksum = bag.getMd5ToHexString();
-                            logger.info("Content: " + fileName + " added with checksum: " + checksum);
+                            logger.fine("Bag: " + fileName + " added with checksum: " + checksum);
                             localchecksum = Hex.encodeHexString(digestInputStream2.getMessageDigest().digest());
                             if (!checksum.equals(localchecksum)) {
                                 logger.severe(checksum + " not equal to " + localchecksum);
@@ -147,7 +135,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                                         "GoogleCloud Submission Failure: incomplete archive transfer");
                             }
                         } catch (RuntimeException rte) {
-                            logger.severe(rte.getMessage());
+                            logger.severe("Error creating Bag during GoogleCloud archiving: " + rte.getMessage());
                             return new Failure("Error in generating Bag",
                                     "GoogleCloud Submission Failure: archive file not created");
                         }
@@ -161,14 +149,14 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                         StringBuffer sb = new StringBuffer("https://storage.cloud.google.com/");
                         sb.append(blobIdString);
                         dv.setArchivalCopyLocation(sb.toString());
-                        logger.fine("GoogleCloud Submission step complete: " + sb.toString());
+                        logger.info("Dataset archived: " + sb.toString());
                     } catch (RuntimeException rte) {
-                        logger.severe(rte.getMessage());
+                        logger.severe("Error creating datacite xml file during GoogleCloud Archiving: " + rte.getMessage());
                         return new Failure("Error in generating datacite.xml file",
                                 "GoogleCloud Submission Failure: metadata file not created");
                     }
                 } else {
-                    logger.warning("DuraCloud Submision Workflow aborted: Dataset locked for pidRegister");
+                    logger.warning("GoogleCloud Submision Workflow aborted: Dataset locked for pidRegister");
                     return new Failure("Dataset locked");
                 }
             } catch (FileNotFoundException e1) {
