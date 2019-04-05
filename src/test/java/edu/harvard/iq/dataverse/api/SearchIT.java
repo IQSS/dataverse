@@ -751,9 +751,58 @@ public class SearchIT {
         searchPublishedSubtreeWDS2.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
-        
-        
                 
+    }
+    
+    @Test
+    public void testCuratorCardFailure() {
+        Response setSearchApiNonPublicAllowed = UtilIT.setSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed, "true");
+        setSearchApiNonPublicAllowed.prettyPrint();
+        setSearchApiNonPublicAllowed.then().assertThat()
+                .statusCode(200);
+        
+        Response createSuperUser = UtilIT.createRandomUser();
+        createSuperUser.prettyPrint();
+        assertEquals(200, createSuperUser.getStatusCode());
+        String usernameSuper = UtilIT.getUsernameFromResponse(createSuperUser);
+        String apiTokenSuper = UtilIT.getApiTokenFromResponse(createSuperUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(usernameSuper);
+        assertEquals(200, makeSuperUser.getStatusCode());
+        
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String parentDataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(parentDataverseAlias, apiToken);
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        String subDataverseAlias = "dv" + UtilIT.getRandomIdentifier();
+        Response createSubDataverseResponse = UtilIT.createSubDataverse(subDataverseAlias, null, apiTokenSuper, parentDataverseAlias);
+        createSubDataverseResponse.prettyPrint();
+        //UtilIT.getAliasFromResponse(createSubDataverseResponse);
+        
+        UtilIT.grantRoleOnDataverse(subDataverseAlias, "curator", username, apiTokenSuper); 
+        
+        String searchPart = "*"; 
+        
+        Response searchPublishedSubtreeSuper = UtilIT.search(searchPart, apiTokenSuper, "&subtree="+parentDataverseAlias);
+        searchPublishedSubtreeSuper.prettyPrint();
+        searchPublishedSubtreeSuper.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1));
+        
+        Response searchPublishedSubtreeCurator = UtilIT.search(searchPart, apiToken, "&subtree="+parentDataverseAlias);
+        searchPublishedSubtreeCurator.prettyPrint();
+        searchPublishedSubtreeCurator.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(0)); //THIS SHOULD BE 1
+        
     }
     
     @Test
