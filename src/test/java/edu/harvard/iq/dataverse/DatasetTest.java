@@ -59,7 +59,9 @@ public class DatasetTest {
 
     // ****************************************************************************************
     // The following tests test the isDeaccessioned method aiming for 100% prime path coverage.
-    // The following tool [1] was used to calculate the needed test paths.
+    // For the test cases below, different dataset versions and different combinations of those
+    // versions are used to execute different paths of the method under test.
+    //
     // 11 test paths (= 11 test methods) are needed.
     // 4 different dataset versions are needed:
     // - DEACCESSIONED
@@ -68,8 +70,6 @@ public class DatasetTest {
     // - non of the above (= ARCHIVED)
     //
     // See details here: https://github.com/IQSS/dataverse/pull/5703
-    //
-    // [1] https://cs.gmu.edu:8443/offutt/coverage/GraphCoverage
     // ****************************************************************************************
 
     private DatasetVersion archivedVersion;
