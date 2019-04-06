@@ -33,6 +33,7 @@
                                     <div class="col-sm-9">
                                         <p:selectOneMenu id="srcAlias" styleClass="form-control"
                                                          required="true"
+                                                         requiredMessage="This field is required"
                                                          immediate="true"
                                                          value="#{DashboardDatamovePage.srcAlias}"
                                                          valueChangeListener="#{DashboardDatamovePage.handleSrcChange}">
@@ -40,6 +41,7 @@
                                             <f:selectItems value="#{DashboardDatamovePage.aliases}" />
                                             <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:dsPersistentIds,:datamove-form:move"/>
                                         </p:selectOneMenu>
+                                        <p:message for="srcAlias" />
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -47,6 +49,7 @@
                                     <div class="col-sm-9">
                                         <p:selectOneMenu id="dsPersistentIds" styleClass="form-control"
                                                          required="true"
+                                                         requiredMessage="This field is required"
                                                          immediate="true"
                                                          value="#{DashboardDatamovePage.dsPersistentId}"
                                                          valueChangeListener="#{DashboardDatamovePage.handleDsPersistentIdChange}">
@@ -54,6 +57,7 @@
                                             <f:selectItems value="#{DashboardDatamovePage.dsPersistentIds}" />
                                             <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move"/>
                                         </p:selectOneMenu>
+                                        <p:message for="dsPersistentIds" />
                                     </div>
                                 </div>
                             </div>
@@ -68,6 +72,7 @@
                                     <div class="col-sm-9">
                                         <p:selectOneMenu id="dstAlias" styleClass="form-control"
                                                          required="true"
+                                                         requiredMessage="This field is required"
                                                          immediate="true"
                                                          value="#{DashboardDatamovePage.dstAlias}"
                                                          valueChangeListener="#{DashboardDatamovePage.handleDstChange}">
@@ -75,6 +80,7 @@
                                             <f:selectItems value="#{DashboardDatamovePage.aliases}" />
                                             <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move"/>
                                         </p:selectOneMenu>
+                                        <p:message for="dstAlias" />
                                     </div>
                                 </div>
                             </div>
@@ -84,6 +90,8 @@
                     <div class="col-sm-12 button-block">
                         <p:commandLink id="move" styleClass="btn btn-default" 
                                        value="#{bundle['saveChanges']}"
+                                       update="datamove-form"
+                                       validateClient="true"
                                        oncomplete="if (args &amp;&amp; !args.validationFailed) PF('datamoveConfirmation').show();">
                             <!-- if (args &amp;&amp; !args.validationFailed) 
                              prevents the confirm dialog to pop up (client side) if validation fails, 
