@@ -78,7 +78,7 @@ public class FileUtilTest {
             return Arrays.asList(new Object[][] {
                 // functional approach: what should the method do
                 // replace no extension with an empty extension
-                //{ "no-extension", "no-extension", ""}, // will not pass as empty extensions are not handled
+                { "no-extension.", "no-extension", ""},
 
                 // replace extension x with same extension
                 { "extension.x", "extension.x", "x" },
@@ -87,14 +87,14 @@ public class FileUtilTest {
                 { "extension.y", "extension.x", "y" },
 
                 // interface approach: what are possible inputs
-                // will not pass as empty or null originalNames are not handled
+                // will not pass as null is not handled
                 //{ null, null, null },
                 //{ null, null, "" },
                 //{ null, null, "y" },
 
-                //{ "", "", null },
-                //{ "", "", "" },
-                //{ "", "", "y" },
+                { ".null", "", null },
+                { ".", "", "" },
+                { ".y", "", "y" },
             });
         }
 
