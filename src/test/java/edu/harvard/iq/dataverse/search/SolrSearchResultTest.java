@@ -15,11 +15,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 // ****************************************************************************************
-// The following tests test the setPublicationStatuses method aiming for 100% prime path coverage.
-// The following tool [1] was used to calculate the needed test paths.
-// 14 test paths (= 14 test methods) are needed.
+// The following tests test the setPublicationStatuses method aiming for 100% prime 
+// path coverage. Various combinations of statuses are used to execute and cover every 
+// possible branch of the method under test.
 //
-// [1] https://cs.gmu.edu:8443/offutt/coverage/GraphCoverage
+// More details here: https://github.com/IQSS/dataverse/pull/5705
 // ****************************************************************************************
 
 public class SolrSearchResultTest {
