@@ -436,24 +436,28 @@
             var="node">
         
         <p:treeNode expandedIcon="ui-icon ui-icon-folder-open" collapsedIcon="ui-icon ui-icon-folder-collapsed">
-            <h:outputText value="#{node.folderName}" />
+            <!-- For a folder, the node payload is just its name as a String object, that we display here: -->
+            <h:outputText value="#{node}" />
         </p:treeNode>
 
         <p:treeNode type="customFileNode">
-            <span class="icon-#{node.fileClass} text-muted" />
-
-            <ui:fragment rendered="#{!empty node.dataFileGlobalId}">
-                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFileGlobalId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
-                    #{node.fileName}
+            <!-- For a file, the payload data ("node") is the corresponding FileMetadata object: -->
+            <span class="icon-#{dataFileServiceBean.getFileClass(node.dataFile)} text-muted" />
+            
+            <!-- same approach to rendering file page links, as in the file table above: -->
+            <!-- if the file has the global id, we use that; if not, we use the database id in the url. -->
+            <ui:fragment rendered="#{!empty node.dataFile.globalIdString}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFile.globalIdString).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.label}
                 </a>
             </ui:fragment>
-            <ui:fragment rendered="#{empty node.dataFileGlobalId}">
-                <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(node.dataFileId).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
-                    #{node.fileName}
+            <ui:fragment rendered="#{empty node.dataFile.globalIdString}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(node.dataFile.id).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.label}
                 </a>
             </ui:fragment>
             
-            <span class="text-muted">(#{node.fileSize})</span>
+            <span class="text-muted">(#{node.dataFile.friendlySize})</span>
         </p:treeNode>
     </p:tree>
 </ui:composition>

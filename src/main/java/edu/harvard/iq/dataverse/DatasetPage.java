@@ -1682,7 +1682,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private void initFilesTree() {
-        filesTreeRoot = createFolderTreeNode("root", null, null);
+        filesTreeRoot = createFolderTreeNode("root", null);
         TreeNode currentNode = filesTreeRoot;
         // this is a temporary map, that we keep while we are building 
         // the tree - in order to have direct access to the ancestor tree
@@ -1699,12 +1699,10 @@ public class DatasetPage implements java.io.Serializable {
                 filesTreeRoot.getChildren().add(createFileTreeNode(fileMetadata, filesTreeRoot));
             } else {
                 if (folderMap.containsKey(folder)) {
-                    /*if (currentNode.getData().getFolderPath().equals(folder)) {*/
+                    // We have already created this node; and since all the FileMetadatas 
+                    // are sorted by folder-then-label, it is safe to assume this is 
+                    // still the "current node":
                     currentNode.getChildren().add(createFileTreeNode(fileMetadata, currentNode));
-                    /*} else {
-                        // error! shouldn't happen!
-                        logger.severe("filemetadatas out of sorted order (should be sorted by folder-label)");
-                    }*/
                 } else {
                     // no node for this folder yet - need to create!
 
@@ -1719,13 +1717,11 @@ public class DatasetPage implements java.io.Serializable {
                         }
 
                         if (folderMap.containsKey(folderPath)) {
-                            logger.fine("folder " + folderPath + " already exists;");
                             // jump directly to that ancestor folder node:
                             currentNode = folderMap.get(folderPath);
                         } else {
                             // create a new folder node:
-                            logger.fine("creating folder " + folderPath);
-                            currentNode = createFolderTreeNode(subfolders[level], folderPath, currentNode);
+                            currentNode = createFolderTreeNode(subfolders[level], currentNode);
                             folderMap.put(folderPath, currentNode);
                             // all the folders, except for the top-level root node 
                             // are collapsed by default:
@@ -1735,7 +1731,7 @@ public class DatasetPage implements java.io.Serializable {
                         level++;
                     }
                     currentNode.getChildren().add(createFileTreeNode(fileMetadata, currentNode));
-                    // As soon as we find the first folder containing files, we want
+                    // As soon as we reach the first folder containing files, we want
                     // to have all the other folders collapsed by default:
                     if (expandFolders) {
                         expandFolders = false; 
@@ -1748,31 +1744,29 @@ public class DatasetPage implements java.io.Serializable {
 
     }
     
-    private DefaultTreeNode createFolderTreeNode(String name, String path, TreeNode parent) {
-        
-        FileTreeNodeData data = new FileTreeNodeData();
-        
-        data.setIsFolder(true);
-        data.setFolderName(name);
-        data.setFolderPath(path);
-        
-        
-        DefaultTreeNode folderNode = new DefaultTreeNode(data, parent); 
-        
+    private DefaultTreeNode createFolderTreeNode(String name, TreeNode parent) {
+        // For a tree node representing a folder, we use its name, as a String, 
+        // as the node data payload. (meaning, in the xhtml the folder name can
+        // be shown as simply "#{node}". 
+        // If we ever want to have more information shown for folders in the 
+        // tree view (for example, we could show the number of files and sub-folders
+        // in each folder next to the name), we will have to define a custom class 
+        // and use it instead of the string in the DefaultTreeNode constructor
+        // below:
+        DefaultTreeNode folderNode = new DefaultTreeNode(name, parent);
         return folderNode; 
     }
     
     private DefaultTreeNode createFileTreeNode(FileMetadata fileMetadata, TreeNode parent) {
-        FileTreeNodeData data = new FileTreeNodeData();
+        // For a tree node representing a DataFile, we pack the entire FileMetadata 
+        // object into the node, as its "data" payload. 
+        // Note that we are using a custom node type ("customFileNode"), defined 
+        // in the page xhtml.
+        // If we ever want to have customized nodes that display different types 
+        // of information for different types of files (tab. files would be a 
+        // natural case), more custom nodes could be defined.
         
-        data.setIsFolder(false);
-        data.setFileName(fileMetadata.getLabel());
-        data.setFileSize(fileMetadata.getDataFile().getFriendlySize());
-        data.setDataFileId(fileMetadata.getDataFile().getId());
-        data.setDataFileGlobalId(fileMetadata.getDataFile().getGlobalId().asString());
-        data.setFileClass(datafileService.getFileClass(fileMetadata.getDataFile()));
-        
-        DefaultTreeNode fileNode = new DefaultTreeNode("customFileNode", data, parent);         
+        DefaultTreeNode fileNode = new DefaultTreeNode("customFileNode", fileMetadata, parent);         
         
         return fileNode; 
     }
@@ -4709,93 +4703,6 @@ public class DatasetPage implements java.io.Serializable {
                 JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
 
             }
-        }
-    }
-    
-    public class FileTreeNodeData {
-        
-        private boolean isFolder = false; 
-        
-        public boolean isFile() {
-            return !isFolder;
-        }
-        
-        public boolean isFolder() {
-            return isFolder;
-        }
-        
-        public void setIsFolder(boolean isFolder) {
-            this.isFolder = isFolder; 
-        }
-        
-        private Long dataFileId = null; 
-        
-        public void setDataFileId(Long dataFileId) {
-            this.dataFileId = dataFileId; 
-        }
-        
-        public Long getDataFileId() {
-            return dataFileId; 
-        }
-        
-        private String dataFileGlobalId = null; 
-        
-        public void setDataFileGlobalId(String dataFileGlobalId) {
-            this.dataFileGlobalId = dataFileGlobalId;
-        }
-        
-        public String getDataFileGlobalId() {
-            return dataFileGlobalId; 
-        }
-        
-        private String fileClass = null; 
-        
-        public String getFileClass() {
-            return fileClass;
-        }
-        
-        public void setFileClass(String fileClass) {
-            this.fileClass = fileClass;
-        }
-        
-        private String fileName = null; 
-        
-        public String getFileName() {
-            return fileName; 
-        }
-        
-        public void setFileName(String fileName) {
-            this.fileName = fileName;
-        }
-        
-        private String fileSize = null; 
-        
-        public String getFileSize() {
-            return fileSize; 
-        }
-        
-        public void setFileSize(String fileSize) {
-            this.fileSize = fileSize;
-        }
-        
-        private String folderName = null; 
-        
-        public String getFolderName() {
-            return folderName; 
-        }
-        
-        public void setFolderName(String folderName) {
-            this.folderName = folderName;
-        }
-        
-        private String folderPath = null; 
-        
-        public String getFolderPath() {
-            return folderPath;  
-        }
-        
-        public void setFolderPath(String folderPath) {
-            this.folderPath = folderPath;
         }
     }
 }
