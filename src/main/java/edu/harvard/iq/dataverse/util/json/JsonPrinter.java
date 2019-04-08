@@ -600,6 +600,7 @@ public class JsonPrinter {
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
                 .add("tabularTags", getTabularFileTags(df))
+                .add("creationDate",  df.getCreateDateFormattedYYYYMMDD())
                 ;
     }
     
