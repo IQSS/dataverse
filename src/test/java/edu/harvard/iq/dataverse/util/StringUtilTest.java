@@ -150,6 +150,50 @@ public class StringUtilTest {
         }
     }
 
+    @RunWith(Parameterized.class)
+    public static class TestSubstringIncludingLast {
+
+        public String str;
+        public String separator;
+        public String expectedString;
+        
+        public TestSubstringIncludingLast(String str, String separator, String expectedString) {
+            this.str = str;
+            this.separator = separator;
+            this.expectedString = expectedString;
+        }
+
+        @Parameters
+        public static Collection<Object[]> parameters() {
+            return Arrays.asList(
+                    new Object[][] { 
+                        // interface-based partitioning
+                        {null, null, null},
+                        {null, "", null},
+                        {null, "d", null},
+
+                        {"", null, ""},
+                        {"", "", ""},
+                        {"", "abcdfg", ""},
+
+                        {"abcdfg", null, ""},
+                        {"abcdfg", "", ""},
+                        {"abcdfg", "d", "dfg"},
+
+                        // functionality-based partitioning
+                        {"abcdfg" , null, ""},
+                        {"abcdfg", "h", ""},
+                        {"abcdfg", "b", "bcdfg"},
+                    }
+            );
+        }
+
+        @Test
+        public void testSubstringIncludingLast() {
+            assertEquals( expectedString, StringUtil.substringIncludingLast(str, separator) );
+        }
+    }
+
     public static class StringUtilNoParamTest{
 
         @Test
