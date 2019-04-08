@@ -69,9 +69,13 @@
                         <div  class="button-block">
                             <p:outputPanel id="filesButtons" >
                                 <div jsf:rendered="#{!(empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment()))}">
-                                    <p:commandButton tabindex="1000" id="save" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockFileForm').show();" />
-                                    <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();">
-                                    </p:commandButton>
+                                    <p:commandButton tabindex="1000" id="save" value="#{bundle.saveChanges}" onclick="PF('blockFileForm').show();"  action="#{EditDatafilesPage.save()}"/>
+                                    
+                                    <p:commandLink styleClass="btn btn-default" value="args"
+                                                   update="@form" oncomplete="if (args &amp;&amp; !args.validationFailed) clickSave() " actionListener="#{EditDatafilesPage.validate()}">
+                                        <f:param name="DO_VALIDATION" value="true"/>
+                                    </p:commandLink>
+                                    <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();"/>
                                     <p:commandButton value="Direct" id="datasetSave"
                                                      style="display:none"
                                                      update=":datasetForm,:messagePanel"
@@ -92,6 +96,22 @@
                 </h:form>
                 
                 <p:blockUI block="datasetForm" widgetVar="blockFileForm"/>
+                
+                <script type="text/javascript">
+                    
+                    function clickSave(){
+                        $('button[id$="datasetSave"]').trigger('click');
+                    }
+
+    function checkNewlyRestricted() {
+        if ($('input[id$="showAccessPopup"]').val() === 'true') {
+            PF('editFileAccessPopup').show();
+        }
+        else {
+            $('button[id$="datasetSave"]').trigger('click');
+        }
+    }
+                </script>
 
             </ui:define>
         </ui:composition>

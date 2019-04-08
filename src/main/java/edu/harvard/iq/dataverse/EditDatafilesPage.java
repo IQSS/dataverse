@@ -34,6 +34,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -73,9 +74,12 @@ import java.util.HashSet;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.FacesEvent;
 import javax.faces.event.ValueChangeEvent;
+import javax.faces.validator.ValidatorException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolation;
@@ -83,6 +87,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.primefaces.context.RequestContext;
 
 /**
@@ -150,8 +155,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     private Long ownerId;
     private Long versionId;
-    private List<DataFile> newFiles = new ArrayList<>();;
-    private List<DataFile> uploadedFiles = new ArrayList<>();; 
+    private List<DataFile> newFiles = new ArrayList<>();
+    private List<DataFile> uploadedFiles = new ArrayList<>();
+    private List<DataFile> filesForEditMetdata = new ArrayList<>();
     private DatasetVersion workingVersion;
     private DatasetVersion clone;
     private String dropBoxSelection = "";
@@ -450,12 +456,13 @@ public class EditDatafilesPage implements java.io.Serializable {
         logger.fine("done");
         
         saveEnabled = true;
-        
+        System.out.print("in Create mode adding file metadatas?: " + fileMetadatas);
         return null; 
     }
     
     
     public String init() {
+        System.out.print("in init at beginning: ");
         fileMetadatas = new ArrayList<>();
         
         newFiles = new ArrayList<>();
@@ -479,7 +486,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             return permissionsWrapper.notFound();
         }
         
-        
+        System.out.print("in init this is the dataset: " + dataset);
         
         workingVersion = dataset.getEditVersion();
         clone = workingVersion.cloneDatasetVersion();
@@ -649,6 +656,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.versionString = versionString;
     }
     
+    /*
     public void toggleSelectedFiles(){
         this.selectedFiles = new ArrayList<>();
         if(this.selectAllFiles){
@@ -663,7 +671,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
     }
-    
+    */
+    /*
     public String getSelectedFilesIdsString() {        
         String downloadIdString = "";
         for (FileMetadata fmd : this.selectedFiles){
@@ -675,7 +684,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         return downloadIdString;
       
     }
-
+*/
     /*
     public void updateFileCounts(){
         
@@ -1062,6 +1071,47 @@ public class EditDatafilesPage implements java.io.Serializable {
             return null;
         }
         
+    }
+    
+    public void validateFileDirectory(FacesContext context, UIComponent toValidate, Object value) throws ValidatorException {
+        System.out.print("validating in validateFileDirectory EDIT DataFilePage: " + value);
+        if (!FileDirectoryNameValidator.isFileDirectoryNameValid((String)value, null)) {
+            System.out.print("Diretory name invalid: " + value);
+            FacesMessage msg = new FacesMessage("bad file directory");
+            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+                         JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
+            throw new ValidatorException(msg);
+        }
+    }
+    
+    
+    
+    public String validate() {
+                // Validate
+                System.out.print("in page validator method");
+        Set<ConstraintViolation> constraintViolations = workingVersion.validate();
+        if (!constraintViolations.isEmpty()) {
+             //JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataset.message.validationError"));
+             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
+             System.out.print("constraint violations DATASET Version");
+            return "";
+        }
+        
+        for (FileMetadata fm : fileMetadatas){
+            Set<ConstraintViolation> fmViolations = fm.validate();
+                    if (!fmViolations.isEmpty()) {
+             //JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataset.message.validationError"));
+             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
+             System.out.print("constraint violations File metadata");
+            return "";
+        }
+            
+        }
+
+        return "";
     }
     
     public String save() {
@@ -1857,9 +1907,13 @@ public class EditDatafilesPage implements java.io.Serializable {
         // used to render the page:
         
         for (DataFile dataFile : uploadedFiles) {
+            System.out.print("adding to file metadatas...");
             fileMetadatas.add(dataFile.getFileMetadata());
             newFiles.add(dataFile);
         }
+        
+        
+        System.out.print("upload finished(): " + fileMetadatas ) ;  
         if(uploadInProgress) {
             uploadedFiles = new ArrayList<>();
             uploadInProgress = false;
@@ -1989,6 +2043,8 @@ public class EditDatafilesPage implements java.io.Serializable {
      * @throws java.io.IOException 
      */
     public void handleFileUpload(FileUploadEvent event) throws IOException {
+        System.out.print("handle file up load...");
+        System.out.print("Before size: " + fileMetadatas.size());
         if (!uploadInProgress) {
             uploadInProgress = true;
         }
@@ -2059,6 +2115,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 deleteTempFile(newFile);
             }
         }
+         System.out.print("AFTER size: " + fileMetadatas.size());
     }
 
     /**
@@ -2074,6 +2131,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     private boolean uploadInProgress = false;
     
     private String processUploadedFileList(List<DataFile> dFileList) {
+        System.out.print("processUploadedfile list: " + dFileList );
         if (dFileList == null) {
             return null;
         }
@@ -2880,45 +2938,15 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     private void populateFileMetadatas() {
-
-        if (selectedFileIdsList != null) {
-
-            Long datasetVersionId = workingVersion.getId();
-
-            if (datasetVersionId != null) {
-                // The version has a database id - this is an existing version, 
-                // that had been saved previously. So we can look up the file metadatas
-                // by the file and version ids:
-                for (Long fileId : selectedFileIdsList) {
-                    logger.fine("attempting to retrieve file metadata for version id " + datasetVersionId + " and file id " + fileId);
-                    FileMetadata fileMetadata =  datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(datasetVersionId, fileId);
-                    if (fileMetadata != null) {
-                        logger.fine("Success!");
-                        fileMetadatas.add(fileMetadata);
-                    } else {
-                        logger.fine("Failed to find file metadata.");
-                    }
-                }
-            } else {
-                logger.fine("Brand new edit version - no database id.");
-                for (FileMetadata fileMetadata : workingVersion.getFileMetadatas()) {
-                    for (Long fileId : selectedFileIdsList) {
-                        if (fileId.equals(fileMetadata.getDataFile().getId())) {
-                            logger.fine("Success! - found the file id "+fileId+" in the brand new edit version.");
-                            fileMetadatas.add(fileMetadata);
-                            selectedFileIdsList.remove(fileId);
-                            break;
-                        }
-                    }
-                    
-                    // If we've already gone through all the file ids on the list - 
-                    // we can stop going through the filemetadatas:
-                    
-                    if (selectedFileIdsList.size() < 1) {
-                        break;
-                    }
-                }
-            }
+        
+        if (selectedFileIdsList == null || selectedFileIdsList.isEmpty()){
+            return;
+        }
+              
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+            selectedFileIdsList.stream().filter((fileId) -> (fmd.getDataFile().getId().longValue() == fileId)).forEachOrdered((_item) -> {
+                fileMetadatas.add(fmd);
+            });
         }
     }
     

@@ -348,25 +348,25 @@
                             <label class="control-label" for="fileName" style="margin-right:1em;margin-bottom:.5em;">
                                 #{bundle['file.fileName']}
                             </label>
-                            <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}">
-                            <p:ajax event="change" listener="#{EditDatafilesPage.handleNameChange}" update="fileName" />
+                        <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}">
+                            <p:ajax event="change"  update="fileName" />
                             </p:inputText>
                             <p:message for="fileName"/>
                         </ui:fragment>
 
 
-                        <ui:fragment>
+
+
                             <label class="control-label" for="fileDirectoryLabel" style="margin-right:1em;margin-bottom:.5em;">
-                                #{bundle['file.metadataTab.fileMetadata.hierarchy.label']}
+                                #{bundle['file.metadataTab.fileMetadata.hierarchy.label']}    
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.metadataTab.fileMetadata.hierarchy.tip']}"></span>
                             </label>
-                            <p:inputText id="fileDirectoryName" value="#{fileMetadata.directoryLabel}" onchange="#{EditDatafilesPage.handleFileDirectoryChange(event)}"                                            
-                                         style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}" widgetVar="fileDirectoryName"> 
-                                <p:ajax event="change" update="fileDirectoryName" process="@this"  />
+                            <p:inputText id="fileDirectoryName" value="#{fileMetadata.directoryLabel}"                                            
+                                         style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}" widgetVar="fileDirectoryName"  validator="#{EditDatafilesPage.validateFileDirectory}"> 
+                                <p:ajax event="change" update="fileDirectoryName"  />
                             </p:inputText>
                             <p:message for="fileDirectoryName"/>
-                        </ui:fragment>
 
 
                         <!-- TYPE + SIZE + DATE + CHECKSUM -->
@@ -924,14 +924,7 @@
                 PF('selectFilesForDeleteFragment').show();              
             }
         }
-        function checkNewlyRestricted() {
-            if ($('input[id$="showAccessPopup"]').val() === 'true') {
-                PF('editFileAccessPopup').show();
-            }
-            else {
-                $('button[id$="datasetSave"]').trigger('click');
-            }
-        }
+
         function openDropboxChooser() {
             options = {
                 // Required. Called when a user selects an item in the Chooser.

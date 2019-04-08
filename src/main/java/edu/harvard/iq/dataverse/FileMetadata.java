@@ -34,6 +34,12 @@ import javax.persistence.Version;
 
 import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import java.util.HashSet;
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import org.hibernate.validator.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
@@ -571,6 +577,29 @@ public class FileMetadata implements Serializable {
 
     public void setProvFreeForm(String provFreeForm) {
         this.provFreeForm = provFreeForm;
+    }
+    
+    public Set<ConstraintViolation> validate() {
+        System.out.print("are we validating here? Yes: FileMetadata object  Set<ConstraintViolation> validate()");
+        Set<ConstraintViolation> returnSet = new HashSet<>();
+
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+ System.out.print("directory: " + this.getDirectoryLabel());
+        Set<ConstraintViolation<FileMetadata>> constraintViolations = validator.validate(this);
+        if (constraintViolations.size() > 0) {
+                    System.out.print("There are constraint violations...?");
+            // currently only support one message
+            ConstraintViolation<FileMetadata> violation = constraintViolations.iterator().next();
+ System.out.print("invalid val: " + violation.getInvalidValue().toString());
+            String message = "Constraint violation found in FileMetadata. "
+                    + violation.getMessage() + " "
+                    + "The invalid value is \"" + violation.getInvalidValue().toString() + "\".";
+            logger.info(message);
+            returnSet.add(violation);
+        }
+
+        return returnSet;
     }
     
 }
