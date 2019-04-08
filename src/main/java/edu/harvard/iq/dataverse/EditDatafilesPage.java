@@ -1088,10 +1088,10 @@ public class EditDatafilesPage implements java.io.Serializable {
             return "";
         }
         //Mirroring the checks for DcmUpload, make sure that the db version of the dataset is not locked. 
-        //Also checking local version to save time - if data.isLocked() is true, the UpdateDatasetVersionCommand below would fail
+        //Also checking local version to save time - if data.isLockedFor() is true, the UpdateDatasetVersionCommand below, which also checks other types of locks (InReview), would fail
         if (dataset.getId() != null) {
             Dataset lockTest = datasetService.find(dataset.getId());
-            if (dataset.isLocked() || lockTest.isLocked()) {
+            if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress) || lockTest.isLockedFor(DatasetLock.Reason.EditInProgress)) {
                 logger.log(Level.INFO, "Couldn''t save dataset: {0}", "It is locked."
                         + "");
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, getBundleString("dataset.locked.editInProgress.message"),getBundleString("dataset.locked.editInProgress.message.details"));
