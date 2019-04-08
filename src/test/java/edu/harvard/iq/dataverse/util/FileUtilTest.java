@@ -61,6 +61,50 @@ public class FileUtilTest {
         }
     }
 
+    @RunWith(Parameterized.class)
+    public static class FileUtilParamTest2 {
+
+        @Parameter
+        public String expectedString;
+
+        @Parameter(1)
+        public String originalName;
+
+        @Parameter(2)
+        public String newExtension;
+
+        @Parameters
+        public static Collection data() {
+            return Arrays.asList(new Object[][] {
+                // functional approach: what should the method do
+                // replace no extension with an empty extension
+                { "no-extension.", "no-extension", ""},
+
+                // replace extension x with same extension
+                { "extension.x", "extension.x", "x" },
+
+                // replace extension x with another extension y
+                { "extension.y", "extension.x", "y" },
+
+                // interface approach: what are possible inputs
+                // will not pass as null is not handled
+                //{ null, null, null },
+                //{ null, null, "" },
+                //{ null, null, "y" },
+
+                { ".null", "", null },
+                { ".", "", "" },
+                { ".y", "", "y" },
+            });
+        }
+
+        @Test
+        public void testReplaceExtension() {
+            assertEquals(expectedString, FileUtil.replaceExtension(originalName, newExtension));
+        }
+
+    }
+
     public static class FileUtilNoParamTest {
         @Test
         public void testIsDownloadPopupRequiredNull() {
