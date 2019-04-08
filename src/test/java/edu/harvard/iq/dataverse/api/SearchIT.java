@@ -754,8 +754,10 @@ public class SearchIT {
                 
     }
     
+    //If this test fails it'll fail inconsistently as it tests underlying async role code
+    //Hopefully it will not fail as we fixed the issue in https://github.com/IQSS/dataverse/issues/3471
     @Test
-    public void testCuratorCardFailure() {
+    public void testCuratorCardDataversePopulation() throws InterruptedException {
         Response setSearchApiNonPublicAllowed = UtilIT.setSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed, "true");
         setSearchApiNonPublicAllowed.prettyPrint();
         setSearchApiNonPublicAllowed.then().assertThat()
@@ -787,7 +789,11 @@ public class SearchIT {
         createSubDataverseResponse.prettyPrint();
         //UtilIT.getAliasFromResponse(createSubDataverseResponse);
         
-        UtilIT.grantRoleOnDataverse(subDataverseAlias, "curator", username, apiTokenSuper); 
+        Response grantRoleOnDataverseResponse = UtilIT.grantRoleOnDataverse(subDataverseAlias, "curator", "@" + username, apiTokenSuper); 
+        grantRoleOnDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Thread.sleep(2000); //wait for async role code to complete
         
         String searchPart = "*"; 
         
@@ -801,7 +807,7 @@ public class SearchIT {
         searchPublishedSubtreeCurator.prettyPrint();
         searchPublishedSubtreeCurator.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.total_count", CoreMatchers.equalTo(0)); //THIS SHOULD BE 1
+                .body("data.total_count", CoreMatchers.equalTo(1));
         
     }
     
