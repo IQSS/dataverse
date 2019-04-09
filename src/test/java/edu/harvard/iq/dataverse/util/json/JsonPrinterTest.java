@@ -12,6 +12,8 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
@@ -253,6 +255,32 @@ public class JsonPrinterTest {
         assertEquals("Bar University", byBlocks.getJsonObject("citation").getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactAffiliation").getString("value"));
         assertEquals(null, byBlocks.getJsonObject("citation").getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactEmail"));
 
+    }
+
+    @Test
+    public void testDataversePrinter() {
+        Dataverse dataverse = new Dataverse();
+        dataverse.setId(42l);
+        dataverse.setAlias("dv42");
+        dataverse.setName("Dataverse 42");
+        dataverse.setAffiliation("42 Inc.");
+        dataverse.setDescription("Description for Dataverse 42.");
+        dataverse.setDataverseType(Dataverse.DataverseType.UNCATEGORIZED);
+        List<DataverseContact> dataverseContacts = new ArrayList<>();
+        dataverseContacts.add(new DataverseContact(dataverse, "dv42@mailinator.com"));
+        dataverse.setDataverseContacts(dataverseContacts);
+        JsonObjectBuilder job = JsonPrinter.json(dataverse);
+        JsonObject jsonObject = job.build();
+        assertNotNull(jsonObject);
+        System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));
+        assertEquals(42, jsonObject.getInt("id"));
+        assertEquals("dv42", jsonObject.getString("alias"));
+        assertEquals("Dataverse 42", jsonObject.getString("name"));
+        assertEquals("42 Inc.", jsonObject.getString("affiliation"));
+        assertEquals("dv42@mailinator.com", jsonObject.getJsonArray("dataverseContacts").getString(0));
+        assertEquals(false, jsonObject.getBoolean("permissionRoot"));
+        assertEquals("Description for Dataverse 42.", jsonObject.getString("description"));
+        assertEquals("UNCATEGORIZED", jsonObject.getString("dataverseType"));
     }
 
     DatasetField constructPrimitive(String datasetFieldTypeName, String value) {
