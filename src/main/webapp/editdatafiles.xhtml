@@ -36,6 +36,7 @@
                                   if="#{(param.mode == 'SINGLE' || param.mode == 'SINGLE_REPLACE')  }" />
                 </f:metadata>
                 <h:form id="datasetForm">
+                    #{facesContext.validationFailed}
                     <!-- BEGIN: file replace original -->
                     <ui:fragment rendered="#{EditDatafilesPage.fileReplaceOperation}">
                         <div id="file-replace-original-block" class="col-sm-12">
@@ -70,11 +71,6 @@
                             <p:outputPanel id="filesButtons" >
                                 <div jsf:rendered="#{!(empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment()))}">
                                     <p:commandButton tabindex="1000" id="save" value="#{bundle.saveChanges}" onclick="PF('blockFileForm').show();"  action="#{EditDatafilesPage.save()}"/>
-                                    
-                                    <p:commandLink styleClass="btn btn-default" value="args"
-                                                   update="@form" oncomplete="if (args &amp;&amp; !args.validationFailed) clickSave() " actionListener="#{EditDatafilesPage.validate()}">
-                                        <f:param name="DO_VALIDATION" value="true"/>
-                                    </p:commandLink>
                                     <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();"/>
                                     <p:commandButton value="Direct" id="datasetSave"
                                                      style="display:none"

@@ -456,13 +456,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         logger.fine("done");
         
         saveEnabled = true;
-        System.out.print("in Create mode adding file metadatas?: " + fileMetadatas);
         return null; 
     }
     
     
     public String init() {
-        System.out.print("in init at beginning: ");
+
         fileMetadatas = new ArrayList<>();
         
         newFiles = new ArrayList<>();
@@ -485,9 +484,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // that the dataset id is mandatory... But 404 will do for now.
             return permissionsWrapper.notFound();
         }
-        
-        System.out.print("in init this is the dataset: " + dataset);
-        
+                
         workingVersion = dataset.getEditVersion();
         clone = workingVersion.cloneDatasetVersion();
         if (workingVersion == null || !workingVersion.isDraft()) {
@@ -1073,49 +1070,46 @@ public class EditDatafilesPage implements java.io.Serializable {
         
     }
     
-    public void validateFileDirectory(FacesContext context, UIComponent toValidate, Object value) throws ValidatorException {
-        System.out.print("validating in validateFileDirectory EDIT DataFilePage: " + value);
+    public void validateFileDirectory(FacesContext context, UIComponent toValidate, Object value) {
+        UIInput input = (UIInput) toValidate;
+                    input.setValid(true);
         if (!FileDirectoryNameValidator.isFileDirectoryNameValid((String)value, null)) {
-            System.out.print("Diretory name invalid: " + value);
-            FacesMessage msg = new FacesMessage("bad file directory");
-            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-                         JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
-            throw new ValidatorException(msg);
+            context.addMessage(toValidate.getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", BundleUtil.getStringFromBundle("file.metadata.filedirectory.invalidCharacters")));
+            context.validationFailed();
+            input.setValid(false);
+
         }
     }
     
     
     
     public String validate() {
-                // Validate
-                System.out.print("in page validator method");
+        // Validate
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
         if (!constraintViolations.isEmpty()) {
-             //JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataset.message.validationError"));
-             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
+            //JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataset.message.validationError"));
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
-             System.out.print("constraint violations DATASET Version");
             return "";
         }
-        
-        for (FileMetadata fm : fileMetadatas){
+
+        for (FileMetadata fm : fileMetadatas) {
+
             Set<ConstraintViolation> fmViolations = fm.validate();
-                    if (!fmViolations.isEmpty()) {
-             //JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataset.message.validationError"));
-             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
-             System.out.print("constraint violations File metadata");
-            return "";
-        }
-            
+            if (!fmViolations.isEmpty()) {
+                //JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataset.message.validationError"));
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
+                return "";
+            }
+
         }
 
         return "";
     }
     
     public String save() {
-        
+        validate();
         if (!saveEnabled) {
             return "";
         }
@@ -1907,13 +1901,11 @@ public class EditDatafilesPage implements java.io.Serializable {
         // used to render the page:
         
         for (DataFile dataFile : uploadedFiles) {
-            System.out.print("adding to file metadatas...");
             fileMetadatas.add(dataFile.getFileMetadata());
             newFiles.add(dataFile);
         }
         
-        
-        System.out.print("upload finished(): " + fileMetadatas ) ;  
+       
         if(uploadInProgress) {
             uploadedFiles = new ArrayList<>();
             uploadInProgress = false;
@@ -2043,8 +2035,7 @@ public class EditDatafilesPage implements java.io.Serializable {
      * @throws java.io.IOException 
      */
     public void handleFileUpload(FileUploadEvent event) throws IOException {
-        System.out.print("handle file up load...");
-        System.out.print("Before size: " + fileMetadatas.size());
+        
         if (!uploadInProgress) {
             uploadInProgress = true;
         }
@@ -2115,7 +2106,6 @@ public class EditDatafilesPage implements java.io.Serializable {
                 deleteTempFile(newFile);
             }
         }
-         System.out.print("AFTER size: " + fileMetadatas.size());
     }
 
     /**
@@ -2131,7 +2121,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     private boolean uploadInProgress = false;
     
     private String processUploadedFileList(List<DataFile> dFileList) {
-        System.out.print("processUploadedfile list: " + dFileList );
+        
         if (dFileList == null) {
             return null;
         }
