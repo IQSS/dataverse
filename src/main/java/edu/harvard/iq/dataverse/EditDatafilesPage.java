@@ -1129,7 +1129,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
                 for (DatasetVersion dv : lockTest.getVersions()) {
                     if (dv.isHasPackageFile()) {
-                        logger.log(Level.INFO, ResourceBundle.getBundle("Bundle").getString("file.api.alreadyHasPackageFile")
+                        logger.log(Level.INFO, BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile")
                                 + "");
                         populateDatasetUpdateFailureMessage();
                         return null;

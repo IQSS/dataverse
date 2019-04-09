@@ -22,3 +22,8 @@ make
 mkdir -p ../../conf/docker-aio/dv/install
 cp dvinstall.zip ../../conf/docker-aio/dv/install/
 
+# ITs sometimes need files server-side
+# yes, these copies could be avoided by moving the build root here. but the build 
+#  context is already big enough that it seems worth avoiding.
+cd ../../
+cp src/test/java/edu/harvard/iq/dataverse/makedatacount/sushi_sample_logs.json conf/docker-aio/testdata/
