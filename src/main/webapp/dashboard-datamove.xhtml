@@ -28,40 +28,45 @@
                         <div class="panel panel-default">
                             <div class="panel-heading text-info">#{bundle['dashboard.card.datamove.selectdataset.header']}</div>
                             <div class="panel-body">
-                                <div class="form-group">
-                                    <label for="srcAlias" class="col-sm-3 control-label">#{bundle['dataverse']}</label>
+
+                                <!-- dataset to move: -->
+                                <div class="form-group" >
+                                    <label for="sourceDataset" class="col-sm-3 control-label">
+                                        #{bundle['dataset']}
+                                    </label>
                                     <div class="col-sm-9">
-                                        <p:selectOneMenu id="srcAlias" styleClass="form-control"
-                                                         required="true"
-                                                         requiredMessage="This field is required"
-                                                         immediate="true"
-                                                         value="#{DashboardDatamovePage.srcAlias}"
-                                                         valueChangeListener="#{DashboardDatamovePage.handleSrcChange}">
-                                            <f:selectItem itemValue="#{null}" itemLabel="#{bundle['dashboard.card.datamove.dataverseid']}" />
-                                            <f:selectItems value="#{DashboardDatamovePage.aliases}" />
-                                            <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:dsPersistentIds,:datamove-form:move"/>
-                                        </p:selectOneMenu>
-                                        <p:message for="srcAlias" />
+                                        <p:autoComplete id="sourceDatasetMenu"
+                                                        required="true"
+                                                        requiredMessage="#{bundle['requiredField']}"
+                                                        binding="#{DashboardDatamovePage.selectedDatasetMenu}"
+                                                        placeholder="#{bundle['dashboard.card.datamove.dataset.menu.enterName']}"
+                                                        multiple="false" scrollHeight="180" forceSelection="true"
+                                                        minQueryLength="2" queryDelay="1000" size="36"
+                                                        groupBy="#{bundle['dashboard.card.datamove.dataset.menu.header']}"
+                                                        emptyMessage="#{bundle['dashboard.card.datamove.dataset.menu.invalidMsg']}"
+                                                        value="#{DashboardDatamovePage.selectedSourceDataset}"
+                                                        completeMethod="#{DashboardDatamovePage.completeSelectedDataset}"
+                                                        var="srcDS" styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
+                                                        itemLabel="#{srcDS.globalId}" itemValue="#{srcDS}" converter="datasetConverter">
+                                            <p:column>
+                                                <h:outputText value="#{srcDS.globalId}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{srcDS.displayName}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{srcDS.owner.alias}"/>
+                                            </p:column>
+                                            <p:ajax process="@this" event="itemSelect" />
+                                            <p:ajax process="@this" event="itemUnselect" />
+                                        </p:autoComplete>
+                                        <script type="text/javascript">
+                                            handle_dropdown_popup_scroll();
+                                        </script>
+                                        <p:message for="sourceDatasetMenu"/>
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="dsPersistentIds" class="col-sm-3 control-label">#{bundle['dataset']}</label>
-                                    <div class="col-sm-9">
-                                        <p:selectOneMenu id="dsPersistentIds" styleClass="form-control"
-                                                         required="true"
-                                                         requiredMessage="This field is required"
-                                                         immediate="true"
-                                                         value="#{DashboardDatamovePage.dsPersistentId}"
-                                                         valueChangeListener="#{DashboardDatamovePage.handleDsPersistentIdChange}">
-                                            <f:selectItem itemValue="#{null}" itemLabel="#{bundle['dashboard.card.datamove.datasetid']}" />
-                                            <f:selectItems value="#{DashboardDatamovePage.dsPersistentIds}" />
-                                            <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move"/>
-                                        </p:selectOneMenu>
-                                        <p:message for="dsPersistentIds" />
-                                    </div>
-                                </div>
-                                
-                                
+
                             </div>
                         </div>
                     </div>
@@ -70,25 +75,6 @@
                             <div class="panel-heading text-info">#{bundle['dashboard.card.datamove.newdataverse.header']}</div>
                             <div class="panel-body">
                                 
-                                <!--
-                                <div class="form-group">
-                                    <label for="dstAlias" class="col-sm-3 control-label">#{bundle['dataverse']}</label>
-                                    <div class="col-sm-9">
-                                        <p:selectOneMenu id="dstAlias" styleClass="form-control"
-                                                         required="true"
-                                                         requiredMessage="This field is required"
-                                                         immediate="true"
-                                                         value="#{DashboardDatamovePage.dstAlias}"
-                                                         valueChangeListener="#{DashboardDatamovePage.handleDstChange}">
-                                            <f:selectItem itemValue="#{null}" itemLabel="#{bundle['dashboard.card.datamove.dataverseid']}" />
-                                            <f:selectItems value="#{DashboardDatamovePage.aliases}" />
-                                            <p:ajax event="valueChange" immediate="true" process="@this" update=":datamove-form:move"/>
-                                        </p:selectOneMenu>
-                                        <p:message for="dstAlias" />
-                                    </div>
-                                </div>
-                                -->
-                                
                                 <!-- dataverse to move to: -->
                                 <div class="form-group" >
                                     <label for="destinationDataverse" class="col-sm-3 control-label">
@@ -96,6 +82,8 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <p:autoComplete id="destinationDataverseMenu"
+                                                        required="true"
+                                                        requiredMessage="#{bundle['requiredField']}"
                                                         binding="#{DashboardDatamovePage.selectedDataverseMenu}"
                                                         placeholder="#{bundle['dashboard.card.datamove.dataverse.menu.enterName']}"
                                                         multiple="false" scrollHeight="180" forceSelection="true"
@@ -127,8 +115,6 @@
                         </div>
                     </div>
 
-
-
                     <div class="col-sm-12 button-block">
                         <p:commandLink id="move" styleClass="btn btn-default" 
                                        value="#{bundle['saveChanges']}"
@@ -136,8 +122,7 @@
                                        validateClient="true"
                                        oncomplete="if (args &amp;&amp; !args.validationFailed) PF('datamoveConfirmation').show();">
                             <!-- if (args &amp;&amp; !args.validationFailed) 
-                             prevents the confirm dialog to pop up (client side) if validation fails, 
-                             but we don't get validation messages, just nothing is not helpful for the user -->
+                             prevents the confirm dialog to pop up (client side) if validation fails -->
                             <f:param name="DO_DATAMOVE_VALIDATION" value="true"/>
                         </p:commandLink>
                         <p:button styleClass="btn btn-default" outcome="dashboard" value="#{bundle['cancel']}">

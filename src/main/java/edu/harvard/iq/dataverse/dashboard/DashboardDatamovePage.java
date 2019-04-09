@@ -51,18 +51,12 @@ import java.util.logging.Logger;
 @Named("DashboardDatamovePage")
 public class DashboardDatamovePage implements java.io.Serializable {
   
-    @EJB
-    AuthenticationServiceBean authenticationService;
-    @EJB
-    UserServiceBean userService;
     @Inject
     DataverseSession session;
     @Inject
     PermissionsWrapper permissionsWrapper;
     @EJB
     EjbDataverseEngine commandEngine;
-    @Inject
-    DataverseRequestServiceBean dvRequestService;
 
     @EJB
     DatasetServiceBean datasetService;
@@ -75,59 +69,33 @@ public class DashboardDatamovePage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DashboardDatamovePage.class.getCanonicalName());
 
     private AuthenticatedUser authUser = null;
-   
-    public String getSrcAlias() {
-      return srcAlias;
-    }
-  
-    public void setSrcAlias(String srcAlias) {
-      this.srcAlias = srcAlias;
-    }
-  
-    private String srcAlias;
 
-    public String getDstAlias() {
-        return dstAlias;
+    // source dataset
+
+    public UIInput getSelectedDatasetMenu() {
+        return selectedDatasetMenu;
     }
 
-    public void setDstAlias(String dstAlias) {
-        this.dstAlias = dstAlias;
+    public void setSelectedDatasetMenu(UIInput selectedDatasetMenu) {
+        this.selectedDatasetMenu = selectedDatasetMenu;
     }
 
-    private String dstAlias;
-    
-    public List<String> getAliases() {
-        return aliases;
+    UIInput selectedDatasetMenu;
+
+    public Dataset getSelectedSourceDataset() {
+        return selectedSourceDataset;
     }
 
-    public void setAliases(List<String> aliases) {
-        this.aliases = aliases;
+    public void setSelectedSourceDataset(Dataset selectedSourceDataset) {
+        this.selectedSourceDataset = selectedSourceDataset;
     }
 
-    private List<String> aliases = new ArrayList<String>();
+    private Dataset selectedSourceDataset;
 
-    public List<String> getDsPersistentIds() {
-      return dsPersistentIds;
-    }
-  
-    public void setDsPersistentIds(List<String> dsPersistentIds) {
-      this.dsPersistentIds = dsPersistentIds;
-    }
-  
-    private List<String> dsPersistentIds = new ArrayList<String>();
 
-    public String getDsPersistentId() {
-      return dsPersistentId;
+    public List<Dataset> completeSelectedDataset(String query) {
+        return datasetService.filterByPidQuery(query);
     }
-  
-    public void setDsPersistentId(String dsPersistentId) {
-      this.dsPersistentId = dsPersistentId;
-    }
-  
-    private String dsPersistentId;
-
-    
-    
     
     // destination dataverse
 
@@ -159,13 +127,7 @@ public class DashboardDatamovePage implements java.io.Serializable {
 
         if ((session.getUser() != null) && (session.getUser().isAuthenticated()) && (session.getUser().isSuperuser())) {
            authUser = (AuthenticatedUser) session.getUser();
-            // initialize components
-            for (Dataverse dataverse : dataverseService.findAll()) {
-                aliases.add(dataverse.getAlias());
-            }
-
-            // Note that target verse selection should be with the autocomplete as when Linking
-            // Dataset selection should also be improved!
+            // initialize components, if any need it
         } else {
             return permissionsWrapper.notAuthorized();
             // redirect to login OR give some type of ‘you must be logged in' message
@@ -179,17 +141,16 @@ public class DashboardDatamovePage implements java.io.Serializable {
     }
     
     public void move(){
-        // copied logic from Datasets API move
-        Dataset ds = datasetService.findByGlobalId(dsPersistentId);
-        //Dataverse target = dataverseService.findByAlias(dstAlias);
-        // new autocomplete input
+        Dataset ds = selectedSourceDataset;
+        String dsPersistentId = ds!=null?ds.getGlobalId().asString():null;
+        String srcAlias = ds!=null?ds.getOwner().getAlias():null;
+
         Dataverse target = selectedDestinationDataverse;
-        dstAlias = target!=null?target.getAlias():dstAlias;
-        
+        String dstAlias = target!=null?target.getAlias():null;
+
         if (ds == null || target == null) {
             // Move only works if both inputs are correct 
-            // But if these inputs are require, we should never get here
-            // TODO use validation?
+            // But if these inputs are required, we should never get here
             FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage("Please specify all fields"));
             return;
@@ -203,6 +164,7 @@ public class DashboardDatamovePage implements java.io.Serializable {
         arguments.add(dsPersistentId!=null?dsPersistentId:"-");
         arguments.add(target!=null?target.getName():"-");
 
+        // copied logic from Datasets API move
         //Command requires Super user - it will be tested by the command
         try {
             commandEngine.submit(new MoveDatasetCommand(
@@ -216,9 +178,6 @@ public class DashboardDatamovePage implements java.io.Serializable {
                 new FacesMessage(FacesMessage.SEVERITY_INFO, 
                     "Moved dataset", 
                     BundleUtil.getStringFromBundle("dashboard.card.datamove.message.success", arguments)));
-            
-            
-            updateDsPersistentIds(); // moved ds should not be in list anymore
         }
         catch (CommandException e) {
             logger.log(Level.SEVERE,"Unable to move "+ dsPersistentId + " from " + srcAlias + " to " + dstAlias, e);
@@ -226,28 +185,6 @@ public class DashboardDatamovePage implements java.io.Serializable {
                 new FacesMessage(FacesMessage.SEVERITY_ERROR,
                     "Failed to moved dataset",
                     BundleUtil.getStringFromBundle("dashboard.card.datamove.message.failure", arguments)));
-        }
-    }
-
-    public void handleSrcChange(final ValueChangeEvent event){
-        srcAlias = (String)event.getNewValue();
-        updateDsPersistentIds();
-    }
-
-    public void handleDsPersistentIdChange(final ValueChangeEvent event){
-        dsPersistentId = (String)event.getNewValue();
-    }
-
-    public void handleDstChange(final ValueChangeEvent event){
-        dstAlias = (String)event.getNewValue();
-    }
-    
-    private void updateDsPersistentIds() {
-        dsPersistentId = null;
-        dsPersistentIds.clear();
-        Dataverse srcDv = dataverseService.findByAlias(srcAlias);
-        for(Dataset dataset: datasetService.findByOwnerId(srcDv.getId())) {
-          dsPersistentIds.add(dataset.getGlobalId().asString());
         }
     }
 
