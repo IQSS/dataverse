@@ -236,6 +236,7 @@ public class OptionalFileParamsTest {
         fm.setDataFile(df);
         fm.setDescription("description");
         fm.setDirectoryLabel("/foo/bar");
+        fm.setLabel("testFileName");
         DataFileCategory fmc = new DataFileCategory();
         fmc.setName("category");
         fm.addCategory(fmc);
@@ -245,6 +246,7 @@ public class OptionalFileParamsTest {
         OptionalFileParams instance = new OptionalFileParams(fmJson.toString());
         assertEquals(fm.getDescription(), instance.getDescription());
         assertEquals(fm.getDirectoryLabel(), instance.getDirectoryLabel());
+        assertEquals(fm.getLabel(), instance.getLabel());
         assertEquals(dft.getTypeLabel(), instance.getDataFileTags().get(0));
         assertEquals(fmc.getName(), instance.getCategories().get(0));
     }

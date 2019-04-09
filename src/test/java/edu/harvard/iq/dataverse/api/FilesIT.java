@@ -1225,7 +1225,8 @@ public class FilesIT {
         String description = "A description.";
         String category = "A category";
         String provFreeForm = "provenance is great";
-        String jsonString = "{\"description\":\""+description+"\",\"provFreeForm\":\""+provFreeForm+"\",\"categories\":[{\"name\":\""+category+"\"}],\"forceReplace\":false}";
+        String label = "acoollabel.tab";
+        String jsonString = "{\"description\":\""+description+"\",\"label\":\""+label+"\",\"provFreeForm\":\""+provFreeForm+"\",\"categories\":[{\"name\":\""+category+"\"}],\"forceReplace\":false}";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, jsonString, apiToken);
         Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
         
@@ -1247,6 +1248,7 @@ public class FilesIT {
         msg(metadataResponseString);
         assertEquals(OK.getStatusCode(), getMetadataResponse.getStatusCode());  
         assertEquals(description, JsonPath.from(metadataResponseString).getString("description"));
+        assertEquals(label, JsonPath.from(metadataResponseString).getString("label"));
         assertEquals(provFreeForm, JsonPath.from(metadataResponseString).getString("provFreeForm"));
         assertEquals(category, JsonPath.from(metadataResponseString).getString("categories[0]"));
         assertNull(JsonPath.from(metadataResponseString).getString("dataFileTags"));
@@ -1256,8 +1258,9 @@ public class FilesIT {
         String updateDescription = "New description.";
         String updateCategory = "New category";
         String updateDataFileTag = "Survey";
+        String updateLabel = "newName.tab";
         //"junk" passed below is to test that it is discarded
-        String updateJsonString = "{\"description\":\""+updateDescription+"\",\"categories\":[\""+updateCategory+"\"],\"dataFileTags\":[\""+updateDataFileTag+"\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
+        String updateJsonString = "{\"description\":\""+updateDescription+"\",\"label\":\""+updateLabel+"\",\"categories\":[\""+updateCategory+"\"],\"dataFileTags\":[\""+updateDataFileTag+"\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
         Response updateMetadataResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateJsonString, apiToken);
         assertEquals(OK.getStatusCode(), updateMetadataResponse.getStatusCode());  
         //String updateMetadataResponseString = updateMetadataResponse.body().asString();
@@ -1266,6 +1269,7 @@ public class FilesIT {
         msg("Draft (should be updated):");
         msg(getUpMetadataResponseString);
         assertEquals(updateDescription, JsonPath.from(getUpMetadataResponseString).getString("description"));
+        assertEquals(updateLabel, JsonPath.from(getUpMetadataResponseString).getString("label"));
         assertEquals(updateCategory, JsonPath.from(getUpMetadataResponseString).getString("categories[0]"));
         assertNull(JsonPath.from(getUpMetadataResponseString).getString("provFreeform")); //unupdated fields are not persisted
         assertEquals(updateDataFileTag, JsonPath.from(getUpMetadataResponseString).getString("dataFileTags[0]"));
@@ -1275,6 +1279,7 @@ public class FilesIT {
         String getOldMetadataResponseString = getOldMetadataResponse.body().asString();
         msg("Old Published (shouldn't be updated):");
         msg(getOldMetadataResponseString);
+        assertEquals(label, JsonPath.from(getOldMetadataResponseString).getString("label"));
         assertEquals(description, JsonPath.from(getOldMetadataResponseString).getString("description"));
         assertEquals(category, JsonPath.from(getOldMetadataResponseString).getString("categories[0]"));
         assertEquals(updateDataFileTag, JsonPath.from(getOldMetadataResponseString).getString("dataFileTags[0]")); //tags are not versioned, so the old version will have the tags

@@ -44,6 +44,9 @@ public class OptionalFileParams {
     private String description;
     public static final String DESCRIPTION_ATTR_NAME = "description";
     
+    private String label;
+    public static final String LABEL_ATTR_NAME = "label";
+    
     private String directoryLabel;
     public static final String DIRECTORY_LABEL_ATTR_NAME = "directoryLabel";
 
@@ -107,6 +110,15 @@ public class OptionalFileParams {
     public String getDescription(){
         return this.description;
     }
+    
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+    
     public String getDirectoryLabel() {
         return directoryLabel;
     }
@@ -154,6 +166,13 @@ public class OptionalFileParams {
 
     public boolean hasDirectoryLabel(){
         if ((directoryLabel == null)||(this.directoryLabel.isEmpty())){
+            return false;
+        }
+        return true;
+    }
+    
+    public boolean hasLabel(){
+        if ((label == null)||(this.label.isEmpty())){
             return false;
         }
         return true;
@@ -228,7 +247,7 @@ public class OptionalFileParams {
         if ((jsonObj.has(DESCRIPTION_ATTR_NAME)) && (!jsonObj.get(DESCRIPTION_ATTR_NAME).isJsonNull())){
             
             this.description = jsonObj.get(DESCRIPTION_ATTR_NAME).getAsString();
-        }
+        }       
 
         // -------------------------------
         // get directory label as string
@@ -237,13 +256,13 @@ public class OptionalFileParams {
 
             this.directoryLabel = jsonObj.get(DIRECTORY_LABEL_ATTR_NAME).getAsString();
         }
-
+        
         // -------------------------------
         // get directory label as string
         // -------------------------------
-        if ((jsonObj.has(DIRECTORY_LABEL_ATTR_NAME)) && (!jsonObj.get(DIRECTORY_LABEL_ATTR_NAME).isJsonNull())){
+        if ((jsonObj.has(LABEL_ATTR_NAME)) && (!jsonObj.get(LABEL_ATTR_NAME).isJsonNull())){
 
-            this.directoryLabel = jsonObj.get(DIRECTORY_LABEL_ATTR_NAME).getAsString();
+            this.label = jsonObj.get(LABEL_ATTR_NAME).getAsString();
         }
         
         // -------------------------------
@@ -376,6 +395,13 @@ public class OptionalFileParams {
         // ---------------------------
         if (hasDirectoryLabel()){
             fm.setDirectoryLabel(this.getDirectoryLabel());
+        }
+        
+        // ---------------------------
+        // Add directory label (path)
+        // ---------------------------
+        if (hasLabel()){
+            fm.setLabel(this.getLabel());
         }
         
         // ---------------------------
