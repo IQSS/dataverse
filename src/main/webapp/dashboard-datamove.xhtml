@@ -60,6 +60,8 @@
                                         <p:message for="dsPersistentIds" />
                                     </div>
                                 </div>
+                                
+                                
                             </div>
                         </div>
                     </div>
@@ -67,6 +69,8 @@
                         <div class="panel panel-default">
                             <div class="panel-heading text-info">#{bundle['dashboard.card.datamove.newdataverse.header']}</div>
                             <div class="panel-body">
+                                
+                                <!--
                                 <div class="form-group">
                                     <label for="dstAlias" class="col-sm-3 control-label">#{bundle['dataverse']}</label>
                                     <div class="col-sm-9">
@@ -83,10 +87,48 @@
                                         <p:message for="dstAlias" />
                                     </div>
                                 </div>
+                                -->
+                                
+                                <!-- dataverse to move to: -->
+                                <div class="form-group" >
+                                    <label for="destinationDataverse" class="col-sm-3 control-label">
+                                        #{bundle['dataverse']}
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:autoComplete id="destinationDataverseMenu"
+                                                        binding="#{DashboardDatamovePage.selectedDataverseMenu}"
+                                                        placeholder="#{bundle['dashboard.card.datamove.dataverse.menu.enterName']}"
+                                                        multiple="false" scrollHeight="180" forceSelection="true"
+                                                        minQueryLength="2" queryDelay="1000" size="36"
+                                                        groupBy="#{bundle['dashboard.card.datamove.dataverse.menu.header']}"
+                                                        emptyMessage="#{bundle['dashboard.card.datamove.dataverse.menu.invalidMsg']}"
+                                                        value="#{DashboardDatamovePage.selectedDestinationDataverse}"
+                                                        completeMethod="#{DashboardDatamovePage.completeSelectedDataverse}"
+                                                        var="destDV" styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
+                                                        itemLabel="#{destDV.alias}" itemValue="#{destDV}" converter="dataverseConverter">
+                                            <p:column>
+                                                <h:outputText value="#{destDV.name}"/>
+                                                <h:outputText value=" (#{destDV.affiliation})" rendered="#{!empty destDV.affiliation}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{destDV.alias}"/>
+                                            </p:column>
+                                            <p:ajax process="@this" event="itemSelect" />
+                                            <p:ajax process="@this" event="itemUnselect" />
+                                        </p:autoComplete>
+                                        <script type="text/javascript">
+                                            handle_dropdown_popup_scroll();
+                                        </script>
+                                        <p:message for="destinationDataverseMenu"/>
+                                    </div>
+                                </div>             
+                                
                             </div>
                         </div>
                     </div>
-                    
+
+
+
                     <div class="col-sm-12 button-block">
                         <p:commandLink id="move" styleClass="btn btn-default" 
                                        value="#{bundle['saveChanges']}"

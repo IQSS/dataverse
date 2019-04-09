@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
+import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.ValueChangeEvent;
@@ -124,7 +125,36 @@ public class DashboardDatamovePage implements java.io.Serializable {
     }
   
     private String dsPersistentId;
-  
+
+    
+    
+    
+    // destination dataverse
+
+    public UIInput getSelectedDataverseMenu() {
+        return selectedDataverseMenu;
+    }
+
+    public void setSelectedDataverseMenu(UIInput selectedDataverseMenu) {
+        this.selectedDataverseMenu = selectedDataverseMenu;
+    }
+
+    UIInput selectedDataverseMenu;
+
+    public Dataverse getSelectedDestinationDataverse() {
+        return selectedDestinationDataverse;
+    }
+
+    public void setSelectedDestinationDataverse(Dataverse selectedDestinationDataverse) {
+        this.selectedDestinationDataverse = selectedDestinationDataverse;
+    }
+
+    private Dataverse selectedDestinationDataverse;
+
+    public List<Dataverse> completeSelectedDataverse(String query) {
+        return dataverseService.filterByAliasQuery(query);
+    }
+
     public String init() {
 
         if ((session.getUser() != null) && (session.getUser().isAuthenticated()) && (session.getUser().isSuperuser())) {
@@ -151,8 +181,11 @@ public class DashboardDatamovePage implements java.io.Serializable {
     public void move(){
         // copied logic from Datasets API move
         Dataset ds = datasetService.findByGlobalId(dsPersistentId);
-        Dataverse target = dataverseService.findByAlias(dstAlias);
-
+        //Dataverse target = dataverseService.findByAlias(dstAlias);
+        // new autocomplete input
+        Dataverse target = selectedDestinationDataverse;
+        dstAlias = target!=null?target.getAlias():dstAlias;
+        
         if (ds == null || target == null) {
             // Move only works if both inputs are correct 
             // But if these inputs are require, we should never get here
