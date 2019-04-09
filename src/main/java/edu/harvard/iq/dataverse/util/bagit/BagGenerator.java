@@ -36,6 +36,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.archivers.zip.ParallelScatterZipCreator;
 import org.apache.commons.compress.archivers.zip.ScatterZipOutputStream;
@@ -786,17 +787,17 @@ public class BagGenerator {
             logger.warning("No contact info available for BagIt Info file");
         }
 
-        info.append("Source-Organization: " + ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganization"));
+        info.append("Source-Organization: " + BundleUtil.getStringFromBundle("bagit.sourceOrganization"));
         // ToDo - make configurable
         info.append(CRLF);
 
         info.append("Organization-Address: " + WordUtils.wrap(
-                ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganizationAddress"), 78, CRLF + " ", true));
+                BundleUtil.getStringFromBundle("bagit.sourceOrganizationAddress"), 78, CRLF + " ", true));
         info.append(CRLF);
 
         // Not a BagIt standard name
         info.append(
-                "Organization-Email: " + ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganizationEmail"));
+                "Organization-Email: " + BundleUtil.getStringFromBundle("bagit.sourceOrganizationEmail"));
         info.append(CRLF);
 
         info.append("External-Description: ");
@@ -835,7 +836,7 @@ public class BagGenerator {
         info.append(CRLF);
 
         info.append("Internal-Sender-Identifier: ");
-        String catalog = ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganization") + " Catalog";
+        String catalog = BundleUtil.getStringFromBundle("bagit.sourceOrganization") + " Catalog";
         if (aggregation.has(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel())) {
             catalog = aggregation.get(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel()).getAsString();
         }
