@@ -263,14 +263,13 @@ public class JsonPrinter {
     }
 
     public static JsonArrayBuilder json(List<DataverseContact> dataverseContacts) {
-        JsonArrayBuilder bld = Json.createArrayBuilder();
-        for(DataverseContact dc : dataverseContacts) {
-            bld.add(dc.getContactEmail()); 
-        }
-        
-        return bld;
+        return dataverseContacts.stream()
+                .map(dc -> jsonObjectBuilder()
+                .add("displayOrder", dc.getDisplayOrder())
+                .add("contactEmail", dc.getContactEmail())
+                ).collect(toJsonArray());
     }
-    
+
     public static JsonObjectBuilder json( DataverseTheme theme ) {
         final NullSafeJsonBuilder baseObject = jsonObjectBuilder()
                 .add("id", theme.getId() )
