@@ -17,6 +17,8 @@ Support for external tools is just getting off the ground but the following tool
 
 - `Whole Tale <https://wholetale.org>`_: a platform for the creation of reproducible research packages that allows users to launch containerized interactive analysis environments based on popular tools such as Jupyter and RStudio. Using this integration, Dataverse users can launch Jupyter and RStudio environments to analyze published datasets. For more information, see the `Whole Tale User Guide <https://wholetale.readthedocs.io/en/stable/users_guide/integration.html>`_.
 
+- `File Previewers <https://github.com/QualitativeDataRepository/dataverse-previewers>`_: A set of tools that display the content of files - including audio, html, `Hypothes.is <https://hypothes.is/>` annotations, images, PDF, text, video - allowing them to be viewed without downloading. The previewers can be run directly from github.io, so the only required step is using the Dataverse API to register the ones you want to use. Documentation, including how to optionally brand the previewers, and an invitation to contribute through github are in the README.md file. 
+
 - [Your tool here! Please get in touch! :) ]
 
 
