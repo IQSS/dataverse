@@ -184,7 +184,7 @@ Steps to set up a DCM via Docker for Development
 See https://github.com/IQSS/dataverse/blob/develop/conf/docker-dcm/readme.md
 
 Using the RSAL Docker Containers
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Create a dataset (either with the procedure mentioned in DCM Docker Containers, or another process)
 - Publish the dataset (from the client container): ``cd /mnt; ./publish_major.bash ${database_id}``

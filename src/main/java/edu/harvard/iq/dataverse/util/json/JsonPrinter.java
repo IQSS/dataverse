@@ -230,7 +230,6 @@ public class JsonPrinter {
         return bld;
     }
     
-    //MAD: Maybe delete this entirely so folks have to make the decision about public/private
     public static JsonObjectBuilder json(Dataverse dv) {
         return json(dv, false);
     }
