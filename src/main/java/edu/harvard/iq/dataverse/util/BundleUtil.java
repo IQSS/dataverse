@@ -78,7 +78,7 @@ public class BundleUtil {
         Locale currentLocale = getCurrentLocale();
         
         if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
-            bundle = ResourceBundle.getBundle(propertyFileName, currentLocale);
+            bundle = ResourceBundle.getBundle("propertyFiles/" +propertyFileName, currentLocale);
         } else {
             File bundleFileDir  = new File(filesRootDirectory);
             URL[] urls = null;

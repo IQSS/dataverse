@@ -449,16 +449,43 @@ public class DataFile extends DvObject implements Comparable {
             }            
             
             // otherwise return the one with the latest version number
+            // duplicate logic in getLatestPublishedFileMetadata()
             if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
                 fmd = fileMetadata;
             } else if ((fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber())==0 )&& 
                    ( fileMetadata.getDatasetVersion().getMinorVersionNumber().compareTo( fmd.getDatasetVersion().getMinorVersionNumber()) > 0 )   ) {
                 fmd = fileMetadata;
-        }
+            }
         }
         return fmd;
     }
     
+//    //Returns null if no published version
+    public FileMetadata getLatestPublishedFileMetadata() throws UnsupportedOperationException {
+        FileMetadata fmd = null;
+        
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            // if it finds a draft, skip
+            if (fileMetadata.getDatasetVersion().getVersionState().equals(VersionState.DRAFT)) {
+                continue;
+            }            
+            
+            // otherwise return the one with the latest version number
+            // duplicate logic in getLatestFileMetadata()
+            if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
+                fmd = fileMetadata;
+            } else if ((fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber())==0 )&& 
+                   ( fileMetadata.getDatasetVersion().getMinorVersionNumber().compareTo( fmd.getDatasetVersion().getMinorVersionNumber()) > 0 )   ) {
+                fmd = fileMetadata;
+            }
+        }
+        if(fmd == null) {
+            throw new UnsupportedOperationException("No published metadata version for DataFile " + this.getId());
+        }
+        
+        return fmd;
+    }
+
     /**
      * Get property filesize, number of bytes
      * @return value of property filesize.
@@ -720,6 +747,11 @@ public class DataFile extends DvObject implements Comparable {
     @Override
     public String getDisplayName() {
        return getLatestFileMetadata().getLabel(); 
+    }
+    
+    @Override 
+    public String getCurrentName(){
+        return getLatestFileMetadata().getLabel();
     }
     
     @Override
