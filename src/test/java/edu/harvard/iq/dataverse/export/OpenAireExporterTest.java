@@ -3,16 +3,24 @@ package edu.harvard.iq.dataverse.export;
 import com.jayway.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import static junit.framework.Assert.assertEquals;
 import org.junit.Test;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 public class OpenAireExporterTest {
 
@@ -67,6 +75,49 @@ public class OpenAireExporterTest {
         assertEquals("Spruce Goose", xmlpath.getString("resource.titles.title"));
         assertEquals("Spruce, Sabrina", xmlpath.getString("resource.creators.creator"));
         assertEquals("1.0", xmlpath.getString("resource.version"));
+    }
+
+    /**
+     * Test of exportDataset method, of class OpenAireExporter.
+     */
+    @Test
+    public void testValidateExportDataset() throws Exception {
+        System.out.println("validateExportDataset");
+        File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
+        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
+        JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
+        JsonObject jsonObject = jsonReader.readObject();
+        DatasetVersion nullVersion = null;
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        openAireExporter.exportDataset(nullVersion, jsonObject, byteArrayOutputStream);
+
+        {
+            String xmlOnOneLine = new String(byteArrayOutputStream.toByteArray());
+            String xmlAsString = XmlPrinter.prettyPrintXml(xmlOnOneLine);
+            System.out.println("XML: " + xmlAsString);
+        }
+        InputStream xmlStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setValidating(true);
+        factory.setNamespaceAware(true);
+        factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaLanguage",
+                "http://www.w3.org/2001/XMLSchema");
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        builder.setErrorHandler(new ErrorHandler() {
+            public void warning(SAXParseException e) throws SAXException {
+                throw new RuntimeException(e);
+            }
+
+            public void error(SAXParseException e) throws SAXException {
+                throw new RuntimeException(e);
+            }
+
+            public void fatalError(SAXParseException e) throws SAXException {
+                throw new RuntimeException(e);
+            }
+        });
+        builder.parse(new InputSource(xmlStream));
+        xmlStream.close();
     }
 
     /**
@@ -140,17 +191,4 @@ public class OpenAireExporterTest {
         String result = instance.getXMLSchemaVersion();
         assertEquals(expResult, result);
     }
-
-    /**
-     * Test of setParam method, of class OpenAireExporter.
-     */
-    @Test
-    public void testSetParam() {
-        System.out.println("setParam");
-        String name = "";
-        Object value = null;
-        OpenAireExporter instance = new OpenAireExporter();
-        instance.setParam(name, value);
-    }
-
 }
