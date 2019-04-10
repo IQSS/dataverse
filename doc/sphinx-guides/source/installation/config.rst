@@ -33,10 +33,15 @@ Forcing HTTPS
 
 To avoid having your users send credentials in the clear, it's strongly recommended to force all web traffic to go through HTTPS (port 443) rather than HTTP (port 80). The ease with which one can install a valid SSL cert into Apache compared with the same operation in Glassfish might be a compelling enough reason to front Glassfish with Apache. In addition, Apache can be configured to rewrite HTTP to HTTPS with rules such as those found at https://wiki.apache.org/httpd/RewriteHTTPToHTTPS or in the section on :doc:`shibboleth`.
 
+.. _PrivacyConsiderations:
+
 Privacy Considerations
 ++++++++++++++++++++++
 
-Out of the box, Dataverse will list email addresses of the "contacts" for datasets when users visit a dataset page and click the "Export Metadata" button. If you prefer to exclude email addresses of dataset contacts from metadata export, set :ref:`:ExcludeEmailFromExport <:ExcludeEmailFromExport>` to true.
+Email Privacy
+^^^^^^^^^^^^^
+
+Out of the box, Dataverse will list email addresses of the contacts for datasets when users visit a dataset page and click the "Export Metadata" button. Additionally, out of the box, Dataverse will list email addresses of dataverse contacts via API (see :ref:`View a Dataverse <view-dataverse>` in the :doc:`/api/native-api` section of the API Guide). If you would like to exclude these email addresses from export, set :ref:`:ExcludeEmailFromExport <:ExcludeEmailFromExport>` to true.
 
 Additional Recommendations
 ++++++++++++++++++++++++++
@@ -544,17 +549,26 @@ Your analytics code can be added to your Dataverse installation in a similar fas
 
 Popular analytics providers Google Analytics (https://www.google.com/analytics/) and Matomo (formerly "Piwik"; https://matomo.org/) have been set up with Dataverse. Use the documentation they provide to add the analytics code to your custom HTML file. This allows for more control of your analytics, making it easier to customize what you prefer to track.
 
-Create your own ``analytics-code.html`` file using the analytics code snippet provided by Google or Matomo and place it at ``/var/www/dataverse/branding/analytics-code.html``. Here is an example of what your HTML file should like like:
+Create your own ``analytics-code.html`` file using the analytics code snippet provided by Google or Matomo and place it somewhere on the server, outside the application deployment directory; for example: ``/var/www/dataverse/branding/analytics-code.html``. Here is an *example* of what your HTML file will look like:
 
 .. code-block:: none
 
+    <!-- Global Site Tag (gtag.js) - Google Analytics -->
+    <script async="async" src="https://www.googletagmanager.com/gtag/js?id=YOUR-ACCOUNT-CODE"></script>
     <script>
-        // Analytics code here...
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+
+	gtag('config', 'YOUR-ACCOUNT-CODE');
     </script>
 
-Once you have the location of your analytics file, run this curl command to add it to your settings:
+**IMPORTANT:** Note the "async" attribute in the first script line above. In the documentation provided by Google, its value is left blank (as in ``<script async src="...">``). It must be set as in the example above (``<script async="async" src="...">``), otherwise it may cause problems with some browsers.
+
+Once you have created the analytics file, run this curl command to add it to your settings (using the same file location as in the example above):
 
 ``curl -X PUT -d '/var/www/dataverse/branding/analytics-code.html' http://localhost:8080/api/admin/settings/:WebAnalyticsCode``
+
 
 DuraCloud/Chronopolis Integration
 ---------------------------------
@@ -873,11 +887,13 @@ This JVM option is only relevant if you plan to run multiple Glassfish servers f
 dataverse.lang.directory
 ++++++++++++++++++++++++
 
-This JVM option is used to configure the path where all the language specific property files are to be stored.  If this option is set then the english property file must be present in the path along with any other language property file.
+This JVM option is used to configure the path where all the language specific property files are to be stored.  If this option is set then the english property file must be present in the path along with any other language property file. You can download language property files from https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs
 
 ``./asadmin create-jvm-options '-Ddataverse.lang.directory=PATH_LOCATION_HERE'``
 
 If this value is not set, by default, a Dataverse installation will read the English language property files from the Java Application.
+
+See also the ``:Languages`` setting below.
 
 dataverse.files.hide-schema-dot-org-download-urls
 +++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1060,9 +1076,6 @@ in any other SQL flavor - the standard JPA code in the application simply expect
 the database to have a saved function ("stored procedure") named ``generateIdentifierAsSequentialNumber``
 with the single return argument ``identifier``. 
 
-For systems using Postgresql 8.4 or older, the procedural language `plpgsql` should be enabled first.
-We have provided an example :download:`here </_static/util/pg8-createsequence-prep.sql>`.
-
 Please note that ``:IdentifierGenerationStyle`` also plays a role for the "identifier" for files. See the section on ``:DataFilePIDFormat`` below for more details.
 
 .. _:DataFilePIDFormat:
@@ -1106,6 +1119,8 @@ If you don't want to register file-based PIDs for your installation, set:
 
 Note: File-level PID registration was added in 4.9 and is required until version 4.9.3.
 
+.. _:IndependentHandleService:
+
 :IndependentHandleService
 +++++++++++++++++++++++++++
 
@@ -1143,6 +1158,8 @@ API users can retrieve this URL from the SWORD Service Document or the "info" se
 
 :ExcludeEmailFromExport
 +++++++++++++++++++++++
+
+See also :ref:`Privacy Considerations <PrivacyConsiderations>` above.
 
 Set ``:ExcludeEmailFromExport`` to prevent email addresses for contacts from being exposed in XML or JSON representations of dataset and dataverse metadata. For a list exported formats such as DDI, see the :doc:`/admin/metadataexport` section of the Admin Guide.
 
@@ -1183,7 +1200,7 @@ Note that this will override the default behaviour for the "Support" menu option
 :MetricsUrl
 +++++++++++
 
-Make the metrics component on the root dataverse a clickable link to a website where you present metrics on your Dataverse installation. This could perhaps be an installation of https://github.com/IQSS/miniverse or any site.
+Make the metrics component on the root dataverse a clickable link to a website where you present metrics on your Dataverse installation, perhaps one of the community-supported tools mentioned in the :doc:`/admin/reporting-tools` section of the Admin Guide.
 
 ``curl -X PUT -d http://metrics.dataverse.example.edu http://localhost:8080/api/admin/settings/:MetricsUrl``
 
@@ -1613,6 +1630,8 @@ Sets which languages should be available. If there is more than one, a dropdown 
 in the header. This should be formated as a JSON array as shown below.
 
 ``curl http://localhost:8080/api/admin/settings/:Languages -X PUT -d '[{  "locale":"en", "title":"English"},  {  "locale":"fr", "title":"Français"}]'``
+
+See also the ``dataverse.lang.directory`` JVM option above.
 
 :InheritParentRoleAssignments
 +++++++++++++++++++++++++++++

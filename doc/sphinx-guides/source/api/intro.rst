@@ -50,8 +50,3 @@ Support
 If you are using the APIs for an installation of Dataverse hosted by your institution, you may want to reach out to the team that supports it. At the top of the Dataverse installation's home page, there should be a form you can fill out by clicking the "Support" link.
 
 If you are having trouble with http://demo.dataverse.org or have questions about the APIs, please feel free to reach out to the Dataverse community via https://groups.google.com/forum/#!forum/dataverse-community .
-
-Metrics
--------
-
-APIs described in this guide are shipped with the Dataverse software itself. Additional APIs are available if someone at your institution installs the "miniverse" application from https://github.com/IQSS/miniverse and gives it read only access to a production Dataverse database. http://dataverse.org/metrics is powered by miniverse.

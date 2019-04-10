@@ -2,9 +2,13 @@ package edu.harvard.iq.dataverse;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -33,6 +37,7 @@ import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import edu.harvard.iq.dataverse.util.DateUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import org.hibernate.validator.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
@@ -55,11 +60,13 @@ public class FileMetadata implements Serializable {
     @Column( nullable=false )
     private String label = "";
     
-    @Pattern(regexp="|[^/\\\\]|^[^/\\\\]+.*[^/\\\\]+$",
-            message = "{directoryname.illegalCharacters}")
+    
+    @ValidateDataFileDirectoryName(message = "{directoryname.illegalCharacters}")
     @Expose
     @Column ( nullable=true )
+
     private String directoryLabel;
+    @Expose
     @Column(columnDefinition = "TEXT")
     private String description = "";
     
@@ -86,6 +93,7 @@ public class FileMetadata implements Serializable {
      * represented in the GUI as text box the user can type into. The other type
      * is based on PROV-JSON from the W3C.
      */
+    @Expose
     @Column(columnDefinition = "TEXT", nullable = true, name="prov_freeform")
     private String provFreeForm;
         
@@ -120,6 +128,12 @@ public class FileMetadata implements Serializable {
     }
 
     public void setDirectoryLabel(String directoryLabel) {
+        //Strip off beginning and ending \ // - .
+        // and replace any sequences/combinations of / and \ with a single /
+        if (directoryLabel != null) {
+            directoryLabel = StringUtil.sanitizeFileDirectory(directoryLabel);
+        }
+
         this.directoryLabel = directoryLabel;
     }
 
@@ -144,6 +158,7 @@ public class FileMetadata implements Serializable {
     /* 
      * File Categories to which this version of the DataFile belongs: 
      */
+    @SerializedName("categories") //Used for OptionalFileParams serialization
     @ManyToMany
     @JoinTable(indexes = {@Index(columnList="filecategories_id"),@Index(columnList="filemetadatas_id")})
     @OrderBy("name")
@@ -511,47 +526,39 @@ public class FileMetadata implements Serializable {
         }
     };
     
-    
-    
-    public String toPrettyJSON(){
-        
-        return serializeAsJSON(true);
-    }
-
-    public String toJSON(){
-        
-        return serializeAsJSON(false);
-    }
-    
-     /**
-     * 
-     * @param prettyPrint
-     * @return 
-     */
-    private String serializeAsJSON(boolean prettyPrint){
-        
-        JsonObject jsonObj = asGsonObject(prettyPrint);
-                
-        return jsonObj.toString();
-       
-    }
-
-    
     public JsonObject asGsonObject(boolean prettyPrint){
-
         
         GsonBuilder builder;
         if (prettyPrint){  // Add pretty printing
             builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting();
-        }else{
+        } else {
             builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation();                        
         }
         
-        builder.serializeNulls();   // correctly capture nulls
         Gson gson = builder.create();
-
-        // serialize this object
+        
         JsonElement jsonObj = gson.toJsonTree(this);
+        
+        //Add categories without the "name"
+        List<String> cats = this.getCategoriesByName();
+        JsonArray jsonCats = new JsonArray();
+        for(String t : cats) {
+            jsonCats.add(new JsonPrimitive(t));
+        }
+        if(jsonCats.size() > 0) {
+            jsonObj.getAsJsonObject().add(OptionalFileParams.CATEGORIES_ATTR_NAME, jsonCats);
+        }
+        
+        //Add tags without the "name"
+        List<String> tags = this.getDataFile().getTagLabels();
+        JsonArray jsonTags = new JsonArray();
+        for(String t : tags) {
+            jsonTags.add(new JsonPrimitive(t));
+        }
+        if(jsonTags.size() > 0) {
+            jsonObj.getAsJsonObject().add(OptionalFileParams.FILE_DATA_TAGS_ATTR_NAME, jsonTags);
+        }
+
         jsonObj.getAsJsonObject().addProperty("id", this.getId());
         
         return jsonObj.getAsJsonObject();

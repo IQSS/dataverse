@@ -814,11 +814,13 @@ public class FileUtil implements java.io.Serializable  {
 
                                 if (!fileEntryName.equals(shortName)) {
                                     // If the filename looks like a hierarchical folder name (i.e., contains slashes and backslashes),
-                                    // we'll extract the directory name, then a) strip the leading and trailing slashes; 
-                                    // and b) replace all the back slashes with regular ones and b) replace any multiple 
-                                    // slashes with a single slash:
-                                    String directoryName = fileEntryName.replaceFirst("[\\/][\\/]*[^\\/]*$", "").replaceFirst("^[\\/]*", "").replaceAll("[\\/][\\/]*", "/");
-                                    if (!"".equals(directoryName)) {
+                                    // we'll extract the directory name; then subject it to some "aggressive sanitizing" - strip all 
+                                    // the leading, trailing and duplicate slashes; then replace all the characters that 
+                                    // don't pass our validation rules. 
+                                    String directoryName = fileEntryName.replaceFirst("[\\\\/][\\\\/]*[^\\\\/]*$", "");
+                                    directoryName = StringUtil.sanitizeFileDirectory(directoryName, true);
+                                    //if (!"".equals(directoryName)) {
+                                    if (!StringUtil.isEmpty(directoryName)) {
                                         logger.fine("setting the directory label to " + directoryName);
                                         datafile.getFileMetadata().setDirectoryLabel(directoryName);
                                     }

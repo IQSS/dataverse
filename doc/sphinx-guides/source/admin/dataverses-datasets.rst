@@ -7,6 +7,11 @@ Managing Datasets and Dataverses
 Dataverses
 ----------
 
+Delete a Dataverse
+^^^^^^^^^^^^^^^^^^
+
+Dataverses have to be empty to delete them. Navigate to the dataverse and click "Edit" and then "Delete Dataverse" to delete it. To delete a dataverse via API, see the :doc:`/api/native-api` section of the API Guide.
+
 Move a Dataverse
 ^^^^^^^^^^^^^^^^
 
