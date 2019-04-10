@@ -112,7 +112,11 @@ public class ConfigureFragmentBean implements java.io.Serializable{
                 apiToken = authService.generateApiTokenForUser(( AuthenticatedUser) user);
                 toolHandler.setApiToken(apiToken);
                 toolHandler.getToolUrlWithQueryParams();
-                userNotificationService.sendNotification((AuthenticatedUser) user, new Timestamp(new Date().getTime()), UserNotification.Type.APIGENERATED, null);
+                try {
+                    userNotificationService.sendNotification((AuthenticatedUser) user, new Timestamp(new Date().getTime()), UserNotification.Type.APIGENERATED, null);
+                } catch (Exception ex) {
+                    logger.warning("Cannot send a message about API Token generation " + ex.getMessage());
+                }
             }
         }
 
