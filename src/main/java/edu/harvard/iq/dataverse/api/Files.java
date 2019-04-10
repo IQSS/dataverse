@@ -301,8 +301,18 @@ public class Files extends AbstractApiBean {
         FileMetadata upFmd = null;
         
         try {
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
-            final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+            DataverseRequest req;
+            try {
+                req = createDataverseRequest(findUserOrDie());
+            } catch (Exception e) {
+                return error(BAD_REQUEST, "Error attempting to request information. Maybe a bad API token?");
+            }
+            final DataFile df;
+            try {
+                df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+            } catch (Exception e) {
+                return error(BAD_REQUEST, "Error attempting get the requested data file.");
+            }
 
             
             User authUser = findUserOrDie();
@@ -390,8 +400,18 @@ public class Files extends AbstractApiBean {
     @GET                             
     @Path("{id}/metadata")
     public Response getFileMetadata(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
-            final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+            DataverseRequest req;
+            try {
+                req = createDataverseRequest(findUserOrDie());
+            } catch (Exception e) {
+                return error(BAD_REQUEST, "Error attempting to request information. Maybe a bad API token?");
+            }
+            final DataFile df;
+            try {
+                df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+            } catch (Exception e) {
+                return error(BAD_REQUEST, "Error attempting get the requested data file.");
+            }
             FileMetadata fm;
             
             if(null != getDraft && getDraft) { 
