@@ -7,18 +7,15 @@ import com.google.gson.JsonObject;
 import com.google.gson.annotations.Expose;
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.persistence.*;
 
+import edu.harvard.iq.dataverse.datavariable.CategoryMetadata;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.util.DateUtil;
@@ -134,9 +131,23 @@ public class FileMetadata implements Serializable {
     @OneToMany(mappedBy="fileMetadata", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
     private List<VarGroup> varGroups;
 
+    public Collection<VariableMetadata> getVariableMetadatas() {
+        return variableMetadatas;
+    }
 
+    public List<VarGroup> getVarGroups() {
+        return varGroups;
+    }
 
-    /* 
+    public void setVariableMetadatas(Collection<VariableMetadata> variableMetadatas) {
+        this.variableMetadatas = variableMetadatas;
+    }
+
+    public void setVarGroups(List<VarGroup> varGroups) {
+        this.varGroups = varGroups;
+    }
+
+    /*
      * File Categories to which this version of the DataFile belongs: 
      */
     @ManyToMany
@@ -558,6 +569,45 @@ public class FileMetadata implements Serializable {
 
     public void setProvFreeForm(String provFreeForm) {
         this.provFreeForm = provFreeForm;
+    }
+
+    public void copyVariableMetadata(Collection<VariableMetadata> vml) {
+
+        for (VariableMetadata vm : vml) {
+            VariableMetadata vmNew = new VariableMetadata(vm.getDataVariable(), this);
+            vmNew.setIsweightvar(vm.isIsweightvar());
+            vmNew.setWeighted(vm.isWeighted());
+            vmNew.setWeightvariable(vm.getWeightvariable());
+            vmNew.setInterviewinstruction(vm.getInterviewinstruction());
+            vmNew.setLabel(vm.getLabel());
+            vmNew.setLiteralquestion(vm.getLiteralquestion());
+            vmNew.setNotes(vm.getNotes());
+            vmNew.setUniverse(vm.getUniverse());
+
+            Collection<CategoryMetadata> cms = vm.getCategoriesMetadata();
+            for (CategoryMetadata cm : cms) {
+                CategoryMetadata cmNew = new CategoryMetadata(vmNew, cm.getCategory());
+                cmNew.setWfreq(cm.getWfreq());
+                vmNew.getCategoriesMetadata().add(cmNew);
+            }
+            if (variableMetadatas == null) {
+                variableMetadatas = new ArrayList<VariableMetadata>();
+            }
+            variableMetadatas.add(vmNew);
+        }
+    }
+
+    public void copyVarGroups(Collection<VarGroup> vgl) {
+
+        for (VarGroup vg : vgl) {
+            VarGroup vgNew = new VarGroup(this, vg.getVarsInGroup());
+            vgNew.setLabel(vg.getLabel());
+            if (varGroups == null) {
+                varGroups = new ArrayList<VarGroup>();
+            }
+            varGroups.add(vgNew);
+        }
+
     }
     
 }

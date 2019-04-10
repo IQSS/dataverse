@@ -1551,7 +1551,7 @@ public class DatasetPage implements java.io.Serializable {
                         selectedTemplate = testT;
                     }
                 }
-                workingVersion = dataset.getEditVersion(selectedTemplate);
+                workingVersion = dataset.getEditVersion(selectedTemplate, null);
                 updateDatasetFieldInputLevels();
             } else {
                 workingVersion = dataset.getCreateVersion();

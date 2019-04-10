@@ -287,7 +287,7 @@ public class Dataset extends DvObjectContainer {
         this.versions = versions;
     }
 
-    private DatasetVersion createNewDatasetVersion(Template template) {
+    private DatasetVersion createNewDatasetVersion(Template template, FileMetadata fmVarMet) {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
         dsv.setFileMetadatas(new ArrayList<>());
@@ -333,6 +333,16 @@ public class Dataset extends DvObjectContainer {
                 newFm.setDataFile(fm.getDataFile());
                 newFm.setDatasetVersion(dsv);
                 newFm.setProvFreeForm(fm.getProvFreeForm());
+
+                //fmVarMet would be updated in DCT
+                if (fmVarMet != null && !fmVarMet.getId().equals(fm.getId())) {
+                    if (fm.getVariableMetadatas() != null) {
+                        newFm.copyVariableMetadata(fm.getVariableMetadatas());
+                    }
+                    if (fm.getVarGroups() != null) {
+                        newFm.copyVarGroups(fm.getVarGroups());
+                    }
+                }
                 
                 dsv.getFileMetadatas().add(newFm);
             }
@@ -358,14 +368,18 @@ public class Dataset extends DvObjectContainer {
      * @return The edit version {@code this}.
      */
     public DatasetVersion getEditVersion() {
-        return getEditVersion(null);
+        return getEditVersion(null, null);
     }
 
-    public DatasetVersion getEditVersion(Template template) {
+    public DatasetVersion getEditVersion(FileMetadata fm) {
+        return getEditVersion(null, fm);
+    }
+
+    public DatasetVersion getEditVersion(Template template, FileMetadata fm) {
         DatasetVersion latestVersion = this.getLatestVersion();
         if (!latestVersion.isWorkingCopy() || template != null) {
             // if the latest version is released or archived, create a new version for editing
-            return createNewDatasetVersion(template);
+            return createNewDatasetVersion(template, fm);
         } else {
             // else, edit existing working copy
             return latestVersion;
