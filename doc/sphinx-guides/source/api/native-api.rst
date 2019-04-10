@@ -39,12 +39,14 @@ Download the :download:`JSON example <../_static/api/dataverse-complete.json>` f
 
 .. literalinclude:: ../_static/api/dataverse-complete.json
 
+.. _view-dataverse:
+
 View a Dataverse
 ~~~~~~~~~~~~~~~~
 
-|CORS| View data about the dataverse identified by ``$id``. ``$id`` can be the id number of the dataverse, its alias, or the special value ``:root``. ::
+|CORS| View data about the dataverse identified by ``$id``. ``$id`` can be the id number of the dataverse, its identifier (a.k.a. alias), or the special value ``:root`` for the root dataverse.
 
-    GET http://$SERVER/api/dataverses/$id
+``curl $SERVER_URL/api/dataverses/$id``
 
 Delete a Dataverse
 ~~~~~~~~~~~~~~~~~~
