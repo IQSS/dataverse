@@ -108,20 +108,8 @@ public class EditDDI  extends AbstractApiBean {
             return error(Response.Status.NOT_ACCEPTABLE, "bad xml file" );
         }
 
-       /*Dataset dataset = dataFile.getOwner();
-        DatasetVersion newDatasetVersion = dataFile.getOwner().getEditVersion();
-        List<FileMetadata> fml = newDatasetVersion.getFileMetadatas();
-
-        DatasetVersion latestDatasetVersion = dataFile.getOwner().getLatestVersionForCopy();
-        List<FileMetadata> latestFml = latestDatasetVersion.getFileMetadatas();*/
-
-       /* DatasetVersion newDatasetVersion = dataFile.getOwner().getEditVersion();
-        Dataset dataset = newDatasetVersion.getDataset();*/
-
         DatasetVersion latestVersion = dataFile.getOwner().getLatestVersion();
         Dataset dataset = latestVersion.getDataset();
-
-                //Dataset dataset = dataFile.getOwner();
 
 
         ArrayList<VariableMetadata> neededToUpdateVM = new ArrayList<VariableMetadata>();
@@ -129,14 +117,7 @@ public class EditDDI  extends AbstractApiBean {
         if (!latestVersion.isWorkingCopy()) {
             //for new draft version
 
-          /*  Timestamp updateTime = new Timestamp(new Date().getTime());
-
-            newDatasetVersion.setCreateTime(updateTime);
-            dataset.setModificationTime(updateTime);
-            newDatasetVersion.setLastUpdateTime(updateTime);*/
-
             FileMetadata latestFml = dataFile.getLatestPublishedFileMetadata();
-
 
             boolean groupUpdate = newGroups(varGroupMap, latestFml);
             boolean varUpdate = varUpdates(mapVarToVarMet, latestFml, neededToUpdateVM, true);
@@ -254,36 +235,6 @@ public class EditDDI  extends AbstractApiBean {
 
         return true;
     }
-
-   /* private void copyVariableMetadataAndGroups(FileMetadata fml, FileMetadata fmLatest) {
-        for (VariableMetadata vm : fmLatest.getVariableMetadatas()) {
-            DataVariable dv = em.find(DataVariable.class, vm.getDataVariable().getId());
-            VariableMetadata vmNew = new VariableMetadata(dv, fml);
-            vmNew.setIsweightvar(vm.isIsweightvar());
-            vmNew.setWeighted(vm.isWeighted());
-            vmNew.setWeightvariable(vm.getWeightvariable());
-            vmNew.setInterviewinstruction(vm.getInterviewinstruction());
-            vmNew.setLabel(vm.getLabel());
-            vmNew.setLiteralquestion(vm.getLiteralquestion());
-            vmNew.setNotes(vm.getNotes());
-            vmNew.setUniverse(vm.getUniverse());
-
-            Collection<CategoryMetadata> cms = vm.getCategoriesMetadata();
-            for (CategoryMetadata cm : cms) {
-                CategoryMetadata cmNew = new CategoryMetadata(vmNew, cm.getCategory());
-                cmNew.setWfreq(cm.getWfreq());
-                vmNew.getCategoriesMetadata().add(cmNew);
-            }
-            em.merge(vmNew);
-        }
-
-        for (VarGroup vg : fmLatest.getVarGroups()) {
-            VarGroup vgNew = new VarGroup(fml, vg.getVarsInGroup());
-            vgNew.setLabel(vg.getLabel());
-            em.merge(vgNew);
-        }
-
-    }*/
 
     private void updateCategories(VariableMetadata varMet) {
 
