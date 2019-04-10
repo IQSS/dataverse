@@ -111,7 +111,6 @@ public class EditDDI  extends AbstractApiBean {
         DatasetVersion latestVersion = dataFile.getOwner().getLatestVersion();
         Dataset dataset = latestVersion.getDataset();
 
-
         ArrayList<VariableMetadata> neededToUpdateVM = new ArrayList<VariableMetadata>();
 
         if (!latestVersion.isWorkingCopy()) {
@@ -134,6 +133,7 @@ public class EditDDI  extends AbstractApiBean {
             boolean groupUpdate = newGroups(varGroupMap, fml);
             boolean varUpdate = varUpdates(mapVarToVarMet, fml, neededToUpdateVM, false);
             if (varUpdate || groupUpdate) {
+
                 if (!updateDraftVersion(neededToUpdateVM, varGroupMap, dataset, latestVersion, groupUpdate, fml)) {
                     return error(Response.Status.INTERNAL_SERVER_ERROR, "Failed to update draft version" );
                 }
@@ -171,6 +171,7 @@ public class EditDDI  extends AbstractApiBean {
     }
 
     private boolean createNewDraftVersion(ArrayList<VariableMetadata> neededToUpdateVM, Map<Long,VarGroup> varGroupMap, Dataset dataset, DataFile dataFile, User apiTokenUser ) {
+
 
         FileMetadata fm = dataFile.getFileMetadata();
 
