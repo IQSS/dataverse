@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Stream;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -16,6 +17,7 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 
@@ -147,6 +149,50 @@ public class StringUtilTest {
         @Test
         public void testIsAlphaNumericChar() {
             assertEquals( isValid, StringUtil.isAlphaNumericChar(inputChar) );
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class TestSubstringIncludingLast {
+
+        public String str;
+        public String separator;
+        public String expectedString;
+        
+        public TestSubstringIncludingLast(String str, String separator, String expectedString) {
+            this.str = str;
+            this.separator = separator;
+            this.expectedString = expectedString;
+        }
+
+        @Parameters
+        public static Collection<Object[]> parameters() {
+            return Arrays.asList(
+                    new Object[][] { 
+                        // interface-based partitioning
+                        {null, null, null},
+                        {null, "", null},
+                        {null, "d", null},
+
+                        {"", null, ""},
+                        {"", "", ""},
+                        {"", "abcdfg", ""},
+
+                        {"abcdfg", null, ""},
+                        {"abcdfg", "", ""},
+                        {"abcdfg", "d", "dfg"},
+
+                        // functionality-based partitioning
+                        {"abcdfg" , null, ""},
+                        {"abcdfg", "h", ""},
+                        {"abcdfg", "b", "bcdfg"},
+                    }
+            );
+        }
+
+        @Test
+        public void testSubstringIncludingLast() {
+            assertEquals( expectedString, StringUtil.substringIncludingLast(str, separator) );
         }
     }
 

@@ -34,7 +34,7 @@ public class StorageIOTest {
     @Test
     public void testGetChannel() throws IOException {
         assertEquals(null, instance.getChannel());
-        Channel c = new RandomAccessFile("src/main/java/Bundle.properties", "r").getChannel();
+        Channel c = new RandomAccessFile("src/main/java/propertyFiles/Bundle.properties", "r").getChannel();
         instance.setChannel(c);
         assertEquals(c, instance.getChannel());
     }
