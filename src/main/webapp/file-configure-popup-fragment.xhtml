@@ -9,15 +9,15 @@
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
         <p class="help-block">
-            <h:outputText styleClass="text-left" value=" #{configureFragmentBean.configurePopupTool.description}" escape="false"/>
+            <h:outputText styleClass="text-left" value=" #{configureFragmentBean.configurePopupTool.description}&lt;br/&gt;#{configureFragmentBean.getMessageApi()}" escape="false"/>
         </p>
         
         <div class="button-block">
             <p:commandLink type="button" styleClass="btn btn-default"
-                action="#{configureFragmentBean.configureExternalAlert()}" 
-                value="#{bundle['continue']}" 
-                onclick="PF('configureToolPopup').hide();window.open('#{configureFragmentBean.configurePopupToolHandler.toolUrlWithQueryParams}', '_blank')"
-                update=":messagePanel">
+                           action="#{configureFragmentBean.configureExternalAlert()}"
+                           value="#{bundle['continue']}"
+                           onclick="PF('configureToolPopup').hide();"
+                           update=":messagePanel">
             </p:commandLink>
             <button type="button" class="btn btn-default" onclick="PF('configureToolPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
         </div>
