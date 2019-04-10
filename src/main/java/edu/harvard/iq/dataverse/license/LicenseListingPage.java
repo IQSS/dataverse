@@ -50,6 +50,7 @@ public class LicenseListingPage implements Serializable {
     private List<LicenseDto> licenses = new ArrayList<>();
 
     private LicenseDto freshLicense;
+    private LicenseDto licenseForPreview;
 
     // -------------------- GETTERS --------------------
 
@@ -59,6 +60,13 @@ public class LicenseListingPage implements Serializable {
 
     public LicenseDto getFreshLicense() {
         return freshLicense;
+    }
+
+    /**
+     * Is Used to indicate which license localized names to show.
+     */
+    public LicenseDto getLicenseForPreview() {
+        return licenseForPreview;
     }
 
     // -------------------- LOGIC --------------------
@@ -153,4 +161,9 @@ public class LicenseListingPage implements Serializable {
                         BundleUtil.getStringFromBundle("dashboard.license.noActiveLicensesWarning")));
     }
 
+    // -------------------- SETTERS --------------------
+
+    public void setLicenseForPreview(LicenseDto licenseForPreview) {
+        this.licenseForPreview = licenseForPreview;
+    }
 }

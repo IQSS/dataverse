@@ -4,6 +4,7 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:p="http://primefaces.org/ui"
       xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
 >
 <h:head>
 </h:head>
@@ -61,9 +62,43 @@
                             <p:ajax update="@this" listener="#{LicenseListingPage.saveLicenseActiveStatus(license)}"/>
                         </p:selectBooleanCheckbox>
                     </p:column>
+                    <p:column headerText="#{bundle['dashboard.license.action']}"
+                              style="width: 10%; text-align: center;">
+                        <p:commandLink type="button"
+                                       styleClass="btn btn-default bootstrap-button-tooltip"
+                                       title="#{bundle['dashboard.license.localePreviewButton']}"
+                                       update=":licenseLocalizedPreviewContent"
+                                       action="#{LicenseListingPage.setLicenseForPreview(license)}"
+                                       onclick="PF('licenseLocalizedPreview').show();">
+                            <span style="text-align: center" class="glyphicon glyphicon-eye-open"/>
+                        </p:commandLink>
+                    </p:column>
                 </p:dataTable>
 
             </h:form>
+
+            <p:dialog modal="true" widgetVar="licenseLocalizedPreview" id="licenseLocalizedPreview"
+                      styleClass="disable-scroll" width="600"
+                      draggable="false" closable="false" resizable="false">
+                <p:outputPanel id="licenseLocalizedPreviewContent">
+                    <div style="display: grid; grid-template-columns: repeat(2, 25%); grid-row-gap: 10%;">
+                        <c:forEach items="#{LicenseListingPage.licenseForPreview.localizedNames}" var="localLicense">
+                            <div style="grid-column: 1;">
+                                <h:outputText value="
+                                #{settingsWrapper.getConfiguredLocaleName(localLicense.locale)}:"/>
+                            </div>
+                            <div style="grid-column: 2; width: 200%">
+                                #{localLicense.text}
+                            </div>
+                        </c:forEach>
+                    </div>
+                    <div style="text-align: left; padding-top: 2%">
+                        <p:button value="#{bundle.close}"
+                                  onclick="PF('licenseLocalizedPreview').hide();"
+                                  styleClass="btn btn-default"/>
+                    </div>
+                </p:outputPanel>
+            </p:dialog>
 
 
             <p:dialog modal="true" widgetVar="newLicense" id="newLicense" styleClass="disable-scroll" width="750"
