@@ -33,10 +33,15 @@ Forcing HTTPS
 
 To avoid having your users send credentials in the clear, it's strongly recommended to force all web traffic to go through HTTPS (port 443) rather than HTTP (port 80). The ease with which one can install a valid SSL cert into Apache compared with the same operation in Glassfish might be a compelling enough reason to front Glassfish with Apache. In addition, Apache can be configured to rewrite HTTP to HTTPS with rules such as those found at https://wiki.apache.org/httpd/RewriteHTTPToHTTPS or in the section on :doc:`shibboleth`.
 
+.. _PrivacyConsiderations:
+
 Privacy Considerations
 ++++++++++++++++++++++
 
-Out of the box, Dataverse will list email addresses of the "contacts" for datasets when users visit a dataset page and click the "Export Metadata" button. If you prefer to exclude email addresses of dataset contacts from metadata export, set :ref:`:ExcludeEmailFromExport <:ExcludeEmailFromExport>` to true.
+Email Privacy
+^^^^^^^^^^^^^
+
+Out of the box, Dataverse will list email addresses of the contacts for datasets when users visit a dataset page and click the "Export Metadata" button. Additionally, out of the box, Dataverse will list email addresses of dataverse contacts via API (see :ref:`View a Dataverse <view-dataverse>` in the :doc:`/api/native-api` section of the API Guide). If you would like to exclude these email addresses from export, set :ref:`:ExcludeEmailFromExport <:ExcludeEmailFromExport>` to true.
 
 Additional Recommendations
 ++++++++++++++++++++++++++
@@ -1149,6 +1154,8 @@ API users can retrieve this URL from the SWORD Service Document or the "info" se
 
 :ExcludeEmailFromExport
 +++++++++++++++++++++++
+
+See also :ref:`Privacy Considerations <PrivacyConsiderations>` above.
 
 Set ``:ExcludeEmailFromExport`` to prevent email addresses for contacts from being exposed in XML or JSON representations of dataset and dataverse metadata. For a list exported formats such as DDI, see the :doc:`/admin/metadataexport` section of the Admin Guide.
 
