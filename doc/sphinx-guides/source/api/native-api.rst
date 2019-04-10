@@ -760,6 +760,8 @@ The current draft can also be viewed if you have permissions and pass your ``api
 
     GET http://$SERVER/api/files/{id}/metadata/draft?key={apiKey}
 
+Note: The ``id`` returned in the json response is the id of the file metadata version.
+
 Updating File Metadata
 ~~~~~~~~~~~~~~~~~~~~~~
 
