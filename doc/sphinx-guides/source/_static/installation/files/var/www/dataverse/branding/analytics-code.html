@@ -111,15 +111,23 @@
 
   function getFileId(target) {
     var label = 'Unknown';
-    var row = target.parents('tr')[0];
-    if(row != null) {
-      label = $(row).find('td.col-file-metadata > a').attr('href');
+    if(target.parents('th').length>0) {
+      //Special case - the Download button that downloads all selected files in the dataset
+      label = 'file(s) from ' + stripId($('#datasetForm').attr('action'));
     } else {
-      label = $('#fileForm').attr('action');
+      var row = target.parents('tr')[0];
+      if(row != null) {
+        //finds the file id/DOI in the Dataset page
+        label = $(row).find('td.col-file-metadata > a').attr('href');
+      } else {
+        //finds the file id/DOI in the file page
+        label = $('#fileForm').attr('action');
+      }
+      label = stripId(label);
     }
-    label = stripId(label);
     return label;
   }
+
 
   function stripId(label) {
     var index = label.indexOf('&');
