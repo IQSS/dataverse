@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import org.primefaces.PrimeFaces;
 import org.primefaces.context.RequestContext;
 
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
@@ -55,7 +56,7 @@ public class ConfigureFragmentBean implements java.io.Serializable{
     public String configureExternalAlert() {
         generateApiToken();
         String httpString = "window.open('" + toolHandler.getToolUrlWithQueryParams()+  "','_blank'" +")";
-        RequestContext.getCurrentInstance().execute(httpString);
+        PrimeFaces.current().executeScript(httpString);
         JH.addMessage(FacesMessage.SEVERITY_WARN, tool.getDisplayName(), BundleUtil.getStringFromBundle("file.configure.launchMessage.details") + " " + tool.getDisplayName() + ".");
         return "";
     }    
