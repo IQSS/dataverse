@@ -96,25 +96,6 @@ public class StringUtil {
                  (c >= '0') && (c <= '9') );
     }
 
-    public static String truncateString(String originalString, int maxLength) {
-        maxLength = Math.max( 0, maxLength);
-        String finalString = originalString;
-        if (finalString != null && finalString.length() > maxLength) {
-            String regexp = "[A-Za-z0-9][\\p{Space}]";
-            Pattern pattern = Pattern.compile(regexp);
-            String startParsedString = finalString.substring(0, maxLength);
-            String endParsedString = finalString.substring(maxLength, finalString.length());
-            Matcher matcher = pattern.matcher(endParsedString);
-            boolean found = matcher.find();
-            if (found) {
-                endParsedString = endParsedString.substring(0, matcher.end());
-                finalString = startParsedString + endParsedString + "<span class='dvn_threedots'>...</span>";
-            }
-        }
-        
-        return finalString;             
-    } 
-
     public static String html2text(String html) {
         if (html == null) {
             return null;
