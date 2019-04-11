@@ -8,7 +8,15 @@
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
-
+<script type="application/javascript">
+     /* <![CDATA[ */
+      function handleMsg(xhr, status, args){
+       var toolurl = args.url;
+       window.open(toolurl, target='_blank');  
+    }
+    /* ]]> */
+    </script>
+    
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <p class="help-block">
             #{bundle['file.downloadDialog.tip']}
@@ -170,7 +178,7 @@
             <!--On the dataset page (but not the file page), "tool" is null so we get the tool from the guestbookResponse.-->
             <p:commandLink type="button" process="@this" styleClass="btn btn-default" rendered="#{guestbookResponse.fileFormat == 'externalTool'}"
                            action="#{fileDownloadHelper.writeGuestbookAndLaunchExploreTool(guestbookResponse, fileMetadata, tool)}"
-                           update="guestbookUIFragment">
+                           update="guestbookUIFragment" oncomplete="handleMsg(xhr, status, args)">
                 #{bundle['acceptTerms']}
                 <f:param name="DO_GB_VALIDATION" value="true"/>
             </p:commandLink>    
