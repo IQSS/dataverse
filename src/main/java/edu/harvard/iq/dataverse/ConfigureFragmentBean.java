@@ -92,7 +92,7 @@ public class ConfigureFragmentBean implements java.io.Serializable{
             apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
         }
         if ((apiToken == null) || (apiToken.getExpireTime().before(new Date()))) {
-            messageApi = BundleUtil.getStringFromBundle("configurefragmentbean.apiTokenGenerated",  null);
+            messageApi = BundleUtil.getStringFromBundle("configurefragmentbean.apiTokenGenerated");
         } else {
             messageApi = "";
         }
