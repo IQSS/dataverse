@@ -14,6 +14,7 @@
         <f:viewParam name="dataverseId" value="#{dashboardPage.dataverseId}"/>
         <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
         <f:viewAction action="#{LicenseListingPage.init}"/>
+        <f:viewAction action="#{OtherTermsOfUseTab.init}"/>
         <f:viewAction
                 action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
         <f:viewAction
@@ -28,53 +29,82 @@
             </p:messages>
 
             <h:form id="tableForm">
-                <div class="container">
-                    <div class="row">
-                        <div class="col" style="text-align: right; width: 78%; margin-bottom: 5px">
-                            <p:commandButton action="#{LicenseListingPage.redirectToLicenseReorderPage()}"
-                                             value="#{bundle['dashboard.license.reorderButton']}"
-                                             styleClass="btn btn-primary"/>
 
-                            <p:commandButton onclick="PF('newLicense').show();"
-                                             value="#{bundle['dashboard.license.newLicense.add']}"
-                                             styleClass="btn btn-primary"/>
+                <p:tabView>
+                    <p:tab title="#{bundle['dashboard.license.header']}">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col" style="text-align: right; width: 75%; margin-bottom: 5px">
+                                    <p:commandButton action="#{LicenseListingPage.redirectToLicenseReorderPage()}"
+                                                     value="#{bundle['dashboard.license.reorderButton']}"
+                                                     styleClass="btn "/>
 
+                                    <p:commandButton onclick="PF('newLicense').show();"
+                                                     value="#{bundle['dashboard.license.newLicense.add']}"
+                                                     styleClass="btn"/>
+
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <p:dataTable var="license" value="#{LicenseListingPage.licenses}" style="width: 80%">
-                    <p:column headerText="#{bundle['dashboard.license.displayOrder']}" style="width: 15%">
-                        <h:outputText value="#{license.position}"/>
-                    </p:column>
-                    <p:column headerText="#{bundle['dashboard.license.universalLicenseName']}" style="width: 30%">
-                        <h:outputText value="#{license.name}"/>
-                    </p:column>
-                    <p:column headerText="#{bundle['dashboard.license.licenseURL']}" style="width: 30%">
-                        <h:outputLink value="#{license.url}">#{license.url}</h:outputLink>
-                    </p:column>
-                    <p:column headerText="#{bundle['dashboard.license.badge']}" style="width: 15%">
-                        <p:graphicImage value="#{license.icon.content}" stream="false"
-                                        rendered="#{license.icon.content.contentLength>0}" width="81" height="31"/>
-                    </p:column>
-                    <p:column headerText="#{bundle['dashboard.license.activeByDefault']}"
-                              style="width: 10%; text-align: center; vertical-align: middle">
-                        <p:selectBooleanCheckbox value="#{license.active}">
-                            <p:ajax update="@this" listener="#{LicenseListingPage.saveLicenseActiveStatus(license)}"/>
-                        </p:selectBooleanCheckbox>
-                    </p:column>
-                    <p:column headerText="#{bundle['dashboard.license.action']}"
-                              style="width: 10%; text-align: center;">
-                        <p:commandLink type="button"
-                                       styleClass="btn btn-default bootstrap-button-tooltip"
-                                       title="#{bundle['dashboard.license.localePreviewButton']}"
-                                       update=":licenseLocalizedPreviewContent"
-                                       action="#{LicenseListingPage.setLicenseForPreview(license)}"
-                                       onclick="PF('licenseLocalizedPreview').show();">
-                            <span style="text-align: center" class="glyphicon glyphicon-eye-open"/>
-                        </p:commandLink>
-                    </p:column>
-                </p:dataTable>
+                        <p:dataTable var="license" value="#{LicenseListingPage.licenses}" style="width: 80%">
+                            <p:column headerText="#{bundle['dashboard.license.displayOrder']}" style="width: 15%">
+                                <h:outputText value="#{license.position}"/>
+                            </p:column>
+                            <p:column headerText="#{bundle['dashboard.license.universalLicenseName']}"
+                                      style="width: 30%">
+                                <h:outputText value="#{license.name}"/>
+                            </p:column>
+                            <p:column headerText="#{bundle['dashboard.license.licenseURL']}" style="width: 30%">
+                                <h:outputLink value="#{license.url}">#{license.url}</h:outputLink>
+                            </p:column>
+                            <p:column headerText="#{bundle['dashboard.license.badge']}" style="width: 15%">
+                                <p:graphicImage value="#{license.icon.content}" stream="false"
+                                                rendered="#{license.icon.content.contentLength>0}" width="81"
+                                                height="31"/>
+                            </p:column>
+                            <p:column headerText="#{bundle['dashboard.license.activeByDefault']}"
+                                      style="width: 12%; text-align: center; vertical-align: middle">
+                                <p:selectBooleanCheckbox value="#{license.active}">
+                                    <p:ajax update="@this"
+                                            listener="#{LicenseListingPage.saveLicenseActiveStatus(license)}"/>
+                                </p:selectBooleanCheckbox>
+                            </p:column>
+                            <p:column headerText="#{bundle['dashboard.license.action']}"
+                                      style="width: 10%; text-align: center;">
+                                <p:commandLink type="button"
+                                               styleClass="btn btn-default bootstrap-button-tooltip"
+                                               title="#{bundle['dashboard.license.localePreviewButton']}"
+                                               update=":licenseLocalizedPreviewContent"
+                                               action="#{LicenseListingPage.setLicenseForPreview(license)}"
+                                               onclick="PF('licenseLocalizedPreview').show();">
+                                    <span style="text-align: center" class="glyphicon glyphicon-eye-open"/>
+                                </p:commandLink>
+                            </p:column>
+                        </p:dataTable>
+                    </p:tab>
 
+                    <p:tab title="#{bundle['dashboard.otherTermsOfUse.header']}">
+                        <p:dataTable var="otherTos" value="#{OtherTermsOfUseTab.otherTermsOfUseDto}"
+                                     style="width: 50%; position: relative; left: 25%">
+                            <p:column headerText="#{bundle['dashboard.license.universalLicenseName']}"
+                                      style="width: 30%">
+                                <h:outputText value="#{otherTos.universalDisplayName}"/>
+                            </p:column>
+                            <p:column headerText="#{bundle['dashboard.license.badge']}"
+                                      style="width: 15%; text-align: center">
+                                <p:graphicImage value="#{otherTos.badge}" stream="false"
+                                                width="64" height="64"/>
+                            </p:column>
+                            <p:column headerText="#{bundle['dashboard.license.activeByDefault']}"
+                                      style="width: 10%; text-align: center; vertical-align: middle">
+                                <p:selectBooleanCheckbox value="#{otherTos.active}">
+                                    <p:ajax update="@this"
+                                            listener="#{OtherTermsOfUseTab.saveLicenseActiveStatus(otherTos)}"/>
+                                </p:selectBooleanCheckbox>
+                            </p:column>
+                        </p:dataTable>
+                    </p:tab>
+                </p:tabView>
             </h:form>
 
             <p:dialog modal="true" widgetVar="licenseLocalizedPreview" id="licenseLocalizedPreview"

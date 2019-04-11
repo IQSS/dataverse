@@ -28,14 +28,19 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import static edu.harvard.iq.dataverse.dataaccess.S3AccessIO.S3_IDENTIFIER_PREFIX;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
-import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
-import java.awt.image.BufferedImage;
+import io.vavr.control.Try;
+import org.apache.commons.io.FileUtils;
+
+import javax.activation.MimetypesFileTypeMap;
+import javax.ejb.EJBException;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,26 +62,20 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.activation.MimetypesFileTypeMap;
-import javax.ejb.EJBException;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
-import org.apache.commons.io.FileUtils;
-
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import static edu.harvard.iq.dataverse.dataaccess.S3AccessIO.S3_IDENTIFIER_PREFIX;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 
 
@@ -1477,6 +1476,12 @@ public class FileUtil implements java.io.Serializable  {
     
     public static boolean isPackageFile(DataFile dataFile) {
         return DataFileServiceBean.MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(dataFile.getContentType());
+    }
+
+    public static byte[] getFileFromResources(String path) {
+        return Try.of(() -> Files.readAllBytes(Paths
+                .get(FileUtil.class.getResource(path).getPath())))
+                .getOrElseThrow(throwable -> new RuntimeException("Unable to get file from resources", throwable));
     }
 
 }

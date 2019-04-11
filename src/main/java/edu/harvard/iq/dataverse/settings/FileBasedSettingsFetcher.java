@@ -1,5 +1,10 @@
 package edu.harvard.iq.dataverse.settings;
 
+import org.apache.commons.lang3.StringUtils;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -8,12 +13,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
-import javax.annotation.PostConstruct;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Service responsible for loading and serving application settings
@@ -52,8 +51,8 @@ public class FileBasedSettingsFetcher {
 		} catch (IOException e) {
 			throw new RuntimeException("Unable to read properties from classpath: " + DEFAULT_PROPERTIES_CLASSPATH_LOCATION, e);
 		}
-		
-		File customProperties = new File(CUSTOM_PROPERTIES_LOCATION);
+
+        File customProperties = new File(CUSTOM_PROPERTIES_LOCATION);
 		if (customProperties.exists() && customProperties.isFile()) {
 			try (InputStream customPropInputStream = new FileInputStream(customProperties)) {
 				Properties customProp = new Properties();
