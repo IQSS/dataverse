@@ -559,7 +559,7 @@ public class GuestbookResponseServiceBean {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
             return authUser.getName();
         }
-        return "Guest";
+        return "";
     }
 
     public String getUserEMail(User user) {
@@ -930,6 +930,12 @@ public class GuestbookResponseServiceBean {
         // dataset id is null, will return 0        
         Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o;");
         return (Long) query.getSingleResult();
+    }
+    
+    public List<GuestbookResponse> findByAuthenticatedUserId(AuthenticatedUser user) {
+        Query query = em.createNamedQuery("GuestbookResponse.findByAuthenticatedUserId"); 
+        query.setParameter("authenticatedUserId", user.getId());
+        return query.getResultList();
     }
     
 }

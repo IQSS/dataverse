@@ -1075,7 +1075,8 @@ public class UtilIT {
     }
 
     static Response requestFileAccess(String fileIdOrPersistentId, String apiToken) {
-
+        System.out.print ("Reuest file acceess + fileIdOrPersistentId: " + fileIdOrPersistentId);
+        System.out.print ("Reuest file acceess + apiToken: " + apiToken);
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
@@ -1087,6 +1088,7 @@ public class UtilIT {
         if (optionalQueryParam.isEmpty()) {
             keySeparator = "?";
         }
+        System.out.print ("URL:  " + "/api/access/datafile/" + idInPath + "/requestAccess" + optionalQueryParam + keySeparator + "key=" + apiToken);
         Response response = given()
                 .put("/api/access/datafile/" + idInPath + "/requestAccess" + optionalQueryParam + keySeparator + "key=" + apiToken);
         return response;
@@ -1378,6 +1380,12 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 //                .get("/api/datasets/:persistentId/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
                 .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
+    }
+    
+    static Response exportDataverse(String identifier, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/" + identifier );
     }
     
     static Response search(String query, String apiToken, String parameterString) {
@@ -1919,6 +1927,40 @@ public class UtilIT {
         String apiPath = String.format("/oai?verb=ListIdentifiers&set=%s&metadataPrefix=%s", setName, metadataFormat);
         return given().get(apiPath);
     }
+    
+    static Response changeAuthenticatedUserIdentifier(String oldIdentifier, String newIdentifier, String apiToken) {
+        Response response;
+        String path = String.format("/api/users/%s/changeIdentifier/%s", oldIdentifier, newIdentifier );
+        
+        if(null == apiToken) {
+            response = given()
+                .post(path);
+        } else {
+            response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post(path);
+        }
+        
+        return response;
+    }
+    
+    static Response mergeAccounts(String baseId, String consumedId, String apiToken) {
+        Response response;
+        String path = String.format("/api/users/%s/mergeIntoUser/%s", consumedId, baseId );
+        
+        if(null == apiToken) {
+            response = given()
+                .post(path);
+        } else {
+            response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post(path);
+        }
+        
+        return response;
+    }
+    
+    
 
     static Response makeDataCountSendDataToHub() {
         return given().post("/api/admin/makeDataCount/sendToHub");

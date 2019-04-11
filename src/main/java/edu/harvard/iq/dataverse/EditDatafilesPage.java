@@ -69,13 +69,19 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.httpclient.methods.GetMethod;
 import java.text.DateFormat;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.FacesEvent;
+import javax.faces.event.ValueChangeEvent;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.context.RequestContext;
 
@@ -1060,26 +1066,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public String save() {
         
-        
-        /*
-        // Validate
-        Set<ConstraintViolation> constraintViolations = workingVersion.validate();
-        if (!constraintViolations.isEmpty()) {
-             //JsfHelper.addFlashMessage(getBundleString("dataset.message.validationError"));
-            logger.fine("Constraint violation detected on SAVE: "+constraintViolations.toString());
-             JH.addMessage(FacesMessage.SEVERITY_ERROR, getBundleString("dataset.message.validationError"));
-             
-            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
-            return "";
-        }
-        }*/
-        
-        // Once all the filemetadatas pass the validation, we'll only allow the user 
-        // to try to save once; (this it to prevent them from creating multiple
-        // DRAFT versions, if the page gets stuck in that state where it 
-        // successfully creates a new version, but can't complete the remaining
-        // tasks. -- L.A. 4.2
-        
         if (!saveEnabled) {
             return "";
         }
@@ -1125,7 +1111,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
                 for (DatasetVersion dv : lockTest.getVersions()) {
                     if (dv.isHasPackageFile()) {
-                        logger.log(Level.INFO, ResourceBundle.getBundle("Bundle").getString("file.api.alreadyHasPackageFile")
+                        logger.log(Level.INFO, BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile")
                                 + "");
                         populateDatasetUpdateFailureMessage();
                         return null;
@@ -2781,6 +2767,10 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public void handleNameChange(final AjaxBehaviorEvent event) {        
+        datasetUpdateRequired = true;
+    }
+    
+    public void handleFileDirectoryChange(final ValueChangeEvent event) {  
         datasetUpdateRequired = true;
     }
         
