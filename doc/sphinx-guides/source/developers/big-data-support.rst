@@ -92,7 +92,7 @@ If you need a fully operating DCM client for development purposes, these steps w
 Docker Image Set-up
 ^^^^^^^^^^^^^^^^^^^
 
-See https://github.com/IQSS/dataverse/blob/develop/conf/docker-dcm/readme.txt
+See https://github.com/IQSS/dataverse/blob/develop/conf/docker-dcm/readme.md
 
 - Install docker if you do not have it
       
@@ -103,6 +103,7 @@ Optional steps for setting up the S3 Docker DCM Variant
 
   - Add AWS bucket info to dcmsrv
     - Add AWS credentials to ``~/.aws/credentials``
+
       - ``[default]``
       - ``aws_access_key_id =``
       - ``aws_secret_access_key =``
@@ -117,6 +118,7 @@ Optional steps for setting up the S3 Docker DCM Variant
 
   - Add AWS bucket info to Dataverse
     - Add AWS credentials to ``~/.aws/credentials``
+    
       - ``[default]``
       - ``aws_access_key_id =``
       - ``aws_secret_access_key =``
@@ -175,6 +177,19 @@ Additional DCM docker development tips
 
 Repository Storage Abstraction Layer (RSAL)
 -------------------------------------------
+
+Steps to set up a DCM via Docker for Development
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+See https://github.com/IQSS/dataverse/blob/develop/conf/docker-dcm/readme.md
+
+Using the RSAL Docker Containers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Create a dataset (either with the procedure mentioned in DCM Docker Containers, or another process)
+- Publish the dataset (from the client container): ``cd /mnt; ./publish_major.bash ${database_id}``
+- Run the RSAL component of the workflow (from the host): ``docker exec -it rsalsrv /opt/rsal/scn/pub.py``
+- If desired, from the client container you can download the dataset following the instructions in the dataset access section of the dataset page.
 
 Configuring the RSAL Mock
 ~~~~~~~~~~~~~~~~~~~~~~~~~

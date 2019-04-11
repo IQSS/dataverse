@@ -5,6 +5,8 @@ Dataverse 4 exposes most of its GUI functionality via a REST-based API. This sec
 
 .. note:: |CORS| Some API endpoint allow CORS_ (cross-origin resource sharing), which makes them usable from scripts runing in web browsers. These endpoints are marked with a *CORS* badge.
 
+.. note:: Bash environment variables shown below. The idea is that you can "export" these environment variables before copying and pasting the commands that use them. For example, you can set ``$SERVER_URL`` by running ``export SERVER_URL="https://demo.dataverse.org"`` in your Bash shell. To check if the environment variable was set properly, you can "echo" it (e.g. ``echo $SERVER_URL``).
+
 .. _CORS: https://www.w3.org/TR/cors/
 
 .. warning:: Dataverse 4's API is versioned at the URI - all API calls may include the version number like so: ``http://server-address/api/v1/...``. Omitting the ``v1`` part would default to the latest API version (currently 1). When writing scripts/applications that will be used for a long time, make sure to specify the API version, so they don't break when the API is upgraded.
@@ -37,19 +39,23 @@ Download the :download:`JSON example <../_static/api/dataverse-complete.json>` f
 
 .. literalinclude:: ../_static/api/dataverse-complete.json
 
+.. _view-dataverse:
+
 View a Dataverse
 ~~~~~~~~~~~~~~~~
 
-|CORS| View data about the dataverse identified by ``$id``. ``$id`` can be the id number of the dataverse, its alias, or the special value ``:root``. ::
+|CORS| View data about the dataverse identified by ``$id``. ``$id`` can be the id number of the dataverse, its identifier (a.k.a. alias), or the special value ``:root`` for the root dataverse.
 
-    GET http://$SERVER/api/dataverses/$id
+``curl $SERVER_URL/api/dataverses/$id``
 
 Delete a Dataverse
 ~~~~~~~~~~~~~~~~~~
 
-Deletes the dataverse whose ID is given::
+In order to delete a dataverse you must first delete or move all of its contents elsewhere.
 
-    DELETE http://$SERVER/api/dataverses/$id?key=$apiKey
+Deletes the dataverse whose ID is given:
+
+``curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE $SERVER_URL/api/dataverses/$id``
 
 Show Contents of a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -264,13 +270,6 @@ Get JSON Representation of a Dataset
 
   GET http://$SERVER/api/datasets/$id?key=$apiKey
 
-Delete Dataset
-~~~~~~~~~~~~~~
-
-Delete the dataset whose id is passed::
-
-  DELETE http://$SERVER/api/datasets/$id?key=$apiKey
-
 List Versions of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -292,7 +291,7 @@ Export Metadata of a Dataset in Various Formats
 
     GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
 
-.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , and ``dataverse_json``.
+.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , ``OAI_ORE`` , ``Datacite`` and ``dataverse_json``.
 
 Schema.org JSON-LD
 ^^^^^^^^^^^^^^^^^^
@@ -443,7 +442,7 @@ Add a file to an existing Dataset. Description and tags are optional::
 
 A more detailed "add" example using curl::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"], "restrict":"true"}' "https://example.dataverse.edu/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"true"}' "https://example.dataverse.edu/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
 
 Example python code to add a file. This may be run by changing these parameters in the sample code:
 
@@ -618,6 +617,73 @@ If the dataset is not locked (or if there is no lock of the specified type), the
 
 (Note that the API calls above all support both the database id and persistent identifier notation for referencing the dataset)
 
+.. _dataset-metrics-api:
+
+Dataset Metrics
+~~~~~~~~~~~~~~~
+
+Please note that these dataset level metrics are only available if support for Make Data Count has been enabled in your installation of Dataverse. See the :ref:`Dataset Metrics <dataset-metrics-user>` in the :doc:`/user/dataset-management` section of the User Guide and the :doc:`/admin/make-data-count` section of the Admin Guide for details.
+
+Please note that in the curl examples, Bash environment variables are used with the idea that you can set a few environment variables and copy and paste the examples as is. For example, "$DV_BASE_URL" could become "https://demo.dataverse.org" by issuing the following ``export`` command from Bash:
+
+``export DV_BASE_URL=https://demo.dataverse.org``
+
+To confirm that the environment variable was set properly, you can use ``echo`` like this:
+
+``echo $DV_BASE_URL``
+
+Please note that for each of these endpoints except the "citations" endpoint, you can optionally pass the query parameter "country" with a two letter code (e.g. "country=us") and you can specify a particular month by adding it in yyyy-mm format after the requested metric (e.g. "viewsTotal/2019-02").
+
+Retrieving Total Views for a Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Please note that "viewsTotal" is a combination of "viewsTotalRegular" and "viewsTotalMachine" which can be requested separately.
+
+``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/viewsTotal?persistentId=$DOI"``
+
+Retrieving Unique Views for a Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Please note that "viewsUnique" is a combination of "viewsUniqueRegular" and "viewsUniqueMachine" which can be requested separately.
+
+``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/viewsUnique?persistentId=$DOI"``
+
+Retrieving Total Downloads for a Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Please note that "downloadsTotal" is a combination of "downloadsTotalRegular" and "downloadsTotalMachine" which can be requested separately.
+
+``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/downloadsTotal?persistentId=$DOI"``
+
+Retrieving Unique Downloads for a Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Please note that "downloadsUnique" is a combination of "downloadsUniqueRegular" and "downloadsUniqueMachine" which can be requested separately.
+
+``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/downloadsUnique?persistentId=$DOI"``
+
+Retrieving Citations for a Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/citations?persistentId=$DOI"``
+
+Delete Unpublished Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Delete the dataset whose id is passed:
+
+``curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE http://$SERVER/api/datasets/$id``
+
+Delete Published Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Normally published datasets should not be deleted, but there exists a "destroy" API endpoint for superusers which will act on a dataset given a persistent ID or dataset database ID:
+
+``curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE http://$SERVER/api/datasets/:persistentId/destroy/?persistentId=doi:10.5072/FK2/AAA000``
+  
+``curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE http://$SERVER/api/datasets/999/destroy``
+  
+Calling the destroy endpoint is permanent and irreversible. It will remove the dataset and its datafiles, then re-index the parent dataverse in Solr. This endpoint requires the API token of a superuser.
 
 Files
 -----
@@ -651,104 +717,65 @@ A curl example using an ``id``::
 A curl example using a ``pid``::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/files/:persistentId/restrict?persistentId={pid}
-
-Replacing Files
-~~~~~~~~~~~~~~~
-
-Replace an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Note that metadata such as description and tags are not carried over from the file being replaced
-
-.. code-block:: bash
-
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' \
-  -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}'\
-  "https://demo.dataverse.org/api/files/$FILE_ID/replace"
-
-Example python code to replace a file.  This may be run by changing these parameters in the sample code:
-
-* ``dataverse_server`` - e.g. https://demo.dataverse.org
-* ``api_key`` - See the top of this document for a description
-* ``file_id`` - Database id of the file to replace (returned in the GET API for a Dataset)
-
-.. code-block:: python
-
-    from datetime import datetime
-    import json
-    import requests  # http://docs.python-requests.org/en/master/
-
-    # --------------------------------------------------
-    # Update params below to run code
-    # --------------------------------------------------
-    dataverse_server = 'http://127.0.0.1:8080' # no trailing slash
-    api_key = 'some key'
-    file_id = 1401  # id of the file to replace
-
-    # --------------------------------------------------
-    # Prepare replacement "file"
-    # --------------------------------------------------
-    file_content = 'content: %s' % datetime.now()
-    files = {'file': ('replacement_file.txt', file_content)}
-
-    # --------------------------------------------------
-    # Using a "jsonData" parameter, add optional description + file tags
-    # --------------------------------------------------
-    params = dict(description='Sunset',
-                categories=['One', 'More', 'Cup of Coffee'])
-
-    # -------------------
-    # IMPORTANT: If the mimetype of the replacement file differs
-    #   from the origina file, the replace will fail
-    #
-    #  e.g. if you try to replace a ".csv" with a ".png" or something similar
-    #
-    #  You can override this with a "forceReplace" parameter
-    # -------------------
-    params['forceReplace'] = True
-
-
-    params_as_json_string = json.dumps(params)
-
-    payload = dict(jsonData=params_as_json_string)
-
-    print 'payload', payload
-    # --------------------------------------------------
-    # Replace file using the id of the file to replace
-    # --------------------------------------------------
-    url_replace = '%s/api/v1/files/%s/replace?key=%s' % (dataverse_server, file_id, api_key)
-
-    # -------------------
-    # Make the request
-    # -------------------
-    print '-' * 40
-    print 'making request: %s' % url_replace
-    r = requests.post(url_replace, data=payload, files=files)
-
-    # -------------------
-    # Print the response
-    # -------------------
-    print '-' * 40
-    print r.json()
-    print r.status_code
     
 Uningest a File
 ~~~~~~~~~~~~~~~
 
-Reverse the tabular data ingest process performed on a file where ``{id}`` is the database id of the file to process. Note that this requires "super user" credentials::
+Reverse the tabular data ingest process performed on a file where ``{id}`` is the database id of the file to process. Note that this requires "superuser" credentials::
 
     POST http://$SERVER/api/files/{id}/uningest?key={apiKey}
-
 
 Reingest a File
 ~~~~~~~~~~~~~~~
 
-Attempt to ingest an existing datafile as tabular data. This API can be used on a file that was not ingested as tabular back when it was uploaded. For example, a Stata v.14 file that was uploaded before ingest support for Stata 14 was added (in Dataverse v.4.9). It can also be used on a file that failed to ingest due to a bug in the ingest plugin that has since been fixed (hence the name "re-ingest").
+Attempt to ingest an existing datafile as tabular data. This API can be used on a file that was not ingested as tabular back when it was uploaded. For example, a Stata v.14 file that was uploaded before ingest support for Stata 14 was added (in Dataverse v.4.9). It can also be used on a file that failed to ingest due to a bug in the ingest plugin that has since been fixed (hence the name "reingest").
 
-Note that this requires "super user" credentials:: 
+Note that this requires "superuser" credentials:: 
 
     POST http://$SERVER/api/files/{id}/reingest?key={apiKey}
 
 (``{id}`` is the database id of the file to process)
 
-Also, note that, at present the API cannot be used on a file that's already ingested as tabular.
+Note: at present, the API cannot be used on a file that's already successfully ingested as tabular.
+
+Replacing Files
+~~~~~~~~~~~~~~~
+
+Replace an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Requires the ``file`` to be passed as well as a ``jsonString`` expressing the new metadata.  Note that metadata such as description, directoryLabel (File Path) and tags are not carried over from the file being replaced::
+
+    POST -F 'file=@file.extension' -F 'jsonData={json}' http://$SERVER/api/files/{id}/metadata?key={apiKey}
+
+Example::
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' \
+  -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}'\
+  "https://demo.dataverse.org/api/files/$FILE_ID/replace"
+
+Getting File Metadata
+~~~~~~~~~~~~~~~~~~~~~
+
+Provides a json representation of the file metadata for an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file::
+
+    GET http://$SERVER/api/files/{id}/metadata
+
+The current draft can also be viewed if you have permissions and pass your ``apiKey``::
+
+    GET http://$SERVER/api/files/{id}/metadata/draft?key={apiKey}
+
+Note: The ``id`` returned in the json response is the id of the file metadata version.
+
+Updating File Metadata
+~~~~~~~~~~~~~~~~~~~~~~
+
+Updates the file metadata for an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Requires a ``jsonString`` expressing the new metadata. No metadata from the previous version of this file will be persisted, so if you want to update a specific field first get the json with the above command and alter the fields you want::
+
+    POST -F 'jsonData={json}' http://$SERVER/api/files/{id}/metadata?key={apiKey}
+
+Example::
+
+    curl -H "X-Dataverse-key:{apiKey}" -X POST -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"restrict":false}' 'http://localhost:8080/api/files/264/metadata'
+
+Also note that dataFileTags are not versioned and changes to these will update the published version of the file.
 
 Provenance
 ~~~~~~~~~~
@@ -1018,6 +1045,9 @@ Show data about an authentication provider::
 
   GET http://$SERVER/api/admin/authenticationProviders/$id
 
+
+.. _api_toggle_auth_provider:
+
 Enable or Disable an Authentication Provider
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1206,6 +1236,32 @@ POSTed JSON example::
       "lastName": "Dataversky",
       "email": "pete@mailinator.com"
     }
+
+.. _merge-accounts-label:
+
+Merge User Accounts
+~~~~~~~~~~~~~~~~~~~
+
+If a user has created multiple accounts and has been performed actions under both accounts that need to be preserved, these accounts can be combined.  One account can be merged into another account and all data associated with both accounts will be combined in the surviving account. Only accessible to superusers.::
+
+    POST https://$SERVER/api/users/$toMergeIdentifier/mergeIntoUser/$continuingIdentifier
+
+Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://demo.dataverse.org/api/users/jsmith2/mergeIntoUser/jsmith``
+
+This action moves account data from jsmith2 into the account jsmith and deletes the account of jsmith2.
+
+.. _change-identifier-label:
+
+Change User Identifier
+~~~~~~~~~~~~~~~~~~~~~~
+
+Changes identifier for user in ``AuthenticatedUser``, ``BuiltinUser``, ``AuthenticatedUserLookup`` & ``RoleAssignment``. Allows them to log in with the new identifier. Only accessible to superusers.::
+
+    PUT http://$SERVER/api/users/$oldIdentifier/changeIdentifier/$newIdentifier
+
+Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST  https://demo.dataverse.org/api/users/johnsmith/changeIdentifier/jsmith``
+
+This action changes the identifier of user johnsmith to jsmith.
 
 Make User a SuperUser
 ~~~~~~~~~~~~~~~~~~~~~

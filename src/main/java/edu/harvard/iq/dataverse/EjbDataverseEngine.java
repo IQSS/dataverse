@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -172,6 +173,9 @@ public class EjbDataverseEngine {
     
     @EJB
     FileDownloadServiceBean fileDownloadService;
+    
+    @EJB
+    ConfirmEmailServiceBean confirmEmailService;
     
     
     @Resource
@@ -479,6 +483,16 @@ public class EjbDataverseEngine {
                 @Override
                 public FileDownloadServiceBean fileDownload() {
                     return fileDownloadService;
+                }
+                
+                @Override
+                public ConfirmEmailServiceBean confirmEmail() {
+                    return confirmEmailService;
+                }
+                
+                @Override
+                public ActionLogServiceBean actionLog() {
+                    return logSvc;
                 }
 
             };
