@@ -6,10 +6,12 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -21,6 +23,8 @@ import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteMapLayerMetadataCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDataFileCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDraftFileMetadataIfAvailableCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
@@ -28,6 +32,7 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -36,23 +41,28 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import javax.ws.rs.core.UriInfo;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import java.util.List;
 
 @Path("files")
 public class Files extends AbstractApiBean {
@@ -75,6 +85,8 @@ public class Files extends AbstractApiBean {
     SystemConfig systemConfig;
     @EJB
     SettingsServiceBean settingsService;
+    @Inject
+    MakeDataCountLoggingServiceBean mdcLogService;
     
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
@@ -138,6 +150,8 @@ public class Files extends AbstractApiBean {
     }
         
     
+    //TODO: This api would be improved by reporting the new fileId after replace
+    
     /**
      * Replace an Existing File 
      * 
@@ -161,9 +175,7 @@ public class Files extends AbstractApiBean {
         if (!systemConfig.isHTTPUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
         }
-        // -------------------------------------
         // (1) Get the user from the API key
-        // -------------------------------------
         User authUser;
         try {
             authUser = findUserOrDie();
@@ -173,9 +185,7 @@ public class Files extends AbstractApiBean {
                     );
         }
 
-        // -------------------------------------
-        // (2) Check/Parse the JSON (if uploaded)
-        // -------------------------------------        
+        // (2) Check/Parse the JSON (if uploaded)  
         Boolean forceReplace = false;
         OptionalFileParams optionalFileParams = null;
         if (jsonData != null) {
@@ -183,7 +193,6 @@ public class Files extends AbstractApiBean {
             try {
                 jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
                 // (2a) Check for optional "forceReplace"
-                // -------------------------------------
                 if ((jsonObj.has("forceReplace")) && (!jsonObj.get("forceReplace").isJsonNull())) {
                     forceReplace = jsonObj.get("forceReplace").getAsBoolean();
                     if (forceReplace == null) {
@@ -193,7 +202,6 @@ public class Files extends AbstractApiBean {
                 try {
                     // (2b) Load up optional params via JSON
                     //  - Will skip extra attributes which includes fileToReplaceId and forceReplace
-                    //---------------------------------------
                     optionalFileParams = new OptionalFileParams(jsonData);
                 } catch (DataFileTagException ex) {
                     return error(Response.Status.BAD_REQUEST, ex.getMessage());
@@ -203,16 +211,14 @@ public class Files extends AbstractApiBean {
             }
         }
 
-        // -------------------------------------
         // (3) Get the file name and content type
-        // -------------------------------------
+        if(null == contentDispositionHeader) {
+             return error(BAD_REQUEST, "You must upload a file.");
+        }
         String newFilename = contentDispositionHeader.getFileName();
         String newFileContentType = formDataBodyPart.getMediaType().toString();
         
-        
-        //-------------------
         // (4) Create the AddReplaceFileHelper object
-        //-------------------
         msg("REPLACE!");
 
         DataverseRequest dvRequest2 = createDataverseRequest(authUser);
@@ -224,9 +230,7 @@ public class Files extends AbstractApiBean {
                                                 this.commandEngine,
                                                 this.systemConfig);
 
-        //-------------------
         // (5) Run "runReplaceFileByDatasetId"
-        //-------------------
         long fileToReplaceId = 0;
         try {
             DataFile dataFile = findDataFileOrDie(fileIdOrPersistentId);
@@ -285,7 +289,160 @@ public class Files extends AbstractApiBean {
         }
             
     } // end: replaceFileInDataset
+    
+    //Much of this code is taken from the replace command, 
+    //simplified as we aren't actually switching files
+    @POST
+    @Path("{id}/metadata")
+    public Response updateFileMetadata(@FormDataParam("jsonData") String jsonData,
+                    @PathParam("id") String fileIdOrPersistentId
+        ) throws DataFileTagException, CommandException {
+        
+        FileMetadata upFmd = null;
+        
+        try {
+            DataverseRequest req;
+            try {
+                req = createDataverseRequest(findUserOrDie());
+            } catch (Exception e) {
+                return error(BAD_REQUEST, "Error attempting to request information. Maybe a bad API token?");
+            }
+            final DataFile df;
+            try {
+                df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+            } catch (Exception e) {
+                return error(BAD_REQUEST, "Error attempting get the requested data file.");
+            }
 
+            
+            User authUser = findUserOrDie();
+
+            //You shouldn't be trying to edit a datafile that has been replaced
+            List<Long> result = em.createNamedQuery("DataFile.findDataFileThatReplacedId", Long.class)
+            .setParameter("identifier", df.getId())
+                    .getResultList();
+            //There will be either 0 or 1 returned dataFile Id. If there is 1 this file is replaced and we need to error.
+            if(null != result && result.size() > 0) {
+                //we get the data file to do a permissions check, if this fails it'll go to the WrappedResponse below for an ugly unpermitted error
+                execCommand(new GetDataFileCommand(req, findDataFileOrDie(result.get(0).toString())));
+
+                return error(Response.Status.BAD_REQUEST, "You cannot edit metadata on a dataFile that has been replaced. Please try again with the newest file id.");
+            }
+
+            // (2) Check/Parse the JSON (if uploaded)  
+            OptionalFileParams optionalFileParams = null;
+
+            if (jsonData != null) {
+                JsonObject jsonObj = null;
+                try {
+                    jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
+                    if ((jsonObj.has("restrict")) && (!jsonObj.get("restrict").isJsonNull())) { 
+                        Boolean restrict = jsonObj.get("restrict").getAsBoolean();
+
+                        if (restrict != df.getFileMetadata().isRestricted()) {
+                            commandEngine.submit(new RestrictFileCommand(df, req, restrict));
+                        }
+                    }
+                    try {
+                        // (2b) Load up optional params via JSON
+                        //  - Will skip extra attributes which includes fileToReplaceId and forceReplace
+                        optionalFileParams = new OptionalFileParams(jsonData);
+                    } catch (DataFileTagException ex) {
+                        return error(Response.Status.BAD_REQUEST, ex.getMessage());
+                    }
+                } catch (ClassCastException | com.google.gson.JsonParseException ex) {
+                    return error(Response.Status.BAD_REQUEST, "Exception parsing provided json");
+                }
+            }
+
+            try {
+                DatasetVersion editVersion = df.getOwner().getEditVersion();
+
+                //We get the new fileMetadata from the new version
+                //This is because after generating the draft with getEditVersion,
+                //the updated fileMetadata is not populated to the DataFile object where its easily accessible.
+                //Due to this we have to find the FileMetadata inside the DatasetVersion by comparing files info.
+                List<FileMetadata> fmdList = editVersion.getFileMetadatas();
+                for(FileMetadata testFmd : fmdList) {
+                    DataFile daf = testFmd.getDataFile();
+                    if(daf.getChecksumType().equals(df.getChecksumType())
+                        && daf.getChecksumValue().equals(df.getChecksumValue())) {
+                        upFmd = testFmd;
+                    }
+                }
+                
+                if (upFmd == null){
+                    return error(Response.Status.BAD_REQUEST, "An error has occurred attempting to update the requested DataFile. It is not part of the current version of the Dataset.");
+                }
+
+                optionalFileParams.addOptionalParams(upFmd);
+
+                Dataset upDS = execCommand(new UpdateDatasetVersionCommand(upFmd.getDataFile().getOwner(), req));
+
+            } catch (Exception e) {
+                logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", e);
+                return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile" + e);
+            }
+
+        } catch (WrappedResponse wr) {
+            return error(Response.Status.BAD_REQUEST, "An error has occurred attempting to update the requested DataFile, likely related to permissions.");
+        }
+
+        String jsonString = upFmd.asGsonObject(true).toString();
+
+        return Response
+                .status(Response.Status.OK)
+                .entity("File Metadata update has been completed: " + jsonString)
+                .type(MediaType.TEXT_PLAIN) //Our plain text string is already json
+                .build();
+    }
+    
+    @GET                             
+    @Path("{id}/metadata")
+    public Response getFileMetadata(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
+            DataverseRequest req;
+            try {
+                req = createDataverseRequest(findUserOrDie());
+            } catch (Exception e) {
+                return error(BAD_REQUEST, "Error attempting to request information. Maybe a bad API token?");
+            }
+            final DataFile df;
+            try {
+                df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+            } catch (Exception e) {
+                return error(BAD_REQUEST, "Error attempting get the requested data file.");
+            }
+            FileMetadata fm;
+            
+            if(null != getDraft && getDraft) { 
+                try {
+                    fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+                } catch (WrappedResponse w) {
+                    return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset." );
+                }
+                if(null == fm) {
+                    return error(BAD_REQUEST, "No draft availabile for this dataset");
+                }
+            } else {
+                fm = df.getLatestPublishedFileMetadata();
+                MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
+                mdcLogService.logEntry(entry);
+            }
+            
+            String jsonString = fm.asGsonObject(true).toString();
+            
+            return Response
+                .status(Response.Status.OK)
+                .entity(jsonString)
+                .type(MediaType.TEXT_PLAIN) //Our plain text string is already json
+                .build();
+    }
+    @GET                    
+    @Path("{id}/metadata/draft")
+    public Response getFileMetadataDraft(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
+        return getFileMetadata(fileIdOrPersistentId, versionId, uriInfo, headers, response, true);
+    }
+    
     // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
     // TODO: Rename this start with "delete" rather than "get".
     @DELETE
@@ -334,7 +491,7 @@ public class Files extends AbstractApiBean {
             Long dataFileId = dataFile.getId();
             dataFile = fileService.find(dataFileId);
             Dataset theDataset = dataFile.getOwner();
-            exportMetadata(settingsService, theDataset);
+            exportDatasetMetadata(settingsService, theDataset);
             return ok("Datafile " + dataFileId + " uningested.");
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -423,7 +580,7 @@ public class Files extends AbstractApiBean {
      * Attempting to run metadata export, for all the formats for which we have
      * metadata Exporters.
      */
-    private void exportMetadata(SettingsServiceBean settingsServiceBean, Dataset theDataset) {
+    private void exportDatasetMetadata(SettingsServiceBean settingsServiceBean, Dataset theDataset) {
 
         try {
             ExportService instance = ExportService.getInstance(settingsServiceBean);

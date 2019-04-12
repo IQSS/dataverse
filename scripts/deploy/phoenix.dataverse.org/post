@@ -3,7 +3,6 @@ cd scripts/api
 ./setup-all.sh --insecure -p=admin1 | tee /tmp/setup-all.sh.out
 cd ../..
 psql -U dvnapp dvndb -f scripts/database/reference_data.sql
-psql -U dvnapp dvndb -f doc/sphinx-guides/source/_static/util/pg8-createsequence-prep.sql
 psql -U dvnapp dvndb -f doc/sphinx-guides/source/_static/util/createsequence.sql
 curl http://localhost:8080/api/admin/settings/:DoiProvider -X PUT -d FAKE
 scripts/search/tests/publish-dataverse-root
