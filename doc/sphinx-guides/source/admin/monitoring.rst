@@ -60,7 +60,7 @@ Monitoring HTTP Traffic from the Client Side
 
 HTTP traffic for web clients that have cookies enabled (most browsers) can be tracked by Google Analytics (https://www.google.com/analytics/) and Matomo (formerly "Piwik"; https://matomo.org/) as explained in the :ref:`Web-Analytics-Code` section of the Installation Guide.
 
-To track analytics beyond pageviews, style classes have been added for end user action buttons, which include:
+To track analytics beyond pageviews, see the :ref:`Tracking-Button-Clicks` section, which outlines how to utilize element classes in the Dataverse source code for action buttons, which include:
 
 ``btn-compute``, ``btn-contact``, ``btn-download``, ``btn-explore``, ``btn-export``, ``btn-preview``, ``btn-request``, ``btn-share``
 

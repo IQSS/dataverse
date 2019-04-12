@@ -1,0 +1,186 @@
+    <style>
+    	/* NOTE: You can use the custom CSS configuration to move this CSS your own stylesheet. */
+
+    	/* Overwrite default footer styles to make room at the bottom of the browser page for our custom footer... */
+    	html, body {
+            height: 100%;
+        }
+        #content.container {
+            min-height: calc(100% - 210px);
+            margin-bottom: -142px; 
+        }
+        #content.container:after {
+            content: "";
+            display: block;
+        }
+        #footer {
+                color: #a9a9a9; margin-top:0px; padding-bottom:0px; bottom:-130px; position: relative;
+        }
+        
+        /* Place custom footer just above default footer at the bottom of the page... */
+        #custom-footer, #content.container:after {
+            height: 142px; 
+        }
+        #custom-footer {
+            background: #414141; color: #a9a9a9; min-height: 100px; padding: 1.25em 0 100px 0;
+        }
+        #custom-footer a {
+            color: #fff;
+        }
+    </style>
+    <div id="custom-footer">
+    	<div class="container">
+    		<p>SAMPLE FOOTER TEXT</p>
+    		<p class="small">
+                    <a href="https://dataverse.org" title="SAMPLE LINK" target="_blank">SAMPLE LINK</a>
+                </p>
+    	</div>
+    </div>
+    
+    <script>
+        //
+        // NOTE: You can track various button click events with this code for Google Analytics
+        //
+        
+        $(document).ready(function() {
+            // Download button
+            $(document).on("click", ".btn-download", function() {
+              var category = $(this).text();
+              var label = getFileId($(this));
+              gtag('event', 'Download',{'event_category' : category,
+                                        'event_label' : label});
+            });
+
+            // Request Access button
+            $(document).on("click", ".btn-request", function() {
+              var category = $(this).text();
+              var label = getFileId($(this));
+              gtag('event', 'Request Access', {'event_category' : category,
+                                             'event_label' : label});
+            });
+
+            // Explore button
+            $(document).on("click", ".btn-explore + ul.dropdown-menu li a", function() {
+              var category = $(this).text();
+              var label = getFileId($(this));
+              gtag('event', 'Explore', {'event_category' : category,
+                                        'event_label' : label});
+            });
+
+            // Compute button
+            $(document).on("click", ".btn-compute", function() {
+              var category = $(this).text();
+              var label = getFileId($(this));
+              gtag('event', 'Compute', {'event_category' : category,
+                                        'event_label' : label});
+            });
+
+            // Preview button
+            $(document).on("click", ".btn-preview", function() {
+              var category = $(this).text();
+              var label = getFileId($(this));
+              gtag('event', 'Preview', {'event_category' : category,
+                                        'event_label' : label});
+            });
+
+            // Cite button
+            $(document).on("click", ".downloadCitation + ul.dropdown-menu li a", function() {
+              var category = $(this).text();
+              var label = 'Unknown';
+              if($('#fileForm').length > 0) {
+                label = stripId($('#fileForm').attr('action'));
+              } else if($('#datasetForm').length > 0) {
+                label = stripId($('#datasetForm').attr('action'));
+              }
+              gtag('event', 'Download Citation', {'event_category' : category,
+                                                'event_label' : label});
+            });
+
+            // Export Metadata button
+            $(document).on("click", ".btn-export + ul.dropdown-menu li a", function() {
+              var category = $(this).text();
+              var label = 'Unknown';
+              if($('#fileForm').length > 0) {
+                label = stripId($('#fileForm').attr('action'));
+              } else if($('#datasetForm').length > 0) {
+                label = stripId($('#datasetForm').attr('action'));
+              }
+              gtag('event', 'Export Metadata', {'event_category' : category,
+                                                'event_label' : label});
+            });
+
+            // Contact button
+            $(document).on("click", ".btn-contact", function() {
+              var category = $(this).text();
+              var label = 'Unknown';
+              if($('#fileForm').length > 0) {
+                label = stripId($('#fileForm').attr('action'));
+              } else if($('#datasetForm').length > 0) {
+                label = stripId($('#datasetForm').attr('action'));
+              } else if($('#dataverseForm').length > 0) {
+                label = stripAlias($('#dataverseForm').attr('action'));
+              }
+              gtag('event', 'Contact', {'event_category' : category,
+                                        'event_label' : label});
+            });
+
+            // Share button
+            $(document).on("click", 'div[id$="shareDialog"] a[class^="sharrre"]', function() {
+              var sharrreVal = $(this).attr('class');
+              var category = sharrreVal.substring(sharrreVal.indexOf('-') + 1) ;
+              var label = 'Unknown';
+              if($('#fileForm').length > 0) {
+                label = stripId($('#fileForm').attr('action'));
+              } else if($('#datasetForm').length > 0) {
+                label = stripId($('#datasetForm').attr('action'));
+              } else if($('#dataverseForm').length > 0) {
+                label = stripAlias($('#dataverseForm').attr('action'));
+              }
+              gtag('event', 'Share', {'event_category' : category,
+                                      'event_label' : label});
+            });
+
+        });
+        
+        //
+        // These functions are used to strip out the ID or alias for files, datasets and dataverses
+        //
+
+        function getFileId(target) {
+          var label = 'Unknown';
+          if(target.parents('th').length>0) {
+            //Special case - the Download button that downloads all selected files in the dataset
+            label = 'file(s) from ' + stripId($('#datasetForm').attr('action'));
+          } else {
+            var row = target.parents('tr')[0];
+            if(row != null) {
+              //finds the file id/DOI in the Dataset page
+              label = $(row).find('td.col-file-metadata > a').attr('href');
+            } else {
+              //finds the file id/DOI in the file page
+              label = $('#fileForm').attr('action');
+            }
+            label = stripId(label);
+          }
+          return label;
+        }
+
+
+        function stripId(label) {
+          var index = label.indexOf('&');
+          if(index == -1) index = label.length;
+          if(label.indexOf('persistentId=') >= 0) {
+            label = label.substring(label.indexOf('persistentId=') + 13, index);
+          }
+          if(label.indexOf('fileId=') >= 0) {
+            label = label.substring(label.indexOf('fileId=') + 7, index);
+          }
+          return(label);
+        }
+
+        function stripAlias(label) {
+          var index = label.length;
+          label = label.substring(label.indexOf('/dataverse/') + 11, index).split(/[?#]/)[0];
+          return(label);
+        }
+    </script>

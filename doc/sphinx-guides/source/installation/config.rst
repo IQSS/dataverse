@@ -510,6 +510,7 @@ If you have enabled a custom header or navbar logo, you might prefer to disable 
 
 Please note: Disabling the display of the root dataverse theme also disables your ability to edit it. Remember that dataverse owners can set their dataverses to "inherit theme" from the root. Those dataverses will continue to inherit the root dataverse theme (even though it no longer displays on the root). If you would like to edit the root dataverse theme in the future, you will have to re-enable it first.
 
+.. _Custom-Footer:
 
 Custom Footer
 +++++++++++++
@@ -560,14 +561,16 @@ Once you have created the analytics file, run this curl command to add it to you
 
 ``curl -X PUT -d '/var/www/dataverse/branding/analytics-code.html' http://localhost:8080/api/admin/settings/:WebAnalyticsCode``
 
+.. _Tracking-Button-Clicks:
+
 Tracking Button Clicks
 ++++++++++++++++++++++
 
-The basic analytics configuration above tracks page navigation. However, it does not capture potentially interesting events, such as those from users clicking buttons on pages, that do not result in a new page opening. In Dataverse, these events include file downloads, requesting access to restricted data, exporting metadata, social media sharing, requesting citation text, launching external tools or WorldMap, contacting authors, and launching computations. 
+The basic analytics configuration above track page views, but to capture various button clicks, you need additional javascript to track events like file downloads, requesting access to restricted data, exporting metadata, social media sharing, requesting citation text, launching external tools, contacting authors, and launching computations.
 
-Both Google and Matomo provide the optional capability to track such events and Dataverse has added CSS style classes (btn-compute, btn-contact, btn-download, btn-explore, btn-export, btn-preview, btn-request, btn-share, anddownloadCitation) to it's HTML to facilitate it.
+Both Google and Matomo provide the optional capability to track such events and that utilize element classes in the Dataverse source code (``btn-compute``, ``btn-contact``, ``btn-download``, ``btn-explore``, ``btn-export``, ``btn-preview``, ``btn-request``, ``btn-share``, and ``downloadCitation``) as selectors to determine the event, and which file or dataset ID or dataverse alias it occurred on.
 
-For Google Analytics, the example script at :download:`analytics-code.html </_static/installation/files/var/www/dataverse/branding/analytics-code.html>` will track both page hits and events within Dataverse. You would use this file in the same way as the shorter example above, putting it somewhere outside your deployment directory, replacing ``YOUR ACCOUNT CODE`` with your actual code and setting :WebAnalyticsCode to reference it.
+For Google Analytics, the example javascript provide in :download:`custom-footer-analytics.html </_static/installation/files/var/www/dataverse/branding/custom-footer-analytics.html>` will track all of these events. Configure this custom footer file in addition to the analytics file configured above, saving it outside your deployment directory as outlined in :ref:`Custom-Footer`.
 
 Once this script is running, you can look in the Google Analytics console (Realtime/Events or Behavior/Events) and view events by type and/or the Dataset or File the event involves.
 
