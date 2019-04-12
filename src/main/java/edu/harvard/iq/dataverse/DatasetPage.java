@@ -2746,9 +2746,20 @@ public class DatasetPage implements java.io.Serializable {
                 }
                 
             } else {
+                //Precheck - also checking db copy of dataset to catch edits in progress that would cause update command transaction to fail
+                if (dataset.getId() != null) {
+                    Dataset lockTest = datasetService.find(dataset.getId());
+                    if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress) || lockTest.isLockedFor(DatasetLock.Reason.EditInProgress)) {
+                        logger.log(Level.INFO, "Couldn''t save dataset: {0}", "It is locked."
+                                + "");
+                        JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details"));
+                        return returnToDraftVersion();
+                    }
+                }
                 if (!filesToBeDeleted.isEmpty()) {
                     deleteStorageLocations = datafileService.getPhysicalFilesToDelete(filesToBeDeleted);
                 }
+                
                 cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, clone );
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);  
             }
