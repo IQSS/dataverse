@@ -36,6 +36,8 @@ public class OpenAireExportUtil {
     public static String RESOURCE_NAMESPACE = "http://datacite.org/schema/kernel-4";
     public static String RESOURCE_SCHEMA_LOCATION = "http://schema.datacite.org/meta/kernel-4.1/metadata.xsd";
 
+    public static String FunderType = "Funder";
+    
     public static void datasetJson2openaire(JsonObject datasetDtoAsJson, OutputStream outputStream) throws XMLStreamException {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
         Gson gson = new Gson();
@@ -73,7 +75,8 @@ public class OpenAireExportUtil {
         // See also: https://schema.datacite.org/meta/kernel-4.0/doc/DataCite-MetadataKernel_v4.0.pdf
         // Table 1: DataCite Mandatory Properties
         // set language 
-        String language = getLanguage(xmlw, version);
+        //String language = getLanguage(xmlw, version);
+        String language = null;
 
         // 1, Identifier (with mandatory type sub-property) (M)
         writeIdentifierElement(xmlw, globalId.toURL().toString(), language);
@@ -128,7 +131,7 @@ public class OpenAireExportUtil {
         writeVersionElement(xmlw, version, language);
 
         // 16 Rights (O), rights
-        writeAcessRightsElement(xmlw, version/*, version.getTermsOfAccess(), version.getRestrictions()*/, language);
+        writeAccessRightsElement(xmlw, version/*, version.getTermsOfAccess(), version.getRestrictions()*/, language);
 
         // 17 Description (R), description
         writeDescriptionsElement(xmlw, version, language);
@@ -549,9 +552,8 @@ public class OpenAireExportUtil {
                                 writeContributorElement(xmlw, "Producer", producerName, producerAffiliation, language);
                             }
                         }
-                    }
-
-                    if (DatasetFieldConstant.distributor.equals(fieldDTO.getTypeName())) {
+                    } 
+                    else if (DatasetFieldConstant.distributor.equals(fieldDTO.getTypeName())) {
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String distributorName = null;
                             String distributorAffiliation = null;
@@ -572,8 +574,7 @@ public class OpenAireExportUtil {
                             }
                         }
                     }
-
-                    if (DatasetFieldConstant.datasetContact.equals(fieldDTO.getTypeName())) {
+                    else if (DatasetFieldConstant.datasetContact.equals(fieldDTO.getTypeName())) {
                         if ("primitive".equals(fieldDTO.getTypeClass())) {
                             String contactAffiliation = null;
                             String contactName = null;
@@ -608,8 +609,7 @@ public class OpenAireExportUtil {
                             }
                         }
                     }
-
-                    if (DatasetFieldConstant.contributor.equals(fieldDTO.getTypeName())) {
+                    else if (DatasetFieldConstant.contributor.equals(fieldDTO.getTypeName())) {
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String contributorName = null;
                             String contributorType = null;
@@ -624,7 +624,8 @@ public class OpenAireExportUtil {
                                 }
                             }
 
-                            if (StringUtils.isNotBlank(contributorName)) {
+                            // Fix Funder contributorType
+                            if (StringUtils.isNotBlank(contributorName) && !StringUtils.equalsIgnoreCase(FunderType, contributorType)) {
                                 contributor_check = writeOpenTag(xmlw, "contributors", contributor_check);
                                 writeContributorElement(xmlw, contributorType, contributorName, null, language);
                             }
@@ -1023,7 +1024,7 @@ public class OpenAireExportUtil {
      * @param language current language
      * @throws XMLStreamException
      */
-    public static void writeAcessRightsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String language) throws XMLStreamException {
+    public static void writeAccessRightsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String language) throws XMLStreamException {
         // rightsList -> rights with rightsURI attribute
         xmlw.writeStartElement("rightsList"); // <rightsList>
 
@@ -1376,6 +1377,31 @@ public class OpenAireExportUtil {
                                     writeFullElement(xmlw, null, "awardNumber", null, awardNumber, language);
                                 }
 
+                                xmlw.writeEndElement(); // </fundingReference>
+                            }
+                        }
+                    }
+                    else if (DatasetFieldConstant.contributor.equals(fieldDTO.getTypeName())) {
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            String contributorName = null;
+                            String contributorType = null;
+
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.contributorName.equals(next.getTypeName())) {
+                                    contributorName = next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.contributorType.equals(next.getTypeName())) {
+                                    contributorType = next.getSinglePrimitive();
+                                }
+                            }
+
+                            // Fix Funder contributorType
+                            if (StringUtils.isNotBlank(contributorName) && StringUtils.equalsIgnoreCase(FunderType, contributorType)) {
+                                fundingReference_check = writeOpenTag(xmlw, "fundingReferences", fundingReference_check);
+                                xmlw.writeStartElement("fundingReference"); // <fundingReference>
+                                writeFullElement(xmlw, null, "funderName", null, contributorName, language);
+                                
                                 xmlw.writeEndElement(); // </fundingReference>
                             }
                         }

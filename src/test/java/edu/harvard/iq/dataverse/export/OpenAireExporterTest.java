@@ -60,7 +60,6 @@ public class OpenAireExporterTest {
     @Test
     public void testExportDataset() throws Exception {
         System.out.println("exportDataset");
-        // TODO: add more fields to json to increase code coverage.
         File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-spruce1.json");
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
         JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));

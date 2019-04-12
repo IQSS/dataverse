@@ -70,7 +70,6 @@ public class OpenAireExportUtilTest {
         GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
         OpenAireExportUtil.writeIdentifierElement(xmlw, globalId.toURL().toString(), null);
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<identifier identifierType=\"DOI\">"
                 + persistentAuthority + "/" + persistentId + "</identifier>",
                 sw.toString());
@@ -84,7 +83,6 @@ public class OpenAireExportUtilTest {
         globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
         OpenAireExportUtil.writeIdentifierElement(xmlw, globalId.toURL().toString(), null);
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<identifier identifierType=\"Handle\">"
                 + persistentAuthority + "/" + persistentId + "</identifier>",
                 sw.toString());
@@ -110,7 +108,6 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeCreatorsElement(xmlw, dto, null);
 
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<creators>"
                 + "<creator>"
                 + "<creatorName nameType=\"Personal\">Privileged, Pete</creatorName>"
@@ -150,7 +147,6 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeTitlesElement(xmlw, dto, null);
 
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<titles><title>My Dataset</title></titles>",
                 sw.toString());
     }
@@ -176,7 +172,6 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeFullElement(xmlw, null, "publisher", null, publisher, null);
 
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<publisher>Publisher01</publisher>",
                 sw.toString());
     }
@@ -191,7 +186,7 @@ public class OpenAireExportUtilTest {
      */
     @Test
     public void testWritePublicationYearElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeContributorsElement");
+        System.out.println("writePublicationYearElement");
         XMLOutputFactory f = XMLOutputFactory.newInstance();
         StringWriter sw = new StringWriter();
         XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
@@ -204,7 +199,6 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writePublicationYearElement(xmlw, dto, null, null);
 
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<publicationYear>2014</publicationYear>",
                 sw.toString());
     }
@@ -231,7 +225,6 @@ public class OpenAireExportUtilTest {
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
         OpenAireExportUtil.writeSubjectsElement(xmlw, dto, null);
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<subjects>"
                 + "<subject>Agricultural Sciences</subject>"
                 + "<subject>Business and Management</subject>"
@@ -266,7 +259,6 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeContributorsElement(xmlw, dto, null);
 
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<contributors>"
                 + "<contributor contributorType=\"ContactPerson\"><contributorName>pete@malinator.com</contributorName>"
                 + "</contributor></contributors>",
@@ -296,7 +288,6 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeDatesElement(xmlw, dto, null);
 
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<dates>"
                 + "<date dateType=\"Issued\">1004-01-01</date>"
                 + "<date dateType=\"Created\">1003-01-01</date>"
@@ -332,7 +323,6 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeFullElement(xmlw, null, "language", null, language, null);
 
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<language>it</language>",
                 sw.toString());
     }
@@ -361,7 +351,6 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeResourceTypeElement(xmlw, dto, null);
 
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<resourceType resourceTypeGeneral=\"Dataset\">"
                 + "KindOfData1</resourceType>",
                 sw.toString());
@@ -387,11 +376,10 @@ public class OpenAireExportUtilTest {
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        
+
         OpenAireExportUtil.writeAlternateIdentifierElement(xmlw, dto, null);
 
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<alternateIdentifiers>"
                 + "<alternateIdentifier alternateIdentifierType=\"OtherIDAgency1\">"
                 + "OtherIDIdentifier1</alternateIdentifier>"
@@ -425,7 +413,6 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeRelatedIdentifierElement(xmlw, dto, null);
 
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<relatedIdentifiers>"
                 + "<relatedIdentifier relationType=\"IsCitedBy\" relatedIdentifierType=\"ARK\">"
                 + "RelatedPublicationIDNumber1</relatedIdentifier>"
@@ -458,7 +445,7 @@ public class OpenAireExportUtilTest {
         {
             // set an empty file list
             dto.setFiles(new ArrayList<FileDTO>());
-        
+
             // Fragment must be enclosed in a fake root element.
             xmlw.writeStartElement("root");
             OpenAireExportUtil.writeSizeElement(xmlw, dto, null);
@@ -466,7 +453,6 @@ public class OpenAireExportUtilTest {
             xmlw.writeEndElement();
         }
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<root />",
                 sw.toString());
     }
@@ -491,32 +477,9 @@ public class OpenAireExportUtilTest {
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        /*{
-            DataFileDTO pdfDTO = new DataFileDTO();
-            pdfDTO.setContentType("application/pdf");
-            pdfDTO.setDescription("Test PDF");
-            pdfDTO.setFilename("test.pdf");
-            pdfDTO.setFileSize(1000L);
-
-            DataFileDTO xmlDTO = new DataFileDTO();
-            xmlDTO.setContentType("application/xml");
-            xmlDTO.setDescription("Test XML");
-            xmlDTO.setFilename("test.xml");
-            xmlDTO.setFileSize(20L);
-
-            FileDTO pdfFileDTO = new FileDTO();
-            pdfFileDTO.setDataFile(pdfDTO);
-            FileDTO xmlFileDTO = new FileDTO();
-            xmlFileDTO.setDataFile(xmlDTO);
-            List<FileDTO> filesDTO = new ArrayList<FileDTO>();
-            filesDTO.add(pdfFileDTO);
-            filesDTO.add(xmlFileDTO);
-            dto.setFiles(filesDTO);
-        }*/
         OpenAireExportUtil.writeSizeElement(xmlw, dto, null);
 
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<sizes>"
                 + "<size>1000</size>"
                 + "<size>20</size>"
@@ -547,7 +510,7 @@ public class OpenAireExportUtilTest {
         {
             // set an empty file list
             dto.setFiles(new ArrayList<FileDTO>());
-        
+
             // Fragment must be enclosed in a fake root element.
             xmlw.writeStartElement("root");
             OpenAireExportUtil.writeFormatElement(xmlw, dto, null);
@@ -556,7 +519,6 @@ public class OpenAireExportUtilTest {
         }
 
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<root />",
                 sw.toString());
     }
@@ -581,32 +543,9 @@ public class OpenAireExportUtilTest {
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        /*{
-            DataFileDTO pdfDTO = new DataFileDTO();
-            pdfDTO.setContentType("application/pdf");
-            pdfDTO.setDescription("Test PDF");
-            pdfDTO.setFilename("test.pdf");
-            pdfDTO.setFileSize(1000L);
-
-            DataFileDTO xmlDTO = new DataFileDTO();
-            xmlDTO.setContentType("application/xml");
-            xmlDTO.setDescription("Test XML");
-            xmlDTO.setFilename("test.xml");
-            xmlDTO.setFileSize(20L);
-
-            FileDTO pdfFileDTO = new FileDTO();
-            pdfFileDTO.setDataFile(pdfDTO);
-            FileDTO xmlFileDTO = new FileDTO();
-            xmlFileDTO.setDataFile(xmlDTO);
-            List<FileDTO> filesDTO = new ArrayList<FileDTO>();
-            filesDTO.add(pdfFileDTO);
-            filesDTO.add(xmlFileDTO);
-            dto.setFiles(filesDTO);
-        }*/
         OpenAireExportUtil.writeFormatElement(xmlw, dto, null);
 
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<formats>"
                 + "<format>application/pdf</format>"
                 + "<format>application/xml</format>"
@@ -643,7 +582,6 @@ public class OpenAireExportUtilTest {
         }
 
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<root><version>1.0</version></root>",
                 sw.toString());
     }
@@ -675,7 +613,6 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeVersionElement(xmlw, dto, null);
 
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<version>2.1</version>",
                 sw.toString());
     }
@@ -700,9 +637,8 @@ public class OpenAireExportUtilTest {
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeAcessRightsElement(xmlw, dto, null);
+        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null);
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<rightsList>"
                 + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\" />"
                 + "<rights rightsURI=\"https://creativecommons.org/publicdomain/zero/1.0/\">"
@@ -719,8 +655,8 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWriteRestrictedAccessRightElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeRestrictedAccessRightElement");
+    public void testWriteRestrictedAccessRightElementWithRequestAccessEnabled() throws XMLStreamException, FileNotFoundException {
+        System.out.println("writeRestrictedAccessRightElementWithRequestAccessEnabled");
         XMLOutputFactory f = XMLOutputFactory.newInstance();
         StringWriter sw = new StringWriter();
         XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
@@ -730,36 +666,51 @@ public class OpenAireExportUtilTest {
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        /*{
-            DataFileDTO pdfDTO = new DataFileDTO();
-            pdfDTO.setContentType("application/pdf");
-            pdfDTO.setDescription("Test PDF");
-            pdfDTO.setFilename("test.pdf");
-            pdfDTO.setFileSize(1000L);
+        {
+            dto.setLicense(null);
+            dto.setTermsOfUse(null);
+            dto.setFileAccessRequest(true);
+        }
 
-            DataFileDTO xmlDTO = new DataFileDTO();
-            xmlDTO.setContentType("application/xml");
-            xmlDTO.setDescription("Test XML");
-            xmlDTO.setFilename("test.xml");
-            xmlDTO.setFileSize(20L);
-
-            FileDTO pdfFileDTO = new FileDTO();
-            pdfFileDTO.setDataFile(pdfDTO);
-            FileDTO xmlFileDTO = new FileDTO();
-            xmlFileDTO.setDataFile(xmlDTO);
-            List<FileDTO> filesDTO = new ArrayList<FileDTO>();
-            filesDTO.add(pdfFileDTO);
-            filesDTO.add(xmlFileDTO);
-            dto.setFiles(filesDTO);
-            pdfFileDTO.setRestricted(true);
-        }*/
-        OpenAireExportUtil.writeAcessRightsElement(xmlw, dto, null);
+        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null);
         xmlw.close();
-        //System.out.println(sw.toString());
+        Assert.assertEquals("<rightsList>"
+                + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
+                + "<rights /></rightsList>",
+                sw.toString());
+    }
+
+    /**
+     * Test: 16 Rights (O)
+     *
+     * rights
+     *
+     * @throws javax.xml.stream.XMLStreamException
+     * @throws java.io.FileNotFoundException
+     */
+    @Test
+    public void testWriteRestrictedAccessRightElementWithRequestAccessDisabled() throws XMLStreamException, FileNotFoundException {
+        System.out.println("writeWriteRestrictedAccessRightElementWithRequestAccessDisabled");
+        XMLOutputFactory f = XMLOutputFactory.newInstance();
+        StringWriter sw = new StringWriter();
+        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+
+        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
+        String text = new Scanner(file).useDelimiter("\\Z").next();
+        Gson gson = new Gson();
+        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+        {
+            dto.setLicense(null);
+            dto.setTermsOfUse(null);
+            dto.setFileAccessRequest(false);
+        }
+
+        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null);
+        xmlw.close();
         Assert.assertEquals("<rightsList>"
                 + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\" />"
-                + "<rights rightsURI=\"https://creativecommons.org/publicdomain/zero/1.0/\">"
-                + "CC0 Waiver</rights></rightsList>",
+                + "<rights /></rightsList>",
                 sw.toString());
     }
 
@@ -786,7 +737,6 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeDescriptionsElement(xmlw, dto, null);
 
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<descriptions>"
                 + "<description descriptionType=\"Abstract\">DescriptionText 1"
                 + "</description>"
@@ -832,7 +782,6 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeGeoLocationsElement(xmlw, dto, null);
 
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<geoLocations>"
                 + "<geoLocation>"
                 + "<geoLocationPlace>ProductionPlace</geoLocationPlace>"
@@ -878,7 +827,6 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeGeoLocationsElement(xmlw, dto, null);
 
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<geoLocations>"
                 + "<geoLocation>"
                 + "<geoLocationBox>"
@@ -915,7 +863,6 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeFundingReferencesElement(xmlw, dto, null);
 
         xmlw.close();
-        //System.out.println(sw.toString());
         Assert.assertEquals("<fundingReferences><fundingReference>"
                 + "<funderName>GrantInformationGrantAgency1</funderName>"
                 + "<awardNumber>GrantInformationGrantNumber1</awardNumber>"
@@ -924,6 +871,63 @@ public class OpenAireExportUtilTest {
                 + "<funderName>GrantInformationGrantAgency2</funderName>"
                 + "<awardNumber>GrantInformationGrantNumber2</awardNumber>"
                 + "</fundingReference></fundingReferences>",
+                sw.toString());
+    }
+
+    /**
+     * Test 19.1, funderName Name of the funding provider.
+     *
+     * funderName
+     */
+    @Test
+    public void testWriteFunderNamePropertyNotInContributor() throws XMLStreamException, FileNotFoundException {
+        System.out.println("writeFunderNamePropertyNotInContributor");
+        XMLOutputFactory f = XMLOutputFactory.newInstance();
+        StringWriter sw = new StringWriter();
+        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+
+        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/datase-updated.txt");
+        String text = new Scanner(file).useDelimiter("\\Z").next();
+        Gson gson = new Gson();
+        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+        {
+            // Fragment must be enclosed in a fake root element.
+            xmlw.writeStartElement("root");
+            OpenAireExportUtil.writeContributorsElement(xmlw, dto, null);
+
+            xmlw.writeEndElement();
+        }
+        xmlw.close();
+        Assert.assertEquals("<root />",
+                sw.toString());
+    }
+    
+    /**
+     * Test 19.1, funderName Name of the funding provider.
+     *
+     * funderName
+     */
+    @Test
+    public void testWriteFunderNamePropertyInFundingReferencesElement() throws XMLStreamException, FileNotFoundException {
+        System.out.println("writeFunderNamePropertyInFundingReferencesElement");
+        XMLOutputFactory f = XMLOutputFactory.newInstance();
+        StringWriter sw = new StringWriter();
+        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+
+        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/datase-updated.txt");
+        String text = new Scanner(file).useDelimiter("\\Z").next();
+        Gson gson = new Gson();
+        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+        OpenAireExportUtil.writeFundingReferencesElement(xmlw, dto, null);
+
+        xmlw.close();
+        Assert.assertEquals("<fundingReferences>"
+                + "<fundingReference><funderName>Dennis</funderName></fundingReference>"
+                + "<fundingReference><funderName>NIH</funderName><awardNumber>NIH1231245154</awardNumber></fundingReference>"
+                + "<fundingReference><funderName>NIH</funderName><awardNumber>NIH99999999</awardNumber></fundingReference>"
+                + "</fundingReferences>",
                 sw.toString());
     }
 }
