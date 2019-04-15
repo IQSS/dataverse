@@ -462,7 +462,7 @@ public class DDIExportServiceBean {
         }
         if (checkField("qstn", excludedFieldSet, includedFieldSet)) {
             if (vm != null) {
-                if (!StringUtilisEmpty(vm.getLiteralquestion()) || !StringUtilisEmpty(vm.getInterviewinstruction())) {
+                if (!StringUtilisEmpty(vm.getLiteralquestion()) || !StringUtilisEmpty(vm.getInterviewinstruction()) || !StringUtilisEmpty(vm.getPostquestion())) {
                     xmlw.writeStartElement("qstn");
                     if (!StringUtilisEmpty(vm.getLiteralquestion())) {
                         xmlw.writeStartElement("qstnLit");
@@ -472,6 +472,11 @@ public class DDIExportServiceBean {
                     if (!StringUtilisEmpty(vm.getInterviewinstruction())) {
                         xmlw.writeStartElement("ivuInstr");
                         xmlw.writeCharacters(vm.getInterviewinstruction());
+                        xmlw.writeEndElement(); //ivuInstr
+                    }
+                    if (!StringUtilisEmpty(vm.getPostquestion())) {
+                        xmlw.writeStartElement("postQTxt");
+                        xmlw.writeCharacters(vm.getPostquestion());
                         xmlw.writeEndElement(); //ivuInstr
                     }
                     xmlw.writeEndElement(); //qstn
