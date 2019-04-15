@@ -51,6 +51,7 @@ public class LicenseListingPage implements Serializable {
 
     private LicenseDto freshLicense;
     private LicenseDto licenseForPreview;
+    private LicenseDto licenseForEdit;
 
     // -------------------- GETTERS --------------------
 
@@ -67,6 +68,10 @@ public class LicenseListingPage implements Serializable {
      */
     public LicenseDto getLicenseForPreview() {
         return licenseForPreview;
+    }
+
+    public LicenseDto getLicenseForEdit() {
+        return licenseForEdit;
     }
 
     // -------------------- LOGIC --------------------
@@ -92,6 +97,17 @@ public class LicenseListingPage implements Serializable {
     public void uploadImageForNewLicenseEvent(FileUploadEvent event) {
         UploadedFile uploadedImage = event.getFile();
         freshLicense.getIcon().setContent(new ByteArrayContent(uploadedImage.getContents(),
+                uploadedImage.getContentType()));
+    }
+
+    /**
+     * Handles image upload for license that already exists and wants to be edited.
+     *
+     * @param event
+     */
+    public void editLicenseImageEvent(FileUploadEvent event) {
+        UploadedFile uploadedImage = event.getFile();
+        licenseForEdit.getIcon().setContent(new ByteArrayContent(uploadedImage.getContents(),
                 uploadedImage.getContentType()));
     }
 
@@ -125,6 +141,14 @@ public class LicenseListingPage implements Serializable {
         licenseDAO.save(license);
 
         freshLicense = prepareFreshLicense();
+
+        return "/dashboard-licenses.xhtml?&faces-redirect=true";
+    }
+
+    public String saveEditedLicense(LicenseDto licenseDto) {
+
+        License license = licenseMapper.mapToLicense(licenseDto);
+        licenseDAO.saveChanges(license);
 
         return "/dashboard-licenses.xhtml?&faces-redirect=true";
     }
@@ -165,5 +189,9 @@ public class LicenseListingPage implements Serializable {
 
     public void setLicenseForPreview(LicenseDto licenseForPreview) {
         this.licenseForPreview = licenseForPreview;
+    }
+
+    public void setLicenseForEdit(LicenseDto licenseForEdit) {
+        this.licenseForEdit = licenseForEdit;
     }
 }

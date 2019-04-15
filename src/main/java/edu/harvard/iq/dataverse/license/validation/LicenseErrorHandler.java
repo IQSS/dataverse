@@ -12,7 +12,7 @@ import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
 /**
- * Class responsible for validating if all information's regarding new license are correct.
+ * Class responsible for validating if all information's regarding license are correct.
  */
 @FacesValidator("licenseValidator")
 public class LicenseErrorHandler implements Validator {
@@ -22,7 +22,7 @@ public class LicenseErrorHandler implements Validator {
     // -------------------- LOGIC --------------------
 
     /**
-     * Checks if new license is valid.
+     * Checks if license is valid.
      */
     @Override
     public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
@@ -30,7 +30,7 @@ public class LicenseErrorHandler implements Validator {
         if (!urlValidator.isValid(value.toString())) {
 
             FacesMessage errorMessage = new FacesMessage(StringUtils.EMPTY,
-                    BundleUtil.getStringFromBundle("dashboard.license.newLicense.invalidURL"));
+                    BundleUtil.getStringFromBundle("dashboard.license.invalidURL"));
             errorMessage.setSeverity(FacesMessage.SEVERITY_ERROR);
 
             throw new ValidatorException(errorMessage);

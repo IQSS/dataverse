@@ -70,15 +70,30 @@
                                 </p:selectBooleanCheckbox>
                             </p:column>
                             <p:column headerText="#{bundle['dashboard.license.action']}"
-                                      style="width: 10%; text-align: center;">
-                                <p:commandLink type="button"
-                                               styleClass="btn btn-default bootstrap-button-tooltip"
-                                               title="#{bundle['dashboard.license.localePreviewButton']}"
-                                               update=":licenseLocalizedPreviewContent"
-                                               action="#{LicenseListingPage.setLicenseForPreview(license)}"
-                                               onclick="PF('licenseLocalizedPreview').show();">
-                                    <span style="text-align: center" class="glyphicon glyphicon-eye-open"/>
-                                </p:commandLink>
+                                      style="width: 15%; text-align: center;">
+                                <div style="display: grid; grid-template-columns: repeat(2, auto); grid-row-gap: 1%;">
+                                    <div style="grid-column: 1;">
+                                        <p:commandLink type="button"
+                                                       styleClass="btn btn-default bootstrap-button-tooltip"
+                                                       title="#{bundle['dashboard.license.localePreviewButton']}"
+                                                       update=":licenseLocalizedPreviewContent"
+                                                       action="#{LicenseListingPage.setLicenseForPreview(license)}"
+                                                       onclick="PF('licenseLocalizedPreview').show();">
+                                            <span style="text-align: center" class="glyphicon glyphicon-eye-open"/>
+                                        </p:commandLink>
+                                    </div>
+
+                                    <div style="grid-column: 2;">
+                                        <p:commandLink type="button"
+                                                       styleClass="btn btn-default bootstrap-button-tooltip"
+                                                       title="#{bundle['dashboard.license.editLicenseButton']}"
+                                                       update=":licenseEditForm"
+                                                       action="#{LicenseListingPage.licenseForEdit(license)}"
+                                                       onclick="PF('licenseEdit').show(); ">
+                                            <span style="text-align: center" class="glyphicon glyphicon-edit"/>
+                                        </p:commandLink>
+                                    </div>
+                                </div>
                             </p:column>
                         </p:dataTable>
                     </p:tab>
@@ -101,11 +116,76 @@
                                     <p:ajax update="@this"
                                             listener="#{OtherTermsOfUseTab.saveLicenseActiveStatus(otherTos)}"/>
                                 </p:selectBooleanCheckbox>
-                            </p:column>
-                        </p:dataTable>
+                            </p:column> </p:dataTable>
                     </p:tab>
                 </p:tabView>
             </h:form>
+
+            <p:dialog modal="true" widgetVar="licenseEdit" id="licenseEdit"
+                      styleClass="disable-scroll" width="600"
+                      draggable="false" closable="false" resizable="false">
+                <h:form id="licenseEditForm">
+
+                    <div style="display: grid; grid-template-columns: repeat(3, 33%); grid-row-gap: 5%;">
+                        <div style="grid-column: 1;">
+                            <p:outputLabel for="urlLicenseEdit" value="#{bundle['dashboard.license.licenseURL']}:"/>
+                        </div>
+                        <div style="grid-column: 2;">
+                            <p:inputTextarea id="urlLicenseEdit" value="#{LicenseListingPage.licenseForEdit.url}"
+                                             required="true"
+                                             requiredMessage="#{bundle['dashboard.license.missingTextField']}">
+                                <f:validator validatorId="licenseValidator"/>
+                            </p:inputTextarea>
+                        </div>
+
+                        <div style="grid-column: 3;">
+                            <p:message for="urlLicenseEdit" display="text"/>
+                        </div>
+
+                        <div style="grid-column: 1;">
+                            <p:outputLabel for="licenseEditFileUpload"
+                                           value="#{bundle['dashboard.license.newLicense.badgeLabel']}:"/>
+                        </div>
+                        <div style="grid-column: 2;">
+                            <p:fileUpload id="licenseEditFileUpload" label="#{bundle.selectFile}"
+                                          fileUploadListener="#{LicenseListingPage.editLicenseImageEvent}"
+                                          mode="advanced" skinSimple="true" auto="true"/>
+                        </div>
+
+                        <ui:repeat value="#{LicenseListingPage.licenseForEdit.localizedNames}" var="localLicense">
+                            <div style="grid-column: 1;">
+                                <p:outputLabel for="localizedName" value="
+                                #{settingsWrapper.getConfiguredLocaleName(localLicense.locale)}:"/>
+                            </div>
+                            <div style="grid-column: 2;">
+                                <p:inputTextarea id="localizedName"
+                                                 value="#{localLicense.text}"
+                                                 required="true"
+                                                 requiredMessage="#{bundle['dashboard.license.missingTextField']}"/>
+                            </div>
+                            <div style="grid-column: 3;">
+                                <p:message for="localizedName" display="text"/>
+                            </div>
+                        </ui:repeat>
+                    </div>
+                    <div class="container">
+                        <div class="row text-left">
+                            <div class="col" style="margin-top: 5%">
+                                <p:commandButton value="#{bundle.save}"
+                                                 update=":licenseEditForm"
+                                                 action="#{LicenseListingPage.saveEditedLicense(LicenseListingPage.licenseForEdit)}"
+                                                 style="margin-right: 1%"
+                                                 styleClass="btn btn-default"/>
+
+                                <p:commandButton value="#{bundle.close}"
+                                                 action="#{LicenseListingPage.refreshPage}"
+                                                 process="@this"
+                                                 styleClass="btn btn-default"/>
+                            </div>
+                        </div>
+                    </div>
+                </h:form>
+            </p:dialog>
 
             <p:dialog modal="true" widgetVar="licenseLocalizedPreview" id="licenseLocalizedPreview"
                       styleClass="disable-scroll" width="600"
@@ -130,7 +210,6 @@
                 </p:outputPanel>
             </p:dialog>
 
-
             <p:dialog modal="true" widgetVar="newLicense" id="newLicense" styleClass="disable-scroll" width="750"
                       draggable="false" closable="false" resizable="false"
                       header="#{bundle['dashboard.license.newLicense.add']}">
@@ -147,7 +226,7 @@
                         <div style="grid-column: 2;">
                             <p:inputText id="universalName" value="#{LicenseListingPage.freshLicense.name}"
                                          required="true"
-                                         requiredMessage="#{bundle['dashboard.license.newLicense.missingTextField']}"/>
+                                         requiredMessage="#{bundle['dashboard.license.missingTextField']}"/>
                         </div>
                         <div style="grid-column: 3;">
                             <p:message for="universalName"
@@ -163,7 +242,7 @@
                             <div style="grid-column: 2;">
                                 <p:inputText id="locale" value="#{localizedLicenses.text}"
                                              required="true"
-                                             requiredMessage="#{bundle['dashboard.license.newLicense.missingTextField']}"/>
+                                             requiredMessage="#{bundle['dashboard.license.missingTextField']}"/>
                             </div>
                             <div style="grid-column: 3;">
                                 <p:message id="localeError" for="locale" display="text"/>
@@ -176,7 +255,7 @@
                         <div style="grid-column: 2;">
                             <p:inputText id="url" value="#{LicenseListingPage.freshLicense.url}"
                                          required="true"
-                                         requiredMessage="#{bundle['dashboard.license.newLicense.missingTextField']}">
+                                         requiredMessage="#{bundle['dashboard.license.missingTextField']}">
                                 <f:validator validatorId="licenseValidator"/>
                             </p:inputText>
                         </div>
@@ -214,5 +293,4 @@
         </ui:define>
     </ui:composition>
 </h:body>
-
 </html>

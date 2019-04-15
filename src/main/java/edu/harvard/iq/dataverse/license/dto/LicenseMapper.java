@@ -57,6 +57,7 @@ public class LicenseMapper {
     public License mapToLicense(LicenseDto licenseDto) {
         License license = new License();
 
+        license.setId(licenseDto.getId());
         license.setPosition(licenseDto.getPosition());
         license.setActive(licenseDto.isActive());
         license.setUrl(licenseDto.getUrl());
@@ -73,6 +74,7 @@ public class LicenseMapper {
 
     private LicenseIcon mapToLicenseIcon(LicenseDto licenseDto, License license) {
         LicenseIcon licenseIcon = new LicenseIcon();
+        licenseIcon.setId(licenseDto.getId());
         licenseIcon.setContent(
                 Try.of(() -> IOUtils.toByteArray(licenseDto.getIcon().getContent().getStream()))
                         .getOrElseThrow(throwable -> new IllegalStateException("Unable to read image", throwable)));
@@ -85,10 +87,11 @@ public class LicenseMapper {
 
     private LicenseIconDto mapToDto(LicenseIcon licenseIcon) {
         if (licenseIcon == null) {
-            return new LicenseIconDto(new ByteArrayContent(new byte[0]));
+            return new LicenseIconDto(0L, new ByteArrayContent(new byte[0]));
         }
 
-        return new LicenseIconDto(new ByteArrayContent(licenseIcon.getContent(),
+        return new LicenseIconDto(licenseIcon.getId(),
+                new ByteArrayContent(licenseIcon.getContent(),
                         licenseIcon.getContentType(),
                         licenseIcon.getLicense().getName(),
                         licenseIcon.getContent().length));
