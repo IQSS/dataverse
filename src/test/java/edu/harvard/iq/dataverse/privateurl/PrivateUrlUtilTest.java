@@ -11,15 +11,17 @@ import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.junit.Assert;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.junit.Test;
 import static org.junit.Assert.assertNull;
-import org.junit.Before;
 
 public class PrivateUrlUtilTest {
 
@@ -349,7 +351,7 @@ public class PrivateUrlUtilTest {
         CreatePrivateUrlCommand createPrivateUrlCommand = new CreatePrivateUrlCommand(null, null);
         CommandException ex = new CommandException(null, createPrivateUrlCommand);
         List<String> strings = PrivateUrlUtil.getRequiredPermissions(ex);
-        assertEquals(Arrays.asList("ManageDatasetPermissions"), strings);
+        assertEquals(Arrays.asList("ManageDatasetPermissions", "ManageMinorDatasetPermissions"), strings);
     }
 
 }

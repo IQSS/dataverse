@@ -11,12 +11,13 @@ import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 public class DeletePrivateUrlCommandTest {
 
@@ -84,24 +85,6 @@ public class DeletePrivateUrlCommandTest {
             actual = ex.getMessage();
         }
         assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testSuccessfulDelete() {
-        dataset = new Dataset();
-        dataset.setId(hasPrivateUrlToDelete);
-        String actual = null;
-        try {
-            testEngine.submit(new DeletePrivateUrlCommand(null, dataset));
-        } catch (CommandException ex) {
-            actual = ex.getMessage();
-        }
-        assertNull(actual);
-        /**
-         * @todo How would we confirm that the role assignement is actually
-         * gone? Really all we're testing above is that there was no
-         * IllegalCommandException from submitting the command.
-         */
     }
 
 }
