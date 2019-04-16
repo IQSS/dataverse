@@ -94,7 +94,7 @@ You must specify the branch with ``-b`` but you can also specify a non-IQSS git 
 
 If you configured an Ansible file above and want to make use of it, add ``-g main.yml`` (or whatever you named your file) as in the following example.
 
-``bash ~/Downloads/ec2-create-instance.sh -b develop -r https://github.com/scholarsportal/dataverse.git -b main.yml``
+``bash ~/Downloads/ec2-create-instance.sh -b develop -r https://github.com/scholarsportal/dataverse.git -g main.yml``
 
 Now you will need to wait around 15 minutes until the deployment is finished. Eventually, the output should tell you how to access the installation of Dataverse in a web browser or via ssh. It will also provide instructions on how to delete the instance when you are finished with it. Please be aware that AWS charges per minute for a running instance. You can also delete your instance from https://console.aws.amazon.com/console/home?region=us-east-1 .
 

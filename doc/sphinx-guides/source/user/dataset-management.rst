@@ -223,6 +223,9 @@ The File Path metadata field is Dataverse's way of representing a file's locatio
 
 A file's File Path can be manually added or edited on the Edit Files page. Changing a file's File Path will change its location in the folder structure that is created when a user downloads the full dataset or a selection of files from it.
 
+If there is more than one file in the dataset, and once at least one of them has a non-empty directory path, the Dataset Page will present an option for switching between the traditional table view, and the tree-like view of the files showing the folder structure, as in the example below: 
+
+|image-file-tree-view|
 
 File Tags
 ---------
@@ -505,4 +508,6 @@ If you deaccession the most recently published version of the dataset but not al
 .. |file-upload-prov-button| image:: ./img/prov0.png
    :class: img-responsive
 .. |file-upload-prov-window| image:: ./img/prov1.png
+   :class: img-responsive
+.. |image-file-tree-view| image:: ./img/file-tree-view.png
    :class: img-responsive

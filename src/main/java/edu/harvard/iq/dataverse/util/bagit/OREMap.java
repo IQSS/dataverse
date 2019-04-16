@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.export.OAI_OREExporter;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
@@ -246,7 +247,7 @@ public class OREMap {
         JsonObject oremap = Json.createObjectBuilder()
                 .add(JsonLDTerm.dcTerms("modified").getLabel(), LocalDate.now().toString())
                 .add(JsonLDTerm.dcTerms("creator").getLabel(),
-                        ResourceBundle.getBundle("Bundle").getString("institution.name"))
+                        BundleUtil.getStringFromBundle("institution.name"))
                 .add("@type", JsonLDTerm.ore("ResourceMap").getLabel())
                 // Define an id for the map itself (separate from the @id of the dataset being
                 // described
