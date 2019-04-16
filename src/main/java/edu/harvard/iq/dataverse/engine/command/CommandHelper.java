@@ -1,7 +1,12 @@
 package edu.harvard.iq.dataverse.engine.command;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
-import java.util.*;
+
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Helper object for the Command class. In java8, these will probably be static
@@ -48,6 +53,10 @@ public class CommandHelper {
 			return Collections.singletonMap(requiredPerms.dataverseName(),
                     asPermissionSet(required));
 		}
+	}
+
+    boolean isAllPermissionsRequired(Class<? extends Command> cmdClass) {
+		return cmdClass.getAnnotation(RequiredPermissions.class).isAllPermissionsRequired();
 	}
 	
 	/**

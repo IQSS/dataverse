@@ -8,9 +8,10 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+
 import java.util.logging.Logger;
 
-@RequiredPermissions(Permission.ManageDatasetPermissions)
+@RequiredPermissions(value = {Permission.ManageDatasetPermissions, Permission.ManageMinorDatasetPermissions}, isAllPermissionsRequired = false)
 public class GetPrivateUrlCommand extends AbstractCommand<PrivateUrl> {
 
     private static final Logger logger = Logger.getLogger(GetPrivateUrlCommand.class.getCanonicalName());

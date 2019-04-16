@@ -3,17 +3,20 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import com.google.common.collect.ImmutableSet;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -50,6 +53,7 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
     @Override
     public RoleAssignment execute(CommandContext ctxt) throws CommandException {
         // TODO make sure the role is defined on the dataverse.
+
         RoleAssignment roleAssignment = new RoleAssignment(role, grantee, defPoint, privateUrlToken);
         return ctxt.roles().save(roleAssignment);
     }
@@ -57,9 +61,18 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         // for data file check permission on owning dataset
-        return Collections.singletonMap("",
-                defPoint instanceof Dataverse ? Collections.singleton(Permission.ManageDataversePermissions)
-                : Collections.singleton(Permission.ManageDatasetPermissions));
+
+        if (defPoint instanceof Dataverse) {
+            return Collections.singletonMap("", Collections.singleton(Permission.ManageDataversePermissions));
+        }
+
+        if (DataverseRolePermissionHelper.getRolesAllowedToBeAssignedByManageMinorDatasetPermissions().contains(role.getAlias())) {
+            return Collections.singletonMap("",
+                    ImmutableSet.of(Permission.ManageDatasetPermissions, Permission.ManageMinorDatasetPermissions));
+        }
+
+        return Collections.singletonMap("", Collections.singleton(Permission.ManageDatasetPermissions));
+
     }
 
     @Override
@@ -67,4 +80,8 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
         return grantee + " has been given " + role + " on " + defPoint.accept(DvObject.NameIdPrinter);
     }
 
+    @Override
+    public boolean isAllPermissionsRequired() {
+        return false;
+    }
 }

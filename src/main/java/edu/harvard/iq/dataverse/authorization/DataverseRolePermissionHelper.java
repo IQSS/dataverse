@@ -335,4 +335,8 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
         }
         return roleNameList;
     }
+
+    public static List<String> getRolesAllowedToBeAssignedByManageMinorDatasetPermissions() {
+        return Lists.newArrayList("member", "fileDownloader", "editor", "depositor");
+    }
 }

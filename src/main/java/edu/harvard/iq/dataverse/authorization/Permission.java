@@ -4,10 +4,11 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 
 /**
  * All the permissions in the system are implemented as enum values in this
@@ -35,22 +36,37 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 public enum Permission implements java.io.Serializable {
 
     // Create
+    //1
     AddDataverse(BundleUtil.getStringFromBundle("permission.addDataverseDataverse"), true, Dataverse.class),
+    //2
     AddDataset(BundleUtil.getStringFromBundle("permission.addDatasetDataverse"), true, Dataverse.class),
     // Read
+    //4
     ViewUnpublishedDataverse(BundleUtil.getStringFromBundle("permission.viewUnpublishedDataverse"), false, Dataverse.class),
+    //8
     ViewUnpublishedDataset(BundleUtil.getStringFromBundle("permission.viewUnpublishedDataset"), false, Dataset.class),
+    //16
     DownloadFile(BundleUtil.getStringFromBundle("permission.downloadFile"), false, DataFile.class),
     // Update
+    //32
     EditDataverse(BundleUtil.getStringFromBundle("permission.editDataverse"), true, Dataverse.class),
+    //64
     EditDataset(BundleUtil.getStringFromBundle("permission.editDataset"), true, Dataset.class),
+    //128
     ManageDataversePermissions(BundleUtil.getStringFromBundle("permission.managePermissionsDataverse"), true, Dataverse.class),
+    //256
     ManageDatasetPermissions(BundleUtil.getStringFromBundle("permission.managePermissionsDataset"), true, Dataset.class),
+    //512
     PublishDataverse(BundleUtil.getStringFromBundle("permission.publishDataverse"), true, Dataverse.class),
+    //1024
     PublishDataset(BundleUtil.getStringFromBundle("permission.publishDataset"), true, Dataset.class, Dataverse.class),
     // Delete
+    //2048
     DeleteDataverse(BundleUtil.getStringFromBundle("permission.deleteDataverse"), true, Dataverse.class),
-    DeleteDatasetDraft(BundleUtil.getStringFromBundle("permission.deleteDataset"), true, Dataset.class);
+    //4096
+    DeleteDatasetDraft(BundleUtil.getStringFromBundle("permission.deleteDataset"), true, Dataset.class),
+    //8192
+    ManageMinorDatasetPermissions(BundleUtil.getStringFromBundle("permission.manageMinorDatasetPermissions"), true, Dataset.class);
 
     // FUTURE:
     //RestrictMetadata("Mark metadata as restricted", DvObject.class),
@@ -98,6 +114,4 @@ public enum Permission implements java.io.Serializable {
     public boolean requiresAuthenticatedUser() {
         return requiresAuthenticatedUser;
     }
-    
-   
 }

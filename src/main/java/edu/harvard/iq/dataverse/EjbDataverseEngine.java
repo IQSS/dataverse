@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import org.apache.commons.collections4.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -216,8 +217,9 @@ public class EjbDataverseEngine {
                 Set<Permission> granted = (dvo != null) ? permissionService.permissionsFor(dvReq, dvo)
                         : EnumSet.allOf(Permission.class);
                 Set<Permission> required = requiredMap.get(dvName);
-                
-                if (!granted.containsAll(required)) {
+
+                if ((!aCommand.isAllPermissionsRequired() && !CollectionUtils.containsAny(granted, required) ||
+                        (aCommand.isAllPermissionsRequired() && !granted.containsAll(required)))) {
                     required.removeAll(granted);
                     logRec.setActionResult(ActionLogRecord.Result.PermissionError);
                     /**

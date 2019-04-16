@@ -3,10 +3,12 @@ package edu.harvard.iq.dataverse.engine.command;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 
 /**
  * Convenience class for implementing the {@link Command} interface.
@@ -72,6 +74,11 @@ public abstract class AbstractCommand<R> implements Command<R> {
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         return CH.permissionsRequired(getClass());
+    }
+
+    @Override
+    public boolean isAllPermissionsRequired() {
+        return CH.isAllPermissionsRequired(getClass());
     }
 
     /**

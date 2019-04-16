@@ -38,7 +38,7 @@ public class PermissionsWrapper implements java.io.Serializable {
 
     @Inject
     DataverseSession session;
-    
+
     @Inject
     DataverseRequestServiceBean dvRequestService;
 
@@ -85,7 +85,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         if (command==null){
             return false;
         }
-        
+
         boolean canIssueCommand;
         canIssueCommand = permissionService.requestOn(dvRequestService.getDataverseRequest(), dvo).canIssue(command);
         dvoCommandMap.put(command, canIssueCommand);
@@ -105,7 +105,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     public boolean canIssueDeleteDataverseCommand(DvObject dvo) {
         return canIssueCommand(dvo, DeleteDataverseCommand.class);
     }
-    
+
     public boolean canIssueCreateDataverseCommand(DvObject dvo) {
         return canIssueCommand(dvo, CreateDataverseCommand.class);
     }
@@ -113,93 +113,93 @@ public class PermissionsWrapper implements java.io.Serializable {
     public boolean canEditDataverseTextMessagesAndBanners(Long dataverseId) {
         return permissionService.isUserCanEditDataverseTextMessagesAndBanners(dataverseId);
     }
-    
+
     public boolean canManagePermissions(DvObject dvo) {
         if (dvo==null || (dvo.getId()==null) ){
             return false;
         }
-        
+
         User u = session.getUser();
         return dvo instanceof Dataverse
                 ? canManageDataversePermissions(u, (Dataverse) dvo)
-                : canManageDatasetPermissions(u, (Dataset) dvo);
+                : canManageDatasetOrMinorDatasetPermissions(u, (Dataset) dvo);
     }
-    
+
     public boolean canManageDataversePermissions(User u, Dataverse dv) {
         if ( dv==null || (dv.getId()==null)){
             return false;
         }
-        if (u==null){            
+        if (u == null) {
             return false;
         }
         return permissionService.requestOn(dvRequestService.getDataverseRequest(), dv).has(Permission.ManageDataversePermissions);
     }
-    
-    public boolean canManageDatasetPermissions(User u, Dataset ds) {
+
+    public boolean canManageDatasetOrMinorDatasetPermissions(User u, Dataset ds) {
         if ( ds==null || (ds.getId()==null)){
             return false;
         }
-        if (u==null){            
+        if (u == null) {
             return false;
         }
-        return permissionService.requestOn(dvRequestService.getDataverseRequest(), ds).has(Permission.ManageDatasetPermissions);
+        return permissionService.requestOn(dvRequestService.getDataverseRequest(), ds).has(Permission.ManageDatasetPermissions) ||
+                permissionService.requestOn(dvRequestService.getDataverseRequest(), ds).has(Permission.ManageMinorDatasetPermissions);
     }
 
     public boolean canViewUnpublishedDataset(DataverseRequest dr, Dataset dataset) {
         return doesSessionUserHaveDataSetPermission(dr, dataset, Permission.ViewUnpublishedDataset);
     }
-    
+
     public boolean canUpdateDataset(DataverseRequest dr, Dataset dataset) {
         return doesSessionUserHaveDataSetPermission(dr, dataset, Permission.EditDataset);
     }
-    
-            
-    
+
+
     /**
-     * (Using Raman's implementation in DatasetPage - moving it here, so that 
+     * (Using Raman's implementation in DatasetPage - moving it here, so that
      * other components could use this optimization -- L.A. 4.2.1)
-     * 
+     *
      * Check Dataset related permissions
-     * 
+     *
      * @param req
      * @param dataset
      * @param permissionToCheck
-     * @return 
+     * @return
      */
     public boolean doesSessionUserHaveDataSetPermission(DataverseRequest req, Dataset dataset, Permission permissionToCheck){
         if (permissionToCheck == null){
             return false;
         }
-               
+
         String permName = permissionToCheck.getHumanName();
-       
+
         // Has this check already been done? 
         // 
         if (this.datasetPermissionMap.containsKey(permName)){
             // Yes, return previous answer
             return this.datasetPermissionMap.get(permName);
         }
-        
+
         // Check the permission
         boolean hasPermission = this.permissionService.requestOn(req, dataset).has(permissionToCheck);
 
         // Save the permission
         this.datasetPermissionMap.put(permName, hasPermission);
-        
+
         // return true/false
         return hasPermission;
     }
     /**
      *  Does this dvoObject have "Permission.DownloadFile"?
      * @param dvo
-     * @return 
+     * @return
      */
     public boolean hasDownloadFilePermission(DvObject dvo){
-        
+
         if ((dvo==null)||(dvo.getId() == null)){
             return false;
         }
-        
+
         // Has this check already been done? Check the hash
         //
         if (this.fileDownloadPermissionMap.containsKey(dvo.getId())){
@@ -214,9 +214,9 @@ public class PermissionsWrapper implements java.io.Serializable {
             // Yes, has permission, store result
             fileDownloadPermissionMap.put(dvo.getId(), true);
             return true;
-            
+
         } else {
-        
+
             // No permission, store result
             fileDownloadPermissionMap.put(dvo.getId(), false);
             return false;
@@ -228,7 +228,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     /* -----------------------------------
         Dataset Commands 
      ----------------------------------- */
-    
+
     // CREATE DATASET
     public boolean canIssueCreateDatasetCommand(DvObject dvo){
         return canIssueCommand(dvo, AbstractCreateDatasetCommand.class);
@@ -243,23 +243,20 @@ public class PermissionsWrapper implements java.io.Serializable {
     public boolean canIssueDeleteDatasetCommand(DvObject dvo){
         return canIssueCommand(dvo, DeleteDatasetCommand.class);
     }
-    
+
     // PLUBLISH DATASET
     public boolean canIssuePublishDatasetCommand(DvObject dvo){
         return canIssueCommand(dvo, PublishDatasetCommand.class);
     }
-    
-    
-    
-    
-    
-    // todo: move any calls to this to call NavigationWrapper   
+
+
+    // todo: move any calls to this to call NavigationWrapper
     @Inject NavigationWrapper navigationWrapper;
-    
+
     public String notAuthorized(){
         return navigationWrapper.notAuthorized();
     }
-    
+
     public String notFound() {
         return navigationWrapper.notFound();
     }

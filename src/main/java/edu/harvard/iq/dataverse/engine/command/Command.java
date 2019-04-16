@@ -4,7 +4,9 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import java.util.*;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Base interface for all commands running on Dataverse.
@@ -41,6 +43,10 @@ public interface Command<R> {
 	 * @return A map of the permissions required for this command
 	 */        
     Map<String,Set<Permission>> getRequiredPermissions();
+
+    default boolean isAllPermissionsRequired() {
+        return true;
+    }
 
     public String describe();
 }
