@@ -877,6 +877,45 @@ public class Admin extends AbstractApiBean {
 		}
 		return ok(msg);
 	}
+        
+    @Path("validate/dataset/{id}")
+    @GET
+    public Response validateDataset(@PathParam("id") String id) {
+        Dataset dataset;
+        try {
+            dataset = findDatasetOrDie(id);
+        } catch (Exception ex) {
+            return error(Response.Status.NOT_FOUND, "No Such Dataset");
+        }
+
+        Long dbId = dataset.getId();
+
+        String msg = "unknown";
+        try {
+            beanValidationSvc.instantiateDataset(dbId);
+            msg = "valid";
+        } catch (Exception ex) {
+            Throwable cause = ex;
+            while (cause != null) {
+                if (cause instanceof ConstraintViolationException) {
+                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
+                    for (ConstraintViolation<?> constraintViolation : constraintViolationException
+                            .getConstraintViolations()) {
+                        String databaseRow = constraintViolation.getLeafBean().toString();
+                        String field = constraintViolation.getPropertyPath().toString();
+                        String invalidValue = constraintViolation.getInvalidValue().toString();
+                        JsonObjectBuilder violation = Json.createObjectBuilder();
+                        violation.add("entityClassDatabaseTableRowId", databaseRow);
+                        violation.add("field", field);
+                        violation.add("invalidValue", invalidValue);
+                        return ok(violation);
+                    }
+                }
+                cause = cause.getCause();
+            }
+        }
+        return ok(msg);
+    }
 
 	@Path("assignments/assignees/{raIdtf: .*}")
 	@GET

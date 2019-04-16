@@ -26,5 +26,14 @@ public class BeanValidationServiceBean {
             }
         }
     }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void instantiateDataset(Long id) {
+        Dataset dataset = datasetService.find(id);
+        for (DatasetVersion version : dataset.getVersions()) {
+            for (FileMetadata fileMetadata : version.getFileMetadatas()) {
+            }
+        }
+    }
 
 }
