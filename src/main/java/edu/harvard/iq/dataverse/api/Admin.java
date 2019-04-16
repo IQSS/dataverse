@@ -86,6 +86,8 @@ import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import java.io.IOException;
+import java.io.OutputStream;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -93,6 +95,8 @@ import java.util.Date;
 import javax.inject.Inject;
 import javax.persistence.Query;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.StreamingOutput;
 
 /**
  * Where the secure, setup API calls live.
@@ -848,7 +852,7 @@ public class Admin extends AbstractApiBean {
 		}
 	}
 
-	@Path("validate")
+	/*@Path("validate")
 	@GET
 	public Response validate() {
 		String msg = "UNKNOWN";
@@ -876,7 +880,88 @@ public class Admin extends AbstractApiBean {
 			}
 		}
 		return ok(msg);
-	}
+	}*/
+   
+    @GET
+    @Path("validate/datasets")
+    @Produces({"application/json"})
+    public Response validateAllDatasets() {
+        
+        StreamingOutput stream = new StreamingOutput() {
+
+            @Override
+            public void write(OutputStream os) throws IOException,
+                    WebApplicationException {
+                os.write("{\"datasets\": [\n".getBytes());
+                
+                boolean wroteObject = false;
+                for (Long datasetId : datasetService.findAllLocalDatasetIds()) {
+                    // Potentially, there's a godzillion datasets in this Dataverse. 
+                    // This is why we go through the list of ids here, and instantiate 
+                    // only one dataset at a time. 
+                    boolean success = false;
+                    boolean constraintViolationDetected = false;
+                     
+                    JsonObjectBuilder output = Json.createObjectBuilder();
+                    output.add("datasetId", datasetId);
+
+                    
+                    try {
+                        beanValidationSvc.instantiateDataset(datasetId);
+                        success = true;
+                    } catch (Exception ex) {
+                        Throwable cause = ex;
+                        while (cause != null) {
+                            if (cause instanceof ConstraintViolationException) {
+                                ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
+                                for (ConstraintViolation<?> constraintViolation : constraintViolationException
+                                        .getConstraintViolations()) {
+                                    String databaseRow = constraintViolation.getLeafBean().toString();
+                                    String field = constraintViolation.getPropertyPath().toString();
+                                    String invalidValue = constraintViolation.getInvalidValue().toString();
+                                    
+                                    output.add("status", "invalid");
+                                    output.add("entityClassDatabaseTableRowId", databaseRow);
+                                    output.add("field", field);
+                                    output.add("invalidValue", invalidValue);
+                                    
+                                    constraintViolationDetected = true; 
+                                    
+                                    break; 
+                                    
+                                }
+                            }
+                            cause = cause.getCause();
+                        }
+                    }
+                    
+                    
+                    if (success) {
+                        output.add("status", "valid");
+                    } else if (!constraintViolationDetected) {
+                        output.add("status", "unknown");
+                    }
+                    
+                    // write it out:
+                    
+                    if (wroteObject) {
+                        os.write(",\n".getBytes());
+                    }
+
+                    os.write(output.build().toString().getBytes("UTF8"));
+                    
+                    if (!wroteObject) {
+                        wroteObject = true;
+                    }
+                }
+                
+                
+                os.write("\n]\n}\n".getBytes());
+            }
+            
+        };
+        return Response.ok(stream).build();
+    }
         
     @Path("validate/dataset/{id}")
     @GET
