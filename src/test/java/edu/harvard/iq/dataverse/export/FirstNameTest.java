@@ -36,6 +36,7 @@ public class FirstNameTest {
     
     /***
      * Name is composed of:
+     * The string is composed of:
      *     <Family Name>, <First Names>
      */
     @Test
