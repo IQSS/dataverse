@@ -5,12 +5,6 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.util.BitSet;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.MissingResourceException;
-import java.util.Objects;
-import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -24,6 +18,12 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.MissingResourceException;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * A role is an annotated set of permissions. A role belongs
@@ -67,7 +67,8 @@ public class DataverseRole implements Serializable  {
     public static final String MANAGER = "manager";
     public static final String CURATOR = "curator";
     public static final String MEMBER = "member";
-    
+	public static final String DEPOSITOR = "depositor";
+
     public static final String NONE = "none";
     
     

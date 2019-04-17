@@ -263,7 +263,9 @@ public class ManagePermissionsPage implements java.io.Serializable {
         if (defaultContributorRoleAlias == null) {
             initAccessSettings();
         }
-        return !(defaultContributorRoleAlias.equals(DataverseRole.EDITOR) || defaultContributorRoleAlias.equals(DataverseRole.CURATOR));
+        return !(defaultContributorRoleAlias.equals(DataverseRole.EDITOR) ||
+                defaultContributorRoleAlias.equals(DataverseRole.CURATOR) ||
+                defaultContributorRoleAlias.equals(DataverseRole.DEPOSITOR));
     }
 
     public String getCustomDefaultContributorRoleName() {

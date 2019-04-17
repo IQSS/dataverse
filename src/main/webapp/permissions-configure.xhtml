@@ -1,10 +1,8 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:h="http://java.sun.com/jsf/html"
-     xmlns:f="http://java.sun.com/jsf/core"
-     xmlns:ui="http://java.sun.com/jsf/facelets"
-     xmlns:c="http://java.sun.com/jsp/jstl/core"
-     xmlns:p="http://primefaces.org/ui"
-     xmlns:o="http://omnifaces.org/ui">
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+>
     
     <div class="form-group">
         <label for="accessRadios">
@@ -26,9 +24,11 @@
         </label>
         <div class="col-sm-offset-1">
             <p:selectOneRadio id="defaultContributorRoleRadio" value="#{managePermissionsPage.defaultContributorRoleAlias}" layout="custom" >
-                <f:selectItem itemLabel="#{bundle.editor}" itemValue="editor" /> 
-                <f:selectItem itemLabel="#{bundle.curator}" itemValue="curator" /> 
-                <f:selectItem itemLabel="#{managePermissionsPage.customDefaultContributorRoleName}" itemValue="#{managePermissionsPage.customDefaultContributorRoleAlias}" /> #{managePermissionsPage.customDefaultContributorRoleAlias}               
+                <f:selectItem itemLabel="#{bundle.editor}" itemValue="editor"/>
+                <f:selectItem itemLabel="#{bundle.curator}" itemValue="curator"/>
+                <f:selectItem itemLabel="#{bundle.depositor}" itemValue="depositor"/>
+                <f:selectItem itemLabel="#{managePermissionsPage.customDefaultContributorRoleName}"
+                              itemValue="#{managePermissionsPage.customDefaultContributorRoleAlias}"/> #{managePermissionsPage.customDefaultContributorRoleAlias}
             </p:selectOneRadio>
             <div class="radio no-padding-left">
                 <label for="opt1">
@@ -44,15 +44,23 @@
                     <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.curator.description']}</span>
                 </label>
             </div>
-            <ui:fragment rendered="#{managePermissionsPage.isCustomDefaultContributorRole()}">
             <div class="radio no-padding-left">
                 <label for="opt3">
-                    <p:radioButton id="opt3" for="defaultContributorRoleRadio" itemIndex="2"  />
+                    <p:radioButton id="opt3" for="defaultContributorRoleRadio" itemIndex="2"/>
+                    #{bundle.depositor}
+                    <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.depositor.description']}</span>
+                </label>
+            </div>
+            <ui:fragment rendered="#{managePermissionsPage.isCustomDefaultContributorRole()}">
+            <div class="radio no-padding-left">
+                <label for="opt4">
+                    <p:radioButton id="opt4" for="defaultContributorRoleRadio" itemIndex="3"/>
                     #{managePermissionsPage.customDefaultContributorRoleName} 
                     <span class="text-muted">- #{managePermissionsPage.customDefaultContributorRoleDescription}</span>
                 </label>
             </div>
             </ui:fragment>
+
         </div>              
     </div>    
 </ui:composition>
