@@ -249,21 +249,43 @@ public class OpenAireExportUtil {
 
                                 boolean nameType_check = false;
                                 Map<String, String> creator_map = new HashMap<String, String>();
-                                if ((StringUtils.containsIgnoreCase(nameIdentifierScheme, "orcid")) || (StringUtils.isNotBlank(affiliation))) {
+                                if ((StringUtils.containsIgnoreCase(nameIdentifierScheme, "orcid"))) {
                                     creator_map.put("nameType", "Personal");
                                     nameType_check = true;
                                 }
-                                writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
-
+ 
+                                String givenName = null;
                                 if (creatorName.contains(",")) {
+                                    // creatorName=<FamilyName>, <FirstName>
+                                    if ((givenName = FirstNames.getInstance().getFirstName(creatorName)) != null) {
+                                        // givenName ok
+                                        creator_map.put("nameType", "Personal");
+                                        nameType_check = true;
+                                    }
+                                    writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
+                                    
                                     if ((nameType_check) && (!creatorName.replaceFirst(",", "").contains(","))) {
+                                        // creatorName=<FamilyName>, <FirstName>
                                         String[] fullName = creatorName.split(", ");
-                                        String givenName = fullName[1];
+                                        givenName = fullName[1];
                                         String familyName = fullName[0];
 
                                         writeFullElement(xmlw, null, "givenName", null, givenName, language);
                                         writeFullElement(xmlw, null, "familyName", null, familyName, language);
                                     }
+                                } else if ((givenName = FirstNames.getInstance().getFirstName(creatorName)) != null) {
+                                    // givenName ok, creatorName=<FirstName> <FamilyName>
+                                    creator_map.put("nameType", "Personal");
+                                    nameType_check = true;
+                                    writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
+                                    
+                                    String familyName = creatorName.substring(givenName.length() + 1);
+                                    
+                                    writeFullElement(xmlw, null, "givenName", null, givenName, language);
+                                    writeFullElement(xmlw, null, "familyName", null, familyName, language);
+                                } else {
+                                    // case: default
+                                    writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
                                 }
 
                                 if (StringUtils.isNotBlank(nameIdentifier)) {

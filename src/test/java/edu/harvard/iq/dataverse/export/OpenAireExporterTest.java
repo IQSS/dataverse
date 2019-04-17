@@ -72,7 +72,7 @@ public class OpenAireExporterTest {
         System.out.println("XML: " + xmlAsString);
         XmlPath xmlpath = XmlPath.from(xmlAsString);
         assertEquals("Spruce Goose", xmlpath.getString("resource.titles.title"));
-        assertEquals("Spruce, Sabrina", xmlpath.getString("resource.creators.creator"));
+        assertEquals("Spruce, Sabrina", xmlpath.getString("resource.creators.creator.creatorName"));
         assertEquals("1.0", xmlpath.getString("resource.version"));
     }
 

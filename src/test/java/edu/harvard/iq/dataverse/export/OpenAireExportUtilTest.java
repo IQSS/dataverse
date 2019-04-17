@@ -108,6 +108,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeCreatorsElement(xmlw, dto, null);
 
         xmlw.close();
+        System.out.println(sw.toString());
         Assert.assertEquals("<creators>"
                 + "<creator>"
                 + "<creatorName nameType=\"Personal\">Privileged, Pete</creatorName>"
@@ -123,8 +124,13 @@ public class OpenAireExportUtilTest {
                 + "<nameIdentifier nameIdentifierScheme=\"DAISY\">audreyId</nameIdentifier>"
                 + "<affiliation>Bottom</affiliation>"
                 + "</creator>"
+                + "<creator>"
+                + "<creatorName>Apache Foundation</creatorName>"
+                + "<nameIdentifier nameIdentifierScheme=\"DAISY\">audreyId</nameIdentifier>"
+                + "<affiliation>Bottom</affiliation>"
+                + "</creator>"
                 + "</creators>",
-                sw.toString());
+                sw.toString());   
     }
 
     /**

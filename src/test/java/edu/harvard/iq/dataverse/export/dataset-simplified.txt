@@ -94,6 +94,32 @@
                                         "typeName": "authorName",
                                         "value": "Awesome, Audrey"
                                     }
+                                },
+                                {
+                                    "authorAffiliation": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "authorAffiliation",
+                                        "value": "Bottom"
+                                    },
+                                    "authorIdentifier": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "authorIdentifier",
+                                        "value": "audreyId"
+                                    },
+                                    "authorIdentifierScheme": {
+                                        "multiple": false,
+                                        "typeClass": "controlledVocabulary",
+                                        "typeName": "authorIdentifierScheme",
+                                        "value": "DAISY"
+                                    },
+                                    "authorName": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "authorName",
+                                        "value": "Apache Foundation"
+                                    }
                                 }
                             ]
                         },
