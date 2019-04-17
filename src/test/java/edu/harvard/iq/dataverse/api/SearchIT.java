@@ -109,7 +109,7 @@ public class SearchIT {
         Response grantUser2AccessOnDataset = UtilIT.grantRoleOnDataverse(dataverseAlias, roleToAssign, "@" + username2, apiToken1);
         grantUser2AccessOnDataset.prettyPrint();
         assertEquals(200, grantUser2AccessOnDataset.getStatusCode());
-        sleep(500l);
+        sleep(3000l);
 
         Response shouldBeVisibleToUser2 = UtilIT.search("id:dataset_" + datasetId1 + "_draft", apiToken2);
         shouldBeVisibleToUser2.prettyPrint();
