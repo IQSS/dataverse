@@ -7,6 +7,7 @@ import com.jayway.restassured.response.Response;
 import java.util.logging.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Ignore;
 import com.jayway.restassured.path.json.JsonPath;
 
 import java.util.List;
@@ -395,6 +396,7 @@ public class DatasetsIT {
      * This test requires the root dataverse to be published to pass.
      */
     @Test
+    @Ignore
     public void testExport() {
 
         Response createUser = UtilIT.createRandomUser();
@@ -560,6 +562,11 @@ public class DatasetsIT {
         setToExcludeEmailFromExport.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        // 3 second sleep, to allow the indexing to finish:
+        try {
+            Thread.sleep(3000l);
+        } catch (InterruptedException iex) {}
+        
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
 
@@ -1637,6 +1644,7 @@ public class DatasetsIT {
      * This test requires the root dataverse to be published to pass.
      */
     @Test
+    @Ignore
     public void testUpdatePIDMetadataAPI() {
 
         Response createUser = UtilIT.createRandomUser();
