@@ -6,7 +6,7 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author fcadili
+ * @author francesco.cadili@4science.it
  */
 public class FirstNameTest {
 

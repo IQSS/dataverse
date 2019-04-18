@@ -10,7 +10,7 @@ import java.util.logging.Level;
 
 /**
  *
- * @author fcadili
+ * @author francesco.cadili@4science.it
  */
 public class FirstNames {
 
@@ -42,7 +42,6 @@ public class FirstNames {
     }
 
     /**
-     * *
      * Initialize hash map.
      *
      */
@@ -75,7 +74,6 @@ public class FirstNames {
     }
 
     /**
-     * *
      * Check if firstName exists on map.
      *
      * @param fullname full name
@@ -123,7 +121,6 @@ public class FirstNames {
     }
 
     /**
-     * *
      * Used to optimize capacity.
      *
      * @return
@@ -133,11 +130,10 @@ public class FirstNames {
     }
 
     /**
+     * Read name_dict.txt file. (GNU Free Documentation License)
      *
-     * Read name_dict.txt file. (GNU license 1.2)
-     *
-     * @see
-     * https://github.com/lead-ratings/gender-guesser/blob/master/gender_guesser/data/nam_dict.txt
+     * @see <a href="https://github.com/lead-ratings/gender-guesser/blob/master/gender_guesser/data/nam_dict.txt">
+     *      List of first names and gender</a>
      */
     private void readNameDict() throws IOException {
         InputStream fis = FirstNames.class.getClassLoader().getResourceAsStream(NAME_DICT_FILENAME);
@@ -173,8 +169,8 @@ public class FirstNames {
      *
      * Read yob2017.txt file. (Creative Commons CCZero)
      *
-     * @see
-     * https://catalog.data.gov/dataset/baby-names-from-social-security-card-applications-national-level-data/resource/fdfd2c5c-6190-4fac-9ead-ae478e0c2790
+     * @see <a href="https://catalog.data.gov/dataset/baby-names-from-social-security-card-applications-national-level-data">
+     *              Baby Names from Social Security Card Applications - National Level Data</a>
      */
     private void readYob() throws IOException {
         InputStream fis = this.getClass().getClassLoader().getResourceAsStream(YOB_FILENAME);

@@ -28,7 +28,7 @@ import org.junit.Test;
 
 /**
  *
- * @author fcadili
+ * @author francesco.cadili@4science.it
  */
 public class OpenAireExportUtilTest {
 
@@ -108,7 +108,6 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeCreatorsElement(xmlw, dto, null);
 
         xmlw.close();
-        System.out.println(sw.toString());
         Assert.assertEquals("<creators>"
                 + "<creator>"
                 + "<creatorName nameType=\"Personal\">Privileged, Pete</creatorName>"
