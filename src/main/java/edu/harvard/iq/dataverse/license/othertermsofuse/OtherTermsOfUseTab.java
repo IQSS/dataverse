@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.model.ByteArrayContent;
 
+import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -25,7 +26,7 @@ public class OtherTermsOfUseTab implements Serializable {
     @Inject
     private PermissionsWrapper permissionsWrapper;
 
-    @Inject
+    @EJB
     private SettingsServiceBean settingsServiceBean;
 
     private List<OtherTermsOfUseDto> otherTermsOfUseDto = new ArrayList<>();

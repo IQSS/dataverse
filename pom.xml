@@ -860,6 +860,7 @@
                             <goal>verify</goal>
                         </goals>
                         <configuration>
+                            <reuseForks>false</reuseForks>
                             <groups>edu.harvard.iq.dataverse.ArquillianIntegrationTests</groups>
                         </configuration>
                     </execution>
