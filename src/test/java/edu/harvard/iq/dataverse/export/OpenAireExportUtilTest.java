@@ -28,7 +28,7 @@ import org.junit.Test;
 
 /**
  *
- * @author fcadili
+ * @author francesco.cadili@4science.it
  */
 public class OpenAireExportUtilTest {
 
@@ -123,8 +123,13 @@ public class OpenAireExportUtilTest {
                 + "<nameIdentifier nameIdentifierScheme=\"DAISY\">audreyId</nameIdentifier>"
                 + "<affiliation>Bottom</affiliation>"
                 + "</creator>"
+                + "<creator>"
+                + "<creatorName>Apache Foundation</creatorName>"
+                + "<nameIdentifier nameIdentifierScheme=\"DAISY\">audreyId</nameIdentifier>"
+                + "<affiliation>Bottom</affiliation>"
+                + "</creator>"
                 + "</creators>",
-                sw.toString());
+                sw.toString());   
     }
 
     /**
