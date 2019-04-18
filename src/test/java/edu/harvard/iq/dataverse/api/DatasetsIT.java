@@ -281,10 +281,13 @@ public class DatasetsIT {
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
         Response attemptToPublishZeroDotOne = UtilIT.publishDatasetViaNativeApiDeprecated(datasetPersistentId, "minor", apiToken);
+        logger.info("Attempting to publish a minor (\"zero-dot-one\") version");
         attemptToPublishZeroDotOne.prettyPrint();
         attemptToPublishZeroDotOne.then().assertThat()
                 .body("message", equalTo("Cannot publish as minor version. Re-try as major release."))
                 .statusCode(403);
+        
+        logger.info("Attempting to publish a major version");
 
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
