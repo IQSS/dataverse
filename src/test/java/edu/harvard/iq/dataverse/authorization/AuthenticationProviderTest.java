@@ -15,15 +15,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AuthenticationProviderTest {
 
-    private final static String[] bundles = {"null", "builtin", "github", "google", "orcid", "orcid-sandbox", "shib"};
+    private final static String[] authProviders = {"null", "builtin", "github", "google", "orcid", "orcid-sandbox", "shib"};
     private static Map<String, String> bundleTestMap;
 
     @BeforeAll
     static void setup() {
-        bundleTestMap = Stream.of(bundles)
-                .map(bundleName -> new SimpleEntry<>(
-                        bundleName,
-                        BundleUtil.getStringFromBundle("authenticationProvider.name." + bundleName)
+        bundleTestMap = Stream.of(authProviders)
+                .map(authProviderId -> new SimpleEntry<>(
+                        authProviderId,
+                        BundleUtil.getStringFromBundle("authenticationProvider.name." + authProviderId)
                     )
                 ).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
