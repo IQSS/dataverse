@@ -255,6 +255,7 @@ public class OpenAireExportUtil {
                                 }
  
                                 String givenName = null;
+                                // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
                                 if (creatorName.contains(",")) {
                                     // creatorName=<FamilyName>, <FirstName>
                                     if ((givenName = FirstNames.getInstance().getFirstName(creatorName)) != null) {
@@ -284,7 +285,7 @@ public class OpenAireExportUtil {
                                     writeFullElement(xmlw, null, "givenName", null, givenName, language);
                                     writeFullElement(xmlw, null, "familyName", null, familyName, language);
                                 } else {
-                                    // case: default
+                                    // default
                                     writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
                                 }
 
