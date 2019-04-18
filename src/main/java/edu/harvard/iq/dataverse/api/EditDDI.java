@@ -391,6 +391,12 @@ public class EditDDI  extends AbstractApiBean {
             thesame = false;
         } else if (checkDiff(vmOld.getLiteralquestion(),vmNew.getLiteralquestion())) {
             thesame = false;
+        } else if (checkDiff(vmOld.getPostquestion(),vmNew.getPostquestion())) {
+            thesame = false;
+        } else if (checkDiffEmpty(vmNew.getPostquestion(),vmOld.getPostquestion())) {
+            thesame = false;
+        } else if (checkDiff(vmOld.getPostquestion(),vmNew.getPostquestion())) {
+            thesame = false;
         } else  if (checkDiffEmpty(vmOld.getLabel(),vmNew.getLabel())) {
             thesame = false;
         } else if  (checkDiffEmpty(vmNew.getLabel(),vmOld.getLabel())) {
@@ -425,6 +431,8 @@ public class EditDDI  extends AbstractApiBean {
         } else if (varMet.getInterviewinstruction() != null && !varMet.getInterviewinstruction().trim().equals("")) {
             thedefault = false;
         } else if (varMet.getLiteralquestion() != null && !varMet.getLiteralquestion().trim().equals("")) {
+            thedefault = false;
+        } else if (varMet.getPostquestion() != null && !varMet.getPostquestion().trim().equals("")) {
             thedefault = false;
         } else if (varMet.isIsweightvar() != false ) {
             thedefault = false;

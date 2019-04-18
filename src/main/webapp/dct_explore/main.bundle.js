@@ -761,7 +761,8 @@ var InterfaceComponent = /** @class */ (function () {
                 // start qstn
                 if (typeof this._variables[i].qstn !== 'undefined' &&
                     ((typeof this._variables[i].qstn.qstnLit !== 'undefined' && this._variables[i].qstn.qstnLit !== '') ||
-                        (typeof this._variables[i].qstn.ivuInstr !== 'undefined' && this._variables[i].qstn.ivuInstr !== ''))) {
+                        (typeof this._variables[i].qstn.ivuInstr !== 'undefined' && this._variables[i].qstn.ivuInstr !== '') ||
+                        (typeof this._variables[i].qstn.postQTxt !== 'undefined' && this._variables[i].qstn.postQTxt !== ''))) {
                     doc.startElement('qstn');
                     if (typeof this._variables[i].qstn.qstnLit !== 'undefined') {
                         doc.startElement('qstnLit').text(this._variables[i].qstn.qstnLit);
@@ -769,6 +770,10 @@ var InterfaceComponent = /** @class */ (function () {
                     }
                     if (typeof this._variables[i].qstn.ivuInstr !== 'undefined') {
                         doc.startElement('ivuInstr').text(this._variables[i].qstn.ivuInstr);
+                        doc.endElement();
+                    }
+                    if (typeof this._variables[i].qstn.postQTxt !== 'undefined') {
+                        doc.startElement('postQTxt').text(this._variables[i].qstn.postQTxt);
                         doc.endElement();
                     }
                     doc.endElement();
@@ -882,7 +887,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/var-dialog/var-dialog.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div mat-dialog-content >\n  <form [formGroup]=\"form\" (ngSubmit)=\"submit(form)\">\n    <h1 mat-dialog-title>Variable Information</h1>\n\n    <mat-dialog-content>\n      <mat-grid-list class=\"table-controls\" cols=\"2\" rowHeight=\"62\">\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <mat-form-field>\n            <input matInput formControlName=\"id\" placeholder=\"ID\" value=\"{{data['@ID']}}\"  >\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <mat-form-field>\n            <input matInput formControlName=\"name\" placeholder=\"Name\" value=\"{{data['@name']}}\" >\n          </mat-form-field>\n        </mat-grid-tile>\n\n\n\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n             <input matInput formControlName=\"labl\" placeholder=\"Label\" value=\"{{data.labl['#text']}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"qstnLit\" placeholder=\"Literal Question\" value=\"{{data.qstn.qstnLit}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"ivuInstr\" placeholder=\"Interviewer Instructions\" value=\"{{data.qstn.ivuInstr}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"universe\" placeholder=\"Universe\" value=\"{{data.universe['#text']}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"2\">\n          <mat-form-field class=\"field_width\" >\n            <textarea matInput formControlName=\"notes\" class=\"textarea_height\" placeholder=\"Notes\" value=\"{{data.notes['#cdata']}}\" ></textarea>\n          </mat-form-field>\n        </mat-grid-tile>\n        <!--Group chip list-->\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\" class=\"field_width\">\n          <mat-form-field class=\"field_width\">\n            <mat-select formControlName=\"_groups\" [(value)]=\"data['_groups']\"  placeholder=\"Group\" multiple=\"true\">\n\n              <mat-option *ngFor=\"let g of _variable_groups\" [value]=\"g.varGrp['@ID']\" >\n                {{ g.varGrp.labl}}\n              </mat-option>\n            </mat-select>\n          </mat-form-field>\n        </mat-grid-tile>\n\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <mat-form-field>\n            <mat-select formControlName=\"wgt_var\" [(value)]=\"data['@wgt-var']\" placeholder=\"Weight Variable\">\n              <mat-option *ngFor=\"let w of weights\" [value]=\"w\">\n                {{ w }}\n              </mat-option>\n              <mat-option>Unweighted</mat-option>\n            </mat-select>\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <section class=\"example-section\">\n            <mat-checkbox formControlName=\"wgt\" align=\"end\" checked=\"{{data['@wgt']}}\">Is Weight</mat-checkbox>\n\n          </section>\n        </mat-grid-tile>\n             <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n               <button mat-button type=\"submit\">Update</button>\n             </mat-grid-tile>\n             <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n               <button mat-button type=\"button\" (click)=\"dialogRef.close()\">Cancel</button>\n             </mat-grid-tile>\n             </mat-grid-list>\n           </mat-dialog-content>\n         </form>\n       </div>\n"
+module.exports = "<div mat-dialog-content >\n  <form [formGroup]=\"form\" (ngSubmit)=\"submit(form)\">\n    <h1 mat-dialog-title>Variable Information</h1>\n\n    <mat-dialog-content>\n      <mat-grid-list class=\"table-controls\" cols=\"2\" rowHeight=\"62\">\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <mat-form-field>\n            <input matInput formControlName=\"id\" placeholder=\"ID\" value=\"{{data['@ID']}}\"  >\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <mat-form-field>\n            <input matInput formControlName=\"name\" placeholder=\"Name\" value=\"{{data['@name']}}\" >\n          </mat-form-field>\n        </mat-grid-tile>\n\n\n\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n             <input matInput formControlName=\"labl\" placeholder=\"Label\" value=\"{{data.labl['#text']}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"qstnLit\" placeholder=\"Literal Question\" value=\"{{data.qstn.qstnLit}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"ivuInstr\" placeholder=\"Interviewer Instructions\" value=\"{{data.qstn.ivuInstr}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"postQTxt\" placeholder=\"Post Question\" value=\"{{data.qstn.postQTxt}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"universe\" placeholder=\"Universe\" value=\"{{data.universe['#text']}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"2\">\n          <mat-form-field class=\"field_width\" >\n            <textarea matInput formControlName=\"notes\" class=\"textarea_height\" placeholder=\"Notes\" value=\"{{data.notes['#cdata']}}\" ></textarea>\n          </mat-form-field>\n        </mat-grid-tile>\n        <!--Group chip list-->\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\" class=\"field_width\">\n          <mat-form-field class=\"field_width\">\n            <mat-select formControlName=\"_groups\" [(value)]=\"data['_groups']\"  placeholder=\"Group\" multiple=\"true\">\n\n              <mat-option *ngFor=\"let g of _variable_groups\" [value]=\"g.varGrp['@ID']\" >\n                {{ g.varGrp.labl}}\n              </mat-option>\n            </mat-select>\n          </mat-form-field>\n        </mat-grid-tile>\n\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <mat-form-field>\n            <mat-select formControlName=\"wgt_var\" [(value)]=\"data['@wgt-var']\" placeholder=\"Weight Variable\">\n              <mat-option *ngFor=\"let w of weights\" [value]=\"w\">\n                {{ w }}\n              </mat-option>\n              <mat-option>Unweighted</mat-option>\n            </mat-select>\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <section class=\"example-section\">\n            <mat-checkbox formControlName=\"wgt\" align=\"end\" checked=\"{{data['@wgt']}}\">Is Weight</mat-checkbox>\n\n          </section>\n        </mat-grid-tile>\n             <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n               <button mat-button type=\"submit\">Update</button>\n             </mat-grid-tile>\n             <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n               <button mat-button type=\"button\" (click)=\"dialogRef.close()\">Cancel</button>\n             </mat-grid-tile>\n             </mat-grid-list>\n           </mat-dialog-content>\n         </form>\n       </div>\n"
 
 /***/ }),
 
@@ -964,6 +969,7 @@ var VarDialogComponent = /** @class */ (function () {
             qstnLit: this.data ? this.data.qstn['qstnLit'] : '',
             universe: this.data ? this.data.universe['#text'] : '',
             ivuInstr: this.data ? this.data.qstn['ivuInstr'] : '',
+            postQTxt: this.data ? this.data.qstn['postQTxt'] : '',
             notes: this.data ? this.data.notes['#cdata'] : '',
             wgt: this.data ? this.data['@wgt'] : '',
             wgt_var: this.data ? this.data['@wgt-var'] : '',
@@ -1001,6 +1007,8 @@ var VarDialogComponent = /** @class */ (function () {
         this.updateObjValue(_obj, 'qstn.qstnLit', form.controls.qstnLit);
         // Interviewer Instructions" value="{{data.qstn.ivuInstr
         this.updateObjValue(_obj, 'qstn.ivuInstr', form.controls.ivuInstr);
+        //Post Question" value="{{data.qstn.postQTxt
+        this.updateObjValue(_obj, 'qstn.postQTxt', form.controls.postQTxt);
         // Universe" value="{{data.universe
         this.updateObjValue(_obj, 'universe.#text', form.controls.universe);
         // update notes if available data.notes
@@ -1192,7 +1200,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/var-group/var-group.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<mat-nav-list class=\"button-header\">\n\n  <a mat-list-item (click)=\"addTab()\">Add Group<span class=\"fill-space\"></span><mat-icon>playlist_add</mat-icon></a>\n\n</mat-nav-list>\n<mat-nav-list>\n\n  <a mat-list-item (click)=\"showAll()\"  [ngClass]=\"{'active': all_active }\">All</a>\n\n  <a mat-list-item id=\"{{tab.varGrp['@ID']}}\" draggable=\"true\" [disableRipple]=\"true\"  (dragstart)=\"dragstart($event);onGroupClick(tab);trackDragRow(tab)\" (dragenter)=\"dragenter($event,tab)\" (dragend)=\"dragend($event)\"  *ngFor=\"let tab of _variable_groups\" (click)=\"onGroupClick(tab)\" (dblclick)=\"onGroupDblClick(tab)\" [ngClass]=\"{'active': tab.active }\" >\n    <mat-icon aria-label=\"drag\" matTooltip=\"Drag Me\" style=\"margin-left:-7px\">drag_indicator</mat-icon>\n    <span *ngIf=\"!tab.editable\">{{tab.varGrp.labl}}</span>\n    <mat-form-field *ngIf=\"tab.editable\" class=\"fixed_width\">\n      <input matInput value=\"{{tab.varGrp.labl}}\" #titleInput  (keyup.enter) =\"renameGroupComplete(tab,titleInput.value )\">\n      <button mat-icon-button matSuffix color=\"primary\"> <mat-icon aria-label=\"Done\" (click)=\"renameGroupComplete(tab,titleInput.value )\" >done</mat-icon></button>\n      <button mat-icon-button matSuffix color=\"primary\"> <mat-icon aria-label=\"Clear\" (click)=\"renameGroupCancel(tab)\">clear</mat-icon></button>\n      <button mat-icon-button matSuffix color=\"primary\"> <mat-icon aria-label=\"Delete\" (click)=\"groupDelete(tab)\">delete</mat-icon></button>\n    </mat-form-field>\n      <span class=\"fill-space\"></span>\n    <button *ngIf=\"!tab.editable\" mat-icon-button color=\"primary\"> <mat-icon aria-label=\"Edit\" (click)=\"renameGroup(tab)\">edit</mat-icon></button>\n\n  </a>\n\n</mat-nav-list>\n"
+module.exports = "<mat-nav-list class=\"button-header\" xmlns=\"http://www.w3.org/1999/html\">\n\n  <a mat-list-item (click)=\"addTab()\">Add Group<span class=\"fill-space\"></span><mat-icon>playlist_add</mat-icon></a>\n\n</mat-nav-list>\n<mat-nav-list>\n\n  <a mat-list-item (click)=\"showAll()\"  [ngClass]=\"{'active': all_active }\">All</a>\n\n  <a mat-list-item id=\"{{tab.varGrp['@ID']}}\" draggable=\"true\" [disableRipple]=\"true\"  (dragstart)=\"dragstart($event);onGroupClick(tab);trackDragRow(tab)\" (dragenter)=\"dragenter($event,tab)\" (dragend)=\"dragend($event)\"  *ngFor=\"let tab of _variable_groups\" (click)=\"onGroupClick(tab)\" (dblclick)=\"onGroupDblClick(tab)\" [ngClass]=\"{'active': tab.active }\" >\n    <mat-icon aria-label=\"drag\" matTooltip=\"Drag Me\" style=\"margin-left:-7px\">drag_indicator</mat-icon>\n    <span *ngIf=\"!tab.editable\">{{tab.varGrp.labl}}</span>\n    <mat-form-field *ngIf=\"tab.editable\" class=\"fixed_width\">\n      <input matInput value=\"{{tab.varGrp.labl}}\" #titleInput  (keyup.enter) =\"renameGroupComplete(tab,titleInput.value )\">\n        <span button mat-icon-button matSuffix color=\"primary\"> <mat-icon aria-label=\"Done\" (click)=\"renameGroupComplete(tab,titleInput.value )\" >done</mat-icon></span>\n        <span button mat-icon-button matSuffix color=\"primary\"> <mat-icon aria-label=\"Clear\" (click)=\"renameGroupCancel(tab)\">clear</mat-icon></span>\n        <span button mat-icon-button matSuffix color=\"primary\"> <mat-icon aria-label=\"Delete\" (click)=\"groupDelete(tab)\">delete</mat-icon></span>\n       </mat-form-field>\n\n      <span class=\"fill-space\"></span>\n    <button *ngIf=\"!tab.editable\" mat-icon-button color=\"primary\"> <mat-icon aria-label=\"Edit\" (click)=\"renameGroup(tab)\">edit</mat-icon></button>\n\n  </a>\n\n</mat-nav-list>\n"
 
 /***/ }),
 
@@ -1253,6 +1261,7 @@ var VarGroupComponent = /** @class */ (function () {
         //
         var obj = this;
         setTimeout(function () {
+            console.log("set time out");
             obj.parentScrollNav.emit();
             obj.onGroupClick(var_group);
         }, 100);
@@ -1268,16 +1277,20 @@ var VarGroupComponent = /** @class */ (function () {
         this.renameGroup(_obj);
     };
     VarGroupComponent.prototype.renameGroup = function (_obj) {
+        console.log("Rename group");
         _obj.editable = true;
     };
     VarGroupComponent.prototype.renameGroupComplete = function (_obj, _val) {
+        console.log("renameGroupComplete");
         _obj.varGrp.labl = _val;
         _obj.editable = false;
     };
     VarGroupComponent.prototype.renameGroupCancel = function (_obj) {
+        console.log("renameGroupCancel");
         _obj.editable = false;
     };
     VarGroupComponent.prototype.groupDelete = function (_obj) {
+        console.log("delete group");
         for (var i = 0; i < this._variable_groups.length; i++) {
             if (this._variable_groups[i].varGrp['@ID'] == _obj.varGrp['@ID']) {
                 this._variable_groups.splice(i, 1);
