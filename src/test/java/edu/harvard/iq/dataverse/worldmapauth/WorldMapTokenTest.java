@@ -35,7 +35,7 @@ public class WorldMapTokenTest {
         msg("------------------------------------------------------------");
     }
 
-     
+    // TODO: run in setup?
     private TokenApplicationType makeTokenApplicationType(int timeLimitMinutes){
         TokenApplicationType tat = new TokenApplicationType();
         tat.setName("GeoConnect");
@@ -45,6 +45,7 @@ public class WorldMapTokenTest {
         tat.setTimeLimitMinutes(timeLimitMinutes);
         return tat;
     }
+
     private WorldMapToken makeNewToken(TokenApplicationType tat){
         WorldMapToken token;
         token = new WorldMapToken();
@@ -80,7 +81,8 @@ public class WorldMapTokenTest {
     @Test
     public void testTokenTimes(){
         msgt("testTokenTimes");
-       
+
+        // TODO: this should not be "tested" in this test class.. indirect testing of the other production class
         TokenApplicationType tat = this.makeTokenApplicationType(30);
 
         assertEquals(30*60, tat.getTimeLimitSeconds());
