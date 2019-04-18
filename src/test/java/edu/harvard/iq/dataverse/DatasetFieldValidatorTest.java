@@ -55,7 +55,7 @@ public class DatasetFieldValidatorTest {
         value.setTemplate(new Template());
         boolean expResult = true;
         boolean result = instance.isValid(value, ctx);
-        assertEquals(expResult, result);
+        assertEquals("test isValid() on template field", expResult, result);
         
         
         //if not template and required
@@ -74,18 +74,18 @@ public class DatasetFieldValidatorTest {
         value.setSingleValue("");
         dfv.setValue("");
         result = instance.isValid(value, ctx);
-        assertEquals(false, result);
+        assertEquals("test isValid() if not template field and required with empty DataSetField", false, result);
         
         //Fill in a value - should be valid now....
         value.setSingleValue("value");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result);
+        assertEquals("test isValid() if not template field and required with non-empty DataSetField", true, result);
         
         //if not required - can be blank
         dft.setRequired(false);
         value.setSingleValue("");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result);
+        assertEquals("test isValid() if not template field and not required", true, result);
     }
     
 }
