@@ -288,6 +288,11 @@ public class DatasetsIT {
                 .statusCode(403);
         
         logger.info("Attempting to publish a major version");
+        
+        // 3 second sleep, to allow the indexing to finish:
+        try {
+            Thread.sleep(3000l);
+        } catch (InterruptedException iex) {}
 
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
@@ -424,6 +429,13 @@ public class DatasetsIT {
                 .body("message", equalTo("Cannot publish as minor version. Re-try as major release."))
                 .statusCode(403);
 
+        logger.info("In testExport; attempting to publish, as major version");
+        
+        // 3 second sleep, to allow the indexing to finish: 
+        try {
+            Thread.sleep(3000l);
+        } catch (InterruptedException iex) {}
+        
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
 
@@ -1653,6 +1665,10 @@ public class DatasetsIT {
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
 
+        try {
+            Thread.sleep(3000l);
+        } catch (InterruptedException iex){}
+        
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
 
