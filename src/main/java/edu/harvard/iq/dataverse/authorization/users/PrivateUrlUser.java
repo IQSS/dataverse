@@ -3,8 +3,6 @@ package edu.harvard.iq.dataverse.authorization.users;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
-import java.util.Objects;
-
 /**
  * A PrivateUrlUser is virtual in the sense that it does not have a row in the
  * authenticateduser table. It exists so when a Private URL is enabled for a
@@ -59,4 +57,7 @@ public class PrivateUrlUser implements User {
         String title = BundleUtil.getStringFromBundle("dataset.privateurl.roleassigeeTitle");
         return new RoleAssigneeDisplayInfo(title, null);
     }
+
+
+    
 }
