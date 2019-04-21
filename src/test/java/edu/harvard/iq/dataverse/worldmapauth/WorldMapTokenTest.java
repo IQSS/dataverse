@@ -34,7 +34,8 @@ public class WorldMapTokenTest {
         msg(s);
         msg("------------------------------------------------------------");
     }
-     
+
+
     private TokenApplicationType makeTokenApplicationType(int timeLimitMinutes){
         TokenApplicationType tat = new TokenApplicationType();
         tat.setName("GeoConnect");
@@ -44,7 +45,6 @@ public class WorldMapTokenTest {
         tat.setTimeLimitMinutes(timeLimitMinutes);
         return tat;
     }
-
     private WorldMapToken makeNewToken(TokenApplicationType tat){
         WorldMapToken token;
         token = new WorldMapToken();
