@@ -34,8 +34,7 @@ public class WorldMapTokenTest {
         msg(s);
         msg("------------------------------------------------------------");
     }
-
-    // TODO: run in setup?
+     
     private TokenApplicationType makeTokenApplicationType(int timeLimitMinutes){
         TokenApplicationType tat = new TokenApplicationType();
         tat.setName("GeoConnect");
