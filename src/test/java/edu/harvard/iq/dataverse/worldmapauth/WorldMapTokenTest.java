@@ -82,7 +82,6 @@ public class WorldMapTokenTest {
     public void testTokenTimes(){
         msgt("testTokenTimes");
 
-        // TODO: this should not be "tested" in this test class.. indirect testing of the other production class
         TokenApplicationType tat = this.makeTokenApplicationType(30);
 
         assertEquals(30*60, tat.getTimeLimitSeconds());
