@@ -9,11 +9,16 @@ import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import org.apache.solr.common.SolrInputDocument;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class SearchUtilTest {
+
+    @BeforeAll
+    static void setup() {
+        new SearchUtil();
+    }
 
     @Test
     public void testSanitizeQuery() {
