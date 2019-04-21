@@ -35,7 +35,7 @@ public class WorldMapTokenTest {
         msg("------------------------------------------------------------");
     }
 
-
+     
     private TokenApplicationType makeTokenApplicationType(int timeLimitMinutes){
         TokenApplicationType tat = new TokenApplicationType();
         tat.setName("GeoConnect");
@@ -80,7 +80,7 @@ public class WorldMapTokenTest {
     @Test
     public void testTokenTimes(){
         msgt("testTokenTimes");
-
+       
         TokenApplicationType tat = this.makeTokenApplicationType(30);
 
         assertEquals(30*60, tat.getTimeLimitSeconds());
