@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import javax.ws.rs.core.Response.Status;
@@ -163,16 +164,44 @@ public class DataversesIT {
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String dataverseAlias = UtilIT.getRandomDvAlias();
+        String emailAddressOfFirstDataverseContact = dataverseAlias + "@mailinator.com";
+        JsonObjectBuilder jsonToCreateDataverse = Json.createObjectBuilder()
+                .add("name", dataverseAlias)
+                .add("alias", dataverseAlias)
+                .add("dataverseContacts", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("contactEmail", emailAddressOfFirstDataverseContact)
+                        )
+                );
+        ;
 
-        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        Response createDataverseResponse = UtilIT.createDataverse(jsonToCreateDataverse.build(), apiToken);
         createDataverseResponse.prettyPrint();
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
-        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode())
+                .body("data.alias", equalTo(dataverseAlias))
+                .body("data.name", equalTo(dataverseAlias))
+                .body("data.dataverseContacts[0].displayOrder", equalTo(0))
+                .body("data.dataverseContacts[0].contactEmail", equalTo(emailAddressOfFirstDataverseContact))
+                .body("data.permissionRoot", equalTo(true))
+                .body("data.dataverseType", equalTo("UNCATEGORIZED"));
         
         Response exportDataverseAsJson = UtilIT.exportDataverse(dataverseAlias, apiToken);
         exportDataverseAsJson.prettyPrint();
         exportDataverseAsJson.then().assertThat()
                 .statusCode(OK.getStatusCode());
+
+        exportDataverseAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.alias", equalTo(dataverseAlias))
+                .body("data.name", equalTo(dataverseAlias))
+                .body("data.dataverseContacts", equalTo(null))
+                .body("data.permissionRoot", equalTo(true))
+                .body("data.dataverseType", equalTo("UNCATEGORIZED"));
+
         RestAssured.unregisterParser("text/plain");
 
         List dataverseEmailNotAllowed = with(exportDataverseAsJson.body().asString())
@@ -187,6 +216,15 @@ public class DataversesIT {
         exportDataverseAsJson2.prettyPrint();
         exportDataverseAsJson2.then().assertThat()
                 .statusCode(OK.getStatusCode());
+        exportDataverseAsJson2.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.alias", equalTo(dataverseAlias))
+                .body("data.name", equalTo(dataverseAlias))
+                .body("data.dataverseContacts[0].displayOrder", equalTo(0))
+                .body("data.dataverseContacts[0].contactEmail", equalTo(emailAddressOfFirstDataverseContact))
+                .body("data.permissionRoot", equalTo(true))
+                .body("data.dataverseType", equalTo("UNCATEGORIZED"));
+        
         RestAssured.unregisterParser("text/plain");
         List dataverseEmailAllowed = with(exportDataverseAsJson2.body().asString())
                 .getJsonObject("data.dataverseContacts");

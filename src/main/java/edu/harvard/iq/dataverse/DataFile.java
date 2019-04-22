@@ -57,7 +57,9 @@ import org.hibernate.validator.constraints.NotBlank;
 	@NamedQuery( name="DataFile.removeFromDatasetVersion",
 		query="DELETE FROM FileMetadata f WHERE f.datasetVersion.id=:versionId and f.dataFile.id=:fileId"),
         @NamedQuery(name="DataFile.findDataFileByIdProtocolAuth", 
-                query="SELECT s FROM DataFile s WHERE s.identifier=:identifier AND s.protocol=:protocol AND s.authority=:authority")
+                query="SELECT s FROM DataFile s WHERE s.identifier=:identifier AND s.protocol=:protocol AND s.authority=:authority"),
+        @NamedQuery(name="DataFile.findDataFileThatReplacedId", 
+                query="SELECT s.id FROM DataFile s WHERE s.previousDataFileId=:identifier")
 })
 @Entity
 @Table(indexes = {@Index(columnList="ingeststatus")
