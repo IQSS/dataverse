@@ -506,6 +506,10 @@ public class DataverseUserPage implements java.io.Serializable {
                 case CHECKSUMIMPORT:
                     userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
                     break;
+
+                case APIGENERATED:
+                    userNotification.setTheObject(userNotification.getUser());
+                    break;
             }
 
             userNotification.setDisplayAsRead(userNotification.isReadNotification());
