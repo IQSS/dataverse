@@ -73,6 +73,8 @@ public class MailUtil {
                 return BundleUtil.getStringFromBundle("notification.email.import.checksum.subject", rootDvNameAsList);
             case CONFIRMEMAIL:
                 return BundleUtil.getStringFromBundle("notification.email.verifyEmail.subject", rootDvNameAsList);
+            case APIGENERATED:
+                return BundleUtil.getStringFromBundle("notification.email.apiTokenGenerated.subject",  rootDvNameAsList);
         }
         return "";
     }
