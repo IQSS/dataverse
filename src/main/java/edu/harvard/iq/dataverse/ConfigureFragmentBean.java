@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import org.primefaces.PrimeFaces;
 import org.primefaces.context.RequestContext;
 
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
@@ -37,7 +38,6 @@ import java.util.Date;
 public class ConfigureFragmentBean implements java.io.Serializable{
     
     private static final Logger logger = Logger.getLogger(ConfigureFragmentBean.class.getName());
-    private final String messageApiGeneration = "API Token will be generated. Please keep it secure as you would do with a password.";
     
     private ExternalTool tool = null;
     private Long fileId = null;
@@ -56,7 +56,7 @@ public class ConfigureFragmentBean implements java.io.Serializable{
     public String configureExternalAlert() {
         generateApiToken();
         String httpString = "window.open('" + toolHandler.getToolUrlWithQueryParams()+  "','_blank'" +")";
-        RequestContext.getCurrentInstance().execute(httpString);
+        PrimeFaces.current().executeScript(httpString);
         JH.addMessage(FacesMessage.SEVERITY_WARN, tool.getDisplayName(), BundleUtil.getStringFromBundle("file.configure.launchMessage.details") + " " + tool.getDisplayName() + ".");
         return "";
     }    
@@ -64,7 +64,9 @@ public class ConfigureFragmentBean implements java.io.Serializable{
     /**
      * @param setTool the tool to set
      */
-    public void setConfigurePopupTool(ExternalTool setTool) { tool = setTool; }
+    public void setConfigurePopupTool(ExternalTool setTool) {
+        tool = setTool;
+    }
     
     /**
      * @return the Tool
@@ -91,7 +93,7 @@ public class ConfigureFragmentBean implements java.io.Serializable{
             apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
         }
         if ((apiToken == null) || (apiToken.getExpireTime().before(new Date()))) {
-            messageApi = this.messageApiGeneration;
+            messageApi = BundleUtil.getStringFromBundle("configurefragmentbean.apiTokenGenerated");
         } else {
             messageApi = "";
         }
@@ -122,7 +124,9 @@ public class ConfigureFragmentBean implements java.io.Serializable{
 
     }
     
-    public void setConfigureFileId(Long setFileId) { fileId = setFileId; }
+    public void setConfigureFileId(Long setFileId) {
+        fileId = setFileId;
+    }
 
     public String getMessageApi() {
         return messageApi;

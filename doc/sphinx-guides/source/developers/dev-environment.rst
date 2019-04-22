@@ -53,7 +53,13 @@ Fork https://github.com/IQSS/dataverse and then clone your fork like this:
 Build the Dataverse War File
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Launch Netbeans and click "File" and then "Open Project". Navigate to where you put the Dataverse code and double-click "dataverse" to open the project. Click "Run" in the menu and then "Build Project (dataverse)". The first time you build the war file, it will take a few minutes while dependencies are downloaded from Maven Central. Feel free to move on to other steps but check back for "BUILD SUCCESS" at the end.
+To build the Dataverse war file using versions of Netbeans newer than 8.2 requires some setup because Java EE support is not enabled by default. An alternative is to build the war file with Maven, which is explained below.
+
+Launch Netbeans and click "File" and then "Open Project". Navigate to where you put the Dataverse code and double-click "dataverse" to open the project.
+
+If you are using Netbeans 8.2, Java EE support should "just work" but if you are using a newer version of Netbeans, you will see "dataverse (broken)". If you see "broken", click "Tools", "Plugins", and "Installed". Check the box next to "Java Web and EE" and click "Activate". Let Netbeans install all the dependencies. You will observe that the green "Active" checkmark does not appear next to "Java Web and EE". Restart Netbeans.
+
+In Netbeans, select "dataverse" under Projects and click "Run" in the menu and then "Build Project (dataverse)". The first time you build the war file, it will take a few minutes while dependencies are downloaded from Maven Central. Feel free to move on to other steps but check back for "BUILD SUCCESS" at the end.
 
 If you installed Maven instead of Netbeans, run ``mvn package``.
 

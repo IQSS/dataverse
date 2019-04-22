@@ -571,6 +571,22 @@ public class UtilIT {
         return requestSpecification
                 .post("/api/files/" + idInPath + "/replace" + optionalQueryParam);
     }
+    
+    static Response updateFileMetadata(String fileIdOrPersistentId, String jsonAsString, String apiToken) {
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+        if (jsonAsString != null) {
+            requestSpecification.multiPart("jsonData", jsonAsString);
+        }
+        return requestSpecification
+                .post("/api/files/" + idInPath + "/metadata" + optionalQueryParam);
+    }
 
     static Response downloadFile(Integer fileId) {
         return given()
@@ -790,6 +806,19 @@ public class UtilIT {
         Response uningestFileResponse = given()
                 .post("/api/files/" + fileId + "/uningest/?key=" + apiToken);
         return uningestFileResponse;
+    }
+    
+    //I don't understand why this blows up when I remove the key
+    public static Response getDataFileMetadata(Long fileId, String apiToken) {
+        Response fileResponse = given()
+                .get("api/files/" + fileId + "/metadata/?key=" + apiToken);
+        return fileResponse;
+    }
+    
+    public static Response getDataFileMetadataDraft(Long fileId, String apiToken) {
+        Response fileResponse = given()
+                .get("api/files/" + fileId + "/metadata/draft?key=" + apiToken);
+        return fileResponse;
     }
 
     public static Response deleteDataverse(String doomed, String apiToken) {

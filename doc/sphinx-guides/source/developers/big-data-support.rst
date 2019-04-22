@@ -103,6 +103,7 @@ Optional steps for setting up the S3 Docker DCM Variant
 
   - Add AWS bucket info to dcmsrv
     - Add AWS credentials to ``~/.aws/credentials``
+
       - ``[default]``
       - ``aws_access_key_id =``
       - ``aws_secret_access_key =``
@@ -117,6 +118,7 @@ Optional steps for setting up the S3 Docker DCM Variant
 
   - Add AWS bucket info to Dataverse
     - Add AWS credentials to ``~/.aws/credentials``
+    
       - ``[default]``
       - ``aws_access_key_id =``
       - ``aws_secret_access_key =``
@@ -182,7 +184,7 @@ Steps to set up a DCM via Docker for Development
 See https://github.com/IQSS/dataverse/blob/develop/conf/docker-dcm/readme.md
 
 Using the RSAL Docker Containers
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Create a dataset (either with the procedure mentioned in DCM Docker Containers, or another process)
 - Publish the dataset (from the client container): ``cd /mnt; ./publish_major.bash ${database_id}``
