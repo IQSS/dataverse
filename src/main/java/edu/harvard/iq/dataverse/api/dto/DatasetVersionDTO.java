@@ -12,6 +12,7 @@ import java.util.Map;
 public class DatasetVersionDTO {
     String archiveNote;
     String deacessionLink;
+    // FIXME: Change to versionNumberMajor and versionNumberMinor? Some partial renaming of "minor" was done.
     Long versionNumber;
     Long versionMinorNumber;
     long id;
