@@ -9,8 +9,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.FileMetadata;
 
 public class DuplicateFileCheckerTest {
 
@@ -28,6 +30,10 @@ public class DuplicateFileCheckerTest {
         duplicateFileChecker = null;
     }
 
+    // ----------------------------------------------------------------------------------------------------------
+    // test constructor
+    // ----------------------------------------------------------------------------------------------------------
+
     @Test(expected = NullPointerException.class)
     public void testConstructorWithUndefinedDatasetVersionService() {
         DuplicateFileChecker duplicateFileChecker = new DuplicateFileChecker(null);
@@ -38,6 +44,10 @@ public class DuplicateFileCheckerTest {
         DuplicateFileChecker duplicateFileChecker = new DuplicateFileChecker(new DatasetVersionServiceBean());
         assertNotNull(duplicateFileChecker);
     }
+
+    // ----------------------------------------------------------------------------------------------------------
+    // test public boolean isFileInSavedDatasetVersion(DatasetVersion datasetVersion, String checkSum)
+    // ----------------------------------------------------------------------------------------------------------
 
     @Test(expected = NullPointerException.class)
     public void testIsFileInSavedDatasetVersionWithCheckSumParamWithUndefinedDatasetVersion() {
@@ -65,6 +75,40 @@ public class DuplicateFileCheckerTest {
                 .thenReturn(false);
 
         assertFalse(this.duplicateFileChecker.isFileInSavedDatasetVersion(datasetVersion, checkSum));
+    }
+
+    // ----------------------------------------------------------------------------------------------------------
+    // test public boolean isFileInSavedDatasetVersion(DatasetVersion datasetVersion, FileMetadata fileMetadata)
+    // ----------------------------------------------------------------------------------------------------------
+
+    @Test(expected = NullPointerException.class)
+    public void testIsFileInSavedDatasetVersionWithFileMetadataParamWithUndefinedDatasetVersion() {
+        DatasetVersion datasetVersion = null;
+        FileMetadata fileMetadata = new FileMetadata();
+
+        this.duplicateFileChecker.isFileInSavedDatasetVersion(datasetVersion, fileMetadata);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testIsFileInSavedDatasetVersionWithFileMetadataParamWithUndefinedFileMetadata() {
+        DatasetVersion datasetVersion = new DatasetVersion();
+        FileMetadata fileMetadata = null;
+
+        this.duplicateFileChecker.isFileInSavedDatasetVersion(datasetVersion, fileMetadata);
+    }
+
+    @Test
+    public void testIsFileInSavedDatasetVersionWithFileMetadataParamWithUnsavedFile() {
+        DatasetVersion datasetVersion = new DatasetVersion();
+        FileMetadata fileMetadata = new FileMetadata();
+        String checkSum = "checkSum";
+        fileMetadata.setDataFile(new DataFile());
+        fileMetadata.getDataFile().setChecksumValue(checkSum);
+
+        // mock sql query
+        Mockito.when(this.datasetVersionServiceBean.doesChecksumExistInDatasetVersion(datasetVersion, checkSum)).thenReturn(false);
+
+        assertFalse(this.duplicateFileChecker.isFileInSavedDatasetVersion(datasetVersion, fileMetadata));
     }
 
 }
