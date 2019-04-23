@@ -74,7 +74,6 @@ public class MailUtil {
             case CONFIRMEMAIL:
                 return BundleUtil.getStringFromBundle("notification.email.verifyEmail.subject", rootDvNameAsList);
             case APIGENERATED:
-                logger.info("APIGENERATED");
                 return BundleUtil.getStringFromBundle("notification.email.apiTokenGenerated.subject",  rootDvNameAsList);
         }
         return "";

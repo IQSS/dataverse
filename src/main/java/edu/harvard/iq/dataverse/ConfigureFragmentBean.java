@@ -13,14 +13,10 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.primefaces.PrimeFaces;
-import org.primefaces.context.RequestContext;
-
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 import java.sql.Timestamp;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -55,9 +51,9 @@ public class ConfigureFragmentBean implements java.io.Serializable{
     
     public String configureExternalAlert() {
         generateApiToken();
+        PrimeFaces.current().executeScript("location.reload(true)");
         String httpString = "window.open('" + toolHandler.getToolUrlWithQueryParams()+  "','_blank'" +")";
         PrimeFaces.current().executeScript(httpString);
-        JH.addMessage(FacesMessage.SEVERITY_WARN, tool.getDisplayName(), BundleUtil.getStringFromBundle("file.configure.launchMessage.details") + " " + tool.getDisplayName() + ".");
         return "";
     }    
 
@@ -114,11 +110,7 @@ public class ConfigureFragmentBean implements java.io.Serializable{
                 apiToken = authService.generateApiTokenForUser(( AuthenticatedUser) user);
                 toolHandler.setApiToken(apiToken);
                 toolHandler.getToolUrlWithQueryParams();
-                try {
-                    userNotificationService.sendNotification((AuthenticatedUser) user, new Timestamp(new Date().getTime()), UserNotification.Type.APIGENERATED, null);
-                } catch (Exception ex) {
-                    logger.warning("Cannot send a message about API Token generation " + ex.getMessage());
-                }
+                userNotificationService.sendNotification((AuthenticatedUser) user, new Timestamp(new Date().getTime()), UserNotification.Type.APIGENERATED, null);
             }
         }
 

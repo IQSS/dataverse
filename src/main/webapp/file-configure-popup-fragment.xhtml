@@ -14,10 +14,10 @@
         
         <div class="button-block">
             <p:commandLink type="button" styleClass="btn btn-default"
-                           action="#{configureFragmentBean.configureExternalAlert()}"
-                           value="#{bundle['continue']}"
-                           onclick="PF('configureToolPopup').hide();"
-                           update=":messagePanel">
+                action="#{configureFragmentBean.configureExternalAlert()}" 
+                value="#{bundle['continue']}" 
+                onclick="PF('configureToolPopup').hide();"
+                update=":messagePanel">
             </p:commandLink>
             <button type="button" class="btn btn-default" onclick="PF('configureToolPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
         </div>
