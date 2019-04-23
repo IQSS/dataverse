@@ -319,6 +319,28 @@ public class UsersIT {
 
     }
 
+    @Test
+    public void testUsernameCaseSensitivity() {
+        String randomUsername = UtilIT.getRandomIdentifier();
+        String lowercaseUsername = randomUsername.toLowerCase();
+        String uppercaseUsername = randomUsername.toUpperCase();
+        String randomEmailForLowercaseuser = UtilIT.getRandomIdentifier() + "@mailinator.com";
+        String randomEmailForUppercaseuser = UtilIT.getRandomIdentifier() + "@mailinator.com";
+
+        // Create first user (username all lower case).
+        Response createLowercaseUser = UtilIT.createUser(lowercaseUsername, randomEmailForLowercaseuser);
+        createLowercaseUser.prettyPrint();
+        createLowercaseUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Attempt to create second user (same username but all UPPER CASE).
+        Response createUppercaseUser = UtilIT.createUser(uppercaseUsername, randomEmailForUppercaseuser);
+        createUppercaseUser.prettyPrint();
+        createUppercaseUser.then().assertThat()
+                // FIXME: This should not return a 200 (OK) response. It should fail and report that the username has been taken.
+                .statusCode(OK.getStatusCode());
+    }
+
     private Response convertUserFromBcryptToSha1(long idOfBcryptUserToConvert, String password) {
         JsonObjectBuilder data = Json.createObjectBuilder();
         data.add("builtinUserId", idOfBcryptUserToConvert);
