@@ -115,22 +115,6 @@ public class PasswordValidatorUtilTest {
         System.out.println(reqString);
         assertEquals("At least 1 character from each of the following types: uppercase, lowercase, numeral, special", reqString);
         
-        numberOfCharacteristics = 4;
-        characterRulesConfigString = "UpperCase:1,LowerCase:1,Digit:1,Special:1";
-        characterRules = PasswordValidatorUtil.getCharacterRules(characterRulesConfigString);
-        reqString = PasswordValidatorUtil.getRequiredCharacters(characterRules,numberOfCharacteristics);
-        System.out.println("Character rules string for '" + characterRulesConfigString );
-        System.out.println(reqString);
-        assertEquals("At least 1 character from each of the following types: uppercase, lowercase, numeral, special", reqString);
-        
-        numberOfCharacteristics = 2;
-        characterRulesConfigString = "UpperCase:1,LowerCase:1,Digit:1,Special:1";
-        characterRules = PasswordValidatorUtil.getCharacterRules(characterRulesConfigString);
-        reqString = PasswordValidatorUtil.getRequiredCharacters(characterRules,numberOfCharacteristics);
-        System.out.println("Character rules string for '" + characterRulesConfigString );
-        System.out.println(reqString);
-        assertEquals("At least 1 character from 2 of the following types: uppercase, lowercase, numeral, special", reqString);
-        
         numberOfCharacteristics = 2; //Should say each, even if more characteristics set than possible
         characterRulesConfigString = "Digit:1";
         characterRules = PasswordValidatorUtil.getCharacterRules(characterRulesConfigString);
