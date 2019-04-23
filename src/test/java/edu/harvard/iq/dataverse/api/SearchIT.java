@@ -109,7 +109,7 @@ public class SearchIT {
         Response grantUser2AccessOnDataset = UtilIT.grantRoleOnDataverse(dataverseAlias, roleToAssign, "@" + username2, apiToken1);
         grantUser2AccessOnDataset.prettyPrint();
         assertEquals(200, grantUser2AccessOnDataset.getStatusCode());
-        sleep(500l);
+        sleep(3000l);
 
         Response shouldBeVisibleToUser2 = UtilIT.search("id:dataset_" + datasetId1 + "_draft", apiToken2);
         shouldBeVisibleToUser2.prettyPrint();
@@ -658,6 +658,13 @@ public class SearchIT {
         publishDataverse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        // 3 second sleep, to allow the indexing to finish:
+        try {
+            Thread.sleep(3000l);
+        } catch (InterruptedException iex) {
+            logger.info("WARNING: failed to execute 3 second sleep");
+        }
+        
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken);
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
