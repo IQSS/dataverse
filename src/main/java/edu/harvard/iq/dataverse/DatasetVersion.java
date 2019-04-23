@@ -147,7 +147,8 @@ public class DatasetVersion implements Serializable {
     
     @Size(min=0, max=ARCHIVE_NOTE_MAX_LENGTH)
     @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
-    @ValidateURL()
+    //@ValidateURL() - this validation rule was making a bunch of older legacy datasets invalid;
+    // removed pending further investigation (v4.13)
     private String archiveNote;
     
     @Column(nullable=true, columnDefinition = "TEXT")
