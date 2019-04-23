@@ -94,7 +94,6 @@ public class PasswordValidatorUtilTest {
     @Test
     public void testGetRequiredCharacters() {
         int numberOfCharacteristics = 2; //influences use of # or "each" in text generation
-        String textBeforeList = BundleUtil.getStringFromBundle("passwdVal.passwdReq.characteristicsReq" , Arrays.asList(Integer.toString(numberOfCharacteristics)))+ " " ;
         List<CharacterRule> characterRules = PasswordValidatorUtil.getCharacterRulesDefault();
         String reqString = PasswordValidatorUtil.getRequiredCharacters(characterRules,numberOfCharacteristics);
         System.out.println("Character rules string for default: ");
