@@ -1,7 +1,3 @@
-<!-- Including jquery here is required for Dataverse ~4.12. There is work being done to make this unnecessary - you may be able to remove this line with newer Dataverse versions.-->
-<script type="text/javascript"
-        src="/javax.faces.resource/jquery/jquery.js.xhtml?ln=primefaces&amp;v=6.2"></script>
-
 <!-- Global site tag (gtag.js) - Google Analytics -->
 <script async="async" src="https://www.googletagmanager.com/gtag/js?id=YOUR ACCOUNT CODE"></script>
 <script>
@@ -9,7 +5,9 @@
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date()); gtag('config', 'YOUR ACCOUNT CODE');
 </script>
-  $(document).ready(function() {
+  window.addEventListener("load", enableAnalyticsEventCapture, false);
+
+  function enableAnalyticsEventCapture() {
     // Download button
     $(document).on("click", ".btn-download", function() {
       var category = $(this).text();
@@ -107,7 +105,7 @@
                               'event_label' : label});
     });
 
-  });
+  }
 
   function getFileId(target) {
     var label = 'Unknown';
