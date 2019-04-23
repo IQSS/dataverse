@@ -15,6 +15,7 @@ import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
@@ -337,8 +338,8 @@ public class UsersIT {
         Response createUppercaseUser = UtilIT.createUser(uppercaseUsername, randomEmailForUppercaseuser);
         createUppercaseUser.prettyPrint();
         createUppercaseUser.then().assertThat()
-                // FIXME: This should not return a 200 (OK) response. It should fail and report that the username has been taken.
-                .statusCode(OK.getStatusCode());
+                // TODO: consider returning "BAD REQUEST" (400) instead of a 500.
+                .statusCode(INTERNAL_SERVER_ERROR.getStatusCode());
     }
 
     private Response convertUserFromBcryptToSha1(long idOfBcryptUserToConvert, String password) {
