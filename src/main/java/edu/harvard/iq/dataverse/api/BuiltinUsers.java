@@ -176,12 +176,13 @@ public class BuiltinUsers extends AbstractApiBean {
             
         } catch ( EJBException ejbx ) {
             alr.setActionResult(ActionLogRecord.Result.InternalError);
-            alr.setInfo( alr.getInfo() + "// " + ejbx.getMessage());
+            String errorMessage = ejbx.getCausedByException().getLocalizedMessage();
+            alr.setInfo( alr.getInfo() + "// " + errorMessage);
             if ( ejbx.getCausedByException() instanceof IllegalArgumentException ) {
-                return error(Status.BAD_REQUEST, "Bad request: can't save user. " + ejbx.getCausedByException().getMessage());
+                return error(Status.BAD_REQUEST, "Bad request: can't save user. " + errorMessage);
             } else {
                 logger.log(Level.WARNING, "Error saving user: ", ejbx);
-                return error(Status.INTERNAL_SERVER_ERROR, "Can't save user: " + ejbx.getMessage());
+                return error(Status.INTERNAL_SERVER_ERROR, "Can't save user: " + errorMessage);
             }
             
         } catch (Exception e) {
