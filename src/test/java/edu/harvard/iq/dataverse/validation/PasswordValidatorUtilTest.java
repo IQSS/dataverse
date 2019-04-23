@@ -25,25 +25,6 @@ import org.passay.EnglishCharacterData;
  */
 public class PasswordValidatorUtilTest {
 
-    public PasswordValidatorUtilTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
     /**
      * Test of getPasswordRequirements method, of class PasswordValidatorUtil.
      */
