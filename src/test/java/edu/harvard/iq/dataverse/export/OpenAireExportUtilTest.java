@@ -270,6 +270,67 @@ public class OpenAireExportUtilTest {
                 sw.toString());
     }
 
+        /**
+     * Test: 7, Contributor (with optional given name, family name, name
+     * identifier and affiliation sub-properties)
+     *
+     * contributors
+     */
+    @Test
+    public void testWriteContributorsElementComplete() throws XMLStreamException, FileNotFoundException {
+        System.out.println("writeContributorsElement");
+        XMLOutputFactory f = XMLOutputFactory.newInstance();
+        StringWriter sw = new StringWriter();
+        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+
+        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
+        String text = new Scanner(file).useDelimiter("\\Z").next();
+        Gson gson = new Gson();
+        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+        OpenAireExportUtil.writeContributorsElement(xmlw, dto, null);
+
+        xmlw.close();
+        System.out.println(sw.toString());
+        Assert.assertEquals("<contributors>"
+                + "<contributor contributorType=\"ContactPerson\">"
+                + "<contributorName>LastContact1, FirstContact1</contributorName>"
+                + "<affiliation>ContactAffiliation1</affiliation>"
+                + "</contributor>"
+                + "<contributor contributorType=\"ContactPerson\">"
+                + "<contributorName nameType=\"Personal\">Condon, Kevin</contributorName>"
+                + "<givenName>Kevin</givenName><familyName>Condon</familyName>"
+                + "<affiliation>ContactAffiliation2</affiliation>"
+                + "</contributor>"
+                + "<contributor contributorType=\"ContactPerson\">"
+                + "<contributorName nameType=\"Personal\">Philip Durbin</contributorName>"
+                + "<givenName>Philip</givenName><familyName>Durbin</familyName>"
+                + "<affiliation>ContactAffiliation3</affiliation>"
+                + "</contributor>"
+                + "<contributor contributorType=\"Producer\">"
+                + "<contributorName>LastProducer1, FirstProducer1</contributorName>"
+                + "<affiliation>ProducerAffiliation1</affiliation>"
+                + "</contributor><contributor contributorType=\"Producer\">"
+                + "<contributorName>LastProducer2, FirstProducer2</contributorName>"
+                + "<affiliation>ProducerAffiliation2</affiliation>"
+                + "</contributor>"
+                + "<contributor contributorType=\"DataCollector\">"
+                + "<contributorName>LastContributor1, FirstContributor1</contributorName>"
+                + "</contributor>"
+                + "<contributor contributorType=\"DataCurator\">"
+                + "<contributorName>LastContributor2, FirstContributor2</contributorName>"
+                + "</contributor><contributor contributorType=\"Distributor\">"
+                + "<contributorName>LastDistributor1, FirstDistributor1</contributorName>"
+                + "<affiliation>DistributorAffiliation1</affiliation>"
+                + "</contributor>"
+                + "<contributor contributorType=\"Distributor\">"
+                + "<contributorName>LastDistributor2, FirstDistributor2</contributorName>"
+                + "<affiliation>DistributorAffiliation2</affiliation>"
+                + "</contributor>"
+                + "</contributors>",
+                sw.toString());
+    }
+    
     /**
      * Test: 8, Date (with type sub-property) (R)
      *

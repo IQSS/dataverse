@@ -684,24 +684,48 @@ public class OpenAireExportUtil {
         boolean nameType_check = false;
         Map<String, String> contributor_map = new HashMap<String, String>();
 
-        if (StringUtils.isNotBlank(contributorAffiliation)) {
+        /*if (StringUtils.isNotBlank(contributorAffiliation)) {
             contributor_map.put("nameType", "Personal");
             nameType_check = true;
         }
-        writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);
+        writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);*/
 
+        String givenName = null;
+        // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
         if (contributorName.contains(",")) {
+            // contributorName=<FamilyName>, <FirstName>
+            if ((givenName = FirstNames.getInstance().getFirstName(contributorName)) != null) {
+                // givenName ok
+                contributor_map.put("nameType", "Personal");
+                nameType_check = true;
+            }
+            writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);
+            
             if ((nameType_check) && (!contributorName.replaceFirst(",", "").contains(","))) {
+                // contributorName=<FamilyName>, <FirstName>
                 String[] fullName = contributorName.split(", ");
-                String givenName = fullName[1];
+                givenName = fullName[1];
                 String familyName = fullName[0];
 
                 writeFullElement(xmlw, null, "givenName", null, givenName, language);
                 writeFullElement(xmlw, null, "familyName", null, familyName, language);
             }
+        } else if ((givenName = FirstNames.getInstance().getFirstName(contributorName)) != null) {
+            contributor_map.put("nameType", "Personal");
+            nameType_check = true;
+            writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);
+            
+            String familyName = contributorName.substring(givenName.length() + 1);
+            
+            writeFullElement(xmlw, null, "givenName", null, givenName, language);
+            writeFullElement(xmlw, null, "familyName", null, familyName, language);
+        }
+        else {
+            // default
+            writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);
         }
 
-        if (nameType_check) {
+        if (StringUtils.isNotBlank(contributorAffiliation)) {
             writeFullElement(xmlw, null, "affiliation", null, contributorAffiliation, language);
         }
         xmlw.writeEndElement(); // </contributor>
