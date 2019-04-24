@@ -264,6 +264,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeContributorsElement(xmlw, dto, null);
 
         xmlw.close();
+        System.out.println(sw.toString());
         Assert.assertEquals("<contributors>"
                 + "<contributor contributorType=\"ContactPerson\"><contributorName>pete@malinator.com</contributorName>"
                 + "</contributor></contributors>",
@@ -294,7 +295,7 @@ public class OpenAireExportUtilTest {
         System.out.println(sw.toString());
         Assert.assertEquals("<contributors>"
                 + "<contributor contributorType=\"ContactPerson\">"
-                + "<contributorName>LastContact1, FirstContact1</contributorName>"
+                + "<contributorName nameType=\"Organizational\">LastContact1, FirstContact1</contributorName>"
                 + "<affiliation>ContactAffiliation1</affiliation>"
                 + "</contributor>"
                 + "<contributor contributorType=\"ContactPerson\">"

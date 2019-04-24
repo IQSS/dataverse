@@ -26,6 +26,8 @@ import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 
 public class OpenAireExportUtil {
 
@@ -37,7 +39,7 @@ public class OpenAireExportUtil {
     public static String RESOURCE_SCHEMA_LOCATION = "http://schema.datacite.org/meta/kernel-4.1/metadata.xsd";
 
     public static String FunderType = "Funder";
-    
+
     public static void datasetJson2openaire(JsonObject datasetDtoAsJson, OutputStream outputStream) throws XMLStreamException {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
         Gson gson = new Gson();
@@ -253,7 +255,7 @@ public class OpenAireExportUtil {
                                     creator_map.put("nameType", "Personal");
                                     nameType_check = true;
                                 }
- 
+
                                 String givenName = null;
                                 // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
                                 if (creatorName.contains(",")) {
@@ -264,7 +266,7 @@ public class OpenAireExportUtil {
                                         nameType_check = true;
                                     }
                                     writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
-                                    
+
                                     if ((nameType_check) && (!creatorName.replaceFirst(",", "").contains(","))) {
                                         // creatorName=<FamilyName>, <FirstName>
                                         String[] fullName = creatorName.split(", ");
@@ -279,9 +281,9 @@ public class OpenAireExportUtil {
                                     creator_map.put("nameType", "Personal");
                                     nameType_check = true;
                                     writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
-                                    
+
                                     String familyName = creatorName.substring(givenName.length() + 1);
-                                    
+
                                     writeFullElement(xmlw, null, "givenName", null, givenName, language);
                                     writeFullElement(xmlw, null, "familyName", null, familyName, language);
                                 } else {
@@ -575,8 +577,7 @@ public class OpenAireExportUtil {
                                 writeContributorElement(xmlw, "Producer", producerName, producerAffiliation, language);
                             }
                         }
-                    } 
-                    else if (DatasetFieldConstant.distributor.equals(fieldDTO.getTypeName())) {
+                    } else if (DatasetFieldConstant.distributor.equals(fieldDTO.getTypeName())) {
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String distributorName = null;
                             String distributorAffiliation = null;
@@ -596,8 +597,7 @@ public class OpenAireExportUtil {
                                 writeContributorElement(xmlw, "Distributor", distributorName, distributorAffiliation, language);
                             }
                         }
-                    }
-                    else if (DatasetFieldConstant.datasetContact.equals(fieldDTO.getTypeName())) {
+                    } else if (DatasetFieldConstant.datasetContact.equals(fieldDTO.getTypeName())) {
                         if ("primitive".equals(fieldDTO.getTypeClass())) {
                             String contactAffiliation = null;
                             String contactName = null;
@@ -631,8 +631,7 @@ public class OpenAireExportUtil {
                                 }
                             }
                         }
-                    }
-                    else if (DatasetFieldConstant.contributor.equals(fieldDTO.getTypeName())) {
+                    } else if (DatasetFieldConstant.contributor.equals(fieldDTO.getTypeName())) {
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String contributorName = null;
                             String contributorType = null;
@@ -689,7 +688,6 @@ public class OpenAireExportUtil {
             nameType_check = true;
         }
         writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);*/
-
         String givenName = null;
         // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
         if (contributorName.contains(",")) {
@@ -698,9 +696,11 @@ public class OpenAireExportUtil {
                 // givenName ok
                 contributor_map.put("nameType", "Personal");
                 nameType_check = true;
+            } else if ("ContactPerson".equals(contributorType) && !isValidEmailAddress(contributorName)) {
+                contributor_map.put("nameType", "Organizational");
             }
             writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);
-            
+
             if ((nameType_check) && (!contributorName.replaceFirst(",", "").contains(","))) {
                 // contributorName=<FamilyName>, <FirstName>
                 String[] fullName = contributorName.split(", ");
@@ -712,16 +712,17 @@ public class OpenAireExportUtil {
             }
         } else if ((givenName = FirstNames.getInstance().getFirstName(contributorName)) != null) {
             contributor_map.put("nameType", "Personal");
-            nameType_check = true;
             writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);
-            
+
             String familyName = contributorName.substring(givenName.length() + 1);
-            
+
             writeFullElement(xmlw, null, "givenName", null, givenName, language);
             writeFullElement(xmlw, null, "familyName", null, familyName, language);
-        }
-        else {
+        } else {
             // default
+            if ("ContactPerson".equals(contributorType) && !isValidEmailAddress(contributorName)) {
+                contributor_map.put("nameType", "Organizational");
+            }
             writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);
         }
 
@@ -1353,7 +1354,7 @@ public class OpenAireExportUtil {
         for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
             FieldDTO next = iterator.next();
             String typeName = next.getTypeName();
-            
+
             Pattern pattern = Pattern.compile("([a-z]+)(Longitude|Latitude)");
             Matcher matcher = pattern.matcher(next.getTypeName());
             boolean skip = false;
@@ -1363,18 +1364,19 @@ public class OpenAireExportUtil {
                     case "north":
                         typeName = matcher.group(1) + "BoundLatitude";
                         break;
-                        
+
                     case "west":
                     case "east":
                         typeName = matcher.group(1) + "BoundLongitude";
                         break;
-                        
+
                     default:
                         skip = true;
                         break;
                 }
-                if (!skip)
+                if (!skip) {
                     writeFullElement(xmlw, null, typeName, null, next.getSinglePrimitive(), language);
+                }
             }
         }
         writeEndTag(xmlw, geoLocationbox_check);
@@ -1427,8 +1429,7 @@ public class OpenAireExportUtil {
                                 xmlw.writeEndElement(); // </fundingReference>
                             }
                         }
-                    }
-                    else if (DatasetFieldConstant.contributor.equals(fieldDTO.getTypeName())) {
+                    } else if (DatasetFieldConstant.contributor.equals(fieldDTO.getTypeName())) {
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String contributorName = null;
                             String contributorType = null;
@@ -1448,7 +1449,7 @@ public class OpenAireExportUtil {
                                 fundingReference_check = writeOpenTag(xmlw, "fundingReferences", fundingReference_check);
                                 xmlw.writeStartElement("fundingReference"); // <fundingReference>
                                 writeFullElement(xmlw, null, "funderName", null, contributorName, language);
-                                
+
                                 xmlw.writeEndElement(); // </fundingReference>
                             }
                         }
@@ -1539,4 +1540,20 @@ public class OpenAireExportUtil {
         }
     }
 
+    /***
+     * Check if the string is a valid email.
+     * 
+     * @param email
+     * @return true/false
+     */
+    private static boolean isValidEmailAddress(String email) {
+        boolean result = true;
+        try {
+           InternetAddress emailAddr = new InternetAddress(email);
+           emailAddr.validate();
+        } catch (AddressException ex) {
+           result = false;
+        }
+        return result;
+     }
 }
