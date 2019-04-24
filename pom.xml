@@ -30,7 +30,7 @@
             -Duser.language=${project.language} -Duser.region=${project.region}
         </argLine>
 
-        <aws.version>1.11.172</aws.version>
+        <aws.version>1.11.538</aws.version>
         <jackson.version>2.9.6</jackson.version>
         <commons.logging.version>1.2</commons.logging.version>
         <httpcomponents.client.version>4.5.5</httpcomponents.client.version>
@@ -699,6 +699,7 @@
                     <include>**/*.xml</include>
                     <include>**/*.conf</include>
                     <include>**/*.png</include>
+                    <include>**/*.providers</include>
                 </includes>
             </resource>
         </resources>
@@ -794,50 +795,6 @@
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <version>4.0.0</version>
-            </plugin>
-            <!-- v4.8: The truezip-maven-plugin below deletes two copies of a file that the AWS SDK bundle
-            includes called javamail.providers which breaks system emails. - bsilverstein 8/8/2017 -->
-            <!-- Once on Eclipse Glassfish 5.1 or Payara 5.x and changing to aws-java-sdk-s3, this can be deleted. -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>truezip-maven-plugin</artifactId>
-                <version>1.1</version>
-                <executions>
-                    <execution>
-                        <id>remove-javamail-providers-from-exploded</id>
-                        <goals>
-                            <goal>remove</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <fileset>
-                                <directory>
-                                    target/dataverse-${project.version}/WEB-INF/lib/aws-java-sdk-bundle-${aws.version}.jar/META-INF
-                                </directory>
-                                <includes>
-                                    <include>javamail.providers</include>
-                                </includes>
-                            </fileset>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>remove-javamail-providers-from-war</id>
-                        <goals>
-                            <goal>remove</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <fileset>
-                                <directory>
-                                    target/dataverse-${project.version}.war/WEB-INF/lib/aws-java-sdk-bundle-${aws.version}.jar/META-INF
-                                </directory>
-                                <includes>
-                                    <include>javamail.providers</include>
-                                </includes>
-                            </fileset>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <!-- https://stackoverflow.com/questions/46177921/how-to-run-unit-tests-in-excludedgroups-in-maven -->
