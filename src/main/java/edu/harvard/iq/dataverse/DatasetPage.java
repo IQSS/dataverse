@@ -2981,8 +2981,13 @@ public class DatasetPage implements java.io.Serializable {
      public String reportEditContinues() {
          editMode = null;
          bulkFileDeleteInProgress = false;
+         
          logger.fine("Timeout during long edit. Redirecting to draft Dataset page...");
          JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.locked.editContinues"));
+         if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
+             JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),
+                     BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details"));
+         }
          
          return returnToDraftVersion();
      }
