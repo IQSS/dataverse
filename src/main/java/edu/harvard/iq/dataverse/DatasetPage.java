@@ -2978,6 +2978,13 @@ public class DatasetPage implements java.io.Serializable {
         return returnToDraftVersion();
     }
     
+     public String reportEditContinues() {
+         logger.fine("Timeout during long edit. Redirecting to draft Dataset page...");
+         JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.locked.editContinues"));
+         
+         return returnToDraftVersion();
+     }
+
     private void populateDatasetUpdateFailureMessage(){
         if (editMode == null) {
             // that must have been a bulk file update or delete:
