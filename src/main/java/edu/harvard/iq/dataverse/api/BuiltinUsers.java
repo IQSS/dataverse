@@ -123,9 +123,9 @@ public class BuiltinUsers extends AbstractApiBean {
                 user.updateEncryptedPassword(PasswordEncryption.get().encrypt(password), PasswordEncryption.getLatestVersionNumber());
             }
             
-            // Make sure the identifier is unique
-            if ( (builtinUserSvc.findByUserName(user.getUserName()) != null)
-                    || ( authSvc.identifierExists(user.getUserName())) ) {
+            // Make sure the identifier is unique, case insensitive. "DATAVERSEADMIN" is not allowed to be created if "dataverseAdmin" exists.
+            if ((builtinUserSvc.findByUserName(user.getUserName()) != null)
+                    || (authSvc.identifierExists(user.getUserName()))) {
                 return error(Status.BAD_REQUEST, "username '" + user.getUserName() + "' already exists");
             }
             user = builtinUserSvc.save(user);

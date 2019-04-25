@@ -15,7 +15,6 @@ import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
@@ -338,8 +337,14 @@ public class UsersIT {
         Response createUppercaseUser = UtilIT.createUser(uppercaseUsername, randomEmailForUppercaseuser);
         createUppercaseUser.prettyPrint();
         createUppercaseUser.then().assertThat()
-                // TODO: consider returning "BAD REQUEST" (400) instead of a 500.
-                .statusCode(INTERNAL_SERVER_ERROR.getStatusCode());
+                .statusCode(BAD_REQUEST.getStatusCode())
+                /**
+                 * Technically, it's the lowercase version that exists but the
+                 * point gets across. There's currently no way to bubble up the
+                 * exact username it's in conflict with, even if we wanted to.
+                 */
+                .body("message", equalTo("username '" + uppercaseUsername + "' already exists"));
+        ;
     }
 
     private Response convertUserFromBcryptToSha1(long idOfBcryptUserToConvert, String password) {

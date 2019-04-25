@@ -49,7 +49,7 @@ import org.hibernate.validator.constraints.NotBlank;
     @NamedQuery( name="AuthenticatedUser.findByEmail",
                 query="select au from AuthenticatedUser au WHERE LOWER(au.email)=LOWER(:email)"),
     @NamedQuery( name="AuthenticatedUser.countOfIdentifier",
-                query="SELECT COUNT(a) FROM AuthenticatedUser a WHERE a.userIdentifier=:identifier"),
+                query="SELECT COUNT(a) FROM AuthenticatedUser a WHERE LOWER(a.userIdentifier)=LOWER(:identifier)"),
     @NamedQuery( name="AuthenticatedUser.filter",
                 query="select au from AuthenticatedUser au WHERE ("
                         + "au.userIdentifier like :query OR "
