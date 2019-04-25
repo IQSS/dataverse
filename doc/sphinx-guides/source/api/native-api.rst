@@ -1339,7 +1339,7 @@ if validation fails, will report the specific database entity and the offending 
 
 Validate all the datasets in the Dataverse, report any constraint violations found::
 
-  GET http://$SERVER/api/admin/validate/dataset/{datasetId}
+  GET http://$SERVER/api/admin/validate/datasets
 
 This API streams its output in real time, i.e. it will start producing the output immediately and will be reporting on the progress as it validates one dataset at a time. For example:: 
 
