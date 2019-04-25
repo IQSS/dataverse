@@ -2,13 +2,11 @@ package edu.harvard.iq.dataverse.bannersandmessages.banners.dto;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.BannerLimits;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.DataverseBanner;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.DataverseLocalizedBanner;
+import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

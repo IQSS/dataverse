@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.bannersandmessages.banners;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.BannerMapper;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.DataverseBannerDto;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.DataverseLocalizedBannerDto;
+import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortOrder;
 
@@ -12,6 +13,7 @@ import javax.inject.Inject;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Stateful
 public class LazyBannerHistory extends LazyDataModel<DataverseBannerDto> {
@@ -21,6 +23,9 @@ public class LazyBannerHistory extends LazyDataModel<DataverseBannerDto> {
 
     @Inject
     private BannerMapper mapper;
+
+    @Inject
+    private SettingsWrapper settingsWrapper;
 
     private Long dataverseId;
     private List<DataverseBannerDto> dataverseBannerDtos;
@@ -33,6 +38,7 @@ public class LazyBannerHistory extends LazyDataModel<DataverseBannerDto> {
 
         dataverseBannerDtos = mapper.mapToDtos(dataverseTextMessages);
 
+        removeBannersLanguagesNotPresentInDataverse(dataverseBannerDtos);
         sortMessageLocales(dataverseBannerDtos);
 
         setPageSize(pageSize);
@@ -54,6 +60,14 @@ public class LazyBannerHistory extends LazyDataModel<DataverseBannerDto> {
                 .filter(dataverseBannerDto -> dataverseBannerDto.getId().equals(id))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private List<DataverseBannerDto> removeBannersLanguagesNotPresentInDataverse(List<DataverseBannerDto> dataList) {
+        Set<String> dataverseLocales = settingsWrapper.getConfiguredLocales().keySet();
+
+        dataList.forEach(dataverseBannerDto -> dataverseBannerDto.getDataverseLocalizedBanner()
+                .removeIf(localizedBannerDto -> !dataverseLocales.contains(localizedBannerDto.getLocale())));
+        return dataList;
     }
 
     private List<DataverseBannerDto> sortMessageLocales(List<DataverseBannerDto> dataList) {

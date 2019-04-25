@@ -7,21 +7,21 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-
+import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.apache.commons.lang.StringUtils;
+
+import javax.ejb.EJB;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import org.apache.commons.lang.StringUtils;
 
 /**
  *

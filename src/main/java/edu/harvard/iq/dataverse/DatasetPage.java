@@ -53,6 +53,7 @@ import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
@@ -195,7 +196,7 @@ public class DatasetPage implements java.io.Serializable {
     @Inject
     ThumbnailServiceWrapper thumbnailServiceWrapper;
     @Inject
-    SettingsWrapper settingsWrapper; 
+    SettingsWrapper settingsWrapper;
     @Inject 
     ProvPopupFragmentBean provPopupFragmentBean;
 

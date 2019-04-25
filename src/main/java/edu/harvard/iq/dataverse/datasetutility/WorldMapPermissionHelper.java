@@ -13,17 +13,18 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import edu.harvard.iq.dataverse.settings.SettingsWrapper;
+
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class originally encapsulated display logic for the DatasetPage

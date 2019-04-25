@@ -43,7 +43,8 @@
                                 <div class="p-grid">
                                     <ui:repeat value="#{history.dataverseLocalizedMessage}" var="localmessage">
                                         <div class="p-col">
-                                            <h:outputLabel for="message" value="#{localmessage.language}:"
+                                            <h:outputLabel for="message"
+                                                           value="#{settingsWrapper.getConfiguredLocaleName(localmessage.locale)}:"
                                                            style="margin-right: 10px"/>
                                             <h:outputText id="message" value="#{localmessage.message}"/>
                                         </div>

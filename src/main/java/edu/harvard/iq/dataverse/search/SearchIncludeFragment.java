@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -14,38 +13,28 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
-import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
-import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
-import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.lang.StringUtils;
+
 import javax.ejb.EJB;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.commons.lang.StringUtils;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
 
 @ViewScoped
 @Named("SearchIncludeFragment")

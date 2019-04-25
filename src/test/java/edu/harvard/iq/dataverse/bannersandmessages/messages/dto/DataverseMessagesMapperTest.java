@@ -1,16 +1,15 @@
 package edu.harvard.iq.dataverse.bannersandmessages.messages.dto;
 
+import com.google.common.collect.ImmutableMap;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.DataverseLocalizedMessage;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.DataverseTextMessage;
+import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import com.google.common.collect.ImmutableMap;
 
 import java.time.LocalDateTime;
 import java.util.Date;
