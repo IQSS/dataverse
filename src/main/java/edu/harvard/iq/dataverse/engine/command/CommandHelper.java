@@ -55,9 +55,15 @@ public class CommandHelper {
 		}
 	}
 
+    /**
+     * Checks if all permissions are required.
+     * {@link RequiredPermissionsMap} is not supported, defaults to true.
+     */
     boolean isAllPermissionsRequired(Class<? extends Command> cmdClass) {
-		return cmdClass.getAnnotation(RequiredPermissions.class).isAllPermissionsRequired();
-	}
+        RequiredPermissions requiredPerms = cmdClass.getAnnotation(RequiredPermissions.class);
+
+        return requiredPerms == null || requiredPerms.isAllPermissionsRequired();
+    }
 	
 	/**
      * Given a command, returns the set of permissions needed to be able to
