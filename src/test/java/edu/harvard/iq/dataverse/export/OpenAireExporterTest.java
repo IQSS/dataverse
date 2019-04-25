@@ -49,7 +49,7 @@ public class OpenAireExporterTest {
     public void testGetDisplayName() {
         System.out.println("getDisplayName");
         OpenAireExporter instance = new OpenAireExporter();
-        String expResult = "DataCite OpenAIRE";
+        String expResult = "OpenAIRE";
         String result = instance.getDisplayName();
         assertEquals(expResult, result);
     }
