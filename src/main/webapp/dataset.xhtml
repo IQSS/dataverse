@@ -532,56 +532,6 @@
                                 $(this).ready(function () {
                                     refreshIfStillLocked();
                                 });
-
-                                function editTimedOut(xhr) {
-                                    if(xhr!=null) {
-                                        if(xhr.status==500) {
-                                             //location.reload(true);
-                                             reportEditContinues();
-                                             console.log("refreshed");
-                                         }
-                                    }
-                                }
-
-
-                                function refreshIfStillLocked() {
-                                    if ($('input[id$="datasetLockedForAnyReasonVariable"]').val() === 'true') {
-                                        // if dataset is locked, instruct the page to
-                                        // wait and check again:
-                                        waitAndCheckLockAgain();
-                                    } else {
-                                        // if not locked, has it just been unlocked?
-                                        if ($('input[id$="datasetStateChangedVariable"]').val() === 'true') {
-                                            // For whatever unknown PrimeFaces reason
-                                            // the page needs to be refreshed twice, for all
-                                            // the pull down menus to update properly:
-                                            refreshAllCommand();
-                                            // You can't just run 2 refreshAllCommand()s in a row
-                                            // either; because the command has an "update=@all" on it,
-                                            // so I guess if you try to execute the 2nd one right after
-                                            // the first one, this fragment is still going to be loading -
-                                            // so there would not yet be a command to run! (it needs to
-                                            // be rendered, before you can execute it, that is)
-                                            setTimeout(function () {
-                                                // this button doesn't do anything, but it has an update="@all"
-                                                // attribute:
-                                                $('button[id$="refreshButton"]').trigger('click');
-                                                //refreshAllCommand();
-                                            }, 1500);
-                                        }
-                                    }
-                                }
-
-                                function waitAndCheckLockAgain() {
-                                    setTimeout(function () {
-                                        // refresh the lock in the
-                                        // backing bean; i.e., check, if the ingest has
-                                        // already completed in the background:
-                                        //$('button[id$="refreshButton"]').trigger('click');
-                                        //refreshLockCommand();
-                                        refreshAllLocksCommand();
-                                    }, 10000);
-                                }
                             </script>
                         </p:fragment>
 
@@ -1596,6 +1546,53 @@
                     }
                     function updateHiddenReason(textArea) {
                         $('input[id$="hiddenReasonInput"]').val(textArea.value);
+                    }
+
+                    function editTimedOut(xhr) {
+                      if(xhr!=null) {
+                        if(xhr.status==500) {
+                          reportEditContinues();
+                        }
+                      }
+                    }
+
+                    function refreshIfStillLocked() {
+                      if ($('input[id$="datasetLockedForAnyReasonVariable"]').val() === 'true') {
+                        // if dataset is locked, instruct the page to
+                        // wait and check again:
+                        waitAndCheckLockAgain();
+                      } else {
+                        // if not locked, has it just been unlocked?
+                        if ($('input[id$="datasetStateChangedVariable"]').val() === 'true') {
+                          // For whatever unknown PrimeFaces reason
+                          // the page needs to be refreshed twice, for all
+                          // the pull down menus to update properly:
+                          refreshAllCommand();
+                          // You can't just run 2 refreshAllCommand()s in a row
+                          // either; because the command has an "update=@all" on it,
+                          // so I guess if you try to execute the 2nd one right after
+                          // the first one, this fragment is still going to be loading -
+                          // so there would not yet be a command to run! (it needs to
+                          // be rendered, before you can execute it, that is)
+                          setTimeout(function () {
+                            // this button doesn't do anything, but it has an update="@all"
+                            // attribute:
+                            $('button[id$="refreshButton"]').trigger('click');
+                            //refreshAllCommand();
+                          }, 1500);
+                        } 
+                      }
+                    }
+
+                    function waitAndCheckLockAgain() {
+                      setTimeout(function () {
+                        // refresh the lock in the
+                        // backing bean; i.e., check, if the ingest has
+                        // already completed in the background:
+                        //$('button[id$="refreshButton"]').trigger('click');
+                        //refreshLockCommand();
+                        refreshAllLocksCommand();
+                      }, 10000);
                     }
                 </script>
             </ui:define>
