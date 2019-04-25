@@ -852,41 +852,22 @@ public class Admin extends AbstractApiBean {
 		}
 	}
 
-	/*@Path("validate")
-	@GET
-	public Response validate() {
-		String msg = "UNKNOWN";
-		try {
-			beanValidationSvc.validateDatasets();
-			msg = "valid";
-		} catch (Exception ex) {
-			Throwable cause = ex;
-			while (cause != null) {
-				if (cause instanceof ConstraintViolationException) {
-					ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-					for (ConstraintViolation<?> constraintViolation : constraintViolationException
-							.getConstraintViolations()) {
-						String databaseRow = constraintViolation.getLeafBean().toString();
-						String field = constraintViolation.getPropertyPath().toString();
-						String invalidValue = constraintViolation.getInvalidValue().toString();
-						JsonObjectBuilder violation = Json.createObjectBuilder();
-						violation.add("entityClassDatabaseTableRowId", databaseRow);
-						violation.add("field", field);
-						violation.add("invalidValue", invalidValue);
-						return ok(violation);
-					}
-				}
-				cause = cause.getCause();
-			}
-		}
-		return ok(msg);
-	}*/
-   
     @GET
     @Path("validate/datasets")
     @Produces({"application/json"})
     public Response validateAllDatasets() {
         
+        // Streaming output: the API will start producing 
+        // the output right away, as it goes through the list 
+        // of the datasets; there's potentially a lot of content 
+        // to validate, so we don't want to wait for the process 
+        // to finish. Or to wait to encounter the first invalid 
+        // object - so we'll be reporting both the success and failure
+        // outcomes for all the validated datasets, to give the user
+        // an indication of the progress. 
+        // This is the first streaming API that produces json that 
+        // we have; there may be better ways to stream json - but 
+        // what I have put together below works. -- L.A. 
         StreamingOutput stream = new StreamingOutput() {
 
             @Override
@@ -907,7 +888,7 @@ public class Admin extends AbstractApiBean {
 
                     
                     try {
-                        beanValidationSvc.instantiateDataset(datasetId);
+                        datasetService.instantiateDatasetInNewTransaction(datasetId);
                         success = true;
                     } catch (Exception ex) {
                         Throwable cause = ex;
@@ -977,7 +958,7 @@ public class Admin extends AbstractApiBean {
 
         String msg = "unknown";
         try {
-            beanValidationSvc.instantiateDataset(dbId);
+            datasetService.instantiateDatasetInNewTransaction(dbId);
             msg = "valid";
         } catch (Exception ex) {
             Throwable cause = ex;
