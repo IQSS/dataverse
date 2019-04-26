@@ -52,8 +52,8 @@
             <ui:define name="body">
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                 <f:metadata>
-                    <o:importConstants type="edu.harvard.iq.dataverse.license.TermsOfUse.RestrictType" var="restrictTypeEnum"/>
-                    <o:importConstants type="edu.harvard.iq.dataverse.license.TermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
+                    <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.RestrictType" var="restrictTypeEnum"/>
+                    <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
                     <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
                     <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
                     <f:viewParam name="version" value="#{DatasetPage.version}"/>
