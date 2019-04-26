@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.AccessRequest;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -1676,5 +1677,16 @@ public class DataFileServiceBean implements java.io.Serializable {
             // we don't care (?) - we'll still try to delete the datafile from the database.
         }
         return null;
+    }
+    
+    public boolean isFoldersMetadataPresentInVersion(DatasetVersion datasetVersion) {
+        Query query = em.createNativeQuery("SELECT id FROM fileMetadata WHERE datasetversion_id="+datasetVersion.getId()+" AND directoryLabel IS NOT null LIMIT 1");
+        
+        try {
+            int count = query.getResultList().size();
+            return count > 0;
+        } catch (Exception ex) {
+            return false;
+        }
     }
 }
