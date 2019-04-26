@@ -8,10 +8,6 @@
             <base-name>Bundle</base-name>
             <var>bundle</var>
         </resource-bundle>
-        <locale-config>
-            <default-locale>en</default-locale>
-            <supported-locale>pl</supported-locale>
-        </locale-config>
     </application>
     <render-kit>
         <renderer>
