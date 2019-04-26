@@ -174,10 +174,7 @@ public class DashboardDatamovePage implements java.io.Serializable {
             
             logger.info("Moved " + dsPersistentId + " from " + srcAlias + " to " + dstAlias);
             
-            FacesContext.getCurrentInstance().addMessage(null, 
-                new FacesMessage(FacesMessage.SEVERITY_INFO, 
-                    "Moved dataset", 
-                    BundleUtil.getStringFromBundle("dashboard.card.datamove.message.success", arguments)));
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dashboard.card.datamove.message.success", arguments));
         }
         catch (CommandException e) {
             logger.log(Level.SEVERE,"Unable to move "+ dsPersistentId + " from " + srcAlias + " to " + dstAlias, e);

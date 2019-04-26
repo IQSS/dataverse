@@ -24,22 +24,22 @@
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
                 <h:form id="datamove-form" class="form-horizontal">
-                    <div class="col-sm-6">
+                    <div class="col-md-6">
                         <div class="panel panel-default">
                             <div class="panel-heading text-info">#{bundle['dashboard.card.datamove.selectdataset.header']}</div>
                             <div class="panel-body">
 
                                 <!-- dataset to move: -->
-                                <div class="form-group" >
-                                    <label for="sourceDataset" class="col-sm-3 control-label">
-                                        #{bundle['dataset']}
+                                <div class="col-xs-12 form-group">
+                                    <label for="sourceDataset" class="col-xs-3 control-label">
+                                        #{bundle['dashboard.card.datamove.dataset.label']}
                                     </label>
-                                    <div class="col-sm-9">
+                                    <div class="col-xs-9">
                                         <p:autoComplete id="sourceDatasetMenu"
                                                         required="true"
                                                         requiredMessage="#{bundle['requiredField']}"
                                                         binding="#{DashboardDatamovePage.selectedDatasetMenu}"
-                                                        placeholder="#{bundle['dashboard.card.datamove.dataset.menu.enterName']}"
+                                                        placeholder="#{bundle['dashboard.card.datamove.dataset.placeholder']}"
                                                         multiple="false" scrollHeight="180" forceSelection="true"
                                                         minQueryLength="2" queryDelay="1000" size="36"
                                                         groupBy="#{bundle['dashboard.card.datamove.dataset.menu.header']}"
@@ -70,22 +70,22 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-sm-6">
+                    <div class="col-md-6">
                         <div class="panel panel-default">
                             <div class="panel-heading text-info">#{bundle['dashboard.card.datamove.newdataverse.header']}</div>
                             <div class="panel-body">
                                 
                                 <!-- dataverse to move to: -->
-                                <div class="form-group" >
-                                    <label for="destinationDataverse" class="col-sm-3 control-label">
-                                        #{bundle['dataverse']}
+                                <div class="col-xs-12 form-group">
+                                    <label for="destinationDataverse" class="col-xs-3 control-label">
+                                        #{bundle['dashboard.card.datamove.dataverse.label']}
                                     </label>
-                                    <div class="col-sm-9">
+                                    <div class="col-xs-9">
                                         <p:autoComplete id="destinationDataverseMenu"
                                                         required="true"
                                                         requiredMessage="#{bundle['requiredField']}"
                                                         binding="#{DashboardDatamovePage.selectedDataverseMenu}"
-                                                        placeholder="#{bundle['dashboard.card.datamove.dataverse.menu.enterName']}"
+                                                        placeholder="#{bundle['dashboard.card.datamove.dataverse.placeholder']}"
                                                         multiple="false" scrollHeight="180" forceSelection="true"
                                                         minQueryLength="2" queryDelay="1000" size="36"
                                                         groupBy="#{bundle['dashboard.card.datamove.dataverse.menu.header']}"
