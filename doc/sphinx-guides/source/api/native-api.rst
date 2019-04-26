@@ -1325,6 +1325,8 @@ Recalculate the UNF value of a dataset version, if it's missing, by supplying th
 
   POST http://$SERVER/api/admin/datasets/integrity/{datasetVersionId}/fixmissingunf
 
+.. _dataset-validation-api:
+
 Dataset Validation
 ~~~~~~~~~~~~~~~~~~
 
