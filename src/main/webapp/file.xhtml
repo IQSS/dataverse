@@ -20,6 +20,8 @@
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
                 <f:metadata>
+                    <o:importConstants type="edu.harvard.iq.dataverse.license.TermsOfUse.RestrictType" var="restrictTypeEnum"/>
+                    <o:importConstants type="edu.harvard.iq.dataverse.license.TermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
                     <f:viewParam name="fileId" value="#{FilePage.fileId}"/>
                     <f:viewParam name="version" value="#{FilePage.version}"/>
                     <f:viewParam name="persistentId" value="#{FilePage.persistentId}"/>
@@ -345,6 +347,24 @@
                                             <h:outputText id="fileNumVars" value="#{FilePage.file.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, " rendered="#{FilePage.file.tabularData}"/>
                                             <h:outputText id="fileNumObs" value="#{FilePage.file.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']} #{!empty FilePage.file.unf ? ' - ' : ''}" rendered="#{FilePage.file.tabularData}"/>
                                             <h:outputText id="fileUNF" value="#{FilePage.file.unf}" rendered="#{!empty FilePage.file.unf}"/>
+                                        </div>
+                                        <div jsf:rendered="#{FilePage.fileMetadata.termsOfUse.termsOfUseType == termsOfUseTypeEnum.LICENSE_BASED}">
+                                            <span style="vertical-align: middle;">
+                                                #{bundle['file.license']}: #{FilePage.fileMetadata.termsOfUse.license.getLocalizedName(dataverseSession.locale)}
+                                            </span>
+                                            <p:link href="#{FilePage.fileMetadata.termsOfUse.license.url}" target="_blank" rendered="#{FilePage.getLicenseIconContent(FilePage.fileMetadata).present}">
+                                                <p:graphicImage value="#{FilePage.getLicenseIconContent(FilePage.fileMetadata).get()}" stream="false" width="81" height="31"/>
+                                            </p:link>
+                                        </div>
+                                        <div jsf:rendered="#{FilePage.fileMetadata.termsOfUse.termsOfUseType == termsOfUseTypeEnum.ALL_RIGHTS_RESERVED}">
+                                            #{bundle['file.termsOfAccess']}: #{bundle['file.allRightsReserved']}
+                                        </div>
+                                        <div jsf:rendered="#{FilePage.fileMetadata.termsOfUse.termsOfUseType == termsOfUseTypeEnum.RESTRICTED}">
+                                            #{bundle['file.termsOfAccess']}: #{bundle['file.termsOfAccess.restricted']} - 
+                                            <h:outputText value="#{bundle['file.termsOfAccess.restricted.'.concat(FilePage.fileMetadata.termsOfUse.restrictType)]}"
+                                                rendered="#{FilePage.fileMetadata.termsOfUse.restrictType != restrictTypeEnum.CUSTOM}" />
+                                            <h:outputText value="#{FilePage.fileMetadata.termsOfUse.restrictCustomText}"
+                                                rendered="#{FilePage.fileMetadata.termsOfUse.restrictType == restrictTypeEnum.CUSTOM}" />
                                         </div>
                                     </div>
                                 </div>

@@ -17,8 +17,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -27,11 +29,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.Version;
 
+import edu.harvard.iq.dataverse.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.util.DateUtil;
 import org.hibernate.validator.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -91,6 +95,10 @@ public class FileMetadata implements Serializable {
 
     private int displayOrder;
 
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true, fetch=FetchType.EAGER)
+    @JoinColumn(nullable=false, name = "termsofuse_id")
+    private FileTermsOfUse termsOfUse;
+
     /**
      * Creates a copy of {@code this}, with identical business logic fields.
      * E.g., {@link #label} would be duplicated; {@link #version} will not.
@@ -106,6 +114,10 @@ public class FileMetadata implements Serializable {
         fmd.setLabel( getLabel() );
         fmd.setRestricted( isRestricted() );
         fmd.setDisplayOrder( getDisplayOrder() );
+        
+        FileTermsOfUse termsOfUseCopy = getTermsOfUse().createCopy();
+        termsOfUseCopy.setFileMetadata(fmd);
+        fmd.setTermsOfUse( termsOfUseCopy );
 
         return fmd;
     }
@@ -148,6 +160,14 @@ public class FileMetadata implements Serializable {
 
     public void setDisplayOrder(int displayOrder) {
         this.displayOrder = displayOrder;
+    }
+
+    public FileTermsOfUse getTermsOfUse() {
+        return termsOfUse;
+    }
+
+    public void setTermsOfUse(FileTermsOfUse termsOfUse) {
+        this.termsOfUse = termsOfUse;
     }
 
     /*

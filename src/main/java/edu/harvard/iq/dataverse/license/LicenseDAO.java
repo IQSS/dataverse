@@ -20,6 +20,12 @@ public class LicenseDAO {
         return em.find(License.class, id);
     }
 
+    public License findFirstActive() {
+        return em.createQuery("SELECT l FROM License l WHERE l.active = true ORDER BY l.position ASC", License.class)
+                    .setMaxResults(1)
+                    .getSingleResult();
+    }
+    
     public List<License> findAll() {
         return em.createQuery("SELECT l FROM License l ORDER BY l.position ASC", License.class).getResultList();
     }

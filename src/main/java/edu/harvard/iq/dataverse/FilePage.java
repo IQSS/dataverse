@@ -23,6 +23,8 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import edu.harvard.iq.dataverse.license.LicenseIcon;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -30,6 +32,8 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
+import org.primefaces.model.ByteArrayContent;
+import org.primefaces.model.StreamedContent;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -42,10 +46,12 @@ import javax.validation.ConstraintViolation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+
 
 /**
  *
@@ -622,6 +628,21 @@ public class FilePage implements java.io.Serializable {
         }
         
         return thumbnailAvailable;
+    }
+    
+    public boolean isLicenseIconAvailable(FileMetadata fileMetadata) {
+        if (fileMetadata.getTermsOfUse().getTermsOfUseType() != TermsOfUseType.LICENSE_BASED) {
+            return false;
+        }
+        return fileMetadata.getTermsOfUse().getLicense().getIcon() != null;
+    }
+    
+    public Optional<StreamedContent> getLicenseIconContent(FileMetadata fileMetadata) {
+        if (!isLicenseIconAvailable(fileMetadata)) {
+            Optional.empty();
+        }
+        LicenseIcon licenseIcon = fileMetadata.getTermsOfUse().getLicense().getIcon();
+        return Optional.of(new ByteArrayContent(licenseIcon.getContent(), licenseIcon.getContentType()));
     }
     
     private String returnToDatasetOnly(){

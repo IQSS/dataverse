@@ -45,6 +45,8 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
@@ -64,6 +66,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.context.RequestContext;
 import org.primefaces.event.CloseEvent;
@@ -104,6 +107,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -272,6 +276,9 @@ public class DatasetPage implements java.io.Serializable {
     List<ExternalTool> exploreTools = new ArrayList<>();
     Map<Long, List<ExternalTool>> configureToolsByFileId = new HashMap<>();
     Map<Long, List<ExternalTool>> exploreToolsByFileId = new HashMap<>();
+    
+    private Boolean sameTermsOfUseForAllFiles;
+    
     
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -1461,10 +1468,6 @@ public class DatasetPage implements java.io.Serializable {
                 // init the list of FileMetadatas
                 if (workingVersion.isDraft() && canUpdateDataset()) {
                     readOnly = false;
-                } else {
-                    // an attempt to retreive both the filemetadatas and datafiles early on, so that 
-                    // we don't have to do so later (possibly, many more times than necessary):
-                    datafileService.findFileMetadataOptimizedExperimental(dataset);
                 }
                 fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
 
@@ -1601,7 +1604,7 @@ public class DatasetPage implements java.io.Serializable {
                 break;
             }
         }
-
+        
         configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
         exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
@@ -2099,10 +2102,6 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         
-
-        if (readOnly) {
-            datafileService.findFileMetadataOptimizedExperimental(dataset);
-        } 
         fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
 
         displayCitation = dataset.getCitation(true, workingVersion);
@@ -4554,5 +4553,48 @@ public class DatasetPage implements java.io.Serializable {
 
             }
         }
+    }
+    
+    public boolean isSameTermsOfUseForAllFiles() {
+        if (sameTermsOfUseForAllFiles != null) {
+            return sameTermsOfUseForAllFiles;
+        }
+        if (workingVersion.getFileMetadatas().isEmpty()) {
+            sameTermsOfUseForAllFiles = true;
+            return sameTermsOfUseForAllFiles;
+        }
+        FileTermsOfUse firstTermsOfUse = workingVersion.getFileMetadatas().get(0).getTermsOfUse();
+        
+        for (FileMetadata fileMetadata : workingVersion.getFileMetadatas()) {
+            if (!isSameTermsOfUse(firstTermsOfUse, fileMetadata.getTermsOfUse())) {
+                sameTermsOfUseForAllFiles = false;
+                return sameTermsOfUseForAllFiles;
+            }
+        }
+        
+        sameTermsOfUseForAllFiles = true;
+        return sameTermsOfUseForAllFiles;
+    }
+    
+    public Optional<FileTermsOfUse> getTermsOfUseOfFirstFile() {
+        if (workingVersion.getFileMetadatas().isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(workingVersion.getFileMetadatas().get(0).getTermsOfUse());
+    }
+    
+    private boolean isSameTermsOfUse(FileTermsOfUse termsOfUse1, FileTermsOfUse termsOfUse2) {
+        if (termsOfUse1.getTermsOfUseType() != termsOfUse2.getTermsOfUseType()) {
+            return false;
+        }
+        if (termsOfUse1.getTermsOfUseType() == TermsOfUseType.LICENSE_BASED) {
+            return termsOfUse1.getLicense().getId().equals(termsOfUse2.getLicense().getId());
+        }
+        if (termsOfUse1.getTermsOfUseType() == TermsOfUseType.RESTRICTED) {
+            return termsOfUse1.getRestrictType() == termsOfUse2.getRestrictType() &&
+                    StringUtils.equals(termsOfUse1.getRestrictCustomText(), termsOfUse2.getRestrictCustomText());
+        }
+        return true;
+        
     }
 }

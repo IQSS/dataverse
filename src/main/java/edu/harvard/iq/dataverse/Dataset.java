@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -326,6 +328,11 @@ public class Dataset extends DvObjectContainer {
                 newFm.setDatasetVersion(dsv);
                 newFm.setProvFreeForm(fm.getProvFreeForm());
                 newFm.setDisplayOrder(fm.getDisplayOrder());
+                
+                FileTermsOfUse termsOfUse = fm.getTermsOfUse();
+                FileTermsOfUse clonedTermsOfUse = termsOfUse.createCopy();
+                clonedTermsOfUse.setFileMetadata(newFm);
+                newFm.setTermsOfUse(clonedTermsOfUse);
                 
                 dsv.getFileMetadatas().add(newFm);
             }

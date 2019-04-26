@@ -11,6 +11,8 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <o:importFunctions type="java.lang.Math" />
+    <o:importConstants type="edu.harvard.iq.dataverse.license.TermsOfUse.RestrictType" var="restrictTypeEnum"/>
+    <o:importConstants type="edu.harvard.iq.dataverse.license.TermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
     <p:remoteCommand name="refreshPaginator" action="#{DatasetPage.refreshPaginator()}" process="@this" update="@form" />
     <!-- Files Table -->
     <p:dataTable id="filesTable" 
@@ -222,6 +224,25 @@
                 <div class="checksum-block" jsf:rendered="#{!fileMetadata.dataFile.tabularData}">
                     <h:outputText id="file-checksum" value="#{fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}" rendered="#{!(empty fileMetadata.dataFile.checksumValue) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
                 </div>
+                
+                <div>
+                <ui:fragment rendered="#{fileMetadata.termsOfUse.termsOfUseType == termsOfUseTypeEnum.LICENSE_BASED}">
+                    #{bundle['file.license']}: #{fileMetadata.termsOfUse.license.getLocalizedName(dataverseSession.locale)}
+                </ui:fragment>
+                <ui:fragment rendered="#{fileMetadata.termsOfUse.termsOfUseType == termsOfUseTypeEnum.ALL_RIGHTS_RESERVED}">
+                    #{bundle['dataset.files.termsOfAccess']}: #{bundle['file.allRightsReserved']}
+                </ui:fragment>
+                <ui:fragment rendered="#{fileMetadata.termsOfUse.termsOfUseType == termsOfUseTypeEnum.RESTRICTED}">
+                    #{bundle['dataset.files.termsOfAccess']}: #{bundle['file.termsOfAccess.restricted']} - 
+                    <ui:fragment rendered="#{fileMetadata.termsOfUse.restrictType != restrictTypeEnum.CUSTOM}">
+                        #{bundle['file.termsOfAccess.restricted.'.concat(DatasetPage.termsOfUseOfFirstFile.restrictType)]}
+                    </ui:fragment>
+                    <ui:fragment rendered="#{fileMetadata.termsOfUse.restrictType == restrictTypeEnum.CUSTOM}">
+                        #{fileMetadata.termsOfUse.restrictCustomText}
+                    </ui:fragment>
+                </ui:fragment>
+                </div>
+                
             </div>
             <!-- UNF + Variables, Obsersvations -->
             <div class="text-muted small" jsf:rendered="#{fileMetadata.dataFile.tabularData}">

@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.license.InitialTermsOfUseFactory;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -66,6 +67,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     SwordAuth swordAuth;
     @Inject
     UrlManager urlManager;
+    @Inject
+    private InitialTermsOfUseFactory termsOfUseFactory;
 
     private HttpServletRequest httpRequest;
 
@@ -300,7 +303,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             List<DataFile> dataFiles = new ArrayList<>();
             try {
                 try {
-                    dataFiles = FileUtil.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, systemConfig);
+                    dataFiles = FileUtil.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, systemConfig, termsOfUseFactory);
                 } catch (EJBException ex) {
                     Throwable cause = ex.getCause();
                     if (cause != null) {

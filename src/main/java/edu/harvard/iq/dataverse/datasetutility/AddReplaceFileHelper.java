@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.license.InitialTermsOfUseFactory;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -111,6 +112,7 @@ public class AddReplaceFileHelper{
     private PermissionServiceBean permissionService;
     private EjbDataverseEngine commandEngine;
     private SystemConfig systemConfig;
+    private InitialTermsOfUseFactory termsOfUseFactory;
     
     // -----------------------------------
     // Instance variables directly added
@@ -192,7 +194,8 @@ public class AddReplaceFileHelper{
                             DataFileServiceBean fileService,
                             PermissionServiceBean permissionService,
                             EjbDataverseEngine commandEngine,
-                            SystemConfig systemConfig){
+                            SystemConfig systemConfig,
+                            InitialTermsOfUseFactory termsOfUseFactory){
 
         // ---------------------------------
         // make sure DataverseRequest isn't null and has a user
@@ -225,6 +228,9 @@ public class AddReplaceFileHelper{
         if (systemConfig == null) {
             throw new NullPointerException("systemConfig cannot be null");
         }
+        if (termsOfUseFactory == null) {
+            throw new NullPointerException("InitialTermsOfUseFactory cannot be null");
+        }
 
         // ---------------------------------
         
@@ -234,6 +240,7 @@ public class AddReplaceFileHelper{
         this.permissionService = permissionService;
         this.commandEngine = commandEngine;
         this.systemConfig = systemConfig;
+        this.termsOfUseFactory = termsOfUseFactory;
         
         
         
@@ -1049,7 +1056,8 @@ public class AddReplaceFileHelper{
                     this.newFileInputStream,
                     this.newFileName,
                     this.newFileContentType,
-                    this.systemConfig);
+                    this.systemConfig,
+                    this.termsOfUseFactory);
 
         } catch (IOException ex) {
             if (!Strings.isNullOrEmpty(ex.getMessage())) {

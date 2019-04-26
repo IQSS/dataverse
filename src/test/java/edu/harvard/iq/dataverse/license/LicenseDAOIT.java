@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Locale;
 
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
@@ -28,6 +30,9 @@ public class LicenseDAOIT extends ArquillianDeployment {
 
     @Inject
     private LicenseDAO licenseDao;
+    
+    @PersistenceContext(unitName = "VDCNet-ejbPU")
+    private EntityManager em;
     
     
     //-------------------- TESTS --------------------
@@ -49,6 +54,16 @@ public class LicenseDAOIT extends ArquillianDeployment {
         
         assertEquals("image/png", license.getIcon().getContentType());
         assertEquals(2601, license.getIcon().getContent().length);
+    }
+    
+    @Test
+    public void findFirstActive() {
+        // when
+        License license = licenseDao.findFirstActive();
+        
+        // then
+        assertEquals(Long.valueOf(1L), license.getId());
+        assertEquals("CC0 Creative Commons Zero 1.0 Waiver", license.getName());
     }
     
     @Test
@@ -77,5 +92,4 @@ public class LicenseDAOIT extends ArquillianDeployment {
                 "Open Data Commons Open Database License 1.0"
         ));
     }
-    
 }

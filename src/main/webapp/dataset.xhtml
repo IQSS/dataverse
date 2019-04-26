@@ -52,6 +52,8 @@
             <ui:define name="body">
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                 <f:metadata>
+                    <o:importConstants type="edu.harvard.iq.dataverse.license.TermsOfUse.RestrictType" var="restrictTypeEnum"/>
+                    <o:importConstants type="edu.harvard.iq.dataverse.license.TermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
                     <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
                     <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
                     <f:viewParam name="version" value="#{DatasetPage.version}"/>
@@ -437,6 +439,55 @@
                                             </div>
                                         </div>
                                     </ui:repeat>
+                                    
+                                    <ui:fragment rendered="#{!empty DatasetPage.workingVersion.fileMetadatas and !DatasetPage.sameTermsOfUseForAllFiles}">
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label">
+                                            #{bundle['dataset.files.license']}
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.files.license.description']}"></span>
+                                        </label>
+                                        <div class="col-sm-9">
+                                            #{bundle['dataset.files.license.multiple']}
+                                        </div>
+                                    </div>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{!empty DatasetPage.workingVersion.fileMetadatas and DatasetPage.sameTermsOfUseForAllFiles}">
+                                    <div class="form-group" jsf:rendered="#{DatasetPage.termsOfUseOfFirstFile.get().termsOfUseType == termsOfUseTypeEnum.LICENSE_BASED}">
+                                        <label class="col-sm-3 control-label">
+                                            #{bundle['dataset.files.license']}
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.files.license.description']}"></span>
+                                        </label>
+                                        <div class="col-sm-9">
+                                            #{DatasetPage.termsOfUseOfFirstFile.get().license.getLocalizedName(dataverseSession.locale)}
+                                        </div>
+                                    </div>
+                                    <div class="form-group" jsf:rendered="#{DatasetPage.termsOfUseOfFirstFile.get().termsOfUseType == termsOfUseTypeEnum.ALL_RIGHTS_RESERVED}">
+                                        <label class="col-sm-3 control-label">
+                                            #{bundle['dataset.files.termsOfAccess']}
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.files.license.description']}"></span>
+                                        </label>
+                                        <div class="col-sm-9">
+                                            #{bundle['file.allRightsReserved']}
+                                        </div>
+                                    </div>
+                                    <div class="form-group" jsf:rendered="#{DatasetPage.termsOfUseOfFirstFile.get().termsOfUseType == termsOfUseTypeEnum.RESTRICTED}">
+                                        <label class="col-sm-3 control-label">
+                                            #{bundle['dataset.files.termsOfAccess']}
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.files.termsOfAccess.description']}"></span>
+                                        </label>
+                                        <div class="col-sm-9">
+                                            #{bundle['file.termsOfAccess.restricted']} - 
+                                            <h:outputText value="#{bundle['file.termsOfAccess.restricted.'.concat(DatasetPage.termsOfUseOfFirstFile.get().restrictType)]}"
+                                                rendered="#{DatasetPage.termsOfUseOfFirstFile.get().restrictType != restrictTypeEnum.CUSTOM}" />
+                                            <h:outputText value="#{DatasetPage.termsOfUseOfFirstFile.get().restrictCustomText}"
+                                                rendered="#{DatasetPage.termsOfUseOfFirstFile.get().restrictType == restrictTypeEnum.CUSTOM}"/>
+                                        </div>
+                                    </div>
+                                    </ui:fragment>
                                 </div>
                             </div>
                             <!-- END: DATASET SUMMARY -->

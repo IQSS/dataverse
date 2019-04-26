@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -151,6 +152,7 @@ public class MocksFactory {
         Random rand = new Random();
         files.forEach( df ->{
             df.getFileMetadata().addCategory(categories.get(rand.nextInt(categories.size())));
+            df.getFileMetadata().setTermsOfUse(new FileTermsOfUse());
             metadatas.add( df.getFileMetadata() );
         });
         ds.setFiles(files);
@@ -242,6 +244,7 @@ public class MocksFactory {
         fileMetadata.setLabel(label);
         fileMetadata.setDisplayOrder(displayOrder);
         fileMetadata.setCategories(new ArrayList<>());
+        fileMetadata.setTermsOfUse(new FileTermsOfUse());
 
         return fileMetadata;
     }

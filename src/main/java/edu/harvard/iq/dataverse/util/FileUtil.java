@@ -33,6 +33,8 @@ import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
+import edu.harvard.iq.dataverse.license.InitialTermsOfUseFactory;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse;
 import io.vavr.control.Try;
 import org.apache.commons.io.FileUtils;
 
@@ -41,6 +43,7 @@ import javax.ejb.EJBException;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -588,7 +591,8 @@ public class FileUtil implements java.io.Serializable  {
         return "";
     }
     
-    public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, SystemConfig systemConfig) throws IOException {
+    public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType,
+            SystemConfig systemConfig, InitialTermsOfUseFactory termsOfUseFactory) throws IOException {
         List<DataFile> datafiles = new ArrayList<>(); 
         
         String warningMessage = null; 
@@ -699,7 +703,7 @@ public class FileUtil implements java.io.Serializable  {
             try {                
                 uncompressedIn = new GZIPInputStream(new FileInputStream(tempFile.toFile()));
                 File unZippedTempFile = saveInputStreamInTempFile(uncompressedIn, fileSizeLimit);
-                datafile = createSingleDataFile(version, unZippedTempFile, finalFileName, MIME_TYPE_UNDETERMINED_DEFAULT, systemConfig.getFileFixityChecksumAlgorithm());
+                datafile = createSingleDataFile(version, unZippedTempFile, finalFileName, MIME_TYPE_UNDETERMINED_DEFAULT, systemConfig.getFileFixityChecksumAlgorithm(), termsOfUseFactory);
             } catch (IOException | FileExceedsMaxSizeException ioex) {
                 datafile = null;
             } finally {
@@ -809,7 +813,7 @@ public class FileUtil implements java.io.Serializable  {
                                 // to read it and create a DataFile with it:
 
                                 File unZippedTempFile = saveInputStreamInTempFile(unZippedIn, fileSizeLimit);
-                                DataFile datafile = createSingleDataFile(version, unZippedTempFile, shortName, MIME_TYPE_UNDETERMINED_DEFAULT, systemConfig.getFileFixityChecksumAlgorithm(), false);
+                                DataFile datafile = createSingleDataFile(version, unZippedTempFile, shortName, MIME_TYPE_UNDETERMINED_DEFAULT, systemConfig.getFileFixityChecksumAlgorithm(), false, termsOfUseFactory);
 
                                 if (!fileEntryName.equals(shortName)) {
                                     // If the filename looks like a hierarchical folder name (i.e., contains slashes and backslashes),
@@ -920,7 +924,7 @@ public class FileUtil implements java.io.Serializable  {
                     }
 
                     File unZippedShapeTempFile = saveInputStreamInTempFile(finalFileInputStream, fileSizeLimit);
-                    DataFile new_datafile = createSingleDataFile(version, unZippedShapeTempFile, finalFile.getName(), finalType, systemConfig.getFileFixityChecksumAlgorithm());
+                    DataFile new_datafile = createSingleDataFile(version, unZippedShapeTempFile, finalFile.getName(), finalType, systemConfig.getFileFixityChecksumAlgorithm(), termsOfUseFactory);
                     if (new_datafile != null) {
                         datafiles.add(new_datafile);
                     } else {
@@ -959,7 +963,7 @@ public class FileUtil implements java.io.Serializable  {
         // if we were unable to unpack an uploaded file, etc.), we'll just 
         // create and return a single DataFile:
         
-        DataFile datafile = createSingleDataFile(version, tempFile.toFile(), fileName, finalType, systemConfig.getFileFixityChecksumAlgorithm());
+        DataFile datafile = createSingleDataFile(version, tempFile.toFile(), fileName, finalType, systemConfig.getFileFixityChecksumAlgorithm(), termsOfUseFactory);
         
         if (datafile != null && tempFile.toFile() != null) {
        
@@ -1006,11 +1010,11 @@ public class FileUtil implements java.io.Serializable  {
      * been figured out. 
     */
     
-    private static DataFile createSingleDataFile(DatasetVersion version, File tempFile, String fileName, String contentType, DataFile.ChecksumType checksumType) {
-        return createSingleDataFile(version, tempFile, fileName, contentType, checksumType, false);
+    private static DataFile createSingleDataFile(DatasetVersion version, File tempFile, String fileName, String contentType, DataFile.ChecksumType checksumType, InitialTermsOfUseFactory termsOfUseFactory) {
+        return createSingleDataFile(version, tempFile, fileName, contentType, checksumType, false, termsOfUseFactory);
     }
     
-    private static DataFile createSingleDataFile(DatasetVersion version, File tempFile, String fileName, String contentType, DataFile.ChecksumType checksumType, boolean addToDataset) {
+    private static DataFile createSingleDataFile(DatasetVersion version, File tempFile, String fileName, String contentType, DataFile.ChecksumType checksumType, boolean addToDataset, InitialTermsOfUseFactory termsOfUseFactory) {
 
         if (tempFile == null) {
             return null;
@@ -1029,6 +1033,10 @@ public class FileUtil implements java.io.Serializable  {
 
         // TODO: add directoryLabel?
         fmd.setLabel(fileName);
+
+        FileTermsOfUse termsOfUse = termsOfUseFactory.createTermsOfUse();
+        fmd.setTermsOfUse(termsOfUse);
+        termsOfUse.setFileMetadata(fmd);
 
         if (addToDataset) {
             datafile.setOwner(version.getDataset());
