@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -26,11 +25,8 @@ import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.search.FileView;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
@@ -87,7 +83,6 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.validator.routines.EmailValidator;
 import org.primefaces.context.RequestContext;
 
 /**
@@ -157,7 +152,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     private Long versionId;
     private List<DataFile> newFiles = new ArrayList<>();
     private List<DataFile> uploadedFiles = new ArrayList<>();
-    private List<DataFile> filesForEditMetdata = new ArrayList<>();
     private DatasetVersion workingVersion;
     private DatasetVersion clone;
     private String dropBoxSelection = "";
@@ -248,7 +242,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         return fileMetadatas;
     }
-    
+  
     public void setFileMetadatas(List<FileMetadata> fileMetadatas) {
         this.fileMetadatas = fileMetadatas;
     }
@@ -459,10 +453,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         return null; 
     }
     
-    
-    public String init() {
 
-        fileMetadatas = new ArrayList<>();
+    public String init() {
         
         newFiles = new ArrayList<>();
         uploadedFiles = new ArrayList<>(); 
@@ -497,9 +489,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (!permissionService.on(dataset).has(Permission.EditDataset)) {
             return permissionsWrapper.notAuthorized();
         }
-
-        // TODO: Think about why this call to populateFileMetadatas was added. It seems like it isn't needed after all.
-//        populateFileMetadatas();
 
         // -------------------------------------------
         //  Is this a file replacement operation?
@@ -700,7 +689,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public boolean isShowAccessPopup() {
         for (FileMetadata fmd : this.fileMetadatas) {
-            
             if (fmd.isRestricted()) {
             
                 if (fmd.getDataFile().getId() == null) {
@@ -1068,48 +1056,9 @@ public class EditDatafilesPage implements java.io.Serializable {
             return null;
         }
         
-    }
-    
-    public void validateFileDirectory(FacesContext context, UIComponent toValidate, Object value) {
-        UIInput input = (UIInput) toValidate;
-                    input.setValid(true);
-        if (!FileDirectoryNameValidator.isFileDirectoryNameValid((String)value, null)) {
-            context.addMessage(toValidate.getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", BundleUtil.getStringFromBundle("file.metadata.filedirectory.invalidCharacters")));
-            context.validationFailed();
-            input.setValid(false);
-
-        }
-    }
-    
-    
-    
-    public String validate() {
-        // Validate
-        Set<ConstraintViolation> constraintViolations = workingVersion.validate();
-        if (!constraintViolations.isEmpty()) {
-            //JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataset.message.validationError"));
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
-            return "";
-        }
-
-        for (FileMetadata fm : fileMetadatas) {
-
-            Set<ConstraintViolation> fmViolations = fm.validate();
-            if (!fmViolations.isEmpty()) {
-                //JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataset.message.validationError"));
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
-                return "";
-            }
-
-        }
-
-        return "";
-    }
-    
+    }    
+        
     public String save() {
-        validate();
         if (!saveEnabled) {
             return "";
         }
@@ -2786,18 +2735,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void handleTabularTagsSelection(final AjaxBehaviorEvent event) {
         tabularDataTagsUpdated = true;
     }
-    
-    public void handleDescriptionChange(final AjaxBehaviorEvent event) {        
-        datasetUpdateRequired = true;
-    }
-    
-    public void handleNameChange(final AjaxBehaviorEvent event) {        
-        datasetUpdateRequired = true;
-    }
-    
-    public void handleFileDirectoryChange(final ValueChangeEvent event) {  
-        datasetUpdateRequired = true;
-    }
         
     /* 
      * Items for the "Advanced (Ingest) Options" popup. 
@@ -2928,16 +2865,17 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     private void populateFileMetadatas() {
-        
-        if (selectedFileIdsList == null || selectedFileIdsList.isEmpty()){
+        fileMetadatas = new ArrayList<>();
+        if (selectedFileIdsList == null || selectedFileIdsList.isEmpty()) {
             return;
         }
-              
+
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-            selectedFileIdsList.stream().filter((fileId) -> (fmd.getDataFile().getId().longValue() == fileId)).forEachOrdered((_item) -> {
-                fileMetadatas.add(fmd);
-            });
-        }
-    }
-    
+            for (Long id : selectedFileIdsList) {
+                if (id.intValue() == fmd.getDataFile().getId().intValue()) {
+                    fileMetadatas.add(fmd);
+                }
+            }
+        }       
+    }    
 }

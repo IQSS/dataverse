@@ -344,30 +344,20 @@
                         </div>
                     </p:column>
                     <p:column class="col-file-metadata">
-                        <ui:fragment>
-                            <label class="control-label" for="fileName" style="margin-right:1em;margin-bottom:.5em;">
+                        <label class="control-label" for="fileName" style="margin-right:1em;margin-bottom:.5em;">
                                 #{bundle['file.fileName']}
-                            </label>
-                        <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}">
-                            <p:ajax event="change"  update="fileName" />
-                            </p:inputText>
-                            <p:message for="fileName"/>
-                        </ui:fragment>
+                        </label>
+                        <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}"/>
+                        <p:message for="fileName"/>
 
-
-
-
-                            <label class="control-label" for="fileDirectoryLabel" style="margin-right:1em;margin-bottom:.5em;">
+                        <label class="control-label" for="fileDirectoryLabel" style="margin-right:1em;margin-bottom:.5em;">
                                 #{bundle['file.metadataTab.fileMetadata.hierarchy.label']}    
-                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.metadataTab.fileMetadata.hierarchy.tip']}"></span>
-                            </label>
-                            <p:inputText id="fileDirectoryName" value="#{fileMetadata.directoryLabel}"                                            
-                                         style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}" widgetVar="fileDirectoryName"  validator="#{EditDatafilesPage.validateFileDirectory}"> 
-                                <p:ajax event="change" update="fileDirectoryName"  />
-                            </p:inputText>
-                            <p:message for="fileDirectoryName"/>
-
+                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.metadataTab.fileMetadata.hierarchy.tip']}"></span>
+                        </label>
+                        <p:inputText id="fileDirectoryName" value="#{fileMetadata.directoryLabel}"                                            
+                                 style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}" widgetVar="fileDirectoryName"/>                        
+                        <p:message for="fileDirectoryName"/>
 
                         <!-- TYPE + SIZE + DATE + CHECKSUM -->
                         <div class="text-muted small">
@@ -385,16 +375,12 @@
                             <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
                         </div>
                         <div class="fileDescription">
-                            <ui:fragment>
-                                <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
+                            <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
                                     #{bundle.description}
-                                </label>
-                                <p:inputTextarea id="fileDescription" immediate="true" rows="2" cols="40" value="#{fileMetadata.description}" style="width:60%; margin-top:.5em;"> 
-                                <p:ajax event="change" listener="#{EditDatafilesPage.handleDescriptionChange}" update="fileDescription" />
-                                </p:inputTextarea>
-                                <p:watermark for="fileDescription" value="#{bundle['file.addDescription']}"/>
-                                <p:message for="fileDescription"/>
-                            </ui:fragment>
+                            </label>
+                            <p:inputTextarea id="fileDescription" rows="2" cols="40" value="#{fileMetadata.description}" style="width:60%; margin-top:.5em;"/> 
+                            <p:watermark for="fileDescription" value="#{bundle['file.addDescription']}"/>
+                            <p:message for="fileDescription"/>
                         </div>
                         <div class="file-tags-block margin-top-half">
                             <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
@@ -520,7 +506,7 @@
                 </p:dataTable>
 </p:outputPanel>
                 </div>
-                
+
             </div>
         </div>
     </div>

@@ -25,7 +25,6 @@
                 <f:metadata>
                     <f:viewParam name="datasetId" value="#{EditDatafilesPage.dataset.id}"/>
                     <f:viewParam name="mode" value="#{EditDatafilesPage.mode}"/>
-                    <!-- f:viewParam name="versionId" value="#.EditDatafilesPage.versionId."/ -->
                     <f:viewParam name="selectedFileIds" value="#{EditDatafilesPage.selectedFileIds}"/>
                     <f:viewParam name="versionString" value="#{EditDatafilesPage.versionString}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
@@ -36,7 +35,6 @@
                                   if="#{(param.mode == 'SINGLE' || param.mode == 'SINGLE_REPLACE')  }" />
                 </f:metadata>
                 <h:form id="datasetForm">
-                    #{facesContext.validationFailed}
                     <!-- BEGIN: file replace original -->
                     <ui:fragment rendered="#{EditDatafilesPage.fileReplaceOperation}">
                         <div id="file-replace-original-block" class="col-sm-12">
@@ -54,45 +52,49 @@
                     </ui:fragment>
                     <!-- END: file replace original -->
 
-                    <div id="contentTabs">
-
-                    <ui:include src="editFilesFragment.xhtml">
-                        <ui:param name="editDatafilesPage" value="true"/>
-                        <ui:param name="createDataset" value="false"/>
-                        <ui:param name="showFileButtonUpdate" value="true"/>
-                        <ui:param name="version" value="#{EditDatafilesPage.workingVersion}"/>
-                        <ui:param name="lockedFromEdits" value="#{EditDatafilesPage.lockedFromEdits}"/>
-                        </ui:include>
-                    </div>
-
+                    <ui:fragment id="uploadFilesOnCreateTab" rendered="#{EditDatafilesPage.mode == 'SINGLE' or                          
+                            EditDatafilesPage.mode == 'SINGLE_REPLACE' or EditDatafilesPage.mode == 'EDIT'
+                            or EditDatafilesPage.mode == 'UPLOAD'}">
+                        <div id="contentTabs">
+                            <ui:include src="editFilesFragment.xhtml">
+                                <ui:param name="editDatafilesPage" value="true"/>
+                                <ui:param name="createDataset" value="false"/>
+                                <ui:param name="showFileButtonUpdate" value="true"/>
+                                <ui:param name="lockedFromEdits" value="#{EditDatafilesPage.lockedFromEdits}"/>                             
+                            </ui:include>
+                        </div>
+                    </ui:fragment>  
+                    
                     <!-- Create/Save Dataset Button Panel -->
-                    <p:fragment  id="editDataFilesButtons">
+                    <ui:fragment  id="editDataFilesButtons">
                         <div  class="button-block">
                             <p:outputPanel id="filesButtons" >
                                 <div jsf:rendered="#{!(empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment()))}">
-                                    <p:commandButton tabindex="1000" id="save" value="#{bundle.saveChanges}" onclick="PF('blockFileForm').show();"  action="#{EditDatafilesPage.save()}"/>
-                                    <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();"/>
-                                    <p:commandButton value="Direct" id="datasetSave"
-                                                     style="display:none"
-                                                     update=":datasetForm,:messagePanel"
-                                                     oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
-                                                     action="#{EditDatafilesPage.save}" />
+                                    <p:commandButton tabindex="1000" id="savebutton" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();"   >
+                                    </p:commandButton> 
+                                    <p:commandButton tabindex="1000" id="cancelbutton" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();"/>
                                 </div>
                                 <div jsf:rendered="#{empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment())}">
-                                    <p:commandButton tabindex="1000" id="doneFilesButton" value="#{bundle.done}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();">
+                                    <p:commandButton tabindex="1000" id="doneFilesButtonnop" value="#{bundle.done}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();">
                                     </p:commandButton>
 
                                 </div>
+                                <p:commandButton value="Direct" id="datasetSave"
+                                                 style="display:none"
+                                                 update=":datasetForm,:messagePanel"
+                                                 onclick="PF('blockFileForm').show();"
+                                                 oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
+                                                 action="#{EditDatafilesPage.save}" />
                             </p:outputPanel> 
                         </div>
-                    </p:fragment>
+                    </ui:fragment>
 
                     <!-- END: Create/Save Dataset Button Panel -->
 
                 </h:form>
                 
                 <p:blockUI block="datasetForm" widgetVar="blockFileForm"/>
-                
+
                 <script type="text/javascript">
                     
                     function clickSave(){
