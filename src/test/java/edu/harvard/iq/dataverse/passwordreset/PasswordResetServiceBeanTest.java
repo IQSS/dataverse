@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.passwordreset;
 
-import com.beust.jcommander.Parameter;
-import com.sun.mail.iap.Argument;
 import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -9,12 +7,8 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
-import org.apache.poi.ss.formula.functions.T;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Matchers;
 
@@ -66,6 +60,9 @@ public class PasswordResetServiceBeanTest {
 
         PasswordResetInitResponse result = passwordResetServiceBean.requestReset("user1@domain.tld");
 
+        // ensure that an email would have been sent
+        verify(mockedMailServiceBean, times(1)).sendSystemEmail(ArgumentMatchers.eq("user1@domain.tld"), ArgumentMatchers.any(), ArgumentMatchers.any());
+
         assertTrue(result.isEmailFound());
     }
 
@@ -77,6 +74,9 @@ public class PasswordResetServiceBeanTest {
         mockTypedQuery("PasswordResetData.findByUser", Arrays.asList());
 
         PasswordResetInitResponse result = passwordResetServiceBean.requestReset("user1@domain.tld");
+
+        // ensure that an email would not have been sent
+        verify(mockedMailServiceBean, times(0)).sendSystemEmail(ArgumentMatchers.eq("user1@domain.tld"), ArgumentMatchers.any(), ArgumentMatchers.any());
 
         assertFalse(result.isEmailFound());
     }
@@ -114,14 +114,14 @@ public class PasswordResetServiceBeanTest {
     @Test
     void testAttemptPasswordReset_successfulUserSave() {
         // prepare a BuiltinUser and an AuthenticatedUser
-        prepareBuiltinUser();
-        prepareAuthenticatedUser();
+        BuiltinUser builtinUser = prepareBuiltinUser();
+        AuthenticatedUser authenticatedUser = prepareAuthenticatedUser();
 
         // mock the internal entity manager
-        mockTypedQuery("abcd", new PasswordResetData());
+        mockTypedQuery("PasswordResetData.findByToken", new PasswordResetData());
 
         // execute the method under test
-        PasswordChangeAttemptResponse passwordChangeAttemptResponse = passwordResetServiceBean.attemptPasswordReset(new BuiltinUser(), "newpass", "token");
+        PasswordChangeAttemptResponse passwordChangeAttemptResponse = passwordResetServiceBean.attemptPasswordReset(builtinUser, "newpass", "token");
 
         // ensure that an email would have been sent
         verify(mockedMailServiceBean, times(1)).sendSystemEmail(ArgumentMatchers.eq("user1@domain.tld"), ArgumentMatchers.any(), ArgumentMatchers.any());
@@ -133,15 +133,15 @@ public class PasswordResetServiceBeanTest {
     @Test
     void testAttemptPasswordReset_successfulUserSaveWithoutToken() {
         // prepare a BuiltinUser and an AuthenticatedUser
-        prepareBuiltinUser();
-        prepareAuthenticatedUser();
+        BuiltinUser builtinUser = prepareBuiltinUser();
+        AuthenticatedUser authenticatedUser = prepareAuthenticatedUser();
 
         // mock the internal entity manager
-        mockTypedQuery("abcd", new PasswordResetData());
+        mockTypedQuery("PasswordResetData.findByToken", new PasswordResetData());
         doThrow(new IllegalArgumentException()).when(mockedEntityManager).remove(ArgumentMatchers.any(PasswordResetData.class));
 
         // execute the method under test
-        PasswordChangeAttemptResponse passwordChangeAttemptResponse = passwordResetServiceBean.attemptPasswordReset(new BuiltinUser(), "newpass", null);
+        PasswordChangeAttemptResponse passwordChangeAttemptResponse = passwordResetServiceBean.attemptPasswordReset(builtinUser, "newpass", null);
 
         // ensure that an email would have been sent
         verify(mockedMailServiceBean, times(1)).sendSystemEmail(ArgumentMatchers.eq("user1@domain.tld"), ArgumentMatchers.any(), ArgumentMatchers.any());
