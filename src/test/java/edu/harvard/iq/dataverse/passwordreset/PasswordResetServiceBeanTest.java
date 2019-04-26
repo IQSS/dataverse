@@ -7,7 +7,9 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import org.apache.poi.ss.formula.functions.T;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -19,6 +21,7 @@ import org.mockito.Matchers;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -27,9 +30,11 @@ public class PasswordResetServiceBeanTest {
 
     private AuthenticationServiceBean mockedAuthenticationServiceBean;
     private BuiltinUserServiceBean mockedBuiltinUserServiceBean;
+    private EntityManager mockedEntityManager;
     private MailServiceBean mockedMailServiceBean;
     private PasswordResetServiceBean passwordResetServiceBean;
     private PasswordValidatorServiceBean mockedPasswordValidatorServiceBean;
+    private SystemConfig mockedSystemConfig;
 
     @BeforeEach
     void setup() {
@@ -38,6 +43,8 @@ public class PasswordResetServiceBeanTest {
         mockedBuiltinUserServiceBean = mock(BuiltinUserServiceBean.class);
         mockedAuthenticationServiceBean = mock(AuthenticationServiceBean.class);
         mockedMailServiceBean = mock(MailServiceBean.class);
+        mockedEntityManager = mock(EntityManager.class);
+        mockedSystemConfig = mock(SystemConfig.class);
 
         // setup the service bean under test and inject services
         passwordResetServiceBean = new PasswordResetServiceBean();
@@ -45,6 +52,33 @@ public class PasswordResetServiceBeanTest {
         passwordResetServiceBean.dataverseUserService = mockedBuiltinUserServiceBean;
         passwordResetServiceBean.mailService = mockedMailServiceBean;
         passwordResetServiceBean.passwordValidatorService = mockedPasswordValidatorServiceBean;
+        passwordResetServiceBean.em = mockedEntityManager;
+        passwordResetServiceBean.systemConfig = mockedSystemConfig;
+    }
+
+    @Test
+    void testRequestReset_forExistingUser() throws PasswordResetException {
+        prepareBuiltinUser();
+        prepareAuthenticatedUser();
+
+        mockTypedQuery("PasswordResetData.findAll", Arrays.asList(new PasswordResetData()));
+        mockTypedQuery("PasswordResetData.findByUser", Arrays.asList(new PasswordResetData()));
+
+        PasswordResetInitResponse result = passwordResetServiceBean.requestReset("user1@domain.tld");
+
+        assertTrue(result.isEmailFound());
+    }
+
+    @Test
+    void testRequestReset_forInexistentUser() throws PasswordResetException {
+        prepareAuthenticatedUser();
+
+        mockTypedQuery("PasswordResetData.findAll", Arrays.asList());
+        mockTypedQuery("PasswordResetData.findByUser", Arrays.asList());
+
+        PasswordResetInitResponse result = passwordResetServiceBean.requestReset("user1@domain.tld");
+
+        assertFalse(result.isEmailFound());
     }
 
     @Test
@@ -80,10 +114,11 @@ public class PasswordResetServiceBeanTest {
     @Test
     void testAttemptPasswordReset_successfulUserSave() {
         // prepare a BuiltinUser and an AuthenticatedUser
-        mockUserEntities();
+        prepareBuiltinUser();
+        prepareAuthenticatedUser();
 
         // mock the internal entity manager
-        mockEntityManager(false);
+        mockTypedQuery("abcd", new PasswordResetData());
 
         // execute the method under test
         PasswordChangeAttemptResponse passwordChangeAttemptResponse = passwordResetServiceBean.attemptPasswordReset(new BuiltinUser(), "newpass", "token");
@@ -98,10 +133,12 @@ public class PasswordResetServiceBeanTest {
     @Test
     void testAttemptPasswordReset_successfulUserSaveWithoutToken() {
         // prepare a BuiltinUser and an AuthenticatedUser
-        mockUserEntities();
+        prepareBuiltinUser();
+        prepareAuthenticatedUser();
 
         // mock the internal entity manager
-        mockEntityManager(true);
+        mockTypedQuery("abcd", new PasswordResetData());
+        doThrow(new IllegalArgumentException()).when(mockedEntityManager).remove(ArgumentMatchers.any(PasswordResetData.class));
 
         // execute the method under test
         PasswordChangeAttemptResponse passwordChangeAttemptResponse = passwordResetServiceBean.attemptPasswordReset(new BuiltinUser(), "newpass", null);
@@ -113,28 +150,35 @@ public class PasswordResetServiceBeanTest {
         assertTrue(passwordChangeAttemptResponse.isChanged());
     }
 
-    private void mockUserEntities() {
+    private BuiltinUser prepareBuiltinUser() {
         BuiltinUser builtinUser= new BuiltinUser();
+        builtinUser.setId(1L);
         builtinUser.setUserName("user1");
+        when(mockedBuiltinUserServiceBean.findByUserName(ArgumentMatchers.anyString())).thenReturn(builtinUser);
         when(mockedBuiltinUserServiceBean.save(ArgumentMatchers.any())).thenReturn(builtinUser);
+        return builtinUser;
+    }
 
+    private AuthenticatedUser prepareAuthenticatedUser() {
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.setUserIdentifier("x83js");
         authenticatedUser.setFirstName("user");
         authenticatedUser.setLastName("1");
         authenticatedUser.setEmail("user1@domain.tld");
-        when(mockedAuthenticationServiceBean.getAuthenticatedUser(ArgumentMatchers.any())).thenReturn(authenticatedUser);
+        when(mockedAuthenticationServiceBean.getAuthenticatedUser("user1")).thenReturn(authenticatedUser);
+        when(mockedAuthenticationServiceBean.getAuthenticatedUserByEmail("user1@domain.tld")).thenReturn(authenticatedUser);
+        return authenticatedUser;
     }
 
-    private void mockEntityManager(boolean throwOnRemoval) {
-        EntityManager mockedEntityManager = mock(EntityManager.class);
+    private void mockTypedQuery(String queryName, List queryResult) {
         TypedQuery mockedQuery = mock(TypedQuery.class);
-        when(mockedEntityManager.createNamedQuery(ArgumentMatchers.anyString(), ArgumentMatchers.any())).thenReturn(mockedQuery);
-        when(mockedQuery.getSingleResult()).thenReturn(new PasswordResetData());
+        when(mockedQuery.getResultList()).thenReturn(queryResult);
+        when(mockedEntityManager.createNamedQuery(ArgumentMatchers.eq(queryName), ArgumentMatchers.any())).thenReturn(mockedQuery);
+    }
 
-        if (throwOnRemoval) {
-            doThrow(new IllegalArgumentException()).when(mockedEntityManager).remove(ArgumentMatchers.any(PasswordResetData.class));
-        }
-
-        passwordResetServiceBean.em = mockedEntityManager;
+    private void mockTypedQuery(String queryName, Object queryResult) {
+        TypedQuery mockedQuery = mock(TypedQuery.class);
+        when(mockedQuery.getSingleResult()).thenReturn(queryResult);
+        when(mockedEntityManager.createNamedQuery(ArgumentMatchers.eq(queryName), ArgumentMatchers.any())).thenReturn(mockedQuery);
     }
 }
