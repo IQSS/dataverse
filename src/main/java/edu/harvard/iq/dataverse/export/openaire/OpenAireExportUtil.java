@@ -257,6 +257,7 @@ public class OpenAireExportUtil {
                                 }
 
                                 String givenName = null;
+                                creatorName = FirstNames.getInstance().cleanup(creatorName);
                                 // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
                                 if (creatorName.contains(",")) {
                                     // creatorName=<FamilyName>, <FirstName>
@@ -282,7 +283,10 @@ public class OpenAireExportUtil {
                                     nameType_check = true;
                                     writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
 
-                                    String familyName = creatorName.substring(givenName.length() + 1);
+                                    String familyName = "";
+                                    if (givenName.length() + 1 < creatorName.length()) {
+                                        familyName = creatorName.substring(givenName.length() + 1);
+                                    }
 
                                     writeFullElement(xmlw, null, "givenName", null, givenName, language);
                                     writeFullElement(xmlw, null, "familyName", null, familyName, language);
@@ -683,12 +687,8 @@ public class OpenAireExportUtil {
         boolean nameType_check = false;
         Map<String, String> contributor_map = new HashMap<String, String>();
 
-        /*if (StringUtils.isNotBlank(contributorAffiliation)) {
-            contributor_map.put("nameType", "Personal");
-            nameType_check = true;
-        }
-        writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);*/
         String givenName = null;
+        contributorName = FirstNames.getInstance().cleanup(contributorName);
         // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
         if (contributorName.contains(",")) {
             // contributorName=<FamilyName>, <FirstName>
@@ -714,7 +714,10 @@ public class OpenAireExportUtil {
             contributor_map.put("nameType", "Personal");
             writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);
 
-            String familyName = contributorName.substring(givenName.length() + 1);
+            String familyName = "";
+            if (givenName.length() + 1 < contributorName.length()) {
+                familyName = contributorName.substring(givenName.length() + 1);
+            }
 
             writeFullElement(xmlw, null, "givenName", null, givenName, language);
             writeFullElement(xmlw, null, "familyName", null, familyName, language);
@@ -1540,20 +1543,20 @@ public class OpenAireExportUtil {
         }
     }
 
-    /***
+    /**
      * Check if the string is a valid email.
-     * 
+     *
      * @param email
      * @return true/false
      */
     private static boolean isValidEmailAddress(String email) {
         boolean result = true;
         try {
-           InternetAddress emailAddr = new InternetAddress(email);
-           emailAddr.validate();
+            InternetAddress emailAddr = new InternetAddress(email);
+            emailAddr.validate();
         } catch (AddressException ex) {
-           result = false;
+            result = false;
         }
         return result;
-     }
+    }
 }

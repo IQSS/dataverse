@@ -69,6 +69,22 @@
                                         "value": "Privileged, Pete"
                                     }
                                 },
+                                {
+                                    "authorName": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "authorName",
+                                        "value": "Smith, John"
+                                    }
+                                },
+                                {
+                                    "authorName": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "authorName",
+                                        "value": "John Smith"
+                                    }
+                                },
   				{
                                     "authorAffiliation": {
                                         "multiple": false,
@@ -119,6 +135,29 @@
                                         "typeClass": "primitive",
                                         "typeName": "authorName",
                                         "value": "Apache Foundation"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "typeName": "datasetContact",
+                            "multiple": true,
+                            "typeClass": "compound",
+                            "value": [
+                                {
+                                  "datasetContactName": {
+                                    "typeName": "datasetContactName",
+                                    "multiple": false,
+                                    "typeClass": "primitive",
+                                    "value": "Smith, John"
+                                    }
+                                },
+                                {
+                                  "datasetContactName": {
+                                    "typeName": "datasetContactName",
+                                    "multiple": false,
+                                    "typeClass": "primitive",
+                                    "value": "John Smith"
                                     }
                                 }
                             ]

@@ -117,6 +117,16 @@ public class OpenAireExportUtilTest {
                 + "<affiliation>Top</affiliation>"
                 + "</creator>"
                 + "<creator>"
+                + "<creatorName nameType=\"Personal\">Smith, John</creatorName>"
+                + "<givenName>John</givenName>"
+                + "<familyName>Smith</familyName>"
+                + "</creator>"
+                + "<creator>"
+                + "<creatorName nameType=\"Personal\">John Smith</creatorName>"
+                + "<givenName>John</givenName>"
+                + "<familyName>Smith</familyName>"
+                + "</creator>"
+                + "<creator>"
                 + "<creatorName nameType=\"Personal\">Awesome, Audrey</creatorName>"
                 + "<givenName>Audrey</givenName>"
                 + "<familyName>Awesome</familyName>"
@@ -129,7 +139,7 @@ public class OpenAireExportUtilTest {
                 + "<affiliation>Bottom</affiliation>"
                 + "</creator>"
                 + "</creators>",
-                sw.toString());   
+                sw.toString());
     }
 
     /**
@@ -264,14 +274,22 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeContributorsElement(xmlw, dto, null);
 
         xmlw.close();
-        System.out.println(sw.toString());
         Assert.assertEquals("<contributors>"
-                + "<contributor contributorType=\"ContactPerson\"><contributorName>pete@malinator.com</contributorName>"
-                + "</contributor></contributors>",
+                + "<contributor contributorType=\"ContactPerson\">"
+                + "<contributorName nameType=\"Personal\">Smith, John</contributorName>"
+                + "<givenName>John</givenName><familyName>Smith</familyName>"
+                + "</contributor>"
+                + "<contributor contributorType=\"ContactPerson\">"
+                + "<contributorName nameType=\"Personal\">John Smith</contributorName>"
+                + "<givenName>John</givenName><familyName>Smith</familyName></contributor>"
+                + "<contributor contributorType=\"ContactPerson\">"
+                + "<contributorName>pete@malinator.com</contributorName>"
+                + "</contributor>"
+                + "</contributors>",
                 sw.toString());
     }
 
-        /**
+    /**
      * Test: 7, Contributor (with optional given name, family name, name
      * identifier and affiliation sub-properties)
      *
@@ -292,7 +310,6 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeContributorsElement(xmlw, dto, null);
 
         xmlw.close();
-        System.out.println(sw.toString());
         Assert.assertEquals("<contributors>"
                 + "<contributor contributorType=\"ContactPerson\">"
                 + "<contributorName nameType=\"Organizational\">LastContact1, FirstContact1</contributorName>"
@@ -331,7 +348,7 @@ public class OpenAireExportUtilTest {
                 + "</contributors>",
                 sw.toString());
     }
-    
+
     /**
      * Test: 8, Date (with type sub-property) (R)
      *
@@ -969,7 +986,7 @@ public class OpenAireExportUtilTest {
         Assert.assertEquals("<root />",
                 sw.toString());
     }
-    
+
     /**
      * Test 19.1, funderName Name of the funding provider.
      *
