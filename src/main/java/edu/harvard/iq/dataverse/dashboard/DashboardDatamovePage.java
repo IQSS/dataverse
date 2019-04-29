@@ -178,6 +178,7 @@ public class DashboardDatamovePage implements java.io.Serializable {
         }
         catch (CommandException e) {
             logger.log(Level.SEVERE,"Unable to move "+ dsPersistentId + " from " + srcAlias + " to " + dstAlias, e);
+            arguments.add(e.getLocalizedMessage());
             FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_ERROR,
                     "Failed to moved dataset",
