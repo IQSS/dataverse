@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.bannersandmessages.messages;
 
 import com.google.common.collect.Lists;
+import edu.harvard.iq.dataverse.bannersandmessages.UnsupportedLanguageCleaner;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseLocalizedMessageDto;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseMessagesMapper;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseTextMessageDto;
-import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortOrder;
 
@@ -15,7 +15,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 @Stateful
 public class LazyDataverseTextMessage extends LazyDataModel<DataverseTextMessageDto> {
@@ -27,7 +26,7 @@ public class LazyDataverseTextMessage extends LazyDataModel<DataverseTextMessage
     private DataverseMessagesMapper mapper;
 
     @Inject
-    private SettingsWrapper settingsWrapper;
+    private UnsupportedLanguageCleaner languageCleaner;
 
     private Long dataverseId;
     private List<DataverseTextMessageDto> dataverseTextMessageDtos;
@@ -41,7 +40,8 @@ public class LazyDataverseTextMessage extends LazyDataModel<DataverseTextMessage
                 mapper.mapToDtos(dataverseTextMessages.get()) :
                 Lists.newArrayList();
 
-        removeMessageLanguagesNotPresentInDataverse(dataverseTextMessageDtos);
+        dataverseTextMessageDtos.forEach(textMessageDto -> languageCleaner.removeMessageLanguagesNotPresentInDataverse(textMessageDto));
+
         sortMessageLanguages(dataverseTextMessageDtos);
 
         setPageSize(pageSize);
@@ -63,14 +63,6 @@ public class LazyDataverseTextMessage extends LazyDataModel<DataverseTextMessage
                 .filter(dtm -> dtm.getId().equals(id))
                 .findFirst()
                 .orElse(null);
-    }
-
-    private List<DataverseTextMessageDto> removeMessageLanguagesNotPresentInDataverse(List<DataverseTextMessageDto> dataList) {
-        Set<String> dataverseLocales = settingsWrapper.getConfiguredLocales().keySet();
-
-        dataList.forEach(dataverseTextMessageDto -> dataverseTextMessageDto.getDataverseLocalizedMessage()
-                .removeIf(localizedMessageDto -> !dataverseLocales.contains(localizedMessageDto.getLocale())));
-        return dataList;
     }
 
     private List<DataverseTextMessageDto> sortMessageLanguages(List<DataverseTextMessageDto> dataList) {

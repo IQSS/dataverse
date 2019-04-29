@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.bannersandmessages.messages;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
+import edu.harvard.iq.dataverse.bannersandmessages.UnsupportedLanguageCleaner;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseTextMessageDto;
 import edu.harvard.iq.dataverse.bannersandmessages.validation.EndDateMustBeAFutureDate;
 import edu.harvard.iq.dataverse.bannersandmessages.validation.EndDateMustNotBeEarlierThanStartingDate;
@@ -31,6 +32,9 @@ public class EditTextMessagePage implements Serializable {
     @EJB
     private DataverseServiceBean dataverseServiceBean;
 
+    @Inject
+    private UnsupportedLanguageCleaner languageCleaner;
+
     private Long dataverseId;
     private Dataverse dataverse;
     private Long textMessageId;
@@ -53,6 +57,7 @@ public class EditTextMessagePage implements Serializable {
 
         if (textMessageId != null) {
             dto = textMessageService.getTextMessage(textMessageId);
+            languageCleaner.removeMessageLanguagesNotPresentInDataverse(dto);
         } else {
             dto = textMessageService.newTextMessage(dataverseId);
         }
