@@ -1691,4 +1691,15 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         return null;
     }
+    
+    public boolean isFoldersMetadataPresentInVersion(DatasetVersion datasetVersion) {
+        Query query = em.createNativeQuery("SELECT id FROM fileMetadata WHERE datasetversion_id="+datasetVersion.getId()+" AND directoryLabel IS NOT null LIMIT 1");
+        
+        try {
+            int count = query.getResultList().size();
+            return count > 0;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
 }

@@ -50,8 +50,8 @@ Manual Reindexing
 
 If you have made manual changes to a dataset in the database or wish to reindex a dataset that solr didn't want to index properly, it is possible to manually reindex dataverses and datasets.
 
-To reindex dataverses:
-~~~~~~~~~~~~~~~~~~~~~~
+Reindexing Dataverses
+++++++++++++++++++++++
 
 Dataverses must be referenced by database object ID. If you have direct database access an SQL query such as
 
@@ -63,8 +63,8 @@ should work, or you may click the Dataverse's "Edit" menu and look for dataverse
 
 which should return: _{"status":"OK","data":{"message":"starting reindex of dataverse 135"}}_
 
-To reindex datasets:
-~~~~~~~~~~~~~~~~~~~~
+Reindexing Datasets
+++++++++++++++++++++
 
 Datasets may be referenced by persistent ID or by database object ID. To re-index by persistent ID:
 

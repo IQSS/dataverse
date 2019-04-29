@@ -32,6 +32,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class FilesIT {
 
@@ -47,7 +48,6 @@ public class FilesIT {
                 .statusCode(200);
 
     }
-    
 
     /**
      * Create user and get apiToken
@@ -565,8 +565,9 @@ public class FilesIT {
 
     }
 
+    //This test first tests forceReplace, and after that ensures that updates only work on the latest file
     @Test
-    public void testForceReplace() {
+    public void testForceReplaceAndUpdate() {
         msgt("testForceReplace");
 
         // Create user
@@ -630,6 +631,54 @@ public class FilesIT {
                 .body("data.files[0].description", equalTo("not an image"))
                 .body("data.files[0].categories[0]", equalTo("Data"))
                 .statusCode(OK.getStatusCode());
+        
+        Long newDfId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.id");
+        
+        //Adding an additional fileMetadata update tests after this to ensure updating replaced files works
+        msg("Update file metadata for old file, will error");
+        String updateDescription = "New description.";
+        String updateCategory = "New category";
+        //"junk" passed below is to test that it is discarded
+        String updateJsonString = "{\"description\":\""+updateDescription+"\",\"categories\":[\""+updateCategory+"\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
+        Response updateMetadataFailResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateJsonString, apiToken);
+        assertEquals(BAD_REQUEST.getStatusCode(), updateMetadataFailResponse.getStatusCode());  
+        
+        //Adding an additional fileMetadata update tests after this to ensure updating replaced files works
+        msg("Update file metadata for new file");
+        //"junk" passed below is to test that it is discarded
+        Response updateMetadataResponse = UtilIT.updateFileMetadata(String.valueOf(newDfId), updateJsonString, apiToken);
+        assertEquals(OK.getStatusCode(), updateMetadataResponse.getStatusCode());  
+        //String updateMetadataResponseString = updateMetadataResponse.body().asString();
+        Response getUpdatedMetadataResponse = UtilIT.getDataFileMetadataDraft(newDfId, apiToken);
+        String getUpMetadataResponseString = getUpdatedMetadataResponse.body().asString();
+        msg("Draft (should be updated):");
+        msg(getUpMetadataResponseString);
+        assertEquals(updateDescription, JsonPath.from(getUpMetadataResponseString).getString("description"));
+        assertEquals(updateCategory, JsonPath.from(getUpMetadataResponseString).getString("categories[0]"));
+        assertNull(JsonPath.from(getUpMetadataResponseString).getString("provFreeform")); //unupdated fields are not persisted
+        
+        //what if we delete? Should get bad request since file is not part of current version
+
+        publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResp.prettyPrint();
+        assertEquals(OK.getStatusCode(), publishDatasetResp.getStatusCode()); 
+        
+        Response deleteFile = UtilIT.deleteFile(newDfId.intValue(), apiToken);
+        deleteFile.prettyPrint();
+        assertEquals(NO_CONTENT.getStatusCode(), deleteFile.getStatusCode()); 
+        publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResp.prettyPrint();
+        assertEquals(OK.getStatusCode(), publishDatasetResp.getStatusCode()); 
+        msg("Update file metadata for deleted file, will error");
+        String delDescription = "Deleted description.";
+        String deletedCategory = "Deleted category";
+        //"junk" passed below is to test that it is discarded
+        String deletedJsonString = "{\"description\":\""+delDescription+"\",\"categories\":[\""+deletedCategory+"\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
+        Response updateMetadataFailResponseDeleted = UtilIT.updateFileMetadata(newDfId.toString(), deletedJsonString, apiToken);
+        updateMetadataFailResponseDeleted.prettyPrint();
+        assertEquals(BAD_REQUEST.getStatusCode(), updateMetadataFailResponseDeleted.getStatusCode()); 
+        
+
 
     }
     
@@ -1153,6 +1202,94 @@ public class FilesIT {
         assertEquals(200, uningestFileResponse.getStatusCode());       
     }
     
+    @Test
+    public void testFileMetaDataGetUpdateRoundTrip() throws InterruptedException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        assertEquals(OK.getStatusCode(), createUser.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);   
+
+        assertEquals(OK.getStatusCode(), makeSuperUser.getStatusCode());
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        
+        // Add initial file
+        String pathToFile = "scripts/search/data/dv-birds1.tsv";
+        String description = "A description.";
+        String category = "A category";
+        String provFreeForm = "provenance is great";
+        String label = "acoollabel.tab";
+        String jsonString = "{\"description\":\""+description+"\",\"label\":\""+label+"\",\"provFreeForm\":\""+provFreeForm+"\",\"categories\":[{\"name\":\""+category+"\"}],\"forceReplace\":false}";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, jsonString, apiToken);
+        Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        
+        sleep(2000); //ensure tsv is consumed
+        
+        msg("Publish dataverse and dataset");
+        Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataversetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        //msg(publishDatasetResp.body().asString());
+        publishDatasetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        //Confirm metadata
+        Response getMetadataResponse = UtilIT.getDataFileMetadata(origFileId, apiToken);
+        String metadataResponseString = getMetadataResponse.body().asString();
+        msg(metadataResponseString);
+        assertEquals(OK.getStatusCode(), getMetadataResponse.getStatusCode());  
+        assertEquals(description, JsonPath.from(metadataResponseString).getString("description"));
+        assertEquals(label, JsonPath.from(metadataResponseString).getString("label"));
+        assertEquals(provFreeForm, JsonPath.from(metadataResponseString).getString("provFreeForm"));
+        assertEquals(category, JsonPath.from(metadataResponseString).getString("categories[0]"));
+        assertNull(JsonPath.from(metadataResponseString).getString("dataFileTags"));
+        
+        //Update fileMetadata and get to confirm again
+        msg("Update file metadata");
+        String updateDescription = "New description.";
+        String updateCategory = "New category";
+        String updateDataFileTag = "Survey";
+        String updateLabel = "newName.tab";
+        //"junk" passed below is to test that it is discarded
+        String updateJsonString = "{\"description\":\""+updateDescription+"\",\"label\":\""+updateLabel+"\",\"categories\":[\""+updateCategory+"\"],\"dataFileTags\":[\""+updateDataFileTag+"\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
+        Response updateMetadataResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateJsonString, apiToken);
+        assertEquals(OK.getStatusCode(), updateMetadataResponse.getStatusCode());  
+        //String updateMetadataResponseString = updateMetadataResponse.body().asString();
+        Response getUpdatedMetadataResponse = UtilIT.getDataFileMetadataDraft(origFileId, apiToken);
+        String getUpMetadataResponseString = getUpdatedMetadataResponse.body().asString();
+        msg("Draft (should be updated):");
+        msg(getUpMetadataResponseString);
+        assertEquals(updateDescription, JsonPath.from(getUpMetadataResponseString).getString("description"));
+        assertEquals(updateLabel, JsonPath.from(getUpMetadataResponseString).getString("label"));
+        assertEquals(updateCategory, JsonPath.from(getUpMetadataResponseString).getString("categories[0]"));
+        assertNull(JsonPath.from(getUpMetadataResponseString).getString("provFreeform")); //unupdated fields are not persisted
+        assertEquals(updateDataFileTag, JsonPath.from(getUpMetadataResponseString).getString("dataFileTags[0]"));
+        
+        //We haven't published so the non-draft call should still give the pre-edit metadata
+        Response getOldMetadataResponse = UtilIT.getDataFileMetadata(origFileId, apiToken);
+        String getOldMetadataResponseString = getOldMetadataResponse.body().asString();
+        msg("Old Published (shouldn't be updated):");
+        msg(getOldMetadataResponseString);
+        assertEquals(label, JsonPath.from(getOldMetadataResponseString).getString("label"));
+        assertEquals(description, JsonPath.from(getOldMetadataResponseString).getString("description"));
+        assertEquals(category, JsonPath.from(getOldMetadataResponseString).getString("categories[0]"));
+        assertEquals(updateDataFileTag, JsonPath.from(getOldMetadataResponseString).getString("dataFileTags[0]")); //tags are not versioned, so the old version will have the tags
+        
+        //extra test for invalid data for tags returning a pretty error
+        String updateInvalidJsonString = "{\"dataFileTags\":false}";
+        Response updateInvalidMetadataResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateInvalidJsonString, apiToken);
+        assertEquals(BAD_REQUEST.getStatusCode(), updateInvalidMetadataResponse.getStatusCode());  
+
+    }
     
     private void msg(String m){
         System.out.println(m);
@@ -1163,6 +1300,5 @@ public class FilesIT {
     private void msgt(String m){
         dashes(); msg(m); dashes();
     }
-    
     
 }

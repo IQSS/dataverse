@@ -88,6 +88,8 @@ import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import java.io.IOException;
+import java.io.OutputStream;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,6 +98,8 @@ import java.util.ResourceBundle;
 import javax.inject.Inject;
 import javax.persistence.Query;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.StreamingOutput;
 
 /**
  * Where the secure, setup API calls live.
@@ -852,35 +856,136 @@ public class Admin extends AbstractApiBean {
 		}
 	}
 
-	@Path("validate")
-	@GET
-	public Response validate() {
-		String msg = "UNKNOWN";
-		try {
-			beanValidationSvc.validateDatasets();
-			msg = "valid";
-		} catch (Exception ex) {
-			Throwable cause = ex;
-			while (cause != null) {
-				if (cause instanceof ConstraintViolationException) {
-					ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-					for (ConstraintViolation<?> constraintViolation : constraintViolationException
-							.getConstraintViolations()) {
-						String databaseRow = constraintViolation.getLeafBean().toString();
-						String field = constraintViolation.getPropertyPath().toString();
-						String invalidValue = constraintViolation.getInvalidValue().toString();
-						JsonObjectBuilder violation = Json.createObjectBuilder();
-						violation.add("entityClassDatabaseTableRowId", databaseRow);
-						violation.add("field", field);
-						violation.add("invalidValue", invalidValue);
-						return ok(violation);
-					}
-				}
-				cause = cause.getCause();
-			}
-		}
-		return ok(msg);
-	}
+    @GET
+    @Path("validate/datasets")
+    @Produces({"application/json"})
+    public Response validateAllDatasets() {
+        
+        // Streaming output: the API will start producing 
+        // the output right away, as it goes through the list 
+        // of the datasets; there's potentially a lot of content 
+        // to validate, so we don't want to wait for the process 
+        // to finish. Or to wait to encounter the first invalid 
+        // object - so we'll be reporting both the success and failure
+        // outcomes for all the validated datasets, to give the user
+        // an indication of the progress. 
+        // This is the first streaming API that produces json that 
+        // we have; there may be better ways to stream json - but 
+        // what I have put together below works. -- L.A. 
+        StreamingOutput stream = new StreamingOutput() {
+
+            @Override
+            public void write(OutputStream os) throws IOException,
+                    WebApplicationException {
+                os.write("{\"datasets\": [\n".getBytes());
+                
+                boolean wroteObject = false;
+                for (Long datasetId : datasetService.findAllLocalDatasetIds()) {
+                    // Potentially, there's a godzillion datasets in this Dataverse. 
+                    // This is why we go through the list of ids here, and instantiate 
+                    // only one dataset at a time. 
+                    boolean success = false;
+                    boolean constraintViolationDetected = false;
+                     
+                    JsonObjectBuilder output = Json.createObjectBuilder();
+                    output.add("datasetId", datasetId);
+
+                    
+                    try {
+                        datasetService.instantiateDatasetInNewTransaction(datasetId);
+                        success = true;
+                    } catch (Exception ex) {
+                        Throwable cause = ex;
+                        while (cause != null) {
+                            if (cause instanceof ConstraintViolationException) {
+                                ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
+                                for (ConstraintViolation<?> constraintViolation : constraintViolationException
+                                        .getConstraintViolations()) {
+                                    String databaseRow = constraintViolation.getLeafBean().toString();
+                                    String field = constraintViolation.getPropertyPath().toString();
+                                    String invalidValue = constraintViolation.getInvalidValue().toString();
+                                    
+                                    output.add("status", "invalid");
+                                    output.add("entityClassDatabaseTableRowId", databaseRow);
+                                    output.add("field", field);
+                                    output.add("invalidValue", invalidValue);
+                                    
+                                    constraintViolationDetected = true; 
+                                    
+                                    break; 
+                                    
+                                }
+                            }
+                            cause = cause.getCause();
+                        }
+                    }
+                    
+                    
+                    if (success) {
+                        output.add("status", "valid");
+                    } else if (!constraintViolationDetected) {
+                        output.add("status", "unknown");
+                    }
+                    
+                    // write it out:
+                    
+                    if (wroteObject) {
+                        os.write(",\n".getBytes());
+                    }
+
+                    os.write(output.build().toString().getBytes("UTF8"));
+                    
+                    if (!wroteObject) {
+                        wroteObject = true;
+                    }
+                }
+                
+                
+                os.write("\n]\n}\n".getBytes());
+            }
+            
+        };
+        return Response.ok(stream).build();
+    }
+        
+    @Path("validate/dataset/{id}")
+    @GET
+    public Response validateDataset(@PathParam("id") String id) {
+        Dataset dataset;
+        try {
+            dataset = findDatasetOrDie(id);
+        } catch (Exception ex) {
+            return error(Response.Status.NOT_FOUND, "No Such Dataset");
+        }
+
+        Long dbId = dataset.getId();
+
+        String msg = "unknown";
+        try {
+            datasetService.instantiateDatasetInNewTransaction(dbId);
+            msg = "valid";
+        } catch (Exception ex) {
+            Throwable cause = ex;
+            while (cause != null) {
+                if (cause instanceof ConstraintViolationException) {
+                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
+                    for (ConstraintViolation<?> constraintViolation : constraintViolationException
+                            .getConstraintViolations()) {
+                        String databaseRow = constraintViolation.getLeafBean().toString();
+                        String field = constraintViolation.getPropertyPath().toString();
+                        String invalidValue = constraintViolation.getInvalidValue().toString();
+                        JsonObjectBuilder violation = Json.createObjectBuilder();
+                        violation.add("entityClassDatabaseTableRowId", databaseRow);
+                        violation.add("field", field);
+                        violation.add("invalidValue", invalidValue);
+                        return ok(violation);
+                    }
+                }
+                cause = cause.getCause();
+            }
+        }
+        return ok(msg);
+    }
 
 	@Path("assignments/assignees/{raIdtf: .*}")
 	@GET

@@ -31,7 +31,7 @@ public class ExternalToolHandler {
     private final Dataset dataset;
     private final DatasetVersion version;
 
-    private final ApiToken apiToken;
+    private ApiToken apiToken;
 
     /**
      * @param externalTool The database entity.
@@ -125,6 +125,10 @@ public class ExternalToolHandler {
 
     public ExternalTool getExternalTool() {
         return externalTool;
+    }
+
+    public void setApiToken(ApiToken apiToken) {
+        this.apiToken = apiToken;
     }
 
 }

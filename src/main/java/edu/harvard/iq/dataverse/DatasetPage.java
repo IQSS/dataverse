@@ -126,6 +126,8 @@ import org.primefaces.event.data.PageEvent;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import java.util.TimeZone;
 import javax.servlet.http.HttpServletRequest;
+import org.primefaces.model.DefaultTreeNode;
+import org.primefaces.model.TreeNode;
 
 /**
  *
@@ -1655,7 +1657,153 @@ public class DatasetPage implements java.io.Serializable {
         configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
         exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
+        
+        
+        
         return null;
+    }
+    
+    private Boolean fileTreeViewRequired = null; 
+    
+    public boolean isFileTreeViewRequired() {
+        if (fileTreeViewRequired == null) {
+            fileTreeViewRequired = workingVersion.getFileMetadatas().size() > 1 
+                    && datafileService.isFoldersMetadataPresentInVersion(workingVersion);
+        }
+        return fileTreeViewRequired; 
+    }
+    
+    public enum FileDisplayStyle {
+
+        TABLE, TREE
+    };
+    
+    private FileDisplayStyle fileDisplayMode = FileDisplayStyle.TABLE; 
+    
+    public String getFileDisplayMode() {
+        return fileDisplayMode.equals(FileDisplayStyle.TABLE) ? "Table" : "Tree";
+    }
+    
+    public void setFileDisplayMode(String fileDisplayMode) {
+        if ("Table".equals(fileDisplayMode)) {
+            this.fileDisplayMode = FileDisplayStyle.TABLE;
+        } else {
+            this.fileDisplayMode = FileDisplayStyle.TREE;
+        } 
+    }
+    
+    public boolean isFileDisplayTable() {
+        return fileDisplayMode == FileDisplayStyle.TABLE;
+    }
+    
+    public void toggleFileDisplayMode() {
+        if (fileDisplayMode == FileDisplayStyle.TABLE) {
+            fileDisplayMode = FileDisplayStyle.TREE;
+        } else {
+            fileDisplayMode = FileDisplayStyle.TABLE;
+        }
+    }
+    public boolean isFileDisplayTree() {
+        return fileDisplayMode == FileDisplayStyle.TREE;
+    }
+    
+    private TreeNode filesTreeRoot = null; 
+    
+    public TreeNode getFilesTreeRoot() {
+        if (filesTreeRoot == null) {
+            initFilesTree();
+        }
+        return filesTreeRoot;
+    }
+    
+    private void initFilesTree() {
+        filesTreeRoot = createFolderTreeNode("root", null);
+        TreeNode currentNode = filesTreeRoot;
+        // this is a temporary map, that we keep while we are building 
+        // the tree - in order to have direct access to the ancestor tree
+        // nodes that have already been created:
+        Map<String, TreeNode> folderMap = new HashMap<>();
+        boolean expandFolders = true; 
+        
+        for ( FileMetadata fileMetadata :workingVersion.getFileMetadatasSortedByLabelAndFolder()) {
+            String folder = fileMetadata.getDirectoryLabel();
+            
+            logger.fine("current folder: "+folder+"; current label: "+fileMetadata.getLabel());
+            
+            if (StringUtil.isEmpty(folder)) {
+                filesTreeRoot.getChildren().add(createFileTreeNode(fileMetadata, filesTreeRoot));
+            } else {
+                if (folderMap.containsKey(folder)) {
+                    // We have already created this node; and since all the FileMetadatas 
+                    // are sorted by folder-then-label, it is safe to assume this is 
+                    // still the "current node":
+                    currentNode.getChildren().add(createFileTreeNode(fileMetadata, currentNode));
+                } else {
+                    // no node for this folder yet - need to create!
+
+                    String[] subfolders = folder.split("/");
+                    int level = 0;
+                    currentNode = filesTreeRoot;
+
+                    while (level < subfolders.length) {
+                        String folderPath = subfolders[0];
+                        for (int i = 1; i < level + 1; i++) {
+                            folderPath = folderPath.concat("/").concat(subfolders[i]);
+                        }
+
+                        if (folderMap.containsKey(folderPath)) {
+                            // jump directly to that ancestor folder node:
+                            currentNode = folderMap.get(folderPath);
+                        } else {
+                            // create a new folder node:
+                            currentNode = createFolderTreeNode(subfolders[level], currentNode);
+                            folderMap.put(folderPath, currentNode);
+                            // all the folders, except for the top-level root node 
+                            // are collapsed by default:
+                            currentNode.setExpanded(expandFolders);
+
+                        }
+                        level++;
+                    }
+                    currentNode.getChildren().add(createFileTreeNode(fileMetadata, currentNode));
+                    // As soon as we reach the first folder containing files, we want
+                    // to have all the other folders collapsed by default:
+                    if (expandFolders) {
+                        expandFolders = false; 
+                    }
+                }
+            }
+        }
+        
+        folderMap = null; 
+
+    }
+    
+    private DefaultTreeNode createFolderTreeNode(String name, TreeNode parent) {
+        // For a tree node representing a folder, we use its name, as a String, 
+        // as the node data payload. (meaning, in the xhtml the folder name can
+        // be shown as simply "#{node}". 
+        // If we ever want to have more information shown for folders in the 
+        // tree view (for example, we could show the number of files and sub-folders
+        // in each folder next to the name), we will have to define a custom class 
+        // and use it instead of the string in the DefaultTreeNode constructor
+        // below:
+        DefaultTreeNode folderNode = new DefaultTreeNode(name, parent);
+        return folderNode; 
+    }
+    
+    private DefaultTreeNode createFileTreeNode(FileMetadata fileMetadata, TreeNode parent) {
+        // For a tree node representing a DataFile, we pack the entire FileMetadata 
+        // object into the node, as its "data" payload. 
+        // Note that we are using a custom node type ("customFileNode"), defined 
+        // in the page xhtml.
+        // If we ever want to have customized nodes that display different types 
+        // of information for different types of files (tab. files would be a 
+        // natural case), more custom nodes could be defined.
+        
+        DefaultTreeNode fileNode = new DefaultTreeNode("customFileNode", fileMetadata, parent);         
+        
+        return fileNode; 
     }
     
     public boolean isHasTabular() {

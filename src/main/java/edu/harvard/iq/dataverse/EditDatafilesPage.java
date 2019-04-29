@@ -73,9 +73,12 @@ import java.util.HashSet;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.FacesEvent;
 import javax.faces.event.ValueChangeEvent;
+import javax.faces.validator.ValidatorException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolation;
@@ -150,8 +153,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     private Long ownerId;
     private Long versionId;
-    private List<DataFile> newFiles = new ArrayList<>();;
-    private List<DataFile> uploadedFiles = new ArrayList<>();; 
+    private List<DataFile> newFiles = new ArrayList<>();
+    private List<DataFile> uploadedFiles = new ArrayList<>();
     private DatasetVersion workingVersion;
     private DatasetVersion clone;
     private String dropBoxSelection = "";
@@ -472,7 +475,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     
     public String init() {
-        fileMetadatas = new ArrayList<>();
         
         newFiles = new ArrayList<>();
         uploadedFiles = new ArrayList<>(); 
@@ -509,9 +511,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (!permissionService.on(dataset).has(Permission.EditDataset)) {
             return permissionsWrapper.notAuthorized();
         }
-
-        // TODO: Think about why this call to populateFileMetadatas was added. It seems like it isn't needed after all.
-//        populateFileMetadatas();
 
         // -------------------------------------------
         //  Is this a file replacement operation?
@@ -665,6 +664,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.versionString = versionString;
     }
     
+    /*
     public void toggleSelectedFiles(){
         this.selectedFiles = new ArrayList<>();
         if(this.selectAllFiles){
@@ -679,7 +679,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
     }
-    
+    */
+    /*
     public String getSelectedFilesIdsString() {        
         String downloadIdString = "";
         for (FileMetadata fmd : this.selectedFiles){
@@ -691,7 +692,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         return downloadIdString;
       
     }
-
+*/
     /*
     public void updateFileCounts(){
         
@@ -3030,43 +3031,15 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     private void populateFileMetadatas() {
-
-        if (selectedFileIdsList != null) {
-
-            Long datasetVersionId = workingVersion.getId();
-
-            if (datasetVersionId != null) {
-                // The version has a database id - this is an existing version, 
-                // that had been saved previously. So we can look up the file metadatas
-                // by the file and version ids:
-                for (Long fileId : selectedFileIdsList) {
-                    logger.fine("attempting to retrieve file metadata for version id " + datasetVersionId + " and file id " + fileId);
-                    FileMetadata fileMetadata =  datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(datasetVersionId, fileId);
-                    if (fileMetadata != null) {
-                        logger.fine("Success!");
-                        fileMetadatas.add(fileMetadata);
-                    } else {
-                        logger.fine("Failed to find file metadata.");
-                    }
-                }
-            } else {
-                logger.fine("Brand new edit version - no database id.");
-                for (FileMetadata fileMetadata : workingVersion.getFileMetadatas()) {
-                    for (Long fileId : selectedFileIdsList) {
-                        if (fileId.equals(fileMetadata.getDataFile().getId())) {
-                            logger.fine("Success! - found the file id "+fileId+" in the brand new edit version.");
-                            fileMetadatas.add(fileMetadata);
-                            selectedFileIdsList.remove(fileId);
-                            break;
-                        }
+        fileMetadatas = new ArrayList<>();
+        if (selectedFileIdsList == null || selectedFileIdsList.isEmpty()) {
+            return;
                     }
                     
-                    // If we've already gone through all the file ids on the list - 
-                    // we can stop going through the filemetadatas:
-                    
-                    if (selectedFileIdsList.size() < 1) {
-                        break;
-                    }
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+            for (Long id : selectedFileIdsList) {
+                if (id.intValue() == fmd.getDataFile().getId().intValue()) {
+                    fileMetadatas.add(fmd);
                 }
             }
         }
