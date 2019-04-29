@@ -525,6 +525,10 @@ public class MailServiceBean implements java.io.Serializable {
                 logger.fine("checksumImportMsg: " + checksumImportMsg);
                 return messageText += checksumImportMsg;
 
+            case APIGENERATED:
+                String message = BundleUtil.getStringFromBundle("notification.email.apiTokenGenerated", Arrays.asList(
+                        userNotification.getUser().getFirstName(), userNotification.getUser().getFirstName() ));
+                return message;
         }
         
         return "";
@@ -565,6 +569,9 @@ public class MailServiceBean implements java.io.Serializable {
                 return versionService.find(userNotification.getObjectId());
             case CHECKSUMIMPORT:
                 return versionService.find(userNotification.getObjectId());
+            case APIGENERATED:
+                return userNotification.getUser();
+
         }
         return null;
     }

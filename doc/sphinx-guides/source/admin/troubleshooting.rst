@@ -58,3 +58,16 @@ followed by an Exception stack trace with these lines in it:
 Make sure you install the correct version of the driver. For example, if you are running the version 9.3 of PostgreSQL, make sure you have the driver postgresql-9.3-1104.jdbc4.jar in your :fixedwidthplain:`<GLASSFISH FOLDER>/glassfish/lib` directory. Go `here <https://jdbc.postgresql.org/download.html>`_
 to download the correct version of the driver. If you have an older driver in glassfish/lib, make sure to remove it, replace it with the new version and restart Glassfish. (You may need to remove the entire contents of :fixedwidthplain:`<GLASSFISH FOLDER>/glassfish/domains/domain1/generated` before you start Glassfish). 
 
+
+Constraint Violations Issues
+----------------------------
+
+In real life production use, it may be possible to end up in a situation where some values associated with the datasets in your database are no longer valid under the constraints enforced by the latest version of Dataverse. This is not very likely to happen, but if it does, the symptomps will be as follows: Some datasets can no longer be edited, long exception stack traces logged in the Glassfish server log, caused by::
+
+   javax.validation.ConstraintViolationException: 
+   Bean Validation constraint(s) violated while executing Automatic Bean Validation on callback event:'preUpdate'. 
+   Please refer to embedded ConstraintViolations for details.
+
+(contrary to what the message suggests, there are no specific "details" anywhere in the stack trace that would explain what values violate which constraints)  
+
+To identifiy the specific invalid values in the affected datasets, or to check all the datasets in the Dataverse for constraint violations, see :ref:`Dataset Validation <dataset-validation-api>` in the :doc:`/api/native-api` section of the User Guide.
