@@ -99,7 +99,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             }
             dataFile.setModificationTime(getTimestamp());
         }
-                
+        
         // Remove / delete any files that were removed
         
         // If any of the files that we are deleting has a UNF, we will need to 
@@ -159,12 +159,17 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         ctxt.em().flush();
 
         updateDatasetUser(ctxt);
-        ctxt.index().indexDataset(savedDataset, true);
+       // ctxt.index().indexDataset(savedDataset, true);
+       /*
+       SEK 4/29/2019 changing the index to async solves our slow update
+       https://github.com/IQSS/dataverse/issues/5598
+       */
+       ctxt.index().asyncIndexDataset(savedDataset, true);
         if (clone != null) {
             DatasetVersionDifference dvd = new DatasetVersionDifference(editVersion, clone);
             AuthenticatedUser au = (AuthenticatedUser) getUser();
             ctxt.datasetVersion().writeEditVersionLog(dvd, au);
-        } 
+        }
         return savedDataset; 
     }
 
