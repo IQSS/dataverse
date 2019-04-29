@@ -220,14 +220,14 @@ public class DatasetVersion implements Serializable {
             }
             setFileMetadatas(newFMDs);
         }
-        Collections.sort(fileMetadatas, FileMetadata.compareByCategoryAndLabel);
+        Collections.sort(fileMetadatas, FileMetadata.compareByCategoryAndLabelAndFolder);
         return fileMetadatas;
     }
     
     public List<FileMetadata> getFileMetadatasSortedByLabelAndFolder() {
         ArrayList<FileMetadata> fileMetadatasCopy = new ArrayList<>();
         fileMetadatasCopy.addAll(fileMetadatas);
-        Collections.sort(fileMetadatasCopy, FileMetadata.compareByLabelAndFolder);
+        Collections.sort(fileMetadatasCopy, FileMetadata.compareByCategoryAndLabelAndFolder);
         return fileMetadatasCopy;
     }
 

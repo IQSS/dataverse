@@ -568,6 +568,26 @@ public class FileMetadata implements Serializable {
     public static final Comparator<FileMetadata> compareByCategoryAndLabelAndFolder = new Comparator<FileMetadata>() {
         @Override
         public int compare(FileMetadata o1, FileMetadata o2) {
+            //Compare folders first
+            String folder1 = o1.getDirectoryLabel() == null ? "" : o1.getDirectoryLabel().toUpperCase();
+            String folder2 = o2.getDirectoryLabel() == null ? "" : o2.getDirectoryLabel().toUpperCase();
+            
+            
+            // We want to the files w/ no folders appear *after* all the folders
+            // on the sorted list:
+            if ("".equals(folder1) && !"".equals(folder2)) {
+                return 1;
+            }
+            
+            if ("".equals(folder2) && !"".equals(folder1)) {
+                return -1;
+            }
+            
+            int comp = folder1.compareTo(folder2); 
+            if (comp != 0) {
+                return comp;
+            }
+            //Then by category if set
             if (categoryMap != null) {
                 long rank1 = Long.MAX_VALUE;
                 for (DataFileCategory c : o1.getCategories()) {
@@ -591,25 +611,8 @@ public class FileMetadata implements Serializable {
                     return rank1 < rank2 ? -1 : 1;
                 }
             }
-            //No categories or category score is equal, so compare labels and folders
-            String folder1 = o1.getDirectoryLabel() == null ? "" : o1.getDirectoryLabel().toUpperCase();
-            String folder2 = o2.getDirectoryLabel() == null ? "" : o2.getDirectoryLabel().toUpperCase();
-            
-            
-            // We want to the files w/ no folders appear *after* all the folders
-            // on the sorted list:
-            if ("".equals(folder1) && !"".equals(folder2)) {
-                return 1;
-            }
-            
-            if ("".equals(folder2) && !"".equals(folder1)) {
-                return -1;
-            }
-            
-            int comp = folder1.compareTo(folder2); 
-            if (comp != 0) {
-                return comp;
-            }
+            //Folders are equal, no categories or category score is equal, so compare labels
+
             return o1.getLabel().toUpperCase().compareTo(o2.getLabel().toUpperCase());
 
         }
