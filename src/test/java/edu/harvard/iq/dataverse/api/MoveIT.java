@@ -1,14 +1,20 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import java.io.StringReader;
 import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonObject;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -166,6 +172,120 @@ public class MoveIT {
         thiefAttemptToStealDataset.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode())
                 .body("message", equalTo("User @" + thiefUsername + " is not permitted to perform requested action."));
+
+    }
+
+    @Test
+    public void testMoveLinkedDataset() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createSuperUser = UtilIT.createRandomUser();
+        createSuperUser.prettyPrint();
+        createSuperUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperUser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperUser);
+        Response makeSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        makeSuperuser.prettyPrint();
+        makeSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response createDataverse1 = UtilIT.createRandomDataverse(apiToken);
+        createDataverse1.prettyPrint();
+        createDataverse1.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverse1Alias = UtilIT.getAliasFromResponse(createDataverse1);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+
+        Response createDataverse2 = UtilIT.createRandomDataverse(apiToken);
+        createDataverse2.prettyPrint();
+        createDataverse2.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverse2Alias = UtilIT.getAliasFromResponse(createDataverse2);
+        Integer dataverse2Id = UtilIT.getDatasetIdFromResponse(createDataverse2);
+
+        UtilIT.publishDataverseViaNativeApi(dataverse1Alias, apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        UtilIT.publishDataverseViaNativeApi(dataverse2Alias, apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Link dataset to second dataverse.
+        Response linkDataset = UtilIT.linkDataset(datasetPid, dataverse2Alias, superuserApiToken);
+        linkDataset.prettyPrint();
+        linkDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response getLinksBefore = UtilIT.getDatasetLinks(datasetPid, superuserApiToken);
+        getLinksBefore.prettyPrint();
+        getLinksBefore.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response listDatasetsBeforeSource = UtilIT.listDatasetsViaSword(dataverse1Alias, apiToken);
+        listDatasetsBeforeSource.prettyPrint();
+        listDatasetsBeforeSource.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("feed.entry[0].id", CoreMatchers.endsWith(datasetPid));
+
+        Response listDatasetsBeforeDestination = UtilIT.listDatasetsViaSword(dataverse2Alias, apiToken);
+        listDatasetsBeforeDestination.prettyPrint();
+        listDatasetsBeforeDestination.then().assertThat()
+                // TODO: Add assertion that no dataset exists.
+                .statusCode(OK.getStatusCode());
+
+        Response attemptToMoveLinkedDataset = UtilIT.moveDataset(datasetId.toString(), dataverse2Alias, superuserApiToken);
+        attemptToMoveLinkedDataset.prettyPrint();
+        attemptToMoveLinkedDataset.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", equalTo("Dataset is linked to target dataverse or one of its parents. Please use the parameter ?forceMove=true to complete the move. This will remove anything from the dataset that is not compatible with the target dataverse."));
+
+        JsonObject linksBeforeData = Json.createReader(new StringReader(getLinksBefore.asString())).readObject();
+        Assert.assertEquals("OK", linksBeforeData.getString("status"));
+        Assert.assertEquals(dataverse2Alias + " (id " + dataverse2Id + ")", linksBeforeData.getJsonObject("data").getJsonArray("dataverses that link to dataset id " + datasetId).getString(0));
+
+        boolean forceMove = true;
+        Response forceMoveLinkedDataset = UtilIT.moveDataset(datasetId.toString(), dataverse2Alias, forceMove, superuserApiToken);
+        forceMoveLinkedDataset.prettyPrint();
+        forceMoveLinkedDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Dataset moved successfully"));
+
+        Response listDatasetsAfterSource = UtilIT.listDatasetsViaSword(dataverse1Alias, apiToken);
+        listDatasetsAfterSource.prettyPrint();
+        listDatasetsAfterSource.then().assertThat()
+                // TODO: Add assertion that no dataset exists.
+                .statusCode(OK.getStatusCode());
+
+        Response listDatasetsAfterDestination = UtilIT.listDatasetsViaSword(dataverse2Alias, apiToken);
+        listDatasetsAfterDestination.prettyPrint();
+        listDatasetsAfterDestination.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("feed.entry[0].id", CoreMatchers.endsWith(datasetPid));
+
+        Response getLinksAfter = UtilIT.getDatasetLinks(datasetPid, superuserApiToken);
+        getLinksAfter.prettyPrint();
+        getLinksAfter.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        JsonObject linksAfterData = Json.createReader(new StringReader(getLinksAfter.asString())).readObject();
+        Assert.assertEquals("OK", linksAfterData.getString("status"));
+        Assert.assertEquals(0, linksAfterData.getJsonObject("data").getJsonArray("dataverses that link to dataset id " + datasetId).size());
 
     }
 
