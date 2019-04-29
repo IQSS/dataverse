@@ -816,7 +816,6 @@ public class GuestbookResponseServiceBean {
         return true;
     }
     
-<<<<<<< HEAD
     public GuestbookResponse modifyDatafile(GuestbookResponse in, FileMetadata fm) {
         if (in != null && fm.getDataFile() != null) {
             in.setDataFile(fm.getDataFile());
@@ -825,16 +824,6 @@ public class GuestbookResponseServiceBean {
             in.setWriteResponse(false);
         } 
         return in;
-=======
-    public GuestbookResponse modifyDatafile(GuestbookResponse in, FileMetadata fm) {	
-        if (in != null && fm.getDataFile() != null) {	
-            in.setDataFile(fm.getDataFile());	
-        }	
-        if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft() ) {	
-            in.setWriteResponse(false);	
-        } 	
-        return in;	
->>>>>>> refs/remotes/IQSS/develop
     }
     
     public GuestbookResponse modifyDatafileAndFormat(GuestbookResponse in, FileMetadata fm, String format) {
