@@ -49,7 +49,7 @@ public class ChangeUserIdentifierCommand extends AbstractVoidCommand {
     public void executeImpl(CommandContext ctxt) throws CommandException {  
         
         AuthenticatedUser authenticatedUserTestNewIdentifier = ctxt.authentication().getAuthenticatedUser(newIdentifier);
-        if (authenticatedUserTestNewIdentifier != null) {
+        if (authenticatedUserTestNewIdentifier != null && !authenticatedUserTestNewIdentifier.equals(au)) {
             String logMsg = " User " + newIdentifier + " already exists. Cannot use this as new identifier";
             throw new IllegalCommandException("Validation of submitted data failed. Details: " + logMsg, this);
         }
