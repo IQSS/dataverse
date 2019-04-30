@@ -200,7 +200,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
 
     public String sendMessage() {
 
-        String institution = ResourceBundle.getBundle("Bundle").getString("institution.acronym");
+        String institution = BundleUtil.getStringFromBundle("institution.acronym");
         String installationBrandName = BrandingUtil.getInstallationBrandName(institution);
         String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress, institution);
         List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(recipient, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, systemConfig.getDataverseSiteUrl(), installationBrandName, supportTeamName);

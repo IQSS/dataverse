@@ -214,7 +214,7 @@ public class SystemConfig {
                 // Jenkins) 
                         
                 try {
-                    buildNumberString = ResourceBundle.getBundle("BuildNumber").getString("build.number");
+                    buildNumberString = BundleUtil.getStringFromBundle("build.number");
                 } catch (MissingResourceException ex) {
                     buildNumberString = null; 
                 }

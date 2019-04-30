@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
 
@@ -60,7 +61,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
             authorString = ":unav";
         }
         //QDR - use institution name
-        String producerString = ResourceBundle.getBundle("Bundle").getString("institution.name");
+        String producerString = BundleUtil.getStringFromBundle("institution.name");
 
         if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {
             producerString = ":unav";

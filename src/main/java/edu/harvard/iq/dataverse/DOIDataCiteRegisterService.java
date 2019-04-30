@@ -6,6 +6,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.AbstractGlobalIdServiceBean.GlobalIdMetadataTemplate;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -215,7 +217,7 @@ public class DOIDataCiteRegisterService {
         
         metadataTemplate.setTitle(title);
         //QDR use institution name
-        String producerString = ResourceBundle.getBundle("Bundle").getString("institution.name");
+        String producerString = BundleUtil.getStringFromBundle("institution.name");
         if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {
             producerString = ":unav";
         }

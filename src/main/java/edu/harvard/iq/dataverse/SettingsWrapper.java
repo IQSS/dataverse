@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -170,7 +171,7 @@ public class SettingsWrapper implements java.io.Serializable {
     public String getSupportTeamName() {
         String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
         InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);
-        return BrandingUtil.getSupportTeamName(systemAddress, ResourceBundle.getBundle("Bundle").getString("institution.acronym"));
+        return BrandingUtil.getSupportTeamName(systemAddress, BundleUtil.getStringFromBundle("institution.acronym"));
     }
     
     public String getSupportTeamEmail() {

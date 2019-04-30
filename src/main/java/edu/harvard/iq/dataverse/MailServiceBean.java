@@ -120,7 +120,7 @@ public class MailServiceBean implements java.io.Serializable {
 		// QDR - uses the institution name rather than a dataverse/collection name in
 		// email subject
         InternetAddress systemAddress = getSystemAddress();
-		String institutionName = ResourceBundle.getBundle("Bundle").getString("institution.acronym");
+		String institutionName = BundleUtil.getStringFromBundle("institution.acronym");
 		String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing",
 				Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress),
 						BrandingUtil.getSupportTeamName(systemAddress, institutionName)));
@@ -224,7 +224,7 @@ public class MailServiceBean implements java.io.Serializable {
                String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification, comment, requestor);
                 // QDR - uses the institution name rather than a dataverse/collection name in
                 // email subject
-                String institutionName = ResourceBundle.getBundle("Bundle").getString("institution.acronym");
+                String institutionName = BundleUtil.getStringFromBundle("institution.acronym");
                 ;
                 String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, institutionName,
                         objectOfNotification);
@@ -475,11 +475,11 @@ public class MailServiceBean implements java.io.Serializable {
                 InternetAddress systemAddress = getSystemAddress();
             // QDR
             String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome",
-                    Arrays.asList(ResourceBundle.getBundle("Bundle").getString("institution.acronym"),
-                            ResourceBundle.getBundle("Bundle").getString("header.guides.user"),
+                    Arrays.asList(BundleUtil.getStringFromBundle("institution.acronym"),
+                            BundleUtil.getStringFromBundle("header.guides.user"),
                             settingsService.getValueForKey(SettingsServiceBean.Key.QDRDrupalSiteURL, "") + "/deposit",
                             BrandingUtil.getSupportTeamName(systemAddress,
-                                    ResourceBundle.getBundle("Bundle").getString("institution.acronym")),
+                                    BundleUtil.getStringFromBundle("institution.acronym")),
                             BrandingUtil.getSupportTeamEmailAddress(systemAddress)));
             String optionalConfirmEmailAddon = confirmEmailService
                     .optionalConfirmEmailAddonMsg(userNotification.getUser());
