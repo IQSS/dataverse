@@ -10,6 +10,8 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 import static edu.harvard.iq.dataverse.util.SystemConfig.FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.ByteArrayOutputStream;
@@ -323,7 +325,7 @@ public class SchemaDotOrgExporterTest {
         assertEquals("LibraScholar", json2.getJsonObject("includedInDataCatalog").getString("name"));
         assertEquals("https://librascholar.org", json2.getJsonObject("includedInDataCatalog").getString("url"));
         assertEquals("Organization", json2.getJsonObject("publisher").getString("@type"));
-        String orgName = ResourceBundle.getBundle("Bundle").getString("institution.name"); 
+        String orgName = BundleUtil.getStringFromBundle("institution.name"); 
         assertEquals(orgName, json2.getJsonObject("provider").getString("name"));
         assertEquals("Organization", json2.getJsonObject("provider").getString("@type"));
         assertEquals("Organization", json2.getJsonArray("funder").getJsonObject(0).getString("@type"));
