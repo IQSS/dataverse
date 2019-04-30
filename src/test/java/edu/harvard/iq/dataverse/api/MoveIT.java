@@ -71,6 +71,13 @@ public class MoveIT {
 
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
 
+        String nullApiToken = null;
+        Response moveDatasetFailGuest = UtilIT.moveDataset(datasetId.toString(), curatorDataverseAlias1, nullApiToken);
+        moveDatasetFailGuest.prettyPrint();
+        moveDatasetFailGuest.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode())
+                .body("message", equalTo("User :guest is not permitted to perform requested action."));
+
         Response moveDatasetFailAlreadyThere = UtilIT.moveDataset(datasetId.toString(), curatorDataverseAlias1, curatorApiToken);
         moveDatasetFailAlreadyThere.prettyPrint();
         moveDatasetFailAlreadyThere.then().assertThat()
@@ -216,14 +223,21 @@ public class MoveIT {
                 .statusCode(CREATED.getStatusCode());
         String dataverse2Alias = UtilIT.getAliasFromResponse(createDataverse2);
         Integer dataverse2Id = UtilIT.getDatasetIdFromResponse(createDataverse2);
+        String dataverse2Name = JsonPath.from(createDataverse2.asString()).getString("data.name");
 
         UtilIT.publishDataverseViaNativeApi(dataverse1Alias, apiToken).then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        UtilIT.publishDataverseViaNativeApi(dataverse2Alias, apiToken).then().assertThat()
+        UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken).then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken).then().assertThat()
+        Response moveDatasetFailTargetDataverseNotPublished = UtilIT.moveDataset(datasetId.toString(), dataverse2Alias, apiToken);
+        moveDatasetFailTargetDataverseNotPublished.prettyPrint();
+        moveDatasetFailTargetDataverseNotPublished.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", equalTo("Published Dataset may not be moved to unpublished Dataverse. You may publish " + dataverse2Name + " and re-try the move."));
+
+        UtilIT.publishDataverseViaNativeApi(dataverse2Alias, apiToken).then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         // Link dataset to second dataverse.
