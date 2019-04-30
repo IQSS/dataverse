@@ -17,6 +17,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -263,12 +265,15 @@ public class FileUtilTest {
         @Test
         public void testDetermineFileType() {
             File file = new File("src/main/webapp/resources/images/cc0.png");
-            try {
-                assertEquals("image/png", FileUtil.determineFileType(file, "cc0.png"));
-            } catch (IOException ex) {
-                Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
+            if (file.exists()) {
+                try {
+                    assertEquals("image/png", FileUtil.determineFileType(file, "cc0.png"));
+                } catch (IOException ex) {
+                    Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                fail("File does not exist: " + file.toPath().toString());
             }
-
         }
 
         // isThumbnailSuppported() has been moved from DataFileService to FileUtil:
