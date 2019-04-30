@@ -285,6 +285,7 @@ public class Dataset extends DvObjectContainer {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
         dsv.setFileMetadatas(new ArrayList<>());
+        dsv.setDataset(this);
         DatasetVersion latestVersion;
 
         //if the latest version has values get them copied over
@@ -347,7 +348,7 @@ public class Dataset extends DvObjectContainer {
             getVersions().add(0, dsv);
         }
 
-        dsv.setDataset(this);
+        
         return dsv;
     }
 

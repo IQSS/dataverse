@@ -50,6 +50,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -527,9 +528,21 @@ public class DatasetVersion implements Serializable {
     }
 
     public void updateDefaultValuesFromTemplate(Template template) {
-        if (!template.getDatasetFields().isEmpty()) {
-            this.setDatasetFields(this.copyDatasetFields(template.getDatasetFields()));
+        List<DatasetField> datasetFields = initDatasetFields();
+        Map<DatasetFieldType, DatasetField> datasetFieldsMap = new LinkedHashMap<>();
+        
+        for (DatasetField datasetField : datasetFields) {
+            datasetFieldsMap.put(datasetField.getDatasetFieldType(), datasetField);
         }
+        if (!template.getDatasetFields().isEmpty()) {
+            List<DatasetField> templateDatasetFields = this.copyDatasetFields(template.getDatasetFields());
+            
+            for (DatasetField templateField : templateDatasetFields) {
+                datasetFieldsMap.put(templateField.getDatasetFieldType(), templateField);
+            }
+        }
+        setDatasetFields(new ArrayList<>(datasetFieldsMap.values()));
+        
         if (template.getTermsOfUseAndAccess() != null) {
             TermsOfUseAndAccess terms = template.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
             terms.setDatasetVersion(this);
