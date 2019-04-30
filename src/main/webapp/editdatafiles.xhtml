@@ -79,10 +79,12 @@
                                     </p:commandButton>
 
                                 </div>
+                                <p:remoteCommand name="reportEditContinues" process="@this" update=":datasetForm,:messagePanel" actionListener="#{EditDatafilesPage.reportEditContinues}"/>
                                 <p:commandButton value="Direct" id="datasetSave"
                                                  style="display:none"
                                                  update=":datasetForm,:messagePanel"
                                                  onclick="PF('blockFileForm').show();"
+                                                 onerror="javascript:editTimedOut(xhr);"
                                                  oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
                                                  action="#{EditDatafilesPage.save}" />
                             </p:outputPanel> 
@@ -109,6 +111,13 @@
             $('button[id$="datasetSave"]').trigger('click');
         }
     }
+                    function editTimedOut(xhr) {
+                      if(xhr!=null) {
+                        if(xhr.status==500) {
+                          reportEditContinues();
+                        }
+                      }
+                    }
                 </script>
 
             </ui:define>

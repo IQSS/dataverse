@@ -1118,7 +1118,7 @@
                             </div>
                         </div>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" id="fileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileTagsPopup').hide()" update=":datasetForm:tabView:filesTable, :datasetForm" action="#{DatasetPage.saveFileTagsAndCategories()}"/>
+                            <p:commandButton styleClass="btn btn-default" id="fileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileTagsPopup').hide()" update=":datasetForm:tabView:filesTable, :datasetForm" onerror="javascript:editTimedOut(xhr);" action="#{DatasetPage.saveFileTagsAndCategories()}"/>
                             <p:commandButton styleClass="btn btn-default" id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileTagsPopup').hide();PF('blockDatasetForm').hide();" actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>
                         </div>
                     </p:dialog>
@@ -1302,7 +1302,7 @@
                             </div>
                             <div class="button-block">
                                 <ui:fragment rendered="#{DatasetPage.editMode != 'CREATE'}">
-                                    <p:commandButton value="#{bundle.continue}" onclick="PF('accessPopup').hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.restrictSelectedFiles(true)}" />
+                                    <p:commandButton value="#{bundle.continue}" onclick="PF('accessPopup').hide()" update=":datasetForm,:messagePanel" onerror="javascript:editTimedOut(xhr);" action="#{DatasetPage.restrictSelectedFiles(true)}" />
                                 </ui:fragment>
                                 <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
                                     <p:commandButton value="#{bundle.continue}" onclick="PF('accessPopup').hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.save()}" />

@@ -1461,6 +1461,21 @@ public class EditDatafilesPage implements java.io.Serializable {
         return returnToDraftVersion();
     }
     
+    public String reportEditContinues() {
+        logger.fine("Timeout during long edit. Redirecting to draft Dataset page...");
+        if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.editContinues.message"),
+                    BundleUtil.getStringFromBundle("dataset.locked.editContinues.message.details"));
+         } else {
+             JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.message.actiontimeout"),
+                     BundleUtil.getStringFromBundle("dataset.message.actiontimeout.details"));
+            
+         }
+        
+        return returnToDraftVersion();
+    }
+
+    
     private void populateDatasetUpdateFailureMessage(){
             
         JH.addMessage(FacesMessage.SEVERITY_FATAL, getBundleString("dataset.message.filesFailure"));
