@@ -1462,6 +1462,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public String reportEditContinues() {
+        dataset = datasetService.find(dataset.getId());
         logger.fine("Timeout during long edit. Redirecting to draft Dataset page...");
         if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
             JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.editContinues.message"),

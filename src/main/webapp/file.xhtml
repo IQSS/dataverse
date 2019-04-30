@@ -108,6 +108,7 @@
                                         <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
                                         </button>
+                                        <p:remoteCommand name="reportEditContinues" process="@this" update=":fileForm,:messagePanel" actionListener="#{FilePage.reportEditContinues}"/>
                                         <ul class="dropdown-menu pull-right text-left" role="menu">
                                             <ui:fragment rendered="#{systemConfig.provCollectionEnabled}">
                                             <!--  Should be FilePage.isLockedFromEdits() ? -->
@@ -135,7 +136,6 @@
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!FilePage.fileMetadata.dataFile.filePackage and FilePage.fileMetadata.restricted}">
                                                     <li>
-                                                        <p:remoteCommand name="reportEditContinues" process="@this" update=":fileForm,:messagePanel" actionListener="#{FilesPage.reportEditContinues}"/>
                                                         <p:commandLink update="@form" onerror="javascript:editTimedOut(xhr);" actionListener="#{FilePage.restrictFile(false)}">
                                                             <h:outputText value="#{bundle['file.unrestrict']}"/>
                                                         </p:commandLink>

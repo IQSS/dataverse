@@ -74,7 +74,8 @@ public class FilePage implements java.io.Serializable {
 
     @EJB
     DataFileServiceBean datafileService;
-    
+    @EJB
+    DatasetServiceBean datasetService;
     @EJB
     DatasetVersionServiceBean datasetVersionService;
 
@@ -612,6 +613,7 @@ public class FilePage implements java.io.Serializable {
     }
     
     public String reportEditContinues() {
+        dataset = datasetService.find(dataset.getId());
         logger.fine("Timeout during long edit. Redirecting to draft Dataset page...");
         if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
             JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.editContinues.message"),
