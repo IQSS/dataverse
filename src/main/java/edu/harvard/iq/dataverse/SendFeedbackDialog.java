@@ -131,7 +131,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
 
     public String getMessageTo() {
         if (recipient == null) {
-            return BrandingUtil.getSupportTeamName(systemAddress, ResourceBundle.getBundle("Bundle").getString("institution.acronym"));
+            return BrandingUtil.getSupportTeamName(systemAddress, BundleUtil.getStringFromBundle("institution.acronym"));
         } else if (recipient.isInstanceofDataverse()) {
             return ((Dataverse) recipient).getDisplayName() + " " + BundleUtil.getStringFromBundle("contact.contact");
         } else {
