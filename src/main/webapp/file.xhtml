@@ -135,6 +135,7 @@
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!FilePage.fileMetadata.dataFile.filePackage and FilePage.fileMetadata.restricted}">
                                                     <li>
+                                                        <p:remoteCommand name="reportEditContinues" process="@this" update=":fileForm,:messagePanel" actionListener="#{FilesPage.reportEditContinues}"/>
                                                         <p:commandLink update="@form" onerror="javascript:editTimedOut(xhr);" actionListener="#{FilePage.restrictFile(false)}">
                                                             <h:outputText value="#{bundle['file.unrestrict']}"/>
                                                         </p:commandLink>
