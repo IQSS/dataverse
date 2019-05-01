@@ -45,14 +45,14 @@ import org.hibernate.validator.constraints.NotBlank;
     @NamedQuery( name="AuthenticatedUser.findSuperUsers",
                 query="SELECT au FROM AuthenticatedUser au WHERE au.superuser = TRUE"),
     @NamedQuery( name="AuthenticatedUser.findByIdentifier",
-                query="select au from AuthenticatedUser au WHERE au.userIdentifier=:identifier"),
+                query="select au from AuthenticatedUser au WHERE LOWER(au.userIdentifier)=LOWER(:identifier)"),
     @NamedQuery( name="AuthenticatedUser.findByEmail",
                 query="select au from AuthenticatedUser au WHERE LOWER(au.email)=LOWER(:email)"),
     @NamedQuery( name="AuthenticatedUser.countOfIdentifier",
                 query="SELECT COUNT(a) FROM AuthenticatedUser a WHERE LOWER(a.userIdentifier)=LOWER(:identifier)"),
     @NamedQuery( name="AuthenticatedUser.filter",
                 query="select au from AuthenticatedUser au WHERE ("
-                        + "au.userIdentifier like :query OR "
+                        + "LOWER(au.userIdentifier) like LOWER(:query) OR "
                         + "lower(concat(au.firstName,' ',au.lastName)) like lower(:query))"),
     @NamedQuery( name="AuthenticatedUser.findAdminUser",
                 query="select au from AuthenticatedUser au WHERE "
