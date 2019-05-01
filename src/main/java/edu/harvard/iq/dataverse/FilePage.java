@@ -941,6 +941,27 @@ public class FilePage implements java.io.Serializable {
         }
         return false;
     }
+    
+    public boolean isLockedForAnyReason() {
+        if (dataset.getId() != null) {
+            Dataset testDataset = datasetService.find(dataset.getId());
+            if (stateChanged) {
+                return false;
+            }
+
+            if (testDataset != null) {
+                if (testDataset.getLocks().size() > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    public void setLockedForAnyReason(boolean locked) {
+        // empty method, so that we can use FilePage.lockedForAnyReason in a hidden 
+        // input on the page. 
+    }
 
     public String getPublicDownloadUrl() {
         try {
