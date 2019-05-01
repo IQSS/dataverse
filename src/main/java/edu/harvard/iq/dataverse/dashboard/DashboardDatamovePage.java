@@ -186,8 +186,8 @@ public class DashboardDatamovePage implements java.io.Serializable {
             }
             FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Failed to moved dataset",
-                    BundleUtil.getStringFromBundle("dashboard.card.datamove.message.failure", arguments)));
+                    BundleUtil.getStringFromBundle("dashboard.card.datamove.message.failure.summary", arguments),
+                    BundleUtil.getStringFromBundle("dashboard.card.datamove.message.failure.details", arguments)));
         }
     }
 
