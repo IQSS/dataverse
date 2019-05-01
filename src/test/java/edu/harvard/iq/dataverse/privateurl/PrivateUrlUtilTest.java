@@ -15,60 +15,33 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import org.junit.Test;
-import static org.junit.Assert.assertNull;
-import org.junit.Before;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PrivateUrlUtilTest {
 
-    @Before
-    public void setUp() {
+    @BeforeAll
+    public static void setUp() {
         new PrivateUrlUtil();
     }
 
-    @Test
-    public void testIdentifier2roleAssignee() {
-        RoleAssignee returnValueFromEmptyString = null;
-        try {
-            returnValueFromEmptyString = PrivateUrlUtil.identifier2roleAssignee("");
-        } catch (Exception ex) {
-            assertEquals(ex.getClass(), IllegalArgumentException.class);
-            assertEquals(ex.getMessage(), "Could not find dataset id in ''");
-        }
+    @ParameterizedTest
+    @ValueSource(strings = {"", "@pete", PrivateUrlUser.PREFIX + "nonNumber"})
+    void testIdentifier2roleAssignee_returnsNullForInvalidIdentifier(String identifier) {
+        RoleAssignee returnValueFromEmptyString = PrivateUrlUtil.identifier2roleAssignee(identifier);
         assertNull(returnValueFromEmptyString);
+    }
 
-        RoleAssignee returnValueFromNonColon = null;
-        String peteIdentifier = "@pete";
-        try {
-            returnValueFromNonColon = PrivateUrlUtil.identifier2roleAssignee(peteIdentifier);
-        } catch (Exception ex) {
-            assertEquals(ex.getClass(), IllegalArgumentException.class);
-            assertEquals(ex.getMessage(), "Could not find dataset id in '" + peteIdentifier + "'");
-        }
-        assertNull(returnValueFromNonColon);
-
-        RoleAssignee returnValueFromNonNumber = null;
-        String nonNumberIdentifier = PrivateUrlUser.PREFIX + "nonNumber";
-        try {
-            returnValueFromNonNumber = PrivateUrlUtil.identifier2roleAssignee(nonNumberIdentifier);
-        } catch (Exception ex) {
-            assertEquals(ex.getClass(), IllegalArgumentException.class);
-            assertEquals(ex.getMessage(), "Could not find dataset id in '" + nonNumberIdentifier + "'");
-        }
-        assertNull(returnValueFromNonNumber);
-
-        RoleAssignee returnFromValidIdentifier = null;
+    @Test
+    void testIdentifier2roleAssignee_fromValidIdentifier() {
         String validIdentifier = PrivateUrlUser.PREFIX + 42;
-        returnFromValidIdentifier = PrivateUrlUtil.identifier2roleAssignee(validIdentifier);
-        assertNotNull(returnFromValidIdentifier);
-        assertEquals("#42", returnFromValidIdentifier.getIdentifier());
-        assertEquals("Private URL Enabled", returnFromValidIdentifier.getDisplayInfo().getTitle());
-        Assert.assertTrue(returnFromValidIdentifier instanceof PrivateUrlUser);
-        PrivateUrlUser privateUrlUser42 = (PrivateUrlUser) returnFromValidIdentifier;
-        assertEquals(42, privateUrlUser42.getDatasetId());
-
+        RoleAssignee returnFromValidIdentifier = PrivateUrlUtil.identifier2roleAssignee(validIdentifier);
+        assertTrue(returnFromValidIdentifier instanceof PrivateUrlUser);
+        assertEquals(validIdentifier, returnFromValidIdentifier.getIdentifier());
     }
 
     private RoleAssignment createTestRoleAssignment(DvObject dvObject) {
