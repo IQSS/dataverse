@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -832,8 +833,10 @@ public class FilePage implements java.io.Serializable {
         return FileUtil.isPubliclyDownloadable(fileMetadata);
     }
     
+    
     private Boolean lockedFromEditsVar;
     private Boolean lockedFromDownloadVar; 
+    private boolean stateChanged = false;
     
     /**
      * Authors are not allowed to edit but curators are allowed - when Dataset is inReview
@@ -868,6 +871,75 @@ public class FilePage implements java.io.Serializable {
             }
         }
         return lockedFromDownloadVar;       
+    }
+    
+    public String refresh() {
+
+        if (fileId != null || persistentId != null) {
+
+            // ---------------------------------------
+            // Set the file and datasetVersion
+            // ---------------------------------------
+            if (fileId != null) {
+                file = datafileService.find(fileId);
+
+            } else if (persistentId != null) {
+                file = datafileService.findByGlobalId(persistentId);
+                if (file != null) {
+                    fileId = file.getId();
+                }
+
+            }
+
+            if (file == null || fileId == null) {
+                return permissionsWrapper.notFound();
+            }
+
+            RetrieveDatasetVersionResponse retrieveDatasetVersionResponse;
+            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(file.getOwner().getVersions(), version);
+            Long getDatasetVersionID = retrieveDatasetVersionResponse.getDatasetVersion().getId();
+            fileMetadata = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, fileId);
+
+            if (fileMetadata == null) {
+                logger.fine("fileMetadata is null! Checking finding most recent version file was in.");
+                fileMetadata = datafileService.findMostRecentVersionFileIsIn(file);
+                if (fileMetadata == null) {
+                    return permissionsWrapper.notFound();
+                }
+            }
+        }
+        stateChanged = false;
+
+        return null;
+    }
+
+    public void refreshAllLocks() {
+        // RequestContext requestContext = RequestContext.getCurrentInstance();
+        logger.fine("checking all locks");
+        if (isStillLockedForAnyReason()) {
+            logger.fine("(still locked)");
+        } else {
+            // OK, the dataset is no longer locked.
+            // let's tell the page to refresh:
+            logger.fine("no longer locked!");
+            stateChanged = true;
+            lockedFromEditsVar = null;
+            lockedFromDownloadVar = null;
+            // requestContext.execute("refreshPage();");
+        }
+    }
+
+    public boolean isStillLockedForAnyReason() {
+        if (dataset.getId() != null) {
+            Dataset testDataset = datasetService.find(dataset.getId());
+            if (testDataset != null && testDataset.getId() != null) {
+                logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
+                if (testDataset.getLocks().size() > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public String getPublicDownloadUrl() {
@@ -912,6 +984,15 @@ public class FilePage implements java.io.Serializable {
     //This can probably be replaced by calling JsfHelper from the provpopup bean
     public void showProvError() {
         JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.metadataTab.provenance.error"));
+    }
+    
+    public boolean isStateChanged() {
+        return stateChanged;
+    }
+    
+    public void setStateChanged(boolean stateChanged) {
+        // empty method, so that we can use DatasetPage.stateChanged in a hidden 
+        // input on the page. 
     }
 
 }
