@@ -3,50 +3,32 @@ package edu.harvard.iq.dataverse.dashboard;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
-import edu.harvard.iq.dataverse.UserServiceBean;
-import edu.harvard.iq.dataverse.api.Admin;
-import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.GrantSuperuserStatusCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.MoveDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RevokeAllRolesCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RevokeSuperuserStatusCommand;
-import edu.harvard.iq.dataverse.mydata.Pager;
-import edu.harvard.iq.dataverse.userdata.UserListMaker;
-import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
-import javax.faces.event.ValueChangeEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Response;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @ViewScoped
 @Named("DashboardDatamovePage")
@@ -152,6 +134,7 @@ public class DashboardDatamovePage implements java.io.Serializable {
         if (ds == null || target == null) {
             // Move only works if both inputs are correct 
             // But if these inputs are required, we should never get here
+            // Since we never get here, we aren't bothering to move this English to the bundle.
             FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage("Please specify all fields"));
             return;
