@@ -195,6 +195,21 @@
                         </div>
                     </div>
                     <!-- END topDatasetBlock -->
+                    <p:fragment id="pageRefreshFragment"> 
+                        <h:inputHidden value="#{FilePage.lockedForAnyReason}" id="datasetLockedForAnyReasonVariable" />
+                        <h:inputHidden value="#{FilePage.stateChanged}" id="datasetStateChangedVariable" />
+
+                        <p:remoteCommand name="refreshAllLocksCommand" process="@this" update=":#{p:resolveClientId('fileForm:pageRefreshFragment', view)}" actionListener="#{FilePage.refreshAllLocks()}"/>
+                        <p:remoteCommand name="refreshAllCommand" process="@this" update=":fileForm:topDatasetBlockFragment,:datasetForm:contentTabs:tabView,:messagePanel" actionListener="#{FilePage.refresh}"/>
+                        <p:remoteCommand name="reportEditContinues" process="@this" update=":fileForm,:messagePanel" actionListener="#{FilePage.reportEditContinues}"/>
+                            
+                        <script type="text/javascript">
+                            $(this).ready(function () {
+                                refreshIfStillLocked();
+                            });
+                        </script>
+                    </p:fragment>
+                    
                     <div id="fileImageTitle" class="row">
                         <div id="file-preview-icon-block" class="col-xs-4">
                             <div id="border-block">
