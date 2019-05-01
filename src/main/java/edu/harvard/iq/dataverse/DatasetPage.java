@@ -3204,38 +3204,6 @@ public class DatasetPage implements java.io.Serializable {
         return new HttpClient();
     }
 
-    public void refreshLock() {
-        //RequestContext requestContext = RequestContext.getCurrentInstance();
-        logger.fine("checking lock");
-        if (isStillLocked()) {
-            logger.fine("(still locked)");
-        } else {
-            // OK, the dataset is no longer locked. 
-            // let's tell the page to refresh:
-            logger.fine("no longer locked!");
-            stateChanged = true;
-            lockedFromEditsVar = null;
-            lockedFromDownloadVar = null;
-            //requestContext.execute("refreshPage();");
-        }
-    }
-    
-    public void refreshIngestLock() {
-        //RequestContext requestContext = RequestContext.getCurrentInstance();
-        logger.fine("checking ingest lock");
-        if (isStillLockedForIngest()) {
-            logger.fine("(still locked)");
-        } else {
-            // OK, the dataset is no longer locked. 
-            // let's tell the page to refresh:
-            logger.fine("no longer locked!");
-            stateChanged = true;
-            lockedFromEditsVar = null;
-            lockedFromDownloadVar = null;
-            //requestContext.execute("refreshPage();");
-        }
-    }
-        
     public void refreshAllLocks() {
         //RequestContext requestContext = RequestContext.getCurrentInstance();
         logger.fine("checking all locks");
@@ -3252,18 +3220,6 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
 
-    /* 
-
-    public boolean isLockedInProgress() {
-        if (dataset != null) {
-            logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
-            if (dataset.isLocked()) {
-                return true;
-            }
-        }
-        return false;
-    }*/
-    
     public boolean isDatasetLockedInWorkflow() {
         return (dataset != null) 
                 ? dataset.isLockedFor(DatasetLock.Reason.Workflow) 
