@@ -29,6 +29,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.servlet.http.HttpServletRequest;
 
 @ViewScoped
 @Named("DashboardDatamovePage")
@@ -151,9 +152,10 @@ public class DashboardDatamovePage implements java.io.Serializable {
         // copied logic from Datasets API move
         //Command requires Super user - it will be tested by the command
         try {
+            HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            DataverseRequest dataverseRequest = new DataverseRequest(authUser, httpServletRequest);
             commandEngine.submit(new MoveDatasetCommand(
-                new DataverseRequest(authUser, IpAddress.valueOf("127.0.0.1")), ds, target, false
-                // Or: new DataverseRequest(authUser, (HttpServletRequest)null), ds, target, false
+                    dataverseRequest, ds, target, false
             ));
             
             logger.info("Moved " + dsPersistentId + " from " + srcAlias + " to " + dstAlias);
