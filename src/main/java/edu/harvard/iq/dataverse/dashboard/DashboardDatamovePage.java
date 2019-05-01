@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.GrantSuperuserStatusCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.MoveDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeAllRolesCommand;
@@ -179,6 +180,10 @@ public class DashboardDatamovePage implements java.io.Serializable {
         catch (CommandException e) {
             logger.log(Level.SEVERE,"Unable to move "+ dsPersistentId + " from " + srcAlias + " to " + dstAlias, e);
             arguments.add(e.getLocalizedMessage());
+            if (e instanceof UnforcedCommandException) {
+                // Suggest using the API to force the move.
+                arguments.add(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.unforced.suggestForce"));
+            }
             FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_ERROR,
                     "Failed to moved dataset",

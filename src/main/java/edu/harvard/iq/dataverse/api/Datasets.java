@@ -80,6 +80,7 @@ import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDvObjectPIDMetadataCommand;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
@@ -1020,7 +1021,11 @@ public class Datasets extends AbstractApiBean {
                     ));
             return ok("Dataset moved successfully");
         } catch (WrappedResponse ex) {
-            return ex.getResponse();
+            if (ex.getCause() instanceof UnforcedCommandException) {
+                return ex.refineResponse("Use the query parameter forceMove=true to complete the move.");
+            } else {
+                return ex.getResponse();
+            }
         }
     }
     

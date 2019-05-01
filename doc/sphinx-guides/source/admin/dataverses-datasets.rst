@@ -48,7 +48,7 @@ Move a Dataset
 
 Superusers can move datasets using the dashboard. See also :doc:`dashboard`.
 
-Moves a dataset whose id is passed to a dataverse whose alias is passed. If the moved dataset has a guestbook or a dataverse link that is not compatible with the destination dataverse, you will be informed and given the option to force the move (with ``forceMove=true`` as a query parameter) and remove the guestbook or link. Only accessible to users with permission to publish the dataset in the original and destination dataverse. ::
+Moves a dataset whose id is passed to a dataverse whose alias is passed. If the moved dataset has a guestbook or a dataverse link that is not compatible with the destination dataverse, you will be informed and given the option to force the move (with ``forceMove=true`` as a query parameter) and remove the guestbook and all links. Only accessible to users with permission to publish the dataset in the original and destination dataverse. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/datasets/$id/move/$alias
 

@@ -82,7 +82,7 @@ public class MoveIT {
         moveDatasetFailAlreadyThere.prettyPrint();
         moveDatasetFailAlreadyThere.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode())
-                .body("message", equalTo("Dataset already in this Dataverse "));
+                .body("message", equalTo("This dataset is already in this dataverse."));
 
         Response createAuthorDataverse1 = UtilIT.createRandomDataverse(curatorApiToken);
         createAuthorDataverse1.prettyPrint();
@@ -235,7 +235,7 @@ public class MoveIT {
         moveDatasetFailTargetDataverseNotPublished.prettyPrint();
         moveDatasetFailTargetDataverseNotPublished.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode())
-                .body("message", equalTo("Published Dataset may not be moved to unpublished Dataverse. You may publish " + dataverse2Name + " and re-try the move."));
+                .body("message", equalTo("A published dataset may not be moved to an unpublished dataverse. You can retry the move after publishing " + dataverse2Name + "."));
 
         UtilIT.publishDataverseViaNativeApi(dataverse2Alias, apiToken).then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -267,7 +267,7 @@ public class MoveIT {
         attemptToMoveLinkedDataset.prettyPrint();
         attemptToMoveLinkedDataset.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode())
-                .body("message", equalTo("Dataset is linked to target dataverse or one of its parents. Please use the parameter ?forceMove=true to complete the move. This will remove anything from the dataset that is not compatible with the target dataverse."));
+                .body("message", equalTo("Use the query parameter forceMove=true to complete the move. This dataset is linked to the new host dataverse or one of its parents. This move will remove all links to this dataset. "));
 
         JsonObject linksBeforeData = Json.createReader(new StringReader(getLinksBefore.asString())).readObject();
         Assert.assertEquals("OK", linksBeforeData.getString("status"));

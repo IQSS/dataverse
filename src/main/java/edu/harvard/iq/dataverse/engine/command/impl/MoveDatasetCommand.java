@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -127,12 +128,12 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         if (removeGuestbook || removeLinkDs) {
             StringBuilder errorString = new StringBuilder();
             if (removeGuestbook) {
-                errorString.append(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.datasetGuestbookNotInTargetDataverse"));
+                errorString.append(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.unforced.datasetGuestbookNotInTargetDataverse"));
             }
             if (removeLinkDs) {
-                errorString.append(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.linkedToTargetDataverseOrOneOfItsParents"));
+                errorString.append(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.unforced.linkedToTargetDataverseOrOneOfItsParents"));
             }
-            throw new IllegalCommandException(errorString + BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.suggestForce"), this);
+            throw new UnforcedCommandException(errorString.toString(), this);
         }
 
 
