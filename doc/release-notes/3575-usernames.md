@@ -1,0 +1,4 @@
+* In an effort to prevent accidental duplicate accounts, user spoofing, or other username-based confusion, this release introduces a database constraint that no longer allows usernames that are exactly the same but use different capitalization, e.g. Bob11 vs. bob11. You may need to do some cleanup before upgrading to deal with existing usernames like this.
+* To check whether you have any usernames like this that need cleaning up, run the case insensitive duplicate queries from our Useful Queries doc.
+* Once you identify the usernames that need cleaning up, you should use either merge endpoint (if it’s the same person) or rename endpoint (if they are different people).
+* After the cleanup you can safely upgrade without issue.
