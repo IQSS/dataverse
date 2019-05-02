@@ -154,7 +154,6 @@ public class EditDDI  extends AbstractApiBean {
             VariableMetadata varMet = mapVarToVarMet.get(varId);
             List<VariableMetadata> vml = variableService.findByDataVarIdAndFileMetaId(varMet.getDataVariable().getId(), fm.getId());
             if (vml.size() > 0) {
-
                 if (!variableMetadataUtil.compareVarMetadata(vml.get(0), varMet )) {
                     updates = true;
                     neededToUpdateVM.add(varMet);
@@ -181,7 +180,6 @@ public class EditDDI  extends AbstractApiBean {
         try {
 
             DataverseRequest dr = new DataverseRequest(apiTokenUser, httpRequest);
-
             cmd = new UpdateDatasetVersionCommand(dataset, dr, fm);
             ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
             dataset = commandEngine.submit(cmd);
@@ -367,6 +365,7 @@ public class EditDDI  extends AbstractApiBean {
     }
 
 
+
     private boolean AreDefaultValues(VariableMetadata varMet) {
         boolean thedefault = true;
 
@@ -416,7 +415,6 @@ public class EditDDI  extends AbstractApiBean {
         return apiTokenUser;
 
     }
-
 }
 
 

@@ -68,7 +68,6 @@ public class VariableServiceBean {
         return query.getResultList();
 
     }
-
     public List<VariableCategory> findCategory(Long varId, String catValue) {
         TypedQuery<VariableCategory> query = em.createQuery("SELECT object(o) FROM VariableCategory as o where o.dataVariable.id =:varId and o.value =:catValue", VariableCategory.class);
 

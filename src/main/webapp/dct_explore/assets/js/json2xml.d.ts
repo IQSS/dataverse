@@ -1,0 +1,1 @@
+export declare function json2xml(o, tab);
