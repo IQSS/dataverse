@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.FileReader;
 import java.io.IOException;
@@ -634,36 +635,5 @@ public class JsonParserTest {
              return null;
         }
     }
-    
-    static class MockDatasetFieldSvc extends DatasetFieldServiceBean {
-        
-        Map<String, DatasetFieldType> fieldTypes = new HashMap<>();
-        long nextId = 1;
-        public DatasetFieldType add( DatasetFieldType t ) {
-            if ( t.getId()==null ) {
-                t.setId( nextId++ );
-            }
-            fieldTypes.put( t.getName(), t);
-            return t;
-        }
-        
-        @Override
-        public DatasetFieldType findByName( String name ) {
-            return fieldTypes.get(name);
-        }
-        
-        @Override
-        public DatasetFieldType findByNameOpt(String name) {
-           return findByName(name);
-        }
-        
-        @Override
-        public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndStrValue(DatasetFieldType dsft, String strValue, boolean lenient) {
-            ControlledVocabularyValue cvv = new ControlledVocabularyValue();
-            cvv.setDatasetFieldType(dsft);
-            cvv.setStrValue(strValue);
-            return cvv;
-        }
- 
-    }
+
 }

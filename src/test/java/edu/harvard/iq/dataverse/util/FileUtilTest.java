@@ -17,6 +17,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -59,6 +61,50 @@ public class FileUtilTest {
         public void testGetCiteDataFileFilename() {
             assertEquals(expectedFileName, FileUtil.getCiteDataFileFilename(actualFileName, citationExtension));
         }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class FileUtilParamTest2 {
+
+        @Parameter
+        public String expectedString;
+
+        @Parameter(1)
+        public String originalName;
+
+        @Parameter(2)
+        public String newExtension;
+
+        @Parameters
+        public static Collection data() {
+            return Arrays.asList(new Object[][] {
+                // functional approach: what should the method do
+                // replace no extension with an empty extension
+                { "no-extension.", "no-extension", ""},
+
+                // replace extension x with same extension
+                { "extension.x", "extension.x", "x" },
+
+                // replace extension x with another extension y
+                { "extension.y", "extension.x", "y" },
+
+                // interface approach: what are possible inputs
+                // will not pass as null is not handled
+                //{ null, null, null },
+                //{ null, null, "" },
+                //{ null, null, "y" },
+
+                { ".null", "", null },
+                { ".", "", "" },
+                { ".y", "", "y" },
+            });
+        }
+
+        @Test
+        public void testReplaceExtension() {
+            assertEquals(expectedString, FileUtil.replaceExtension(originalName, newExtension));
+        }
+
     }
 
     public static class FileUtilNoParamTest {
@@ -219,12 +265,15 @@ public class FileUtilTest {
         @Test
         public void testDetermineFileType() {
             File file = new File("src/main/webapp/resources/images/cc0.png");
-            try {
-                assertEquals("image/png", FileUtil.determineFileType(file, "cc0.png"));
-            } catch (IOException ex) {
-                Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
+            if (file.exists()) {
+                try {
+                    assertEquals("image/png", FileUtil.determineFileType(file, "cc0.png"));
+                } catch (IOException ex) {
+                    Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                fail("File does not exist: " + file.toPath().toString());
             }
-
         }
 
         // isThumbnailSuppported() has been moved from DataFileService to FileUtil:
