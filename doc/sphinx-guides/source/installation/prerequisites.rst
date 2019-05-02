@@ -124,11 +124,9 @@ PostgreSQL
 Installing PostgreSQL
 =======================
 
-Version 9.3 is required. Previous versions have not been tested.
+Dataverse uses the Flyway database migration tool, which requires a version of Postgres which is actively maintained by upstream developers.
 
-Version 9.6 is strongly recommended::
-
-	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 	# yum makecache fast
 	# yum install -y postgresql96-server
 	# /usr/pgsql-9.6/bin/postgresql96-setup initdb
@@ -137,7 +135,7 @@ Version 9.6 is strongly recommended::
 	
 Note that the steps above are specific to RHEL/CentOS 7. For RHEL/CentOS 6 use::
 
-	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-6-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-6/pgdg-redhat-repo-latest.noarch.rpm
 	# yum makecache fast
 	# yum install -y postgresql96-server
 	# service postgresql-9.6 initdb
