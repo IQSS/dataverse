@@ -102,7 +102,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     public Dataset find(Object pk) {
         return em.find(Dataset.class, pk);
     }
-
+    
     public List<Dataset> findByOwnerId(Long ownerId) {
         return findByOwnerId(ownerId, false);
     }
@@ -201,6 +201,24 @@ public class DatasetServiceBean implements java.io.Serializable {
             //try to find with alternative PID
             return (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset", true);
         }        
+    }
+    
+    /**
+     * Instantiate dataset, and its components (DatasetVersions and FileMetadatas)
+     * this method is used for object validation; if there are any invalid values
+     * in the dataset components, a ConstraintViolationException will be thrown,
+     * which can be further parsed to detect the specific offending values.
+     * @param id the id of the dataset
+     * @throws javax.validation.ConstraintViolationException 
+     */
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void instantiateDatasetInNewTransaction(Long id) {
+        Dataset dataset = find(id);
+        for (DatasetVersion version : dataset.getVersions()) {
+            for (FileMetadata fileMetadata : version.getFileMetadatas()) {
+            }
+        }
     }
 
     public String generateDatasetIdentifier(Dataset dataset, GlobalIdServiceBean idServiceBean) {

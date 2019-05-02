@@ -224,6 +224,17 @@ One way of generating load is by downloading many files. You can download :downl
 
 The script requires a file called ``files.txt`` to operate and database IDs for the files you want to download should each be on their own line.
 
+Continuous Integration
+~~~~~~~~~~~~~~~~~~~~~~
+
+The Dataverse Project currently makes use of two Continuous Integration platforms, Travis and Jenkins.
+
+Travis builds are configured via :download:`.travis.yml <../../../../.travis.yml>` and a `GitHub webhook <https://docs.travis-ci.com/user/notifications/#configuring-webhook-notifications>`; build output is viewable at https://travis-ci.org/IQSS/dataverse/builds
+
+Our Jenkins config is a work in progress and may be viewed at https://github.com/IQSS/dataverse-jenkins/ A corresponding GitHub webhook is required. Build output is viewable at https://jenkins.dataverse.org/
+
+As always, pull requests to improve our continuous integration configurations are welcome.
+
 The Phoenix Server
 ------------------
 
