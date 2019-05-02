@@ -46,7 +46,7 @@ public class PasswordResetServiceBean {
     SystemConfig systemConfig;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    protected EntityManager em;
 
     /**
      * Initiate the password reset process.
