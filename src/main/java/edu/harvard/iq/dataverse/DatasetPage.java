@@ -1612,6 +1612,12 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         
+            if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"),
+                        BundleUtil.getStringFromBundle("dataset.locked.ingest.message"));
+                lockedDueToIngestVar = true;
+            }
+        
         for(DataFile f : dataset.getFiles()) {
             if(f.isTabularData()) {
                 hasTabular = true;
@@ -2270,6 +2276,11 @@ public class DatasetPage implements java.io.Serializable {
 
         displayCitation = dataset.getCitation(true, workingVersion);
         stateChanged = false;
+        
+        if (lockedDueToIngestVar != null && lockedDueToIngestVar) {
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.unlocked.ingest.message"));
+            lockedDueToIngestVar = null;
+        }
     }
     
     public String deleteDataset() {
@@ -3238,6 +3249,7 @@ public class DatasetPage implements java.io.Serializable {
     private Boolean lockedFromEditsVar;
     private Boolean lockedFromDownloadVar;    
     private boolean lockedDueToDcmUpload;
+    private Boolean lockedDueToIngestVar;
     /**
      * Authors are not allowed to edit but curators are allowed - when Dataset is inReview
      * For all other locks edit should be locked for all editors.
@@ -3253,6 +3265,17 @@ public class DatasetPage implements java.io.Serializable {
         }
         return lockedFromEditsVar;
     }
+    
+    /**
+    Need to save ingest lock state to display success later.
+     */
+    public boolean isLockedDueToIngest() {
+        if(null == lockedDueToIngestVar || stateChanged) {
+               lockedDueToIngestVar = isLockedForIngest();
+        }
+        return lockedFromEditsVar;
+    }
+    
     
     // TODO: investigate why this method was needed in the first place?
     // It appears that it was written under the assumption that downloads 
