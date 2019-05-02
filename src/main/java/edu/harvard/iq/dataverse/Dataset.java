@@ -335,7 +335,7 @@ public class Dataset extends DvObjectContainer {
                 newFm.setProvFreeForm(fm.getProvFreeForm());
 
                 //fmVarMet would be updated in DCT
-                if (fmVarMet != null && !fmVarMet.getId().equals(fm.getId())) {
+                if ((fmVarMet != null && !fmVarMet.getId().equals(fm.getId())) || (fmVarMet == null))  {
                     if (fm.getVariableMetadatas() != null) {
                         newFm.copyVariableMetadata(fm.getVariableMetadatas());
                     }

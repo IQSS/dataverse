@@ -112,6 +112,11 @@ public class FileMetadata implements Serializable {
         this.label = label;
     }
 
+    public FileMetadata() {
+        variableMetadatas = new ArrayList<VariableMetadata>();
+        varGroups = new ArrayList<VarGroup>();
+    }
+
     public String getDirectoryLabel() {
         return directoryLabel;
     }

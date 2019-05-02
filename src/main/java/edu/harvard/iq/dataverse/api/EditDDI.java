@@ -81,6 +81,8 @@ public class EditDDI  extends AbstractApiBean {
     @Context
     protected HttpServletRequest httpRequest;
 
+    private VariableMetadataUtil variableMetadataUtil;
+
 
     @PUT
     @Consumes("application/xml")
@@ -153,7 +155,7 @@ public class EditDDI  extends AbstractApiBean {
             List<VariableMetadata> vml = variableService.findByDataVarIdAndFileMetaId(varMet.getDataVariable().getId(), fm.getId());
             if (vml.size() > 0) {
 
-                if (!compareVarMetadata(vml.get(0), varMet )) {
+                if (!variableMetadataUtil.compareVarMetadata(vml.get(0), varMet )) {
                     updates = true;
                     neededToUpdateVM.add(varMet);
                 } else if (newVersion) {
@@ -179,6 +181,7 @@ public class EditDDI  extends AbstractApiBean {
         try {
 
             DataverseRequest dr = new DataverseRequest(apiTokenUser, httpRequest);
+
             cmd = new UpdateDatasetVersionCommand(dataset, dr, fm);
             ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
             dataset = commandEngine.submit(cmd);
@@ -346,7 +349,7 @@ public class EditDDI  extends AbstractApiBean {
         for (Long id : varGroupMap.keySet()) {
             VarGroup dbVarGroup = em.find(VarGroup.class, id);
             if (dbVarGroup != null) {
-                if (checkDiff(dbVarGroup.getLabel(), varGroupMap.get(id).getLabel())) {
+                if (variableMetadataUtil.checkDiff(dbVarGroup.getLabel(), varGroupMap.get(id).getLabel())) {
                     areNewGroups = true;
                     break;
                 } else if (!dbVarGroup.getVarsInGroup().equals(varGroupMap.get(id).getVarsInGroup())) {
@@ -363,63 +366,6 @@ public class EditDDI  extends AbstractApiBean {
         return areNewGroups;
     }
 
-
-    private boolean  compareVarMetadata(VariableMetadata vmOld, VariableMetadata vmNew) {
-        boolean thesame = true;
-
-        if (checkDiffEmpty(vmOld.getNotes(), vmNew.getNotes())) {
-            thesame = false;
-        } else if (checkDiffEmpty(vmNew.getNotes(), vmOld.getNotes())) {
-            thesame = false;
-        }else if (checkDiff(vmOld.getNotes(), vmNew.getNotes())) {
-            thesame = false;
-        } else if ( checkDiffEmpty(vmOld.getUniverse(), vmNew.getUniverse())) {
-            thesame = false;
-        } else if (checkDiffEmpty(vmNew.getUniverse(), vmOld.getUniverse())) {
-                thesame = false;
-        } else if (checkDiff(vmOld.getUniverse(),vmNew.getUniverse())) {
-            thesame = false;
-        } else if (checkDiffEmpty(vmOld.getInterviewinstruction(),vmNew.getInterviewinstruction())) {
-            thesame = false;
-        } else if ( checkDiffEmpty(vmNew.getInterviewinstruction(),vmOld.getInterviewinstruction())) {
-            thesame = false;
-        } else if (checkDiff(vmOld.getInterviewinstruction(),vmNew.getInterviewinstruction())) {
-            thesame = false;
-        } else  if (checkDiffEmpty(vmOld.getLiteralquestion(),vmNew.getLiteralquestion())) {
-            thesame = false;
-        } else if (checkDiffEmpty(vmNew.getLiteralquestion(),vmOld.getLiteralquestion())) {
-            thesame = false;
-        } else if (checkDiff(vmOld.getLiteralquestion(),vmNew.getLiteralquestion())) {
-            thesame = false;
-        } else if (checkDiff(vmOld.getPostquestion(),vmNew.getPostquestion())) {
-            thesame = false;
-        } else if (checkDiffEmpty(vmNew.getPostquestion(),vmOld.getPostquestion())) {
-            thesame = false;
-        } else if (checkDiff(vmOld.getPostquestion(),vmNew.getPostquestion())) {
-            thesame = false;
-        } else  if (checkDiffEmpty(vmOld.getLabel(),vmNew.getLabel())) {
-            thesame = false;
-        } else if  (checkDiffEmpty(vmNew.getLabel(),vmOld.getLabel())) {
-            thesame = false;
-        } else if (checkDiff(vmOld.getLabel(),vmNew.getLabel())) {
-            thesame = false;
-        } else if (vmOld.isIsweightvar() != vmNew.isIsweightvar() ) {
-            thesame = false;
-        } else if (vmOld.isWeighted() != vmNew.isWeighted()) {
-            thesame = false;
-        } else if (vmOld.isWeighted() == vmNew.isWeighted()) {
-            if (vmOld.isWeighted() ){
-                Long oldWeightId = vmOld.getWeightvariable().getId();
-                Long newWeightId = vmNew.getWeightvariable().getId();
-                if ( !oldWeightId.equals(newWeightId) ) {
-                    thesame = false;
-                }
-            }
-        }
-
-        return thesame;
-
-    }
 
     private boolean AreDefaultValues(VariableMetadata varMet) {
         boolean thedefault = true;
@@ -469,20 +415,6 @@ public class EditDDI  extends AbstractApiBean {
 
         return apiTokenUser;
 
-    }
-
-    private boolean checkDiffEmpty(String str1, String str2) {
-        if (str1 == null && str2 != null && !str2.trim().equals("")) {
-            return true;
-        }
-        return false;
-
-    }
-    private boolean checkDiff(String str1, String str2) {
-        if (str1 != null && str2 != null && !str1.equals(str2)) {
-            return true;
-        }
-        return false;
     }
 
 }

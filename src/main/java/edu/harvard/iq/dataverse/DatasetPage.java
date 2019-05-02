@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Collection;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -80,6 +81,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.primefaces.context.RequestContext;
 import java.util.Arrays;
 import java.util.HashSet;
+
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
@@ -99,6 +101,7 @@ import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import java.util.Collections;
+
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 
@@ -114,9 +117,7 @@ import org.primefaces.event.CloseEvent;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.event.data.PageEvent;
 
-import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import java.util.TimeZone;
-import javax.servlet.http.HttpServletRequest;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
@@ -211,6 +212,7 @@ public class DatasetPage implements java.io.Serializable {
     ProvPopupFragmentBean provPopupFragmentBean;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
+
 
     private Dataset dataset = new Dataset();
     private EditMode editMode;
@@ -511,7 +513,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private List<FileMetadata> selectFileMetadatasForDisplay(String searchTerm) {
-        Set<Long> searchResultsIdSet = null; 
+        Set<Long> searchResultsIdSet = null;
         
         if (searchTerm != null && !searchTerm.equals("")) {
             List<Integer> searchResultsIdList = datafileService.findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(workingVersion.getId(), searchTerm, "", "");
@@ -1378,7 +1380,7 @@ public class DatasetPage implements java.io.Serializable {
         String nonNullDefaultIfKeyNotFound = "";
         protocol = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         authority = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset     
+        if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset
 
             DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
 
@@ -2893,6 +2895,7 @@ public class DatasetPage implements java.io.Serializable {
                 if (!filesToBeDeleted.isEmpty()) {
                     deleteStorageLocations = datafileService.getPhysicalFilesToDelete(filesToBeDeleted);
                 }
+
                 cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, clone );
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);  
             }
@@ -2955,7 +2958,7 @@ public class DatasetPage implements java.io.Serializable {
                     
                     // and another update command: 
                     boolean addFilesSuccess = false;
-                    cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), new ArrayList<FileMetadata>());
+                    cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest());
                     try {
                         dataset = commandEngine.submit(cmd);
                         addFilesSuccess = true; 
@@ -3482,6 +3485,11 @@ public class DatasetPage implements java.io.Serializable {
 
         if (permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {
             for (DatasetVersion version : dataset.getVersions()) {
+                Collection<FileMetadata> fml = version.getFileMetadatas();
+                for (FileMetadata fm : fml) {
+                    fm.setVariableMetadatas(variableService.findVarMetByFileMetaId(fm.getId()));
+                    fm.setVarGroups(variableService.findAllGroupsByFileMetadata(fm.getId()));
+                }
                 version.setContributorNames(datasetVersionService.getContributorsNames(version));
                 retList.add(version);
             }
