@@ -214,6 +214,9 @@ public class FilePage implements java.io.Serializable {
             configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE, contentType);
             exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE, contentType);
 
+            if(null == dataset) {
+                dataset = file.getOwner();
+            }
             if(dataset.isLockedFor(DatasetLock.Reason.EditInProgress))  {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),
                         BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details"));
