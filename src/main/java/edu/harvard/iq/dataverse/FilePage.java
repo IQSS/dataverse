@@ -913,6 +913,8 @@ public class FilePage implements java.io.Serializable {
             }
         }
         stateChanged = false;
+        lockedFromEditsVar = null;
+        lockedFromDownloadVar = null;
 
         return null;
     }
