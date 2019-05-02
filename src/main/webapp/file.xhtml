@@ -202,7 +202,7 @@
                         <h:inputHidden value="#{FilePage.stateChanged}" id="datasetStateChangedVariable" />
 
                         <p:remoteCommand name="refreshAllLocksCommand" process="@this" update=":#{p:resolveClientId('fileForm:pageRefreshFragment', view)}" actionListener="#{FilePage.refreshAllLocks()}"/>
-                        <p:remoteCommand name="refreshAllCommand" process="@this" update=":fileForm:topDatasetBlockFragment,:fileForm:contentTabs:tabView,:messagePanel" actionListener="#{FilePage.refresh}"/>
+                        <p:remoteCommand name="refreshAllCommand" process="@this" update=":fileForm:topDatasetBlockFragment,:fileForm:tabView,:messagePanel" actionListener="#{FilePage.refresh}"/>
                         <p:remoteCommand name="reportEditContinues" process="@this" update=":fileForm,:messagePanel" actionListener="#{FilePage.reportEditContinues}"/>
                             
                         <script type="text/javascript">
