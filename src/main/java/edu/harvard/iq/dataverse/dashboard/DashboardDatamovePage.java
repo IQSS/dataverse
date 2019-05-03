@@ -124,7 +124,7 @@ public class DashboardDatamovePage implements java.io.Serializable {
         FacesContext.getCurrentInstance().addMessage(null, 
             new FacesMessage(FacesMessage.SEVERITY_INFO, 
                 BundleUtil.getStringFromBundle("dashboard.card.datamove.manage"), 
-                BundleUtil.getStringFromBundle("dashboard.card.datamove.message")));
+                BundleUtil.getStringFromBundle("dashboard.card.datamove.message", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()))));
         return null;
     }
     
