@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
+import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -17,6 +18,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,6 +48,8 @@ public class DashboardDatamovePage implements java.io.Serializable {
     DatasetServiceBean datasetService;
     @EJB
     DataverseServiceBean dataverseService;
+    @Inject
+    SettingsWrapper settingsWrapper;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -166,8 +170,10 @@ public class DashboardDatamovePage implements java.io.Serializable {
             logger.log(Level.SEVERE,"Unable to move "+ dsPersistentId + " from " + srcAlias + " to " + dstAlias, e);
             arguments.add(e.getLocalizedMessage());
             if (e instanceof UnforcedCommandException) {
+                String guidesBaseUrl = settingsWrapper.getGuidesBaseUrl();
+                String version = settingsWrapper.getGuidesVersion();
                 // Suggest using the API to force the move.
-                arguments.add(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.unforced.suggestForce"));
+                arguments.add(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.unforced.suggestForce", Arrays.asList(guidesBaseUrl, version)));
             }
             FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_ERROR,
