@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
+import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -24,6 +25,7 @@ public class JhoveFileTypeTest {
 
     @BeforeClass
     public static void setUpClass() {
+        System.setProperty("com.sun.aas.instanceRoot", baseDirForConfigFiles);
         jhoveFileType = new JhoveFileType();
         copyConfigIntoPlace();
 
@@ -35,6 +37,12 @@ public class JhoveFileTypeTest {
         xml = new File("pom.xml");
         html = new File("src/main/webapp/mydata_templates/mydata.html");
         ico = new File("src/main/webapp/resources/images/fav/favicon.ico");
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        // SiteMapUtilTest relies on com.sun.aas.instanceRoot being null.
+        System.clearProperty("com.sun.aas.instanceRoot");
     }
 
     @Test
@@ -68,7 +76,6 @@ public class JhoveFileTypeTest {
 
     private static void copyConfigIntoPlace() {
         String testFile1Src = "conf/jhove/jhove.conf";
-        System.setProperty("com.sun.aas.instanceRoot", baseDirForConfigFiles);
         String testFile1Tmp = baseDirForConfigFiles + "/config/jhove.conf";
         try {
             FileUtils.copyFile(new File(testFile1Src), new File(testFile1Tmp));
