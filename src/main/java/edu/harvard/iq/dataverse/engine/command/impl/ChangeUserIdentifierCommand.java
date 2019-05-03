@@ -60,6 +60,8 @@ public class ChangeUserIdentifierCommand extends AbstractVoidCommand {
         
         if (bu != null) {
             bu.setUserName(newIdentifier);
+            AuthenticatedUserLookup aul = au.getAuthenticatedUserLookup();
+            aul.setPersistentUserId(newIdentifier);
             //Validate the BuiltinUser change. Username validations are there.
             //If we have our validation errors pass up to commands, this could be removed
             ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -77,9 +79,6 @@ public class ChangeUserIdentifierCommand extends AbstractVoidCommand {
         }
         
         ctxt.actionLog().changeUserIdentifierInHistory("@" + oldIdentifier, "@" + newIdentifier);
-        
-        AuthenticatedUserLookup aul = au.getAuthenticatedUserLookup();
-        aul.setPersistentUserId(newIdentifier);
         
         for(RoleAssignment ra : raList) {
             ra.setAssigneeIdentifier("@" + newIdentifier);
