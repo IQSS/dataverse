@@ -331,4 +331,12 @@
         <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
         <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
     </p:commandLink>
+    <script type="text/javascript">
+      function downloadFiles(url, filelist) {
+        var form = $('<form></form>').attr('action', url).attr('method', 'post').attr('target','_blank');
+        form.append($("<input></input>").attr('type', 'hidden').attr('name', fileIds).attr('value', filelist);
+        //Submit and then remove form
+        form.appendTo('body').submit().remove();
+      }
+    </script>
 </ui:composition>

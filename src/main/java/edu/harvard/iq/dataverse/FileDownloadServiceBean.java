@@ -199,7 +199,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     // to the API.
     private void redirectToBatchDownloadAPI(String multiFileString, Boolean guestbookRecordsAlreadyWritten, Boolean downloadOriginal){
 
-        String fileDownloadUrl = "/api/access/datafiles/" + multiFileString;
+        String fileDownloadUrl = "/api/access/datafiles";
         if (guestbookRecordsAlreadyWritten && !downloadOriginal){
             fileDownloadUrl += "?gbrecs=true";
         } else if (guestbookRecordsAlreadyWritten && downloadOriginal){
@@ -208,11 +208,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             fileDownloadUrl += "?format=original";
         }
         
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
-        } catch (IOException ex) {
-            logger.info("Failed to issue a redirect to file download url.");
-        }
+        PrimeFaces.current().executeScript("downloadFiles('"+fileDownloadUrl + "',"+ multiFileString+");");
 
     }
 
