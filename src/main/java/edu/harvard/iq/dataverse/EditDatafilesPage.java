@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -26,14 +25,12 @@ import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.search.FileView;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -73,9 +70,12 @@ import java.util.HashSet;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.FacesEvent;
 import javax.faces.event.ValueChangeEvent;
+import javax.faces.validator.ValidatorException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolation;
@@ -242,7 +242,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         return fileMetadatas;
     }
-    
+  
     public void setFileMetadatas(List<FileMetadata> fileMetadatas) {
         this.fileMetadatas = fileMetadatas;
     }
@@ -450,13 +450,11 @@ public class EditDatafilesPage implements java.io.Serializable {
         logger.fine("done");
         
         saveEnabled = true;
-        
         return null; 
     }
     
-    
+
     public String init() {
-        fileMetadatas = new ArrayList<>();
         
         newFiles = new ArrayList<>();
         uploadedFiles = new ArrayList<>(); 
@@ -478,9 +476,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // that the dataset id is mandatory... But 404 will do for now.
             return permissionsWrapper.notFound();
         }
-        
-        
-        
+                
         workingVersion = dataset.getEditVersion();
         clone = workingVersion.cloneDatasetVersion();
         if (workingVersion == null || !workingVersion.isDraft()) {
@@ -493,9 +489,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (!permissionService.on(dataset).has(Permission.EditDataset)) {
             return permissionsWrapper.notAuthorized();
         }
-
-        // TODO: Think about why this call to populateFileMetadatas was added. It seems like it isn't needed after all.
-//        populateFileMetadatas();
 
         // -------------------------------------------
         //  Is this a file replacement operation?
@@ -649,6 +642,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.versionString = versionString;
     }
     
+    /*
     public void toggleSelectedFiles(){
         this.selectedFiles = new ArrayList<>();
         if(this.selectAllFiles){
@@ -663,7 +657,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
     }
-    
+    */
+    /*
     public String getSelectedFilesIdsString() {        
         String downloadIdString = "";
         for (FileMetadata fmd : this.selectedFiles){
@@ -675,7 +670,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         return downloadIdString;
       
     }
-
+*/
     /*
     public void updateFileCounts(){
         
@@ -694,7 +689,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public boolean isShowAccessPopup() {
         for (FileMetadata fmd : this.fileMetadatas) {
-            
             if (fmd.isRestricted()) {
             
                 if (fmd.getDataFile().getId() == null) {
@@ -1062,10 +1056,9 @@ public class EditDatafilesPage implements java.io.Serializable {
             return null;
         }
         
-    }
-    
-    public String save() {
+    }    
         
+    public String save() {
         if (!saveEnabled) {
             return "";
         }
@@ -1860,6 +1853,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             fileMetadatas.add(dataFile.getFileMetadata());
             newFiles.add(dataFile);
         }
+        
+       
         if(uploadInProgress) {
             uploadedFiles = new ArrayList<>();
             uploadInProgress = false;
@@ -1989,6 +1984,7 @@ public class EditDatafilesPage implements java.io.Serializable {
      * @throws java.io.IOException 
      */
     public void handleFileUpload(FileUploadEvent event) throws IOException {
+        
         if (!uploadInProgress) {
             uploadInProgress = true;
         }
@@ -2074,6 +2070,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     private boolean uploadInProgress = false;
     
     private String processUploadedFileList(List<DataFile> dFileList) {
+        
         if (dFileList == null) {
             return null;
         }
@@ -2738,18 +2735,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void handleTabularTagsSelection(final AjaxBehaviorEvent event) {
         tabularDataTagsUpdated = true;
     }
-    
-    public void handleDescriptionChange(final AjaxBehaviorEvent event) {        
-        datasetUpdateRequired = true;
-    }
-    
-    public void handleNameChange(final AjaxBehaviorEvent event) {        
-        datasetUpdateRequired = true;
-    }
-    
-    public void handleFileDirectoryChange(final ValueChangeEvent event) {  
-        datasetUpdateRequired = true;
-    }
         
     /* 
      * Items for the "Advanced (Ingest) Options" popup. 
@@ -2880,46 +2865,17 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     private void populateFileMetadatas() {
+        fileMetadatas = new ArrayList<>();
+        if (selectedFileIdsList == null || selectedFileIdsList.isEmpty()) {
+            return;
+        }
 
-        if (selectedFileIdsList != null) {
-
-            Long datasetVersionId = workingVersion.getId();
-
-            if (datasetVersionId != null) {
-                // The version has a database id - this is an existing version, 
-                // that had been saved previously. So we can look up the file metadatas
-                // by the file and version ids:
-                for (Long fileId : selectedFileIdsList) {
-                    logger.fine("attempting to retrieve file metadata for version id " + datasetVersionId + " and file id " + fileId);
-                    FileMetadata fileMetadata =  datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(datasetVersionId, fileId);
-                    if (fileMetadata != null) {
-                        logger.fine("Success!");
-                        fileMetadatas.add(fileMetadata);
-                    } else {
-                        logger.fine("Failed to find file metadata.");
-                    }
-                }
-            } else {
-                logger.fine("Brand new edit version - no database id.");
-                for (FileMetadata fileMetadata : workingVersion.getFileMetadatas()) {
-                    for (Long fileId : selectedFileIdsList) {
-                        if (fileId.equals(fileMetadata.getDataFile().getId())) {
-                            logger.fine("Success! - found the file id "+fileId+" in the brand new edit version.");
-                            fileMetadatas.add(fileMetadata);
-                            selectedFileIdsList.remove(fileId);
-                            break;
-                        }
-                    }
-                    
-                    // If we've already gone through all the file ids on the list - 
-                    // we can stop going through the filemetadatas:
-                    
-                    if (selectedFileIdsList.size() < 1) {
-                        break;
-                    }
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+            for (Long id : selectedFileIdsList) {
+                if (id.intValue() == fmd.getDataFile().getId().intValue()) {
+                    fileMetadatas.add(fmd);
                 }
             }
-        }
-    }
-    
+        }       
+    }    
 }

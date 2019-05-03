@@ -24,6 +24,12 @@ import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import java.util.HashSet;
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import org.hibernate.validator.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
@@ -670,6 +676,25 @@ public class FileMetadata implements Serializable {
             varGroups.add(vgNew);
         }
 
+    }
+    
+    public Set<ConstraintViolation> validate() {
+        Set<ConstraintViolation> returnSet = new HashSet<>();
+
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        Set<ConstraintViolation<FileMetadata>> constraintViolations = validator.validate(this);
+        if (constraintViolations.size() > 0) {
+            // currently only support one message
+            ConstraintViolation<FileMetadata> violation = constraintViolations.iterator().next();
+            String message = "Constraint violation found in FileMetadata. "
+                    + violation.getMessage() + " "
+                    + "The invalid value is \"" + violation.getInvalidValue().toString() + "\".";
+            logger.info(message);
+            returnSet.add(violation);
+        }
+
+        return returnSet;
     }
     
 }
