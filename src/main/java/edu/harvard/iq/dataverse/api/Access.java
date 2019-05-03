@@ -103,6 +103,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
@@ -511,6 +512,7 @@ public class Access extends AbstractApiBean {
     // consider supporting persistent identifiers.
     @Path("datafiles")
     @POST
+    @Consumes("text/plain")
     @Produces({ "application/zip" })
     public Response postDownloadDatafiles(String fileIds, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
         return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
