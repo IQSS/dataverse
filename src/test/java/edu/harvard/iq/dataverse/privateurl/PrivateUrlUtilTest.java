@@ -15,60 +15,64 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import org.junit.Test;
-import static org.junit.Assert.assertNull;
-import org.junit.Before;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PrivateUrlUtilTest {
 
-    @Before
-    public void setUp() {
+    @BeforeAll
+    public static void setUp() {
         new PrivateUrlUtil();
     }
 
-    @Test
-    public void testIdentifier2roleAssignee() {
-        RoleAssignee returnValueFromEmptyString = null;
-        try {
-            returnValueFromEmptyString = PrivateUrlUtil.identifier2roleAssignee("");
-        } catch (Exception ex) {
-            assertEquals(ex.getClass(), IllegalArgumentException.class);
-            assertEquals(ex.getMessage(), "Could not find dataset id in ''");
-        }
+    @ParameterizedTest
+    @ValueSource(strings = {"", "@pete", PrivateUrlUser.PREFIX + "nonNumber"})
+    void testIdentifier2roleAssignee_returnsNullForInvalidIdentifier(String identifier) {
+        RoleAssignee returnValueFromEmptyString = PrivateUrlUtil.identifier2roleAssignee(identifier);
         assertNull(returnValueFromEmptyString);
+    }
 
-        RoleAssignee returnValueFromNonColon = null;
-        String peteIdentifier = "@pete";
-        try {
-            returnValueFromNonColon = PrivateUrlUtil.identifier2roleAssignee(peteIdentifier);
-        } catch (Exception ex) {
-            assertEquals(ex.getClass(), IllegalArgumentException.class);
-            assertEquals(ex.getMessage(), "Could not find dataset id in '" + peteIdentifier + "'");
-        }
-        assertNull(returnValueFromNonColon);
-
-        RoleAssignee returnValueFromNonNumber = null;
-        String nonNumberIdentifier = PrivateUrlUser.PREFIX + "nonNumber";
-        try {
-            returnValueFromNonNumber = PrivateUrlUtil.identifier2roleAssignee(nonNumberIdentifier);
-        } catch (Exception ex) {
-            assertEquals(ex.getClass(), IllegalArgumentException.class);
-            assertEquals(ex.getMessage(), "Could not find dataset id in '" + nonNumberIdentifier + "'");
-        }
-        assertNull(returnValueFromNonNumber);
-
-        RoleAssignee returnFromValidIdentifier = null;
+    @Test
+    void testIdentifier2roleAssignee_fromValidIdentifier() {
         String validIdentifier = PrivateUrlUser.PREFIX + 42;
-        returnFromValidIdentifier = PrivateUrlUtil.identifier2roleAssignee(validIdentifier);
-        assertNotNull(returnFromValidIdentifier);
-        assertEquals("#42", returnFromValidIdentifier.getIdentifier());
-        assertEquals("Private URL Enabled", returnFromValidIdentifier.getDisplayInfo().getTitle());
-        Assert.assertTrue(returnFromValidIdentifier instanceof PrivateUrlUser);
-        PrivateUrlUser privateUrlUser42 = (PrivateUrlUser) returnFromValidIdentifier;
-        assertEquals(42, privateUrlUser42.getDatasetId());
+        RoleAssignee returnFromValidIdentifier = PrivateUrlUtil.identifier2roleAssignee(validIdentifier);
+        assertTrue(returnFromValidIdentifier instanceof PrivateUrlUser);
+        assertEquals(validIdentifier, returnFromValidIdentifier.getIdentifier());
+    }
 
+    private RoleAssignment createTestRoleAssignment(DvObject dvObject) {
+        DataverseRole role = null;
+        PrivateUrlUser user = new PrivateUrlUser(42);
+        RoleAssignee assignee = user;
+        String urlToken = null;
+
+        return new RoleAssignment(role, assignee, dvObject, urlToken);
+    }
+
+    private RoleAssignment createTestRoleAssignmentWithVersion(Dataset dataset, DatasetVersion.VersionState versionState) {
+        RoleAssignment ra = createTestRoleAssignment(dataset);
+
+        List<DatasetVersion> versions = new ArrayList<>();
+        DatasetVersion datasetVersion = new DatasetVersion();
+        datasetVersion.setVersionState(versionState);
+        versions.add(datasetVersion);
+        dataset.setVersions(versions);
+        ra.setDefinitionPoint(dataset);
+
+        return ra;
+    }
+
+    private RoleAssignment createTestRoleAssignmentWithDvObjectId(DvObject dvObject, Long datasetId) {
+        RoleAssignment ra = createTestRoleAssignment(dvObject);
+
+        dvObject.setId(123l);
+        ra.setDefinitionPoint(dvObject);
+
+        return ra;
     }
 
     @Test
@@ -78,34 +82,25 @@ public class PrivateUrlUtilTest {
 
     @Test
     public void testGetDatasetFromRoleAssignmentNullDefinitionPoint() {
-        DataverseRole aRole = null;
-        PrivateUrlUser privateUrlUser = new PrivateUrlUser(42);
-        RoleAssignee anAssignee = privateUrlUser;
         DvObject nullDefinitionPoint = null;
-        String privateUrlToken = null;
-        RoleAssignment ra = new RoleAssignment(aRole, anAssignee, nullDefinitionPoint, privateUrlToken);
+        RoleAssignment ra = this.createTestRoleAssignment(nullDefinitionPoint);
+
         assertNull(PrivateUrlUtil.getDatasetFromRoleAssignment(ra));
     }
 
     @Test
     public void testGetDatasetFromRoleAssignmentNonDataset() {
-        DataverseRole aRole = null;
-        PrivateUrlUser privateUrlUser = new PrivateUrlUser(42);
-        RoleAssignee anAssignee = privateUrlUser;
         DvObject nonDataset = new Dataverse();
-        String privateUrlToken = null;
-        RoleAssignment ra = new RoleAssignment(aRole, anAssignee, nonDataset, privateUrlToken);
+        RoleAssignment ra = this.createTestRoleAssignment(nonDataset);
+
         assertNull(PrivateUrlUtil.getDatasetFromRoleAssignment(ra));
     }
 
     @Test
     public void testGetDatasetFromRoleAssignmentSuccess() {
-        DataverseRole aRole = null;
-        PrivateUrlUser privateUrlUser = new PrivateUrlUser(42);
-        RoleAssignee anAssignee = privateUrlUser;
         DvObject dataset = new Dataset();
-        String privateUrlToken = null;
-        RoleAssignment ra = new RoleAssignment(aRole, anAssignee, dataset, privateUrlToken);
+        RoleAssignment ra = this.createTestRoleAssignment(dataset);
+
         assertNotNull(PrivateUrlUtil.getDatasetFromRoleAssignment(ra));
         assertEquals("#42", ra.getAssigneeIdentifier());
     }
@@ -117,46 +112,29 @@ public class PrivateUrlUtilTest {
 
     @Test
     public void testGetDraftDatasetVersionFromRoleAssignmentNullDataset() {
-        DataverseRole aRole = null;
-        PrivateUrlUser privateUrlUser = new PrivateUrlUser(42);
-        RoleAssignee anAssignee = privateUrlUser;
         DvObject dataset = null;
-        String privateUrlToken = null;
-        RoleAssignment ra = new RoleAssignment(aRole, anAssignee, dataset, privateUrlToken);
+        RoleAssignment ra = this.createTestRoleAssignment(dataset);
+
         DatasetVersion datasetVersion = PrivateUrlUtil.getDraftDatasetVersionFromRoleAssignment(ra);
         assertNull(datasetVersion);
     }
 
     @Test
     public void testGetDraftDatasetVersionFromRoleAssignmentLastestIsNotDraft() {
-        DataverseRole aRole = null;
-        PrivateUrlUser privateUrlUser = new PrivateUrlUser(42);
-        RoleAssignee anAssignee = privateUrlUser;
         Dataset dataset = new Dataset();
-        List<DatasetVersion> versions = new ArrayList<>();
-        DatasetVersion datasetVersionIn = new DatasetVersion();
-        datasetVersionIn.setVersionState(DatasetVersion.VersionState.RELEASED);
-        versions.add(datasetVersionIn);
-        dataset.setVersions(versions);
-        String privateUrlToken = null;
-        RoleAssignment ra = new RoleAssignment(aRole, anAssignee, dataset, privateUrlToken);
+        DatasetVersion.VersionState versionState = DatasetVersion.VersionState.RELEASED;
+        RoleAssignment ra = this.createTestRoleAssignmentWithVersion(dataset, versionState);
+
         DatasetVersion datasetVersionOut = PrivateUrlUtil.getDraftDatasetVersionFromRoleAssignment(ra);
         assertNull(datasetVersionOut);
     }
 
     @Test
     public void testGetDraftDatasetVersionFromRoleAssignmentSuccess() {
-        DataverseRole aRole = null;
-        PrivateUrlUser privateUrlUser = new PrivateUrlUser(42);
-        RoleAssignee anAssignee = privateUrlUser;
         Dataset dataset = new Dataset();
-        List<DatasetVersion> versions = new ArrayList<>();
-        DatasetVersion datasetVersionIn = new DatasetVersion();
-        datasetVersionIn.setVersionState(DatasetVersion.VersionState.DRAFT);
-        versions.add(datasetVersionIn);
-        dataset.setVersions(versions);
-        String privateUrlToken = null;
-        RoleAssignment ra = new RoleAssignment(aRole, anAssignee, dataset, privateUrlToken);
+        DatasetVersion.VersionState versionState = DatasetVersion.VersionState.DRAFT;
+        RoleAssignment ra = this.createTestRoleAssignmentWithVersion(dataset, versionState);
+
         DatasetVersion datasetVersionOut = PrivateUrlUtil.getDraftDatasetVersionFromRoleAssignment(ra);
         assertNotNull(datasetVersionOut);
         assertEquals("#42", ra.getAssigneeIdentifier());
@@ -169,39 +147,27 @@ public class PrivateUrlUtilTest {
 
     @Test
     public void testGetUserFromRoleAssignmentNonDataset() {
-        DataverseRole aRole = null;
-        PrivateUrlUser privateUrlUserIn = new PrivateUrlUser(42);
-        RoleAssignee anAssignee = privateUrlUserIn;
         DvObject nonDataset = new Dataverse();
-        nonDataset.setId(123l);
-        String privateUrlToken = null;
-        RoleAssignment ra = new RoleAssignment(aRole, anAssignee, nonDataset, privateUrlToken);
+        RoleAssignment ra = this.createTestRoleAssignmentWithDvObjectId(nonDataset, 123l);
+
         PrivateUrlUser privateUrlUserOut = PrivateUrlUtil.getPrivateUrlUserFromRoleAssignment(ra);
         assertNull(privateUrlUserOut);
     }
 
     @Test
     public void testGetUserFromRoleAssignmentSucess() {
-        DataverseRole aRole = null;
-        PrivateUrlUser privateUrlUserIn = new PrivateUrlUser(42);
-        RoleAssignee anAssignee = privateUrlUserIn;
         DvObject dataset = new Dataset();
-        dataset.setId(123l);
-        String privateUrlToken = null;
-        RoleAssignment ra = new RoleAssignment(aRole, anAssignee, dataset, privateUrlToken);
+        RoleAssignment ra = this.createTestRoleAssignmentWithDvObjectId(dataset, 123l);
+
         PrivateUrlUser privateUrlUserOut = PrivateUrlUtil.getPrivateUrlUserFromRoleAssignment(ra);
         assertNotNull(privateUrlUserOut);
     }
 
     @Test
     public void testGetPrivateUrlRedirectDataFail() {
-        DataverseRole aRole = null;
-        long datasetId = 42;
-        PrivateUrlUser privateUrlUser = new PrivateUrlUser(datasetId);
-        RoleAssignee anAssignee = privateUrlUser;
         Dataset dataset = new Dataset();
-        String privateUrlToken = null;
-        RoleAssignment ra = new RoleAssignment(aRole, anAssignee, dataset, privateUrlToken);
+        RoleAssignment ra = this.createTestRoleAssignment(dataset);
+
         ra.setDefinitionPoint(null);
         PrivateUrlRedirectData privateUrlRedirectData = null;
         privateUrlRedirectData = PrivateUrlUtil.getPrivateUrlRedirectData(ra);
