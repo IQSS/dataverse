@@ -133,9 +133,9 @@
                     </div>
                     
                     <p:dialog id="datamoveConfirmation" header="#{bundle['dashboard.card.datamove.manage']}" widgetVar="datamoveConfirmation" modal="true">
-                        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dashboard.card.datamove.confim.dialog']}</p>
+                        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dashboard.card.datamove.confirm.dialog']}</p>
                         <div class="button-block">
-                            <h:commandButton styleClass="btn btn-default" value="#{bundle['dashboard.card.datamove.confim.yes']}" 
+                            <h:commandButton styleClass="btn btn-default" value="#{bundle['dashboard.card.datamove.confirm.yes']}"
                                              onclick="PF('datamoveConfirmation').hide();" 
                                              action="#{DashboardDatamovePage.move()}"
                                              update=":datamove-form:dsPersistentIds,:datamove-form:move" />
