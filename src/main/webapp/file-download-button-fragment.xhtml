@@ -333,7 +333,7 @@
     </p:commandLink>
     <script type="text/javascript">
       function downloadFiles(url, filelist) {
-        var form = $('<form></form>').attr('action', url).attr('method', 'post').attr('target','_blank');
+        var form = $('<form></form>').attr('action', url).attr('method', 'post').attr('enctype','text/plain').attr('target','_blank');
         form.append($("<input></input>").attr('type', 'hidden').attr('name', 'fileIds').attr('value', filelist));
         //Submit and then remove form
         form.appendTo('body').submit().remove();
