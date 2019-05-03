@@ -58,6 +58,13 @@ public class ChangeUserIdentifierCommand extends AbstractVoidCommand {
         BuiltinUser bu = ctxt.builtinUsers().findByUserName(oldIdentifier);
         au.setUserIdentifier(newIdentifier);
         
+        /*
+        5/3/2019
+        Related to 3575 and subsequent issues - we may decide to remove username from built in user as redundent
+        If so the code below will have to change, be careful around authenticated user lookup, could decide to leave as null if 
+        AU lookup provider is built in.
+        */
+        
         if (bu != null) {
             bu.setUserName(newIdentifier);
             AuthenticatedUserLookup aul = au.getAuthenticatedUserLookup();
