@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
+import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
@@ -186,39 +187,6 @@ public class DDIExporterTest {
 
         System.out.println(XmlPrinter.prettyPrintXml(byteArrayOutputStream.toString()));
         assertFalse(byteArrayOutputStream.toString().contains("finch@mailinator.com"));
-
-    }
-
-    static class MockDatasetFieldSvc extends DatasetFieldServiceBean {
-
-        Map<String, DatasetFieldType> fieldTypes = new HashMap<>();
-        long nextId = 1;
-
-        public DatasetFieldType add(DatasetFieldType t) {
-            if (t.getId() == null) {
-                t.setId(nextId++);
-            }
-            fieldTypes.put(t.getName(), t);
-            return t;
-        }
-
-        @Override
-        public DatasetFieldType findByName(String name) {
-            return fieldTypes.get(name);
-        }
-
-        @Override
-        public DatasetFieldType findByNameOpt(String name) {
-            return findByName(name);
-        }
-
-        @Override
-        public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndStrValue(DatasetFieldType dsft, String strValue, boolean lenient) {
-            ControlledVocabularyValue cvv = new ControlledVocabularyValue();
-            cvv.setDatasetFieldType(dsft);
-            cvv.setStrValue(strValue);
-            return cvv;
-        }
 
     }
 
