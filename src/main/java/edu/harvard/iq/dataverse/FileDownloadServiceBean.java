@@ -208,7 +208,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             fileDownloadUrl += "?format=original";
         }
         
-        PrimeFaces.current().executeScript("downloadFiles('"+fileDownloadUrl + "',"+ multiFileString+");");
+        PrimeFaces.current().executeScript("downloadFiles('"+fileDownloadUrl + "','"+ multiFileString+"');");
 
     }
 
