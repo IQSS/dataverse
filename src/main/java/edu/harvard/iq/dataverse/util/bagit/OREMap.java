@@ -185,6 +185,8 @@ public class OREMap {
             addIfNotNull(aggRes, JsonLDTerm.restricted, fmd.isRestricted());
             addIfNotNull(aggRes, JsonLDTerm.directoryLabel, fmd.getDirectoryLabel());
             addIfNotNull(aggRes, JsonLDTerm.schemaOrg("version"), fmd.getVersion());
+            addIfNotNull(aggRes, JsonLDTerm.DVCore("provenance"), fmd.getProvFreeForm());
+
             addIfNotNull(aggRes, JsonLDTerm.datasetVersionId, fmd.getDatasetVersion().getId());
             JsonArray catArray = null;
             if (fmd != null) {
