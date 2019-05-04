@@ -516,8 +516,11 @@ public class Access extends AbstractApiBean {
     @Produces({ "application/zip" })
     public Response postDownloadDatafiles(String fileIds, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
         
-        fileIds=fileIds.substring(8); //String "fileIds=" from the front
-        logger.info(fileIds + "x");
+        fileIds = fileIds.substring(8); // String "fileIds=" from the front
+        /* Note - fileIds also has a ',' after the last file id number and before a
+         * final '\n' - the latter appears to stop the last item from being parsed in
+         * the fileIds.split(","); line below.
+         */
         return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
     }
     /*

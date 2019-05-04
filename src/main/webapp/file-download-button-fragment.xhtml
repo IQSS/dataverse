@@ -333,6 +333,7 @@
     </p:commandLink>
     <script type="text/javascript">
       function downloadFiles(url, filelist) {
+        filelist=filelist + ','; //Prevents last file from being dropped on server
         var form = $('<form></form>').attr('action', url).attr('method', 'post').attr('enctype','text/plain');
         form.append($("<input></input>").attr('type', 'hidden').attr('name', 'fileIds').attr('value', filelist));
         //Submit and then remove form
