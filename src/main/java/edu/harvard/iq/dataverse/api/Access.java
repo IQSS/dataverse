@@ -515,7 +515,9 @@ public class Access extends AbstractApiBean {
     @Consumes("text/plain")
     @Produces({ "application/zip" })
     public Response postDownloadDatafiles(String fileIds, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
-        logger.info(fileIds);
+        
+        fileIds=fileIds.substring(8); //String "fileIds=" from the front
+        logger.info(fileIds + "x");
         return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
     }
     /*
