@@ -8,6 +8,7 @@ import java.io.StringReader;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -72,6 +73,13 @@ public class MoveIT {
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
 
         String nullApiToken = null;
+        String nonExistentDataverse = UtilIT.getRandomDvAlias();
+        Response moveDatasetFailNoTargetDataverse = UtilIT.moveDataset(datasetId.toString(), nonExistentDataverse, nullApiToken);
+        moveDatasetFailNoTargetDataverse.prettyPrint();
+        moveDatasetFailNoTargetDataverse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Target dataverse not found."));
+
         Response moveDatasetFailGuest = UtilIT.moveDataset(datasetId.toString(), curatorDataverseAlias1, nullApiToken);
         moveDatasetFailGuest.prettyPrint();
         moveDatasetFailGuest.then().assertThat()
@@ -109,13 +117,13 @@ public class MoveIT {
         moveDataset1.prettyPrint();
         moveDataset1.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.message", equalTo("Dataset moved successfully"));
+                .body("data.message", equalTo("Dataset moved successfully."));
 
         Response moveDataset2 = UtilIT.moveDataset(datasetId.toString(), curatorDataverseAlias1, superuserApiToken);
         moveDataset2.prettyPrint();
         moveDataset2.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.message", equalTo("Dataset moved successfully"));
+                .body("data.message", equalTo("Dataset moved successfully."));
 
         Response createCuratorDataverse2 = UtilIT.createRandomDataverse(curatorApiToken);
         createCuratorDataverse2.prettyPrint();
@@ -133,7 +141,7 @@ public class MoveIT {
         moveDataset3.prettyPrint();
         moveDataset3.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.message", equalTo("Dataset moved successfully"));
+                .body("data.message", equalTo("Dataset moved successfully."));
 
     }
 
@@ -278,7 +286,7 @@ public class MoveIT {
         forceMoveLinkedDataset.prettyPrint();
         forceMoveLinkedDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.message", equalTo("Dataset moved successfully"));
+                .body("data.message", equalTo("Dataset moved successfully."));
 
         Response listDatasetsAfterSource = UtilIT.listDatasetsViaSword(dataverse1Alias, apiToken);
         listDatasetsAfterSource.prettyPrint();
