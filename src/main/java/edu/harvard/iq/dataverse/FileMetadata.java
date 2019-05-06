@@ -651,6 +651,7 @@ public class FileMetadata implements Serializable {
             vmNew.setLiteralquestion(vm.getLiteralquestion());
             vmNew.setNotes(vm.getNotes());
             vmNew.setUniverse(vm.getUniverse());
+            vmNew.setPostquestion(vm.getPostquestion());
 
             Collection<CategoryMetadata> cms = vm.getCategoriesMetadata();
             for (CategoryMetadata cm : cms) {
