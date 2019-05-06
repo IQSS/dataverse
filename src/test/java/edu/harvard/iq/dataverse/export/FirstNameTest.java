@@ -46,21 +46,6 @@ public class FirstNameTest {
     }
 
     /**
-     * Name cleanup fullname
-     *
-     * Name is composed of:
-     * <First Names> <Family Name>
-     */
-    @Test
-    public void testCleanup() {
-        assertEquals(firstNames.cleanup("    Francesco    "), "Francesco");
-        assertEquals(firstNames.cleanup("Francesco  Cadili "), "Francesco Cadili");
-        assertEquals(firstNames.cleanup("  Cadili,Francesco"), "Cadili, Francesco");
-        assertEquals(firstNames.cleanup("Cadili,     Francesco  "), "Cadili, Francesco");
-        assertEquals(firstNames.cleanup(null), "");
-    }
-
-    /**
      * Name is composed of: The string is composed of:
      * <Family Name>, <First Names>
      */

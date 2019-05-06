@@ -599,6 +599,12 @@
             <artifactId>tika-parsers</artifactId>
             <version>1.19</version>
         </dependency>
+        <!-- Named Entity Recognition -->
+        <dependency>
+            <groupId>org.apache.opennlp</groupId>
+            <artifactId>opennlp-tools</artifactId>
+            <version>1.9.1</version>
+        </dependency>
     </dependencies>
     <build>
         <!--        <testResources>

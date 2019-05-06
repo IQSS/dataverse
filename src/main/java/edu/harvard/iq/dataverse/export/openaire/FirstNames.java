@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.util.logging.Logger;
 import java.util.HashMap;
 import java.util.logging.Level;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -148,23 +147,6 @@ public class FirstNames {
      */
     int getDuplicates() {
         return duplicates;
-    }
-
-    /**
-     * Cleanup full name
-     *
-     * @param fullname full name
-     */
-    public String cleanup(String fullname) {
-        if (StringUtils.isBlank(fullname)) {
-            return "";
-        }
-
-        fullname = fullname.trim()
-                .replaceAll(", *", ", ")
-                .replaceAll(" +", " ");
-
-        return fullname;
     }
 
     /**

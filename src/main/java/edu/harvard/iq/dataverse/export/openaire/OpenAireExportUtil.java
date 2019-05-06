@@ -257,7 +257,7 @@ public class OpenAireExportUtil {
                                 }
 
                                 String givenName = null;
-                                creatorName = FirstNames.getInstance().cleanup(creatorName);
+                                creatorName = Cleanup.normalize(creatorName);
                                 // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
                                 if (creatorName.contains(",")) {
                                     // creatorName=<FamilyName>, <FirstName>
@@ -688,7 +688,7 @@ public class OpenAireExportUtil {
         Map<String, String> contributor_map = new HashMap<String, String>();
 
         String givenName = null;
-        contributorName = FirstNames.getInstance().cleanup(contributorName);
+        contributorName = Cleanup.normalize(contributorName);
         // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
         if (contributorName.contains(",")) {
             // contributorName=<FamilyName>, <FirstName>
