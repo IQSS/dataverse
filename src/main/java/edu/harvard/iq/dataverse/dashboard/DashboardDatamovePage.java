@@ -174,10 +174,13 @@ public class DashboardDatamovePage implements java.io.Serializable {
                 String version = settingsWrapper.getGuidesVersion();
                 // Suggest using the API to force the move.
                 arguments.add(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.unforced.suggestForce", Arrays.asList(guidesBaseUrl, version)));
+            } else {
+                String emptyStringNoDetails = "";
+                arguments.add(emptyStringNoDetails);
             }
             FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    BundleUtil.getStringFromBundle("dashboard.card.datamove.message.failure.summary", arguments),
+                    BundleUtil.getStringFromBundle("dashboard.card.datamove.message.failure.summary"),
                     BundleUtil.getStringFromBundle("dashboard.card.datamove.message.failure.details", arguments)));
         }
     }
