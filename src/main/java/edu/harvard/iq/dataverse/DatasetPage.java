@@ -499,9 +499,9 @@ public class DatasetPage implements java.io.Serializable {
     public void updateFileSearch(){  
         logger.info("updating file search list");
         //if (readOnly) {
-            // if we are in the read-only mode, this is definitely an indexed version (right?)
-            this.fileMetadatasSearch = selectFileMetadatasForDisplay(this.fileLabelSearchTerm); 
+            this.fileMetadatasSearch = selectFileMetadatasForDisplay(this.fileLabelSearchTerm);
         //} else {
+        //    (we may not need this method at all? -- 4.13)
         //    this.fileMetadatasSearch = datafileService.findFileMetadataByDatasetVersionIdLabelSearchTerm(workingVersion.getId(), this.fileLabelSearchTerm, "", "");
         //}
     }
@@ -521,27 +521,59 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private List<FileMetadata> selectFileMetadatasForDisplay(String searchTerm) {
-        Set<Long> searchResultsIdSet = null; 
-        
+        Set<Long> searchResultsIdSet = null;
+
         if (searchTerm != null && !searchTerm.equals("")) {
-            //List<Integer> searchResultsIdList = datafileService.findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(workingVersion.getId(), searchTerm, "", "");
-            //searchResultsIdSet = new HashSet<>();
-            //for (Integer id : searchResultsIdList) {
-            //    searchResultsIdSet.add(id.longValue());
-            //}
-            searchResultsIdSet = getDataFileIdsInVersion(workingVersion.getId(), searchTerm);
-        }
-        
-        List<FileMetadata> retList = new ArrayList<>(); 
-        
-        for (FileMetadata fileMetadata : workingVersion.getFileMetadatasSorted()) {
-            if (searchResultsIdSet == null || searchResultsIdSet.contains(fileMetadata.getId())) {
-                retList.add(fileMetadata);
+            if (isIndexedVersion()) {
+                searchResultsIdSet = getFileIdsInVersionFromSolr(workingVersion.getId(), searchTerm);
+            } else {
+                searchResultsIdSet = getFileIdsInVersionFromDb(workingVersion.getId(), searchTerm);
             }
+
+            List<FileMetadata> retList = new ArrayList<>();
+
+            for (FileMetadata fileMetadata : workingVersion.getFileMetadatasSorted()) {
+                if (searchResultsIdSet == null || searchResultsIdSet.contains(fileMetadata.getId())) {
+                    retList.add(fileMetadata);
+                }
+            }
+
+            return retList;
+        }
+
+        return workingVersion.getFileMetadatasSorted();       
+    }
+    
+    public boolean isIndexedVersion() {
+        // The version is indexed if it's the latest published version, or a 
+        // draft. 
+        
+        // (We probably want to have some straightforward test to verify
+        // that this version *has* actually been indexed and is searchable here - ?). 
+        return workingVersion.isDraft() || isThisLatestReleasedVersion();
+    }
+    
+    /**
+     * Finds the list of numeric datafile ids in the Version specified, by running
+     * a database query.
+     * 
+     * @param datasetVersionId numeric version id
+     * @param pattern string keyword
+     * @return set of numeric ids
+     * 
+     */
+    
+    public Set<Long> getFileIdsInVersionFromDb(Long datasetVersionId, String pattern) {        
+        List<Integer> searchResultsIdList = datafileService.findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(datasetVersionId, pattern, "", "");
+        
+        Set<Long> ret = new HashSet<>();
+        for (Integer id : searchResultsIdList) {
+            ret.add(id.longValue());
         }
         
-        return retList;
+        return ret;
     }
+    
     
     /**
      * Finds the list of numeric datafile ids in the Version specified, by running
@@ -552,7 +584,7 @@ public class DatasetPage implements java.io.Serializable {
      * @return set of numeric ids
      * 
      */
-    public Set<Long> getDataFileIdsInVersion(Long datasetVersionId, String pattern) {
+    public Set<Long> getFileIdsInVersionFromSolr(Long datasetVersionId, String pattern) {
         
         SolrQuery solrQuery = new SolrQuery();
         
