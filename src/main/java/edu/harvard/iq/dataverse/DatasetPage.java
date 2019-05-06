@@ -115,8 +115,17 @@ import org.primefaces.event.TabChangeEvent;
 import org.primefaces.event.data.PageEvent;
 
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
+import edu.harvard.iq.dataverse.search.SearchConstants;
+import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SearchUtil;
 import java.util.TimeZone;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
@@ -489,11 +498,12 @@ public class DatasetPage implements java.io.Serializable {
     
     public void updateFileSearch(){  
         logger.info("updating file search list");
-        if (readOnly) {
+        //if (readOnly) {
+            // if we are in the read-only mode, this is definitely an indexed version (right?)
             this.fileMetadatasSearch = selectFileMetadatasForDisplay(this.fileLabelSearchTerm); 
-        } else {
-            this.fileMetadatasSearch = datafileService.findFileMetadataByDatasetVersionIdLabelSearchTerm(workingVersion.getId(), this.fileLabelSearchTerm, "", "");
-        }
+        //} else {
+        //    this.fileMetadatasSearch = datafileService.findFileMetadataByDatasetVersionIdLabelSearchTerm(workingVersion.getId(), this.fileLabelSearchTerm, "", "");
+        //}
     }
     
         private Long numberOfFilesToShow = (long) 25;
@@ -514,11 +524,12 @@ public class DatasetPage implements java.io.Serializable {
         Set<Long> searchResultsIdSet = null; 
         
         if (searchTerm != null && !searchTerm.equals("")) {
-            List<Integer> searchResultsIdList = datafileService.findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(workingVersion.getId(), searchTerm, "", "");
-            searchResultsIdSet = new HashSet<>();
-            for (Integer id : searchResultsIdList) {
-                searchResultsIdSet.add(id.longValue());
-            }
+            //List<Integer> searchResultsIdList = datafileService.findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(workingVersion.getId(), searchTerm, "", "");
+            //searchResultsIdSet = new HashSet<>();
+            //for (Integer id : searchResultsIdList) {
+            //    searchResultsIdSet.add(id.longValue());
+            //}
+            searchResultsIdSet = getDataFileIdsInVersion(workingVersion.getId(), searchTerm);
         }
         
         List<FileMetadata> retList = new ArrayList<>(); 
@@ -531,6 +542,59 @@ public class DatasetPage implements java.io.Serializable {
         
         return retList;
     }
+    
+    /**
+     * Finds the list of numeric datafile ids in the Version specified, by running
+     * a direct solr search query.
+     * 
+     * @param datasetVersionId numeric version id
+     * @param pattern string keyword
+     * @return set of numeric ids
+     * 
+     */
+    public Set<Long> getDataFileIdsInVersion(Long datasetVersionId, String pattern) {
+        
+        SolrQuery solrQuery = new SolrQuery();
+        
+        List<String> queryStrings = new ArrayList<>();
+        
+        // Main query: searching on the file name ("label") and description
+        queryStrings.add(SearchUtil.constructQuery(SearchFields.FILE_NAME, pattern));
+        queryStrings.add(SearchUtil.constructQuery(SearchFields.FILE_DESCRIPTION, pattern));
+
+        solrQuery.setQuery(SearchUtil.constructQuery(queryStrings, true));
+        
+        // Additional filter queries, to restrict the results to files in this version only:
+        
+        solrQuery.addFilterQuery(SearchFields.TYPE + ":" + SearchConstants.FILES);
+        solrQuery.addFilterQuery(SearchFields.DATASET_VERSION_ID + ":" + datasetVersionId);
+
+        // Unlimited number of search results: 
+        // (but we are searching within one dataset(version), so it should be manageable)
+        solrQuery.setRows(Integer.MAX_VALUE);
+
+        
+        QueryResponse queryResponse = null;
+        try {
+            queryResponse = getSolrServer().query(solrQuery);
+        } catch (Exception ex) {
+            return null; 
+        }
+        
+        SolrDocumentList docs = queryResponse.getResults();
+        Iterator<SolrDocument> iter = docs.iterator();
+        Set<Long> resultIds = new HashSet<>();
+        
+        while (iter.hasNext()) {
+            SolrDocument solrDocument = iter.next();
+            Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
+            resultIds.add(entityid);
+        }
+        
+        return resultIds;
+    }
+    
+
     
     /*
         Save the setting locally so db isn't hit repeatedly
@@ -4705,4 +4769,17 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
     }
+    
+    private SolrClient solrServer = null;
+    
+    private SolrClient getSolrServer () {
+        if (solrServer == null) {
+        }
+        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
+        solrServer = new HttpSolrClient.Builder(urlString).build();
+        
+        return solrServer;
+        
+    }
+
 }

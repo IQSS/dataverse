@@ -320,9 +320,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
         setSolrErrorEncountered(false);
         
         try {
-            logger.fine("query from user:   " + query);
-            logger.fine("queryToPassToSolr: " + queryToPassToSolr);
-            logger.fine("sort by: " + sortField);
+            logger.info("ATTENTION! query from user:   " + query);
+            logger.info("ATTENTION! queryToPassToSolr: " + queryToPassToSolr);
+            logger.info("ATTENTION! sort by: " + sortField);
 
             /**
              * @todo Number of search results per page should be configurable -
