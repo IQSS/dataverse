@@ -486,6 +486,42 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
     
+    private String fileTypeFacet; 
+    
+    public String getFileTypeFacet() {
+        return fileTypeFacet;
+    }
+
+    public void setFileTypeFacet(String fileTypeFacet) {
+        if (fileTypeFacet != null) {
+            this.fileTypeFacet = fileTypeFacet.trim();
+        } 
+    }
+    
+    private String fileAccessFacet; 
+    
+    public String getFileAccessFacet() {
+        return fileAccessFacet;
+    }
+
+    public void setFileAccessFacet(String fileAccessFacet) {
+        if (fileAccessFacet != null) {
+            this.fileAccessFacet = fileAccessFacet.trim();
+        } 
+    }
+    
+    private String fileTagsFacet; 
+    
+    public String getFileTagsFacet() {
+        return fileTagsFacet;
+    }
+
+    public void setFileTagsFacet(String fileTagsFacet) {
+        if (fileTagsFacet != null) {
+            this.fileTagsFacet = fileTagsFacet.trim();
+        } 
+    }
+    
     private List<FileMetadata> fileMetadatasSearch;
     
     public List<FileMetadata> getFileMetadatasSearch() {
@@ -533,7 +569,7 @@ public class DatasetPage implements java.io.Serializable {
             List<FileMetadata> retList = new ArrayList<>();
 
             for (FileMetadata fileMetadata : workingVersion.getFileMetadatasSorted()) {
-                if (searchResultsIdSet == null || searchResultsIdSet.contains(fileMetadata.getId())) {
+                if (searchResultsIdSet == null || searchResultsIdSet.contains(fileMetadata.getDataFile().getId())) {
                     retList.add(fileMetadata);
                 }
             }
@@ -563,12 +599,13 @@ public class DatasetPage implements java.io.Serializable {
      * 
      */
     
-    public Set<Long> getFileIdsInVersionFromDb(Long datasetVersionId, String pattern) {        
-        List<Integer> searchResultsIdList = datafileService.findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(datasetVersionId, pattern, "", "");
+    public Set<Long> getFileIdsInVersionFromDb(Long datasetVersionId, String pattern) {
+        logger.info("searching for file ids, in the database");
+        List<Long> searchResultsIdList = datafileService.findDataFileIdsByDatasetVersionIdLabelSearchTerm(datasetVersionId, pattern, "", "");
         
         Set<Long> ret = new HashSet<>();
-        for (Integer id : searchResultsIdList) {
-            ret.add(id.longValue());
+        for (Long id : searchResultsIdList) {
+            ret.add(id);
         }
         
         return ret;
@@ -585,6 +622,7 @@ public class DatasetPage implements java.io.Serializable {
      * 
      */
     public Set<Long> getFileIdsInVersionFromSolr(Long datasetVersionId, String pattern) {
+        logger.info("searching for file ids, in solr");
         
         SolrQuery solrQuery = new SolrQuery();
         
@@ -594,22 +632,31 @@ public class DatasetPage implements java.io.Serializable {
         queryStrings.add(SearchUtil.constructQuery(SearchFields.FILE_NAME, pattern));
         queryStrings.add(SearchUtil.constructQuery(SearchFields.FILE_DESCRIPTION, pattern));
 
-        solrQuery.setQuery(SearchUtil.constructQuery(queryStrings, true));
+        solrQuery.setQuery(SearchUtil.constructQuery(queryStrings, false));
         
         // Additional filter queries, to restrict the results to files in this version only:
         
         solrQuery.addFilterQuery(SearchFields.TYPE + ":" + SearchConstants.FILES);
-        solrQuery.addFilterQuery(SearchFields.DATASET_VERSION_ID + ":" + datasetVersionId);
+        if (!workingVersion.isDraft()) {
+            solrQuery.addFilterQuery(SearchFields.DATASET_VERSION_ID + ":" + datasetVersionId);
+        } else {
+            // This may be a bit of a problem: 
+            // (to avoid indexing duplicate documents, we don't index ALL of the files
+            // in a draft version - only the new files added to the draft.)
+            solrQuery.addFilterQuery(SearchFields.PARENT_ID + ":" + workingVersion.getDataset().getId());
+        }
 
         // Unlimited number of search results: 
         // (but we are searching within one dataset(version), so it should be manageable)
         solrQuery.setRows(Integer.MAX_VALUE);
 
+        logger.info("Solr query (file search): " + solrQuery);
         
         QueryResponse queryResponse = null;
         try {
             queryResponse = getSolrServer().query(solrQuery);
         } catch (Exception ex) {
+            logger.info("Solr exception: " + ex.getLocalizedMessage());
             return null; 
         }
         
@@ -620,6 +667,7 @@ public class DatasetPage implements java.io.Serializable {
         while (iter.hasNext()) {
             SolrDocument solrDocument = iter.next();
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
+            logger.info("solr result id: "+entityid);
             resultIds.add(entityid);
         }
         
@@ -1579,7 +1627,10 @@ public class DatasetPage implements java.io.Serializable {
                     // we don't have to do so later (possibly, many more times than necessary):
                     datafileService.findFileMetadataOptimizedExperimental(dataset);
                 }
-                fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
+                
+                // This will default to all the files in the version, if the search term
+                // parameter hasn't been specified yet:
+                fileMetadatasSearch = selectFileMetadatasForDisplay(fileLabelSearchTerm);
 
                 ownerId = dataset.getOwner().getId();
                 datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
@@ -2362,7 +2413,8 @@ public class DatasetPage implements java.io.Serializable {
         if (readOnly) {
             datafileService.findFileMetadataOptimizedExperimental(dataset);
         } 
-        fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
+        //fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
+        fileMetadatasSearch = selectFileMetadatasForDisplay(fileLabelSearchTerm);
 
         displayCitation = dataset.getCitation(true, workingVersion);
         stateChanged = false;
