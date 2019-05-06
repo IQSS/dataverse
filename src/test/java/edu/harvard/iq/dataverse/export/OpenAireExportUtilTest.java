@@ -134,7 +134,7 @@ public class OpenAireExportUtilTest {
                 + "<affiliation>Bottom</affiliation>"
                 + "</creator>"
                 + "<creator>"
-                + "<creatorName>Apache Foundation</creatorName>"
+                + "<creatorName nameType=\"Organizational\">Apache Foundation</creatorName>"
                 + "<nameIdentifier nameIdentifierScheme=\"DAISY\">audreyId</nameIdentifier>"
                 + "<affiliation>Bottom</affiliation>"
                 + "</creator>"
@@ -142,6 +142,51 @@ public class OpenAireExportUtilTest {
                 sw.toString());
     }
 
+    /**
+     * Test: 2, Creator (with optional given name, family name, name identifier
+     * and affiliation sub-properties) (M)
+     *
+     * nameType="Organizational"
+     * 
+     * creators
+     */
+    @Test
+    public void testWriteCreatorsElementWithOrganizations() throws XMLStreamException, FileNotFoundException {
+        XMLOutputFactory f = XMLOutputFactory.newInstance();
+        StringWriter sw = new StringWriter();
+        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+
+        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-organizations.txt");
+        String text = new Scanner(file).useDelimiter("\\Z").next();
+        Gson gson = new Gson();
+        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+        OpenAireExportUtil.writeCreatorsElement(xmlw, dto, null);
+
+        xmlw.close();
+        Assert.assertEquals("<creators>"
+                + "<creator>"
+                + "<creatorName nameType=\"Organizational\">IBM</creatorName>"
+                + "</creator>"
+                + "<creator>"
+                + "<creatorName nameType=\"Organizational\">Harvard University</creatorName>"
+                + "</creator>"
+                + "<creator>"
+                + "<creatorName nameType=\"Organizational\">The Institute for Quantitative Social Science</creatorName>"
+                + "</creator>"
+                + "<creator>"
+                + "<creatorName nameType=\"Organizational\">The Ford Foundation</creatorName>"
+                + "</creator>"
+                + "<creator>"
+                + "<creatorName nameType=\"Organizational\">United Nations Economic and Social Commission for Asia and the Pacific (UNESCAP)</creatorName>"
+                + "</creator>"
+                + "<creator>"
+                + "<creatorName nameType=\"Organizational\">Michael J. Fox Foundation for Parkinson's Research</creatorName>"
+                + "</creator>"
+                + "</creators>",
+                sw.toString());
+    }
+    
     /**
      * Test: 3, Title (with optional type sub-properties) (M)
      *
@@ -282,6 +327,55 @@ public class OpenAireExportUtilTest {
                 + "<contributor contributorType=\"ContactPerson\">"
                 + "<contributorName nameType=\"Personal\">John Smith</contributorName>"
                 + "<givenName>John</givenName><familyName>Smith</familyName></contributor>"
+                + "<contributor contributorType=\"ContactPerson\">"
+                + "<contributorName>pete@malinator.com</contributorName>"
+                + "</contributor>"
+                + "</contributors>",
+                sw.toString());
+    }
+    
+    /**
+     * Test: 7, Contributor ((with optional given name, family name, name
+     * identifier and affiliation sub-properties)
+     * 
+     * nameType="Organizational"
+     *
+     * contributors
+     */
+    @Test
+    public void testWriteContributorsElementWithOrganizations() throws XMLStreamException, FileNotFoundException {
+        System.out.println("writeContributorsElement");
+        XMLOutputFactory f = XMLOutputFactory.newInstance();
+        StringWriter sw = new StringWriter();
+        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+
+        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-organizations.txt");
+        String text = new Scanner(file).useDelimiter("\\Z").next();
+        Gson gson = new Gson();
+        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+        OpenAireExportUtil.writeContributorsElement(xmlw, dto, null);
+
+        xmlw.close();
+        Assert.assertEquals("<contributors>"
+                + "<contributor contributorType=\"ContactPerson\">"
+                + "<contributorName nameType=\"Organizational\">IBM</contributorName>"
+                + "</contributor>"
+                + "<contributor contributorType=\"ContactPerson\">"
+                + "<contributorName nameType=\"Organizational\">Harvard University</contributorName>"
+                + "</contributor>"
+                + "<contributor contributorType=\"ContactPerson\">"
+                + "<contributorName nameType=\"Organizational\">The Institute for Quantitative Social Science</contributorName>"
+                + "</contributor>"
+                + "<contributor contributorType=\"ContactPerson\">"
+                + "<contributorName nameType=\"Organizational\">The Ford Foundation</contributorName>"
+                + "</contributor>"
+                + "<contributor contributorType=\"ContactPerson\">"
+                + "<contributorName nameType=\"Organizational\">United Nations Economic and Social Commission for Asia and the Pacific (UNESCAP)</contributorName>"
+                + "</contributor>"
+                + "<contributor contributorType=\"ContactPerson\">"
+                + "<contributorName nameType=\"Organizational\">Michael J. Fox Foundation for Parkinson's Research</contributorName>"
+                + "</contributor>"
                 + "<contributor contributorType=\"ContactPerson\">"
                 + "<contributorName>pete@malinator.com</contributorName>"
                 + "</contributor>"

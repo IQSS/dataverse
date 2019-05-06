@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.export.openaire;
 
 import java.io.IOException;
@@ -20,22 +15,23 @@ import opennlp.tools.util.Span;
  * @author francesco.cadili@4science.it
  */
 public class Organizations {
+
     private static Organizations instance = null;
-    
+
     private boolean[] loadOrganizationModels = {
-        true, 
-        false       // es-ner-organization.bin seams not work...
+        true,
+        false // es-ner-organization.bin seams not work...
     };
-    
+
     private static final Logger logger = Logger.getLogger(FirstNames.class.getCanonicalName());
     private static List<NameFinderME> organizationNameFinders = new ArrayList<NameFinderME>();
 
-    public static final String[] TAG_ORGANIZATIONS = { "organization" };    
-    public static String [] ORGNANIZATION_MODELS = { 
+    public static final String[] TAG_ORGANIZATIONS = {"organization"};
+    public static String[] ORGNANIZATION_MODELS = {
         "edu/harvard/iq/dataverse/firstNames/en-ner-organization.bin",
         "edu/harvard/iq/dataverse/firstNames/es-ner-organization.bin"
     };
-    
+
     /**
      * Singleton method
      *
@@ -48,7 +44,7 @@ public class Organizations {
 
         return instance;
     }
-    
+
     /**
      * Initialize organization model.
      *
@@ -56,23 +52,22 @@ public class Organizations {
     private Organizations() {
         int pos = 0;
         for (boolean loadEnOrganizationModel : loadOrganizationModels) {
-            
+
             //Loading the NER-organization model 
             if (loadEnOrganizationModel) {
                 try {
-                    loadEnOrganizationModel(ORGNANIZATION_MODELS[pos]);
+                    loadOrganizationModel(ORGNANIZATION_MODELS[pos]);
                 } catch (IOException ioe) {
-                    logger.log(Level.WARNING, 
-                            String.format("I cannot read model {0}, with name {1}", 
+                    logger.log(Level.WARNING,
+                            String.format("I cannot read model {0}, with name {1}",
                                     pos, ORGNANIZATION_MODELS[pos]));
                 }
             }
             pos++;
         }
     }
-    
+
     /**
-     *
      * Check if organization is recognized by models.
      *
      * @param organization
@@ -80,9 +75,9 @@ public class Organizations {
      */
     public boolean isOrganization(String organization) {
         organization = Cleanup.normalize(organization);
-        
+
         String[] sentence = organization.split(" ");
-        
+
         for (NameFinderME organizationNameFinder : organizationNameFinders) {
             Span spans[] = organizationNameFinder.find(sentence);
             for (Span span : spans) {
@@ -93,20 +88,21 @@ public class Organizations {
                 }
             }
         }
-        
+
         return false;
     }
-    
-    /***
-     * Load enOrganizationModel
+
+    /**
+     * Load Organization Model
+     *
      * @see <a href="http://opennlp.apache.org/models.html">models</a>
-     * 
-     * @throws IOException 
+     *
+     * @throws IOException
      */
-    private void loadEnOrganizationModel(String modelFileName) throws IOException {
+    private void loadOrganizationModel(String modelFileName) throws IOException {
         InputStream fis = this.getClass().getClassLoader().getResourceAsStream(modelFileName);
         TokenNameFinderModel organizationModel = new TokenNameFinderModel(fis);
-        
+
         organizationNameFinders.add(new NameFinderME(organizationModel));
     }
 }

@@ -256,12 +256,13 @@ public class OpenAireExportUtil {
                                     nameType_check = true;
                                 }
 
-                                String givenName = null;
                                 creatorName = Cleanup.normalize(creatorName);
                                 // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
                                 if (creatorName.contains(",")) {
+                                    String givenName = FirstNames.getInstance().getFirstName(creatorName);
+
                                     // creatorName=<FamilyName>, <FirstName>
-                                    if ((givenName = FirstNames.getInstance().getFirstName(creatorName)) != null) {
+                                    if (givenName != null) {
                                         // givenName ok
                                         creator_map.put("nameType", "Personal");
                                         nameType_check = true;
@@ -277,22 +278,30 @@ public class OpenAireExportUtil {
                                         writeFullElement(xmlw, null, "givenName", null, givenName, language);
                                         writeFullElement(xmlw, null, "familyName", null, familyName, language);
                                     }
-                                } else if ((givenName = FirstNames.getInstance().getFirstName(creatorName)) != null) {
-                                    // givenName ok, creatorName=<FirstName> <FamilyName>
-                                    creator_map.put("nameType", "Personal");
-                                    nameType_check = true;
-                                    writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
-
-                                    String familyName = "";
-                                    if (givenName.length() + 1 < creatorName.length()) {
-                                        familyName = creatorName.substring(givenName.length() + 1);
-                                    }
-
-                                    writeFullElement(xmlw, null, "givenName", null, givenName, language);
-                                    writeFullElement(xmlw, null, "familyName", null, familyName, language);
                                 } else {
-                                    // default
-                                    writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
+                                    String givenName = FirstNames.getInstance().getFirstName(creatorName);
+                                    boolean isOrganization = Organizations.getInstance().isOrganization(creatorName);
+                                    
+                                    if (givenName != null && !isOrganization) {
+                                        // givenName ok, creatorName=<FirstName> <FamilyName>
+                                        creator_map.put("nameType", "Personal");
+                                        nameType_check = true;
+                                        writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
+
+                                        String familyName = "";
+                                        if (givenName.length() + 1 < creatorName.length()) {
+                                            familyName = creatorName.substring(givenName.length() + 1);
+                                        }
+
+                                        writeFullElement(xmlw, null, "givenName", null, givenName, language);
+                                        writeFullElement(xmlw, null, "familyName", null, familyName, language);
+                                    } else {
+                                        // default
+                                        if (isOrganization) {
+                                            creator_map.put("nameType", "Organizational");
+                                        }
+                                        writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
+                                    }
                                 }
 
                                 if (StringUtils.isNotBlank(nameIdentifier)) {
@@ -687,12 +696,13 @@ public class OpenAireExportUtil {
         boolean nameType_check = false;
         Map<String, String> contributor_map = new HashMap<String, String>();
 
-        String givenName = null;
         contributorName = Cleanup.normalize(contributorName);
         // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
         if (contributorName.contains(",")) {
+            String givenName = FirstNames.getInstance().getFirstName(contributorName);
+
             // contributorName=<FamilyName>, <FirstName>
-            if ((givenName = FirstNames.getInstance().getFirstName(contributorName)) != null) {
+            if (givenName != null) {
                 // givenName ok
                 contributor_map.put("nameType", "Personal");
                 nameType_check = true;
@@ -710,23 +720,28 @@ public class OpenAireExportUtil {
                 writeFullElement(xmlw, null, "givenName", null, givenName, language);
                 writeFullElement(xmlw, null, "familyName", null, familyName, language);
             }
-        } else if ((givenName = FirstNames.getInstance().getFirstName(contributorName)) != null) {
-            contributor_map.put("nameType", "Personal");
-            writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);
-
-            String familyName = "";
-            if (givenName.length() + 1 < contributorName.length()) {
-                familyName = contributorName.substring(givenName.length() + 1);
-            }
-
-            writeFullElement(xmlw, null, "givenName", null, givenName, language);
-            writeFullElement(xmlw, null, "familyName", null, familyName, language);
         } else {
-            // default
-            if ("ContactPerson".equals(contributorType) && !isValidEmailAddress(contributorName)) {
-                contributor_map.put("nameType", "Organizational");
+            String givenName = FirstNames.getInstance().getFirstName(contributorName);
+            boolean isOrganization = Organizations.getInstance().isOrganization(contributorName);
+
+            if (givenName != null && !isOrganization) {
+                contributor_map.put("nameType", "Personal");
+                writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);
+
+                String familyName = "";
+                if (givenName.length() + 1 < contributorName.length()) {
+                    familyName = contributorName.substring(givenName.length() + 1);
+                }
+
+                writeFullElement(xmlw, null, "givenName", null, givenName, language);
+                writeFullElement(xmlw, null, "familyName", null, familyName, language);
+            } else {
+                // default
+                if (isOrganization || ("ContactPerson".equals(contributorType) && !isValidEmailAddress(contributorName))) {
+                    contributor_map.put("nameType", "Organizational");
+                }
+                writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);
             }
-            writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);
         }
 
         if (StringUtils.isNotBlank(contributorAffiliation)) {

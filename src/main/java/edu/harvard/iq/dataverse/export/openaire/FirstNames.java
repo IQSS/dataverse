@@ -74,7 +74,6 @@ public class FirstNames {
     }
 
     /**
-     * *
      * Check if firstName exists on map.
      *
      * @param firstName

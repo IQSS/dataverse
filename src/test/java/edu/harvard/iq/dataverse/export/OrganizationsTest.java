@@ -9,8 +9,8 @@ import static org.junit.Assert.*;
  * @author francesco.cadili@4science.it
  */
 public class OrganizationsTest {
-    
-   private final Organizations organizations;
+
+    private final Organizations organizations;
 
     public OrganizationsTest() {
         organizations = Organizations.getInstance();
@@ -21,7 +21,7 @@ public class OrganizationsTest {
         assertTrue(organizations.isOrganization("IBM"));
         assertTrue(organizations.isOrganization("Harvard University"));
     }
-    
+
     @Test
     public void testOrganizationCOMPLEXName() {
         assertTrue(organizations.isOrganization("The Institute for Quantitative Social Science"));
@@ -30,12 +30,12 @@ public class OrganizationsTest {
         assertTrue(organizations.isOrganization("United Nations Economic and Social Commission for Asia and the Pacific (UNESCAP)"));
         assertTrue(organizations.isOrganization("Michael J. Fox Foundation for Parkinson's Research"));
     }
-    
+
     //@Test
     //public void testOrganizationES() {
     //    assertTrue(organizations.isOrganization("Compañía de San Fernando"));
     //}
-    
+
     /**
      * Name is composed of:
      * <First Names> <Family Name>
