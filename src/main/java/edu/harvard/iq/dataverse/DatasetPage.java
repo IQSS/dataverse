@@ -279,6 +279,16 @@ public class DatasetPage implements java.io.Serializable {
     private Boolean hasRsyncScript = false;
     
     private Boolean hasTabular = false;
+    
+    private boolean showIngestSuccess;
+
+    public boolean isShowIngestSuccess() {
+        return showIngestSuccess;
+    }
+
+    public void setShowIngestSuccess(boolean showIngestSuccess) {
+        this.showIngestSuccess = showIngestSuccess;
+    }
         
     List<ExternalTool> configureTools = new ArrayList<>();
     List<ExternalTool> exploreTools = new ArrayList<>();
@@ -1523,7 +1533,7 @@ public class DatasetPage implements java.io.Serializable {
                     }  
                 }
                    
-            }
+            }                       
         } else if (ownerId != null) {
             // create mode for a new child dataset
             readOnly = false; 
@@ -1617,18 +1627,23 @@ public class DatasetPage implements java.io.Serializable {
                         BundleUtil.getStringFromBundle("dataset.locked.ingest.message"));
                 lockedDueToIngestVar = true;
             }
-        
+            
         for(DataFile f : dataset.getFiles()) {
             if(f.isTabularData()) {
                 hasTabular = true;
                 break;
             }
         }
-
+        //Show ingest success message if refresh forces a page reload after ingest success
+        //This is needed to display the explore buttons (the fileDownloadHelper needs to be reloaded via page 
+        if (showIngestSuccess) {
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.unlocked.ingest.message"));
+        }
+        
         configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
         exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
-        
+      
         
         
         return null;
@@ -2221,8 +2236,8 @@ public class DatasetPage implements java.io.Serializable {
     public void refresh(ActionEvent e) {
         refresh();
     }
-    
-    public void refresh() {
+        
+    public String refresh() {
         logger.fine("refreshing");
 
         //dataset = datasetService.find(dataset.getId());
@@ -2249,7 +2264,7 @@ public class DatasetPage implements java.io.Serializable {
             // should probably redirect to the 404 page, if we can't find 
             // this version anymore. 
             // -- L.A. 4.2.3 
-            return;
+            return "";
         }
         this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
 
@@ -2257,9 +2272,8 @@ public class DatasetPage implements java.io.Serializable {
             // TODO: 
             // same as the above
 
-            return;
+            return "";
         }
-
 
         if (dataset == null) {
             // this would be the case if we were retrieving the version by 
@@ -2267,23 +2281,22 @@ public class DatasetPage implements java.io.Serializable {
             this.dataset = this.workingVersion.getDataset();
         }
 
-        
-
         if (readOnly) {
             datafileService.findFileMetadataOptimizedExperimental(dataset);
-        } 
+        }
+
         fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
-        FacesContext.getCurrentInstance().getViewRoot().getViewMap().remove("fileDownloadHelper");
         displayCitation = dataset.getCitation(true, workingVersion);
         stateChanged = false;
-        
+
         if (lockedDueToIngestVar != null && lockedDueToIngestVar) {
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.unlocked.ingest.message"));
+            //we need to add a redirect here to disply the explore buttons as needed
+            //as well as the ingest success message
             lockedDueToIngestVar = null;
+            return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&showIngestSuccess=true&faces-redirect=true";
         }
-        
-        RequestContext rc = RequestContext.getCurrentInstance();
-        rc.execute("window.location.reload(true)");
+
+        return "";
     }
     
     public String deleteDataset() {
