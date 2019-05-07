@@ -528,7 +528,7 @@ public class BagGenerator {
                 String childPath = currentPath + childTitle;
                 JsonElement directoryLabel = child.get(JsonLDTerm.DVCore("directoryLabel").getLabel());
                 if(directoryLabel!=null) {
-                    childPath=currentPath + directoryLabel.getAsString() + childTitle;
+                    childPath=currentPath + directoryLabel.getAsString() + "/" + childTitle;
                 }
                 
 
