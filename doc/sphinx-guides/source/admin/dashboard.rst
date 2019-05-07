@@ -29,3 +29,7 @@ Users
  
 This dashboard tool allows you to search a list of all users of your Dataverse installation. You can remove roles from user accounts and assign or remove superuser status. See the :doc:`user-administration` section for more details.
 
+Move Data
+---------
+
+This tool allows you to move datasets. To move dataverses, see the :doc:`dataverses-datasets` section.
