@@ -115,6 +115,8 @@ import org.primefaces.event.TabChangeEvent;
 import org.primefaces.event.data.PageEvent;
 
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
+import edu.harvard.iq.dataverse.search.FacetCategory;
+import edu.harvard.iq.dataverse.search.FacetLabel;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchUtil;
@@ -123,6 +125,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -535,7 +538,7 @@ public class DatasetPage implements java.io.Serializable {
     public void updateFileSearch(){  
         logger.info("updating file search list");
         //if (readOnly) {
-            this.fileMetadatasSearch = selectFileMetadatasForDisplay(this.fileLabelSearchTerm);
+            this.fileMetadatasSearch = selectFileMetadatasForDisplay();
         //} else {
         //    (we may not need this method at all? -- 4.13)
         //    this.fileMetadatasSearch = datafileService.findFileMetadataByDatasetVersionIdLabelSearchTerm(workingVersion.getId(), this.fileLabelSearchTerm, "", "");
@@ -556,28 +559,42 @@ public class DatasetPage implements java.io.Serializable {
         setNumberOfFilesToShow(new Long(fileMetadatasSearch.size()));
     }
     
-    private List<FileMetadata> selectFileMetadatasForDisplay(String searchTerm) {
+    private List<FileMetadata> selectFileMetadatasForDisplay() {
         Set<Long> searchResultsIdSet = null;
 
-        if (searchTerm != null && !searchTerm.equals("")) {
-            if (isIndexedVersion()) {
-                searchResultsIdSet = getFileIdsInVersionFromSolr(workingVersion.getId(), searchTerm);
-            } else {
-                searchResultsIdSet = getFileIdsInVersionFromDb(workingVersion.getId(), searchTerm);
+        if (isIndexedVersion()) {
+            // We run the search even if no search term and/or facets are 
+            // specified - to generate the facet labels list:
+            searchResultsIdSet = getFileIdsInVersionFromSolr(workingVersion.getId(), this.fileLabelSearchTerm);
+            // But, if no search terms were specified, we can immediately return the full 
+            // list of the files in the version: 
+            if (StringUtil.isEmpty(fileLabelSearchTerm)
+                    && StringUtil.isEmpty(fileTypeFacet)
+                    && StringUtil.isEmpty(fileAccessFacet)
+                    && StringUtil.isEmpty(fileTagsFacet)) {
+                return workingVersion.getFileMetadatasSorted();
             }
 
-            List<FileMetadata> retList = new ArrayList<>();
-
-            for (FileMetadata fileMetadata : workingVersion.getFileMetadatasSorted()) {
-                if (searchResultsIdSet == null || searchResultsIdSet.contains(fileMetadata.getDataFile().getId())) {
-                    retList.add(fileMetadata);
-                }
+        } else {
+            // No, this is not an indexed version. 
+            // If the search term was specified, we'll run a search in the db;
+            // if not - return the full list of files in the version. 
+            // (no facets without solr!)
+            if (StringUtil.isEmpty(this.fileLabelSearchTerm)) {
+                return workingVersion.getFileMetadatasSorted();
             }
-
-            return retList;
+            searchResultsIdSet = getFileIdsInVersionFromDb(workingVersion.getId(), this.fileLabelSearchTerm);
         }
 
-        return workingVersion.getFileMetadatasSorted();       
+        List<FileMetadata> retList = new ArrayList<>();
+
+        for (FileMetadata fileMetadata : workingVersion.getFileMetadatasSorted()) {
+            if (searchResultsIdSet == null || searchResultsIdSet.contains(fileMetadata.getDataFile().getId())) {
+                retList.add(fileMetadata);
+            }
+        }
+
+        return retList;     
     }
     
     public boolean isIndexedVersion() {
@@ -586,6 +603,7 @@ public class DatasetPage implements java.io.Serializable {
         
         // (We probably want to have some straightforward test to verify
         // that this version *has* actually been indexed and is searchable here - ?). 
+        // (and confirm that solr is up and running!)
         return workingVersion.isDraft() || isThisLatestReleasedVersion();
     }
     
@@ -612,6 +630,33 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     
+    private Map<String, List<FacetLabel>> facetLabelsMap; 
+    
+    public Map<String, List<FacetLabel>> getFacetLabelsMap() {
+        return facetLabelsMap;
+    }
+    
+    public List<FacetLabel> getFileTypeFacetLabels() {
+        if (facetLabelsMap != null) {
+            return facetLabelsMap.get("fileTypeGroupFacet");
+        }
+        return null;
+    }
+    
+    public List<FacetLabel> getFileAccessFacetLabels() {
+        if (facetLabelsMap != null) {
+            return facetLabelsMap.get("fileAccess");
+        }
+        return null;
+    }
+    
+    public List<FacetLabel> getFileTagsFacetLabels() {
+        if (facetLabelsMap != null) {
+            return facetLabelsMap.get("fileTag");
+        }
+        return null;
+    }
+    
     /**
      * Finds the list of numeric datafile ids in the Version specified, by running
      * a direct solr search query.
@@ -628,11 +673,46 @@ public class DatasetPage implements java.io.Serializable {
         
         List<String> queryStrings = new ArrayList<>();
         
-        // Main query: searching on the file name ("label") and description
-        queryStrings.add(SearchUtil.constructQuery(SearchFields.FILE_NAME, pattern));
-        queryStrings.add(SearchUtil.constructQuery(SearchFields.FILE_DESCRIPTION, pattern));
+        // Main query: 
+        if (!StringUtil.isEmpty(pattern)) {
+            // searching on the file name ("label") and description:
+            queryStrings.add(SearchUtil.constructQuery(SearchFields.FILE_NAME, pattern));
+            queryStrings.add(SearchUtil.constructQuery(SearchFields.FILE_DESCRIPTION, pattern));
 
-        solrQuery.setQuery(SearchUtil.constructQuery(queryStrings, false));
+            solrQuery.setQuery(SearchUtil.constructQuery(queryStrings, false));
+        } else {
+            // ... or "everything", if no search pattern is supplied: 
+            // (presumably, one or more facet fields is supplied, below)
+            solrQuery.setQuery("*");
+        }
+        
+        
+        // ask for facets: 
+        
+        solrQuery.setParam("facet", "true");
+        /**
+         * @todo: do we need facet.query?
+         */
+        solrQuery.setParam("facet.query", "*");
+        
+        solrQuery.addFacetField(SearchFields.FILE_TYPE);
+        solrQuery.addFacetField(SearchFields.ACCESS);
+        solrQuery.addFacetField(SearchFields.FILE_TAG);
+        
+        
+        // Extra filter queries from the facets, if specified: 
+        
+        if (!StringUtil.isEmpty(fileTypeFacet)) {
+            solrQuery.addFilterQuery(SearchFields.FILE_TYPE + ":" + fileTypeFacet);
+        } 
+        
+        if (!StringUtil.isEmpty(fileAccessFacet)) {
+            solrQuery.addFilterQuery(SearchFields.ACCESS + ":" + fileAccessFacet);
+        }
+        
+        if (!StringUtil.isEmpty(fileTagsFacet)) {
+            solrQuery.addFilterQuery(SearchFields.FILE_TAG + ":" + fileTagsFacet);
+        }        
         
         // Additional filter queries, to restrict the results to files in this version only:
         
@@ -660,6 +740,31 @@ public class DatasetPage implements java.io.Serializable {
             return null; 
         }
         
+        // Process the facets: 
+        
+        facetLabelsMap = new HashMap<>();
+        
+        for (FacetField facetField : queryResponse.getFacetFields()) {
+            List<FacetLabel> facetLabelList = new ArrayList<>();
+
+            int count = 0;
+            
+            for (FacetField.Count facetFieldCount : facetField.getValues()) {
+                logger.info("facet field value: " + facetField.getName() + " " + facetFieldCount.getName() + " (" + facetFieldCount.getCount() + ")");
+                if (facetFieldCount.getCount() > 0) {
+                    FacetLabel facetLabel = new FacetLabel(facetFieldCount.getName(), facetFieldCount.getCount());
+                    // quote facets arguments, just in case:
+                    facetLabel.setFilterQuery(facetField.getName() + ":\"" + facetFieldCount.getName() + "\"");
+                    facetLabelList.add(facetLabel);
+                    count += facetFieldCount.getCount();
+                }
+            }
+            
+            if (count > 0) {
+                facetLabelsMap.put(facetField.getName(), facetLabelList);
+            }            
+        }
+        
         SolrDocumentList docs = queryResponse.getResults();
         Iterator<SolrDocument> iter = docs.iterator();
         Set<Long> resultIds = new HashSet<>();
@@ -673,8 +778,6 @@ public class DatasetPage implements java.io.Serializable {
         
         return resultIds;
     }
-    
-
     
     /*
         Save the setting locally so db isn't hit repeatedly
@@ -1630,7 +1733,7 @@ public class DatasetPage implements java.io.Serializable {
                 
                 // This will default to all the files in the version, if the search term
                 // parameter hasn't been specified yet:
-                fileMetadatasSearch = selectFileMetadatasForDisplay(fileLabelSearchTerm);
+                fileMetadatasSearch = selectFileMetadatasForDisplay();
 
                 ownerId = dataset.getOwner().getId();
                 datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
@@ -2412,9 +2515,9 @@ public class DatasetPage implements java.io.Serializable {
 
         if (readOnly) {
             datafileService.findFileMetadataOptimizedExperimental(dataset);
-        } 
-        //fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
-        fileMetadatasSearch = selectFileMetadatasForDisplay(fileLabelSearchTerm);
+        }
+        
+        fileMetadatasSearch = selectFileMetadatasForDisplay();
 
         displayCitation = dataset.getCitation(true, workingVersion);
         stateChanged = false;
