@@ -2273,7 +2273,7 @@ public class DatasetPage implements java.io.Serializable {
             datafileService.findFileMetadataOptimizedExperimental(dataset);
         } 
         fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
-
+        FacesContext.getCurrentInstance().getViewRoot().getViewMap().remove("fileDownloadHelper");
         displayCitation = dataset.getCitation(true, workingVersion);
         stateChanged = false;
         
@@ -2281,6 +2281,9 @@ public class DatasetPage implements java.io.Serializable {
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.unlocked.ingest.message"));
             lockedDueToIngestVar = null;
         }
+        
+        RequestContext rc = RequestContext.getCurrentInstance();
+        rc.execute("window.location.reload(true)");
     }
     
     public String deleteDataset() {
