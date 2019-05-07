@@ -222,7 +222,10 @@ public class OREMap {
             addIfNotNull(aggRes, JsonLDTerm.originalFileFormat, df.getOriginalFileFormat());
             addIfNotNull(aggRes, JsonLDTerm.originalFormatLabel, df.getOriginalFormatLabel());
             addIfNotNull(aggRes, JsonLDTerm.UNF, df.getUnf());
-            addIfNotNull(aggRes, JsonLDTerm.rootDataFileId, df.getRootDataFileId());
+            //Suppress the default for files that have never been replaced
+            if(df.getRootDataFileId() != edu.harvard.iq.dataverse.DataFile.ROOT_DATAFILE_ID_DEFAULT) {
+              addIfNotNull(aggRes, JsonLDTerm.rootDataFileId, df.getRootDataFileId());
+            }
             addIfNotNull(aggRes, JsonLDTerm.previousDataFileId, df.getPreviousDataFileId());
             JsonObject checksum = null;
             // Add checksum. RDA recommends SHA-512
