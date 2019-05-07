@@ -22,6 +22,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -96,6 +97,7 @@ public class OpenAireExportUtilTest {
      */
     @Test
     public void testWriteCreatorsElement() throws XMLStreamException, FileNotFoundException {
+        System.out.println("writeCreatorsElement");
         XMLOutputFactory f = XMLOutputFactory.newInstance();
         StringWriter sw = new StringWriter();
         XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
@@ -152,6 +154,7 @@ public class OpenAireExportUtilTest {
      */
     @Test
     public void testWriteCreatorsElementWithOrganizations() throws XMLStreamException, FileNotFoundException {
+        System.out.println("writeCreatorsElementWithOrganizations");
         XMLOutputFactory f = XMLOutputFactory.newInstance();
         StringWriter sw = new StringWriter();
         XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
@@ -182,6 +185,45 @@ public class OpenAireExportUtilTest {
                 + "</creator>"
                 + "<creator>"
                 + "<creatorName nameType=\"Organizational\">Michael J. Fox Foundation for Parkinson's Research</creatorName>"
+                + "</creator>"
+                + "</creators>",
+                sw.toString());
+    }
+    
+    /**
+     * Test: 2, Creator (with optional given name, family name, name identifier
+     * and affiliation sub-properties) (M)
+     *
+     * nameType="Organizational"
+     * 
+     * creators
+     */
+    @Test
+    public void testWriteCreatorsElementWithOrganizationsAndComma() throws XMLStreamException, FileNotFoundException {
+        System.out.println("writeCreatorsElementWithOrganizationsAndComma");
+        XMLOutputFactory f = XMLOutputFactory.newInstance();
+        StringWriter sw = new StringWriter();
+        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+
+        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-organizations-comma.txt");
+        String text = new Scanner(file).useDelimiter("\\Z").next();
+        Gson gson = new Gson();
+        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+        OpenAireExportUtil.writeCreatorsElement(xmlw, dto, null);
+        xmlw.close();
+        Assert.assertEquals("<creators>"
+                + "<creator>"
+                + "<creatorName nameType=\"Organizational\">Digital Archive of Massachusetts Anti-Slavery and Anti-Segregation Petitions, Massachusetts Archives, Boston MA</creatorName>"
+                + "</creator>"
+                + "<creator>"
+                + "<creatorName nameType=\"Organizational\">U.S. Department of Commerce, Bureau of the Census, Geography Division</creatorName>"
+                + "</creator>"
+                + "<creator>"
+                + "<creatorName nameType=\"Organizational\">Harvard Map Collection, Harvard College Library</creatorName>"
+                + "</creator>"
+                + "<creator>"
+                + "<creatorName nameType=\"Organizational\">Geographic Data Technology, Inc. (GDT)</creatorName>"
                 + "</creator>"
                 + "</creators>",
                 sw.toString());
@@ -344,7 +386,7 @@ public class OpenAireExportUtilTest {
      */
     @Test
     public void testWriteContributorsElementWithOrganizations() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeContributorsElement");
+        System.out.println("writeContributorsElementWithOrganizations");
         XMLOutputFactory f = XMLOutputFactory.newInstance();
         StringWriter sw = new StringWriter();
         XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
@@ -382,6 +424,49 @@ public class OpenAireExportUtilTest {
                 + "</contributors>",
                 sw.toString());
     }
+    
+    /**
+     * Test: 7, Contributor ((with optional given name, family name, name
+     * identifier and affiliation sub-properties)
+     * 
+     * nameType="Organizational"
+     *
+     * contributors
+     */
+    @Test
+    public void testWriteContributorsElementWithOrganizationsAndComma() throws XMLStreamException, FileNotFoundException {
+        System.out.println("writeContributorsElementWithOrganizationsAndComma");
+        XMLOutputFactory f = XMLOutputFactory.newInstance();
+        StringWriter sw = new StringWriter();
+        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+
+        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-organizations-comma.txt");
+        String text = new Scanner(file).useDelimiter("\\Z").next();
+        Gson gson = new Gson();
+        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+        OpenAireExportUtil.writeContributorsElement(xmlw, dto, null);
+
+        xmlw.close();
+        Assert.assertEquals("<contributors>"
+                + "<contributor contributorType=\"ContactPerson\">"
+                + "<contributorName nameType=\"Organizational\">Digital Archive of Massachusetts Anti-Slavery and Anti-Segregation Petitions, Massachusetts Archives, Boston MA</contributorName>"
+                + "</contributor>"
+                + "<contributor contributorType=\"ContactPerson\">"
+                + "<contributorName nameType=\"Organizational\">U.S. Department of Commerce, Bureau of the Census, Geography Division</contributorName>"
+                + "</contributor>"
+                + "<contributor contributorType=\"ContactPerson\">"
+                + "<contributorName nameType=\"Organizational\">Harvard Map Collection, Harvard College Library</contributorName>"
+                + "</contributor>"
+                + "<contributor contributorType=\"ContactPerson\">"
+                + "<contributorName nameType=\"Organizational\">Geographic Data Technology, Inc. (GDT)</contributorName>"
+                + "</contributor>"
+                + "<contributor contributorType=\"ContactPerson\">"
+                + "<contributorName>pete@malinator.com</contributorName>"
+                + "</contributor>"
+                + "</contributors>",
+                sw.toString());
+    }
 
     /**
      * Test: 7, Contributor (with optional given name, family name, name
@@ -391,7 +476,7 @@ public class OpenAireExportUtilTest {
      */
     @Test
     public void testWriteContributorsElementComplete() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeContributorsElement");
+        System.out.println("writeContributorsElementComplete");
         XMLOutputFactory f = XMLOutputFactory.newInstance();
         StringWriter sw = new StringWriter();
         XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
@@ -487,7 +572,7 @@ public class OpenAireExportUtilTest {
      */
     @Test
     public void testWriteLanguageElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeRelatedIdentifierElement");
+        System.out.println("writeLanguageElement");
         XMLOutputFactory f = XMLOutputFactory.newInstance();
         StringWriter sw = new StringWriter();
         XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);

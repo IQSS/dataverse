@@ -17,6 +17,13 @@ public class OrganizationsTest {
     }
 
     @Test
+    public void checkLanguageTest() {
+        assertEquals("en", organizations.getLanguage(Organizations.ORGANIZATION_MODELS[0]));
+        assertEquals("es", organizations.getLanguage(Organizations.ORGANIZATION_MODELS[1]));
+        assertEquals("en", organizations.getLanguage(Organizations.TOCKENIZER_MODELS[0]));
+    }
+    
+    @Test
     public void testOrganizationSimpleName() {
         assertTrue(organizations.isOrganization("IBM"));
         assertTrue(organizations.isOrganization("Harvard University"));
@@ -31,11 +38,19 @@ public class OrganizationsTest {
         assertTrue(organizations.isOrganization("Michael J. Fox Foundation for Parkinson's Research"));
     }
 
+    @Test
+    public void testOrganizationComaOrDash() {
+        assertTrue(organizations.isOrganization("Digital Archive of Massachusetts Anti-Slavery and Anti-Segregation Petitions, Massachusetts Archives, Boston MA"));
+        assertTrue(organizations.isOrganization("U.S. Department of Commerce, Bureau of the Census, Geography Division"));
+        assertTrue(organizations.isOrganization("Harvard Map Collection, Harvard College Library"));
+        assertTrue(organizations.isOrganization("Geographic Data Technology, Inc. (GDT)"));
+    }
+
     //@Test
     //public void testOrganizationES() {
     //    assertTrue(organizations.isOrganization("Compañía de San Fernando"));
     //}
-
+    
     /**
      * Name is composed of:
      * <First Names> <Family Name>

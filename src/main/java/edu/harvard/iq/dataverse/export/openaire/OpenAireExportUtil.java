@@ -260,12 +260,16 @@ public class OpenAireExportUtil {
                                 // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
                                 if (creatorName.contains(",")) {
                                     String givenName = FirstNames.getInstance().getFirstName(creatorName);
+                                    boolean isOrganization = Organizations.getInstance().isOrganization(creatorName);
 
                                     // creatorName=<FamilyName>, <FirstName>
-                                    if (givenName != null) {
+                                    if (givenName != null && !isOrganization) {
                                         // givenName ok
                                         creator_map.put("nameType", "Personal");
                                         nameType_check = true;
+                                    } else if (isOrganization) {
+                                        creator_map.put("nameType", "Organizational");
+                                        nameType_check = false;
                                     }
                                     writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
 
@@ -700,13 +704,14 @@ public class OpenAireExportUtil {
         // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
         if (contributorName.contains(",")) {
             String givenName = FirstNames.getInstance().getFirstName(contributorName);
+            boolean isOrganization = Organizations.getInstance().isOrganization(contributorName);
 
             // contributorName=<FamilyName>, <FirstName>
-            if (givenName != null) {
+            if (givenName != null && !isOrganization) {
                 // givenName ok
                 contributor_map.put("nameType", "Personal");
                 nameType_check = true;
-            } else if ("ContactPerson".equals(contributorType) && !isValidEmailAddress(contributorName)) {
+            } else if (isOrganization || ("ContactPerson".equals(contributorType) && !isValidEmailAddress(contributorName))) {
                 contributor_map.put("nameType", "Organizational");
             }
             writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);
