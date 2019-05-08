@@ -91,21 +91,28 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _angular_platform_browser__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/platform-browser */ "./node_modules/@angular/platform-browser/fesm5/platform-browser.js");
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
 /* harmony import */ var _angular_forms__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/forms */ "./node_modules/@angular/forms/fesm5/forms.js");
-/* harmony import */ var _angular_material__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/material */ "./node_modules/@angular/material/esm5/material.es5.js");
-/* harmony import */ var _angular_platform_browser_animations__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/platform-browser/animations */ "./node_modules/@angular/platform-browser/fesm5/animations.js");
-/* harmony import */ var _app_component__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./app.component */ "./src/app/app.component.ts");
-/* harmony import */ var _ddi_service__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./ddi.service */ "./src/app/ddi.service.ts");
-/* harmony import */ var _interface_interface_component__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./interface/interface.component */ "./src/app/interface/interface.component.ts");
-/* harmony import */ var _angular_common_http__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @angular/common/http */ "./node_modules/@angular/common/fesm5/http.js");
-/* harmony import */ var _var_group_var_group_component__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./var-group/var-group.component */ "./src/app/var-group/var-group.component.ts");
-/* harmony import */ var _var_var_component__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./var/var.component */ "./src/app/var/var.component.ts");
-/* harmony import */ var _var_dialog_var_dialog_component__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./var-dialog/var-dialog.component */ "./src/app/var-dialog/var-dialog.component.ts");
-/* harmony import */ var _var_stat_dialog_var_stat_dialog_component__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./var-stat-dialog/var-stat-dialog.component */ "./src/app/var-stat-dialog/var-stat-dialog.component.ts");
-/* harmony import */ var _chart_chart_component__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./chart/chart.component */ "./src/app/chart/chart.component.ts");
+/* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/common */ "./node_modules/@angular/common/fesm5/common.js");
+/* harmony import */ var _angular_common_locales_fr_CA__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/common/locales/fr-CA */ "./node_modules/@angular/common/locales/fr-CA.js");
+/* harmony import */ var _angular_common_locales_fr_CA__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_angular_common_locales_fr_CA__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _angular_material__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @angular/material */ "./node_modules/@angular/material/esm5/material.es5.js");
+/* harmony import */ var _angular_platform_browser_animations__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @angular/platform-browser/animations */ "./node_modules/@angular/platform-browser/fesm5/animations.js");
+/* harmony import */ var _app_component__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./app.component */ "./src/app/app.component.ts");
+/* harmony import */ var _ddi_service__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./ddi.service */ "./src/app/ddi.service.ts");
+/* harmony import */ var _interface_interface_component__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./interface/interface.component */ "./src/app/interface/interface.component.ts");
+/* harmony import */ var _angular_common_http__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @angular/common/http */ "./node_modules/@angular/common/fesm5/http.js");
+/* harmony import */ var _var_group_var_group_component__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./var-group/var-group.component */ "./src/app/var-group/var-group.component.ts");
+/* harmony import */ var _var_var_component__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./var/var.component */ "./src/app/var/var.component.ts");
+/* harmony import */ var _var_dialog_var_dialog_component__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./var-dialog/var-dialog.component */ "./src/app/var-dialog/var-dialog.component.ts");
+/* harmony import */ var _var_stat_dialog_var_stat_dialog_component__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./var-stat-dialog/var-stat-dialog.component */ "./src/app/var-stat-dialog/var-stat-dialog.component.ts");
+/* harmony import */ var _chart_chart_component__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./chart/chart.component */ "./src/app/chart/chart.component.ts");
 
 
 
 
+
+
+// the second parameter 'fr' is optional
+Object(_angular_common__WEBPACK_IMPORTED_MODULE_4__["registerLocaleData"])(_angular_common_locales_fr_CA__WEBPACK_IMPORTED_MODULE_5___default.a, 'fr-CA');
 
 
 
@@ -123,45 +130,45 @@ var AppModule = /** @class */ (function () {
     AppModule = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_2__["NgModule"])({
             declarations: [
-                _app_component__WEBPACK_IMPORTED_MODULE_6__["AppComponent"],
-                _interface_interface_component__WEBPACK_IMPORTED_MODULE_8__["InterfaceComponent"],
-                _var_group_var_group_component__WEBPACK_IMPORTED_MODULE_10__["VarGroupComponent"],
-                _var_var_component__WEBPACK_IMPORTED_MODULE_11__["VarComponent"],
-                _var_dialog_var_dialog_component__WEBPACK_IMPORTED_MODULE_12__["VarDialogComponent"],
-                _var_stat_dialog_var_stat_dialog_component__WEBPACK_IMPORTED_MODULE_13__["VarStatDialogComponent"],
-                _chart_chart_component__WEBPACK_IMPORTED_MODULE_14__["ChartComponent"]
+                _app_component__WEBPACK_IMPORTED_MODULE_8__["AppComponent"],
+                _interface_interface_component__WEBPACK_IMPORTED_MODULE_10__["InterfaceComponent"],
+                _var_group_var_group_component__WEBPACK_IMPORTED_MODULE_12__["VarGroupComponent"],
+                _var_var_component__WEBPACK_IMPORTED_MODULE_13__["VarComponent"],
+                _var_dialog_var_dialog_component__WEBPACK_IMPORTED_MODULE_14__["VarDialogComponent"],
+                _var_stat_dialog_var_stat_dialog_component__WEBPACK_IMPORTED_MODULE_15__["VarStatDialogComponent"],
+                _chart_chart_component__WEBPACK_IMPORTED_MODULE_16__["ChartComponent"]
             ],
             imports: [
                 _angular_platform_browser__WEBPACK_IMPORTED_MODULE_1__["BrowserModule"],
                 _angular_forms__WEBPACK_IMPORTED_MODULE_3__["FormsModule"],
                 _angular_forms__WEBPACK_IMPORTED_MODULE_3__["ReactiveFormsModule"],
-                _angular_common_http__WEBPACK_IMPORTED_MODULE_9__["HttpClientModule"],
-                _angular_platform_browser_animations__WEBPACK_IMPORTED_MODULE_5__["BrowserAnimationsModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatButtonModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatTabsModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatIconModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatToolbarModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatTableModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatSortModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatProgressSpinnerModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatPaginatorModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatFormFieldModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatInputModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatDialogModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatSidenavModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatListModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatCheckboxModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatSelectModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatGridListModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatChipsModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatSnackBarModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatTooltipModule"],
-                _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatAutocompleteModule"],
+                _angular_common_http__WEBPACK_IMPORTED_MODULE_11__["HttpClientModule"],
+                _angular_platform_browser_animations__WEBPACK_IMPORTED_MODULE_7__["BrowserAnimationsModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatButtonModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatTabsModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatIconModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatToolbarModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatTableModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatSortModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatProgressSpinnerModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatPaginatorModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatFormFieldModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatInputModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatDialogModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatSidenavModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatListModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatCheckboxModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatSelectModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatGridListModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatChipsModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatSnackBarModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatTooltipModule"],
+                _angular_material__WEBPACK_IMPORTED_MODULE_6__["MatAutocompleteModule"],
             ],
             exports: [],
-            entryComponents: [_var_dialog_var_dialog_component__WEBPACK_IMPORTED_MODULE_12__["VarDialogComponent"], _var_stat_dialog_var_stat_dialog_component__WEBPACK_IMPORTED_MODULE_13__["VarStatDialogComponent"]],
-            providers: [_ddi_service__WEBPACK_IMPORTED_MODULE_7__["DdiService"]],
-            bootstrap: [_app_component__WEBPACK_IMPORTED_MODULE_6__["AppComponent"]]
+            entryComponents: [_var_dialog_var_dialog_component__WEBPACK_IMPORTED_MODULE_14__["VarDialogComponent"], _var_stat_dialog_var_stat_dialog_component__WEBPACK_IMPORTED_MODULE_15__["VarStatDialogComponent"]],
+            providers: [_ddi_service__WEBPACK_IMPORTED_MODULE_9__["DdiService"]],
+            bootstrap: [_app_component__WEBPACK_IMPORTED_MODULE_8__["AppComponent"]]
         })
     ], AppModule);
     return AppModule;
@@ -296,7 +303,9 @@ var ChartComponent = /** @class */ (function () {
             return d3__WEBPACK_IMPORTED_MODULE_2__["ascending"](a.freq, b.freq);
         });
         // set the dimensions and margins of the graph
-        var margin = { top: 0, right: 20, bottom: 30, left: 90 }, width = 500 - margin.left - margin.right, height = max_height - margin.top - margin.bottom;
+        var margin = { top: 0, right: 20, bottom: 30, left: 90 };
+        var width = 500 - margin.left - margin.right;
+        var height = max_height - margin.top - margin.bottom;
         // set the ranges
         var y = d3__WEBPACK_IMPORTED_MODULE_2__["scaleBand"]()
             .range([height, 0])
@@ -361,7 +370,7 @@ var ChartComponent = /** @class */ (function () {
         return color;
     };
     ChartComponent.prototype.getRandomColor = function () {
-        var letters = '0123456789ABCDEF'.split(''); // '0123456789ABCDEF'
+        var letters = '0123456789ABCDEF'.split('');
         var color = '#';
         for (var i = 0; i < 6; i++) {
             color += letters[Math.floor(Math.random() * 16)];
@@ -431,7 +440,8 @@ var DdiService = /** @class */ (function () {
     DdiService.prototype.getParameterByName = function (name) {
         var url = window.location.href;
         name = name.replace(/[\[\]]/g, '\\$&');
-        var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'), results = regex.exec(url);
+        var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+        var results = regex.exec(url);
         if (!results) {
             return null;
         }
@@ -482,7 +492,7 @@ module.exports = ".small {\n  font-size: 12px;\n}\n\n/*# sourceMappingURL=data:a
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"loading-details\" *ngIf=\"!ddi_loaded\" class=\"row content-area\">\n  <mat-progress-spinner mode=\"indeterminate\"></mat-progress-spinner>\n</div>\n\n<ng-container class=\"interface-container\">\n  <mat-toolbar class=\"interface-header\">\n\n    <span>{{title}}</span>\n    <span class=\"fill-space\"></span>\n    <span style=\"float:right\">\n    <button mat-icon-button color=\"accent\" (click)=\"onSave()\" matTooltip=\"Save\">\n      <mat-icon aria-label=\"Save\">save</mat-icon>\n    </button>\n     <span class=\"small\">Save</span>\n      </span>\n  </mat-toolbar>\n\n\n\n<mat-sidenav-container >\n  <mat-sidenav mode=\"side\" opened class=\"side_nav\" #scrollMe>\n    <app-var-group [_variable_groups]=\"_variable_groups\" (subSetRows)=\"broadcastSubSetRows($event)\" (selectGroup)=\"broadcastSelect($event)\" (draggedGroup)=\"broadcastDraggedGroup($event)\" (disableSelectGroup)=\"broadcastDeselectGroup()\"\n     (parentScrollNav)=\"scrollNav()\"\n    ></app-var-group>\n  </mat-sidenav>\n  <mat-sidenav-content>\n    <app-var [_variable_groups]=\"_variable_groups\" ></app-var>\n    </mat-sidenav-content>\n</mat-sidenav-container>\n\n\n</ng-container>\n\n\n"
+module.exports = "<div id=\"loading-details\" *ngIf=\"!ddi_loaded\" class=\"row content-area\">\n  <mat-progress-spinner mode=\"indeterminate\"></mat-progress-spinner>\n</div>\n\n<ng-container class=\"interface-container\">\n\n  <mat-toolbar class=\"interface-header\">\n    <span>{{title}}</span>\n    <span class=\"fill-space\"></span>\n    <span style=\"float:right\">\n        <button mat-icon-button color=\"accent\" (click)=\"onSave()\" i18n-matTooltip matTooltip=\"Download\">\n          <mat-icon i18n-aria-label aria-label=\"Download xml\">get_app</mat-icon>\n        </button>\n        <span class=\"small\" i18n>Export</span>\n      </span>\n    <span style=\"float:right\">\n      <button mat-icon-button color=\"accent\" (click)=\"sendToDV()\" i18n-matTooltip matTooltip=\"Save\">\n        <mat-icon i18n-aria-label aria-label=\"Save\">save</mat-icon>\n      </button>\n      <span class=\"small\" i18n>Save</span>\n    </span>\n  </mat-toolbar>\n\n<mat-sidenav-container >\n  <mat-sidenav mode=\"side\" opened class=\"side_nav\" #scrollMe>\n    <app-var-group [_variable_groups]=\"_variable_groups\" (subSetRows)=\"broadcastSubSetRows($event)\" (selectGroup)=\"broadcastSelect($event)\" (draggedGroup)=\"broadcastDraggedGroup($event)\" (disableSelectGroup)=\"broadcastDeselectGroup()\"\n     (parentScrollNav)=\"scrollNav()\"\n    ></app-var-group>\n  </mat-sidenav>\n  <mat-sidenav-content>\n    <app-var [_variable_groups]=\"_variable_groups\" ></app-var>\n    </mat-sidenav-content>\n</mat-sidenav-container>\n\n</ng-container>\n"
 
 /***/ }),
 
@@ -531,22 +541,15 @@ var InterfaceComponent = /** @class */ (function () {
         uri = this.ddiService.getParameterByName('uri');
         this._id = this.ddiService.getParameterByName('dfId');
         this._metaId = this.ddiService.getParameterByName('metaId');
-        console.log(this._id);
         this._base_url = this.ddiService.getBaseUrl();
-        console.log(this._base_url);
-        console.log('New!');
         if (!uri && this._id != null) {
-            console.log('Interface setting id ' + this._id);
             uri = this._base_url + '/api/access/datafile/' + this._id + '/metadata/ddi';
-            console.log(uri);
-            // &key=8f18fd62-3c5b-48f9-87d7-3fd181e6b5ed';
         }
         else {
             if (!uri) {
                 // Just for testing purposes
                 uri = this._base_url + '/assets/FOCN_SPSS_20150525_FORMATTED-ddi.xml';
                 // uri = this._base_url + '/assets/arg-drones-E-2014-can.xml';
-                console.log(uri);
             }
         }
         this.getDDI(uri);
@@ -612,16 +615,12 @@ var InterfaceComponent = /** @class */ (function () {
                 }
             }
             if (typeof obj.var.universe !== 'undefined') {
-                console.log(obj.var.universe);
                 if (typeof obj.var.universe.size === 'undefined') {
                     obj.var.universe = { '#text': obj.var.universe };
                 }
             }
-            console.log('Notes');
-            console.log(obj.var.notes);
             if (typeof obj.var.notes !== 'undefined') {
-                console.log(obj.var.notes);
-                if (typeof obj.var.notes.length !== undefined && obj.var.notes.length == 2) {
+                if (typeof obj.var.notes.length !== undefined && obj.var.notes.length === 2) {
                     obj.var.notes = { '#cdata': obj.var.notes[1]['#cdata'],
                         '#text': obj.var.notes[0]['#text'],
                         '@level': obj.var.notes[0]['@level'],
@@ -631,10 +630,8 @@ var InterfaceComponent = /** @class */ (function () {
             }
             flat_array.push(obj.var);
         }
-        //
         this._variables = flat_array;
         this.child.onUpdateVars(this._variables);
-        console.log(this._variables.length);
     };
     // pass the selected ids to the var table for display
     InterfaceComponent.prototype.broadcastSubSetRows = function (ids) {
@@ -653,170 +650,173 @@ var InterfaceComponent = /** @class */ (function () {
     InterfaceComponent.prototype.showDDI = function () {
         this.ddi_loaded = true;
     };
-    InterfaceComponent.prototype.onSave = function () {
-        console.log('GET ALL the JSON and convert it to XML');
-        var key = this.ddiService.getParameterByName('key');
-        if (key !== null) {
-            var doc = new xml_writer__WEBPACK_IMPORTED_MODULE_7__();
-            doc.startDocument();
-            doc.startElement('dataDscr');
-            console.log(this._variable_groups);
-            // add groups
-            for (var i = 0; i < this._variable_groups.length; i++) {
-                console.log(this._variable_groups[i]);
-                doc.startElement('varGrp');
-                doc.writeAttribute('ID', this._variable_groups[i].varGrp['@ID']);
-                doc.writeAttribute('var', this._variable_groups[i].varGrp['@var']);
-                doc.startElement('labl');
-                doc.text(this._variable_groups[i].varGrp.labl);
-                doc.endElement();
+    // Create the XML File
+    InterfaceComponent.prototype.makeXML = function () {
+        var doc = new xml_writer__WEBPACK_IMPORTED_MODULE_7__();
+        doc.startDocument();
+        doc.startElement('dataDscr');
+        // add groups
+        for (var _i = 0, _a = this._variable_groups; _i < _a.length; _i++) {
+            var group = _a[_i];
+            doc.startElement('varGrp');
+            doc.writeAttribute('ID', group.varGrp['@ID']);
+            doc.writeAttribute('var', group.varGrp['@var']);
+            doc.startElement('labl');
+            doc.text(group.varGrp.labl);
+            doc.endElement();
+            doc.endElement();
+        }
+        // add variables
+        for (var i = 0; i < this._variables.length; i++) {
+            // start variable (var)
+            doc.startElement('var');
+            doc.writeAttribute('ID', this._variables[i]['@ID']);
+            doc.writeAttribute('name', this._variables[i]['@name']);
+            if (typeof this._variables[i]['@intrvl'] !== 'undefined') {
+                doc.writeAttribute('intrvl', this._variables[i]['@intrvl']);
+            }
+            if (typeof this._variables[i]['@wgt'] !== 'undefined' && this._variables[i]['@wgt'] !== '') {
+                doc.writeAttribute('wgt', this._variables[i]['@wgt']);
+            }
+            if (typeof this._variables[i]['@wgt-var'] !== 'undefined' && this._variables[i]['@wgt-var'] !== '') {
+                doc.writeAttribute('wgt-var', this._variables[i]['@wgt-var']);
+            }
+            // start location
+            if (typeof this._variables[i].location !== 'undefined') {
+                doc.startElement('location').writeAttribute('fileid', this._variables[i].location['@fileid']);
                 doc.endElement();
             }
-            // add variables
-            for (var i = 0; i < this._variables.length; i++) {
-                console.log(this._variables[i]);
-                // start variable (var)
-                doc.startElement('var');
-                doc.writeAttribute('ID', this._variables[i]['@ID']);
-                doc.writeAttribute('name', this._variables[i]['@name']);
-                if (typeof this._variables[i]['@intrvl'] !== 'undefined') {
-                    doc.writeAttribute('intrvl', this._variables[i]['@intrvl']);
-                }
-                if (typeof this._variables[i]['@wgt'] !== 'undefined' && this._variables[i]['@wgt'] !== '') {
-                    doc.writeAttribute('wgt', this._variables[i]['@wgt']);
-                }
-                if (typeof this._variables[i]['@wgt-var'] !== 'undefined' && this._variables[i]['@wgt-var'] !== '') {
-                    doc.writeAttribute('wgt-var', this._variables[i]['@wgt-var']);
-                }
-                // start location
-                if (typeof this._variables[i].location !== 'undefined') {
-                    doc.startElement('location').writeAttribute('fileid', this._variables[i].location['@fileid']);
-                    doc.endElement();
-                }
-                // end location
-                // start labl
-                if (typeof this._variables[i].labl !== 'undefined') {
-                    doc.startElement('labl');
-                    doc.writeAttribute('level', this._variables[i].labl['@level']);
-                    doc.text(this._variables[i].labl['#text']);
-                    doc.endElement();
-                }
-                // end labl
-                // start sumStat
-                if (typeof this._variables[i].sumStat !== 'undefined') {
-                    if (typeof this._variables[i].sumStat.length !== 'undefined') {
-                        for (var j = 0; j < this._variables[i].sumStat.length; j++) {
-                            doc.startElement('sumStat');
-                            doc.writeAttribute('type', this._variables[i].sumStat[j]['@type']);
-                            doc.text(this._variables[i].sumStat[j]['#text']);
-                            doc.endElement();
-                        }
+            // end location
+            // start labl
+            if (typeof this._variables[i].labl !== 'undefined') {
+                doc.startElement('labl');
+                doc.writeAttribute('level', this._variables[i].labl['@level']);
+                doc.text(this._variables[i].labl['#text']);
+                doc.endElement();
+            }
+            // end labl
+            // start sumStat
+            if (typeof this._variables[i].sumStat !== 'undefined') {
+                if (typeof this._variables[i].sumStat.length !== 'undefined') {
+                    for (var j = 0; j < this._variables[i].sumStat.length; j++) {
+                        doc.startElement('sumStat');
+                        doc.writeAttribute('type', this._variables[i].sumStat[j]['@type']);
+                        doc.text(this._variables[i].sumStat[j]['#text']);
+                        doc.endElement();
                     }
                 }
-                // end sumStat
-                // start catgry
-                if (typeof this._variables[i].catgry !== 'undefined') {
-                    if (typeof this._variables[i].catgry.length !== 'undefined') {
-                        for (var j = 0; j < this._variables[i].catgry.length; j++) {
-                            doc.startElement('catgry');
-                            if (typeof this._variables[i].catgry[j].catValu !== 'undefined') {
-                                doc.startElement('catValu').text(this._variables[i].catgry[j].catValu);
+            }
+            // end sumStat
+            // start catgry
+            if (typeof this._variables[i].catgry !== 'undefined') {
+                if (typeof this._variables[i].catgry.length !== 'undefined') {
+                    for (var j = 0; j < this._variables[i].catgry.length; j++) {
+                        doc.startElement('catgry');
+                        if (typeof this._variables[i].catgry[j].catValu !== 'undefined') {
+                            doc.startElement('catValu').text(this._variables[i].catgry[j].catValu);
+                            doc.endElement();
+                        }
+                        if (typeof this._variables[i].catgry[j].labl !== 'undefined') {
+                            doc.startElement('labl');
+                            doc.writeAttribute('level', this._variables[i].catgry[j].labl['@level']);
+                            doc.text(this._variables[i].catgry[j].labl['#text']);
+                            doc.endElement();
+                        }
+                        if (typeof this._variables[i].catgry[j].catStat !== 'undefined') {
+                            // frequency
+                            if (typeof this._variables[i].catgry[j].catStat.length !== 'undefined') {
+                                doc.startElement('catStat');
+                                doc.writeAttribute('type', this._variables[i].catgry[j].catStat[0]['@type']);
+                                doc.text(this._variables[i].catgry[j].catStat[0]['#text']);
                                 doc.endElement();
-                            }
-                            if (typeof this._variables[i].catgry[j].labl !== 'undefined') {
-                                doc.startElement('labl');
-                                doc.writeAttribute('level', this._variables[i].catgry[j].labl['@level']);
-                                doc.text(this._variables[i].catgry[j].labl['#text']);
-                                doc.endElement();
-                            }
-                            if (typeof this._variables[i].catgry[j].catStat !== 'undefined') {
-                                // frequency
-                                if (typeof this._variables[i].catgry[j].catStat.length !== 'undefined') {
+                                // weighted frequency
+                                if (this._variables[i].catgry[j].catStat.length > 1) {
                                     doc.startElement('catStat');
-                                    doc.writeAttribute('type', this._variables[i].catgry[j].catStat[0]['@type']);
-                                    doc.text(this._variables[i].catgry[j].catStat[0]['#text']);
+                                    doc.writeAttribute('wgtd', this._variables[i].catgry[j].catStat[1]['@wgtd']);
+                                    doc.writeAttribute('type', this._variables[i].catgry[j].catStat[1]['@type']);
+                                    doc.text(this._variables[i].catgry[j].catStat[1]['#text']);
                                     doc.endElement();
-                                    // weighted frequency
-                                    if (this._variables[i].catgry[j].catStat.length > 1) {
-                                        doc.startElement('catStat');
-                                        doc.writeAttribute('wgtd', this._variables[i].catgry[j].catStat[1]['@wgtd']);
-                                        doc.writeAttribute('type', this._variables[i].catgry[j].catStat[1]['@type']);
-                                        doc.text(this._variables[i].catgry[j].catStat[1]['#text']);
-                                        doc.endElement();
-                                    }
                                 }
                             }
-                            doc.endElement();
                         }
-                    }
-                }
-                // end catgry
-                // start qstn
-                if (typeof this._variables[i].qstn !== 'undefined' &&
-                    ((typeof this._variables[i].qstn.qstnLit !== 'undefined' && this._variables[i].qstn.qstnLit !== '') ||
-                        (typeof this._variables[i].qstn.ivuInstr !== 'undefined' && this._variables[i].qstn.ivuInstr !== '') ||
-                        (typeof this._variables[i].qstn.postQTxt !== 'undefined' && this._variables[i].qstn.postQTxt !== ''))) {
-                    doc.startElement('qstn');
-                    if (typeof this._variables[i].qstn.qstnLit !== 'undefined') {
-                        doc.startElement('qstnLit').text(this._variables[i].qstn.qstnLit);
                         doc.endElement();
                     }
-                    if (typeof this._variables[i].qstn.ivuInstr !== 'undefined') {
-                        doc.startElement('ivuInstr').text(this._variables[i].qstn.ivuInstr);
-                        doc.endElement();
-                    }
-                    if (typeof this._variables[i].qstn.postQTxt !== 'undefined') {
-                        doc.startElement('postQTxt').text(this._variables[i].qstn.postQTxt);
-                        doc.endElement();
-                    }
+                }
+            }
+            // end catgry
+            // start qstn
+            if (typeof this._variables[i].qstn !== 'undefined' &&
+                ((typeof this._variables[i].qstn.qstnLit !== 'undefined' && this._variables[i].qstn.qstnLit !== '') ||
+                    (typeof this._variables[i].qstn.ivuInstr !== 'undefined' && this._variables[i].qstn.ivuInstr !== '') ||
+                    (typeof this._variables[i].qstn.postQTxt !== 'undefined' && this._variables[i].qstn.postQTxt !== ''))) {
+                doc.startElement('qstn');
+                if (typeof this._variables[i].qstn.qstnLit !== 'undefined') {
+                    doc.startElement('qstnLit').text(this._variables[i].qstn.qstnLit);
                     doc.endElement();
                 }
-                // end qstn
-                // start varFormat
-                if (typeof this._variables[i].varFormat !== 'undefined') {
-                    doc.startElement('varFormat');
-                    doc.writeAttribute('type', this._variables[i].varFormat['@type']);
+                if (typeof this._variables[i].qstn.ivuInstr !== 'undefined') {
+                    doc.startElement('ivuInstr').text(this._variables[i].qstn.ivuInstr);
                     doc.endElement();
                 }
-                // end varFormat
-                // start notes
-                if (typeof this._variables[i].notes !== 'undefined') {
-                    // start notes cdata
-                    if (typeof this._variables[i].notes['#cdata'] !== 'undefined' && this._variables[i].notes['#cdata'] !== '') {
-                        doc.startElement('notes');
-                        doc.startCData();
-                        doc.writeCData(this._variables[i].notes['#cdata']);
-                        doc.endCData();
-                        doc.endElement();
-                    }
-                    // end notes cdata
-                    doc.startElement('notes');
-                    doc.writeAttribute('subject', this._variables[i].notes['@subject']);
-                    doc.writeAttribute('level', this._variables[i].notes['@level']);
-                    doc.writeAttribute('type', this._variables[i].notes['@type']);
-                    doc.text(this._variables[i].notes['#text']);
+                if (typeof this._variables[i].qstn.postQTxt !== 'undefined') {
+                    doc.startElement('postQTxt').text(this._variables[i].qstn.postQTxt);
                     doc.endElement();
                 }
-                // end notes
-                // start universe
-                if (typeof this._variables[i].universe !== 'undefined' && this._variables[i].universe['#text'] !== '') {
-                    doc.startElement('universe');
-                    doc.text(this._variables[i].universe['#text']);
-                    doc.endElement();
-                }
-                // end universe
-                // end variable (var)
                 doc.endElement();
             }
-            doc.endDocument();
-            console.log(doc);
-            var text = new Blob([doc.toString()], { type: 'application/xml' });
-            console.log('Title ' + this.title);
-            var tl = this.title + '.xml';
-            console.log('base_url ' + this._base_url);
+            // end qstn
+            // start varFormat
+            if (typeof this._variables[i].varFormat !== 'undefined') {
+                doc.startElement('varFormat');
+                doc.writeAttribute('type', this._variables[i].varFormat['@type']);
+                doc.endElement();
+            }
+            // end varFormat
+            // start notes
+            if (typeof this._variables[i].notes !== 'undefined') {
+                // start notes cdata
+                if (typeof this._variables[i].notes['#cdata'] !== 'undefined' && this._variables[i].notes['#cdata'] !== '') {
+                    doc.startElement('notes');
+                    doc.startCData();
+                    doc.writeCData(this._variables[i].notes['#cdata']);
+                    doc.endCData();
+                    doc.endElement();
+                }
+                // end notes cdata
+                doc.startElement('notes');
+                doc.writeAttribute('subject', this._variables[i].notes['@subject']);
+                doc.writeAttribute('level', this._variables[i].notes['@level']);
+                doc.writeAttribute('type', this._variables[i].notes['@type']);
+                doc.text(this._variables[i].notes['#text']);
+                doc.endElement();
+            }
+            // end notes
+            // start universe
+            if (typeof this._variables[i].universe !== 'undefined' && this._variables[i].universe['#text'] !== '') {
+                doc.startElement('universe');
+                doc.text(this._variables[i].universe['#text']);
+                doc.endElement();
+            }
+            // end universe
+            // end variable (var)
+            doc.endElement();
+        }
+        doc.endDocument();
+        return doc;
+    };
+    // Save the XML file locally
+    InterfaceComponent.prototype.onSave = function () {
+        var doc = this.makeXML();
+        var text = new Blob([doc.toString()], { type: 'application/xml' });
+        var tl = this.title + '.xml';
+        file_saver__WEBPACK_IMPORTED_MODULE_6__["saveAs"](text, 'dct.xml');
+    };
+    // Send the XML to Dataverse
+    InterfaceComponent.prototype.sendToDV = function () {
+        var key = this.ddiService.getParameterByName('key');
+        var doc = this.makeXML();
+        if (key !== null) {
             var url = this._base_url + '/api/edit/' + this._id; // + "/" + this._metaId;
-            console.log('url ' + url);
-            file_saver__WEBPACK_IMPORTED_MODULE_6__["saveAs"](text, 'dct.xml');
             this.ddiService
                 .putDDI(url, doc.toString(), key)
                 .subscribe(function (data) {
@@ -828,7 +828,7 @@ var InterfaceComponent = /** @class */ (function () {
             }, function () { return console.log('Ok'); });
         }
         else {
-            console.log('key is null');
+            console.log('API Key missing');
         }
     };
     tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
@@ -865,7 +865,7 @@ var InterfaceComponent = /** @class */ (function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = ".text-inside-grid  > div{\n  justify-content: flex-start !important;\n}\n.field_width {\n  width: 480px !important;\n}\n.textarea_height{\n  height:80px;\n}\n.mat-dialog-content{\n  overflow: visible;\n}\n\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvdmFyLWRpYWxvZy92YXItZGlhbG9nLmNvbXBvbmVudC5jc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7RUFDRSxzQ0FBc0M7QUFDeEM7QUFDQTtFQUNFLHVCQUF1QjtBQUN6QjtBQUNBO0VBQ0UsV0FBVztBQUNiO0FBQ0E7RUFDRSxpQkFBaUI7QUFDbkIiLCJmaWxlIjoic3JjL2FwcC92YXItZGlhbG9nL3Zhci1kaWFsb2cuY29tcG9uZW50LmNzcyIsInNvdXJjZXNDb250ZW50IjpbIi50ZXh0LWluc2lkZS1ncmlkICA+IGRpdntcbiAganVzdGlmeS1jb250ZW50OiBmbGV4LXN0YXJ0ICFpbXBvcnRhbnQ7XG59XG4uZmllbGRfd2lkdGgge1xuICB3aWR0aDogNDgwcHggIWltcG9ydGFudDtcbn1cbi50ZXh0YXJlYV9oZWlnaHR7XG4gIGhlaWdodDo4MHB4O1xufVxuLm1hdC1kaWFsb2ctY29udGVudHtcbiAgb3ZlcmZsb3c6IHZpc2libGU7XG59XG4iXX0= */"
+module.exports = ".text-inside-grid > div {\n  justify-content: flex-start !important;\n}\n\n.field_width {\n  width: 480px !important;\n}\n\n.textarea_height {\n  height: 80px;\n}\n\n.mat-dialog-content {\n  overflow: visible;\n}\n\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvdmFyLWRpYWxvZy92YXItZGlhbG9nLmNvbXBvbmVudC5jc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7RUFDRSxzQ0FBc0M7QUFDeEM7O0FBRUE7RUFDRSx1QkFBdUI7QUFDekI7O0FBRUE7RUFDRSxZQUFZO0FBQ2Q7O0FBRUE7RUFDRSxpQkFBaUI7QUFDbkIiLCJmaWxlIjoic3JjL2FwcC92YXItZGlhbG9nL3Zhci1kaWFsb2cuY29tcG9uZW50LmNzcyIsInNvdXJjZXNDb250ZW50IjpbIi50ZXh0LWluc2lkZS1ncmlkID4gZGl2IHtcbiAganVzdGlmeS1jb250ZW50OiBmbGV4LXN0YXJ0ICFpbXBvcnRhbnQ7XG59XG5cbi5maWVsZF93aWR0aCB7XG4gIHdpZHRoOiA0ODBweCAhaW1wb3J0YW50O1xufVxuXG4udGV4dGFyZWFfaGVpZ2h0IHtcbiAgaGVpZ2h0OiA4MHB4O1xufVxuXG4ubWF0LWRpYWxvZy1jb250ZW50IHtcbiAgb3ZlcmZsb3c6IHZpc2libGU7XG59XG4iXX0= */"
 
 /***/ }),
 
@@ -876,7 +876,7 @@ module.exports = ".text-inside-grid  > div{\n  justify-content: flex-start !impo
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div mat-dialog-content >\n  <form [formGroup]=\"form\" (ngSubmit)=\"submit(form)\">\n    <h1 mat-dialog-title>Variable Information</h1>\n\n    <mat-dialog-content>\n      <mat-grid-list class=\"table-controls\" cols=\"2\" rowHeight=\"62\">\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <mat-form-field>\n            <input matInput formControlName=\"id\" placeholder=\"ID\" value=\"{{data['@ID']}}\"  >\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <mat-form-field>\n            <input matInput formControlName=\"name\" placeholder=\"Name\" value=\"{{data['@name']}}\" >\n          </mat-form-field>\n        </mat-grid-tile>\n\n\n\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n             <input matInput formControlName=\"labl\" placeholder=\"Label\" value=\"{{data.labl['#text']}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"qstnLit\" placeholder=\"Literal Question\" value=\"{{data.qstn.qstnLit}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"ivuInstr\" placeholder=\"Interviewer Instructions\" value=\"{{data.qstn.ivuInstr}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"postQTxt\" placeholder=\"Post Question\" value=\"{{data.qstn.postQTxt}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"universe\" placeholder=\"Universe\" value=\"{{data.universe['#text']}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"2\">\n          <mat-form-field class=\"field_width\" >\n            <textarea matInput formControlName=\"notes\" class=\"textarea_height\" placeholder=\"Notes\" value=\"{{data.notes['#cdata']}}\" ></textarea>\n          </mat-form-field>\n        </mat-grid-tile>\n        <!--Group chip list-->\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\" class=\"field_width\">\n          <mat-form-field class=\"field_width\">\n            <mat-select formControlName=\"_groups\" [(value)]=\"data['_groups']\"  placeholder=\"Group\" multiple=\"true\">\n\n              <mat-option *ngFor=\"let g of _variable_groups\" [value]=\"g.varGrp['@ID']\" >\n                {{ g.varGrp.labl}}\n              </mat-option>\n            </mat-select>\n          </mat-form-field>\n        </mat-grid-tile>\n\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <mat-form-field>\n            <mat-select formControlName=\"wgt_var\" [(value)]=\"data['@wgt-var']\" placeholder=\"Weight Variable\">\n              <mat-option *ngFor=\"let w of weights\" [value]=\"w\">\n                {{ w }}\n              </mat-option>\n              <mat-option>Unweighted</mat-option>\n            </mat-select>\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <section class=\"example-section\">\n            <mat-checkbox formControlName=\"wgt\" align=\"end\" checked=\"{{data['@wgt']}}\">Is Weight</mat-checkbox>\n\n          </section>\n        </mat-grid-tile>\n             <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n               <button mat-button type=\"submit\">Update</button>\n             </mat-grid-tile>\n             <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n               <button mat-button type=\"button\" (click)=\"dialogRef.close()\">Cancel</button>\n             </mat-grid-tile>\n             </mat-grid-list>\n           </mat-dialog-content>\n         </form>\n       </div>\n"
+module.exports = "<div mat-dialog-content >\n  <form [formGroup]=\"form\" (ngSubmit)=\"submit(form)\">\n    <h1 mat-dialog-title i18n>Variable Information</h1>\n\n    <mat-dialog-content>\n      <mat-grid-list class=\"table-controls\" cols=\"2\" rowHeight=\"62\">\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <mat-form-field>\n            <input matInput formControlName=\"id\" i18n-placeholder placeholder=\"ID\" value=\"{{data['@ID']}}\"  >\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <mat-form-field>\n            <input matInput formControlName=\"name\" i18n-placeholder placeholder=\"Name\" value=\"{{data['@name']}}\" >\n          </mat-form-field>\n        </mat-grid-tile>\n\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n             <input matInput formControlName=\"labl\" i18n-placeholder placeholder=\"Label\" value=\"{{data.labl['#text']}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"qstnLit\" i18n-placeholder placeholder=\"Literal Question\" value=\"{{data.qstn.qstnLit}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"ivuInstr\" i18n-placeholder placeholder=\"Interviewer Instructions\" value=\"{{data.qstn.ivuInstr}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"postQTxt\" i18n-placeholder placeholder=\"Post Question\" value=\"{{data.qstn.postQTxt}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"universe\" i18n-placeholder placeholder=\"Universe\" value=\"{{data.universe['#text']}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"2\">\n          <mat-form-field class=\"field_width\" >\n            <textarea matInput formControlName=\"notes\" class=\"textarea_height\" i18n-placeholder placeholder=\"Notes\" value=\"{{data.notes['#cdata']}}\" ></textarea>\n          </mat-form-field>\n        </mat-grid-tile>\n        <!--Group chip list-->\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\" class=\"field_width\">\n          <mat-form-field class=\"field_width\">\n            <mat-select formControlName=\"_groups\" [(value)]=\"data['_groups']\"  i18n-placeholder placeholder=\"Group\" multiple=\"true\">\n              <mat-option *ngFor=\"let g of _variable_groups\" [value]=\"g.varGrp['@ID']\" >\n                {{ g.varGrp.labl}}\n              </mat-option>\n            </mat-select>\n          </mat-form-field>\n        </mat-grid-tile>\n\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <mat-form-field>\n            <mat-select formControlName=\"wgt_var\" [(value)]=\"data['@wgt-var']\" i18n-placeholder placeholder=\"Weight Variable\">\n              <mat-option *ngFor=\"let w of weights\" [value]=\"w\">\n                {{ w }}\n              </mat-option>\n              <mat-option i18n>Unweighted</mat-option>\n            </mat-select>\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <section class=\"example-section\">\n            <mat-checkbox formControlName=\"wgt\" align=\"end\" checked=\"{{data['@wgt']}}\" i18n>Is Weight</mat-checkbox>\n          </section>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <button mat-button type=\"submit\" i18n>Update</button>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <button mat-button type=\"button\" (click)=\"dialogRef.close()\" i18n>Cancel</button>\n        </mat-grid-tile>\n      </mat-grid-list>\n    </mat-dialog-content>\n  </form>\n</div>\n"
 
 /***/ }),
 
@@ -988,11 +988,11 @@ var VarDialogComponent = /** @class */ (function () {
         this.updateObjValue(_obj, 'labl.#text', form.controls.labl);
         // Literal Question - data.qstn.qstnLit
         this.updateObjValue(_obj, 'qstn.qstnLit', form.controls.qstnLit);
-        // Interviewer Instructions" value="{{data.qstn.ivuInstr
+        // Interviewer Instructions - data.qstn.ivuInstr
         this.updateObjValue(_obj, 'qstn.ivuInstr', form.controls.ivuInstr);
-        //Post Question" value="{{data.qstn.postQTxt
+        // Post Question - data.qstn.postQTxt
         this.updateObjValue(_obj, 'qstn.postQTxt', form.controls.postQTxt);
-        // Universe" value="{{data.universe
+        // Universe - data.universe
         this.updateObjValue(_obj, 'universe.#text', form.controls.universe);
         // update notes if available data.notes
         // TODO surround notes with <![CDATA[ before saving back to xml
@@ -1180,7 +1180,7 @@ module.exports = "\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<mat-nav-list class=\"button-header\" xmlns=\"http://www.w3.org/1999/html\">\n\n  <a mat-list-item (click)=\"addTab()\">Add Group<span class=\"fill-space\"></span><mat-icon>playlist_add</mat-icon></a>\n\n</mat-nav-list>\n<mat-nav-list>\n\n  <a mat-list-item (click)=\"showAll()\"  [ngClass]=\"{'active': all_active }\">All</a>\n\n  <a mat-list-item id=\"{{tab.varGrp['@ID']}}\" draggable=\"true\" [disableRipple]=\"true\"  (dragstart)=\"dragstart($event);onGroupClick(tab);trackDragRow(tab)\" (dragenter)=\"dragenter($event,tab)\" (dragend)=\"dragend($event)\"  *ngFor=\"let tab of _variable_groups\" (click)=\"onGroupClick(tab)\" (dblclick)=\"onGroupDblClick(tab)\" [ngClass]=\"{'active': tab.active }\" >\n    <mat-icon aria-label=\"drag\" matTooltip=\"Drag Me\" style=\"margin-left:-7px\">drag_indicator</mat-icon>\n    <span *ngIf=\"!tab.editable\">{{tab.varGrp.labl}}</span>\n    <mat-form-field *ngIf=\"tab.editable\" class=\"fixed_width\">\n      <input matInput value=\"{{tab.varGrp.labl}}\" #titleInput  (keyup.enter) =\"renameGroupComplete(tab,titleInput.value )\">\n        <span button mat-icon-button matSuffix color=\"primary\"> <mat-icon aria-label=\"Done\" (click)=\"renameGroupComplete(tab,titleInput.value )\" >done</mat-icon></span>\n        <span button mat-icon-button matSuffix color=\"primary\"> <mat-icon aria-label=\"Clear\" (click)=\"renameGroupCancel(tab)\">clear</mat-icon></span>\n        <span button mat-icon-button matSuffix color=\"primary\"> <mat-icon aria-label=\"Delete\" (click)=\"groupDelete(tab)\">delete</mat-icon></span>\n       </mat-form-field>\n\n      <span class=\"fill-space\"></span>\n    <button *ngIf=\"!tab.editable\" mat-icon-button color=\"primary\"> <mat-icon aria-label=\"Edit\" (click)=\"renameGroup(tab)\">edit</mat-icon></button>\n\n  </a>\n\n</mat-nav-list>\n"
+module.exports = "<mat-nav-list class=\"button-header\" xmlns=\"http://www.w3.org/1999/html\">\n\n  <a mat-list-item (click)=\"addTab()\"><span i18n>Add Group</span><span class=\"fill-space\"></span><mat-icon>playlist_add</mat-icon></a>\n\n</mat-nav-list>\n<mat-nav-list>\n\n  <a mat-list-item (click)=\"showAll()\" [ngClass]=\"{'active': all_active }\" i18n>All</a>\n\n  <a mat-list-item id=\"{{tab.varGrp['@ID']}}\" draggable=\"true\" [disableRipple]=\"true\"  (dragstart)=\"dragstart($event);onGroupClick(tab);trackDragRow(tab)\" (dragenter)=\"dragenter($event,tab)\" (dragend)=\"dragend($event)\"  *ngFor=\"let tab of _variable_groups\" (click)=\"onGroupClick(tab)\" (dblclick)=\"onGroupDblClick(tab)\" [ngClass]=\"{'active': tab.active }\" >\n    <mat-icon aria-label=\"drag\" i18n-matTooltip matTooltip=\"Drag Me\" style=\"margin-left:-7px\">drag_indicator</mat-icon>\n    <span *ngIf=\"!tab.editable\">{{tab.varGrp.labl}}</span>\n    <mat-form-field *ngIf=\"tab.editable\" class=\"fixed_width\">\n      <input matInput maxLength=\"50\" value=\"{{tab.varGrp.labl}}\" #titleInput  (keyup.enter) =\"renameGroupComplete(tab,titleInput.value )\">\n        <span button mat-icon-button matSuffix color=\"primary\"> <mat-icon i18n-aria-label aria-label=\"Done\" (click)=\"renameGroupComplete(tab,titleInput.value )\">done</mat-icon></span>\n        <span button mat-icon-button matSuffix color=\"primary\"> <mat-icon i18n-aria-label aria-label=\"Clear\" (click)=\"renameGroupCancel(tab)\">clear</mat-icon></span>\n        <span button mat-icon-button matSuffix color=\"primary\"> <mat-icon i18n-aria-label aria-label=\"Delete\" (click)=\"groupDelete(tab)\">delete</mat-icon></span>\n    </mat-form-field>\n\n    <span class=\"fill-space\"></span>\n    <button *ngIf=\"!tab.editable\" mat-icon-button color=\"primary\"><mat-icon aria-label=\"Edit\" (click)=\"renameGroup(tab)\">edit</mat-icon></button>\n\n  </a>\n\n</mat-nav-list>\n"
 
 /***/ }),
 
@@ -1213,8 +1213,9 @@ var VarGroupComponent = /** @class */ (function () {
     VarGroupComponent.prototype.addTab = function () {
         // get the next id
         var ids = [];
-        for (var i = 0; i < this._variable_groups.length; i++) {
-            ids.push(Number(this._variable_groups[i].varGrp['@ID'].substring(2)));
+        for (var _i = 0, _a = this._variable_groups; _i < _a.length; _i++) {
+            var i = _a[_i];
+            ids.push(Number(i.varGrp['@ID'].substring(2)));
         }
         ids.sort();
         var _id = 'VG';
@@ -1231,14 +1232,10 @@ var VarGroupComponent = /** @class */ (function () {
             '@ID': _id
         };
         var_group.varGrp['@var'] = '';
-        //
         this._variable_groups.push(var_group);
-        //
-        // this.selectedTab = this._variable_groups.length-1;
-        //
         var obj = this;
         setTimeout(function () {
-            console.log("set time out");
+            console.log('set time out');
             obj.parentScrollNav.emit();
             obj.onGroupClick(var_group);
         }, 100);
@@ -1263,13 +1260,13 @@ var VarGroupComponent = /** @class */ (function () {
         _obj.editable = false;
     };
     VarGroupComponent.prototype.renameGroupCancel = function (_obj) {
-        console.log("renameGroupCancel");
+        console.log('renameGroupCancel');
         _obj.editable = false;
     };
     VarGroupComponent.prototype.groupDelete = function (_obj) {
         console.log('delete group');
         for (var i = 0; i < this._variable_groups.length; i++) {
-            if (this._variable_groups[i].varGrp['@ID'] == _obj.varGrp['@ID']) {
+            if (this._variable_groups[i].varGrp['@ID'] === _obj.varGrp['@ID']) {
                 this._variable_groups.splice(i, 1);
             }
         }
@@ -1278,7 +1275,7 @@ var VarGroupComponent = /** @class */ (function () {
         this.all_active = false;
         // show it's active
         for (var i = 0; i < this._variable_groups.length; i++) {
-            if (this._variable_groups[i].varGrp['@ID'] == _id) {
+            if (this._variable_groups[i].varGrp['@ID'] === _id) {
                 this._variable_groups[i].active = true;
             }
             else {
@@ -1292,7 +1289,6 @@ var VarGroupComponent = /** @class */ (function () {
         this.subSetRows.emit();
         this.disableSelectGroup.emit();
     };
-    //
     VarGroupComponent.prototype.dragstart = function ($event) {
         this.source = $event.currentTarget;
         $event.dataTransfer.effectAllowed = 'move';
@@ -1300,7 +1296,6 @@ var VarGroupComponent = /** @class */ (function () {
     VarGroupComponent.prototype.trackDragRow = function (_row) {
         this.dragged_obj = _row;
     };
-    //
     VarGroupComponent.prototype.dragenter = function ($event, _row) {
         var target = $event.currentTarget;
         if (!this.source) {
@@ -1308,7 +1303,7 @@ var VarGroupComponent = /** @class */ (function () {
             this.draggedGroup.emit($event.currentTarget.id);
             return;
         }
-        if (_row == this.dragged_obj) {
+        if (_row === this.dragged_obj) {
             return;
         }
         this.dragged_over_obj = _row; // keep track of the dragged over obj to later update the list
@@ -1323,7 +1318,7 @@ var VarGroupComponent = /** @class */ (function () {
         }
     };
     VarGroupComponent.prototype.isbefore = function (a, b) {
-        if (a.parentNode == b.parentNode) {
+        if (a.parentNode === b.parentNode) {
             for (var cur = a; cur; cur = cur.previousSibling) {
                 if (cur === b) {
                     return true;
@@ -1349,7 +1344,7 @@ var VarGroupComponent = /** @class */ (function () {
             return e.varGrp['@ID'];
         })
             .indexOf(this.dragged_over_obj.varGrp['@ID']);
-        if (this.dragged_over_dir == 'before') {
+        if (this.dragged_over_dir === 'before') {
             this._variable_groups.splice(index, 0, this.dragged_obj);
         }
         else {
@@ -1404,7 +1399,7 @@ var VarGroupComponent = /** @class */ (function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = ".table-bordered {\n  border: 1px solid #ddd;\n  width:100%;\n  border-spacing: 0;\n  border-collapse: collapse;\n}\n\n.table-bordered tr > td,.table-bordered tr > th {\n  border: 1px solid #ddd;\n  padding: 5px;\n  text-align: left;\n}\n\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvdmFyLXN0YXQtZGlhbG9nL3Zhci1zdGF0LWRpYWxvZy5jb21wb25lbnQuY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0VBQ0Usc0JBQXNCO0VBQ3RCLFVBQVU7RUFDVixpQkFBaUI7RUFDakIseUJBQXlCO0FBQzNCOztBQUVBO0VBQ0Usc0JBQXNCO0VBQ3RCLFlBQVk7RUFDWixnQkFBZ0I7QUFDbEIiLCJmaWxlIjoic3JjL2FwcC92YXItc3RhdC1kaWFsb2cvdmFyLXN0YXQtZGlhbG9nLmNvbXBvbmVudC5jc3MiLCJzb3VyY2VzQ29udGVudCI6WyIudGFibGUtYm9yZGVyZWQge1xuICBib3JkZXI6IDFweCBzb2xpZCAjZGRkO1xuICB3aWR0aDoxMDAlO1xuICBib3JkZXItc3BhY2luZzogMDtcbiAgYm9yZGVyLWNvbGxhcHNlOiBjb2xsYXBzZTtcbn1cblxuLnRhYmxlLWJvcmRlcmVkIHRyID4gdGQsLnRhYmxlLWJvcmRlcmVkIHRyID4gdGgge1xuICBib3JkZXI6IDFweCBzb2xpZCAjZGRkO1xuICBwYWRkaW5nOiA1cHg7XG4gIHRleHQtYWxpZ246IGxlZnQ7XG59XG4iXX0= */"
+module.exports = ".table-bordered {\n  border: 1px solid #ddd;\n  width: 100%;\n  border-spacing: 0;\n  border-collapse: collapse;\n}\n\n.table-bordered tr > td,\n.table-bordered tr > th {\n  border: 1px solid #ddd;\n  padding: 5px;\n  text-align: left;\n}\n\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvdmFyLXN0YXQtZGlhbG9nL3Zhci1zdGF0LWRpYWxvZy5jb21wb25lbnQuY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0VBQ0Usc0JBQXNCO0VBQ3RCLFdBQVc7RUFDWCxpQkFBaUI7RUFDakIseUJBQXlCO0FBQzNCOztBQUVBOztFQUVFLHNCQUFzQjtFQUN0QixZQUFZO0VBQ1osZ0JBQWdCO0FBQ2xCIiwiZmlsZSI6InNyYy9hcHAvdmFyLXN0YXQtZGlhbG9nL3Zhci1zdGF0LWRpYWxvZy5jb21wb25lbnQuY3NzIiwic291cmNlc0NvbnRlbnQiOlsiLnRhYmxlLWJvcmRlcmVkIHtcbiAgYm9yZGVyOiAxcHggc29saWQgI2RkZDtcbiAgd2lkdGg6IDEwMCU7XG4gIGJvcmRlci1zcGFjaW5nOiAwO1xuICBib3JkZXItY29sbGFwc2U6IGNvbGxhcHNlO1xufVxuXG4udGFibGUtYm9yZGVyZWQgdHIgPiB0ZCxcbi50YWJsZS1ib3JkZXJlZCB0ciA+IHRoIHtcbiAgYm9yZGVyOiAxcHggc29saWQgI2RkZDtcbiAgcGFkZGluZzogNXB4O1xuICB0ZXh0LWFsaWduOiBsZWZ0O1xufVxuIl19 */"
 
 /***/ }),
 
@@ -1415,7 +1410,7 @@ module.exports = ".table-bordered {\n  border: 1px solid #ddd;\n  width:100%;\n 
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div mat-dialog-content>\n  <h1 mat-dialog-title>{{data[\"@name\"]}}: {{data[\"labl\"][\"#text\"]}}</h1>\n  <app-chart [data]=\"sorted_categories\"></app-chart>\n  <table class=\"table-bordered\">\n  <tr>\n      <th>Values</th>\n      <th>Categories</th>\n      <th>N</th>\n    <th>NW</th>\n  </tr>\n    <tr *ngFor=\"let row of sorted_categories\">\n      <td>{{row.catValu}}</td>\n      <td>{{row.labl[\"#text\"]}}</td>\n      <td *ngIf=\"isUndefined(row.catStat); else elseBlock\"></td>\n      <ng-template #elseBlock>\n        <td *ngIf=\"isUndefined(row.catStat.length); else elseBlock2\"></td>\n        <ng-template #elseBlock2>\n          <td>{{row.catStat[0][\"#text\"]}}</td>\n        </ng-template>\n      </ng-template>\n      <td *ngIf=\"isUndefined(row.catStat); else elseBloc\"></td>\n      <ng-template #elseBloc>\n        <td *ngIf=\"doesExist(row.catStat.length); else elseBloc2\">{{row.catStat[1][\"#text\"]}}</td>\n        <ng-template #elseBloc2>\n          <td></td>\n        </ng-template>\n      </ng-template>\n    </tr>\n\n  </table>\n\n\n</div>\n"
+module.exports = "<div mat-dialog-content>\n\n  <h1 mat-dialog-title>{{data[\"@name\"]}}: {{data[\"labl\"][\"#text\"]}}</h1>\n\n  <app-chart [data]=\"sortedCategories\"></app-chart>\n\n  <table class=\"table-bordered\">\n  <tr>\n      <th i18n>Values</th>\n      <th i18n>Categories</th>\n      <th i18n>Count</th>\n      <th i18n>Weighted Count</th>\n  </tr>\n    <tr *ngFor=\"let row of sortedCategories\">\n      <td>{{row.catValu}}</td>\n      <td>{{row.labl[\"#text\"]}}</td>\n      <td *ngIf=\"isUndefined(row.catStat); else elseBlock\"></td>\n      <ng-template #elseBlock>\n        <td *ngIf=\"isUndefined(row.catStat.length); else elseBlock2\"></td>\n        <ng-template #elseBlock2>\n          <td>{{row.catStat[0][\"#text\"]}}</td>\n        </ng-template>\n      </ng-template>\n      <td *ngIf=\"isUndefined(row.catStat); else elseBloc\"></td>\n      <ng-template #elseBloc>\n        <td *ngIf=\"doesExist(row.catStat.length); else elseBloc2\">{{row.catStat[1][\"#text\"]}}</td>\n        <ng-template #elseBloc2>\n          <td></td>\n        </ng-template>\n      </ng-template>\n    </tr>\n  </table>\n\n  <mat-dialog-actions>\n      <button mat-button mat-dialog-close i18n>Close</button>\n  </mat-dialog-actions>\n\n</div>\n"
 
 /***/ }),
 
@@ -1438,22 +1433,23 @@ __webpack_require__.r(__webpack_exports__);
 var VarStatDialogComponent = /** @class */ (function () {
     function VarStatDialogComponent(data) {
         this.data = data;
-        this.sorted_categories = [];
+        this.sortedCategories = [];
     }
     VarStatDialogComponent.prototype.ngOnInit = function () {
         if (typeof this.data.catgry !== 'undefined') {
             console.log(this.data.catgry);
             if (typeof this.data.catgry.length === 'undefined') {
-                this.sorted_categories.push(this.data.catgry);
+                this.sortedCategories.push(this.data.catgry);
             }
             else {
-                for (var i = 0; i < this.data.catgry.length; i++) {
-                    console.log(this.data.catgry[i]);
-                    this.sorted_categories.push(this.data.catgry[i]);
+                for (var _i = 0, _a = this.data.catgry; _i < _a.length; _i++) {
+                    var i = _a[_i];
+                    console.log(i);
+                    this.sortedCategories.push(i);
                 }
             }
-            console.log(this.sorted_categories);
-            this.sorted_categories.sort(function (a, b) {
+            console.log(this.sortedCategories);
+            this.sortedCategories.sort(function (a, b) {
                 return a.catValu - b.catValu;
             });
         }
@@ -1498,7 +1494,7 @@ module.exports = ".grey {\n  background: #ebebeb;\n}\n\n.active {\n  background:
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<mat-grid-list class=\"table-controls\" cols=\"3\" rowHeight=\"58\">\n  <mat-grid-tile>\n    <mat-form-field>\n      <input matInput [formControl]=\"searchFilter\" placeholder=\"Search\" />\n      <span matSuffix><mat-icon>search</mat-icon></span>\n    </mat-form-field>\n  </mat-grid-tile>\n  <mat-divider [vertical]=\"true\"></mat-divider>\n  <mat-grid-tile>\n    <mat-select\n      color=\"primary\"\n      (change)=\"addToGroup($event.value)\"\n      placeholder=\"Add Selected to Group\"\n      #group_select\n      disabled=\"true\"\n      [hidden]=\"group_select.hidden\"\n    >\n      <mat-option *ngFor=\"let g of _variable_groups\" [value]=\"g.varGrp['@ID']\">\n        {{ g.varGrp.labl }}\n      </mat-option>\n    </mat-select>\n  </mat-grid-tile>\n</mat-grid-list>\n\n<mat-table class=\"mat-elevation-z8\" [dataSource]=\"datasource\" matSort>\n  <!-- drag Icon Column -->\n  <ng-container matColumnDef=\"drag\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header> </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\">\n      <mat-icon aria-label=\"drag\" matTooltip=\"Drag Me\">drag_indicator</mat-icon>\n    </mat-cell>\n  </ng-container>\n\n  <!-- Checkbox Column -->\n  <ng-container matColumnDef=\"select\">\n    <mat-header-cell *matHeaderCellDef>\n      <mat-checkbox\n        (change)=\"$event ? masterToggle() : null\"\n        [checked]=\"selection.hasValue() && isAllSelected()\"\n        [indeterminate]=\"selection.hasValue() && !isAllSelected()\"\n      >\n      </mat-checkbox>\n    </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\">\n      <mat-checkbox\n        (click)=\"$event.stopPropagation()\"\n        (change)=\"$event ? selection.toggle(row) : null; checkSelection()\"\n        [checked]=\"selection.isSelected(row)\"\n      >\n      </mat-checkbox>\n    </mat-cell>\n  </ng-container>\n  <!-- MINUS PLUS Column -->\n\n  <ng-container matColumnDef=\"control\">\n    <mat-header-cell *matHeaderCellDef\n      ><div style=\"width:40px;\"></div\n    ></mat-header-cell>\n    <mat-cell *matCellDef=\"let row; let i = index\">\n      <button\n        *ngIf=\"row._show\"\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onRemove(row['@ID'])\"\n      >\n        <mat-icon aria-label=\"remove\">indeterminate_check_box</mat-icon>\n      </button>\n      <button\n        *ngIf=\"!row._show\"\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onAdd(row['@ID'])\"\n      >\n        <mat-icon aria-label=\"add\">add_box</mat-icon>\n      </button>\n    </mat-cell>\n  </ng-container>\n\n  <!-- ID Column -->\n  <ng-container matColumnDef=\"id\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header> ID </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\">\n      <mat-chip-list>\n        <mat-chip\n          [color]=\"row['_in_group'] == true ? 'accent' : 'primary'\"\n          selected=\"true\"\n        >\n          {{ row['id'] }}\n        </mat-chip></mat-chip-list\n      >\n    </mat-cell>\n  </ng-container>\n\n  <ng-container matColumnDef=\"_order\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header> order </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\"> {{ row['_order'] }} </mat-cell>\n  </ng-container>\n\n  <ng-container matColumnDef=\"name\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header> Name </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\"> {{ row['@name'] }} </mat-cell>\n  </ng-container>\n  <ng-container matColumnDef=\"labl\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header> Label </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\"> {{ row.labl['#text'] }} </mat-cell>\n  </ng-container>\n  <ng-container matColumnDef=\"catgry\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header>\n      Category\n    </mat-header-cell>\n    <!--\n      <mat-cell *matCellDef=\"let row\"> <span *ngIf=\"row.catgry\">{{row.catgry.length}}</span> </mat-cell>\n  --></ng-container>\n\n  <ng-container matColumnDef=\"wgt-var\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header>\n      Weight\n    </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\">\n      <span *ngIf=\"row['@wgt-var']\">{{ row['@wgt-var'] }}</span></mat-cell\n    >\n  </ng-container>\n\n  <ng-container matColumnDef=\"view\">\n    <mat-header-cell *matHeaderCellDef>View</mat-header-cell>\n\n    <mat-cell *matCellDef=\"let row; let i = index\">\n      <button\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onView(row['@ID'])\"\n        matTooltip=\"View\"\n      >\n        <mat-icon aria-label=\"View\">visibility</mat-icon>\n      </button>\n    </mat-cell>\n  </ng-container>\n\n  <ng-container matColumnDef=\"action\">\n    <mat-header-cell *matHeaderCellDef>\n      <button\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onEditSelected()\"\n        matTooltip=\"Group Edit\"\n        #group_edit\n        disabled=\"true\"\n      >\n        <mat-icon aria-label=\"Group Edit\">edit</mat-icon>\n      </button>\n    </mat-header-cell>\n\n    <mat-cell *matCellDef=\"let row; let i = index\">\n      <button\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onEdit(row['@ID'])\"\n        matTooltip=\"Edit\"\n      >\n        <mat-icon aria-label=\"Edit\">edit</mat-icon>\n      </button>\n    </mat-cell>\n  </ng-container>\n\n  <mat-header-row *matHeaderRowDef=\"getDisplayedColumns()\"></mat-header-row>\n  <mat-row\n    *matRowDef=\"let row; columns: getDisplayedColumns()\"\n    draggable=\"true\"\n    (dragstart)=\"dragstart($event); highlightRow(row); trackDragRow(row)\"\n    (dragend)=\"dragend($event)\"\n    (dragenter)=\"dragenter($event, row)\"\n    [ngClass]=\"{ grey: row._show != true, active: row._active == true }\"\n  >\n  </mat-row\n  >!-- -->\n</mat-table>\n<mat-paginator [pageSizeOptions]=\"[10, 25, 50]\"></mat-paginator>\n<!--\n  <div class=\"no-results\" [style.display]=\"datasource.renderedData.length == 0 ? '' : 'none'\">\n    No results\n  </div>\n-->\n"
+module.exports = "<mat-grid-list class=\"table-controls\" cols=\"3\" rowHeight=\"58\">\n  <mat-grid-tile>\n    <mat-form-field>\n      <input matInput [formControl]=\"searchFilter\" placeholder=\"Search\" />\n      <span matSuffix><mat-icon>search</mat-icon></span>\n    </mat-form-field>\n  </mat-grid-tile>\n  <mat-divider [vertical]=\"true\"></mat-divider>\n  <mat-grid-tile>\n    <mat-select\n      color=\"primary\"\n      (change)=\"addToGroup($event.value)\"\n      placeholder=\"Add Selected to Group\"\n      #group_select\n      disabled=\"true\"\n      [hidden]=\"group_select.hidden\"\n    >\n      <mat-option *ngFor=\"let g of _variable_groups\" [value]=\"g.varGrp['@ID']\">\n        {{ g.varGrp.labl }}\n      </mat-option>\n    </mat-select>\n  </mat-grid-tile>\n</mat-grid-list>\n\n<mat-table class=\"mat-elevation-z8\" [dataSource]=\"datasource\" matSort>\n  <!-- drag Icon Column -->\n  <ng-container matColumnDef=\"drag\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header> </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\">\n      <mat-icon aria-label=\"drag\" matTooltip=\"Drag Me\">drag_indicator</mat-icon>\n    </mat-cell>\n  </ng-container>\n\n  <!-- Checkbox Column -->\n  <ng-container matColumnDef=\"select\">\n    <mat-header-cell *matHeaderCellDef>\n      <mat-checkbox\n        (change)=\"$event ? masterToggle() : null\"\n        [checked]=\"selection.hasValue() && isAllSelected()\"\n        [indeterminate]=\"selection.hasValue() && !isAllSelected()\"\n      >\n      </mat-checkbox>\n    </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\">\n      <mat-checkbox\n        (click)=\"$event.stopPropagation()\"\n        (change)=\"$event ? selection.toggle(row) : null; checkSelection()\"\n        [checked]=\"selection.isSelected(row)\"\n      >\n      </mat-checkbox>\n    </mat-cell>\n  </ng-container>\n  <!-- MINUS PLUS Column -->\n\n  <ng-container matColumnDef=\"control\">\n    <mat-header-cell *matHeaderCellDef\n      ><div style=\"width:40px;\"></div\n    ></mat-header-cell>\n    <mat-cell *matCellDef=\"let row; let i = index\">\n      <button\n        *ngIf=\"row._show\"\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onRemove(row['@ID'])\"\n      >\n        <mat-icon aria-label=\"remove\">indeterminate_check_box</mat-icon>\n      </button>\n      <button\n        *ngIf=\"!row._show\"\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onAdd(row['@ID'])\"\n      >\n        <mat-icon aria-label=\"add\">add_box</mat-icon>\n      </button>\n    </mat-cell>\n  </ng-container>\n\n  <!-- ID Column -->\n  <ng-container matColumnDef=\"id\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header i18n> ID </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\">\n      <mat-chip-list>\n        <mat-chip\n          [color]=\"row['_in_group'] == true ? 'accent' : 'primary'\"\n          selected=\"true\"\n        >\n          {{ row['id'] }}\n        </mat-chip></mat-chip-list\n      >\n    </mat-cell>\n  </ng-container>\n\n  <ng-container matColumnDef=\"_order\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header> order </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\"> {{ row['_order'] }} </mat-cell>\n  </ng-container>\n\n  <ng-container matColumnDef=\"name\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header i18n> Name </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\"> {{ row['@name'] }} </mat-cell>\n  </ng-container>\n  <ng-container matColumnDef=\"labl\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header i18n> Label </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\"> {{ row.labl['#text'] }} </mat-cell>\n  </ng-container>\n  <ng-container matColumnDef=\"catgry\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header i18n>\n      Category\n    </mat-header-cell>\n    <!--\n      <mat-cell *matCellDef=\"let row\"> <span *ngIf=\"row.catgry\">{{row.catgry.length}}</span> </mat-cell>\n  --></ng-container>\n\n  <ng-container matColumnDef=\"wgt-var\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header i18n>\n      Weight\n    </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\">\n      <span *ngIf=\"row['@wgt-var']\">{{ row['@wgt-var'] }}</span></mat-cell\n    >\n  </ng-container>\n\n  <ng-container matColumnDef=\"view\">\n    <mat-header-cell *matHeaderCellDef i18n>View</mat-header-cell>\n\n    <mat-cell *matCellDef=\"let row; let i = index\">\n      <button\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onView(row['@ID'])\"\n        i18n-matTooltip\n        matTooltip=\"View\"\n      >\n        <mat-icon i18n-aria-label aria-label=\"View\">visibility</mat-icon>\n      </button>\n    </mat-cell>\n  </ng-container>\n\n  <ng-container matColumnDef=\"action\">\n    <mat-header-cell *matHeaderCellDef>\n      <button\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onEditSelected()\"\n        i18n-matTooltip\n        matTooltip=\"Group Edit\"\n        #group_edit\n        disabled=\"true\"\n      >\n        <mat-icon i18n-aria-label aria-label=\"Group Edit\">edit</mat-icon>\n      </button>\n    </mat-header-cell>\n\n    <mat-cell *matCellDef=\"let row; let i = index\">\n      <button\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onEdit(row['@ID'])\"\n        i18n-matTooltip\n        matTooltip=\"Edit\"\n      >\n        <mat-icon i18n-aria-label aria-label=\"Edit\">edit</mat-icon>\n      </button>\n    </mat-cell>\n  </ng-container>\n\n  <mat-header-row *matHeaderRowDef=\"getDisplayedColumns()\"></mat-header-row>\n  <mat-row\n    *matRowDef=\"let row; columns: getDisplayedColumns()\"\n    draggable=\"true\"\n    (dragstart)=\"dragstart($event); highlightRow(row); trackDragRow(row)\"\n    (dragend)=\"dragend($event)\"\n    (dragenter)=\"dragenter($event, row)\"\n    [ngClass]=\"{ grey: row._show != true, active: row._active == true }\"\n  >\n  </mat-row>\n</mat-table>\n<mat-paginator [pageSizeOptions]=\"[10, 25, 50]\"></mat-paginator>\n"
 
 /***/ }),
 
@@ -1537,7 +1533,6 @@ var VarComponent = /** @class */ (function () {
         this.dragged_over_dir = 'before';
         //
         this._variable_groups_vars = [];
-        //
         this.selection = new _angular_cdk_collections__WEBPACK_IMPORTED_MODULE_6__["SelectionModel"](true, []);
     }
     VarComponent.prototype.getDisplayedColumns = function () {
@@ -1594,7 +1589,6 @@ var VarComponent = /** @class */ (function () {
             _this.filterValues['search'] = value;
             _this.datasource.filter = JSON.stringify(_this.filterValues);
         });
-        //
         this.group_select['hidden'] = true;
     };
     // Entry point - when data has been loaded
@@ -1659,7 +1653,6 @@ var VarComponent = /** @class */ (function () {
         this.id = _id;
         // get the data
         this.openDialog([this.getObjByID(_id, this._variables)]);
-        //
     };
     VarComponent.prototype.onSubset = function (_ids) {
         if (_ids == null) {
@@ -1692,7 +1685,6 @@ var VarComponent = /** @class */ (function () {
         obj._active = false;
         this.filterValues['_show'] = true;
         this.datasource.filter = JSON.stringify(this.filterValues);
-        //
         // Showing all
         this.checkSelection(); // and enable group dropdown if applicable
         if (this.mode === 'group') {
@@ -1730,8 +1722,9 @@ var VarComponent = /** @class */ (function () {
     };
     // get the var
     VarComponent.prototype.getObjByID = function (_id, _data) {
-        for (var i = 0; i < _data.length; i++) {
-            var obj = _data[i];
+        for (var _i = 0, _data_1 = _data; _i < _data_1.length; _i++) {
+            var i = _data_1[_i];
+            var obj = i;
             if (obj['@ID'] === _id) {
                 return obj;
             }
@@ -1797,8 +1790,9 @@ var VarComponent = /** @class */ (function () {
         // first get the group
         var obj = this.getObjByIDNested(_id, this._variable_groups);
         var vars = obj.varGrp['@var'].split(' ');
-        for (var i = 0; i < this.selection.selected.length; i++) {
-            var selected = this.selection.selected[i];
+        for (var _i = 0, _a = this.selection.selected; _i < _a.length; _i++) {
+            var i = _a[_i];
+            var selected = i;
             if (vars.indexOf(selected['@ID']) === -1) {
                 vars.push(selected['@ID']);
             }
@@ -1951,8 +1945,9 @@ var VarComponent = /** @class */ (function () {
     VarComponent.prototype.onEditSelected = function () {
         var selected_objs = [];
         // show the popup but only allow certain fields be be updated
-        for (var i = 0; i < this.selection.selected.length; i++) {
-            var selected = this.selection.selected[i];
+        for (var _i = 0, _a = this.selection.selected; _i < _a.length; _i++) {
+            var i = _a[_i];
+            var selected = i;
             selected_objs.push(selected);
         }
         this.openDialog(selected_objs);
