@@ -32,7 +32,7 @@ public class SolrQueryFormatter {
      * @param paramName
      * @return
      */
-    private String formatIdsForSolrClause(List<Long> sliceOfIds, String paramName,  String dvObjectType){ //='entityId'):
+    protected String formatIdsForSolrClause(List<Long> sliceOfIds, String paramName,  String dvObjectType){ //='entityId'):
         if (paramName == null){
             throw new NullPointerException("paramName cannot be null");
         }
@@ -50,7 +50,7 @@ public class SolrQueryFormatter {
             }
         }
         String orClause = StringUtils.join(idList, " ");
-                            String qPart = "(" + paramName  + ":(" + orClause + "))";
+        String qPart = "(" + paramName  + ":(" + orClause + "))";
         if (dvObjectType != null){
              qPart = "(" + paramName  + ":(" + orClause + ") AND " + SearchFields.TYPE + ":(" +  dvObjectType + "))";
              //valStr;
