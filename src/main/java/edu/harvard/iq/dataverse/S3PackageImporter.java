@@ -21,7 +21,7 @@ import edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordWriter;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.FileUtil;;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
