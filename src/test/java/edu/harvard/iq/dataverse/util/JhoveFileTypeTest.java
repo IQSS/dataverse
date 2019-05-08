@@ -22,6 +22,7 @@ public class JhoveFileTypeTest {
     static File xml;
     static File html;
     static File ico;
+    static File ipynb;
 
     @BeforeClass
     public static void setUpClass() {
@@ -37,6 +38,7 @@ public class JhoveFileTypeTest {
         xml = new File("pom.xml");
         html = new File("src/main/webapp/mydata_templates/mydata.html");
         ico = new File("src/main/webapp/resources/images/fav/favicon.ico");
+        ipynb = new File("src/test/java/edu/harvard/iq/dataverse/util/irc-metrics.ipynb");
     }
 
     @AfterClass
@@ -59,6 +61,7 @@ public class JhoveFileTypeTest {
         // BAD: not very specific. :(
         assertEquals("text/plain; charset=US-ASCII", jhoveFileType.getFileMimeType(xml));
         assertEquals("text/plain; charset=US-ASCII", jhoveFileType.getFileMimeType(html));
+        assertEquals("text/plain; charset=US-ASCII", jhoveFileType.getFileMimeType(ipynb));
     }
 
     @Test

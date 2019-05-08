@@ -110,6 +110,7 @@ public class FileUtil implements java.io.Serializable  {
         STATISTICAL_FILE_EXTENSION.put("sps", "application/x-spss-syntax");
         STATISTICAL_FILE_EXTENSION.put("csv", "text/csv");
         STATISTICAL_FILE_EXTENSION.put("tsv", "text/tsv");
+        STATISTICAL_FILE_EXTENSION.put("ipynb", "application/x-ipynb+json");
     }
     
     private static MimetypesFileTypeMap MIME_TYPE_MAP = new MimetypesFileTypeMap();
