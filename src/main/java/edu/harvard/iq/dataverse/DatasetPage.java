@@ -1500,7 +1500,7 @@ public class DatasetPage implements java.io.Serializable {
                 datasetNextMinorVersion = this.dataset.getNextMinorVersionString();
                 datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, false);
                 updateDatasetFieldInputLevels();
-                
+
                 setExistReleasedVersion(resetExistRealeaseVersion());
                 //moving setVersionTabList to tab change event
                 //setVersionTabList(resetVersionTabList());
@@ -1517,22 +1517,21 @@ public class DatasetPage implements java.io.Serializable {
                     try {
                         ScriptRequestResponse scriptRequestResponse = commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset));
                         logger.fine("script: " + scriptRequestResponse.getScript());
-                        if(scriptRequestResponse.getScript()!=null && !scriptRequestResponse.getScript().isEmpty()){
+                        if (scriptRequestResponse.getScript() != null && !scriptRequestResponse.getScript().isEmpty()) {
                             setHasRsyncScript(true);
                             setRsyncScript(scriptRequestResponse.getScript());
-                            rsyncScriptFilename = "upload-"+ workingVersion.getDataset().getIdentifier() + ".bash";
+                            rsyncScriptFilename = "upload-" + workingVersion.getDataset().getIdentifier() + ".bash";
                             rsyncScriptFilename = rsyncScriptFilename.replace("/", "_");
-                        }
-                        else{
+                        } else {
                             setHasRsyncScript(false);
                         }
                     } catch (RuntimeException ex) {
                         logger.warning("Problem getting rsync script: " + ex.getLocalizedMessage());
                     } catch (CommandException cex) {
                         logger.warning("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
-                    }  
+                    }
                 }
-                   
+
             }                       
         } else if (ownerId != null) {
             // create mode for a new child dataset
