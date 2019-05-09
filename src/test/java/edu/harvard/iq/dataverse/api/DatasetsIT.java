@@ -662,6 +662,11 @@ public class DatasetsIT {
         String numericPart = identifier.replace("FK2/", ""); //remove shoulder from identifier
         assertTrue(StringUtils.isNumeric(numericPart));
 
+        try {
+            Thread.sleep(3000l);
+        } catch (Exception ex) {logger.warning("failed to execute sleep 3 sec.");}
+
+        
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
