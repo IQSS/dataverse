@@ -194,7 +194,8 @@ public class ExternalTool implements Serializable {
         SITE_URL("siteUrl"),
         API_TOKEN("apiToken"),
         DATASET_ID("datasetId"),
-        DATASET_VERSION("datasetVersion");
+        DATASET_VERSION("datasetVersion"),
+        FILE_METADATA_ID("fileMetadataId");
 
         private final String text;
         private final String START = "{";
