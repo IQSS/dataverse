@@ -5,19 +5,25 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import java.lang.NullPointerException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-
-import static org.junit.Assert.*;
 
 /**
  *
@@ -127,11 +133,102 @@ public class SolrQueryFormatterTest {
     @RunWith(Parameterized.class)
     public static class SolrQueryFormatterParamTest {
 
+        @Parameter(0)
+        public List<Long> sliceOfIds;
+
+        @Parameter(1)
+        public String paramName;
+
+        @Parameter(2)
+        public String dvObjectType;
+
+        // may be either
+        //  (i) the expected query part or
+        // (ii) the expected exception message
+        @Parameter(3)
+        public String expectedResult;
+
+        @Parameter(4)
+        public Class expectedException;
+
         @Parameters
         public static Collection data() {
+            // The following list of test cases was compiled using the interface-based approach for input-space partition.
+            // Therefor, for every input parameter, the domain of possible values was partitioned into different sets:
+            //   - sliceOfIds   (5 sets): null, empty, non-empty with null values only, non-empty with Long values only, non-empty with both null and Long values
+            //   - paramName    (3 sets): null, empty, non-empty
+            //   - dvObjectType (3 sets): null, empty, non-empty
+            // Then, for every set, a representative value was chosen and combined with every other set (3*3*5 = 45 test cases).
             return Arrays.asList(new Object[][] {
-                // TODO: insert test cases
+                // sliceOfIds                                   paramName    dvObjectType    expectedResult                                     expectedException
+                { null,                                         null,        null,           "paramName cannot be null",                        NullPointerException.class },
+                { null,                                         null,        "",             "paramName cannot be null",                        NullPointerException.class },
+                { null,                                         null,        "dvObjectType", "paramName cannot be null",                        NullPointerException.class },
+                { null,                                         "",          null,           "sliceOfIds cannot be null",                       NullPointerException.class },
+                { null,                                         "",          "",             "sliceOfIds cannot be null",                       NullPointerException.class },
+                { null,                                         "",          "dvObjectType", "sliceOfIds cannot be null",                       NullPointerException.class },
+                { null,                                         "paramName", null,           "sliceOfIds cannot be null",                       NullPointerException.class },
+                { null,                                         "paramName", "",             "sliceOfIds cannot be null",                       NullPointerException.class },
+                { null,                                         "paramName", "dvObjectType", "sliceOfIds cannot be null",                       NullPointerException.class },
+
+                { new ArrayList<Long>(),                        null,        null,           "paramName cannot be null",                        NullPointerException.class },
+                { new ArrayList<Long>(),                        null,        "",             "paramName cannot be null",                        NullPointerException.class },
+                { new ArrayList<Long>(),                        null,        "dvObjectType", "paramName cannot be null",                        NullPointerException.class },
+                { new ArrayList<Long>(),                        "",          null,           "sliceOfIds must have at least 1 value",           IllegalStateException.class },
+                { new ArrayList<Long>(),                        "",          "",             "sliceOfIds must have at least 1 value",           IllegalStateException.class },
+                { new ArrayList<Long>(),                        "",          "dvObjectType", "sliceOfIds must have at least 1 value",           IllegalStateException.class },
+                { new ArrayList<Long>(),                        "paramName", null,           "sliceOfIds must have at least 1 value",           IllegalStateException.class },
+                { new ArrayList<Long>(),                        "paramName", "",             "sliceOfIds must have at least 1 value",           IllegalStateException.class },
+                { new ArrayList<Long>(),                        "paramName", "dvObjectType", "sliceOfIds must have at least 1 value",           IllegalStateException.class },
+
+                { new ArrayList<Long>() {{ add(null); }},       null,        null,           "paramName cannot be null",                        NullPointerException.class },
+                { new ArrayList<Long>() {{ add(null); }},       null,        "",             "paramName cannot be null",                        NullPointerException.class },
+                { new ArrayList<Long>() {{ add(null); }},       null,        "dvObjectType", "paramName cannot be null",                        NullPointerException.class },
+                { new ArrayList<Long>() {{ add(null); }},       "",          null,           "(:())",                                           null },
+                { new ArrayList<Long>() {{ add(null); }},       "",          "",             "(:() AND dvObjectType:())",                       null },
+                { new ArrayList<Long>() {{ add(null); }},       "",          "dvObjectType", "(:() AND dvObjectType:(dvObjectType))",           null },
+                { new ArrayList<Long>() {{ add(null); }},       "paramName", null,           "(paramName:())",                                  null },
+                { new ArrayList<Long>() {{ add(null); }},       "paramName", "",             "(paramName:() AND dvObjectType:())",              null },
+                { new ArrayList<Long>() {{ add(null); }},       "paramName", "dvObjectType", "(paramName:() AND dvObjectType:(dvObjectType))",  null },
+
+                { new ArrayList<Long>(Arrays.asList(1L)),       null,        null,           "paramName cannot be null",                        NullPointerException.class },
+                { new ArrayList<Long>(Arrays.asList(1L)),       null,        "",             "paramName cannot be null",                        NullPointerException.class },
+                { new ArrayList<Long>(Arrays.asList(1L)),       null,        "dvObjectType", "paramName cannot be null",                        NullPointerException.class },
+                { new ArrayList<Long>(Arrays.asList(1L)),       "",          null,           "(:(1))",                                          null },
+                { new ArrayList<Long>(Arrays.asList(1L)),       "",          "",             "(:(1) AND dvObjectType:())",                      null },
+                { new ArrayList<Long>(Arrays.asList(1L)),       "",          "dvObjectType", "(:(1) AND dvObjectType:(dvObjectType))",          null },
+                { new ArrayList<Long>(Arrays.asList(1L)),       "paramName", null,           "(paramName:(1))",                                 null },
+                { new ArrayList<Long>(Arrays.asList(1L)),       "paramName", "",             "(paramName:(1) AND dvObjectType:())",             null },
+                { new ArrayList<Long>(Arrays.asList(1L)),       "paramName", "dvObjectType", "(paramName:(1) AND dvObjectType:(dvObjectType))", null },
+
+                { new ArrayList<Long>(Arrays.asList(1L, null)), null,        null,           "paramName cannot be null",                        NullPointerException.class },
+                { new ArrayList<Long>(Arrays.asList(1L, null)), null,        "",             "paramName cannot be null",                        NullPointerException.class },
+                { new ArrayList<Long>(Arrays.asList(1L, null)), null,        "dvObjectType", "paramName cannot be null",                        NullPointerException.class },
+                { new ArrayList<Long>(Arrays.asList(1L, null)), "",          null,           "(:(1))",                                          null },
+                { new ArrayList<Long>(Arrays.asList(1L, null)), "",          "",             "(:(1) AND dvObjectType:())",                      null },
+                { new ArrayList<Long>(Arrays.asList(1L, null)), "",          "dvObjectType", "(:(1) AND dvObjectType:(dvObjectType))",          null },
+                { new ArrayList<Long>(Arrays.asList(1L, null)), "paramName", null,           "(paramName:(1))",                                 null },
+                { new ArrayList<Long>(Arrays.asList(1L, null)), "paramName", "",             "(paramName:(1) AND dvObjectType:())",             null },
+                { new ArrayList<Long>(Arrays.asList(1L, null)), "paramName", "dvObjectType", "(paramName:(1) AND dvObjectType:(dvObjectType))", null },
             });
+        }
+
+        @Test
+        public void testFormatIdsForSolrClause() {
+            SolrQueryFormatter sqf = new SolrQueryFormatter();
+
+            if (expectedException == null) {
+                assertEquals(expectedResult, sqf.formatIdsForSolrClause(sliceOfIds, paramName, dvObjectType));
+                return;
+            }
+
+            try {
+                sqf.formatIdsForSolrClause(sliceOfIds, paramName, dvObjectType);
+                fail("Expected exception (" + expectedException.toString() + ") was not thrown");
+            } catch (Exception ex) {
+                assertEquals("verify the exception class", expectedException, ex.getClass());
+                assertEquals("verify the exception message", expectedResult, ex.getMessage());
+            }
         }
 
     }
