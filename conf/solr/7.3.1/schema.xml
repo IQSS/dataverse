@@ -126,7 +126,7 @@
         via copyField further on in this schema  -->
     <!-- Dataverse solr 7.3.0: for some reason the old text wasn't working so switched to _text_ for copyfields -->
         <!--<field name="text" type="text_general" indexed="true" stored="false" multiValued="true"/>-->
-        <field name="_text_" type="text_general" indexed="true" stored="false" multiValued="true"/>
+        <field name="_text_" type="text_en_splitting" indexed="true" stored="false" multiValued="true"/>
     <!-- catchall text field that indexes tokens both normally and in reverse for efficient
         leading wildcard queries. -->
     <field name="text_rev" type="text_general_rev" indexed="true" stored="false" multiValued="true"/>    
@@ -167,7 +167,7 @@
 
     <field name="subtreePaths" type="string" stored="true" indexed="true" multiValued="true"/>
 
-    <field name="fileName" type="text_en" stored="true" indexed="true" multiValued="true"/>
+    <field name="fileName" type="text_en_splitting" stored="true" indexed="true" multiValued="true"/>
     <field name="fileType" type="text_en" stored="true" indexed="true" multiValued="true"/>
     <field name="fileNameWithoutExtension" type="text_en" stored="true" indexed="true" multiValued="true"/>
     <field name="variableName" type="text_en" stored="true" indexed="true" multiValued="true"/>
