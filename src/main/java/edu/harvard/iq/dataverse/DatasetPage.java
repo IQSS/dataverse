@@ -607,14 +607,25 @@ public class DatasetPage implements java.io.Serializable {
         return retList;     
     }
     
+    private Boolean isIndexedVersion = null; 
+    
     public boolean isIndexedVersion() {
+        if (isIndexedVersion != null) {
+            return isIndexedVersion;
+        }
         // The version is indexed if it's the latest published version, or a 
         // draft. 
         
         // (We probably want to have some straightforward test to verify
         // that this version *has* actually been indexed and is searchable here - ?). 
         // (and confirm that solr is up and running!)
-        return workingVersion.isDraft() || isThisLatestReleasedVersion();
+        if (!(workingVersion.isDraft() || isThisLatestReleasedVersion())) {
+            return isIndexedVersion = false; 
+            //return isIndexedVersion;
+        }
+        
+        return isIndexedVersion = isThisVersionSearchable();
+        //return isIndexedVersion;
     }
     
     /**
@@ -665,6 +676,42 @@ public class DatasetPage implements java.io.Serializable {
             return facetLabelsMap.get("fileTag");
         }
         return null;
+    }
+    
+    public boolean isThisVersionSearchable() {
+        SolrQuery solrQuery = new SolrQuery();
+        
+        solrQuery.setQuery(SearchUtil.constructQuery(SearchFields.ENTITY_ID, workingVersion.getDataset().getId().toString()));
+        
+        solrQuery.addFilterQuery(SearchUtil.constructQuery(SearchFields.TYPE, SearchConstants.DATASETS));
+        solrQuery.addFilterQuery(SearchUtil.constructQuery(SearchFields.DATASET_VERSION_ID, workingVersion.getId().toString()));
+        
+        logger.info("Solr query (testing if searchable): " + solrQuery);
+                
+        QueryResponse queryResponse = null;
+        
+        try {
+            queryResponse = getSolrServer().query(solrQuery);
+        } catch (Exception ex) {
+            logger.info("Solr exception: " + ex.getLocalizedMessage());
+            // solr maybe down/some error may have occurred... 
+            return false; 
+        }
+        
+        SolrDocumentList docs = queryResponse.getResults();
+        Iterator<SolrDocument> iter = docs.iterator();
+        
+        // there should be only 1 result, really... 
+        while (iter.hasNext()) {
+            SolrDocument solrDocument = iter.next();
+            Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
+            logger.info("solr result id: "+entityid);
+            if (entityid.equals(workingVersion.getDataset().getId())) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     /**
@@ -734,6 +781,8 @@ public class DatasetPage implements java.io.Serializable {
             // (to avoid indexing duplicate documents, we don't index ALL of the files
             // in a draft version - only the new files added to the draft.)
             solrQuery.addFilterQuery(SearchFields.PARENT_ID + ":" + workingVersion.getDataset().getId());
+            solrQuery.addFilterQuery(SearchFields.FILE_DELETED + ":" + false);
+            
         }
 
         // Unlimited number of search results: 
@@ -741,13 +790,34 @@ public class DatasetPage implements java.io.Serializable {
         solrQuery.setRows(Integer.MAX_VALUE);
 
         logger.info("Solr query (file search): " + solrQuery);
-        
+                
         QueryResponse queryResponse = null;
+        boolean fileDeletedFlagNotIndexed = false; 
+        
         try {
             queryResponse = getSolrServer().query(solrQuery);
+        } catch (HttpSolrClient.RemoteSolrException ex) {
+            logger.info("Remote Solr Exception: " + ex.getLocalizedMessage());
+            String msg = ex.getLocalizedMessage(); 
+            if (msg.contains(SearchFields.FILE_DELETED)) {
+                fileDeletedFlagNotIndexed = true; 
+            }
         } catch (Exception ex) {
             logger.info("Solr exception: " + ex.getLocalizedMessage());
             return null; 
+        }
+        
+        if (fileDeletedFlagNotIndexed) {
+            // try again, without the flag:
+            solrQuery.removeFilterQuery(SearchFields.FILE_DELETED + ":" + false);
+            logger.info("Solr query (trying again): " + solrQuery);
+
+            try {
+                queryResponse = getSolrServer().query(solrQuery);
+            } catch (Exception ex) {
+                logger.info("Nope, still caught a Solr exception: " + ex.getLocalizedMessage());
+                return null;
+            }
         }
         
         // Process the facets: 
