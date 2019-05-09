@@ -573,14 +573,12 @@ public class FileMetadata implements Serializable {
             String folder2 = o2.getDirectoryLabel() == null ? "" : o2.getDirectoryLabel().toUpperCase();
             
             
-            // We want to the files w/ no folders appear *after* all the folders
-            // on the sorted list:
             if ("".equals(folder1) && !"".equals(folder2)) {
-                return 1;
+                return -1;
             }
             
             if ("".equals(folder2) && !"".equals(folder1)) {
-                return -1;
+                return 1;
             }
             
             int comp = folder1.compareTo(folder2); 
