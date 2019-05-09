@@ -291,7 +291,7 @@ Export Metadata of a Dataset in Various Formats
 
     GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
 
-.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , ``OAI_ORE`` , ``Datacite`` and ``dataverse_json``.
+.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , ``OAI_ORE`` , ``Datacite``, ``oai_datacite`` and ``dataverse_json``.
 
 Schema.org JSON-LD
 ^^^^^^^^^^^^^^^^^^
@@ -1324,6 +1324,43 @@ Dataset Integrity
 Recalculate the UNF value of a dataset version, if it's missing, by supplying the dataset version database id::
 
   POST http://$SERVER/api/admin/datasets/integrity/{datasetVersionId}/fixmissingunf
+
+.. _dataset-validation-api:
+
+Dataset Validation
+~~~~~~~~~~~~~~~~~~
+
+Validate the dataset and its components (DatasetVersion, FileMetadatas, etc.) for constraint violations::
+
+  curl $SERVER_URL/api/admin/validate/dataset/{datasetId}
+
+if validation fails, will report the specific database entity and the offending value. For example::
+   
+   {"status":"OK","data":{"entityClassDatabaseTableRowId":"[DatasetVersion id:73]","field":"archiveNote","invalidValue":"random text, not a url"}} 
+
+
+Validate all the datasets in the Dataverse, report any constraint violations found::
+
+  curl $SERVER_URL/api/admin/validate/datasets
+
+This API streams its output in real time, i.e. it will start producing the output immediately and will be reporting on the progress as it validates one dataset at a time. For example:: 
+
+     {"datasets": [
+     		  {"datasetId":27,"status":"valid"},
+		  {"datasetId":29,"status":"valid"},
+		  {"datasetId":31,"status":"valid"},
+		  {"datasetId":33,"status":"valid"},
+		  {"datasetId":35,"status":"valid"},
+		  {"datasetId":41,"status":"invalid","entityClassDatabaseTableRowId":"[DatasetVersion id:73]","field":"archiveNote","invalidValue":"random text, not a url"}, 
+		  {"datasetId":57,"status":"valid"}
+		  ]
+      }
+
+Note that if you are attempting to validate a very large number of datasets in your Dataverse, this API may time out - subject to the timeout limit set in your Glassfish configuration. If this is a production Dataverse instance serving large amounts of data, you most likely have that timeout set to some high value already. But if you need to increase it, it can be done with the asadmin command. For example::
+ 
+     asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=3600
+
+
 
 Workflows
 ~~~~~~~~~
