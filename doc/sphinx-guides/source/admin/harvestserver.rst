@@ -38,7 +38,7 @@ default disabled on a brand new, "out of the box" Dataverse.
 
 The OAI-PMH endpoint can be accessed at ``http(s)://<Your Dataverse FQDN>/oai``.
 If you want other services to harvest your repository, point them to this URL.
-*Example URL to 'Identify' verb*: `Harvard Dataverse OAI <https://dataverse.harvard.edu/oai?verb=Identify>`_
+*Example URL for 'Identify' verb*: `demo.dataverse.org OAI <https://demo.dataverse.org/oai?verb=Identify>`_
 
 OAI Sets
 --------
