@@ -571,6 +571,22 @@ public class UtilIT {
         return requestSpecification
                 .post("/api/files/" + idInPath + "/replace" + optionalQueryParam);
     }
+    
+    static Response updateFileMetadata(String fileIdOrPersistentId, String jsonAsString, String apiToken) {
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+        if (jsonAsString != null) {
+            requestSpecification.multiPart("jsonData", jsonAsString);
+        }
+        return requestSpecification
+                .post("/api/files/" + idInPath + "/metadata" + optionalQueryParam);
+    }
 
     static Response downloadFile(Integer fileId) {
         return given()
@@ -790,6 +806,19 @@ public class UtilIT {
         Response uningestFileResponse = given()
                 .post("/api/files/" + fileId + "/uningest/?key=" + apiToken);
         return uningestFileResponse;
+    }
+    
+    //I don't understand why this blows up when I remove the key
+    public static Response getDataFileMetadata(Long fileId, String apiToken) {
+        Response fileResponse = given()
+                .get("api/files/" + fileId + "/metadata/?key=" + apiToken);
+        return fileResponse;
+    }
+    
+    public static Response getDataFileMetadataDraft(Long fileId, String apiToken) {
+        Response fileResponse = given()
+                .get("api/files/" + fileId + "/metadata/draft?key=" + apiToken);
+        return fileResponse;
     }
 
     public static Response deleteDataverse(String doomed, String apiToken) {
@@ -1153,9 +1182,11 @@ public class UtilIT {
         return moveDataset(idOrPersistentIdOfDatasetToMove, destinationDataverseAlias, false, apiToken);
     }
 
-    private static Response moveDataset(String idOrPersistentIdOfDatasetToMove, String destinationDataverseAlias, boolean force, String apiToken) {
+    static Response moveDataset(String idOrPersistentIdOfDatasetToMove, String destinationDataverseAlias, boolean force, String apiToken) {
+        String forceMoveQueryParam = "";
         if (force) {
-            throw new RuntimeException("FIXME: support force");
+            // FIXME: Make "&" version work (instead of "?").
+            forceMoveQueryParam = "?forceMove=true";
         }
         String idInPath = idOrPersistentIdOfDatasetToMove; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
@@ -1168,9 +1199,23 @@ public class UtilIT {
             requestSpecification = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
-        return requestSpecification.post("/api/datasets/" + idInPath + "/move/" + destinationDataverseAlias + optionalQueryParam);
+        return requestSpecification.post("/api/datasets/" + idInPath + "/move/" + destinationDataverseAlias + optionalQueryParam + forceMoveQueryParam);
     }
-    
+
+    static Response linkDataset(String datasetToLinkPid, String dataverseAlias, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("api/datasets/:persistentId/link/" + dataverseAlias + "?persistentId=" + datasetToLinkPid);
+        return response;
+    }
+
+    static Response getDatasetLinks(String datasetToLinkPid, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("api/datasets/:persistentId/links" + "?persistentId=" + datasetToLinkPid);
+        return response;
+    }
+
     static Response createDataverseLink(String linkedDataverseAlias, String linkingDataverseAlias, String apiToken) {
         Response response = given()
             .header(API_TOKEN_HTTP_HEADER, apiToken)

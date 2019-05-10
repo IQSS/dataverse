@@ -7,7 +7,7 @@
     -->
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.12</version>
+    <version>4.14</version>
     <packaging>war</packaging>
     <name>dataverse</name>
     <properties>
@@ -599,6 +599,12 @@
             <artifactId>tika-parsers</artifactId>
             <version>1.19</version>
         </dependency>
+        <!-- Named Entity Recognition -->
+        <dependency>
+            <groupId>org.apache.opennlp</groupId>
+            <artifactId>opennlp-tools</artifactId>
+            <version>1.9.1</version>
+        </dependency>
     </dependencies>
     <build>
         <!--        <testResources>
@@ -632,6 +638,7 @@
                 <includes>
                     <include>**/*.sql</include>
                     <include>**/*.xml</include>
+                    <include>**/firstNames/*.*</include>
                 </includes>
             </resource>
         </resources>

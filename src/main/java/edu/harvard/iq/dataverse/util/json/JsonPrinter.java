@@ -230,7 +230,6 @@ public class JsonPrinter {
         return bld;
     }
     
-    //MAD: Maybe delete this entirely so folks have to make the decision about public/private
     public static JsonObjectBuilder json(Dataverse dv) {
         return json(dv, false);
     }
@@ -263,14 +262,16 @@ public class JsonPrinter {
     }
 
     public static JsonArrayBuilder json(List<DataverseContact> dataverseContacts) {
-        JsonArrayBuilder bld = Json.createArrayBuilder();
-        for(DataverseContact dc : dataverseContacts) {
-            bld.add(dc.getContactEmail()); 
+        JsonArrayBuilder jsonArrayOfContacts = Json.createArrayBuilder();
+        for (DataverseContact dataverseContact : dataverseContacts) {
+            NullSafeJsonBuilder contactJsonObject = NullSafeJsonBuilder.jsonObjectBuilder();
+            contactJsonObject.add("displayOrder", dataverseContact.getDisplayOrder());
+            contactJsonObject.add("contactEmail", dataverseContact.getContactEmail());
+            jsonArrayOfContacts.add(contactJsonObject);
         }
-        
-        return bld;
+        return jsonArrayOfContacts;
     }
-    
+
     public static JsonObjectBuilder json( DataverseTheme theme ) {
         final NullSafeJsonBuilder baseObject = jsonObjectBuilder()
                 .add("id", theme.getId() )
@@ -339,7 +340,8 @@ public class JsonPrinter {
                 .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus() != null ? dsv.getTermsOfUseAndAccess().getAvailabilityStatus() : null)
                 .add("contactForAccess", dsv.getTermsOfUseAndAccess().getContactForAccess() != null ? dsv.getTermsOfUseAndAccess().getContactForAccess() : null)
                 .add("sizeOfCollection", dsv.getTermsOfUseAndAccess().getSizeOfCollection() != null ? dsv.getTermsOfUseAndAccess().getSizeOfCollection() : null)
-                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion() != null ? dsv.getTermsOfUseAndAccess().getStudyCompletion() : null);
+                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion() != null ? dsv.getTermsOfUseAndAccess().getStudyCompletion() : null)
+                .add("fileAccessRequest", dsv.getTermsOfUseAndAccess().isFileAccessRequest());
 
         bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields()));
 
