@@ -78,6 +78,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
+import org.apache.commons.io.FilenameUtils;
 
 
 /**
@@ -110,7 +111,6 @@ public class FileUtil implements java.io.Serializable  {
         STATISTICAL_FILE_EXTENSION.put("sps", "application/x-spss-syntax");
         STATISTICAL_FILE_EXTENSION.put("csv", "text/csv");
         STATISTICAL_FILE_EXTENSION.put("tsv", "text/tsv");
-        STATISTICAL_FILE_EXTENSION.put("ipynb", "application/x-ipynb+json");
     }
     
     private static MimetypesFileTypeMap MIME_TYPE_MAP = new MimetypesFileTypeMap();
@@ -415,13 +415,34 @@ public class FileUtil implements java.io.Serializable  {
         logger.fine("returning fileType "+fileType);
         return fileType;
     }
-    
+
     public static String determineFileTypeByExtension(String fileName) {
-        logger.fine("Type by extension, for "+fileName+": "+MIME_TYPE_MAP.getContentType(fileName));
-        return MIME_TYPE_MAP.getContentType(fileName);
+        String mimetypesFileTypeMapResult = MIME_TYPE_MAP.getContentType(fileName);
+        logger.fine("MimetypesFileTypeMap type by extension, for " + fileName + ": " + mimetypesFileTypeMapResult);
+        if (mimetypesFileTypeMapResult != null) {
+            if ("application/octet-stream".equals(mimetypesFileTypeMapResult)) {
+                return lookupFileTypeFromPropertiesFile(fileName);
+            } else {
+                return mimetypesFileTypeMapResult;
+            }
+        } else {
+            return null;
+        }
     }
-    
-    
+
+    public static String lookupFileTypeFromPropertiesFile(String fileName) {
+        String fileExtension = FilenameUtils.getExtension(fileName);
+        String propertyFileName = "MimeTypeDetectionByFileExtension";
+        String propertyFileNameOnDisk = propertyFileName + ".properties";
+        try {
+            logger.fine("checking " + propertyFileNameOnDisk + " for file extension " + fileExtension);
+            return BundleUtil.getStringFromPropertyFile(fileExtension, propertyFileName);
+        } catch (MissingResourceException ex) {
+            logger.info(fileExtension + " is a file extension Dataverse doesn't know about. Consider adding it to the " + propertyFileNameOnDisk + " file.");
+            return null;
+        }
+    }
+
     /* 
      * Custom method for identifying FITS files: 
      * TODO: 
