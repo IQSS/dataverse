@@ -424,13 +424,11 @@ public class SystemConfig {
      */
     public long getZipDownloadLimit() {
         String zipLimitOption = settingsService.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit);
-
         return getLongLimitFromStringOrDefault(zipLimitOption, 0L);
     }
     
     public int getZipUploadFilesLimit() {
         String limitOption = settingsService.getValueForKey(SettingsServiceBean.Key.ZipUploadFilesLimit);
-
         return getIntLimitFromStringOrDefault(limitOption, defaultZipUploadFilesLimit);
     }
     
@@ -440,13 +438,11 @@ public class SystemConfig {
     */
     public int getMultipleUploadFilesLimit() {
         String limitOption = settingsService.getValueForKey(SettingsServiceBean.Key.MultipleUploadFilesLimit);
-
         return getIntLimitFromStringOrDefault(limitOption, defaultMultipleUploadFilesLimit);
     }
     
     public long getGuestbookResponsesPageDisplayLimit() {
         String limitSetting = settingsService.getValueForKey(SettingsServiceBean.Key.GuestbookResponsesPageDisplayLimit);
-
         return getLongLimitFromStringOrDefault(limitSetting, DEFAULT_GUESTBOOK_RESPONSES_DISPLAY_LIMIT);
     }
     
