@@ -388,7 +388,7 @@ public class SystemConfig {
         return metricsUrl;
     }
 
-    protected long getLongLimitFromStringOrDefault(String limitSetting, Long defaultValue) {
+    static long getLongLimitFromStringOrDefault(String limitSetting, Long defaultValue) {
         Long limit = null;
 
         if (limitSetting != null && !limitSetting.equals("")) {
@@ -402,7 +402,7 @@ public class SystemConfig {
         return limit != null ? limit : defaultValue;
     }
 
-    protected int getIntLimitFromStringOrDefault(String limitSetting, Integer defaultValue) {
+    static int getIntLimitFromStringOrDefault(String limitSetting, Integer defaultValue) {
         Integer limit = null;
 
         if (limitSetting != null && !limitSetting.equals("")) {
