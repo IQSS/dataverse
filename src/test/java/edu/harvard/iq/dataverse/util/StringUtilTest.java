@@ -227,6 +227,52 @@ public class StringUtilTest {
         }
     }
 
+    @RunWith(Parameterized.class)
+    public static class TestSanitizeFileDirectory {
+
+        public String inputString;
+        public String expected;
+        public boolean aggressively;
+
+        public TestSanitizeFileDirectory(String inputString, String expected, boolean aggressively) {
+            this.inputString = inputString;
+            this.expected = expected;
+            this.aggressively = aggressively;
+        }
+
+        @Parameters
+        public static Collection<Object[]> parameters() {
+            return Arrays.asList(
+                    new Object[][] { 
+                        {"some\\path\\to\\a\\directory", "some/path/to/a/directory", false},
+                        {"some\\//path\\//to\\//a\\//directory", "some/path/to/a/directory", false},
+                        // starts with / or - or . or whitepsace
+                        {"/some/path/to/a/directory", "some/path/to/a/directory", false},
+                        {"-some/path/to/a/directory", "some/path/to/a/directory", false},
+                        {".some/path/to/a/directory", "some/path/to/a/directory", false},
+                        {" some/path/to/a/directory", "some/path/to/a/directory", false},
+                        // ends with / or - or . or whitepsace
+                        {"some/path/to/a/directory/", "some/path/to/a/directory", false},
+                        {"some/path/to/a/directory-", "some/path/to/a/directory", false},
+                        {"some/path/to/a/directory.", "some/path/to/a/directory", false},
+                        {"some/path/to/a/directory ", "some/path/to/a/directory", false},
+
+                        {"", null, false},
+                        {"/", null, false},
+
+                        // aggressively
+                        {"some/path/to/a/dire{`~}ctory", "some/path/to/a/dire.ctory", true},
+                        {"some/path/to/a/directory\\.\\.", "some/path/to/a/directory", true},
+                    }
+            );
+        }
+
+        @Test
+        public void testSanitizeFileDirectory() {
+            assertEquals(expected, StringUtil.sanitizeFileDirectory(inputString, aggressively));
+        }
+    }
+
     public static class StringUtilNoParamTest{
 
         @Test
