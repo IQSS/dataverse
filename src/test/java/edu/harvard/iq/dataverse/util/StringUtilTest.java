@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.junit.After;
@@ -17,7 +18,6 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 
@@ -193,6 +193,37 @@ public class StringUtilTest {
         @Test
         public void testSubstringIncludingLast() {
             assertEquals( expectedString, StringUtil.substringIncludingLast(str, separator) );
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class TestToOption {
+
+        public String inputString;
+        public Optional<String> expected;
+
+        public TestToOption(String inputString, Optional<String> expected) {
+            this.inputString = inputString;
+            this.expected = expected;
+        }
+
+        @Parameters
+        public static Collection<Object[]> parameters() {
+            return Arrays.asList(
+                    new Object[][] { 
+                        {null, Optional.empty()},
+                        {"", Optional.empty()},
+                        {"    leadingWhitespace", Optional.of("leadingWhitespace")},
+                        {"trailingWhiteSpace    ", Optional.of("trailingWhiteSpace")},
+                        {"someString", Optional.of("someString")},
+                        {"some string with spaces", Optional.of("some string with spaces")}
+                    }
+            );
+        }
+
+        @Test
+        public void testToOption() {
+            assertEquals(expected, StringUtil.toOption(inputString));
         }
     }
 
