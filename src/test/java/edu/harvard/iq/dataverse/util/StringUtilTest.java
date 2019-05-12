@@ -290,5 +290,23 @@ public class StringUtilTest {
             
             assertFalse( StringUtil.isTrue(null) );
         }
+
+        @Test
+        public void testNonEmpty_normalString() {
+            String expected = "someString";
+            assertTrue(StringUtil.nonEmpty(expected));
+        }
+
+        @Test
+        public void testNonEmpty_null() {
+            String expected = null;
+            assertFalse(StringUtil.nonEmpty(expected));
+        }
+
+        @Test
+        public void testNonEmpty_emptyString() {
+            String expected = "";
+            assertFalse(StringUtil.nonEmpty(expected));
+        }
     }
 }
