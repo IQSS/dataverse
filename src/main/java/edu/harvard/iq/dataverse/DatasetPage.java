@@ -613,19 +613,17 @@ public class DatasetPage implements java.io.Serializable {
         if (isIndexedVersion != null) {
             return isIndexedVersion;
         }
-        // The version is indexed if it's the latest published version, or a 
-        // draft. 
+        // The version is SUPPOSED to be indexed if it's the latest published version, or a 
+        // draft. So if none of the above is true, we return false right away:
         
-        // (We probably want to have some straightforward test to verify
-        // that this version *has* actually been indexed and is searchable here - ?). 
-        // (and confirm that solr is up and running!)
         if (!(workingVersion.isDraft() || isThisLatestReleasedVersion())) {
             return isIndexedVersion = false; 
-            //return isIndexedVersion;
         }
         
+        // ... but if it is the latest published version or a draft, we want to test 
+        // and confirm that this version *has* actually been indexed and is searchable   
+        // (and that solr is actually up and running!), by running a quick solr search:
         return isIndexedVersion = isThisVersionSearchable();
-        //return isIndexedVersion;
     }
     
     /**
@@ -678,6 +676,10 @@ public class DatasetPage implements java.io.Serializable {
         return null;
     }
     
+    /**
+     * Verifies that solr is running and that the version is indexed and searchable
+     * @return boolean
+     */
     public boolean isThisVersionSearchable() {
         SolrQuery solrQuery = new SolrQuery();
         

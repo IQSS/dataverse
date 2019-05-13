@@ -142,8 +142,8 @@
             </div>
             
             <!-- FILES FILTER FACETS -->
-            <div class="row" style="margin-bottom:10px;" jsf:rendered="#{DatasetPage.indexedVersion and (DatasetPage.workingVersion.fileMetadatas.size() gt 1)}">
-                <div class="col-xs-9 text-left">
+            <div class="row" style="margin-bottom:10px;" jsf:rendered="#{(DatasetPage.workingVersion.fileMetadatas.size() gt 1)}">
+                <div class="col-xs-9 text-left" jsf:rendered="#{DatasetPage.indexedVersion}">
                     <div class="text-muted small" style="font-weight:normal;">#{bundle['file.results.filter']}</div>
                     <!-- FACET: TYPE -->
                     <div class="btn-group" style="margin-right:20px;" jsf:rendered="#{!(empty DatasetPage.fileTypeFacetLabels)}">
