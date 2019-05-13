@@ -93,5 +93,10 @@ public abstract class AbstractCommand<R> implements Command<R> {
         }
         return sb.toString();
     }
+    
+    @Override 
+    public boolean onSuccess(CommandContext ctxt, R r) {
+        return true;
+    }
 
 }

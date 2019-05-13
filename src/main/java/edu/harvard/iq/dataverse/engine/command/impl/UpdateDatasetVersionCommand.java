@@ -159,13 +159,19 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         ctxt.em().flush();
 
         updateDatasetUser(ctxt);
-        ctxt.index().indexDataset(savedDataset, true);
+        
         if (clone != null) {
             DatasetVersionDifference dvd = new DatasetVersionDifference(editVersion, clone);
             AuthenticatedUser au = (AuthenticatedUser) getUser();
             ctxt.datasetVersion().writeEditVersionLog(dvd, au);
         } 
         return savedDataset; 
+    }
+    
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Dataset r){
+        ctxt.index().indexDataset((Dataset) r, true);
+        return true;
     }
 
 }

@@ -39,6 +39,7 @@ import javax.ejb.EJBContext;
 import javax.ejb.EJBException;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
+import static javax.ejb.TransactionAttributeType.SUPPORTS;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.validation.ConstraintViolation;
@@ -177,6 +178,9 @@ public class EjbDataverseEngine {
     @EJB
     ConfirmEmailServiceBean confirmEmailService;
     
+    @EJB
+    EjbDataverseEngineInner innerEngine;
+    
     
     @Resource
     EJBContext ejbCtxt;
@@ -188,6 +192,7 @@ public class EjbDataverseEngine {
         return submit(aCommand);
     }
 
+    @TransactionAttribute(SUPPORTS)
     public <R> R submit(Command<R> aCommand) throws CommandException {
         
         final ActionLogRecord logRec = new ActionLogRecord(ActionLogRecord.ActionType.Command, aCommand.getClass().getCanonicalName());
@@ -233,7 +238,10 @@ public class EjbDataverseEngine {
                 }
             }
             try {
-                return aCommand.execute(getContext());
+                R r = innerEngine.submit(aCommand, getContext());
+                aCommand.onSuccess(getContext(), r);
+                //boolean aCommand.onSuccess(getContext(), r);
+                return r; // aCommand.execute(getContext());
                 
             } catch ( EJBException ejbe ) {
                 throw new CommandException("Command " + aCommand.toString() + " failed: " + ejbe.getMessage(), ejbe.getCausedByException(), aCommand);

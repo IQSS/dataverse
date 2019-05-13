@@ -13,6 +13,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * Creates a new {@link Dataset}, used to store unpublished data. This is as opposed to 
@@ -47,6 +49,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
      */
     @Override
     protected void additionalParameterTests(CommandContext ctxt) throws CommandException {
+        System.out.print("additionalParameterTests begin: " + new Timestamp(new Date().getTime()));
         if ( nonEmpty(getDataset().getIdentifier()) ) {
             GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(getDataset().getProtocol(), ctxt);
             if ( ctxt.datasets().isIdentifierUnique(getDataset().getIdentifier(), getDataset(), idServiceBean) ) {
@@ -55,6 +58,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
                     this);
            }
         }
+        System.out.print("additionalParameterTests END: " + new Timestamp(new Date().getTime()));
     }
     
     @Override
@@ -69,11 +73,13 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
             // pre-register a persistent id
             registerExternalIdentifier(theDataset, ctxt);
         }
+        System.out.print("Handle PID END: " + new Timestamp(new Date().getTime()));
     }
     
     @Override
     protected void postPersist( Dataset theDataset, CommandContext ctxt ){
         // set the role to be default contributor role for its dataverse
+         System.out.print("Post persist begin: " + new Timestamp(new Date().getTime()));
         String privateUrlToken = null;
         if (theDataset.getOwner().getDefaultContributorRole() != null) {
             RoleAssignment roleAssignment = new RoleAssignment(theDataset.getOwner().getDefaultContributorRole(),
@@ -96,6 +102,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
         if ( template != null ) {
             ctxt.templates().incrementUsageCount(template.getId());
         }
+         System.out.print("Post Persist END: " + new Timestamp(new Date().getTime()));
     }
     
     

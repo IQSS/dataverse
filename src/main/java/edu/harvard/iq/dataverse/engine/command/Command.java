@@ -43,4 +43,6 @@ public interface Command<R> {
     Map<String,Set<Permission>> getRequiredPermissions();
 
     public String describe();
+    
+    public boolean onSuccess(CommandContext ctxt, R r);
 }
