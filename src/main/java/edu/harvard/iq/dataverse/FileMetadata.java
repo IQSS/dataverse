@@ -36,6 +36,7 @@ import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import edu.harvard.iq.dataverse.license.FileTermsOfUse;
+import edu.harvard.iq.dataverse.license.TermsOfUseForm;
 import edu.harvard.iq.dataverse.util.DateUtil;
 import org.hibernate.validator.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -471,6 +472,16 @@ public class FileMetadata implements Serializable {
         this.contributorNames = contributorNames;
     }
 
+    
+    @Transient
+    private TermsOfUseForm termsOfUseForm = new TermsOfUseForm();
+    
+    public TermsOfUseForm getTermsOfUseForm() {
+        return termsOfUseForm;
+    }
+    public void setTermsOfUseForm(TermsOfUseForm termsOfUseForm) {
+        this.termsOfUseForm = termsOfUseForm;
+    }
 
     @Override
     public int hashCode() {

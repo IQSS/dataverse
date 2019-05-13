@@ -30,6 +30,10 @@ public class LicenseDAO {
         return em.createQuery("SELECT l FROM License l ORDER BY l.position ASC", License.class).getResultList();
     }
   
+    public List<License> findActive() {
+        return em.createQuery("SELECT l FROM License l WHERE l.active = true ORDER BY l.position ASC", License.class).getResultList();
+    }
+    
     public License saveChanges(License license) {
         return em.merge(license);
     }

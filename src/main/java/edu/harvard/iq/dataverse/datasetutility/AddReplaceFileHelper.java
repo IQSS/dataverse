@@ -23,7 +23,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.license.InitialTermsOfUseFactory;
+import edu.harvard.iq.dataverse.license.TermsOfUseFactory;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -112,7 +112,7 @@ public class AddReplaceFileHelper{
     private PermissionServiceBean permissionService;
     private EjbDataverseEngine commandEngine;
     private SystemConfig systemConfig;
-    private InitialTermsOfUseFactory termsOfUseFactory;
+    private TermsOfUseFactory termsOfUseFactory;
     
     // -----------------------------------
     // Instance variables directly added
@@ -195,7 +195,7 @@ public class AddReplaceFileHelper{
                             PermissionServiceBean permissionService,
                             EjbDataverseEngine commandEngine,
                             SystemConfig systemConfig,
-                            InitialTermsOfUseFactory termsOfUseFactory){
+                            TermsOfUseFactory termsOfUseFactory){
 
         // ---------------------------------
         // make sure DataverseRequest isn't null and has a user
@@ -229,7 +229,7 @@ public class AddReplaceFileHelper{
             throw new NullPointerException("systemConfig cannot be null");
         }
         if (termsOfUseFactory == null) {
-            throw new NullPointerException("InitialTermsOfUseFactory cannot be null");
+            throw new NullPointerException("TermsOfUseFactory cannot be null");
         }
 
         // ---------------------------------

@@ -7,6 +7,7 @@
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:o="http://omnifaces.org/ui"
+      xmlns:dv="http://dataverse.org/facelets"
 >
     <h:head>
     </h:head>
@@ -1106,6 +1107,14 @@
                         </div>
                     </p:dialog>
 
+                    <p:dialog id="selectFilesForEditLicense" styleClass="smallPopUp"
+                            header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForEditLicense" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> Nic nie zaznaczono</p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.close}" onclick="PF('selectFilesForEditLicense').hide();PF('blockDatasetForm').hide();"/>
+                        </div>
+                    </p:dialog>
+
                     <p:dialog id="selectFilesForEditTags" styleClass="smallPopUp"
                               header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForEditTags" modal ="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForMetadataEdit']}</p>
@@ -1120,7 +1129,7 @@
                     <!-- We no longer need this remoteCommand; see my comments in the javascript method testFilesSelectedForEditMetadata() -->
                     <!-- for more info. - L.A. 4.2.1 -->
                     <!-- p:remoteCommand  name="openEditFilesPageCommand" action=" {DatasetPage.editFileMetadata()}"  / -->
-
+                    
                     <p:dialog id="fileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="fileTagsPopup" modal="true">
                         <p class="help-block">#{bundle['file.editTagsDialog.tip']}</p>
                         <div class="form-horizontal" jsf:rendered="#{!(empty DatasetPage.selectedFiles)}">
@@ -1226,6 +1235,11 @@
                         </div>
                     </p:dialog>
                     <!-- END: Request Access Sign Up/Log In Button -->
+                    
+                    <div jsf:rendered="#{empty DatasetPage.editMode}">
+	                    <dv:termsOfUseDialog id="editTermsOfUseDialog" widgetVar="editTermsOfUseDialog"
+	                        action="#{DatasetPage.saveTermsOfUse(editTermsOfUseDialog.termsOfUseForm)}" update="" />
+                    </div>
                     
                     <p:dialog header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true" 
                             id="configureToolPopup" styleClass="smallPopUp">
@@ -1549,6 +1563,7 @@
                     
                      <!-- END: Publish/Submit for Review Dialogs -->
                 </h:form>
+                
                 <script type="text/javascript">
                     $(document).ready(function () {
                         popoverHTML('#{bundle.htmlAllowedTitle}');
@@ -1622,6 +1637,14 @@
                         // commandButton. -- L.A. 4.2.1
                         //openEditFilesPageCommand();
                         //}
+                    }
+                    function testFilesSelectedForEditLicense() {
+                        var count = PF('filesTable').getSelectedRowsCount();
+                        if (count === 0) {
+                            PF('selectFilesForEditLicense').show();
+                        } else {
+                            PF('editTermsOfUseDialog').show();
+                        }
                     }
                     function updateTemplate() {
                         $('button[id$="updateTemplate"]').trigger('click');

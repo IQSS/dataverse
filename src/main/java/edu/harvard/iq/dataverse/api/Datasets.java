@@ -73,7 +73,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailComman
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.license.InitialTermsOfUseFactory;
+import edu.harvard.iq.dataverse.license.TermsOfUseFactory;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -181,7 +181,7 @@ public class Datasets extends AbstractApiBean {
     SettingsServiceBean settingsService;
 
     @Inject
-    private InitialTermsOfUseFactory termsOfUseFactory;
+    private TermsOfUseFactory termsOfUseFactory;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.

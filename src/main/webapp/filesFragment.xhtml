@@ -235,7 +235,7 @@
                 <ui:fragment rendered="#{fileMetadata.termsOfUse.termsOfUseType == termsOfUseTypeEnum.RESTRICTED}">
                     #{bundle['dataset.files.termsOfAccess']}: #{bundle['file.termsOfAccess.restricted']} - 
                     <ui:fragment rendered="#{fileMetadata.termsOfUse.restrictType != restrictTypeEnum.CUSTOM}">
-                        #{bundle['file.termsOfAccess.restricted.'.concat(DatasetPage.termsOfUseOfFirstFile.restrictType)]}
+                        #{bundle['file.termsOfAccess.restricted.'.concat(fileMetadata.termsOfUse.restrictType)]}
                     </ui:fragment>
                     <ui:fragment rendered="#{fileMetadata.termsOfUse.restrictType == restrictTypeEnum.CUSTOM}">
                         #{fileMetadata.termsOfUse.restrictCustomText}
@@ -289,6 +289,11 @@
                             <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                 <p:commandLink onclick="testFilesSelectedForEditMetadata();" id="editMetadataSelectedFile" action="#{DatasetPage.editFileMetadata()}">                                         
                                     <h:outputText value="#{bundle['file.metadata']}"/>
+                                </p:commandLink>
+                            </li>
+                            <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
+                                <p:commandLink onclick="testFilesSelectedForEditLicense();" id="editLicenseSelectedFile">
+                                    <h:outputText value="#{bundle['file.license']}" />
                                 </p:commandLink>
                             </li>
                             <!--no restrict on non-s3 package file -->

@@ -21,8 +21,16 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
+import edu.harvard.iq.dataverse.license.TermsOfUseFactory;
+import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.license.LicenseDAO;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse;
+import edu.harvard.iq.dataverse.license.TermsOfUseForm;
+import edu.harvard.iq.dataverse.license.TermsOfUseFormMapper;
+import edu.harvard.iq.dataverse.license.TermsOfUseSelectItemsFactory;
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
-import edu.harvard.iq.dataverse.license.InitialTermsOfUseFactory;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse.RestrictType;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.search.FileView;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -48,6 +56,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.FacesEvent;
+import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -73,6 +82,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -80,6 +90,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+
 
 /**
  *
@@ -133,7 +144,16 @@ public class EditDatafilesPage implements java.io.Serializable {
     SettingsWrapper settingsWrapper;
     
     @Inject
-    private InitialTermsOfUseFactory termsOfUseFactory;
+    private TermsOfUseFactory termsOfUseFactory;
+    @Inject
+    private TermsOfUseFormMapper termsOfUseFormMapper;
+    
+    @EJB
+    private LicenseDAO licenseDao;
+
+    @Inject
+    private TermsOfUseSelectItemsFactory termsOfUseSelectItemsFactory;
+    
     
     private final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
@@ -171,6 +191,8 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     private Long maxFileUploadSizeInBytes = null;
     private Integer multipleUploadFilesLimit = null; 
+    
+    private List<SelectItem> termsOfUseSelectItems;
     
     private final int NUMBER_OF_SCROLL_ROWS = 25;
     
@@ -446,6 +468,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         newFiles = newFilesList;
         uploadedFiles = new ArrayList<>();
         selectedFiles = selectedFileMetadatasList;
+        termsOfUseSelectItems = termsOfUseSelectItemsFactory.buildLicenseSelectItems();
         
         logger.fine("done");
         
@@ -463,6 +486,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
+        
+        termsOfUseSelectItems = termsOfUseSelectItemsFactory.buildLicenseSelectItems();
         
         if (dataset.getId() != null){
             // Set Working Version and Dataset by Datasaet Id and Version
@@ -591,7 +616,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)){
             JH.addMessage(FacesMessage.SEVERITY_WARN, getBundleString("dataset.message.publicInstall"));
-        }   
+        }
         
         return null;
     }
@@ -1126,6 +1151,13 @@ public class EditDatafilesPage implements java.io.Serializable {
                         return null;
                     }
                 }
+            }
+            
+            for (DataFile newFile : newFiles) {
+                TermsOfUseForm termsOfUseForm = newFile.getFileMetadata().getTermsOfUseForm();
+                FileTermsOfUse termsOfUse = termsOfUseFormMapper.mapToFileTermsOfUse(termsOfUseForm);
+                
+                newFile.getFileMetadata().setTermsOfUse(termsOfUse);
             }
                                 
             // Try to save the NEW files permanently: 
@@ -2767,6 +2799,10 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void handleNameChange(final AjaxBehaviorEvent event) {        
         datasetUpdateRequired = true;
     }
+    
+    public void handleTermsOfUseChange(final AjaxBehaviorEvent event) {
+        datasetUpdateRequired = true;
+    }
         
     /* 
      * Items for the "Advanced (Ingest) Options" popup. 
@@ -2937,6 +2973,22 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
             }
         }
+    }
+    
+    public List<SelectItem> getTermsOfUseSelectItems() {
+        return termsOfUseSelectItems;
+    }
+
+    public void updateTermsOfUseForSelectedFiles(TermsOfUseForm termsOfUseForm) {
+        
+        for (FileMetadata selectedFile: selectedFiles) {
+            TermsOfUseForm termsOfUseCopy = new TermsOfUseForm();
+            termsOfUseCopy.setTypeWithLicenseId(termsOfUseForm.getTypeWithLicenseId());
+            termsOfUseCopy.setRestrictType(termsOfUseForm.getRestrictType());
+            termsOfUseCopy.setCustomRestrictText(termsOfUseForm.getCustomRestrictText());
+            selectedFile.setTermsOfUseForm(termsOfUseCopy);
+        }
+        
     }
     
 }

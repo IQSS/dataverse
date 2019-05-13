@@ -19,7 +19,7 @@ import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
 public class InitialTermsOfUseFactoryTest {
 
     @InjectMocks
-    private InitialTermsOfUseFactory termsOfUseFactory;
+    private TermsOfUseFactory termsOfUseFactory;
     
     @Mock
     private LicenseDAO licenseDao;

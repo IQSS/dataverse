@@ -9,9 +9,13 @@
     xmlns:pt="http://java.sun.com/jsf/passthrough"
     xmlns:cc="http://java.sun.com/jsf/composite"
     xmlns:o="http://omnifaces.org/ui"
+    xmlns:dv="http://dataverse.org/facelets"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
     <script type="text/javascript" language="javascript" src="#{resource['js/fileupload.js']}"></script>
+    
+    <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.RestrictType" var="restrictTypeEnum"/>
+    
     <!-- Static Tab Layout -->
     <div data-widget="content" class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container ui-tabs-top" id="datasetForm:tabView">
         <ul role="tablist" class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
@@ -379,6 +383,39 @@
                                 <p:message for="fileDescription"/>
                             </ui:fragment>
                         </div>
+                        <div jsf:rendered="#{datasetPage}">
+                            <ui:fragment id="fileTermsOfUse">
+                                
+                                <p:outputLabel styleClass="control-label" for="fileLicense" value="#{bundle['file.editTermsOfUseDialog.license']}" />
+                                <p class="help-block">#{bundle['file.editTermsOfUseDialog.license.tip']}</p>
+                                <p:selectOneMenu id="fileLicense" value="#{fileMetadata.termsOfUseForm.typeWithLicenseId}" autoWidth="false">
+                                    <f:selectItems value="#{EditDatafilesPage.termsOfUseSelectItems}" />
+                                    <p:ajax listener="#{EditDatafilesPage.handleTermsOfUseChange}" update="filesTable" />
+                                </p:selectOneMenu>
+                                
+                                <div jsf:rendered="#{fileMetadata.termsOfUseForm.typeWithLicenseId eq 'RESTRICTED'}">
+                                <p:outputLabel styleClass="control-label" for="fileRestrictType" value="#{bundle['file.editTermsOfUseDialog.accessConditions']}" />
+                                <p class="help-block">#{bundle['file.editTermsOfUseDialog.accessConditions.tip']}</p>
+                                <p:selectOneMenu id="fileRestrictType" value="#{fileMetadata.termsOfUseForm.restrictType}" autoWidth="false">
+                                    <f:selectItem itemLabel="#{bundle['file.termsOfAccess.restricted.ACADEMIC_PURPOSE']}" itemValue="ACADEMIC_PURPOSE" />
+                                    <f:selectItem itemLabel="#{bundle['file.termsOfAccess.restricted.NOT_FOR_REDISTRIBUTION']}" itemValue="NOT_FOR_REDISTRIBUTION" />
+                                    <f:selectItem itemLabel="#{bundle['file.termsOfAccess.restricted.ACADEMIC_PURPOSE_AND_NOT_FOR_REDISTRIBUTION']}" itemValue="ACADEMIC_PURPOSE_AND_NOT_FOR_REDISTRIBUTION" />
+                                    <f:selectItem itemLabel="#{bundle['file.termsOfAccess.restricted.CUSTOM']}" itemValue="CUSTOM" />
+                                    <p:ajax listener="#{EditDatafilesPage.handleTermsOfUseChange}" update="filesTable" />
+                                </p:selectOneMenu>
+                                </div>
+                                
+                                <div jsf:rendered="#{fileMetadata.termsOfUseForm.typeWithLicenseId eq 'RESTRICTED' and fileMetadata.termsOfUseForm.restrictType eq 'CUSTOM'}">
+                                <p:outputLabel styleClass="control-label" for="fileCustomRestrictText" value="#{bundle['file.editTermsOfUseDialog.accessConditions.custom']}" />
+                                <p class="help-block">#{bundle['file.editTermsOfUseDialog.accessConditions.custom.tip']}</p>
+                                <p:inputTextarea id="fileCustomRestrictText" value="#{fileMetadata.termsOfUseForm.customRestrictText}"
+                                    required="true" requiredMessage="#{bundle['file.editTermsOfUseDialog.accessConditions.custom.required']}" style="width: 100%;" />
+                                    <p:ajax listener="#{EditDatafilesPage.handleTermsOfUseChange}" />
+                                <p:message for="fileCustomRestrictText" display="text"/>
+                                </div>
+                                
+                            </ui:fragment>
+                        </div>
                         <div class="file-tags-block margin-top-half">
                             <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
                                 <ui:repeat value="#{fileMetadata.categories}" var="cat">
@@ -402,6 +439,11 @@
                                     <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                         <p:commandLink  onclick="checkFilesSelected();" > 
                                             <h:outputText value="#{bundle['file.delete']}"/> 
+                                        </p:commandLink>
+                                    </li>
+                                    <li jsf:rendered="#{datasetPage}">
+                                        <p:commandLink  onclick="checkFilesForLicenseEdit();" > 
+                                            <h:outputText value="#{bundle['file.license']}"/> 
                                         </p:commandLink>
                                     </li>
                                     <li>
@@ -530,6 +572,14 @@
         </div>
     </p:dialog>
     
+    <p:dialog id="selectFilesForLicenseEdit" styleClass="smallPopUp"
+              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForLicenseEdit" modal ="true">
+        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/>Brak zanaczonych plików</p>
+        <div class="button-block">
+            <p:commandButton value="#{bundle.close}" onclick="PF('selectFilesForLicenseEdit').hide();"/>
+        </div>
+    </p:dialog>
+    
     <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
         <ui:fragment rendered="#{EditDatafilesPage.dataset.released}">
@@ -541,6 +591,11 @@
             <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()" type="button" />
         </div>
     </p:dialog>
+    
+    <dv:termsOfUseDialog id="editSelectedFilesLicense" widgetVar="editSelectedFilesLicense"
+        action="#{EditDatafilesPage.updateTermsOfUseForSelectedFiles(editTermsOfUseDialog.termsOfUseForm)}"
+        update=":datasetForm" />
+
     <p:dialog id="editFileAccessPopup" header="#{bundle['dataset.access.accessHeader']}" widgetVar="editFileAccessPopup" modal="true">
         <div class="form-horizontal">
             <div class="form-group">
@@ -905,6 +960,14 @@
                 PF('deleteFileConfirmation').show();
             } else {
                 PF('selectFilesForDeleteFragment').show();              
+            }
+        }
+        function checkFilesForLicenseEdit() {
+            var count = PF('filesTable').getSelectedRowsCount();
+            if (count > 0) {
+                PF('editSelectedFilesLicense').show();
+            } else {
+                PF('selectFilesForLicenseEdit').show();
             }
         }
         function checkNewlyRestricted() {

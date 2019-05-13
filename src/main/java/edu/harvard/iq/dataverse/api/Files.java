@@ -28,7 +28,7 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.license.InitialTermsOfUseFactory;
+import edu.harvard.iq.dataverse.license.TermsOfUseFactory;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -77,7 +77,7 @@ public class Files extends AbstractApiBean {
     @EJB
     SettingsServiceBean settingsService;
     @Inject
-    private InitialTermsOfUseFactory initialTermsOfUseFactory;
+    private TermsOfUseFactory termsOfUseFactory;
     
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
@@ -226,7 +226,7 @@ public class Files extends AbstractApiBean {
                                                 this.permissionSvc,
                                                 this.commandEngine,
                                                 this.systemConfig,
-                                                this.initialTermsOfUseFactory);
+                                                this.termsOfUseFactory);
 
         //-------------------
         // (5) Run "runReplaceFileByDatasetId"

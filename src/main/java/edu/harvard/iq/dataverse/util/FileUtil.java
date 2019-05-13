@@ -33,7 +33,7 @@ import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
-import edu.harvard.iq.dataverse.license.InitialTermsOfUseFactory;
+import edu.harvard.iq.dataverse.license.TermsOfUseFactory;
 import edu.harvard.iq.dataverse.license.FileTermsOfUse;
 import io.vavr.control.Try;
 import org.apache.commons.io.FileUtils;
@@ -592,7 +592,7 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType,
-            SystemConfig systemConfig, InitialTermsOfUseFactory termsOfUseFactory) throws IOException {
+            SystemConfig systemConfig, TermsOfUseFactory termsOfUseFactory) throws IOException {
         List<DataFile> datafiles = new ArrayList<>(); 
         
         String warningMessage = null; 
@@ -1010,11 +1010,11 @@ public class FileUtil implements java.io.Serializable  {
      * been figured out. 
     */
     
-    private static DataFile createSingleDataFile(DatasetVersion version, File tempFile, String fileName, String contentType, DataFile.ChecksumType checksumType, InitialTermsOfUseFactory termsOfUseFactory) {
+    private static DataFile createSingleDataFile(DatasetVersion version, File tempFile, String fileName, String contentType, DataFile.ChecksumType checksumType, TermsOfUseFactory termsOfUseFactory) {
         return createSingleDataFile(version, tempFile, fileName, contentType, checksumType, false, termsOfUseFactory);
     }
     
-    private static DataFile createSingleDataFile(DatasetVersion version, File tempFile, String fileName, String contentType, DataFile.ChecksumType checksumType, boolean addToDataset, InitialTermsOfUseFactory termsOfUseFactory) {
+    private static DataFile createSingleDataFile(DatasetVersion version, File tempFile, String fileName, String contentType, DataFile.ChecksumType checksumType, boolean addToDataset, TermsOfUseFactory termsOfUseFactory) {
 
         if (tempFile == null) {
             return null;

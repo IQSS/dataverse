@@ -46,7 +46,12 @@ import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.license.FileTermsOfUse;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse.RestrictType;
 import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
+import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.license.LicenseDAO;
+import edu.harvard.iq.dataverse.license.TermsOfUseForm;
+import edu.harvard.iq.dataverse.license.TermsOfUseFormMapper;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
@@ -67,10 +72,12 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.primefaces.PrimeFaces;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.context.RequestContext;
 import org.primefaces.event.CloseEvent;
 import org.primefaces.event.FileUploadEvent;
+import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.event.data.PageEvent;
 import org.primefaces.model.UploadedFile;
@@ -105,6 +112,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -187,6 +195,8 @@ public class DatasetPage implements java.io.Serializable {
     PrivateUrlServiceBean privateUrlService;
     @EJB
     ExternalToolServiceBean externalToolService;
+    @EJB
+    TermsOfUseFormMapper termsOfUseFormMapper;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -2692,6 +2702,9 @@ public class DatasetPage implements java.io.Serializable {
         }
 
     }
+    
+    @EJB
+    private LicenseDAO licenseDao;
      
      public String save() {
          //Before dataset saved, write cached prov freeform to version
@@ -2785,6 +2798,13 @@ public class DatasetPage implements java.io.Serializable {
                     // RoleAssignments properly linked to it - even though they
                     // have been created in the dataset. 
                     dataset = datasetService.find(dataset.getId());
+                    
+                    for (DataFile newFile : newFiles) {
+                        TermsOfUseForm termsOfUseForm = newFile.getFileMetadata().getTermsOfUseForm();
+                        FileTermsOfUse termsOfUse = termsOfUseFormMapper.mapToFileTermsOfUse(termsOfUseForm);
+                        
+                        newFile.getFileMetadata().setTermsOfUse(termsOfUse);
+                    }
                     
                     List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getEditVersion(), newFiles);
                     newFiles.clear();
@@ -4596,5 +4616,22 @@ public class DatasetPage implements java.io.Serializable {
         }
         return true;
         
+    }
+    
+    public String saveTermsOfUse(TermsOfUseForm termsOfUseForm) {
+        
+        if (bulkUpdateCheckVersion()) {
+            refreshSelectedFiles();
+        }
+        
+        FileTermsOfUse termsOfUse = termsOfUseFormMapper.mapToFileTermsOfUse(termsOfUseForm);
+        
+        for (FileMetadata fm : selectedFiles) {
+            fm.setTermsOfUse(termsOfUse.createCopy());
+        }
+        
+        save();
+        
+        return returnToDraftVersion();
     }
 }
