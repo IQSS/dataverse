@@ -1063,6 +1063,9 @@
         <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
         <filter class="solr.PorterStemFilterFactory"/>
         <filter class="solr.FlattenGraphFilterFactory" />
+        <!-- QDR handling non-ascii chars in foreign words and foreign contractions. Note that the Pattern filter should match the one below in the query analyzer -->
+        <filter class="solr.ASCIIFoldingFilterFactory" preserveOriginal="true" />
+        <filter class="solr.PatternReplaceFilterFactory" pattern="([^i]|qu)'(.*)" replacement="$2"/>
       </analyzer>
       <analyzer type="query">
         <tokenizer class="solr.WhitespaceTokenizerFactory"/>
@@ -1075,6 +1078,9 @@
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
         <filter class="solr.PorterStemFilterFactory"/>
+        <!--  QDR - handle foreign contractions --> 
+        <filter class="solr.PatternReplaceFilterFactory" pattern="([^i]|qu)'(.*)" replacement="$2"/>
+        
       </analyzer>
     </fieldType>
 
