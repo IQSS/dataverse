@@ -82,67 +82,68 @@ public class OpenAireExportUtil {
 
         // 1, Identifier (with mandatory type sub-property) (M)
         writeIdentifierElement(xmlw, globalId.toURL().toString(), language);
-
+logger.info("1 complete");
         // 2, Creator (with optional given name, family name, 
         //      name identifier and affiliation sub-properties) (M)
         writeCreatorsElement(xmlw, version, language);
-
+        logger.info("2 complete");
         // 3, Title (with optional type sub-properties)
         writeTitlesElement(xmlw, version, language);
-
+        logger.info("3 complete");
         // 4, Publisher (M)
         String publisher = datasetDto.getPublisher();
         if (StringUtils.isNotBlank(publisher)) {
             writeFullElement(xmlw, null, "publisher", null, publisher, language);
         }
-
+        logger.info("4 complete");
         // 5, PublicationYear (M)
         String publicationDate = datasetDto.getPublicationDate();
         writePublicationYearElement(xmlw, version, publicationDate, language);
-
+        logger.info("5 complete");
         // 6, Subject (with scheme sub-property)
         writeSubjectsElement(xmlw, version, language);
-
+        logger.info("6 complete");
         // 7, Contributor (with optional given name, family name, 
         //      name identifier and affiliation sub-properties)
         writeContributorsElement(xmlw, version, language);
-
+        logger.info("7 complete");
         // 8, Date (with type sub-property)  (R)
         writeDatesElement(xmlw, version, language);
-
+        logger.info("8 complete");
         // 9, Language (MA), language
         writeFullElement(xmlw, null, "language", null, language, null);
-
+        logger.info("9 complete");
         // 10, ResourceType (with mandatory general type 
         //      description sub- property) (M)
         writeResourceTypeElement(xmlw, version, language);
-
+        logger.info("10 complete");
         // 11. AlternateIdentifier (with type sub-property) (O)
         writeAlternateIdentifierElement(xmlw, version, language);
-
+        logger.info("11 complete");
         // 12, RelatedIdentifier (with type and relation type sub-properties) (R)
         writeRelatedIdentifierElement(xmlw, version, language);
-
+        logger.info("12 complete");
         // 13, Size (O)
         writeSizeElement(xmlw, version, language);
-
+        logger.info("13 complete");
         // 14 Format (O)
         writeFormatElement(xmlw, version, language);
-
+        logger.info("14 complete");
         // 15 Version (O)
         writeVersionElement(xmlw, version, language);
-
+        logger.info("15 complete");
         // 16 Rights (O), rights
         writeAccessRightsElement(xmlw, version/*, version.getTermsOfAccess(), version.getRestrictions()*/, language);
-
+        logger.info("16 complete");
         // 17 Description (R), description
         writeDescriptionsElement(xmlw, version, language);
-
+        logger.info("17 complete");
         // 18 GeoLocation (with point, box and polygon sub-properties) (R)
         writeGeoLocationsElement(xmlw, version, language);
-
+        logger.info("18 complete");
         // 19 FundingReference (with name, identifier, and award related sub- properties) (O)
         writeFundingReferencesElement(xmlw, version, language);
+        logger.info("19 complete");
     }
 
     /**
