@@ -17,6 +17,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
@@ -31,6 +34,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.asJsonArray;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -39,6 +44,17 @@ import java.util.logging.Logger;
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import javax.ws.rs.core.Response.Status;
+
+import java.io.BufferedInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 @Path("admin/datasetfield")
 public class DatasetFieldServiceApi extends AbstractApiBean {
@@ -403,4 +419,79 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         datasetFieldService.save(cvv);
         return cvv.getStrValue();
     }
+
+
+    @POST
+    @Consumes("application/zip")
+    @Path("loadpropertyfiles")
+    public Response loadLanguagePropertyFile(File inputFile) {
+        try
+        {
+            ZipFile file = new ZipFile(inputFile);
+            FileSystem fileSystem = FileSystems.getDefault();
+            //Get file entries
+            Enumeration<? extends ZipEntry> entries = file.entries();
+
+            //We will unzip files in this folder
+            String dataverseLangDirectory = getDataverseLangDirectory();
+
+            System.out.println(" ==== dataverseLangDirectory ===== " + dataverseLangDirectory);
+
+            //Iterate over entries
+            while (entries.hasMoreElements())
+            {
+                ZipEntry entry = entries.nextElement();
+                System.out.println(" ==== entry.getName() ===== " + entry.getName());
+                if (entry.isDirectory())
+                {
+                    System.out.println("Creating Directory:" + dataverseLangDirectory + entry.getName());
+                    Files.createDirectories(fileSystem.getPath(dataverseLangDirectory + "/" + entry.getName()));
+                }
+                //Else create the file
+                else {
+                    String dataverseLangFileName = dataverseLangDirectory + "/" + entry.getName();
+                    java.nio.file.Path uncompressedFilePath = fileSystem.getPath(dataverseLangFileName);
+
+                    System.out.println("======Creating file:" + uncompressedFilePath );
+
+
+                    Files.createFile(uncompressedFilePath);
+                    FileOutputStream fileOutput = new FileOutputStream(dataverseLangFileName);
+
+                    InputStream is = file.getInputStream(entry);
+                    BufferedInputStream bis = new BufferedInputStream(is);
+
+                    while (bis.available() > 0) {
+                        fileOutput.write(bis.read());
+                    }
+                    fileOutput.close();
+                }
+            }
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        return Response.status(200).entity("Uploaded the file successfully ").build();
+    }
+
+    public static String getDataverseLangDirectory() {
+        String dataverseLangDirectory = System.getProperty("dataverse.lang.directory");
+        if (dataverseLangDirectory == null || dataverseLangDirectory.equals("")) {
+            dataverseLangDirectory = "/tmp/files";
+        }
+
+        if (!Files.exists(Paths.get(dataverseLangDirectory))) {
+            try {
+                Files.createDirectories(Paths.get(dataverseLangDirectory));
+            } catch (IOException ex) {
+                logger.severe("Failed to create dataverseLangDirectory: " + dataverseLangDirectory );
+                return null;
+            }
+        }
+
+        return dataverseLangDirectory;
+    }
+
 }
