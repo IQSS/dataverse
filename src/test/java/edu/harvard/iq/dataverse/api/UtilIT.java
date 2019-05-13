@@ -536,10 +536,15 @@ public class UtilIT {
     }
 
     static Response uploadFileViaNative(String datasetId, String pathToFile, String jsonAsString, String apiToken) {
+        String nullMimeType = null;
+        return uploadFileViaNative(datasetId, pathToFile, jsonAsString, nullMimeType, apiToken);
+    }
+
+    static Response uploadFileViaNative(String datasetId, String pathToFile, String jsonAsString, String mimeType, String apiToken) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("datasetId", datasetId)
-                .multiPart("file", new File(pathToFile));
+                .multiPart("file", new File(pathToFile), mimeType);
         if (jsonAsString != null) {
             requestSpecification.multiPart("jsonData", jsonAsString);
         }
