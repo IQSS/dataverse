@@ -8,6 +8,8 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
+
 import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 import static edu.harvard.iq.dataverse.util.SystemConfig.FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS;
 
@@ -44,7 +46,7 @@ import static org.junit.Assert.*;
 public class SchemaDotOrgExporterTest {
 
     private final SchemaDotOrgExporter schemaDotOrgExporter;
-    DDIExporterTest.MockDatasetFieldSvc datasetFieldTypeSvc = null;
+    MockDatasetFieldSvc datasetFieldTypeSvc = null;
 
     public SchemaDotOrgExporterTest() {
         schemaDotOrgExporter = new SchemaDotOrgExporter();
@@ -60,7 +62,7 @@ public class SchemaDotOrgExporterTest {
 
     @Before
     public void setUp() {
-        datasetFieldTypeSvc = new DDIExporterTest.MockDatasetFieldSvc();
+        datasetFieldTypeSvc = new MockDatasetFieldSvc();
 
         DatasetFieldType titleType = datasetFieldTypeSvc.add(new DatasetFieldType("title", DatasetFieldType.FieldType.TEXTBOX, false));
         DatasetFieldType authorType = datasetFieldTypeSvc.add(new DatasetFieldType("author", DatasetFieldType.FieldType.TEXT, true));

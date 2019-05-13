@@ -388,49 +388,48 @@ public class SystemConfig {
         return metricsUrl;
     }
 
+    static long getLongLimitFromStringOrDefault(String limitSetting, Long defaultValue) {
+        Long limit = null;
+
+        if (limitSetting != null && !limitSetting.equals("")) {
+            try {
+                limit = new Long(limitSetting);
+            } catch (NumberFormatException nfe) {
+                limit = null;
+            }
+        }
+
+        return limit != null ? limit : defaultValue;
+    }
+
+    static int getIntLimitFromStringOrDefault(String limitSetting, Integer defaultValue) {
+        Integer limit = null;
+
+        if (limitSetting != null && !limitSetting.equals("")) {
+            try {
+                limit = new Integer(limitSetting);
+            } catch (NumberFormatException nfe) {
+                limit = null;
+            }
+        }
+
+        return limit != null ? limit : defaultValue;
+    }
+
     /**
      * Download-as-zip size limit.
      * returns 0 if not specified; 
      * (the file zipper will then use the default value)
      * set to -1 to disable zip downloads. 
      */
-    
     public long getZipDownloadLimit() {
-        String zipLimitOption = settingsService.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit);   
-        
-        Long zipLimit = null; 
-        if (zipLimitOption != null && !zipLimitOption.equals("")) {
-            try {
-                zipLimit = new Long(zipLimitOption);
-            } catch (NumberFormatException nfe) {
-                zipLimit = null; 
-            }
-        }
-        
-        if (zipLimit != null) {
-            return zipLimit.longValue();
-        }
-        
-        return 0L; 
+        String zipLimitOption = settingsService.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit);
+        return getLongLimitFromStringOrDefault(zipLimitOption, 0L);
     }
     
     public int getZipUploadFilesLimit() {
         String limitOption = settingsService.getValueForKey(SettingsServiceBean.Key.ZipUploadFilesLimit);
-        Integer limit = null; 
-        
-        if (limitOption != null && !limitOption.equals("")) {
-            try {
-                limit = new Integer(limitOption);
-            } catch (NumberFormatException nfe) {
-                limit = null; 
-            }
-        }
-        
-        if (limit != null) {
-            return limit;
-        }
-        
-        return defaultZipUploadFilesLimit; 
+        return getIntLimitFromStringOrDefault(limitOption, defaultZipUploadFilesLimit);
     }
     
     /*
@@ -439,40 +438,12 @@ public class SystemConfig {
     */
     public int getMultipleUploadFilesLimit() {
         String limitOption = settingsService.getValueForKey(SettingsServiceBean.Key.MultipleUploadFilesLimit);
-        Integer limit = null; 
-        
-        if (limitOption != null && !limitOption.equals("")) {
-            try {
-                limit = new Integer(limitOption);
-            } catch (NumberFormatException nfe) {
-                limit = null; 
-            }
-        }
-        
-        if (limit != null) {
-            return limit;
-        }
-        
-        return defaultMultipleUploadFilesLimit; 
+        return getIntLimitFromStringOrDefault(limitOption, defaultMultipleUploadFilesLimit);
     }
     
     public long getGuestbookResponsesPageDisplayLimit() {
-        String limitSetting = settingsService.getValueForKey(SettingsServiceBean.Key.GuestbookResponsesPageDisplayLimit);   
-        
-        Long limit = null; 
-        if (limitSetting != null && !limitSetting.equals("")) {
-            try {
-                limit = new Long(limitSetting);
-            } catch (NumberFormatException nfe) {
-                limit = null; 
-            }
-        }
-        
-        if (limit != null) {
-            return limit.longValue();
-        }
-        
-        return DEFAULT_GUESTBOOK_RESPONSES_DISPLAY_LIMIT; 
+        String limitSetting = settingsService.getValueForKey(SettingsServiceBean.Key.GuestbookResponsesPageDisplayLimit);
+        return getLongLimitFromStringOrDefault(limitSetting, DEFAULT_GUESTBOOK_RESPONSES_DISPLAY_LIMIT);
     }
     
     public long getUploadLogoSizeLimit(){
@@ -501,21 +472,8 @@ public class SystemConfig {
         } else if ("PDF".equals(type)) {
             option = System.getProperty("dataverse.dataAccess.thumbnail.pdf.limit");
         }
-        Long limit = null; 
-        
-        if (option != null && !option.equals("")) {
-            try {
-                limit = new Long(option);
-            } catch (NumberFormatException nfe) {
-                limit = null; 
-            }
-        }
-        
-        if (limit != null) {
-            return limit.longValue();
-        }
-        
-        return 0l;
+
+        return getLongLimitFromStringOrDefault(option, 0L);
     }
     
     public boolean isThumbnailGenerationDisabledForType(String type) {

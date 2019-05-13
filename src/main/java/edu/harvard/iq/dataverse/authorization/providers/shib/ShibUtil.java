@@ -88,7 +88,7 @@ public class ShibUtil {
      *
      * - "Guido|van Rossum"
      *
-     * - "Philip Seymour|Hoffman"
+     * - "Philip Seymour|Hoffman" (see FirstNameTest.java)
      *
      * Also, we currently compel all Shibboleth IdPs to send us firstName and
      * lastName so the logic to handle null/empty values for firstName and

@@ -59,6 +59,7 @@
                     <f:viewParam name="version" value="#{DatasetPage.version}"/>
                     <f:viewParam name="versionId" value="#{DatasetPage.versionId}"/>
                     <f:viewParam name="persistentId" value="#{DatasetPage.persistentId}"/>
+                    <f:viewParam name="showIngestSuccess" value="#{DatasetPage.showIngestSuccess}"/>
                     <f:viewParam name="fileSortField" value="#{DatasetPage.fileSortField}"/>
                     <f:viewParam name="fileSortOrder" value="#{DatasetPage.fileSortOrder}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
@@ -522,7 +523,7 @@
                             <h:inputHidden value="#{DatasetPage.stateChanged}" id="datasetStateChangedVariable" />
 
                             <p:remoteCommand name="refreshAllLocksCommand" process="@this" update=":#{p:resolveClientId('datasetForm:pageRefreshFragment', view)}" actionListener="#{DatasetPage.refreshAllLocks()}"/>
-                            <p:remoteCommand name="refreshAllCommand" process="@this" update=":datasetForm:topDatasetBlockFragment,:datasetForm:tabView:filesTable,:messagePanel" actionListener="#{DatasetPage.refresh}"/>
+                            <p:remoteCommand name="refreshAllCommand" process="@this" update=":datasetForm:topDatasetBlockFragment,:datasetForm:tabView:filesTable,:messagePanel" action="#{DatasetPage.refresh()}"/>
                             <p:remoteCommand name="reportEditContinues" process="@this" update=":datasetForm,:messagePanel" actionListener="#{DatasetPage.reportEditContinues}"/>
                             
                             <script type="text/javascript">
