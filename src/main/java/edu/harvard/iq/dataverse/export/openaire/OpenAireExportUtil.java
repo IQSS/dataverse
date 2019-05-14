@@ -288,7 +288,7 @@ logger.info("readytoWrite");
                                 } else {
                                     String givenName = FirstNames.getInstance().getFirstName(creatorName);
                                     boolean isOrganization = Organizations.getInstance().isOrganization(creatorName);
-                                    
+logger.info("Is Org: " + isOrganization + " " + givenName);                               
                                     if (givenName != null && !isOrganization) {
                                         // givenName ok, creatorName=<FirstName> <FamilyName>
                                         creator_map.put("nameType", "Personal");
