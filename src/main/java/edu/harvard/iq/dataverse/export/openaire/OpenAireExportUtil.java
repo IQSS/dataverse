@@ -245,7 +245,7 @@ logger.info("1 complete");
                                     affiliation = next.getSinglePrimitive();
                                 }
                             }
-
+logger.info(creatorName + " " + nameIdentifier + " " + nameIdentifierScheme + " " + affiliation);
                             if (StringUtils.isNotBlank(creatorName)) {
                                 creator_check = writeOpenTag(xmlw, "creators", creator_check);
                                 xmlw.writeStartElement("creator"); // <creator>
@@ -272,6 +272,8 @@ logger.info("1 complete");
                                         creator_map.put("nameType", "Organizational");
                                         nameType_check = false;
                                     }
+                                    
+logger.info("readytoWrite");                                    
                                     writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
 
                                     if ((nameType_check) && (!creatorName.replaceFirst(",", "").contains(","))) {
