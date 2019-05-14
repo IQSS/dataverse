@@ -481,7 +481,7 @@ var DdiService = /** @class */ (function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = ".small {\n  font-size: 12px;\n}\n\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvaW50ZXJmYWNlL2ludGVyZmFjZS5jb21wb25lbnQuY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0VBQ0UsZUFBZTtBQUNqQiIsImZpbGUiOiJzcmMvYXBwL2ludGVyZmFjZS9pbnRlcmZhY2UuY29tcG9uZW50LmNzcyIsInNvdXJjZXNDb250ZW50IjpbIi5zbWFsbCB7XG4gIGZvbnQtc2l6ZTogMTJweDtcbn1cbiJdfQ== */"
+module.exports = ".small {\n  font-size: 12px;\n}\n\n.medium {\n  font-size: 14px;\n}\n\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvaW50ZXJmYWNlL2ludGVyZmFjZS5jb21wb25lbnQuY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0VBQ0UsZUFBZTtBQUNqQjs7QUFFQTtFQUNFLGVBQWU7QUFDakIiLCJmaWxlIjoic3JjL2FwcC9pbnRlcmZhY2UvaW50ZXJmYWNlLmNvbXBvbmVudC5jc3MiLCJzb3VyY2VzQ29udGVudCI6WyIuc21hbGwge1xuICBmb250LXNpemU6IDEycHg7XG59XG5cbi5tZWRpdW0ge1xuICBmb250LXNpemU6IDE0cHg7XG59XG4iXX0= */"
 
 /***/ }),
 
@@ -492,7 +492,7 @@ module.exports = ".small {\n  font-size: 12px;\n}\n\n/*# sourceMappingURL=data:a
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"loading-details\" *ngIf=\"!ddi_loaded\" class=\"row content-area\">\n  <mat-progress-spinner mode=\"indeterminate\"></mat-progress-spinner>\n</div>\n\n<ng-container class=\"interface-container\">\n\n  <mat-toolbar class=\"interface-header\">\n    <span>{{title}}</span>\n    <span class=\"fill-space\"></span>\n    <span style=\"float:right\">\n        <button mat-icon-button color=\"accent\" (click)=\"onSave()\" i18n-matTooltip matTooltip=\"Download\">\n          <mat-icon i18n-aria-label aria-label=\"Download xml\">get_app</mat-icon>\n        </button>\n        <span class=\"small\" i18n>Export</span>\n      </span>\n    <span style=\"float:right\">\n      <button mat-icon-button color=\"accent\" (click)=\"sendToDV()\" i18n-matTooltip matTooltip=\"Save\">\n        <mat-icon i18n-aria-label aria-label=\"Save\">save</mat-icon>\n      </button>\n      <span class=\"small\" i18n>Save</span>\n    </span>\n  </mat-toolbar>\n\n<mat-sidenav-container >\n  <mat-sidenav mode=\"side\" opened class=\"side_nav\" #scrollMe>\n    <app-var-group [_variable_groups]=\"_variable_groups\" (subSetRows)=\"broadcastSubSetRows($event)\" (selectGroup)=\"broadcastSelect($event)\" (draggedGroup)=\"broadcastDraggedGroup($event)\" (disableSelectGroup)=\"broadcastDeselectGroup()\"\n     (parentScrollNav)=\"scrollNav()\"\n    ></app-var-group>\n  </mat-sidenav>\n  <mat-sidenav-content>\n    <app-var [_variable_groups]=\"_variable_groups\" ></app-var>\n    </mat-sidenav-content>\n</mat-sidenav-container>\n\n</ng-container>\n"
+module.exports = "<div id=\"loading-details\" *ngIf=\"!ddi_loaded\" class=\"row content-area\">\n  <mat-progress-spinner mode=\"indeterminate\"></mat-progress-spinner>\n</div>\n\n<ng-container class=\"interface-container\">\n\n  <mat-toolbar class=\"interface-header\">\n    <mat-toolbar-row>\n    <span>{{title}}</span>\n    <span class=\"fill-space\"></span>\n    <span style=\"float:right\">\n        <button mat-icon-button color=\"accent\" (click)=\"onSave()\" i18n-matTooltip matTooltip=\"Download\">\n          <mat-icon i18n-aria-label aria-label=\"Download xml\">get_app</mat-icon>\n        </button>\n        <span class=\"small\" i18n>Export</span>\n      </span>\n    <span style=\"float:right\">\n      <button mat-icon-button color=\"accent\" (click)=\"sendToDV()\" i18n-matTooltip matTooltip=\"Save\">\n        <mat-icon i18n-aria-label aria-label=\"Save\">save</mat-icon>\n      </button>\n      <span class=\"small\" i18n>Save</span>\n    </span>\n    </mat-toolbar-row>\n    <mat-toolbar-row class=\"medium\">\n      <span>{{firstCitat}}</span>\n      <a href=\"{{doi}}\">{{doi}}</a>\n      <span>{{secondCitat}}</span>\n    </mat-toolbar-row>\n  </mat-toolbar>\n\n\n\n<mat-sidenav-container >\n  <mat-sidenav mode=\"side\" opened class=\"side_nav\" #scrollMe>\n    <app-var-group [_variable_groups]=\"_variable_groups\" (subSetRows)=\"broadcastSubSetRows($event)\" (selectGroup)=\"broadcastSelect($event)\" (draggedGroup)=\"broadcastDraggedGroup($event)\" (disableSelectGroup)=\"broadcastDeselectGroup()\"\n     (parentScrollNav)=\"scrollNav()\"\n    ></app-var-group>\n  </mat-sidenav>\n  <mat-sidenav-content>\n    <app-var [_variable_groups]=\"_variable_groups\" ></app-var>\n    </mat-sidenav-content>\n</mat-sidenav-container>\n\n</ng-container>\n"
 
 /***/ }),
 
@@ -540,10 +540,14 @@ var InterfaceComponent = /** @class */ (function () {
         var uri = null;
         uri = this.ddiService.getParameterByName('uri');
         this._id = this.ddiService.getParameterByName('dfId');
-        this._metaId = this.ddiService.getParameterByName('metaId');
+        this._metaId = this.ddiService.getParameterByName('fileMetadataId');
+        console.log(this._metaId);
         this._base_url = this.ddiService.getBaseUrl();
         if (!uri && this._id != null) {
             uri = this._base_url + '/api/access/datafile/' + this._id + '/metadata/ddi';
+            if (this._metaId != null) {
+                uri = uri + '?fileMetadataId=' + this._metaId;
+            }
         }
         else {
             if (!uri) {
@@ -575,6 +579,19 @@ var InterfaceComponent = /** @class */ (function () {
         this.title = this.data
             .getElementsByTagName('stdyDscr')[0]
             .getElementsByTagName('titl')[0].textContent;
+        var citation = this.data
+            .getElementsByTagName('stdyDscr')[0]
+            .getElementsByTagName('biblCit')[0].textContent;
+        console.log(citation);
+        var start = citation.indexOf('http');
+        var temp = citation.substr(start);
+        var end = temp.indexOf(',');
+        this.doi = temp.substr(0, end);
+        console.log(temp);
+        this.firstCitat = citation.substr(0, start) + ' ';
+        console.log(this.firstCitat);
+        this.secondCitat = ' ' + temp.substr(end);
+        console.log(this.secondCitat);
         this.showDDI();
     };
     InterfaceComponent.prototype.showVarsGroups = function () {
