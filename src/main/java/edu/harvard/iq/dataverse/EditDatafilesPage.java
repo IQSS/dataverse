@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
@@ -104,6 +105,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    DataverseServiceBean dataverseService;
     @EJB
     DatasetVersionServiceBean datasetVersionService;
     @EJB
@@ -1069,7 +1072,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress) || lockTest.isLockedFor(DatasetLock.Reason.EditInProgress)) {
                 logger.log(Level.INFO, "Couldn''t save dataset: {0}", "It is locked."
                         + "");
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, getBundleString("dataset.locked.editInProgress.message"),getBundleString("dataset.locked.editInProgress.message.details"));
+                String rootDataverseName = dataverseService.findRootDataverse().getName();
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, getBundleString("dataset.locked.editInProgress.message"),BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null, rootDataverseName))));
                 return null;
             }
         }
