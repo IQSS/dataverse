@@ -217,7 +217,7 @@ logger.info("1 complete");
         // creators -> creator -> creatorName with nameType attribute, givenName, familyName, nameIdentifier
         // write all creators
         boolean creator_check = false;
-
+try {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
@@ -344,6 +344,11 @@ logger.info("Is Org: " + isOrganization + " " + givenName);
             }
         }
         writeEndTag(xmlw, creator_check);
+} catch (Exception e ) {
+    logger.severe(e.getMessage());
+    e.printStackTrace();
+    
+}
     }
 
     /**

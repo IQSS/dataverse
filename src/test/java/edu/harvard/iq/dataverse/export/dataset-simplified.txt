@@ -43,40 +43,6 @@
                             "typeClass": "compound",
                             "typeName": "author",
                             "value": [
-                            {
-                                    "authorAffiliation": {
-                                        "multiple": false,
-                                        "typeClass": "primitive",
-                                        "typeName": "authorAffiliation",
-                                        "value": "Coy Tain, Ross-Shire"
-                                    },
-                                    "authorIdentifierScheme": {
-                                        "multiple": false,
-                                        "typeClass": "controlledVocabulary",
-                                        "typeName": "authorIdentifierScheme",
-                                        "value": "ORCID"
-                                    },
-                                    "authorName": {
-                                        "multiple": false,
-                                        "typeClass": "primitive",
-                                        "typeName": "authorName",
-                                        "value": "The Glenmorangie Distillery"
-                                    }
-                                },
-                                {
-                                    "authorIdentifierScheme": {
-                                        "multiple": false,
-                                        "typeClass": "controlledVocabulary",
-                                        "typeName": "authorIdentifierScheme",
-                                        "value": "ORCID"
-                                    },
-                                    "authorName": {
-                                        "multiple": false,
-                                        "typeClass": "primitive",
-                                        "typeName": "authorName",
-                                        "value": "Myers, Jim"
-                                    }
-                                },
                                 {
                                     "authorAffiliation": {
                                         "multiple": false,
