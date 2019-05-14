@@ -17,9 +17,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
@@ -47,11 +44,9 @@ import javax.ws.rs.core.Response.Status;
 
 import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -428,49 +423,32 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         try
         {
             ZipFile file = new ZipFile(inputFile);
-            FileSystem fileSystem = FileSystems.getDefault();
             //Get file entries
             Enumeration<? extends ZipEntry> entries = file.entries();
 
             //We will unzip files in this folder
             String dataverseLangDirectory = getDataverseLangDirectory();
 
-            System.out.println(" ==== dataverseLangDirectory ===== " + dataverseLangDirectory);
-
             //Iterate over entries
             while (entries.hasMoreElements())
             {
                 ZipEntry entry = entries.nextElement();
-                System.out.println(" ==== entry.getName() ===== " + entry.getName());
-                if (entry.isDirectory())
-                {
-                    System.out.println("Creating Directory:" + dataverseLangDirectory + entry.getName());
-                    Files.createDirectories(fileSystem.getPath(dataverseLangDirectory + "/" + entry.getName()));
+                String dataverseLangFileName = dataverseLangDirectory + "/" + entry.getName();
+                FileOutputStream fileOutput = new FileOutputStream(dataverseLangFileName);
+
+                InputStream is = file.getInputStream(entry);
+                BufferedInputStream bis = new BufferedInputStream(is);
+
+                while (bis.available() > 0) {
+                    fileOutput.write(bis.read());
                 }
-                //Else create the file
-                else {
-                    String dataverseLangFileName = dataverseLangDirectory + "/" + entry.getName();
-                    java.nio.file.Path uncompressedFilePath = fileSystem.getPath(dataverseLangFileName);
-
-                    System.out.println("======Creating file:" + uncompressedFilePath );
-
-
-                    Files.createFile(uncompressedFilePath);
-                    FileOutputStream fileOutput = new FileOutputStream(dataverseLangFileName);
-
-                    InputStream is = file.getInputStream(entry);
-                    BufferedInputStream bis = new BufferedInputStream(is);
-
-                    while (bis.available() > 0) {
-                        fileOutput.write(bis.read());
-                    }
-                    fileOutput.close();
-                }
+                fileOutput.close();
             }
         }
         catch(IOException e)
         {
             e.printStackTrace();
+            return Response.status(500).entity("Internal server error. More details available at the server logs.").build();
         }
 
         return Response.status(200).entity("Uploaded the file successfully ").build();
