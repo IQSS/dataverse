@@ -286,7 +286,9 @@ logger.info("readytoWrite");
                                         writeFullElement(xmlw, null, "familyName", null, familyName, language);
                                     }
                                 } else {
+                                    logger.info("Here");
                                     String givenName = FirstNames.getInstance().getFirstName(creatorName);
+                                    logger.info("There");
                                     boolean isOrganization = Organizations.getInstance().isOrganization(creatorName);
 logger.info("Is Org: " + isOrganization + " " + givenName);                               
                                     if (givenName != null && !isOrganization) {
