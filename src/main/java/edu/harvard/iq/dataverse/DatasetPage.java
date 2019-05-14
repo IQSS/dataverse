@@ -1623,8 +1623,9 @@ public class DatasetPage implements java.io.Serializable {
                         BundleUtil.getStringFromBundle("dataset.pidRegister.workflow.inprogress"));
             }
             if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
+                String rootDataverseName = dataverseService.findRootDataverse().getName();
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),
-                        BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details"));
+                        BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null, rootDataverseName))));
             }
         }
         
