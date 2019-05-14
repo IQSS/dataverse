@@ -559,7 +559,7 @@ public class GuestbookResponseServiceBean {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
             return authUser.getName();
         }
-        return "Guest";
+        return "";
     }
 
     public String getUserEMail(User user) {
@@ -816,6 +816,16 @@ public class GuestbookResponseServiceBean {
         return true;
     }
     
+    public GuestbookResponse modifyDatafile(GuestbookResponse in, FileMetadata fm) {	
+        if (in != null && fm.getDataFile() != null) {	
+            in.setDataFile(fm.getDataFile());	
+        }	
+        if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft() ) {	
+            in.setWriteResponse(false);	
+        } 	
+        return in;	
+    }
+    
     public GuestbookResponse modifyDatafileAndFormat(GuestbookResponse in, FileMetadata fm, String format) {
         if (in != null && fm.getDataFile() != null) {
             in.setFileFormat(format);
@@ -930,6 +940,12 @@ public class GuestbookResponseServiceBean {
         // dataset id is null, will return 0        
         Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o;");
         return (Long) query.getSingleResult();
+    }
+    
+    public List<GuestbookResponse> findByAuthenticatedUserId(AuthenticatedUser user) {
+        Query query = em.createNamedQuery("GuestbookResponse.findByAuthenticatedUserId"); 
+        query.setParameter("authenticatedUserId", user.getId());
+        return query.getResultList();
     }
     
 }

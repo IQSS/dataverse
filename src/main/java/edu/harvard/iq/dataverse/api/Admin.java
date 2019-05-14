@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -75,6 +76,8 @@ import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -83,6 +86,8 @@ import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import java.io.IOException;
+import java.io.OutputStream;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,6 +95,8 @@ import java.util.Date;
 import javax.inject.Inject;
 import javax.persistence.Query;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.StreamingOutput;
 
 /**
  * Where the secure, setup API calls live.
@@ -118,14 +125,14 @@ public class Admin extends AbstractApiBean {
 	DatasetServiceBean datasetService;
 	@EJB
 	DatasetVersionServiceBean datasetversionService;
-    @Inject
-    DataverseRequestServiceBean dvRequestService;
-    @EJB
-    EjbDataverseEngine commandEngine;
-    @EJB
-    GroupServiceBean groupService;
-    @EJB
-    SettingsServiceBean settingsService;
+        @Inject
+        DataverseRequestServiceBean dvRequestService;
+        @EJB
+        EjbDataverseEngine commandEngine;
+        @EJB
+        GroupServiceBean groupService;
+        @EJB
+        SettingsServiceBean settingsService;
 
 	// Make the session available
 	@Inject
@@ -310,7 +317,9 @@ public class Admin extends AbstractApiBean {
 		}
 		return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
 	}
-
+        
+        
+        
 	@POST
 	@Path("publishDataverseAsCreator/{id}")
 	public Response publishDataverseAsCreator(@PathParam("id") long id) {
@@ -843,35 +852,136 @@ public class Admin extends AbstractApiBean {
 		}
 	}
 
-	@Path("validate")
-	@GET
-	public Response validate() {
-		String msg = "UNKNOWN";
-		try {
-			beanValidationSvc.validateDatasets();
-			msg = "valid";
-		} catch (Exception ex) {
-			Throwable cause = ex;
-			while (cause != null) {
-				if (cause instanceof ConstraintViolationException) {
-					ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-					for (ConstraintViolation<?> constraintViolation : constraintViolationException
-							.getConstraintViolations()) {
-						String databaseRow = constraintViolation.getLeafBean().toString();
-						String field = constraintViolation.getPropertyPath().toString();
-						String invalidValue = constraintViolation.getInvalidValue().toString();
-						JsonObjectBuilder violation = Json.createObjectBuilder();
-						violation.add("entityClassDatabaseTableRowId", databaseRow);
-						violation.add("field", field);
-						violation.add("invalidValue", invalidValue);
-						return ok(violation);
-					}
-				}
-				cause = cause.getCause();
-			}
-		}
-		return ok(msg);
-	}
+    @GET
+    @Path("validate/datasets")
+    @Produces({"application/json"})
+    public Response validateAllDatasets() {
+        
+        // Streaming output: the API will start producing 
+        // the output right away, as it goes through the list 
+        // of the datasets; there's potentially a lot of content 
+        // to validate, so we don't want to wait for the process 
+        // to finish. Or to wait to encounter the first invalid 
+        // object - so we'll be reporting both the success and failure
+        // outcomes for all the validated datasets, to give the user
+        // an indication of the progress. 
+        // This is the first streaming API that produces json that 
+        // we have; there may be better ways to stream json - but 
+        // what I have put together below works. -- L.A. 
+        StreamingOutput stream = new StreamingOutput() {
+
+            @Override
+            public void write(OutputStream os) throws IOException,
+                    WebApplicationException {
+                os.write("{\"datasets\": [\n".getBytes());
+                
+                boolean wroteObject = false;
+                for (Long datasetId : datasetService.findAllLocalDatasetIds()) {
+                    // Potentially, there's a godzillion datasets in this Dataverse. 
+                    // This is why we go through the list of ids here, and instantiate 
+                    // only one dataset at a time. 
+                    boolean success = false;
+                    boolean constraintViolationDetected = false;
+                     
+                    JsonObjectBuilder output = Json.createObjectBuilder();
+                    output.add("datasetId", datasetId);
+
+                    
+                    try {
+                        datasetService.instantiateDatasetInNewTransaction(datasetId);
+                        success = true;
+                    } catch (Exception ex) {
+                        Throwable cause = ex;
+                        while (cause != null) {
+                            if (cause instanceof ConstraintViolationException) {
+                                ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
+                                for (ConstraintViolation<?> constraintViolation : constraintViolationException
+                                        .getConstraintViolations()) {
+                                    String databaseRow = constraintViolation.getLeafBean().toString();
+                                    String field = constraintViolation.getPropertyPath().toString();
+                                    String invalidValue = constraintViolation.getInvalidValue().toString();
+                                    
+                                    output.add("status", "invalid");
+                                    output.add("entityClassDatabaseTableRowId", databaseRow);
+                                    output.add("field", field);
+                                    output.add("invalidValue", invalidValue);
+                                    
+                                    constraintViolationDetected = true; 
+                                    
+                                    break; 
+                                    
+                                }
+                            }
+                            cause = cause.getCause();
+                        }
+                    }
+                    
+                    
+                    if (success) {
+                        output.add("status", "valid");
+                    } else if (!constraintViolationDetected) {
+                        output.add("status", "unknown");
+                    }
+                    
+                    // write it out:
+                    
+                    if (wroteObject) {
+                        os.write(",\n".getBytes());
+                    }
+
+                    os.write(output.build().toString().getBytes("UTF8"));
+                    
+                    if (!wroteObject) {
+                        wroteObject = true;
+                    }
+                }
+                
+                
+                os.write("\n]\n}\n".getBytes());
+            }
+            
+        };
+        return Response.ok(stream).build();
+    }
+        
+    @Path("validate/dataset/{id}")
+    @GET
+    public Response validateDataset(@PathParam("id") String id) {
+        Dataset dataset;
+        try {
+            dataset = findDatasetOrDie(id);
+        } catch (Exception ex) {
+            return error(Response.Status.NOT_FOUND, "No Such Dataset");
+        }
+
+        Long dbId = dataset.getId();
+
+        String msg = "unknown";
+        try {
+            datasetService.instantiateDatasetInNewTransaction(dbId);
+            msg = "valid";
+        } catch (Exception ex) {
+            Throwable cause = ex;
+            while (cause != null) {
+                if (cause instanceof ConstraintViolationException) {
+                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
+                    for (ConstraintViolation<?> constraintViolation : constraintViolationException
+                            .getConstraintViolations()) {
+                        String databaseRow = constraintViolation.getLeafBean().toString();
+                        String field = constraintViolation.getPropertyPath().toString();
+                        String invalidValue = constraintViolation.getInvalidValue().toString();
+                        JsonObjectBuilder violation = Json.createObjectBuilder();
+                        violation.add("entityClassDatabaseTableRowId", databaseRow);
+                        violation.add("field", field);
+                        violation.add("invalidValue", invalidValue);
+                        return ok(violation);
+                    }
+                }
+                cause = cause.getCause();
+            }
+        }
+        return ok(msg);
+    }
 
 	@Path("assignments/assignees/{raIdtf: .*}")
 	@GET
@@ -1390,4 +1500,6 @@ public class Admin extends AbstractApiBean {
         return error(Response.Status.BAD_REQUEST,
                 "InheritParentRoleAssignments does not list any roles on this instance");
     }
+    
+
 }

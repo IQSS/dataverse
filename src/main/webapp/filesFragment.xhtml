@@ -12,6 +12,28 @@
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <o:importFunctions type="java.lang.Math" />
     <p:remoteCommand name="refreshPaginator" action="#{DatasetPage.refreshPaginator()}" process="@this" update="@form" />
+    
+    <!-- Toggle Files Display Components -->
+    <div jsf:id="filesDisplayToggleBlock" jsf:rendered="#{DatasetPage.fileTreeViewRequired}" class="row">
+        <div class="form-group col-xs-12">
+            <label class="col-sm-2 control-label" style="padding:.3em 1em;">
+                #{bundle['file.display.label']}
+            </label>
+            <div class="col-xs-4 input-group">
+                <p:selectOneButton id="displayValue" styleClass="form-control" value="#{DatasetPage.fileDisplayMode}" 
+                                   style="padding:0;border:0;box-shadow:none;">
+                    <f:selectItem itemLabel="#{bundle['file.display.table']}" itemValue="Table" />
+                    <f:selectItem itemLabel="#{bundle['file.display.tree']}" itemValue="Tree" />
+
+                    <!-- AJAX UPDATES TO TOGGLE p:dataTable widgetVar="filesTable" AND p:tree widgetVar="filesTree" COMPONENTS BELOW -->
+                    <p:ajax update=":datasetForm" process="@this" oncomplete="bind_bsui_components();"/> 
+                </p:selectOneButton>
+            </div>
+        </div>
+    </div>
+    
+    <p:remoteCommand name="rebindCommand" process="@this" update="filesTable" oncomplete="javascript:bind_bsui_components();"/>
+    
     <!-- Files Table -->
     <p:dataTable id="filesTable" 
                  rows="10" paginator="#{DatasetPage.workingVersion.fileMetadatas.size() gt 10}" paginatorPosition="bottom"
@@ -21,15 +43,15 @@
                  value="#{DatasetPage.fileMetadatasSearch}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
-                 rendered="#{empty DatasetPage.editMode and (DatasetPage.workingVersion != null)}"
+                 rendered="#{DatasetPage.fileDisplayTable and empty DatasetPage.editMode and (DatasetPage.workingVersion != null)}"
                  emptyMessage="#{bundle['file.notFound.tip']}">
-        <p:ajax event="page" listener="#{DatasetPage.fileListingPaginatorListener}" update="filesTable" process="@this"  oncomplete="refreshPaginator()"  immediate="true"/>
-        <p:ajax event="toggleSelect" listener="#{DatasetPage.toggleAllSelected()}" update="filesTable" /> 
-        <p:ajax event="rowUnselectCheckbox" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
-        <p:ajax event="rowSelect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
-        <p:ajax event="rowSelectCheckbox" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
-        <p:ajax event="rowUnselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
-        <p:ajax event="rowDblselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this"/>
+        <p:ajax event="page" listener="#{DatasetPage.fileListingPaginatorListener}" update="filesTable" process="@this"  oncomplete="refreshPaginator(),rebindCommand()"  immediate="true"/>
+        <p:ajax event="toggleSelect" listener="#{DatasetPage.toggleAllSelected()}" update="filesTable"  process="@this" oncomplete="rebindCommand()"  /> 
+        <p:ajax event="rowUnselectCheckbox" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" oncomplete="rebindCommand()"  />
+        <p:ajax event="rowSelect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" oncomplete="rebindCommand()" />
+        <p:ajax event="rowSelectCheckbox" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" oncomplete="rebindCommand()"  />
+        <p:ajax event="rowUnselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" oncomplete="rebindCommand()" />
+        <p:ajax event="rowDblselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" oncomplete="rebindCommand()" />
 
         <f:facet name="header">
             <div class="row form-inline" jsf:id="cloudStorageBlock" jsf:rendered="#{DatasetPage.showComputeButton()}">
@@ -195,9 +217,12 @@
                 </a>
             </ui:fragment>
 
-            <!-- TYPE + SIZE + DATE + CHECKSUM -->
+            <!-- HIERARCHY + TYPE + SIZE + DATE + CHECKSUM -->
             <div class="text-muted small">
                 <!-- id:#{fileMetadata.dataFile.id} -->
+                <div jsf:rendered="#{!empty fileMetadata.directoryLabel}">
+                    <h:outputText id="fileHierarchy" value="#{fileMetadata.directoryLabel}/"/>
+                </div>
                 <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
                 <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{fileMetadata.dataFile.tabularData}"/>
                 <h:outputText id="fileSize" value=" - #{fileMetadata.dataFile.friendlySize}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
@@ -405,4 +430,37 @@
             </div>
         </p:column>
     </p:dataTable>
+    
+    <!-- Files Tree -->
+    <p:tree id="filesTree" style="width:100%;"
+            rendered="#{DatasetPage.fileDisplayTree}"
+            widgetVar="filesTree"
+            value="#{DatasetPage.filesTreeRoot}"
+            var="node">
+        
+        <p:treeNode expandedIcon="ui-icon ui-icon-folder-open" collapsedIcon="ui-icon ui-icon-folder-collapsed">
+            <!-- For a folder, the node payload is just its name as a String object, that we display here: -->
+            <h:outputText value="#{node}" />
+        </p:treeNode>
+
+        <p:treeNode type="customFileNode">
+            <!-- For a file, the payload data ("node") is the corresponding FileMetadata object: -->
+            <span class="icon-#{dataFileServiceBean.getFileClass(node.dataFile)} text-muted" />
+            
+            <!-- same approach to rendering file page links, as in the file table above: -->
+            <!-- if the file has the global id, we use that; if not, we use the database id in the url. -->
+            <ui:fragment rendered="#{!empty node.dataFile.globalIdString}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFile.globalIdString).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.label}
+                </a>
+            </ui:fragment>
+            <ui:fragment rendered="#{empty node.dataFile.globalIdString}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(node.dataFile.id).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                    #{node.label}
+                </a>
+            </ui:fragment>
+            
+            <span class="text-muted">(#{node.dataFile.friendlySize})</span>
+        </p:treeNode>
+    </p:tree>
 </ui:composition>

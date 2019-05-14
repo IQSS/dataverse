@@ -42,8 +42,10 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
                query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier"),
     @NamedQuery(name = "Dataset.findByIdentifierAuthorityProtocol",
                query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier AND d.protocol=:protocol AND d.authority=:authority"),
-    @NamedQuery(name = "Dataset.findIdByOwnerId", 
+    @NamedQuery(name = "Dataset.findIdentifierByOwnerId", 
                 query = "SELECT o.identifier FROM Dataset o WHERE o.owner.id=:ownerId"),
+    @NamedQuery(name = "Dataset.findIdByOwnerId", 
+                query = "SELECT o.id FROM Dataset o WHERE o.owner.id=:ownerId"),
     @NamedQuery(name = "Dataset.findByOwnerId", 
                 query = "SELECT o FROM Dataset o WHERE o.owner.id=:ownerId"),
 })
@@ -772,6 +774,11 @@ public class Dataset extends DvObjectContainer {
     public String getDisplayName() {
         DatasetVersion dsv = getReleasedVersion();
         return dsv != null ? dsv.getTitle() : getLatestVersion().getTitle();
+    }
+    
+    @Override
+    public String getCurrentName(){
+        return getLatestVersion().getTitle();
     }
 
     @Override

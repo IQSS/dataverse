@@ -296,6 +296,7 @@
                 <!-- TODO: ADDED filesCounts id to commandButtons above in Line 291-292, is there a better way to do this other than listing out 5-6 elements to update? -->
                 
                 <!-- Files Table -->
+                <p:outputPanel autoUpdate="true">
                 <p:dataTable id="filesTable" 
                              value="#{EditDatafilesPage.fileMetadatas}"
                              rendered="#{!empty EditDatafilesPage.fileMetadatas or !EditDatafilesPage.showFileUploadFragment()}"
@@ -343,15 +344,21 @@
                         </div>
                     </p:column>
                     <p:column class="col-file-metadata">
-                        <ui:fragment>
-                            <label class="control-label" for="fileName" style="margin-right:1em;margin-bottom:.5em;">
+                        <label class="control-label" for="fileName" style="margin-right:1em;margin-bottom:.5em;">
                                 #{bundle['file.fileName']}
-                            </label>
-                            <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}">
-                            <p:ajax event="change" listener="#{EditDatafilesPage.handleNameChange}" update="fileName" />
-                            </p:inputText>
-                            <p:message for="fileName"/>
-                        </ui:fragment>
+                        </label>
+                        <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}"/>
+                        <p:message for="fileName"/>
+
+                        <label class="control-label" for="fileDirectoryLabel" style="margin-right:1em;margin-bottom:.5em;">
+                                #{bundle['file.metadataTab.fileMetadata.hierarchy.label']}    
+                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.metadataTab.fileMetadata.hierarchy.tip']}"></span>
+                        </label>
+                        <p:inputText id="fileDirectoryName" value="#{fileMetadata.directoryLabel}"                                            
+                                 style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}" widgetVar="fileDirectoryName"/>                        
+                        <p:message for="fileDirectoryName"/>
+
                         <!-- TYPE + SIZE + DATE + CHECKSUM -->
                         <div class="text-muted small">
                             <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
@@ -368,16 +375,12 @@
                             <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
                         </div>
                         <div class="fileDescription">
-                            <ui:fragment>
-                                <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
+                            <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
                                     #{bundle.description}
-                                </label>
-                                <p:inputTextarea id="fileDescription" immediate="true" rows="2" cols="40" value="#{fileMetadata.description}" style="width:60%; margin-top:.5em;"> 
-                                <p:ajax event="change" listener="#{EditDatafilesPage.handleDescriptionChange}" update="fileDescription" />
-                                </p:inputTextarea>
-                                <p:watermark for="fileDescription" value="#{bundle['file.addDescription']}"/>
-                                <p:message for="fileDescription"/>
-                            </ui:fragment>
+                            </label>
+                            <p:inputTextarea id="fileDescription" rows="2" cols="40" value="#{fileMetadata.description}" style="width:60%; margin-top:.5em;"/> 
+                            <p:watermark for="fileDescription" value="#{bundle['file.addDescription']}"/>
+                            <p:message for="fileDescription"/>
                         </div>
                         <div class="file-tags-block margin-top-half">
                             <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
@@ -501,9 +504,9 @@
                         </div>
                     </p:column>
                 </p:dataTable>
-                
+</p:outputPanel>
                 </div>
-                
+
             </div>
         </div>
     </div>
@@ -907,14 +910,7 @@
                 PF('selectFilesForDeleteFragment').show();              
             }
         }
-        function checkNewlyRestricted() {
-            if ($('input[id$="showAccessPopup"]').val() === 'true') {
-                PF('editFileAccessPopup').show();
-            }
-            else {
-                $('button[id$="datasetSave"]').trigger('click');
-            }
-        }
+
         function openDropboxChooser() {
             options = {
                 // Required. Called when a user selects an item in the Chooser.

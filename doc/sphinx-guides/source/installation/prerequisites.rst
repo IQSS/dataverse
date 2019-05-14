@@ -124,9 +124,7 @@ PostgreSQL
 Installing PostgreSQL
 =======================
 
-Version 9.x is required. Previous versions have not been tested.
-
-Version 9.6 is anticipated as an "LTS" release in RHEL and on other platforms::
+Version 9.6 is strongly recommended because it is the version developers and QA test with::
 
 	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
 	# yum makecache fast
@@ -135,8 +133,11 @@ Version 9.6 is anticipated as an "LTS" release in RHEL and on other platforms::
 	# /usr/bin/systemctl start postgresql-9.6
 	# /usr/bin/systemctl enable postgresql-9.6
 	
-Note these steps are specific to RHEL/CentOS 7. For RHEL/CentOS 6 use::
+Note that the steps above are specific to RHEL/CentOS 7. For RHEL/CentOS 6 use::
 
+	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-6-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+	# yum makecache fast
+	# yum install -y postgresql96-server
 	# service postgresql-9.6 initdb
 	# service postgresql-9.6 start
 
@@ -175,10 +176,6 @@ Configuring Database Access for the Dataverse Application (and the Dataverse Ins
 - **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL/CentOS 7 and similar (provided you installed Postgres as instructed above)::
 
         # systemctl restart postgresql-9.6
-
-  or on RHEL/CentOS 6::
-
-        # service postgresql restart
 
   On MacOS X a "Reload Configuration" icon is usually supplied in the PostgreSQL application folder. Or you could look up the process id of the PostgreSQL postmaster process, and send it the SIGHUP signal:: 
 

@@ -23,7 +23,7 @@ public class SortBy {
 
     @Override
     public String toString() {
-        return "SortBy{" + "field=" + field + ", order=" + order + '}';
+        return "SortBy{" + "field=" + field + ", order=" + order + "}";
     }
 
     public String getField() {
