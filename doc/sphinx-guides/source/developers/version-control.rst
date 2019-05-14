@@ -82,7 +82,7 @@ Push your feature branch to your fork of Dataverse. Your git command may look so
 Make a Pull Request
 ~~~~~~~~~~~~~~~~~~~
 
-Make a pull request to get approval to merge your changes into the develop branch. Feedback on the pull request template we use is welcome! The "connects to #3728" syntax is important because it's used at https://github.com/orgs/IQSS/projects/2 to associate pull requests with issues.
+Make a pull request to get approval to merge your changes into the develop branch. Feedback on the pull request template we use is welcome!
 
 Here's an example of a pull request for issue #3728: https://github.com/IQSS/dataverse/pull/3827
 
