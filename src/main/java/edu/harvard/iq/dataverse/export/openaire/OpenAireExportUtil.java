@@ -217,7 +217,7 @@ logger.info("1 complete");
         // creators -> creator -> creatorName with nameType attribute, givenName, familyName, nameIdentifier
         // write all creators
         boolean creator_check = false;
-
+try {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
@@ -245,7 +245,7 @@ logger.info("1 complete");
                                     affiliation = next.getSinglePrimitive();
                                 }
                             }
-
+logger.info(creatorName + " " + nameIdentifier + " " + nameIdentifierScheme + " " + affiliation);
                             if (StringUtils.isNotBlank(creatorName)) {
                                 creator_check = writeOpenTag(xmlw, "creators", creator_check);
                                 xmlw.writeStartElement("creator"); // <creator>
@@ -272,6 +272,8 @@ logger.info("1 complete");
                                         creator_map.put("nameType", "Organizational");
                                         nameType_check = false;
                                     }
+                                    
+logger.info("readytoWrite");                                    
                                     writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
 
                                     if ((nameType_check) && (!creatorName.replaceFirst(",", "").contains(","))) {
@@ -284,9 +286,11 @@ logger.info("1 complete");
                                         writeFullElement(xmlw, null, "familyName", null, familyName, language);
                                     }
                                 } else {
+                                    logger.info("Here");
                                     String givenName = FirstNames.getInstance().getFirstName(creatorName);
+                                    logger.info("There");
                                     boolean isOrganization = Organizations.getInstance().isOrganization(creatorName);
-                                    
+logger.info("Is Org: " + isOrganization + " " + givenName);                               
                                     if (givenName != null && !isOrganization) {
                                         // givenName ok, creatorName=<FirstName> <FamilyName>
                                         creator_map.put("nameType", "Personal");
@@ -340,6 +344,11 @@ logger.info("1 complete");
             }
         }
         writeEndTag(xmlw, creator_check);
+} catch (Exception e ) {
+    logger.severe(e.getMessage());
+    e.printStackTrace();
+    
+}
     }
 
     /**
