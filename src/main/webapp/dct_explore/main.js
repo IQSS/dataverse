@@ -492,7 +492,7 @@ module.exports = ".small {\n  font-size: 12px;\n}\n\n.medium {\n  font-size: 14p
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"loading-details\" *ngIf=\"!ddi_loaded\" class=\"row content-area\">\n  <mat-progress-spinner mode=\"indeterminate\"></mat-progress-spinner>\n</div>\n\n<ng-container class=\"interface-container\">\n\n  <mat-toolbar class=\"interface-header\">\n    <mat-toolbar-row>\n    <span>{{title}}</span>\n    <span class=\"fill-space\"></span>\n    <span style=\"float:right\">\n        <button mat-icon-button color=\"accent\" (click)=\"onSave()\" i18n-matTooltip matTooltip=\"Download\">\n          <mat-icon i18n-aria-label aria-label=\"Download xml\">get_app</mat-icon>\n        </button>\n        <span class=\"small\" i18n>Export</span>\n      </span>\n    <span style=\"float:right\">\n      <button mat-icon-button color=\"accent\" (click)=\"sendToDV()\" i18n-matTooltip matTooltip=\"Save\">\n        <mat-icon i18n-aria-label aria-label=\"Save\">save</mat-icon>\n      </button>\n      <span class=\"small\" i18n>Save</span>\n    </span>\n    </mat-toolbar-row>\n    <mat-toolbar-row class=\"medium\">\n      <span>{{firstCitat}}</span>\n      <a href=\"{{doi}}\">{{doi}}</a>\n      <span>{{secondCitat}}</span>\n    </mat-toolbar-row>\n  </mat-toolbar>\n\n\n\n<mat-sidenav-container >\n  <mat-sidenav mode=\"side\" opened class=\"side_nav\" #scrollMe>\n    <app-var-group [_variable_groups]=\"_variable_groups\" (subSetRows)=\"broadcastSubSetRows($event)\" (selectGroup)=\"broadcastSelect($event)\" (draggedGroup)=\"broadcastDraggedGroup($event)\" (disableSelectGroup)=\"broadcastDeselectGroup()\"\n     (parentScrollNav)=\"scrollNav()\"\n    ></app-var-group>\n  </mat-sidenav>\n  <mat-sidenav-content>\n    <app-var [_variable_groups]=\"_variable_groups\" ></app-var>\n    </mat-sidenav-content>\n</mat-sidenav-container>\n\n</ng-container>\n"
+module.exports = "<div id=\"loading-details\" *ngIf=\"!ddi_loaded\" class=\"row content-area\">\n  <mat-progress-spinner mode=\"indeterminate\"></mat-progress-spinner>\n</div>\n\n<ng-container class=\"interface-container\">\n\n  <mat-toolbar class=\"interface-header\">\n    <mat-toolbar-row>\n    <span>{{title}}</span>\n    <span class=\"fill-space\"></span>\n    <span style=\"float:right\">\n        <button mat-icon-button color=\"accent\" (click)=\"onSave()\" i18n-matTooltip matTooltip=\"Download\">\n          <mat-icon i18n-aria-label aria-label=\"Download xml\">get_app</mat-icon>\n        </button>\n        <span class=\"small\" i18n>Export</span>\n      </span>\n    <span style=\"float:right\">\n      <button mat-icon-button color=\"accent\" (click)=\"sendToDV()\" i18n-matTooltip matTooltip=\"Save\">\n        <mat-icon i18n-aria-label aria-label=\"Save\">save</mat-icon>\n      </button>\n      <span class=\"small\" i18n>Save</span>\n    </span>\n    </mat-toolbar-row>\n    <mat-toolbar-row class=\"medium\">\n      <span>{{filename}}</span>\n    </mat-toolbar-row>\n    <mat-toolbar-row class=\"medium\">\n      <span>{{firstCitat}}&nbsp;</span>\n      <a href=\"{{doi}}\">{{doi}}</a>\n      <span>{{secondCitat}}</span>\n    </mat-toolbar-row>\n  </mat-toolbar>\n\n\n\n<mat-sidenav-container >\n  <mat-sidenav mode=\"side\" opened class=\"side_nav\" #scrollMe>\n    <app-var-group [_variable_groups]=\"_variable_groups\" (subSetRows)=\"broadcastSubSetRows($event)\" (selectGroup)=\"broadcastSelect($event)\" (draggedGroup)=\"broadcastDraggedGroup($event)\" (disableSelectGroup)=\"broadcastDeselectGroup()\"\n     (parentScrollNav)=\"scrollNav()\"\n    ></app-var-group>\n  </mat-sidenav>\n  <mat-sidenav-content>\n    <app-var [_variable_groups]=\"_variable_groups\" ></app-var>\n    </mat-sidenav-content>\n</mat-sidenav-container>\n\n</ng-container>\n"
 
 /***/ }),
 
@@ -582,16 +582,17 @@ var InterfaceComponent = /** @class */ (function () {
         var citation = this.data
             .getElementsByTagName('stdyDscr')[0]
             .getElementsByTagName('biblCit')[0].textContent;
-        console.log(citation);
         var start = citation.indexOf('http');
         var temp = citation.substr(start);
         var end = temp.indexOf(',');
         this.doi = temp.substr(0, end);
-        console.log(temp);
-        this.firstCitat = citation.substr(0, start) + ' ';
-        console.log(this.firstCitat);
-        this.secondCitat = ' ' + temp.substr(end);
-        console.log(this.secondCitat);
+        this.firstCitat = citation.substr(0, start);
+        this.firstCitat = this.firstCitat;
+        this.secondCitat = temp.substr(end);
+        this.secondCitat = this.secondCitat;
+        this.filename = this.data
+            .getElementsByTagName('fileDscr')[0]
+            .getElementsByTagName('fileName')[0].textContent;
         this.showDDI();
     };
     InterfaceComponent.prototype.showVarsGroups = function () {
