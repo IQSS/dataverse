@@ -649,6 +649,8 @@
                 <includes>
                     <include>**/*.sql</include>
                     <include>**/*.xml</include>
+                    <include>**/*.bin</include>
+                    <include>**/*.txt</include>
                 </includes>
             </resource>
         </resources>
