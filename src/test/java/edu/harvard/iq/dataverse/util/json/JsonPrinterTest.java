@@ -267,7 +267,7 @@ public class JsonPrinterTest {
     private static class MockSettingsSvc extends SettingsServiceBean {
 
         @Override
-        public boolean isTrueForKey(SettingsServiceBean.Key key, boolean defaultValue) {
+        public boolean isTrueForKey(SettingsServiceBean.Key key) {
             switch (key) {
                 case ExcludeEmailFromExport:
                     return true;

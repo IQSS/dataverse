@@ -452,7 +452,7 @@ public class DatasetPage implements java.io.Serializable {
     public String getCartComputeUrl() {
         if (session.getUser() instanceof AuthenticatedUser) {
             AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
-            String url = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl);
+            String url = settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl);
             if (url == null) {
                 return "";
             }
@@ -688,9 +688,9 @@ public class DatasetPage implements java.io.Serializable {
     */
     public String getComputeUrl() throws IOException {
 
-        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getPersistentId();
+        return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getPersistentId();
             //WHEN we are able to get a temp url for a dataset
-            //return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+        //return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
 
         
     }
@@ -708,16 +708,16 @@ public class DatasetPage implements java.io.Serializable {
         } catch (IOException e) {
             logger.info("DatasetPage: Failed to get storageIO");
         }
-        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
-            return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getPersistentId() + "=" + swiftObject.getSwiftFileName();
+        if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall)) {
+            return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getPersistentId() + "=" + swiftObject.getSwiftFileName();
         }
-        
-        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getPersistentId() + "=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+
+        return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getPersistentId() + "=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
 
     }
     
     public String getCloudEnvironmentName() {
-        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.CloudEnvironmentName);
+        return settingsService.getValueForKey(SettingsServiceBean.Key.CloudEnvironmentName);
     }
     
     public DataFile getSelectedDownloadFile() {
@@ -1378,10 +1378,9 @@ public class DatasetPage implements java.io.Serializable {
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
 
         guestbookResponse = new GuestbookResponse();
-        
-        String nonNullDefaultIfKeyNotFound = "";
-        protocol = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        authority = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+
+        protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol);
+        authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority);
         if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset     
 
             DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
@@ -1498,7 +1497,7 @@ public class DatasetPage implements java.io.Serializable {
                 this.guestbookResponse = guestbookResponseService.initGuestbookResponseForFragment(workingVersion, null, session);
                 this.getFileDownloadHelper().setGuestbookResponse(guestbookResponse);
                 logger.fine("Checking if rsync support is enabled.");
-                if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))
+                if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods))
                         && dataset.getFiles().isEmpty()) { //only check for rsync if no files exist
                     try {
                         ScriptRequestResponse scriptRequestResponse = commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset));
@@ -1555,8 +1554,8 @@ public class DatasetPage implements java.io.Serializable {
                 workingVersion = dataset.getCreateVersion();
                 updateDatasetFieldInputLevels();
             }
-            
-            if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)){
+
+            if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall)) {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.message.publicInstall"));
             }
 
@@ -3387,7 +3386,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getDatasetPublishCustomText(){
-        String datasetPublishCustomText = settingsWrapper.getValueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
+        String datasetPublishCustomText = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
         if( datasetPublishCustomText!= null && !datasetPublishCustomText.isEmpty()){
             return datasetPublishCustomText;
             
@@ -3396,7 +3395,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public Boolean isDatasetPublishPopupCustomTextOnAllVersions(){
-        return  settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomTextOnAllVersions, false);
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomTextOnAllVersions);
     }
 
     public String getVariableMetadataURL(Long fileid) {
@@ -4422,7 +4421,7 @@ public class DatasetPage implements java.io.Serializable {
      * @return the dataset fields to be shown in the dataset summary
      */
     public List<DatasetField> getDatasetSummaryFields() {
-       customFields  = settingsWrapper.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
+        customFields = settingsService.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
        
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }

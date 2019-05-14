@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.engine;
 
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import org.apache.commons.lang.StringUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,7 +28,8 @@ public class TestSettingsServiceBean extends SettingsServiceBean {
 
     @Override
     public String get(String name) {
-        return settings.get(name);
+        String setting = settings.get(name);
+        return setting == null ? StringUtils.EMPTY : setting;
     }
 
 }

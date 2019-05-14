@@ -247,8 +247,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         if (signupAllowed != null) {
             return signupAllowed;
         }
-        boolean safeDefaultIfKeyNotFound = false;
-        signupAllowed = settingsWrapper.isTrueForKey(SettingsServiceBean.Key.AllowSignUp, safeDefaultIfKeyNotFound);
+        signupAllowed = settingsService.isTrueForKey(SettingsServiceBean.Key.AllowSignUp);
         return signupAllowed;
     }
 
@@ -258,7 +257,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         }
         if (dataverse.getOwner() == null) {
             // We're operating on the root dataverse.
-            return settingsWrapper.isRootDataverseThemeDisabled();
+            return settingsService.isTrueForKey(SettingsServiceBean.Key.DisableRootDataverseTheme);
         } else {
             return false;
         }
@@ -266,7 +265,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     public String getSignupUrl(String loginRedirect) {
         String nonNullDefaultIfKeyNotFound = "";
-        String signUpUrl = settingsWrapper.getValueForKey(SettingsServiceBean.Key.SignUpUrl, nonNullDefaultIfKeyNotFound);
+        String signUpUrl = settingsService.getValueForKey(SettingsServiceBean.Key.SignUpUrl);
         return signUpUrl + (!signUpUrl.contains("?") ? loginRedirect : loginRedirect.replace("?", "&"));
     }
 

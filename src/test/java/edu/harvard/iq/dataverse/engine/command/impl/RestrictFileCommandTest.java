@@ -12,18 +12,20 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataFile;
-import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataset;
-import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import java.sql.Timestamp;
-import java.util.Date;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.sql.Timestamp;
+import java.util.Date;
+
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataFile;
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataset;
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 
@@ -65,7 +67,7 @@ public class RestrictFileCommandTest {
                     //override for a public install, 
                     //assume false
                     @Override
-                    public boolean isTrueForKey(SettingsServiceBean.Key key, boolean defaultValue) {
+                    public boolean isTrueForKey(SettingsServiceBean.Key key) {
                         return publicInstall;
                     }
                 };

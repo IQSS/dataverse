@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+
 import java.util.logging.Logger;
 
 
@@ -44,8 +45,7 @@ public class RestrictFileCommand extends AbstractVoidCommand {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         // check if public install & don't allow
-        boolean defaultValue = false;
-        boolean publicInstall = ctxt.settings().isTrueForKey(SettingsServiceBean.Key.PublicInstall, defaultValue);
+        boolean publicInstall = ctxt.settings().isTrueForKey(SettingsServiceBean.Key.PublicInstall);
         
         if (publicInstall) {
             throw new CommandExecutionException("Restricting files is not permitted on a public installation.", this);

@@ -12,9 +12,10 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
-import java.util.Date;
+
 import java.util.Optional;
 import java.util.logging.Logger;
+
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -101,9 +102,9 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             // ...
             // Additionaly in 4.9.3 we have added a system variable to disable 
             // registering file PIDs on the installation level.
-            String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
-            String currentGlobalAuthority= ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, "");
-            String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+            String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol);
+            String currentGlobalAuthority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority);
+            String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat);
             boolean registerGlobalIdsForFiles = 
                     (currentGlobalIdProtocol.equals(theDataset.getProtocol()) || dataFilePIDFormat.equals("INDEPENDENT")) 
                     && ctxt.systemConfig().isFilePIDsEnabled();

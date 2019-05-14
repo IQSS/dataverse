@@ -72,7 +72,8 @@ public class FileBasedSettingsFetcher {
 	 * Returns setting value with the given key
 	 */
 	public String getSetting(String key) {
-		return settings.get(key);
+        String setting = settings.get(key);
+        return setting == null ? StringUtils.EMPTY : setting;
 	}
 	
 	/**

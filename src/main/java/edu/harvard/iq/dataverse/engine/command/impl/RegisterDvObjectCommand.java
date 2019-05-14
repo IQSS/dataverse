@@ -5,15 +5,16 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+
 import java.sql.Timestamp;
 import java.util.Date;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 /**
  *
@@ -45,8 +46,8 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             if (!processMigrateHandle(ctxt)) return;
         }
         String nonNullDefaultIfKeyNotFound = "";
-        String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+        String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol);
+        String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority);
         // Get the idServiceBean that is configured to mint new IDs
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
         try {

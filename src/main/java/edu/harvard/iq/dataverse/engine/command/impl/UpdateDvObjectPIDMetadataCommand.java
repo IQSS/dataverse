@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.Date;
@@ -55,8 +56,8 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
                 ctxt.em().flush();
                 // When updating, we want to traverse through files even if the dataset itself
                 // didn't need updating.
-                String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
-                String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+                String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol);
+                String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat);
                 boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabled();
                 // We will skip trying to update the global identifiers for datafiles if they
                 // aren't being used.

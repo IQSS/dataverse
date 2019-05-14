@@ -242,14 +242,14 @@
                     <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses eq 0 and SearchIncludeFragment.facetCountDatasets eq 0 and SearchIncludeFragment.facetCountFiles eq 0}">
                         <!--SEARCH ZERO COUNTS-->
                         <p><h:outputFormat value="#{bundle['dataverse.results.empty.zero']}" escape="false">
-                                <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                            <f:param value="#{settingsService.guidesBaseUrl}"/>
                                 <f:param value="#{systemConfig.guidesVersion}"/>
                             </h:outputFormat></p>
                     </ui:fragment>
                     <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses gt 0 or SearchIncludeFragment.facetCountDatasets gt 0 or SearchIncludeFragment.facetCountFiles gt 0}">
                         <!--SEARCH HIDDEN-->
                         <p><h:outputFormat value="#{bundle['dataverse.results.empty.hidden']}" escape="false">
-                                <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                            <f:param value="#{settingsService.guidesBaseUrl}"/>
                                 <f:param value="#{systemConfig.guidesVersion}"/>
                             </h:outputFormat></p>
                     </ui:fragment>
@@ -298,7 +298,7 @@
                         <!--BROWSE CAN_ADD ZERO COUNTS-->
                         <p>
                             <h:outputFormat value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.results.empty.browse.loggedin.perms.zero'] : bundle['dataverse.results.empty.browse.loggedin.perms.zero']}" escape="false">
-                                <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                <f:param value="#{settingsService.guidesBaseUrl}"/>
                                 <f:param value="#{systemConfig.guidesVersion}"/>
                             </h:outputFormat>
                         </p>

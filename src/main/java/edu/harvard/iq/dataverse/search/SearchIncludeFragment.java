@@ -11,13 +11,11 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
@@ -53,21 +51,17 @@ public class SearchIncludeFragment implements java.io.Serializable {
     @EJB
     DataFileServiceBean dataFileService;
     @EJB
-    PermissionServiceBean permissionService;
-    @EJB
     DvObjectServiceBean dvObjectService;
     @Inject
     DataverseSession session;
     @Inject
     SettingsWrapper settingsWrapper;
-    @Inject
-    PermissionsWrapper permissionsWrapper;
+    @EJB
+    SettingsServiceBean settingsService;
     @Inject
     ThumbnailServiceWrapper thumbnailServiceWrapper;
     @Inject
-    WidgetWrapper widgetWrapper;  
-    @EJB
-    SystemConfig systemConfig;
+    WidgetWrapper widgetWrapper;
 
     private String browseModeString = "browse";
     private String searchModeString = "search";
@@ -105,15 +99,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
     final private String ASCENDING = SortOrder.asc.toString();
     final private String DESCENDING = SortOrder.desc.toString();
     private String typeFilterQuery;
-    private Long facetCountDataverses = 0L;
-    private Long facetCountDatasets = 0L;
-    private Long facetCountFiles = 0L;
     Map<String, Long> previewCountbyType = new HashMap<>();
     private SolrQueryResponse solrQueryResponseAllTypes;
     private String sortField;
     private SortOrder sortOrder;
-    private String currentSort;
-    private String currentSortFriendly;
     private int page = 1;
     private int paginationGuiStart = 1;
     private int paginationGuiEnd = 10;
@@ -129,7 +118,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private String errorFromSolr;
     private SearchException searchException;
     private boolean rootDv = false;
-    private Map<Long, String> harvestedDatasetDescriptions = null;
     private boolean solrErrorEncountered = false;
     
     /**
@@ -926,7 +914,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     public boolean isDebug() {
         return (debug && session.getUser().isSuperuser())
-                || settingsWrapper.isTrueForKey(":Debug", false);
+                || settingsService.isTrue(":Debug");
     }
 
     public void setDebug(boolean debug) {

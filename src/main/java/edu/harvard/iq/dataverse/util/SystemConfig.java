@@ -4,11 +4,16 @@ import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
-import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.passay.CharacterRule;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.inject.Named;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,11 +26,8 @@ import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import org.passay.CharacterRule;
-import org.apache.commons.io.IOUtils;
+
+import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 
 /**
  * System-wide configuration
@@ -229,22 +231,12 @@ public class SystemConfig {
     }
 
     public String getSolrHostColonPort() {
-        String SolrHost;
-        if ( System.getenv("SOLR_SERVICE_HOST") != null && System.getenv("SOLR_SERVICE_HOST") != ""){
-            SolrHost = System.getenv("SOLR_SERVICE_HOST");
-        }
-        else SolrHost = saneDefaultForSolrHostColonPort;
-        String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, SolrHost);
-        return solrHostColonPort;
+        return settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort);
     }
 
     public boolean isProvCollectionEnabled() {
-        String provCollectionEnabled = settingsService.getValueForKey(SettingsServiceBean.Key.ProvCollectionEnabled, null);
-        if("true".equalsIgnoreCase(provCollectionEnabled)){         
-            return true;
-        }
-        return false;
-
+        String provCollectionEnabled = settingsService.getValueForKey(SettingsServiceBean.Key.ProvCollectionEnabled);
+        return provCollectionEnabled.equalsIgnoreCase("true");
     }
     
     public int getMetricsCacheTimeoutMinutes() {
@@ -363,8 +355,7 @@ public class SystemConfig {
     }
 
     public String getGuidesBaseUrl() {
-        String saneDefault = "http://guides.dataverse.org";
-        String guidesBaseUrl = settingsService.getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl, saneDefault);
+        String guidesBaseUrl = settingsService.getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl);
         return guidesBaseUrl + "/" + getGuidesLanguage();
     }
 
@@ -374,18 +365,13 @@ public class SystemConfig {
     }
 
     public String getGuidesVersion() {
-        String saneDefault = getVersion();
-        String guidesVersion = settingsService.getValueForKey(SettingsServiceBean.Key.GuidesVersion, saneDefault);
-        if (guidesVersion != null) {
-            return guidesVersion;
-        }
-        return saneDefault;
+        String guidesVersion = settingsService.getValueForKey(SettingsServiceBean.Key.GuidesVersion);
+
+        return guidesVersion.equals(StringUtils.EMPTY) ? getVersion() : guidesVersion;
     }
 
     public String getMetricsUrl() {
-        String saneDefault = null;
-        String metricsUrl = settingsService.getValueForKey(SettingsServiceBean.Key.MetricsUrl, saneDefault);
-        return metricsUrl;
+        return settingsService.getValueForKey(SettingsServiceBean.Key.MetricsUrl);
     }
 
     /**
@@ -531,34 +517,19 @@ public class SystemConfig {
     }
     
     public String getApplicationTermsOfUse() {
-        String saneDefaultForAppTermsOfUse = BundleUtil.getStringFromBundle("system.app.terms");
-        String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
-        return appTermsOfUse;
+        String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse);
+
+        return appTermsOfUse.equals(StringUtils.EMPTY) ? BundleUtil.getStringFromBundle("system.app.terms") : appTermsOfUse;
     }
 
     public String getApiTermsOfUse() {
-        String saneDefaultForApiTermsOfUse = BundleUtil.getStringFromBundle("system.api.terms");
-        String apiTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApiTermsOfUse, saneDefaultForApiTermsOfUse);
-        return apiTermsOfUse;
-    }
+        String apiTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApiTermsOfUse);
 
-    // TODO: 
-    // remove this method!
-    // pages should be using settingsWrapper.get(":ApplicationPrivacyPolicyUrl") instead. -- 4.2.1
-    public String getApplicationPrivacyPolicyUrl() {
-        String saneDefaultForPrivacyPolicyUrl = null;
-        String appPrivacyPolicyUrl = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationPrivacyPolicyUrl, saneDefaultForPrivacyPolicyUrl);
-        return appPrivacyPolicyUrl;
+        return apiTermsOfUse.equals(StringUtils.EMPTY) ? BundleUtil.getStringFromBundle("system.api.terms") : apiTermsOfUse;
     }
 
     public boolean myDataDoesNotUsePermissionDocs() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.MyDataDoesNotUseSolrPermissionDocs, safeDefaultIfKeyNotFound);
-    }
-
-    public boolean isFilesOnDatasetPageFromSolr() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.FilesOnDatasetPageFromSolr, safeDefaultIfKeyNotFound);
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.MyDataDoesNotUseSolrPermissionDocs);
     }
 
     public Long getMaxFileUploadSize(){
@@ -626,8 +597,7 @@ public class SystemConfig {
     }
 
     public boolean isOAIServerEnabled() {
-        boolean defaultResponse = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.OAIServerEnabled, defaultResponse);
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.OAIServerEnabled);
     }
     
     public void enableOAIServer() {
@@ -651,27 +621,13 @@ public class SystemConfig {
     }
 
     public DataFile.ChecksumType getFileFixityChecksumAlgorithm() {
-        DataFile.ChecksumType saneDefault = DataFile.ChecksumType.MD5;
-        String checksumStringFromDatabase = settingsService.getValueForKey(SettingsServiceBean.Key.FileFixityChecksumAlgorithm, saneDefault.toString());
-        try {
-            DataFile.ChecksumType checksumTypeFromDatabase = DataFile.ChecksumType.fromString(checksumStringFromDatabase);
-            return checksumTypeFromDatabase;
-        } catch (IllegalArgumentException ex) {
-            logger.info("The setting " + SettingsServiceBean.Key.FileFixityChecksumAlgorithm + " is misconfigured. " + ex.getMessage() + " Returning sane default: " + saneDefault + ".");
-            return saneDefault;
-        }
+        String checksumStringFromDatabase = settingsService.getValueForKey(SettingsServiceBean.Key.FileFixityChecksumAlgorithm);
+        return DataFile.ChecksumType.fromString(checksumStringFromDatabase);
+
     }
 
     public String getDefaultAuthProvider() {
-        String saneDefault = BuiltinAuthenticationProvider.PROVIDER_ID;
-        String settingInDatabase = settingsService.getValueForKey(SettingsServiceBean.Key.DefaultAuthProvider, saneDefault);
-        if (settingInDatabase != null && !settingInDatabase.isEmpty()) {
-            /**
-             * @todo Add more sanity checking.
-             */
-            return settingInDatabase;
-        }
-        return saneDefault;
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DefaultAuthProvider);
     }
 
     public String getNameOfInstallation() {
@@ -707,8 +663,7 @@ public class SystemConfig {
     }
     
     public boolean isShibPassiveLoginEnabled() {
-        boolean defaultResponse = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibPassiveLoginEnabled, defaultResponse);
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibPassiveLoginEnabled);
     }
 
     /**
@@ -977,7 +932,7 @@ public class SystemConfig {
 
     public boolean isPublicInstall(){
         boolean saneDefault = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, saneDefault);
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall);
     }
     
     public boolean isRsyncUpload(){
@@ -1034,8 +989,8 @@ public class SystemConfig {
         }       
     }
     public boolean isDataFilePIDSequentialDependent(){
-        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
-        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle);
+        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat);
         if (doiIdentifierType.equals("sequentialNumber") && doiDataFileFormat.equals("DEPENDENT")){
             return true;
         }
@@ -1043,7 +998,7 @@ public class SystemConfig {
     }
     
     public int getPIDAsynchRegFileCount() {
-        String fileCount = settingsService.getValueForKey(SettingsServiceBean.Key.PIDAsynchRegFileCount, "10");
+        String fileCount = settingsService.getValueForKey(SettingsServiceBean.Key.PIDAsynchRegFileCount);
         int retVal = 10;
         try {
             retVal = Integer.parseInt(fileCount);
@@ -1054,12 +1009,10 @@ public class SystemConfig {
     }
     
     public boolean isFilePIDsEnabled() {
-        boolean safeDefaultIfKeyNotFound = true;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, safeDefaultIfKeyNotFound);
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled);
     }
     
     public boolean isIndependentHandleService() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.IndependentHandleService, safeDefaultIfKeyNotFound);
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.IndependentHandleService);
     }
 }

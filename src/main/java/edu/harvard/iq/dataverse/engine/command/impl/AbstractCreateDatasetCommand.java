@@ -1,6 +1,9 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -10,11 +13,13 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
+
 import java.io.IOException;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 
 /**;
  * An abstract base class for commands that creates {@link Dataset}s.
@@ -83,13 +88,12 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             dataFile.setCreator((AuthenticatedUser) getRequest().getUser());
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
-        
-        String nonNullDefaultIfKeyNotFound = "";
+
         if (theDataset.getProtocol()==null) {
-            theDataset.setProtocol(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound));
+            theDataset.setProtocol(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol));
         }
         if (theDataset.getAuthority()==null) {
-            theDataset.setAuthority(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound));
+            theDataset.setAuthority(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority));
         }
         if (theDataset.getStorageIdentifier() == null) {
             try {

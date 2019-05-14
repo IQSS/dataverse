@@ -5,7 +5,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:o="http://omnifaces.org/ui"
-      xmlns:jsf="http://xmlns.jcp.org/jsf">
+>
     <h:head>
     </h:head>
 
@@ -31,7 +31,9 @@
 				    </p>
                     <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
                             <o:param>
-                                <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                <p:commandLink value="#{settingsServiceBean.supportTeamName}"
+                                               oncomplete="PF('contactForm').show()" update=":contactDialog"
+                                               actionListener="#{sendFeedbackDialog.initUserInput}">
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>

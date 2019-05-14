@@ -5,10 +5,10 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetLock;
-import static edu.harvard.iq.dataverse.DatasetVersion.VersionState.*;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -22,13 +22,15 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
+
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+
+import static edu.harvard.iq.dataverse.DatasetVersion.VersionState.RELEASED;
 
 /**
  *
@@ -193,8 +195,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         if (idServiceBean != null) {
             List<String> args = idServiceBean.getProviderInformation();
             try {
-                String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
-                String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+                String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol);
+                String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat);
                 boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabled();
                 // We will skip trying to register the global identifiers for datafiles 
                 // if "dependent" file-level identifiers are requested, AND the naming 

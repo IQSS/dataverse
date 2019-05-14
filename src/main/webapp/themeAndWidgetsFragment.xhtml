@@ -5,8 +5,10 @@
     xmlns:p="http://primefaces.org/ui"
     xmlns:o="http://omnifaces.org/ui">
     <!-- Theme and Widgets Edit Tabs -->
-        <p:tabView  rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">
-            <p:tab id="themeTab" title="#{bundle['dataverse.theme.title']}" rendered="#{not settingsWrapper.rootDataverseThemeDisabled or themeWidgetFragment.editDv.owner != null}">
+    <o:importConstants type="edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key" var="SettingKey"/>
+    <p:tabView rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">
+        <p:tab id="themeTab" title="#{bundle['dataverse.theme.title']}"
+               rendered="#{not settingsServiceBean.isTrueForKey(SettingKey.DisableRootDataverseTheme) or themeWidgetFragment.editDv.owner != null}">
                 <p:fragment>
                     <p:autoUpdate/>
                     <!-- Dataverse Theme Panel -->
@@ -185,7 +187,8 @@
                     <p:commandButton class="btn btn-default" action="#{themeWidgetFragment.cancel()}" immediate="true" id="themeCancel" value="#{bundle.cancel}"/>
                 </div>
             </p:tab>
-            <p:tab id="themeTabDisabled" title="#{bundle['dataverse.theme.title']}" rendered="#{themeWidgetFragment.editDv.owner == null and settingsWrapper.rootDataverseThemeDisabled}">
+        <p:tab id="themeTabDisabled" title="#{bundle['dataverse.theme.title']}"
+               rendered="#{themeWidgetFragment.editDv.owner == null and settingsServiceBean.isTrueForKey(SettingKey.DisableRootDataverseTheme)}">
                 <div>#{bundle['dataverse.theme.disabled']}</div>
                 <div class="button-block">
                     <p:commandButton class="btn btn-default" action="#{themeWidgetFragment.cancel()}" immediate="true" id="themeTabDisabledDone" value="#{bundle.done}"/>

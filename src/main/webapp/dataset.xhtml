@@ -1294,7 +1294,10 @@
                             <p class="help-block">
                                 <h:outputFormat value="#{bundle['dataverse.link.dataset.choose']}" escape="false">
                                     <o:param>
-                                        <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('linkDatasetForm').hide();PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                        <p:commandLink value="#{settingsServiceBean.supportTeamName}"
+                                                       oncomplete="PF('linkDatasetForm').hide();PF('contactForm').show()"
+                                                       update=":contactDialog"
+                                                       actionListener="#{sendFeedbackDialog.initUserInput}">
                                             <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                             <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                             <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>

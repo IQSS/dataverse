@@ -147,13 +147,13 @@ public class EditDatafilesPage implements java.io.Serializable {
     private TermsOfUseFactory termsOfUseFactory;
     @Inject
     private TermsOfUseFormMapper termsOfUseFormMapper;
-    
+
     @EJB
     private LicenseDAO licenseDao;
 
     @Inject
     private TermsOfUseSelectItemsFactory termsOfUseSelectItemsFactory;
-    
+
     
     private final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
@@ -193,7 +193,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     private Integer multipleUploadFilesLimit = null; 
     
     private List<SelectItem> termsOfUseSelectItems;
-    
+
     private final int NUMBER_OF_SCROLL_ROWS = 25;
     
     private DataFile singleFile = null;
@@ -469,7 +469,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         uploadedFiles = new ArrayList<>();
         selectedFiles = selectedFileMetadatasList;
         termsOfUseSelectItems = termsOfUseSelectItemsFactory.buildLicenseSelectItems();
-        
+
         logger.fine("done");
         
         saveEnabled = true;
@@ -488,7 +488,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
         
         termsOfUseSelectItems = termsOfUseSelectItemsFactory.buildLicenseSelectItems();
-        
+
         if (dataset.getId() != null){
             // Set Working Version and Dataset by Datasaet Id and Version
             //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), null);
@@ -613,8 +613,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
             
         }
-        
-        if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)){
+
+        if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall)) {
             JH.addMessage(FacesMessage.SEVERITY_WARN, getBundleString("dataset.message.publicInstall"));
         }
         
@@ -1152,14 +1152,14 @@ public class EditDatafilesPage implements java.io.Serializable {
                     }
                 }
             }
-            
+
             for (DataFile newFile : newFiles) {
                 TermsOfUseForm termsOfUseForm = newFile.getFileMetadata().getTermsOfUseForm();
                 FileTermsOfUse termsOfUse = termsOfUseFormMapper.mapToFileTermsOfUse(termsOfUseForm);
-                
+
                 newFile.getFileMetadata().setTermsOfUse(termsOfUse);
             }
-                                
+
             // Try to save the NEW files permanently: 
             List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles);
             
@@ -1810,7 +1810,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     private  void setUpRsync() {
         logger.fine("setUpRsync called...");
-        if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))
+        if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods))
                 && dataset.getFiles().isEmpty()) { //only check for rsync if no files exist
             try {
                 ScriptRequestResponse scriptRequestResponse = commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset));
@@ -2799,11 +2799,11 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void handleNameChange(final AjaxBehaviorEvent event) {        
         datasetUpdateRequired = true;
     }
-    
+
     public void handleTermsOfUseChange(final AjaxBehaviorEvent event) {
         datasetUpdateRequired = true;
     }
-        
+
     /* 
      * Items for the "Advanced (Ingest) Options" popup. 
      * 
@@ -2980,7 +2980,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public void updateTermsOfUseForSelectedFiles(TermsOfUseForm termsOfUseForm) {
-        
+
         for (FileMetadata selectedFile: selectedFiles) {
             TermsOfUseForm termsOfUseCopy = new TermsOfUseForm();
             termsOfUseCopy.setTypeWithLicenseId(termsOfUseForm.getTypeWithLicenseId());
@@ -2988,7 +2988,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             termsOfUseCopy.setCustomRestrictText(termsOfUseForm.getCustomRestrictText());
             selectedFile.setTermsOfUseForm(termsOfUseCopy);
         }
-        
+
     }
-    
+
 }

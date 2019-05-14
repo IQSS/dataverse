@@ -6,6 +6,15 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.customization.CustomizationConstants;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import org.apache.commons.io.IOUtils;
+
+import javax.ejb.EJB;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,14 +23,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import javax.ejb.EJB;
-import org.apache.commons.io.IOUtils;
 
 /**
  *
@@ -97,32 +98,32 @@ public class CustomizationFilesServlet extends HttpServlet {
         if (fileTypeParam.equals(CustomizationConstants.fileTypeHomePage)) {
             
             // Homepage
-            return settingsService.getValueForKey(SettingsServiceBean.Key.HomePageCustomizationFile, nonNullDefaultIfKeyNotFound);
+            return settingsService.getValueForKey(SettingsServiceBean.Key.HomePageCustomizationFile);
                 
         } else if (fileTypeParam.equals(CustomizationConstants.fileTypeHeader)) {
             
             // Header
-            return settingsService.getValueForKey(SettingsServiceBean.Key.HeaderCustomizationFile, nonNullDefaultIfKeyNotFound);
+            return settingsService.getValueForKey(SettingsServiceBean.Key.HeaderCustomizationFile);
 
         } else if (fileTypeParam.equals(CustomizationConstants.fileTypeFooter)) {
             
             // Footer        
-            return settingsService.getValueForKey(SettingsServiceBean.Key.FooterCustomizationFile, nonNullDefaultIfKeyNotFound);
+            return settingsService.getValueForKey(SettingsServiceBean.Key.FooterCustomizationFile);
         
         } else if (fileTypeParam.equals(CustomizationConstants.fileTypeStyle)) {
             
             // Style (css)               
-            return settingsService.getValueForKey(SettingsServiceBean.Key.StyleCustomizationFile, nonNullDefaultIfKeyNotFound);
+            return settingsService.getValueForKey(SettingsServiceBean.Key.StyleCustomizationFile);
         
         } else if (fileTypeParam.equals(CustomizationConstants.fileTypeAnalytics)) {
 
             // Analytics - appears in head               
-            return settingsService.getValueForKey(SettingsServiceBean.Key.WebAnalyticsCode, nonNullDefaultIfKeyNotFound);
+            return settingsService.getValueForKey(SettingsServiceBean.Key.WebAnalyticsCode);
         
         } else if (fileTypeParam.equals(CustomizationConstants.fileTypeLogo)) {
 
             // Logo for installation - appears in header               
-            return settingsService.getValueForKey(SettingsServiceBean.Key.LogoCustomizationFile, nonNullDefaultIfKeyNotFound);
+            return settingsService.getValueForKey(SettingsServiceBean.Key.LogoCustomizationFile);
         }
         
 

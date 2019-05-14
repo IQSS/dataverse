@@ -108,11 +108,13 @@
                                 <h:form>
                                     <p class="help-block">
                                         <h:outputFormat value="#{bundle['login.institution.blurb']} " escape="false">
-                                            <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                            <f:param value="#{settingsService.guidesBaseUrl}"/>
                                             <f:param value="#{systemConfig.guidesVersion}"/>
                                         </h:outputFormat>
                                         <h:outputText value="#{bundle['login.institution.support.beforeLink']} " />
-                                        <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                        <p:commandLink value="#{settingsServiceBean.supportTeamName}"
+                                                       oncomplete="PF('contactForm').show()" update=":contactDialog"
+                                                       actionListener="#{sendFeedbackDialog.initUserInput}">
                                             <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                             <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                             <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
@@ -170,10 +172,13 @@
                                     <p class="help-block">
                                         <h:outputFormat value="#{bundle['auth.providers.blurb']}" escape="false">
                                             <o:param value="#{LoginPage.authProvider.info.title}"/>
-                                            <o:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                            <o:param value="#{settingsService.guidesBaseUrl}"/>
                                             <o:param value="#{systemConfig.guidesVersion}"/>
                                             <o:param>
-                                                <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                                <p:commandLink value="#{settingsServiceBean.supportTeamName}"
+                                                               oncomplete="PF('contactForm').show()"
+                                                               update=":contactDialog"
+                                                               actionListener="#{sendFeedbackDialog.initUserInput}">
                                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
@@ -214,7 +219,7 @@
                                 <div jsf:rendered="#{LoginPage.authProvider.id == 'builtin'}">
                                     <p class="help-block">
                                         <h:outputFormat value="#{bundle['auth.providers.tip']}" escape="false">
-                                            <o:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                            <o:param value="#{settingsService.guidesBaseUrl}"/>
                                             <o:param value="#{systemConfig.guidesVersion}"/>
                                         </h:outputFormat>
                                     </p>

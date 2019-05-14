@@ -27,6 +27,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -47,6 +48,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -57,8 +59,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 @Named
 @Dependent
@@ -357,17 +357,16 @@ public class FileRecordWriter extends AbstractItemWriter {
         
         dataset.getLatestVersion().addFileMetadata(fmd);
         fmd.setDatasetVersion(dataset.getLatestVersion());
-        
-	String isFilePIDsEnabled = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.FilePIDsEnabled, "true"); //default value for file PIDs is 'true'
+
+        String isFilePIDsEnabled = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.FilePIDsEnabled);
 	if ("true".contentEquals( isFilePIDsEnabled )) {
 	
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
         if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
             packageFile.setIdentifier(dataFileServiceBean.generateDataFileIdentifier(packageFile, idServiceBean));
         }
-        String nonNullDefaultIfKeyNotFound = "";
-        String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        String authority = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+        String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol);
+        String authority = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Authority);
         if (packageFile.getProtocol() == null) {
             packageFile.setProtocol(protocol);
         }

@@ -299,7 +299,7 @@ public class ImportServiceBean {
                     boolean fixed = false;
                     boolean converted = false;
                     // TODO: Is this scrubbing something we want to continue doing? 
-                    if (settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)) {
+                    if (settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData)) {
                         fixed = processMigrationValidationError(f, cleanupLog, metadataFile.getName());
                         converted = true;
                         if (fixed) {
@@ -429,7 +429,7 @@ public class ImportServiceBean {
             // For ImportType.NEW, if the user supplies a global identifier, and it's not a protocol
             // we support, it will be rejected.
             if (importType.equals(ImportType.NEW)) {
-                if (ds.getGlobalIdString() != null && !ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, ""))) {
+                if (ds.getGlobalIdString() != null && !ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol))) {
                     throw new ImportException("Could not register id " + ds.getGlobalIdString() + ", protocol not supported");
                 }
             }
@@ -468,8 +468,8 @@ public class ImportServiceBean {
                     DatasetFieldValue f = v.getRootBean();
                     boolean fixed = false;
                     boolean converted = false;
-                    if ( importType.equals(ImportType.HARVEST) && 
-                         settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)) {
+                    if ( importType.equals(ImportType.HARVEST) &&
+                            settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData)) {
                         fixed = processMigrationValidationError(f, cleanupLog, fileName);
                         converted = true;
                         if (fixed) {

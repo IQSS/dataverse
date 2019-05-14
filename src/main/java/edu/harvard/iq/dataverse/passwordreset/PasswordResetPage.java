@@ -8,10 +8,8 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import org.apache.commons.lang.StringUtils;
@@ -39,15 +37,13 @@ public class PasswordResetPage implements java.io.Serializable {
     @EJB
     PasswordResetServiceBean passwordResetService;
     @EJB
-    BuiltinUserServiceBean dataverseUserService;
-    @EJB
     DataverseServiceBean dataverseService;    
     @EJB
     AuthenticationServiceBean authSvc;
     @Inject
     DataverseSession session;
-    @Inject
-    SettingsWrapper settingsWrapper; 
+    @EJB
+    SettingsServiceBean settingsService;
     
     @EJB
     ActionLogServiceBean actionLogSvc;
@@ -213,22 +209,9 @@ public class PasswordResetPage implements java.io.Serializable {
     public String getNewPassword() {
         return newPassword;
     }
-
-    public PasswordResetData getPasswordResetData() {
-        return passwordResetData;
-    }
-
-    public void setPasswordResetData(PasswordResetData passwordResetData) {
-        this.passwordResetData = passwordResetData;
-    }
-
-    public String getGoodPasswordDescription() {
-        // FIXME: Pass the errors in.
-        return passwordValidatorService.getGoodPasswordDescription(null);
-    }
     
     public String getCustomPasswordResetAlertMessage() {
-        String customPasswordResetAlertMessage = settingsWrapper.getValueForKey(SettingsServiceBean.Key.PVCustomPasswordResetAlertMessage);
+        String customPasswordResetAlertMessage = settingsService.getValueForKey(SettingsServiceBean.Key.PVCustomPasswordResetAlertMessage);
         if(customPasswordResetAlertMessage != null && !customPasswordResetAlertMessage.isEmpty()){
             return customPasswordResetAlertMessage;
         } else {

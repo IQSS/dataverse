@@ -14,8 +14,11 @@ import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.search.SearchIncludeFragment;
+import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchFilterQuery;
+import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -92,6 +95,8 @@ public class DataversePage implements java.io.Serializable {
     DataverseRequestServiceBean dvRequestService;
     @Inject
     SettingsWrapper settingsWrapper;
+    @EJB
+    SettingsServiceBean settingsService;
     @EJB
     DataverseLinkingServiceBean linkingService;
     @Inject
@@ -362,7 +367,7 @@ public class DataversePage implements java.io.Serializable {
             if (editMode != null && editMode.equals(EditMode.FEATURED)) {
                 message = BundleUtil.getStringFromBundle("dataverse.feature.update");
             } else {
-                message = (create) ? BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), systemConfig.getGuidesVersion())) : BundleUtil.getStringFromBundle("dataverse.update.success");
+                message = (create) ? BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList(settingsService.getGuidesBaseUrl(), systemConfig.getGuidesVersion())) : BundleUtil.getStringFromBundle("dataverse.update.success");
             }
             JsfHelper.addFlashSuccessMessage(message);
 

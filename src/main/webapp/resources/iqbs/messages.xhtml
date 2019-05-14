@@ -25,7 +25,9 @@
                     <h:outputText value="#{flash['errorMsg']} " escape="false"/>
                     <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
                         <o:param>
-                            <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                            <p:commandLink value="#{settingsServiceBean.supportTeamName}"
+                                           oncomplete="PF('contactForm').show()" update=":contactDialog"
+                                           actionListener="#{sendFeedbackDialog.initUserInput}">
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
@@ -61,7 +63,8 @@
                 </ui:fragment>
                 <span class="glyphicon glyphicon-#{bsIcon}-sign"></span>&#160;<strong>#{msg.summary}</strong> – <h:outputText escape="false" value="#{msg.detail}" rendered="#{!empty msg.detail and (msg.detail != msg.summary)}"/>
                 <ui:fragment rendered="#{level eq 'FATAL'}">
-                    Please contact <a href="#" onclick="event.preventDefault();PF('contactForm').show();" title="Contact #{settingsWrapper.supportTeamName}">#{settingsWrapper.supportTeamName}</a> for assistance.
+                    Please contact <a href="#" onclick="event.preventDefault();PF('contactForm').show();"
+                                      title="Contact #{settingsServiceBean.supportTeamName}">#{settingsServiceBean.supportTeamName}</a> for assistance.
                     <strong>Date/Time: </strong>
                     <h:outputText value="#{now}">
                         <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" type="date" />

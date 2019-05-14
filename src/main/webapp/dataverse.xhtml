@@ -536,10 +536,10 @@
                                 <div id="metrics-label" class="col-xs-4 small text-center">
                                     <h:outputLink value="#{systemConfig.metricsUrl}" target="_blank"
                                                   title="#{bundle['metrics.title.tip']}"
-                                                  rendered="#{systemConfig.metricsUrl != null}">
+                                                  rendered="#{!empty systemConfig.metricsUrl}">
                                         <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
                                     </h:outputLink>
-                                    <ui:fragment rendered="#{systemConfig.metricsUrl == null}">
+                                    <ui:fragment rendered="#{systemConfig.metricsUrl.equals('')}">
                                         <p:commandLink action="#{DatasetPage.redirectToMetrics}">
                                         <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
                                         </p:commandLink>

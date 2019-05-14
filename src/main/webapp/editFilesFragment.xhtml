@@ -13,9 +13,9 @@
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
     <script type="text/javascript" language="javascript" src="#{resource['js/fileupload.js']}"></script>
-    
+
     <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.RestrictType" var="restrictTypeEnum"/>
-    
+
     <!-- Static Tab Layout -->
     <div data-widget="content" class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container ui-tabs-top" id="datasetForm:tabView">
         <ul role="tablist" class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
@@ -52,7 +52,9 @@
                                     <span class="glyphicon glyphicon-warning-sign text-warning"></span>
                                     <h:outputFormat class="text-warning" value=" #{bundle['file.rsyncUpload.httpUploadDisabledDueToRsyncFileExisting']}" escape="false">
                                         <o:param>
-                                            <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                            <p:commandLink value="#{settingsServiceBean.supportTeamName}"
+                                                           oncomplete="PF('contactForm').show()" update=":contactDialog"
+                                                           actionListener="#{sendFeedbackDialog.initUserInput}">
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
@@ -210,7 +212,10 @@
                                             <span class="glyphicon glyphicon-warning-sign text-warning"></span>
                                             <h:outputFormat class="text-warning" value=" #{bundle['file.rsyncUpload.filesExist']}" escape="false">
                                                 <o:param>
-                                                    <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                                    <p:commandLink value="#{settingsServiceBean.supportTeamName}"
+                                                                   oncomplete="PF('contactForm').show()"
+                                                                   update=":contactDialog"
+                                                                   actionListener="#{sendFeedbackDialog.initUserInput}">
                                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
@@ -244,7 +249,10 @@
                                             <span class="glyphicon glyphicon-exclamation-sign text-danger"></span>
                                             <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.noScriptBroken']}" escape="false">
                                                 <o:param>
-                                                    <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                                    <p:commandLink value="#{settingsServiceBean.supportTeamName}"
+                                                                   oncomplete="PF('contactForm').show()"
+                                                                   update=":contactDialog"
+                                                                   actionListener="#{sendFeedbackDialog.initUserInput}">
                                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
@@ -261,7 +269,10 @@
                                             <span class="glyphicon glyphicon-warning-sign text-warning"></span>
                                             <h:outputFormat class="text-warning" value=" #{bundle['file.rsyncUpload.noScriptBusy']}" escape="false">
                                                 <o:param>
-                                                    <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                                    <p:commandLink value="#{settingsServiceBean.supportTeamName}"
+                                                                   oncomplete="PF('contactForm').show()"
+                                                                   update=":contactDialog"
+                                                                   actionListener="#{sendFeedbackDialog.initUserInput}">
                                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
@@ -385,14 +396,14 @@
                         </div>
                         <div jsf:rendered="#{datasetPage}">
                             <ui:fragment id="fileTermsOfUse">
-                                
+
                                 <p:outputLabel styleClass="control-label" for="fileLicense" value="#{bundle['file.editTermsOfUseDialog.license']}" />
                                 <p class="help-block">#{bundle['file.editTermsOfUseDialog.license.tip']}</p>
                                 <p:selectOneMenu id="fileLicense" value="#{fileMetadata.termsOfUseForm.typeWithLicenseId}" autoWidth="false">
                                     <f:selectItems value="#{EditDatafilesPage.termsOfUseSelectItems}" />
                                     <p:ajax listener="#{EditDatafilesPage.handleTermsOfUseChange}" update="filesTable" />
                                 </p:selectOneMenu>
-                                
+
                                 <div jsf:rendered="#{fileMetadata.termsOfUseForm.typeWithLicenseId eq 'RESTRICTED'}">
                                 <p:outputLabel styleClass="control-label" for="fileRestrictType" value="#{bundle['file.editTermsOfUseDialog.accessConditions']}" />
                                 <p class="help-block">#{bundle['file.editTermsOfUseDialog.accessConditions.tip']}</p>
@@ -404,7 +415,7 @@
                                     <p:ajax listener="#{EditDatafilesPage.handleTermsOfUseChange}" update="filesTable" />
                                 </p:selectOneMenu>
                                 </div>
-                                
+
                                 <div jsf:rendered="#{fileMetadata.termsOfUseForm.typeWithLicenseId eq 'RESTRICTED' and fileMetadata.termsOfUseForm.restrictType eq 'CUSTOM'}">
                                 <p:outputLabel styleClass="control-label" for="fileCustomRestrictText" value="#{bundle['file.editTermsOfUseDialog.accessConditions.custom']}" />
                                 <p class="help-block">#{bundle['file.editTermsOfUseDialog.accessConditions.custom.tip']}</p>
@@ -413,7 +424,7 @@
                                     <p:ajax listener="#{EditDatafilesPage.handleTermsOfUseChange}" />
                                 <p:message for="fileCustomRestrictText" display="text"/>
                                 </div>
-                                
+
                             </ui:fragment>
                         </div>
                         <div class="file-tags-block margin-top-half">
@@ -442,8 +453,8 @@
                                         </p:commandLink>
                                     </li>
                                     <li jsf:rendered="#{datasetPage}">
-                                        <p:commandLink  onclick="checkFilesForLicenseEdit();" > 
-                                            <h:outputText value="#{bundle['file.license']}"/> 
+                                        <p:commandLink  onclick="checkFilesForLicenseEdit();" >
+                                            <h:outputText value="#{bundle['file.license']}"/>
                                         </p:commandLink>
                                     </li>
                                     <li>
@@ -571,7 +582,7 @@
             <p:commandButton value="#{bundle.close}" onclick="PF('selectFilesForDeleteFragment').hide();"/>
         </div>
     </p:dialog>
-    
+
     <p:dialog id="selectFilesForLicenseEdit" styleClass="smallPopUp"
               header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForLicenseEdit" modal ="true">
         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/>Brak zanaczonych plików</p>
@@ -579,7 +590,7 @@
             <p:commandButton value="#{bundle.close}" onclick="PF('selectFilesForLicenseEdit').hide();"/>
         </div>
     </p:dialog>
-    
+
     <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
         <ui:fragment rendered="#{EditDatafilesPage.dataset.released}">
@@ -591,7 +602,7 @@
             <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()" type="button" />
         </div>
     </p:dialog>
-    
+
     <dv:termsOfUseDialog id="editSelectedFilesLicense" widgetVar="editSelectedFilesLicense"
         action="#{EditDatafilesPage.updateTermsOfUseForSelectedFiles(editTermsOfUseDialog.termsOfUseForm)}"
         update=":datasetForm" />

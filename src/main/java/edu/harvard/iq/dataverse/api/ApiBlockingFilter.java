@@ -3,13 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import java.io.IOException;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import javax.ejb.EJB;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -18,6 +12,13 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A web filter to block API administration calls.
@@ -129,7 +130,7 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
 
     private void updateBlockedPoints() {
         blockedApiEndpoints.clear();
-        String endpointList = settingsSvc.getValueForKey(SettingsServiceBean.Key.BlockedApiEndpoints, "");
+        String endpointList = settingsSvc.getValueForKey(SettingsServiceBean.Key.BlockedApiEndpoints);
         for ( String endpoint : endpointList.split(",") ) {
             String endpointPrefix = canonize(endpoint);
             if ( ! endpointPrefix.isEmpty() ) {
@@ -143,8 +144,8 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
 
     @Override
     public void doFilter(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
-        
-        String endpointList = settingsSvc.getValueForKey(SettingsServiceBean.Key.BlockedApiEndpoints, "");
+
+        String endpointList = settingsSvc.getValueForKey(SettingsServiceBean.Key.BlockedApiEndpoints);
         if ( ! endpointList.equals(lastEndpointList) ) {
             updateBlockedPoints();
         }
@@ -173,7 +174,7 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
     public void destroy() {}
     
     private BlockPolicy getBlockPolicy() {
-        String blockPolicyName = settingsSvc.getValueForKey(SettingsServiceBean.Key.BlockedApiPolicy, "");
+        String blockPolicyName = settingsSvc.getValueForKey(SettingsServiceBean.Key.BlockedApiPolicy);
         BlockPolicy p = policies.get(blockPolicyName.trim());
         if ( p != null ) {
             return p;

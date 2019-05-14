@@ -8,21 +8,13 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.api.imports.ImportGenericServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractCreateDatasetCommand;
-import edu.harvard.iq.dataverse.api.imports.ImportGenericServiceBean;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
 import org.apache.abdera.parser.ParseException;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.CollectionDepositManager;
@@ -34,6 +26,15 @@ import org.swordapp.server.SwordEntry;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 import org.swordapp.server.UriRegistry;
+
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class CollectionDepositManagerImpl implements CollectionDepositManager {
 
@@ -95,9 +96,8 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
 
                     Dataset dataset = new Dataset();
                     dataset.setOwner(dvThatWillOwnDataset);
-                    String nonNullDefaultIfKeyNotFound = "";
-                    String protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-                    String authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+                    String protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol);
+                    String authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority);
 
                     dataset.setProtocol(protocol);
                     dataset.setAuthority(authority);

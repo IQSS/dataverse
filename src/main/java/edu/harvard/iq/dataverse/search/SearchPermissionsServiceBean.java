@@ -16,15 +16,16 @@ import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
 
 /**
  * Determine whether items should be searchable.
@@ -232,9 +233,7 @@ public class SearchPermissionsServiceBean {
 
     @Deprecated
     private boolean respectPermissionRoot() {
-        boolean safeDefaultIfKeyNotFound = true;
-        // see javadoc of the key
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.SearchRespectPermissionRoot, safeDefaultIfKeyNotFound);
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.SearchRespectPermissionRoot);
     }
 
     /**

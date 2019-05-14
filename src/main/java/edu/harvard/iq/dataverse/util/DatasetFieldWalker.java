@@ -83,7 +83,7 @@ public class DatasetFieldWalker {
             
         } else if ( datasetFieldType.isPrimitive() ) {
             for ( DatasetFieldValue pv : sort(fld.getDatasetFieldValues(), DatasetFieldValue.DisplayOrder) ) {
-                if (settingsService != null && settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false) && FieldType.EMAIL.equals(pv.getDatasetField().getDatasetFieldType().getFieldType())) {
+                if (settingsService != null && settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport) && FieldType.EMAIL.equals(pv.getDatasetField().getDatasetFieldType().getFieldType())) {
                     continue;
                 }
                 l.primitiveValue(pv);

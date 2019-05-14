@@ -1,13 +1,16 @@
 package edu.harvard.iq.dataverse;
 
-import static edu.harvard.iq.dataverse.GlobalIdServiceBean.logger;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.GlobalIdServiceBean.logger;
 
 public interface GlobalIdServiceBean {
 
@@ -61,7 +64,7 @@ public interface GlobalIdServiceBean {
     }
 
     static GlobalIdServiceBean getBean(CommandContext ctxt) {
-        return getBean(ctxt.settings().getValueForKey(Key.Protocol, ""), ctxt);
+        return getBean(ctxt.settings().getValueForKey(Key.Protocol), ctxt);
     }
     
 }
@@ -76,7 +79,7 @@ class BeanDispatcher {
     static {
         DISPATCHER.put("hdl", ctxt->ctxt.handleNet() );
         DISPATCHER.put("doi", ctxt->{
-            String doiProvider = ctxt.settings().getValueForKey(Key.DoiProvider, "");
+            String doiProvider = ctxt.settings().getValueForKey(Key.DoiProvider);
             switch ( doiProvider ) {
                 case "EZID": return ctxt.doiEZId();
                 case "DataCite": return ctxt.doiDataCite();
