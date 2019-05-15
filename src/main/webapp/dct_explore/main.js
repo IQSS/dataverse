@@ -676,13 +676,15 @@ var InterfaceComponent = /** @class */ (function () {
         // add groups
         for (var _i = 0, _a = this._variable_groups; _i < _a.length; _i++) {
             var group = _a[_i];
-            doc.startElement('varGrp');
-            doc.writeAttribute('ID', group.varGrp['@ID']);
-            doc.writeAttribute('var', group.varGrp['@var']);
-            doc.startElement('labl');
-            doc.text(group.varGrp.labl);
-            doc.endElement();
-            doc.endElement();
+            if (group.varGrp.labl !== null && group.varGrp.labl.trim() !== '') {
+                doc.startElement('varGrp');
+                doc.writeAttribute('ID', group.varGrp['@ID']);
+                doc.writeAttribute('var', group.varGrp['@var']);
+                doc.startElement('labl');
+                doc.text(group.varGrp.labl);
+                doc.endElement();
+                doc.endElement();
+            }
         }
         // add variables
         for (var i = 0; i < this._variables.length; i++) {
@@ -1245,13 +1247,14 @@ var VarGroupComponent = /** @class */ (function () {
         }
         var var_group = {};
         var_group.varGrp = {
-            labl: 'New Group ' + _id,
+            labl: '',
             '@var': '',
             '@ID': _id
         };
         var_group.varGrp['@var'] = '';
         this._variable_groups.push(var_group);
         var obj = this;
+        obj._variable_groups[obj._variable_groups.length - 1].editable = true;
         setTimeout(function () {
             console.log('set time out');
             obj.parentScrollNav.emit();
@@ -1274,12 +1277,16 @@ var VarGroupComponent = /** @class */ (function () {
     };
     VarGroupComponent.prototype.renameGroupComplete = function (_obj, _val) {
         console.log('renameGroupComplete');
-        _obj.varGrp.labl = _val;
-        _obj.editable = false;
+        if (_val !== null && _val.trim() !== '') {
+            _obj.varGrp.labl = _val.trim();
+            _obj.editable = false;
+        }
     };
     VarGroupComponent.prototype.renameGroupCancel = function (_obj) {
         console.log('renameGroupCancel');
-        _obj.editable = false;
+        if (_obj.varGrp.labl !== null && _obj.varGrp.labl.trim() !== '') {
+            _obj.editable = false;
+        }
     };
     VarGroupComponent.prototype.groupDelete = function (_obj) {
         console.log('delete group');
