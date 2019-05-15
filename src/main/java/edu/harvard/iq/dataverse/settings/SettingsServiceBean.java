@@ -15,6 +15,9 @@ import javax.inject.Named;
 import javax.mail.internet.InternetAddress;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -472,7 +475,7 @@ public class SettingsServiceBean {
         
         String val = this.getValueForKey(key);
 
-        if (val == null){
+        if (StringUtils.isEmpty(val)){
             return null;
         }
 

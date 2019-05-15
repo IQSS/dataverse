@@ -61,8 +61,8 @@ public class TermsOfUseSelectItemsFactory implements Serializable {
     // -------------------- PRIVATE --------------------
     
     private Optional<SelectItemGroup> buildOtherTermsOfUseItemGroup() {
-        boolean allRightsReservedEnabled = Boolean.valueOf(settingsWrapper.getValueForKey(Key.AllRightsReservedTermsOfUseActive));
-        boolean restrictedAccessEnabled = Boolean.valueOf(settingsWrapper.getValueForKey(Key.RestrictedAccessTermsOfUseActive));
+        boolean allRightsReservedEnabled = Boolean.valueOf(settingsWrapper.getSettingValue(Key.AllRightsReservedTermsOfUseActive.toString()));
+        boolean restrictedAccessEnabled = Boolean.valueOf(settingsWrapper.getSettingValue(Key.RestrictedAccessTermsOfUseActive.toString()));
         
         if (!allRightsReservedEnabled && !restrictedAccessEnabled) {
             return Optional.empty();

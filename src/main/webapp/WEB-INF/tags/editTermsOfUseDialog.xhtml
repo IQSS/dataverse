@@ -1,0 +1,56 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:o="http://omnifaces.org/ui"
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+<p:dialog id="#{id}" styleClass="smallPopUp" header="#{bundle['file.editTermsOfUseDialog.header']}" widgetVar="#{widgetVar}" modal="true">
+<p:outputPanel id="#{id}Content">
+
+    <div class="form-horizontal">
+        <div class="form-group text-left">
+            <p:outputLabel styleClass="col-sm-4 control-label" for="#{id}License" value="#{bundle['file.editTermsOfUseDialog.license']}" />
+            <div class="col-sm-8">
+                <p class="help-block">#{bundle['file.editTermsOfUseDialog.license.tip']}</p>
+                <p:selectOneMenu id="#{id}License" value="#{editTermsOfUseDialog.termsOfUseForm.typeWithLicenseId}" autoWidth="false">
+                    <f:selectItems value="#{editTermsOfUseDialog.termsOfUseSelectItems}" />
+                    <p:ajax event="change" update="#{id}Content" />
+                </p:selectOneMenu>
+            </div>
+        </div>
+        <div class="form-group text-left" jsf:rendered="#{editTermsOfUseDialog.termsOfUseForm.typeWithLicenseId eq 'RESTRICTED'}">
+            <p:outputLabel styleClass="col-sm-4 control-label" for="#{id}RestrictType" value="#{bundle['file.editTermsOfUseDialog.accessConditions']}" />
+            <div class="col-sm-8">
+                <p class="help-block">#{bundle['file.editTermsOfUseDialog.accessConditions.tip']}</p>
+                <p:selectOneMenu id="#{id}RestrictType" value="#{editTermsOfUseDialog.termsOfUseForm.restrictType}" autoWidth="false">
+                    <f:selectItem itemLabel="#{bundle['file.termsOfAccess.restricted.ACADEMIC_PURPOSE']}" itemValue="ACADEMIC_PURPOSE" />
+                    <f:selectItem itemLabel="#{bundle['file.termsOfAccess.restricted.NOT_FOR_REDISTRIBUTION']}" itemValue="NOT_FOR_REDISTRIBUTION" />
+                    <f:selectItem itemLabel="#{bundle['file.termsOfAccess.restricted.ACADEMIC_PURPOSE_AND_NOT_FOR_REDISTRIBUTION']}" itemValue="ACADEMIC_PURPOSE_AND_NOT_FOR_REDISTRIBUTION" />
+                    <f:selectItem itemLabel="#{bundle['file.termsOfAccess.restricted.CUSTOM']}" itemValue="CUSTOM" />
+                    <p:ajax event="change" update="#{id}Content" />
+                </p:selectOneMenu>
+            </div>
+        </div>
+        <div class="form-group text-left" jsf:rendered="#{editTermsOfUseDialog.termsOfUseForm.typeWithLicenseId eq 'RESTRICTED' and editTermsOfUseDialog.termsOfUseForm.restrictType eq 'CUSTOM'}">
+            <p:outputLabel styleClass="col-sm-4 control-label" for="#{id}CustomRestrictText" value="#{bundle['file.editTermsOfUseDialog.accessConditions.custom']}" />
+            <div class="col-sm-8">
+                <p class="help-block">#{bundle['file.editTermsOfUseDialog.accessConditions.custom.tip']}</p>
+                <p:inputTextarea id="#{id}CustomRestrictText" value="#{editTermsOfUseDialog.termsOfUseForm.customRestrictText}"
+                    required="true" requiredMessage="#{bundle['file.editTermsOfUseDialog.accessConditions.custom.required']}" style="width: 100%;" />
+                <p:message for="#{id}CustomRestrictText" display="text"/>
+            </div>
+        </div>
+    </div>
+    <div class="button-block">
+        <o:methodParam name="method" value="#{action}" />
+        <p:commandButton styleClass="btn btn-default" value="#{bundle.ok}" action="#{method}" update="#{id}Content #{update}"
+            oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('#{widgetVar}').hide(); }" />
+        <p:commandButton styleClass="btn btn-default" value="#{bundle.cancel}" onclick="PF('#{widgetVar}').hide();" />
+    </div>
+    
+</p:outputPanel>
+</p:dialog>
+
+</ui:composition>
