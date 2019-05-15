@@ -540,6 +540,81 @@ Once you have the location of your custom CSS file, run this curl command to add
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-stylesheet.css' http://localhost:8080/api/admin/settings/:StyleCustomizationFile``
 
+.. _i18n:
+
+Internationalization
+--------------------
+
+Dataverse is being translated into multiple languages by the Dataverse community! Please see below for how to help with this effort!
+
+Adding Multiple Languages to the Dropdown in the Header
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+The presence of the :ref:`:Languages` database setting adds a dropdown in the header for multiple languages. For example to add English and French to the dropdown:
+
+``curl http://localhost:8080/api/admin/settings/:Languages -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'``
+
+Configuring the "lang" Directory
+++++++++++++++++++++++++++++++++
+
+Translations for Dataverse are stored in "properties" files in a directory on disk (e.g. ``/home/glassfish/langBundles``) that you specify with the :ref:`dataverse.lang.directory` ``dataverse.lang.directory`` JVM option, like this:
+
+``./asadmin create-jvm-options '-Ddataverse.lang.directory=/home/glassfish/langBundles'``
+
+Go ahead and create the directory you specified.
+
+``mkdir /home/glassfish/langBundles``
+
+Creating a languages.zip File
++++++++++++++++++++++++++++++
+
+Dataverse provides and API endpoint for adding languages using a zip file.
+
+First, clone the "dataverse-language-packs" git repo.
+
+``git clone https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs.git``
+
+Take a look at https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs/branches to see if the version of Dataverse you're running has translations.
+
+Change to the directory for the git repo you just cloned.
+
+``cd dataverse-language-packs``
+
+Switch (``git checkout``) to the branch based on Dataverse version you are running. The branch "dataverse-v4.13" is used in the example below.
+
+``export BRANCH_NAME=dataverse-v4.13``
+
+``git checkout $BRANCH_NAME``
+
+Create a "languages" directory in "/tmp".
+
+``mkdir /tmp/languages``
+
+Copy the properties files into the "languages" directory
+
+``cp -R en_US/*.properties /tmp/languages``
+
+``cp -R fr_CA/*.properties /tmp/languages``
+
+Create the zip file
+
+``cd /tmp/languages``
+
+``zip languages.zip *.properties``
+
+Load the languages.zip file into Dataverse.
+
+``curl http://localhost:8080/api/admin/datasetfield/loadpropertyfiles -X POST --upload-file /tmp/languages/languages.zip -H "Content-Type: application/zip"``
+
+Click on the languages using the drop down in the header to try them out.
+
+How to Help Translate Dataverse Into Your Language
+++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Please join the `dataverse-internationalization-wg`_ mailing list and contribute to https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs to help translate Dataverse into various languages!
+
+.. _dataverse-internationalization-wg: https://groups.google.com/forum/#!forum/dataverse-internationalization-wg
+
 .. _Web-Analytics-Code:
 
 Web Analytics Code
@@ -897,13 +972,13 @@ This JVM option is only relevant if you plan to run multiple Glassfish servers f
 dataverse.lang.directory
 ++++++++++++++++++++++++
 
-This JVM option is used to configure the path where all the language specific property files are to be stored.  If this option is set then the english property file must be present in the path along with any other language property file. You can download language property files from https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs
+This JVM option is used to configure the path where all the language specific property files are to be stored.  If this option is set then the English property file must be present in the path along with any other language property file. You can download language property files from https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs
 
 ``./asadmin create-jvm-options '-Ddataverse.lang.directory=PATH_LOCATION_HERE'``
 
 If this value is not set, by default, a Dataverse installation will read the English language property files from the Java Application.
 
-See also the ``:Languages`` setting below.
+See also :ref:`i18n`.
 
 dataverse.files.hide-schema-dot-org-download-urls
 +++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1633,15 +1708,15 @@ Sets the path where the raw Make Data Count logs are stored before being process
 
 ``curl -X PUT -d '/usr/local/glassfish4/glassfish/domains/domain1/logs' http://localhost:8080/api/admin/settings/:MDCLogPath``
 
+.. _:Languages:
+
 :Languages
 ++++++++++
 
 Sets which languages should be available. If there is more than one, a dropdown is displayed
-in the header. This should be formated as a JSON array as shown below.
+in the header.
 
-``curl http://localhost:8080/api/admin/settings/:Languages -X PUT -d '[{  "locale":"en", "title":"English"},  {  "locale":"fr", "title":"Français"}]'``
-
-See also the ``dataverse.lang.directory`` JVM option above.
+See :ref:`i18n` for a curl example and related settings.
 
 :InheritParentRoleAssignments
 +++++++++++++++++++++++++++++
