@@ -1231,35 +1231,41 @@ var VarGroupComponent = /** @class */ (function () {
     VarGroupComponent.prototype.ngOnInit = function () { };
     // Add a new group to the list and scroll to show it!
     VarGroupComponent.prototype.addTab = function () {
-        // get the next id
-        var ids = [];
-        for (var _i = 0, _a = this._variable_groups; _i < _a.length; _i++) {
-            var i = _a[_i];
-            ids.push(Number(i.varGrp['@ID'].substring(2)));
+        var numberOfGroups = this._variable_groups.length;
+        if (numberOfGroups === 0 ||
+            (this._variable_groups[numberOfGroups - 1].varGrp.labl !== 'undefined' &&
+                this._variable_groups[numberOfGroups - 1].varGrp.labl.trim() !== '')) {
+            // get the next id
+            var ids = [];
+            for (var _i = 0, _a = this._variable_groups; _i < _a.length; _i++) {
+                var i = _a[_i];
+                ids.push(Number(i.varGrp['@ID'].substring(2)));
+            }
+            ids.sort();
+            var _id = 'VG';
+            if (ids.length > 0) {
+                _id += String(ids[ids.length - 1] + 1);
+            }
+            else {
+                _id += '1';
+            }
+            var var_group_1 = {};
+            var_group_1.varGrp = {
+                labl: '',
+                '@var': '',
+                '@ID': _id
+            };
+            var_group_1.varGrp['@var'] = '';
+            this._variable_groups.push(var_group_1);
+            var obj_1 = this;
+            obj_1._variable_groups[numberOfGroups].editable = true;
+            setTimeout(function () {
+                obj_1.titleInput.nativeElement.focus();
+                console.log('set time out');
+                obj_1.parentScrollNav.emit();
+                obj_1.onGroupClick(var_group_1);
+            }, 100);
         }
-        ids.sort();
-        var _id = 'VG';
-        if (ids.length > 0) {
-            _id += String(ids[ids.length - 1] + 1);
-        }
-        else {
-            _id += '1';
-        }
-        var var_group = {};
-        var_group.varGrp = {
-            labl: '',
-            '@var': '',
-            '@ID': _id
-        };
-        var_group.varGrp['@var'] = '';
-        this._variable_groups.push(var_group);
-        var obj = this;
-        obj._variable_groups[obj._variable_groups.length - 1].editable = true;
-        setTimeout(function () {
-            console.log('set time out');
-            obj.parentScrollNav.emit();
-            obj.onGroupClick(var_group);
-        }, 100);
     };
     VarGroupComponent.prototype.onGroupClick = function (_obj) {
         var obj = _obj;
@@ -1402,6 +1408,10 @@ var VarGroupComponent = /** @class */ (function () {
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Output"])(),
         tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", _angular_core__WEBPACK_IMPORTED_MODULE_1__["EventEmitter"])
     ], VarGroupComponent.prototype, "disableSelectGroup", void 0);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ViewChild"])('titleInput'),
+        tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", _angular_core__WEBPACK_IMPORTED_MODULE_1__["ElementRef"])
+    ], VarGroupComponent.prototype, "titleInput", void 0);
     VarGroupComponent = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Component"])({
             selector: 'app-var-group',
