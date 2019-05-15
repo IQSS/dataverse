@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
@@ -104,6 +105,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    DataverseServiceBean dataverseService;
     @EJB
     DatasetVersionServiceBean datasetVersionService;
     @EJB
@@ -1062,6 +1065,19 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (!saveEnabled) {
             return "";
         }
+        //Mirroring the checks for DcmUpload, make sure that the db version of the dataset is not locked. 
+        //Also checking local version to save time - if data.isLocked() is true, the UpdateDatasetVersionCommand below would fail
+        if (dataset.getId() != null) {
+            Dataset lockTest = datasetService.find(dataset.getId());
+            if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress) || lockTest.isLockedFor(DatasetLock.Reason.EditInProgress)) {
+                logger.log(Level.INFO, "Couldn''t save dataset: {0}", "It is locked."
+                        + "");
+                String rootDataverseName = dataverseService.findRootDataverse().getName();
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, getBundleString("dataset.locked.editInProgress.message"),BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null, rootDataverseName))));
+                return null;
+            }
+        }
+
         if (isFileReplaceOperation()){
             try {
                 return saveReplacementFile();
@@ -1243,113 +1259,126 @@ public class EditDatafilesPage implements java.io.Serializable {
             datasetUpdateRequired = false;
             saveEnabled = false; 
         } else {
-            // This is an existing Draft version (and nobody has explicitly 
-            // requested that the entire dataset is updated). So we'll try to update 
-            // only the filemetadatas and/or files affected, and not the 
-            // entire version. 
-            Timestamp updateTime = new Timestamp(new Date().getTime());
-        
-            workingVersion.setLastUpdateTime(updateTime);
-            dataset.setModificationTime(updateTime);
-        
-            StringBuilder saveError = new StringBuilder();
-        
-            for (FileMetadata fileMetadata : fileMetadatas) {
+            String lockInfoMessage = "saving current edits";
+            DatasetLock lock = datasetService.addDatasetLock(getDataset().getId(), DatasetLock.Reason.EditInProgress, session.getUser() != null ? ((AuthenticatedUser)session.getUser()).getId() : null, lockInfoMessage);
+            if (lock != null) {
+                getDataset().addLock(lock);
+            } else {
+                logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", getDataset().getId());
+            }
+            try {
+                // This is an existing Draft version (and nobody has explicitly
+                // requested that the entire dataset is updated). So we'll try to update
+                // only the filemetadatas and/or files affected, and not the
+                // entire version.
+                Timestamp updateTime = new Timestamp(new Date().getTime());
 
-                if (fileMetadata.getDataFile().getCreateDate() == null) {
-                    fileMetadata.getDataFile().setCreateDate(updateTime);
-                    fileMetadata.getDataFile().setCreator((AuthenticatedUser) session.getUser());
-                }
-                fileMetadata.getDataFile().setModificationTime(updateTime);
-                try {
-                    //DataFile savedDatafile = datafileService.save(fileMetadata.getDataFile());
-                    fileMetadata = datafileService.mergeFileMetadata(fileMetadata);
-                    logger.fine("Successfully saved DataFile "+fileMetadata.getLabel()+" in the database.");
-                } catch (EJBException ex) {
-                    saveError.append(ex).append(" ");
-                    saveError.append(ex.getMessage()).append(" ");
-                    Throwable cause = ex;
-                    while (cause.getCause() != null) {
-                        cause = cause.getCause();
-                        saveError.append(cause).append(" ");
-                        saveError.append(cause.getMessage()).append(" ");
+                workingVersion.setLastUpdateTime(updateTime);
+                dataset.setModificationTime(updateTime);
+
+                StringBuilder saveError = new StringBuilder();
+
+                for (FileMetadata fileMetadata : fileMetadatas) {
+
+                    if (fileMetadata.getDataFile().getCreateDate() == null) {
+                        fileMetadata.getDataFile().setCreateDate(updateTime);
+                        fileMetadata.getDataFile().setCreator((AuthenticatedUser) session.getUser());
+                    }
+                    fileMetadata.getDataFile().setModificationTime(updateTime);
+                    try {
+                        // DataFile savedDatafile = datafileService.save(fileMetadata.getDataFile());
+                        fileMetadata = datafileService.mergeFileMetadata(fileMetadata);
+                        logger.fine("Successfully saved DataFile " + fileMetadata.getLabel() + " in the database.");
+                    } catch (EJBException ex) {
+                        saveError.append(ex).append(" ");
+                        saveError.append(ex.getMessage()).append(" ");
+                        Throwable cause = ex;
+                        while (cause.getCause() != null) {
+                            cause = cause.getCause();
+                            saveError.append(cause).append(" ");
+                            saveError.append(cause.getMessage()).append(" ");
+                        }
                     }
                 }
-            }
 
-            // Remove / delete any files that were removed
-            for (FileMetadata fmd : filesToBeDeleted) {
-                //  check if this file is being used as the default thumbnail
-                if (fmd.getDataFile().equals(dataset.getThumbnailFile())) {
-                    logger.fine("deleting the dataset thumbnail designation");
-                    dataset.setThumbnailFile(null);
-                }
+                // Remove / delete any files that were removed
+                for (FileMetadata fmd : filesToBeDeleted) {
+                    // check if this file is being used as the default thumbnail
+                    if (fmd.getDataFile().equals(dataset.getThumbnailFile())) {
+                        logger.fine("deleting the dataset thumbnail designation");
+                        dataset.setThumbnailFile(null);
+                    }
 
-                if (!fmd.getDataFile().isReleased()) {
-                    // if file is draft (ie. new to this version, delete; otherwise just remove filemetadata object)
-                    boolean deleteCommandSuccess = false;
-                    Long dataFileId = fmd.getDataFile().getId();
-                    String deleteStorageLocation = null;
+                    if (!fmd.getDataFile().isReleased()) {
+                        // if file is draft (ie. new to this version, delete; otherwise just remove
+                        // filemetadata object)
+                        boolean deleteCommandSuccess = false;
+                        Long dataFileId = fmd.getDataFile().getId();
+                        String deleteStorageLocation = null;
 
-                    if (dataFileId != null) { // is this check necessary?
-                        
-                        deleteStorageLocation = datafileService.getPhysicalFileToDelete(fmd.getDataFile());
-                        
-                        try {
-                            commandEngine.submit(new DeleteDataFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest()));
-                            dataset.getFiles().remove(fmd.getDataFile());
-                            workingVersion.getFileMetadatas().remove(fmd);
-                            // added this check to handle an issue where you could not delete a file that shared a category with a new file
-                            // the relationship does not seem to cascade, yet somehow it was trying to merge the filemetadata
-                            // todo: clean this up some when we clean the create / update dataset methods
-                            for (DataFileCategory cat : dataset.getCategories()) {
-                                cat.getFileMetadatas().remove(fmd);
+                        if (dataFileId != null) { // is this check necessary?
+
+                            deleteStorageLocation = datafileService.getPhysicalFileToDelete(fmd.getDataFile());
+
+                            try {
+                                commandEngine.submit(new DeleteDataFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest()));
+                                dataset.getFiles().remove(fmd.getDataFile());
+                                workingVersion.getFileMetadatas().remove(fmd);
+                                // added this check to handle an issue where you could not delete a file that
+                                // shared a category with a new file
+                                // the relationship does not seem to cascade, yet somehow it was trying to merge
+                                // the filemetadata
+                                // todo: clean this up some when we clean the create / update dataset methods
+                                for (DataFileCategory cat : dataset.getCategories()) {
+                                    cat.getFileMetadatas().remove(fmd);
+                                }
+                                deleteCommandSuccess = true;
+                            } catch (CommandException cmde) {
+                                // TODO:
+                                // add diagnostics reporting for individual data files that
+                                // we failed to delete.
+                                logger.warning("Failed to delete DataFile id=" + dataFileId + " from the database; " + cmde.getMessage());
                             }
-                            deleteCommandSuccess = true;
-                        } catch (CommandException cmde) {
-                            // TODO: 
-                            // add diagnostics reporting for individual data files that 
-                            // we failed to delete.
-                            logger.warning("Failed to delete DataFile id=" + dataFileId + " from the database; " + cmde.getMessage());
-                        }
-                        if (deleteCommandSuccess) {
-                            if (deleteStorageLocation != null) {
-                                // Finalize the delete of the physical file 
-                                // (File service will double-check that the datafile no 
-                                // longer exists in the database, before proceeding to 
-                                // delete the physical file)
-                                try {
-                                    datafileService.finalizeFileDelete(dataFileId, deleteStorageLocation);
-                                } catch (IOException ioex) {
-                                    logger.warning("Failed to delete the physical file associated with the deleted datafile id="
-                                            + dataFileId + ", storage location: " + deleteStorageLocation);
+                            if (deleteCommandSuccess) {
+                                if (deleteStorageLocation != null) {
+                                    // Finalize the delete of the physical file
+                                    // (File service will double-check that the datafile no
+                                    // longer exists in the database, before proceeding to
+                                    // delete the physical file)
+                                    try {
+                                        datafileService.finalizeFileDelete(dataFileId, deleteStorageLocation);
+                                    } catch (IOException ioex) {
+                                        logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                                                + dataFileId + ", storage location: " + deleteStorageLocation);
+                                    }
                                 }
                             }
                         }
+                    } else {
+                        datafileService.removeFileMetadata(fmd);
+                        fmd.getDataFile().getFileMetadatas().remove(fmd);
+                        workingVersion.getFileMetadatas().remove(fmd);
                     }
-                } else {
-                    datafileService.removeFileMetadata(fmd);
-                    fmd.getDataFile().getFileMetadatas().remove(fmd);
-                    workingVersion.getFileMetadatas().remove(fmd);
                 }
-            }
-            
-            String saveErrorString = saveError.toString();
-            if (saveErrorString != null && !saveErrorString.isEmpty()) {
-                logger.log(Level.INFO, "Couldn''t save dataset: {0}", saveErrorString);
-                populateDatasetUpdateFailureMessage();
-                return null;
-            }
 
-            
-            // Refresh the instance of the dataset object:
-            // (being in the UPLOAD mode more or less guarantees that the 
-            // dataset object already exists in the database, but we'll check 
-            // the id for null, just in case)
-            if (mode == FileEditMode.UPLOAD) {
-                if (dataset.getId() != null) {
-                    dataset = datasetService.find(dataset.getId());
+                String saveErrorString = saveError.toString();
+                if (saveErrorString != null && !saveErrorString.isEmpty()) {
+                    logger.log(Level.INFO, "Couldn''t save dataset: {0}", saveErrorString);
+                    populateDatasetUpdateFailureMessage();
+                    return null;
                 }
+
+                // Refresh the instance of the dataset object:
+                // (being in the UPLOAD mode more or less guarantees that the
+                // dataset object already exists in the database, but we'll check
+                // the id for null, just in case)
+                if (mode == FileEditMode.UPLOAD) {
+                    if (dataset.getId() != null) {
+                        dataset = datasetService.find(dataset.getId());
+                    }
+                }
+            } finally {
+                datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
             }
         }
         
@@ -1386,7 +1415,6 @@ public class EditDatafilesPage implements java.io.Serializable {
                 JsfHelper.addWarningMessage(warningMessage);
             }
         }
-        
 
         // Call Ingest Service one more time, to 
         // queue the data ingest jobs for asynchronous execution:
