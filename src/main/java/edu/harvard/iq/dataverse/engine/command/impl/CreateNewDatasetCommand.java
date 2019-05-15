@@ -73,13 +73,11 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
             // pre-register a persistent id
             registerExternalIdentifier(theDataset, ctxt);
         }
-        System.out.print("Handle PID END: " + new Timestamp(new Date().getTime()));
     }
     
     @Override
     protected void postPersist( Dataset theDataset, CommandContext ctxt ){
         // set the role to be default contributor role for its dataverse
-         System.out.print("Post persist begin: " + new Timestamp(new Date().getTime()));
         String privateUrlToken = null;
         if (theDataset.getOwner().getDefaultContributorRole() != null) {
             RoleAssignment roleAssignment = new RoleAssignment(theDataset.getOwner().getDefaultContributorRole(),
@@ -102,7 +100,6 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
         if ( template != null ) {
             ctxt.templates().incrementUsageCount(template.getId());
         }
-         System.out.print("Post Persist END: " + new Timestamp(new Date().getTime()));
     }
     
     
