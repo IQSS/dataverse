@@ -19,7 +19,10 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -37,6 +40,7 @@ import java.util.logging.Logger;
 public class MoveDatasetCommand extends AbstractVoidCommand {
 
     private static final Logger logger = Logger.getLogger(MoveDatasetCommand.class.getCanonicalName());
+    // FIXME: "toMove" would be a better name than "moved".
     final Dataset moved;
     final Dataverse destination;
     final Boolean force;
@@ -56,18 +60,23 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
     public void executeImpl(CommandContext ctxt) throws CommandException {
         boolean removeGuestbook = false, removeLinkDs = false;
         if (!(getUser() instanceof AuthenticatedUser)) {
+            /**
+             * This English wasn't moved to the bundle because it is impossible
+             * to exercise it via both API and UI. See also the note in in the
+             * PermissionException catch in AbstractApiBean.
+             */
             throw new PermissionException("Move Dataset can only be called by authenticated users.", this, Collections.singleton(Permission.DeleteDatasetDraft), moved);
         }
 
         // validate the move makes sense
         if (moved.getOwner().equals(destination)) {
-            throw new IllegalCommandException("Dataset already in this Dataverse ", this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.targetDataverseSameAsOriginalDataverse"), this);
         }
         
         // if dataset is published make sure that its target is published
         
         if (moved.isReleased() && !destination.isReleased()){
-            throw new IllegalCommandException("Published Dataset may not be moved to unpublished Dataverse. You may publish " + destination.getDisplayName() + " and re-try the move.", this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.targetDataverseUnpublishedDatasetPublished", Arrays.asList(destination.getDisplayName())), this);
         }
                 
         //if the datasets guestbook is not contained in the new dataverse then remove it
@@ -119,12 +128,12 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         if (removeGuestbook || removeLinkDs) {
             StringBuilder errorString = new StringBuilder();
             if (removeGuestbook) {
-                errorString.append("Dataset guestbook is not in target dataverse. ");
+                errorString.append(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.unforced.datasetGuestbookNotInTargetDataverse"));
             }
             if (removeLinkDs) {
-                errorString.append("Dataset is linked to target dataverse or one of its parents. ");
+                errorString.append(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.unforced.linkedToTargetDataverseOrOneOfItsParents"));
             }
-            throw new IllegalCommandException(errorString + "Please use the parameter ?forceMove=true to complete the move. This will remove anything from the dataset that is not compatible with the target dataverse.", this);
+            throw new UnforcedCommandException(errorString.toString(), this);
         }
 
 
@@ -138,7 +147,7 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
 
         } catch (Exception e) { // RuntimeException e ) {
             logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage()); //, e);
-            throw new CommandException("Dataset could not be moved. Indexing failed", this);
+            throw new CommandException(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.indexingProblem"), this);
 
         }
 

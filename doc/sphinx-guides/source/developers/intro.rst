@@ -34,7 +34,7 @@ For the Dataverse development roadmap, please see https://dataverse.org/goals-ro
 Kanban Board
 ------------
 
-You can get a sense of what's currently in flight (in dev, in QA, etc.) by looking at https://waffle.io/IQSS/dataverse
+You can get a sense of what's currently in flight (in dev, in QA, etc.) by looking at https://github.com/orgs/IQSS/projects/2
 
 Issue Tracker
 -------------

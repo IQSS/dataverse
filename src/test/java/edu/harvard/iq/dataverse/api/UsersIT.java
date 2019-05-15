@@ -316,6 +316,13 @@ public class UsersIT {
         makeShibUser.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.affiliation", equalTo("TestShib Test IdP"));
+        
+        String newUsername = "newUser_" + UtilIT.getRandomString(4);
+        System.out.println("newUsername for change shib user: " + newUsername);
+        Response renameShib = UtilIT.changeAuthenticatedUserIdentifier(usernameOfNonBcryptUserToConvert, newUsername, superuserApiToken);
+        renameShib.prettyPrint();
+        renameShib.then().assertThat()
+                .statusCode(OK.getStatusCode()); 
 
     }
 
