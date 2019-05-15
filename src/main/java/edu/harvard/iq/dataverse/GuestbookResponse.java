@@ -1,3 +1,4 @@
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -24,16 +25,13 @@ import javax.persistence.*;
         @Index(columnList = "datafile_id"),
         @Index(columnList = "dataset_id")
 })
-@NamedQueries(
-            @NamedQuery(name = "GuestbookResponse.findByAuthenticatedUserId",
-            query = "SELECT gbr FROM GuestbookResponse gbr WHERE gbr.authenticatedUser.id=:authenticatedUserId")
-)
+
 public class GuestbookResponse implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
+    private Long guestbookResponseId;
+            
     @ManyToOne
     @JoinColumn(nullable=false)
     private Guestbook guestbook;
@@ -54,6 +52,9 @@ public class GuestbookResponse implements Serializable {
     @JoinColumn(nullable=true)
     private AuthenticatedUser authenticatedUser;
 
+    @OneToOne(cascade=CascadeType.ALL,mappedBy="guestbookResponse")
+    private FileDownload fileDownload;
+    
     @OneToMany(mappedBy="guestbookResponse",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval=true)
     @OrderBy ("id")
     private List<CustomQuestionResponse> customQuestionResponses;
@@ -73,8 +74,8 @@ public class GuestbookResponse implements Serializable {
      * (Some day it would be nice to convert WorldMap into an ExternalTool but
      * it's not worth the effort at this time.)
      */
-    private String downloadtype;
-    private String sessionId;
+    //private String downloadtype;
+    //private String sessionId;
         
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date responseTime;
@@ -112,22 +113,23 @@ public class GuestbookResponse implements Serializable {
         this.writeResponse = writeResponse;
     }
 
+    /*for download - moved to FileDownload.java
     public String getSelectedFileIds() {
         return selectedFileIds;
     }
 
     public void setSelectedFileIds(String selectedFileIds) {
         this.selectedFileIds = selectedFileIds;
-    }
+    }*/
     
-    
+    /*for download - moved to FileDownload.java
     public String getFileFormat() {
         return fileFormat;
     }
 
     public void setFileFormat(String downloadFormat) {
         this.fileFormat = downloadFormat;
-    }
+    }*/
 
     public ExternalTool getExternalTool() {
         return externalTool;
@@ -151,7 +153,7 @@ public class GuestbookResponse implements Serializable {
         this.setDataset(source.getDataset());
         this.setDatasetVersion(source.getDatasetVersion());
         this.setAuthenticatedUser(source.getAuthenticatedUser());
-        this.setSessionId(source.getSessionId());
+        //this.setSessionId(source.getSessionId());
         List <CustomQuestionResponse> customQuestionResponses = new ArrayList<>();
         if (!source.getCustomQuestionResponses().isEmpty()){
             for (CustomQuestionResponse customQuestionResponse : source.getCustomQuestionResponses() ){
@@ -208,11 +210,11 @@ public class GuestbookResponse implements Serializable {
     }
 
     public Long getId() {
-        return id;
+        return guestbookResponseId;
     }
 
     public void setId(Long id) {
-        this.id = id;
+        this.guestbookResponseId = id;
     }
     
     public Date getResponseTime() {
@@ -239,6 +241,15 @@ public class GuestbookResponse implements Serializable {
     public void setCustomQuestionResponses(List<CustomQuestionResponse> customQuestionResponses) {
         this.customQuestionResponses = customQuestionResponses;
     }
+    
+    public FileDownload getFileDownload(){
+        return fileDownload;
+    }
+    
+    public void setFileDownload(FileDownload fDownload){
+        this.fileDownload = fDownload;
+    }
+    
     
     public Dataset getDataset() {
         return dataset;
@@ -272,26 +283,29 @@ public class GuestbookResponse implements Serializable {
         this.authenticatedUser = authenticatedUser;
     }
     
+    /*for download - moved to FileDownload.java
     public String getDownloadtype() {
         return downloadtype;
     }
 
     public void setDownloadtype(String downloadtype) {
         this.downloadtype = downloadtype;
-    }
+    }*/
     
+    
+    /*for download - moved to FileDownload.java
     public String getSessionId() {
         return sessionId;
     }
 
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
-    }
+    }*/
     
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
+        hash += (guestbookResponseId != null ? guestbookResponseId.hashCode() : 0);
         return hash;
     }
 
@@ -302,7 +316,7 @@ public class GuestbookResponse implements Serializable {
             return false;
         }
         GuestbookResponse other = (GuestbookResponse) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+        if ((this.guestbookResponseId == null && other.guestbookResponseId != null) || (this.guestbookResponseId != null && !this.guestbookResponseId.equals(other.guestbookResponseId))) {
             return false;
         }
         return true;
@@ -310,7 +324,7 @@ public class GuestbookResponse implements Serializable {
 
     @Override
     public String toString() {
-        return "edu.harvard.iq.dvn.core.vdc.GuestBookResponse[ id=" + id + " ]";
+        return "edu.harvard.iq.dvn.core.vdc.GuestBookResponse[ id=" + guestbookResponseId + " ]";
     }
     
 }
