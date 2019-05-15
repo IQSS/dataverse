@@ -444,6 +444,8 @@ A more detailed "add" example using curl::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"true"}' "https://example.dataverse.edu/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
 
+Please note that it's possible to "trick" Dataverse into giving a file a content type (MIME type) of your choosing. For example, you can make a text file be treated like a video file with ``-F 'file=@README.txt;type=video/mpeg4'``, for example. If Dataverse does not properly detect a file type, specifying the content type via API like this a potential workaround.
+
 Example python code to add a file. This may be run by changing these parameters in the sample code:
 
 * ``dataverse_server`` - e.g. https://demo.dataverse.org
