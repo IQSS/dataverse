@@ -196,7 +196,7 @@ public class EjbDataverseEngine {
     public <R> R submit(Command<R> aCommand) throws CommandException {
         
         final ActionLogRecord logRec = new ActionLogRecord(ActionLogRecord.ActionType.Command, aCommand.getClass().getCanonicalName());
-        
+        boolean rollbackNeeded = false;
         try {
             logRec.setUserIdentifier( aCommand.getRequest().getUser().getIdentifier() );
             
@@ -238,6 +238,7 @@ public class EjbDataverseEngine {
                 }
             }
             try {
+                rollbackNeeded = true;
                 R r = innerEngine.submit(aCommand, getContext());
                 aCommand.onSuccess(getContext(), r);
                 //boolean aCommand.onSuccess(getContext(), r);
@@ -278,7 +279,9 @@ public class EjbDataverseEngine {
             if ( logRec.getActionResult() == null ) {
                 logRec.setActionResult( ActionLogRecord.Result.OK );
             } else {
-                ejbCtxt.setRollbackOnly();
+                if (rollbackNeeded) {
+                    ejbCtxt.setRollbackOnly();
+                }
             }
             logRec.setEndTime( new java.util.Date() );
             logSvc.log(logRec);
