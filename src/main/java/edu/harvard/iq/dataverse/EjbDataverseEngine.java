@@ -196,7 +196,6 @@ public class EjbDataverseEngine {
     public <R> R submit(Command<R> aCommand) throws CommandException {
         
         final ActionLogRecord logRec = new ActionLogRecord(ActionLogRecord.ActionType.Command, aCommand.getClass().getCanonicalName());
-        boolean rollbackNeeded = false;
         try {
             logRec.setUserIdentifier( aCommand.getRequest().getUser().getIdentifier() );
             
@@ -238,11 +237,9 @@ public class EjbDataverseEngine {
                 }
             }
             try {
-                rollbackNeeded = true;
                 R r = innerEngine.submit(aCommand, getContext());
                 aCommand.onSuccess(getContext(), r);
-                //boolean aCommand.onSuccess(getContext(), r);
-                return r; // aCommand.execute(getContext());
+                return r;
                 
             } catch ( EJBException ejbe ) {
                 throw new CommandException("Command " + aCommand.toString() + " failed: " + ejbe.getMessage(), ejbe.getCausedByException(), aCommand);
@@ -276,14 +273,17 @@ public class EjbDataverseEngine {
             throw re;
             
         } finally {
-            if ( logRec.getActionResult() == null ) {
-                logRec.setActionResult( ActionLogRecord.Result.OK );
+            if (logRec.getActionResult() == null) {
+                logRec.setActionResult(ActionLogRecord.Result.OK);
             } else {
-                if (rollbackNeeded) {
-                    ejbCtxt.setRollbackOnly();
+                try{
+                     ejbCtxt.setRollbackOnly();
+                } catch (IllegalStateException isEx){
+                    //Not in a transaction nothing to rollback
                 }
+                   
             }
-            logRec.setEndTime( new java.util.Date() );
+            logRec.setEndTime(new java.util.Date());
             logSvc.log(logRec);
         }
     }

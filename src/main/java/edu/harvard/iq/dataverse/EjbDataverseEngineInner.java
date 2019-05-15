@@ -21,12 +21,12 @@ import javax.inject.Named;
 @Stateless
 @Named
 public class EjbDataverseEngineInner {
-    
+
     @TransactionAttribute(REQUIRED)
     public <R> R submit(Command<R> aCommand, CommandContext ctxt) throws CommandException {
-        
+
         return aCommand.execute(ctxt);
-    
+
     }
-    
+
 }
