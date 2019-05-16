@@ -684,6 +684,12 @@ public class UtilIT {
                 .get("/api/ingest/test/file?fileName=" + fileName + "&fileType=" + fileType);
     }
 
+    static Response redetectFileType(String fileId, boolean dryRun, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/files/" + fileId + "/redetect?dryRun=" + dryRun);
+    }
+
     static Response getSwordAtomEntry(String persistentId, String apiToken) {
         Response response = given()
                 .auth().basic(apiToken, EMPTY_STRING)
@@ -805,7 +811,14 @@ public class UtilIT {
                 .delete("/api/admin/authenticatedUsers/" + username + "/");
         return deleteUserResponse;
     }
-    
+
+    public static Response reingestFile(Long fileId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/files/" + fileId + "/reingest");
+        return response;
+    }
+
     public static Response uningestFile(Long fileId, String apiToken) {
         
         Response uningestFileResponse = given()
