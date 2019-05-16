@@ -740,6 +740,16 @@ Note that this requires "superuser" credentials::
 
 Note: at present, the API cannot be used on a file that's already successfully ingested as tabular.
 
+
+Redetect File Type
+~~~~~~~~~~~~~~~~~~
+
+Dataverse uses a variety of methods for determining file types (MIME types or content types) and these methods are updated periodically. If you have files that have an unknown file type, you can have Dataverse attempt to redetect the file time. When you pass ``dryRun=true`` nothing is saved to the database. Change this to ``dryRun=false`` (or omit it) to save the change. In the example below, the file is identified by database id "42".
+
+``export FILE_ID=42``
+
+``curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/files/$FILE_ID/redetect?dryRun=true``
+
 Replacing Files
 ~~~~~~~~~~~~~~~
 
