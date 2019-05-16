@@ -100,9 +100,19 @@ It returns a zipped bundle that contains the data in the following formats:
 * Data (Variable) metadata record, in DDI XML;
 * File citation, in Endnote and RIS formats. 
 
+
 Parameters: 
 ~~~~~~~~~~~
-none.
+
+``fileMetadataId``
+
+==============  ===========
+Value           Description
+==============  ===========
+ID              Exports file with specific file metadata ``ID``.
+                For example for data file with id 6 and file metadata id 2: ``curl 'http://localhost:8080/api/access/datafile/6?fileMetadataId=2'``
+==============  ===========
+
 
 Data Variable Metadata Access
 -----------------------------
@@ -176,6 +186,20 @@ Example:
          </var>
       </dataDscr>
    </codeBook>
+
+
+Parameters: 
+~~~~~~~~~~~
+
+``fileMetadataId``
+
+==============  ===========
+Value           Description
+==============  ===========
+ID              Exports file with specific file metadata ``ID``.
+                For example for data file with id 6 and file metadata id 2: ``curl 'http://localhost:8080/api/access/datafile/6?fileMetadataId=2'``
+==============  ===========
+
 
 More information on DDI is available in the :doc:`/user/tabulardataingest/ingestprocess` section of the User Guide.
 
