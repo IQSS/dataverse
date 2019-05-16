@@ -6,6 +6,7 @@ import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import org.junit.Test;
@@ -168,6 +169,17 @@ public class FileTypeDetectionIT {
                 .body("data.dryRun", equalTo(true))
                 .body("data.oldContentType", equalTo("foo/bar"))
                 .body("data.newContentType", equalTo("application/pdf"));
+
+        Response createNoPrivsUser = UtilIT.createRandomUser();
+        createNoPrivsUser.prettyPrint();
+        createNoPrivsUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String noPrivsUsername = UtilIT.getUsernameFromResponse(createNoPrivsUser);
+        String noPrivsApiToken = UtilIT.getApiTokenFromResponse(createNoPrivsUser);
+
+        Response forbidden = UtilIT.redetectFileType(fileId.toString(), true, noPrivsApiToken);
+        forbidden.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
 
         Response noChange = UtilIT.nativeGet(datasetId, apiToken);
         noChange.prettyPrint();

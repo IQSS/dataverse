@@ -19,7 +19,7 @@ import java.nio.file.Path;
 import java.util.logging.Logger;
 import javax.ejb.EJBException;
 
-@RequiredPermissions(Permission.ManageDatasetPermissions)
+@RequiredPermissions(Permission.EditDataset)
 public class RedetectFileTypeCommand extends AbstractCommand<DataFile> {
 
     private static final Logger logger = Logger.getLogger(RedetectFileTypeCommand.class.getCanonicalName());
