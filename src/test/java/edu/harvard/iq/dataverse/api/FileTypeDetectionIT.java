@@ -188,7 +188,6 @@ public class FileTypeDetectionIT {
         databaseChanged.prettyPrint();
         databaseChanged.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // TODO: Assert that it's now a PDF in the database by implementing the save in RedetectFileTypeCommand.
                 .body("data.latestVersion.files[0].dataFile.contentType", equalTo("application/pdf"));
 
     }

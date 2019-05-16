@@ -33,6 +33,7 @@ public class RedetectFileTypeCommand extends AbstractCommand<DataFile> {
 
     @Override
     public DataFile execute(CommandContext ctxt) throws CommandException {
+        DataFile filetoReturn = null;
         try {
             // FIXME: Get this working with S3 and Swift.
             Path path = DataAccess.getStorageIO(fileToRedetect).getFileSystemPath();
@@ -40,8 +41,9 @@ public class RedetectFileTypeCommand extends AbstractCommand<DataFile> {
             File file = path.toFile();
             String newlyDetectedContentType = FileTypeDetection.determineFileType(file);
             fileToRedetect.setContentType(newlyDetectedContentType);
+            filetoReturn = fileToRedetect;
             if (!dryRun) {
-                // TODO: save the new content type to the database.
+                filetoReturn = ctxt.files().save(fileToRedetect);
                 Dataset dataset = fileToRedetect.getOwner();
                 try {
                     boolean doNormalSolrDocCleanUp = true;
@@ -60,7 +62,7 @@ public class RedetectFileTypeCommand extends AbstractCommand<DataFile> {
         } catch (IOException ex) {
             throw new CommandException("Exception thrown redetecting file type: " + ex.getLocalizedMessage(), this);
         }
-        return fileToRedetect;
+        return filetoReturn;
     }
 
 }
