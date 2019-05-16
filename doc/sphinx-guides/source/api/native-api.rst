@@ -570,7 +570,7 @@ Optionally, you can check if there's a lock of a specific type on the dataset::
 
     curl "$SERVER_URL/api/datasets/{database_id}/locks?type={lock_type}
 
-Currently implemented lock types are ``Ingest, Workflow, InReview, DcmUpload and pidRegister``. 
+Currently implemented lock types are ``Ingest, Workflow, InReview, DcmUpload, pidRegister, and EditInProgress``. 
 
 The API will output the list of locks, for example:: 
 

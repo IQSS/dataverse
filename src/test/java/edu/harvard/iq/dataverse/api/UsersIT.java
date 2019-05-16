@@ -326,6 +326,34 @@ public class UsersIT {
 
     }
 
+    @Test
+    public void testUsernameCaseSensitivity() {
+        String randomUsername = UtilIT.getRandomIdentifier();
+        String lowercaseUsername = randomUsername.toLowerCase();
+        String uppercaseUsername = randomUsername.toUpperCase();
+        String randomEmailForLowercaseuser = UtilIT.getRandomIdentifier() + "@mailinator.com";
+        String randomEmailForUppercaseuser = UtilIT.getRandomIdentifier() + "@mailinator.com";
+
+        // Create first user (username all lower case).
+        Response createLowercaseUser = UtilIT.createUser(lowercaseUsername, randomEmailForLowercaseuser);
+        createLowercaseUser.prettyPrint();
+        createLowercaseUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Attempt to create second user (same username but all UPPER CASE).
+        Response createUppercaseUser = UtilIT.createUser(uppercaseUsername, randomEmailForUppercaseuser);
+        createUppercaseUser.prettyPrint();
+        createUppercaseUser.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                /**
+                 * Technically, it's the lowercase version that exists but the
+                 * point gets across. There's currently no way to bubble up the
+                 * exact username it's in conflict with, even if we wanted to.
+                 */
+                .body("message", equalTo("username '" + uppercaseUsername + "' already exists"));
+        ;
+    }
+
     private Response convertUserFromBcryptToSha1(long idOfBcryptUserToConvert, String password) {
         JsonObjectBuilder data = Json.createObjectBuilder();
         data.add("builtinUserId", idOfBcryptUserToConvert);
