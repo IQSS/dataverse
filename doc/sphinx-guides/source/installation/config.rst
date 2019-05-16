@@ -602,7 +602,10 @@ Create the zip file
 
 ``zip languages.zip *.properties``
 
-Load the languages.zip file into Dataverse.
+Load the languages.zip file into Dataverse
+++++++++++++++++++++++++++++++++++++++++++
+
+Now that you have a "languages.zip" file, you can load it into Dataverse with the command below.
 
 ``curl http://localhost:8080/api/admin/datasetfield/loadpropertyfiles -X POST --upload-file /tmp/languages/languages.zip -H "Content-Type: application/zip"``
 
