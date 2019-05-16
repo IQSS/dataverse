@@ -109,7 +109,7 @@ Parameters:
 ==============  ===========
 Value           Description
 ==============  ===========
-ID              Exports file with specific file metadata ``ID``. For example for data file with id 6 and file metadata id 2: ``curl 'http://localhost:8080/api/access/datafile/6?fileMetadataId=2'``
+ID              Exports file with specific file metadata ``ID``.
 ==============  ===========
 
 
@@ -195,7 +195,7 @@ Parameters:
 ==============  ===========
 Value           Description
 ==============  ===========
-ID              Exports file with specific file metadata ``ID``. For example for data file with id 6 and file metadata id 2: ``curl 'http://localhost:8080/api/access/datafile/6?fileMetadataId=2'``
+ID              Exports file with specific file metadata ``ID``. For example for data file with id 6 and file metadata id 2: ``curl 'http://localhost:8080/api/access/datafile/6/metadata/ddi?fileMetadataId=2'``
 ==============  ===========
 
 
