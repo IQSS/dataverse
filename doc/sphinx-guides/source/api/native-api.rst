@@ -291,7 +291,7 @@ Export Metadata of a Dataset in Various Formats
 
     GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
 
-.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , ``OAI_ORE`` , ``Datacite`` and ``dataverse_json``.
+.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , ``OAI_ORE`` , ``Datacite``, ``oai_datacite`` and ``dataverse_json``.
 
 Schema.org JSON-LD
 ^^^^^^^^^^^^^^^^^^
@@ -572,7 +572,7 @@ Optionally, you can check if there's a lock of a specific type on the dataset::
 
     curl "$SERVER_URL/api/datasets/{database_id}/locks?type={lock_type}
 
-Currently implemented lock types are ``Ingest, Workflow, InReview, DcmUpload and pidRegister``. 
+Currently implemented lock types are ``Ingest, Workflow, InReview, DcmUpload, pidRegister, and EditInProgress``. 
 
 The API will output the list of locks, for example:: 
 
