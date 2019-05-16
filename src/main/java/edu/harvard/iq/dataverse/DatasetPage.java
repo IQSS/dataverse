@@ -550,13 +550,9 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void updateFileSearch(){  
-        logger.info("updating file search list");
-        //if (readOnly) {
-            this.fileMetadatasSearch = selectFileMetadatasForDisplay();
-        //} else {
-        //    (we may not need this method at all? -- 4.13)
-        //    this.fileMetadatasSearch = datafileService.findFileMetadataByDatasetVersionIdLabelSearchTerm(workingVersion.getId(), this.fileLabelSearchTerm, "", "");
-        //}
+        logger.fine("updating file search list");
+        this.fileMetadatasSearch = selectFileMetadatasForDisplay();
+        
     }
     
         private Long numberOfFilesToShow = (long) 25;
@@ -670,7 +666,7 @@ public class DatasetPage implements java.io.Serializable {
      */
     
     public Set<Long> getFileIdsInVersionFromDb(Long datasetVersionId, String pattern) {
-        logger.info("searching for file ids, in the database");
+        logger.fine("searching for file ids, in the database");
         List<Long> searchResultsIdList = datafileService.findDataFileIdsByDatasetVersionIdLabelSearchTerm(datasetVersionId, pattern, "", "");
         
         Set<Long> ret = new HashSet<>();
@@ -721,14 +717,14 @@ public class DatasetPage implements java.io.Serializable {
         solrQuery.addFilterQuery(SearchUtil.constructQuery(SearchFields.TYPE, SearchConstants.DATASETS));
         solrQuery.addFilterQuery(SearchUtil.constructQuery(SearchFields.DATASET_VERSION_ID, workingVersion.getId().toString()));
         
-        logger.info("Solr query (testing if searchable): " + solrQuery);
+        logger.fine("Solr query (testing if searchable): " + solrQuery);
                 
         QueryResponse queryResponse = null;
         
         try {
             queryResponse = getSolrServer().query(solrQuery);
         } catch (Exception ex) {
-            logger.info("Solr exception: " + ex.getLocalizedMessage());
+            logger.fine("Solr exception: " + ex.getLocalizedMessage());
             // solr maybe down/some error may have occurred... 
             return false; 
         }
@@ -740,7 +736,7 @@ public class DatasetPage implements java.io.Serializable {
         while (iter.hasNext()) {
             SolrDocument solrDocument = iter.next();
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
-            logger.info("solr result id: "+entityid);
+            logger.fine("solr result id: "+entityid);
             if (entityid.equals(workingVersion.getDataset().getId())) {
                 return true;
             }
@@ -759,7 +755,7 @@ public class DatasetPage implements java.io.Serializable {
      * 
      */
     public Set<Long> getFileIdsInVersionFromSolr(Long datasetVersionId, String pattern) {
-        logger.info("searching for file ids, in solr");
+        logger.fine("searching for file ids, in solr");
         
         SolrQuery solrQuery = new SolrQuery();
         
@@ -812,11 +808,21 @@ public class DatasetPage implements java.io.Serializable {
         if (!workingVersion.isDraft()) {
             solrQuery.addFilterQuery(SearchFields.DATASET_VERSION_ID + ":" + datasetVersionId);
         } else {
-            // This may be a bit of a problem: 
-            // (to avoid indexing duplicate documents, we don't index ALL of the files
-            // in a draft version - only the new files added to the draft.)
+            // To avoid indexing duplicate solr documents, we don't index ALL of the files
+            // in a draft version - only the new files added to the draft and/or the
+            // files for which the metadata have been changed. 
+            // So, in order to find all the files in the draft version, we can't just 
+            // run a query with the dataset version id, like with the published version, 
+            // above. Instead we are searching for all the indexed files in the dataset, 
+            // except the ones indexed with the "fileDeleted" flag - that indicates that 
+            // they are no longer in the draft:
             solrQuery.addFilterQuery(SearchFields.PARENT_ID + ":" + workingVersion.getDataset().getId());
-            solrQuery.addFilterQuery(SearchFields.FILE_DELETED + ":" + false);
+            // Note that we don't want to use the query "fileDeleted: false" - that 
+            // would only find the documents in which the fileDeleted boolean field 
+            // is actually present, AND set to false. Instead we are searching with 
+            // "!(fileDeleted: true)" - that will find ALL the records, except for 
+            // the ones where the value is explicitly set to true.
+            solrQuery.addFilterQuery("!(" + SearchFields.FILE_DELETED + ":" + true + ")");
             
         }
 
@@ -824,7 +830,7 @@ public class DatasetPage implements java.io.Serializable {
         // (but we are searching within one dataset(version), so it should be manageable)
         solrQuery.setRows(Integer.MAX_VALUE);
 
-        logger.info("Solr query (file search): " + solrQuery);
+        logger.fine("Solr query (file search): " + solrQuery);
                 
         QueryResponse queryResponse = null;
         boolean fileDeletedFlagNotIndexed = false; 
@@ -832,25 +838,25 @@ public class DatasetPage implements java.io.Serializable {
         try {
             queryResponse = getSolrServer().query(solrQuery);
         } catch (HttpSolrClient.RemoteSolrException ex) {
-            logger.info("Remote Solr Exception: " + ex.getLocalizedMessage());
+            logger.fine("Remote Solr Exception: " + ex.getLocalizedMessage());
             String msg = ex.getLocalizedMessage(); 
             if (msg.contains(SearchFields.FILE_DELETED)) {
                 fileDeletedFlagNotIndexed = true; 
             }
         } catch (Exception ex) {
-            logger.info("Solr exception: " + ex.getLocalizedMessage());
+            logger.warning("Solr exception: " + ex.getLocalizedMessage());
             return null; 
         }
         
         if (fileDeletedFlagNotIndexed) {
             // try again, without the flag:
             solrQuery.removeFilterQuery(SearchFields.FILE_DELETED + ":" + false);
-            logger.info("Solr query (trying again): " + solrQuery);
+            logger.fine("Solr query (trying again): " + solrQuery);
 
             try {
                 queryResponse = getSolrServer().query(solrQuery);
             } catch (Exception ex) {
-                logger.info("Nope, still caught a Solr exception: " + ex.getLocalizedMessage());
+                logger.warning("Caught a Solr exception (again!): " + ex.getLocalizedMessage());
                 return null;
             }
         }
@@ -865,7 +871,7 @@ public class DatasetPage implements java.io.Serializable {
             int count = 0;
             
             for (FacetField.Count facetFieldCount : facetField.getValues()) {
-                logger.info("facet field value: " + facetField.getName() + " " + facetFieldCount.getName() + " (" + facetFieldCount.getCount() + ")");
+                logger.fine("facet field value: " + facetField.getName() + " " + facetFieldCount.getName() + " (" + facetFieldCount.getCount() + ")");
                 if (facetFieldCount.getCount() > 0) {
                     FacetLabel facetLabel = new FacetLabel(facetFieldCount.getName(), facetFieldCount.getCount());
                     // quote facets arguments, just in case:
@@ -887,7 +893,7 @@ public class DatasetPage implements java.io.Serializable {
         while (iter.hasNext()) {
             SolrDocument solrDocument = iter.next();
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
-            logger.info("solr result id: "+entityid);
+            logger.fine("solr result id: "+entityid);
             resultIds.add(entityid);
         }
         
