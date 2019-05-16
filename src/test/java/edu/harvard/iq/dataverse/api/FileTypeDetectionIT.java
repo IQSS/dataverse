@@ -109,7 +109,7 @@ public class FileTypeDetectionIT {
     }
 
     @Test
-    public void testRedectMimeType() {
+    public void testRedetectMimeType() {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         createUser.then().assertThat()
