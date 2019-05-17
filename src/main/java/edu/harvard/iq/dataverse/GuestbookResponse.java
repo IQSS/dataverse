@@ -113,6 +113,22 @@ public class GuestbookResponse implements Serializable {
         this.writeResponse = writeResponse;
     }
 
+    public String getSelectedFileIds(){
+        return this.fileDownload.getSelectedFileIds();
+    }
+    
+    public void setSelectedFileIds(String selectedFileIds) {
+        this.fileDownload.setSelectedFileIds(selectedFileIds);
+    }
+    
+    public String getFileFormat() {
+        return this.fileDownload.getFileFormat();
+    }
+
+    public void setFileFormat(String downloadFormat) {
+        this.fileDownload.setFileFormat(downloadFormat);
+    }
+    
     /*for download - moved to FileDownload.java
     public String getSelectedFileIds() {
         return selectedFileIds;
@@ -281,6 +297,23 @@ public class GuestbookResponse implements Serializable {
 
     public void setAuthenticatedUser(AuthenticatedUser authenticatedUser) {
         this.authenticatedUser = authenticatedUser;
+    }
+    
+    public String getDownloadtype() {
+        return this.fileDownload.getDownloadtype();
+    }
+
+    public void setDownloadtype(String downloadtype) {
+        this.fileDownload.setDownloadtype(downloadtype);
+        
+    }
+    
+    public String getSessionId() {
+        return this.fileDownload.getSessionId();
+    }
+
+    public void setSessionId(String sessionId) {
+        this.fileDownload.setSessionId(sessionId);
     }
     
     /*for download - moved to FileDownload.java
