@@ -511,17 +511,20 @@ public class DDIExportServiceBean {
         xmlw.writeDefaultNamespace("http://www.icpsr.umich.edu/DDI");
         writeAttribute(xmlw, "version", "2.0");
 
-        createStdyDscr(xmlw, excludedFieldSet, includedFieldSet, df.getOwner().getLatestVersion());
-        
-        DataTable dt = fileService.findDataTableByFileId(df.getId());
 
         FileMetadata latestFm = df.getFileMetadata();
         if (fileMetadataId == null) {
             fileMetadataId = latestFm.getId();
         }
 
+        FileMetadata fm = fileService.findFileMetadata(fileMetadataId);
+
+        createStdyDscr(xmlw, excludedFieldSet, includedFieldSet, fm.getDatasetVersion());
+        
+        DataTable dt = fileService.findDataTableByFileId(df.getId());
+
         if (checkField("fileDscr", excludedFieldSet, includedFieldSet)) {
-            createFileDscr(xmlw, excludedFieldSet, null, df, dt);
+            createFileDscr(xmlw, excludedFieldSet, null, df, dt, fm);
         }
 
         // And now, the variables:
@@ -619,7 +622,7 @@ public class DDIExportServiceBean {
         if (checkField("fileDscr", excludedFieldSet, includedFieldSet)) {
             for (FileMetadata fileMetadata : tabularDataFiles) {
                 DataTable dt = fileService.findDataTableByFileId(fileMetadata.getDataFile().getId());
-                createFileDscr(xmlw, excludedFieldSet, includedFieldSet, fileMetadata.getDataFile(),dt);
+                createFileDscr(xmlw, excludedFieldSet, includedFieldSet, fileMetadata.getDataFile(),dt, fileMetadata);
             }
             
             // 2nd pass, to create data (variable) description sections: 
@@ -710,7 +713,7 @@ public class DDIExportServiceBean {
         xmlw.writeEndElement(); // otherMat
     }
 
-    private void createFileDscr(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, DataFile df, DataTable dt) throws XMLStreamException {
+    private void createFileDscr(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, DataFile df, DataTable dt, FileMetadata fm) throws XMLStreamException {
 
         xmlw.writeStartElement("fileDscr");
         writeAttribute(xmlw, "ID", "f" + df.getId().toString());
@@ -722,7 +725,7 @@ public class DDIExportServiceBean {
 
             if (checkField("fileTxt", excludedFieldSet, includedFieldSet)) {
                 xmlw.writeStartElement("fileName");
-                xmlw.writeCharacters(df.getFileMetadata().getLabel());
+                xmlw.writeCharacters(fm.getLabel());
                 xmlw.writeEndElement(); // fileName
             }
 
