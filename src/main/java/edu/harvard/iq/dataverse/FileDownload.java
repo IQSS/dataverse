@@ -37,7 +37,7 @@ public class FileDownload implements Serializable {
     
     
     @Temporal(value = TemporalType.TIMESTAMP)
-    private Date timestamp;
+    private Date downloadTimestamp;
     
     /*
     Transient Values carry non-written information 
@@ -100,6 +100,15 @@ public class FileDownload implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+    
+    public Date getDownloadTimestamp(){
+        return this.downloadTimestamp;
+    }
+    
+    public void setDownloadTimestamp(Date downloadTimestamp){
+        this.downloadTimestamp = downloadTimestamp;
+    }
+    
     
     public void setGuestbookResponse(GuestbookResponse gbr){
         this.guestbookResponse = gbr;
