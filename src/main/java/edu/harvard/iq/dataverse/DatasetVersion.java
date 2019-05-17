@@ -1853,7 +1853,7 @@ public class DatasetVersion implements Serializable {
                 } else {
                     if (FileUtil.isPubliclyDownloadable(fileMetadata)) {
                         String nullDownloadType = null;
-                        fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(nullDownloadType, fileMetadata.getDataFile().getId(), false));
+                        fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(nullDownloadType, fileMetadata.getDataFile().getId(), false, fileMetadata.getId()));
                     }
                 }
                 fileArray.add(fileObject);

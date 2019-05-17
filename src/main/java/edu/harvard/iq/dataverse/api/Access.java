@@ -182,7 +182,7 @@ public class Access extends AbstractApiBean {
     @Path("datafile/bundle/{fileId}")
     @GET
     @Produces({"application/zip"})
-    public BundleDownloadInstance datafileBundle(@PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public BundleDownloadInstance datafileBundle(@PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId,@QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
  
 
         GuestbookResponse gbr = null;
@@ -207,9 +207,14 @@ public class Access extends AbstractApiBean {
         
         DownloadInfo dInfo = new DownloadInfo(df);
         BundleDownloadInstance downloadInstance = new BundleDownloadInstance(dInfo);
-        
-        FileMetadata fileMetadata = df.getFileMetadata();
-        DatasetVersion datasetVersion = df.getOwner().getLatestVersion();
+
+        FileMetadata fileMetadata = null;
+
+        if (fileMetadataId == null) {
+            fileMetadata = df.getFileMetadata();
+        } else {
+            fileMetadata = dataFileService.findFileMetadata(fileMetadataId);
+        }
         
         downloadInstance.setFileCitationEndNote(new DataCitation(fileMetadata).toEndNoteString());
         downloadInstance.setFileCitationRIS(new DataCitation(fileMetadata).toRISString());
@@ -223,7 +228,8 @@ public class Access extends AbstractApiBean {
                     dfId,
                     outStream,
                     null,
-                    null);
+                    null,
+                    fileMetadataId);
 
             downloadInstance.setFileDDIXML(outStream.toString());
 
@@ -382,8 +388,8 @@ public class Access extends AbstractApiBean {
     @Path("datafile/{fileId}/metadata")
     @GET
     @Produces({"text/xml"})
-    public String tabularDatafileMetadata(@PathParam("fileId") String fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ { 
-        return tabularDatafileMetadataDDI(fileId, exclude, include, header, response);
+    public String tabularDatafileMetadata(@PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
+        return tabularDatafileMetadataDDI(fileId, fileMetadataId, exclude, include, header, response);
     }
     
     /* 
@@ -393,7 +399,7 @@ public class Access extends AbstractApiBean {
     @Path("datafile/{fileId}/metadata/ddi")
     @GET
     @Produces({"text/xml"})
-    public String tabularDatafileMetadataDDI(@PathParam("fileId") String fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public String tabularDatafileMetadataDDI(@PathParam("fileId") String fileId,  @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
 
         DataFile dataFile = null; 
@@ -406,8 +412,16 @@ public class Access extends AbstractApiBean {
         }
         
         response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
-        
-        String fileName = dataFile.getFileMetadata().getLabel().replaceAll("\\.tab$", "-ddi.xml");
+
+        FileMetadata fm = null;
+        if (fileMetadataId == null) {
+            fm = dataFile.getFileMetadata();
+        } else {
+            fm = dataFileService.findFileMetadata(fileMetadataId);
+        }
+
+        String fileName = fm.getLabel().replaceAll("\\.tab$", "-ddi.xml");
+
         response.setHeader("Content-disposition", "attachment; filename=\""+fileName+"\"");
         response.setHeader("Content-Type", "application/xml; name=\""+fileName+"\"");
         
@@ -419,7 +433,8 @@ public class Access extends AbstractApiBean {
                     dataFileId,
                     outStream,
                     exclude,
-                    include);
+                    include,
+                    fileMetadataId);
 
             retValue = outStream.toString();
 
@@ -439,7 +454,7 @@ public class Access extends AbstractApiBean {
     @GET
     @Produces({ "application/xml" })
 
-    public String dataVariableMetadataDDI(@PathParam("varId") Long varId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public String dataVariableMetadataDDI(@PathParam("varId") Long varId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
         
         ByteArrayOutputStream outStream = null;
@@ -450,7 +465,8 @@ public class Access extends AbstractApiBean {
                     varId,
                     outStream,
                     exclude,
-                    include);
+                    include,
+                    fileMetadataId);
         } catch (Exception e) {
             // For whatever reason we've failed to generate a partial 
             // metadata record requested. We simply return an empty string.
