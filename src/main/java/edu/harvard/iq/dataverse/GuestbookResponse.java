@@ -156,7 +156,10 @@ public class GuestbookResponse implements Serializable {
     }
 
     public GuestbookResponse(){
-        
+        if(this.getFileDownload() == null){
+            this.fileDownload = new FileDownload();
+            this.fileDownload.setGuestbookResponse(this);
+        }
     }
     
     public GuestbookResponse(GuestbookResponse source){
@@ -182,6 +185,7 @@ public class GuestbookResponse implements Serializable {
         }
         this.setCustomQuestionResponses(customQuestionResponses);
         this.setGuestbook(source.getGuestbook());
+        this.setFileDownload(source.getFileDownload());
     }
     
     
@@ -313,6 +317,7 @@ public class GuestbookResponse implements Serializable {
     }
 
     public void setSessionId(String sessionId) {
+        
         this.fileDownload.setSessionId(sessionId);
     }
     
