@@ -94,11 +94,11 @@ public class FileDownload implements Serializable {
     }
     
     public Long getId() {
-        return guestbookResponseId;
+        return id;
     }
 
     public void setId(Long id) {
-        this.guestbookResponseId = id;
+        this.id = id;
     }
     
     public void setGuestbookResponse(GuestbookResponse gbr){
