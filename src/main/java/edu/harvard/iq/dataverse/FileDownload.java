@@ -13,8 +13,9 @@ import javax.persistence.Id;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import javax.persistence.CascadeType;
 import javax.persistence.OneToOne;
-import javax.persistence.MapsId;
+import javax.persistence.JoinColumn;
 import java.util.Date;
 
 
@@ -27,12 +28,13 @@ public class FileDownload implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long guestbookResponseId;
-
-    @OneToOne @MapsId
+    
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true)
+    @JoinColumn(name="guestbookResponse_id")
     private GuestbookResponse guestbookResponse;
+    
     
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date timestamp;

@@ -30,7 +30,7 @@ public class GuestbookResponse implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long guestbookResponseId;
+    private Long id;
             
     @ManyToOne
     @JoinColumn(nullable=false)
@@ -226,11 +226,11 @@ public class GuestbookResponse implements Serializable {
     }
 
     public Long getId() {
-        return guestbookResponseId;
+        return id;
     }
 
     public void setId(Long id) {
-        this.guestbookResponseId = id;
+        this.id = id;
     }
     
     public Date getResponseTime() {
@@ -338,7 +338,7 @@ public class GuestbookResponse implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (guestbookResponseId != null ? guestbookResponseId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -349,7 +349,7 @@ public class GuestbookResponse implements Serializable {
             return false;
         }
         GuestbookResponse other = (GuestbookResponse) object;
-        if ((this.guestbookResponseId == null && other.guestbookResponseId != null) || (this.guestbookResponseId != null && !this.guestbookResponseId.equals(other.guestbookResponseId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -357,7 +357,7 @@ public class GuestbookResponse implements Serializable {
 
     @Override
     public String toString() {
-        return "edu.harvard.iq.dvn.core.vdc.GuestBookResponse[ id=" + guestbookResponseId + " ]";
+        return "edu.harvard.iq.dvn.core.vdc.GuestBookResponse[ id=" + id + " ]";
     }
     
 }
