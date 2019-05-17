@@ -2,6 +2,9 @@ nb-configuration.xml
 target
 infer-out
 nbactions.xml
+.settings
+.classpath
+.project
 michael-local
 GPATH
 GTAGS

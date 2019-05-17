@@ -103,6 +103,28 @@ public class UtilIT {
         return createRandomUser("user");
     }
 
+    public static Response createUser(String username, String email) {
+        logger.info("Creating user " + username);
+        String userAsJson = getUserAsJsonString(username, username, username, email);
+        String password = getPassword(userAsJson);
+        Response response = given()
+                .body(userAsJson)
+                .contentType(ContentType.JSON)
+                .post("/api/builtin-users?key=" + BUILTIN_USER_KEY + "&password=" + password);
+        return response;
+    }
+
+    private static String getUserAsJsonString(String username, String firstName, String lastName, String email) {
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        builder.add(USERNAME_KEY, username);
+        builder.add("firstName", firstName);
+        builder.add("lastName", lastName);
+        builder.add(EMAIL_KEY, email);
+        String userAsJson = builder.build().toString();
+        logger.fine("User to create: " + userAsJson);
+        return userAsJson;
+    }
+
     private static String getUserAsJsonString(String username, String firstName, String lastName) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add(USERNAME_KEY, username);
@@ -1182,9 +1204,11 @@ public class UtilIT {
         return moveDataset(idOrPersistentIdOfDatasetToMove, destinationDataverseAlias, false, apiToken);
     }
 
-    private static Response moveDataset(String idOrPersistentIdOfDatasetToMove, String destinationDataverseAlias, boolean force, String apiToken) {
+    static Response moveDataset(String idOrPersistentIdOfDatasetToMove, String destinationDataverseAlias, boolean force, String apiToken) {
+        String forceMoveQueryParam = "";
         if (force) {
-            throw new RuntimeException("FIXME: support force");
+            // FIXME: Make "&" version work (instead of "?").
+            forceMoveQueryParam = "?forceMove=true";
         }
         String idInPath = idOrPersistentIdOfDatasetToMove; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
@@ -1197,9 +1221,23 @@ public class UtilIT {
             requestSpecification = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
-        return requestSpecification.post("/api/datasets/" + idInPath + "/move/" + destinationDataverseAlias + optionalQueryParam);
+        return requestSpecification.post("/api/datasets/" + idInPath + "/move/" + destinationDataverseAlias + optionalQueryParam + forceMoveQueryParam);
     }
-    
+
+    static Response linkDataset(String datasetToLinkPid, String dataverseAlias, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("api/datasets/:persistentId/link/" + dataverseAlias + "?persistentId=" + datasetToLinkPid);
+        return response;
+    }
+
+    static Response getDatasetLinks(String datasetToLinkPid, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("api/datasets/:persistentId/links" + "?persistentId=" + datasetToLinkPid);
+        return response;
+    }
+
     static Response createDataverseLink(String linkedDataverseAlias, String linkingDataverseAlias, String apiToken) {
         Response response = given()
             .header(API_TOKEN_HTTP_HEADER, apiToken)
