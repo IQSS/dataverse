@@ -49,7 +49,6 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
      */
     @Override
     protected void additionalParameterTests(CommandContext ctxt) throws CommandException {
-        System.out.print("additionalParameterTests begin: " + new Timestamp(new Date().getTime()));
         if ( nonEmpty(getDataset().getIdentifier()) ) {
             GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(getDataset().getProtocol(), ctxt);
             if ( ctxt.datasets().isIdentifierUnique(getDataset().getIdentifier(), getDataset(), idServiceBean) ) {
@@ -58,7 +57,6 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
                     this);
            }
         }
-        System.out.print("additionalParameterTests END: " + new Timestamp(new Date().getTime()));
     }
     
     @Override
