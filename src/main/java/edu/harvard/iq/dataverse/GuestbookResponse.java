@@ -52,9 +52,9 @@ public class GuestbookResponse implements Serializable {
     @JoinColumn(nullable=true)
     private AuthenticatedUser authenticatedUser;
 
-    @OneToOne(cascade=CascadeType.ALL,mappedBy="guestbookResponse")
+    @OneToOne(cascade=CascadeType.ALL,mappedBy="guestbookResponse",fetch = FetchType.LAZY, optional = false)
     private FileDownload fileDownload;
-    
+     
     @OneToMany(mappedBy="guestbookResponse",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval=true)
     @OrderBy ("id")
     private List<CustomQuestionResponse> customQuestionResponses;
@@ -88,11 +88,12 @@ public class GuestbookResponse implements Serializable {
     - writeResponse is set to false when dataset version is draft.
     */
     
-    @Transient
-    private String selectedFileIds;
+    /*@Transient
+    private String selectedFileIds; -> moved to FileDownload
     
     @Transient 
-    private String fileFormat;
+    private String fileFormat;  -> moved to FileDownload
+    */
     
     @Transient 
     private boolean writeResponse = true;
@@ -173,6 +174,8 @@ public class GuestbookResponse implements Serializable {
         this.setDatasetVersion(source.getDatasetVersion());
         this.setAuthenticatedUser(source.getAuthenticatedUser());
         //this.setSessionId(source.getSessionId());
+        
+    
         List <CustomQuestionResponse> customQuestionResponses = new ArrayList<>();
         if (!source.getCustomQuestionResponses().isEmpty()){
             for (CustomQuestionResponse customQuestionResponse : source.getCustomQuestionResponses() ){

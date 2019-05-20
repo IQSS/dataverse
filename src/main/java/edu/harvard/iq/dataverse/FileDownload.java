@@ -15,6 +15,8 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.persistence.CascadeType;
 import javax.persistence.OneToOne;
+import javax.persistence.MapsId;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import java.util.Date;
 
@@ -26,15 +28,21 @@ import java.util.Date;
 @Entity
 public class FileDownload implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    /*private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true)
     @JoinColumn(name="guestbookResponse_id")
-    private GuestbookResponse guestbookResponse;
+    private GuestbookResponse guestbookResponse;*/
     
+    @Id
+    private Long id;
+    
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
+    private GuestbookResponse guestbookResponse;
     
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date downloadTimestamp;
@@ -44,7 +52,6 @@ public class FileDownload implements Serializable {
     that will assist in the download process
     - selected file ids is a comma delimited list that contains the file ids for multiple download
     - fileFormat tells the download api which format a subsettable file should be downloaded as
-    - writeResponse is set to false when dataset version is draft.
     */
     
     @Transient
@@ -53,14 +60,28 @@ public class FileDownload implements Serializable {
     @Transient 
     private String fileFormat;
     
-    @Transient 
-    private boolean writeResponse = true;
+    /*@Transient 
+    private boolean writeResponse = true; -> in GuestbookResponse
+    */ 
     
     
     private String downloadtype;
     private String sessionId;
     
-     public String getFileFormat() {
+     public FileDownload(){
+        
+    }
+     
+    public FileDownload(FileDownload source){
+        this.setDownloadTimestamp(source.getDownloadTimestamp());
+        this.setDownloadtype(source.getDownloadtype());
+        this.setFileFormat(source.getFileFormat());
+        this.setGuestbookResponse(source.getGuestbookResponse());
+        this.setSelectedFileIds(source.getSelectedFileIds());
+        this.setSessionId(source.getSessionId());
+    }
+    
+    public String getFileFormat() {
         return fileFormat;
     }
 
@@ -117,6 +138,9 @@ public class FileDownload implements Serializable {
     public GuestbookResponse getGuestbookResponse(){
         return this.guestbookResponse;
     }
+    
+    
+    
     
     @Override
     public int hashCode() {
