@@ -130,24 +130,6 @@ public class GuestbookResponse implements Serializable {
         this.fileDownload.setFileFormat(downloadFormat);
     }
     
-    /*for download - moved to FileDownload.java
-    public String getSelectedFileIds() {
-        return selectedFileIds;
-    }
-
-    public void setSelectedFileIds(String selectedFileIds) {
-        this.selectedFileIds = selectedFileIds;
-    }*/
-    
-    /*for download - moved to FileDownload.java
-    public String getFileFormat() {
-        return fileFormat;
-    }
-
-    public void setFileFormat(String downloadFormat) {
-        this.fileFormat = downloadFormat;
-    }*/
-
     public ExternalTool getExternalTool() {
         return externalTool;
     }
@@ -173,9 +155,7 @@ public class GuestbookResponse implements Serializable {
         this.setDataset(source.getDataset());
         this.setDatasetVersion(source.getDatasetVersion());
         this.setAuthenticatedUser(source.getAuthenticatedUser());
-        //this.setSessionId(source.getSessionId());
-        
-    
+   
         List <CustomQuestionResponse> customQuestionResponses = new ArrayList<>();
         if (!source.getCustomQuestionResponses().isEmpty()){
             for (CustomQuestionResponse customQuestionResponse : source.getCustomQuestionResponses() ){
@@ -323,25 +303,6 @@ public class GuestbookResponse implements Serializable {
         
         this.fileDownload.setSessionId(sessionId);
     }
-    
-    /*for download - moved to FileDownload.java
-    public String getDownloadtype() {
-        return downloadtype;
-    }
-
-    public void setDownloadtype(String downloadtype) {
-        this.downloadtype = downloadtype;
-    }*/
-    
-    
-    /*for download - moved to FileDownload.java
-    public String getSessionId() {
-        return sessionId;
-    }
-
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }*/
     
     @Override
     public int hashCode() {
