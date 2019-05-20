@@ -73,7 +73,7 @@ public class Meta {
     @GET
     @Produces({ "application/xml" })
 
-    public String variable(@PathParam("varId") Long varId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public String variable(@PathParam("varId") Long varId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
         
         ByteArrayOutputStream outStream = null;
@@ -84,7 +84,8 @@ public class Meta {
                     varId,
                     outStream,
                     exclude,
-                    include);
+                    include,
+                    fileMetadataId);
         } catch (Exception e) {
             // For whatever reason we've failed to generate a partial 
             // metadata record requested. We simply return an empty string.
@@ -103,7 +104,7 @@ public class Meta {
     @Path("datafile/{fileId}")
     @GET
     @Produces({"text/xml"})
-    public String datafile(@PathParam("fileId") Long fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public String datafile(@PathParam("fileId") Long fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
 
         DataFile dataFile = null; 
@@ -129,7 +130,8 @@ public class Meta {
                     fileId,
                     outStream,
                     exclude,
-                    include);
+                    include,
+                    fileMetadataId);
 
             retValue = outStream.toString();
 
