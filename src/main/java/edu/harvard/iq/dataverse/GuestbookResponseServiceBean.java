@@ -730,9 +730,7 @@ public class GuestbookResponseServiceBean {
         } else{
             user = sessionUser;
         }
-        
-        System.out.println("setUserDefaultResponses 1 sessionuser: " + user.toString() );
-        
+         
         if (user != null) {
             guestbookResponse.setEmail(getUserEMail(user));
             guestbookResponse.setName(getUserName(user));
@@ -751,8 +749,6 @@ public class GuestbookResponseServiceBean {
     
     private void setUserDefaultResponses(GuestbookResponse guestbookResponse, DataverseSession session) {
         User user = session.getUser();
-        
-        System.out.println("setUserDefaultResponses 2 sessionuser: " + user.toString() );
         
         if (user != null) {
             guestbookResponse.setEmail(getUserEMail(user));
