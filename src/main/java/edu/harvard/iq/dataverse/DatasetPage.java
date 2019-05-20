@@ -764,8 +764,8 @@ public class DatasetPage implements java.io.Serializable {
         // Main query: 
         if (!StringUtil.isEmpty(pattern)) {
             // searching on the file name ("label") and description:
-            queryStrings.add(SearchUtil.constructQuery(SearchFields.FILE_NAME, pattern));
-            queryStrings.add(SearchUtil.constructQuery(SearchFields.FILE_DESCRIPTION, pattern));
+            queryStrings.add(SearchUtil.constructQuery(SearchFields.FILE_NAME, pattern + "*"));
+            queryStrings.add(SearchUtil.constructQuery(SearchFields.FILE_DESCRIPTION, pattern + "*"));
 
             solrQuery.setQuery(SearchUtil.constructQuery(queryStrings, false));
         } else {
@@ -834,6 +834,7 @@ public class DatasetPage implements java.io.Serializable {
                 
         QueryResponse queryResponse = null;
         boolean fileDeletedFlagNotIndexed = false; 
+        Set<Long> resultIds = new HashSet<>();
         
         try {
             queryResponse = getSolrServer().query(solrQuery);
@@ -845,19 +846,19 @@ public class DatasetPage implements java.io.Serializable {
             }
         } catch (Exception ex) {
             logger.warning("Solr exception: " + ex.getLocalizedMessage());
-            return null; 
+            return resultIds; 
         }
         
         if (fileDeletedFlagNotIndexed) {
             // try again, without the flag:
-            solrQuery.removeFilterQuery(SearchFields.FILE_DELETED + ":" + false);
+            solrQuery.removeFilterQuery("!(" + SearchFields.FILE_DELETED + ":" + true + ")");
             logger.fine("Solr query (trying again): " + solrQuery);
 
             try {
                 queryResponse = getSolrServer().query(solrQuery);
             } catch (Exception ex) {
                 logger.warning("Caught a Solr exception (again!): " + ex.getLocalizedMessage());
-                return null;
+                return resultIds;
             }
         }
         
@@ -888,7 +889,6 @@ public class DatasetPage implements java.io.Serializable {
         
         SolrDocumentList docs = queryResponse.getResults();
         Iterator<SolrDocument> iter = docs.iterator();
-        Set<Long> resultIds = new HashSet<>();
         
         while (iter.hasNext()) {
             SolrDocument solrDocument = iter.next();
