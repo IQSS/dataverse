@@ -26,16 +26,7 @@ import java.util.Date;
  * @author marina
  */
 @Entity
-public class FileDownload implements Serializable {
-
-    /*private static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true)
-    @JoinColumn(name="guestbookResponse_id")
-    private GuestbookResponse guestbookResponse;*/
+public class FileDownload implements Serializable { 
     
     @Id
     private Long id;
@@ -59,11 +50,6 @@ public class FileDownload implements Serializable {
     
     @Transient 
     private String fileFormat;
-    
-    /*@Transient 
-    private boolean writeResponse = true; -> in GuestbookResponse
-    */ 
-    
     
     private String downloadtype;
     private String sessionId;
