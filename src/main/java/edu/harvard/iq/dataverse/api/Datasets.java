@@ -29,6 +29,8 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -77,14 +79,28 @@ import edu.harvard.iq.dataverse.S3PackageImporter;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.EjbUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
+
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.HttpMethod;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.net.URL;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -1189,6 +1205,71 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+    }
+
+    /**
+     * Get a pre-signed URL to upload data too large for add-method to S3
+     *
+     * @param idSupplied
+     * @param jsonData
+     * @return
+     */
+    @POST
+    @Path("{id}/getOneTimeUrl")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response getOneTimeUrl(@PathParam("id")String idSupplied, @FormDataParam("jsonData") String jsonData){
+        // -------------------------------------
+        // (1) Get the user from the API key
+        // -------------------------------------
+        User authUser;
+        try {
+            authUser = findUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.FORBIDDEN, ResourceBundle.getBundle("Bundle").getString("file.addreplace"
+                    + ".error.auth"));
+        }
+        // -------------------------------------
+        // (1a) Find dataset
+        // -------------------------------------
+        Dataset dataset;
+        try {
+            dataset = findDatasetOrDie(idSupplied);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+        // -------------------------------------
+        // (2) Generate pre-signed URL for uploading file to S3
+        // -------------------------------------
+
+        //Todo: Remove Logging below; just for checking if s3 configuration is correct
+        String endpoint = System.getProperty("dataverse.files.s3-endpoint");
+        Logger.getLogger(Files.class.getName()).info("Endpoint is: " + endpoint);
+        String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
+        Logger.getLogger(Files.class.getName()).info("Bucketname is: " + bucketName);
+
+
+        StorageIO<DataFile> dataAccess = null;
+        DataFile emptyFile = new DataFile();
+        emptyFile.setOwner(dataset);
+        try {
+            dataAccess = DataAccess.createNewStorageIO(emptyFile, "s3");
+            FileUtil.generateStorageIdentifier(emptyFile);
+        } catch (IOException e) {
+            Logger.getLogger(Files.class.getName()).warning("Failed to save the file, storage id " + emptyFile.getStorageIdentifier() + " (" + e.getMessage() + ")");
+        }
+
+        URL url = dataAccess.generateS3PreSignedUrl(emptyFile.getStorageIdentifier());
+
+        // -------------------------------------
+        // (3) //todo: Save the pre-signed URL and provided JSON-Data in database
+        // -------------------------------------
+
+        // -------------------------------------
+        // (4) Return the pre-signed URL
+        // -------------------------------------
+
+        return Response.ok().entity(url).build();
     }
 
     /**
