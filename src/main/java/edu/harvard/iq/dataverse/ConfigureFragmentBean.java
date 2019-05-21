@@ -39,6 +39,7 @@ public class ConfigureFragmentBean implements java.io.Serializable{
     private Long fileId = null;
     private ExternalToolHandler toolHandler = null;
     private String messageApi = "";
+    private Long fileMetadataId = null;
     
     @EJB
     DataFileServiceBean datafileService;
@@ -95,7 +96,7 @@ public class ConfigureFragmentBean implements java.io.Serializable{
         }
 
         
-        toolHandler = new ExternalToolHandler(tool, datafileService.find(fileId), apiToken);
+        toolHandler = new ExternalToolHandler(tool, datafileService.find(fileId), apiToken, datafileService.findFileMetadata(fileMetadataId));
 
         return toolHandler;
     }
@@ -116,8 +117,10 @@ public class ConfigureFragmentBean implements java.io.Serializable{
 
     }
     
-    public void setConfigureFileId(Long setFileId) {
+    public void setConfigureIds(Long setFileId, Long setFileMetadataId) {
+
         fileId = setFileId;
+        fileMetadataId = setFileMetadataId;
     }
 
     public String getMessageApi() {

@@ -25,6 +25,7 @@ public class ExternalToolServiceBeanTest {
         DataFile dataFile = new DataFile();
         dataFile.setId(42l);
         FileMetadata fmd = new FileMetadata();
+        fmd.setId(2L);
         DatasetVersion dv = new DatasetVersion();
         Dataset ds = new Dataset();
         dv.setDataset(ds);
@@ -39,7 +40,7 @@ public class ExternalToolServiceBeanTest {
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
         ExternalTool.Type type = ExternalTool.Type.EXPLORE;
         ExternalTool externalTool = new ExternalTool("displayName", "description", type, "http://foo.com", "{}", DataFileServiceBean.MIME_TYPE_TSV_ALT);
-        ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, apiToken);
+        ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd);
         List<ExternalTool> externalTools = new ArrayList<>();
         externalTools.add(externalTool);
         List<ExternalTool> availableExternalTools = ExternalToolServiceBean.findExternalToolsByFile(externalTools, dataFile);
@@ -61,6 +62,9 @@ public class ExternalToolServiceBeanTest {
                         .add(Json.createObjectBuilder()
                                 .add("key", "{apiToken}")
                                 .build())
+                        .add(Json.createObjectBuilder()
+                                .add("fileMetadataId", "{fileMetadataId}")
+                                .build())
                         .build())
                 .build());
         job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
@@ -71,6 +75,7 @@ public class ExternalToolServiceBeanTest {
         DataFile dataFile = new DataFile();
         dataFile.setId(42l);
         FileMetadata fmd = new FileMetadata();
+        fmd.setId(2L);
         DatasetVersion dv = new DatasetVersion();
         Dataset ds = new Dataset();
         dv.setDataset(ds);
@@ -80,10 +85,10 @@ public class ExternalToolServiceBeanTest {
         dataFile.setFileMetadatas(fmdl);
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
-        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken);
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken,fmd);
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
         System.out.println("result: " + toolUrl);
-        assertEquals("http://awesometool.com?fileid=42&key=7196b5ce-f200-4286-8809-03ffdbc255d7", toolUrl);
+        assertEquals("http://awesometool.com?fileid=42&key=7196b5ce-f200-4286-8809-03ffdbc255d7&fileMetadataId=2", toolUrl);
     }
 
     @Test

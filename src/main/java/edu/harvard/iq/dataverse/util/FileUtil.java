@@ -1364,10 +1364,14 @@ public class FileUtil implements java.io.Serializable  {
     /**
      * The FileDownloadServiceBean operates on file IDs, not DOIs.
      */
-    public static String getFileDownloadUrlPath(String downloadType, Long fileId, boolean gbRecordsWritten) {
+    public static String getFileDownloadUrlPath(String downloadType, Long fileId, boolean gbRecordsWritten, Long fileMetadataId) {
         String fileDownloadUrl = "/api/access/datafile/" + fileId;
         if (downloadType != null && downloadType.equals("bundle")) {
-            fileDownloadUrl = "/api/access/datafile/bundle/" + fileId;
+            if (fileMetadataId == null) {
+                fileDownloadUrl = "/api/access/datafile/bundle/" + fileId;
+            } else {
+                fileDownloadUrl = "/api/access/datafile/bundle/" + fileId + "?fileMetadataId=" + fileMetadataId;
+            }
         }
         if (downloadType != null && downloadType.equals("original")) {
             fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=original";
@@ -1376,13 +1380,18 @@ public class FileUtil implements java.io.Serializable  {
             fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=RData";
         }
         if (downloadType != null && downloadType.equals("var")) {
-            fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata";
+            if (fileMetadataId == null) {
+                fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata";
+            } else {
+                fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata?fileMetadataId=" + fileMetadataId;
+            }
         }
         if (downloadType != null && downloadType.equals("tab")) {
             fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=tab";
         }
         if (gbRecordsWritten) {
-            if (downloadType != null && (downloadType.equals("original") || downloadType.equals("RData") || downloadType.equals("tab"))) {
+            if (downloadType != null && ((downloadType.equals("original") || downloadType.equals("RData") || downloadType.equals("tab")) ||
+                    ((downloadType.equals("var") || downloadType.equals("bundle") ) && fileMetadataId != null))) {
                 fileDownloadUrl += "&gbrecs=true";
             } else {
                 fileDownloadUrl += "?gbrecs=true";
