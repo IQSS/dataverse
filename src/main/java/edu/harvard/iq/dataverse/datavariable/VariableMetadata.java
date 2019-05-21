@@ -57,8 +57,8 @@ public class VariableMetadata implements Serializable  {
     private String literalquestion;
 
     /**
-    *
-    */
+     * postquestion: post question, metadata variable field.
+     */
     @Column(columnDefinition="TEXT")
     private String postquestion;
 
@@ -149,11 +149,11 @@ public class VariableMetadata implements Serializable  {
         return this.literalquestion;
     }
 
-    public String getPostquestion() {return this.postquestion;}
-
     public void setLiteralquestion(String literalquestion) {
         this.literalquestion = literalquestion;
     }
+
+    public String getPostquestion() {return this.postquestion;}
 
     public void setPostquestion(String postquestion) {this.postquestion = postquestion;}
 
