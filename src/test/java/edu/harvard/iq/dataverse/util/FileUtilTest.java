@@ -219,15 +219,18 @@ public class FileUtilTest {
         @Test
         public void testgetFileDownloadUrl() {
             Long fileId = 42l;
-            assertEquals("/api/access/datafile/42", FileUtil.getFileDownloadUrlPath(null, fileId, false));
-            assertEquals("/api/access/datafile/42", FileUtil.getFileDownloadUrlPath("", fileId, false));
-            assertEquals("/api/access/datafile/bundle/42", FileUtil.getFileDownloadUrlPath("bundle", fileId, false));
-            assertEquals("/api/access/datafile/42?format=original", FileUtil.getFileDownloadUrlPath("original", fileId, false));
-            assertEquals("/api/access/datafile/42?format=RData", FileUtil.getFileDownloadUrlPath("RData", fileId, false));
-            assertEquals("/api/access/datafile/42/metadata", FileUtil.getFileDownloadUrlPath("var", fileId, false));
-            assertEquals("/api/access/datafile/42?format=tab", FileUtil.getFileDownloadUrlPath("tab", fileId, false));
-            assertEquals("/api/access/datafile/42?format=tab&gbrecs=true", FileUtil.getFileDownloadUrlPath("tab", fileId, true));
-            assertEquals("/api/access/datafile/42?gbrecs=true", FileUtil.getFileDownloadUrlPath(null, fileId, true));
+            Long fileMetadataId = 2L;
+            assertEquals("/api/access/datafile/42", FileUtil.getFileDownloadUrlPath(null, fileId, false, null));
+            assertEquals("/api/access/datafile/42", FileUtil.getFileDownloadUrlPath("", fileId, false, null));
+            assertEquals("/api/access/datafile/bundle/42", FileUtil.getFileDownloadUrlPath("bundle", fileId, false, null));
+            assertEquals("/api/access/datafile/bundle/42?fileMetadataId=2", FileUtil.getFileDownloadUrlPath("bundle", fileId, false, fileMetadataId));
+            assertEquals("/api/access/datafile/42?format=original", FileUtil.getFileDownloadUrlPath("original", fileId, false, null));
+            assertEquals("/api/access/datafile/42?format=RData", FileUtil.getFileDownloadUrlPath("RData", fileId, false, null));
+            assertEquals("/api/access/datafile/42/metadata", FileUtil.getFileDownloadUrlPath("var", fileId, false, null));
+            assertEquals("/api/access/datafile/42/metadata?fileMetadataId=2", FileUtil.getFileDownloadUrlPath("var", fileId, false, fileMetadataId));
+            assertEquals("/api/access/datafile/42?format=tab", FileUtil.getFileDownloadUrlPath("tab", fileId, false, null));
+            assertEquals("/api/access/datafile/42?format=tab&gbrecs=true", FileUtil.getFileDownloadUrlPath("tab", fileId, true, null));
+            assertEquals("/api/access/datafile/42?gbrecs=true", FileUtil.getFileDownloadUrlPath(null, fileId, true, null));
         }
 
         @Test
