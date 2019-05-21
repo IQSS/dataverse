@@ -51,6 +51,17 @@ public class FileDownload implements Serializable {
     @Transient 
     private String fileFormat;
     
+    
+    /**
+     * Possible values for downloadType include "Download", "Subset",
+     * "WorldMap", or the displayName of an ExternalTool.
+     *
+     * TODO: Types like "Download" and "Subset" and probably "WorldMap" should
+     * be defined once as constants (likely an enum) rather than having these
+     * strings duplicated in various places when setDownloadtype() is called.
+     * (Some day it would be nice to convert WorldMap into an ExternalTool but
+     * it's not worth the effort at this time.)
+     */
     private String downloadtype;
     private String sessionId;
     
@@ -124,9 +135,6 @@ public class FileDownload implements Serializable {
     public GuestbookResponse getGuestbookResponse(){
         return this.guestbookResponse;
     }
-    
-    
-    
     
     @Override
     public int hashCode() {

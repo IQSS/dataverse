@@ -59,23 +59,11 @@ public class GuestbookResponse implements Serializable {
     @OrderBy ("id")
     private List<CustomQuestionResponse> customQuestionResponses;
 
-
     private String name;
     private String email;
     private String institution;
     private String position;
-    /**
-     * Possible values for downloadType include "Download", "Subset",
-     * "WorldMap", or the displayName of an ExternalTool.
-     *
-     * TODO: Types like "Download" and "Subset" and probably "WorldMap" should
-     * be defined once as constants (likely an enum) rather than having these
-     * strings duplicated in various places when setDownloadtype() is called.
-     * (Some day it would be nice to convert WorldMap into an ExternalTool but
-     * it's not worth the effort at this time.)
-     */
-    //private String downloadtype;
-    //private String sessionId;
+    
         
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date responseTime;
@@ -83,18 +71,9 @@ public class GuestbookResponse implements Serializable {
     /*
     Transient Values carry non-written information 
     that will assist in the download process
-    - selected file ids is a comma delimited list that contains the file ids for multiple download
-    - fileFormat tells the download api which format a subsettable file should be downloaded as
     - writeResponse is set to false when dataset version is draft.
     */
-    
-    /*@Transient
-    private String selectedFileIds; -> moved to FileDownload
-    
-    @Transient 
-    private String fileFormat;  -> moved to FileDownload
-    */
-    
+      
     @Transient 
     private boolean writeResponse = true;
 
@@ -226,6 +205,7 @@ public class GuestbookResponse implements Serializable {
 
     public void setResponseTime(Date responseTime) {
         this.responseTime = responseTime;
+        this.getFileDownload().setDownloadTimestamp(responseTime);
     }
 
     public String getResponseDate() {
