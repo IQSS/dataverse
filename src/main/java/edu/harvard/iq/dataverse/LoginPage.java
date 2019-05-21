@@ -160,7 +160,7 @@ public class LoginPage implements java.io.Serializable {
             logger.info("Credential list is null!");
             return null;
         }
-        for ( FilledCredential fc : filledCredentialsList ) {            
+        for ( FilledCredential fc : filledCredentialsList ) {       
             authReq.putCredential(fc.getCredential().getKey(), fc.getValue());
         }
         authReq.setIpAddress( dvRequestService.getDataverseRequest().getSourceAddress() );

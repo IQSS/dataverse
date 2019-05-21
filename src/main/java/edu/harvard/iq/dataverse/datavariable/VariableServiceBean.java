@@ -60,6 +60,13 @@ public class VariableServiceBean {
         return query.getResultList();
 
     }
+
+    public List<VarGroup> findAllGroupsByFileMetadata(Long fileMetaId) {
+        TypedQuery<VarGroup> query = em.createQuery("SELECT object(o) FROM VarGroup as o where o.fileMetadata.id =:fileMetaId", VarGroup.class);
+        query.setParameter("fileMetaId", fileMetaId);
+
+        return query.getResultList();
+    }
     
     /* 
      * This is awful!
