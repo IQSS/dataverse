@@ -44,7 +44,7 @@
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
                  rendered="#{DatasetPage.fileDisplayTable and empty DatasetPage.editMode and (DatasetPage.workingVersion != null)}"
-                 emptyMessage="#{DatasetPage.workingVersion.fileMetadatas.size() == 0 ? bundle['file.notFound.tip'] : 'Your search found no files'}">
+                 emptyMessage="#{DatasetPage.workingVersion.fileMetadatas.size() == 0 ? bundle['file.notFound.tip'] : bundle['file.notFound.search']}">
         <p:ajax event="page" listener="#{DatasetPage.fileListingPaginatorListener}" update="filesTable" process="@this"  oncomplete="refreshPaginator(),rebindCommand()"  immediate="true"/>
         <p:ajax event="toggleSelect" listener="#{DatasetPage.toggleAllSelected()}" update="filesTable"  process="@this" oncomplete="rebindCommand()"  /> 
         <p:ajax event="rowUnselectCheckbox" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" oncomplete="rebindCommand()"  />
