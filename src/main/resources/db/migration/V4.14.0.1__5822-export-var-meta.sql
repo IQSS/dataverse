@@ -1,2 +1,2 @@
 ALTER TABLE variablemetadata
-ADD COLUMN postquestion text;
+ADD COLUMN IF NOT EXISTS postquestion text;
