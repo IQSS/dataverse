@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.FileMetadata;
-
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.datavariable.CategoryMetadata;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
@@ -465,6 +464,7 @@ public class DDIExportServiceBean {
                 }
             }
         }
+
         if (checkField("qstn", excludedFieldSet, includedFieldSet)) {
             if (vm != null) {
                 if (!StringUtilisEmpty(vm.getLiteralquestion()) || !StringUtilisEmpty(vm.getInterviewinstruction()) || !StringUtilisEmpty(vm.getPostquestion())) {
@@ -522,7 +522,6 @@ public class DDIExportServiceBean {
         createStdyDscr(xmlw, excludedFieldSet, includedFieldSet, fm.getDatasetVersion());
         
         DataTable dt = fileService.findDataTableByFileId(df.getId());
-
 
         if (checkField("fileDscr", excludedFieldSet, includedFieldSet)) {
             createFileDscr(xmlw, excludedFieldSet, null, df, dt, fm);

@@ -227,17 +227,8 @@ public class MailServiceBean implements java.io.Serializable {
            Object objectOfNotification =  getObjectOfNotification(notification);
            if (objectOfNotification != null){
                String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification, comment, requestor);
-               if (messageText == null) {
-                   logger.info("Send message null");
-               }
-
-               logger.info("Message mail" + messageText);
                String rootDataverseName = dataverseService.findRootDataverse().getName();
                String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, rootDataverseName, objectOfNotification);
-               if (subjectText == null) {
-                   logger.info("Subject message is null");
-               }
-               logger.info("Subject Message mail" + subjectText);
                if (!(messageText.isEmpty() || subjectText.isEmpty())){
                     retval = sendSystemEmail(emailAddress, subjectText, messageText); 
                } else {
