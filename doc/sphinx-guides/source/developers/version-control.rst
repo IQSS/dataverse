@@ -62,7 +62,7 @@ For guidance on which issue to work on, please ask! Also, see https://github.com
 
 Let's say you want to tackle https://github.com/IQSS/dataverse/issues/3728 which points out a typo in a page of Dataverse's documentation.
 
-If you tell us your GitHub username we are happy to add you to the "read only" team at https://github.com/orgs/IQSS/teams/dataverse-readonly/members so that we can assign the issue to you while you're working on it. You can also tell us if you'd like to be added to the `Dataverse Community Contributors spreadsheet <https://docs.google.com/spreadsheets/d/1o9DD-MQ0WkrYaEFTD5rF_NtyL8aUISgURsAXSL7Budk/edit?usp=sharing>`_ and the `Dev Efforts by the Dataverse Community spreadsheet <https://groups.google.com/d/msg/dataverse-community/X2diSWYll0w/ikp1TGcfBgAJ>`_.
+If you tell us your GitHub username we are happy to add you to the "read only" team at https://github.com/orgs/IQSS/teams/dataverse-readonly/members so that we can assign the issue to you while you're working on it. You can also tell us if you'd like to be added to the `Dataverse Community Contributors spreadsheet <https://docs.google.com/spreadsheets/d/1o9DD-MQ0WkrYaEFTD5rF_NtyL8aUISgURsAXSL7Budk/edit?usp=sharing>`_.
 
 Create a New Branch off the develop Branch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -82,14 +82,14 @@ Push your feature branch to your fork of Dataverse. Your git command may look so
 Make a Pull Request
 ~~~~~~~~~~~~~~~~~~~
 
-Make a pull request to get approval to merge your changes into the develop branch. Feedback on the pull request template we use is welcome! The "connects to #3728" syntax is important because it's used at https://waffle.io/IQSS/dataverse to associate pull requests with issues.
+Make a pull request to get approval to merge your changes into the develop branch. Feedback on the pull request template we use is welcome!
 
 Here's an example of a pull request for issue #3728: https://github.com/IQSS/dataverse/pull/3827
 
 Make Sure Your Pull Request Has Been Advanced to Code Review
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Now that you've made your pull request, your goal is to make sure it appears in the "Code Review" column at https://waffle.io/IQSS/dataverse 
+Now that you've made your pull request, your goal is to make sure it appears in the "Code Review" column at https://github.com/orgs/IQSS/projects/2
 
 Look at https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md for various ways to reach out to developers who have enough access to the GitHub repo to move your issue and pull request to the "Code Review" column.
 
