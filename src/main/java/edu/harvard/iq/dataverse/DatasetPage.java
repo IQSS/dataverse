@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
@@ -73,6 +74,8 @@ import javax.faces.event.ValueChangeEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.mail.internet.InternetAddress;
+
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
 import javax.validation.ConstraintViolation;
@@ -279,6 +282,16 @@ public class DatasetPage implements java.io.Serializable {
     private Boolean hasRsyncScript = false;
     
     private Boolean hasTabular = false;
+    
+    private boolean showIngestSuccess;
+
+    public boolean isShowIngestSuccess() {
+        return showIngestSuccess;
+    }
+
+    public void setShowIngestSuccess(boolean showIngestSuccess) {
+        this.showIngestSuccess = showIngestSuccess;
+    }
         
     List<ExternalTool> configureTools = new ArrayList<>();
     List<ExternalTool> exploreTools = new ArrayList<>();
@@ -1490,7 +1503,7 @@ public class DatasetPage implements java.io.Serializable {
                 datasetNextMinorVersion = this.dataset.getNextMinorVersionString();
                 datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, false);
                 updateDatasetFieldInputLevels();
-                
+
                 setExistReleasedVersion(resetExistRealeaseVersion());
                 //moving setVersionTabList to tab change event
                 //setVersionTabList(resetVersionTabList());
@@ -1507,23 +1520,22 @@ public class DatasetPage implements java.io.Serializable {
                     try {
                         ScriptRequestResponse scriptRequestResponse = commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset));
                         logger.fine("script: " + scriptRequestResponse.getScript());
-                        if(scriptRequestResponse.getScript()!=null && !scriptRequestResponse.getScript().isEmpty()){
+                        if (scriptRequestResponse.getScript() != null && !scriptRequestResponse.getScript().isEmpty()) {
                             setHasRsyncScript(true);
                             setRsyncScript(scriptRequestResponse.getScript());
-                            rsyncScriptFilename = "upload-"+ workingVersion.getDataset().getIdentifier() + ".bash";
+                            rsyncScriptFilename = "upload-" + workingVersion.getDataset().getIdentifier() + ".bash";
                             rsyncScriptFilename = rsyncScriptFilename.replace("/", "_");
-                        }
-                        else{
+                        } else {
                             setHasRsyncScript(false);
                         }
                     } catch (RuntimeException ex) {
                         logger.warning("Problem getting rsync script: " + ex.getLocalizedMessage());
                     } catch (CommandException cex) {
                         logger.warning("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
-                    }  
+                    }
                 }
-                   
-            }
+
+            }                       
         } else if (ownerId != null) {
             // create mode for a new child dataset
             readOnly = false; 
@@ -1610,19 +1622,35 @@ public class DatasetPage implements java.io.Serializable {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.publish.workflow.message"),
                         BundleUtil.getStringFromBundle("dataset.pidRegister.workflow.inprogress"));
             }
+            if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
+                String rootDataverseName = dataverseService.findRootDataverse().getName();
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),
+                        BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null, rootDataverseName))));
+            }
         }
         
+            if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"),
+                        BundleUtil.getStringFromBundle("dataset.locked.ingest.message"));
+                lockedDueToIngestVar = true;
+            }
+            
         for(DataFile f : dataset.getFiles()) {
             if(f.isTabularData()) {
                 hasTabular = true;
                 break;
             }
         }
-
+        //Show ingest success message if refresh forces a page reload after ingest success
+        //This is needed to display the explore buttons (the fileDownloadHelper needs to be reloaded via page 
+        if (showIngestSuccess) {
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.unlocked.ingest.message"));
+        }
+        
         configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
         exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
-        
+      
         
         
         return null;
@@ -2215,8 +2243,8 @@ public class DatasetPage implements java.io.Serializable {
     public void refresh(ActionEvent e) {
         refresh();
     }
-    
-    public void refresh() {
+        
+    public String refresh() {
         logger.fine("refreshing");
 
         //dataset = datasetService.find(dataset.getId());
@@ -2243,7 +2271,7 @@ public class DatasetPage implements java.io.Serializable {
             // should probably redirect to the 404 page, if we can't find 
             // this version anymore. 
             // -- L.A. 4.2.3 
-            return;
+            return "";
         }
         this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
 
@@ -2251,9 +2279,8 @@ public class DatasetPage implements java.io.Serializable {
             // TODO: 
             // same as the above
 
-            return;
+            return "";
         }
-
 
         if (dataset == null) {
             // this would be the case if we were retrieving the version by 
@@ -2261,15 +2288,22 @@ public class DatasetPage implements java.io.Serializable {
             this.dataset = this.workingVersion.getDataset();
         }
 
-        
-
         if (readOnly) {
             datafileService.findFileMetadataOptimizedExperimental(dataset);
-        } 
-        fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
+        }
 
+        fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
         displayCitation = dataset.getCitation(true, workingVersion);
         stateChanged = false;
+
+        if (lockedDueToIngestVar != null && lockedDueToIngestVar) {
+            //we need to add a redirect here to disply the explore buttons as needed
+            //as well as the ingest success message
+            lockedDueToIngestVar = null;
+            return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&showIngestSuccess=true&faces-redirect=true";
+        }
+
+        return "";
     }
     
     public String deleteDataset() {
@@ -2890,9 +2924,21 @@ public class DatasetPage implements java.io.Serializable {
                 }
                 
             } else {
+                //Precheck - also checking db copy of dataset to catch edits in progress that would cause update command transaction to fail
+                if (dataset.getId() != null) {
+                    Dataset lockTest = datasetService.find(dataset.getId());
+                    if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress) || lockTest.isLockedFor(DatasetLock.Reason.EditInProgress)) {
+                        logger.log(Level.INFO, "Couldn''t save dataset: {0}", "It is locked."
+                                + "");
+                        String rootDataverseName = dataverseService.findRootDataverse().getName();
+                        JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null, rootDataverseName))));
+                        return returnToDraftVersion();
+                    }
+                }
                 if (!filesToBeDeleted.isEmpty()) {
                     deleteStorageLocations = datafileService.getPhysicalFilesToDelete(filesToBeDeleted);
                 }
+                
                 cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, clone );
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);  
             }
@@ -3238,6 +3284,7 @@ public class DatasetPage implements java.io.Serializable {
     private Boolean lockedFromEditsVar;
     private Boolean lockedFromDownloadVar;    
     private boolean lockedDueToDcmUpload;
+    private Boolean lockedDueToIngestVar;
     /**
      * Authors are not allowed to edit but curators are allowed - when Dataset is inReview
      * For all other locks edit should be locked for all editors.
@@ -3253,6 +3300,17 @@ public class DatasetPage implements java.io.Serializable {
         }
         return lockedFromEditsVar;
     }
+    
+    /**
+    Need to save ingest lock state to display success later.
+     */
+    public boolean isLockedDueToIngest() {
+        if(null == lockedDueToIngestVar || stateChanged) {
+               lockedDueToIngestVar = isLockedForIngest();
+        }
+        return lockedFromEditsVar;
+    }
+    
     
     // TODO: investigate why this method was needed in the first place?
     // It appears that it was written under the assumption that downloads 

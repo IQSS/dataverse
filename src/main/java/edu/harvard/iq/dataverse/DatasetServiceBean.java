@@ -149,6 +149,25 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
 
+    public List<Dataset> filterByPidQuery(String filterQuery) {
+        // finds only exact matches
+        Dataset ds = findByGlobalId(filterQuery);
+        List<Dataset> ret = new ArrayList<>();
+        if (ds != null) ret.add(ds);
+
+        
+        /*
+        List<Dataset> ret = em.createNamedQuery("Dataset.filterByPid", Dataset.class)
+            .setParameter("affiliation", "%" + filterQuery.toLowerCase() + "%").getResultList();
+        //logger.info("created native query: select o from Dataverse o where o.alias LIKE '" + filterQuery + "%' order by o.alias");
+        logger.info("created named query");
+        */
+        if (ret != null) {
+            logger.info("results list: "+ret.size()+" results.");
+        }
+        return ret;
+    }
+    
     public List<Dataset> findAll() {
         return em.createQuery("select object(o) from Dataset as o order by o.id", Dataset.class).getResultList();
     }
@@ -306,7 +325,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         Long dsId = dataset.getId();
         if (dsId != null) {
             try {
-                idResults = em.createNamedQuery("Dataset.findIdByOwnerId")
+                idResults = em.createNamedQuery("Dataset.findIdentifierByOwnerId")
                                 .setParameter("ownerId", dsId).getResultList();
             } catch (NoResultException ex) {
                 logger.log(Level.FINE, "No files found in dataset id {0}. Returning a count of zero.", dsId);

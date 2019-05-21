@@ -123,21 +123,43 @@
                                     </div>
                                 </div>
                             </div>
-                            
-                            
-<div class="col-md-4">
-    <div class="card-box">
-        <h4 class="header-title">#{bundle_trsa_registry.dashboardCardTrsaRegistryHeader}</h4>
-        <div class="row text-left">
-            <div class="col-xs-12">
-            <p>
-                <a href="/trsaRegistry/List.xhtml" class="btn btn-primary" role="button">#{bundle_trsa_registry.dashboardCardTrsaRegistryManage}</a>
-            </p>
-            </div>
-        </div>
-    </div>
-</div>
-                            
+
+                            <div class="col-md-4">
+                                <div class="card-box">
+                                    <h4 class="header-title">#{bundle['dashboard.card.datamove']}</h4>
+                                    <div class="row text-center">
+                                        <div class="col-xs-6">
+                                            <h:outputText value="#{DashboardDatamovePage.getDataverseCount()}"/>
+                                            <p class="small text-muted">#{bundle['dataverses']}</p>
+                                        </div>
+                                        <div class="col-xs-6">
+                                            <h:outputText value="#{DashboardDatamovePage.getDatasetCount()}"/>
+                                            <p class="small text-muted">#{bundle['datasets']}</p>
+                                        </div>
+                                    </div>
+                                    <div class="row text-center">
+                                        <div  class="col-xs-12">
+                                            <p>
+                                                <a href="/dashboard-datamove.xhtml" class="btn btn-primary" role="button">#{bundle['dashboard.card.datamove.manage']}</a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card-box">
+                                    <h4 class="header-title">#{bundle_trsa_registry.dashboardCardTrsaRegistryHeader}</h4>
+                                    <div class="row text-left">
+                                        <div class="col-xs-12">
+                                        <p>
+                                            <a href="/trsaRegistry/List.xhtml" class="btn btn-primary" role="button">#{bundle_trsa_registry.dashboardCardTrsaRegistryManage}</a>
+                                        </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                                                        
                         </div>
                     </div>
                 </div>

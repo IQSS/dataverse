@@ -82,6 +82,7 @@ import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDvObjectPIDMetadataCommand;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
@@ -1049,21 +1050,25 @@ public class Datasets extends AbstractApiBean {
     
     @POST
     @Path("{id}/move/{targetDataverseAlias}")
-    public Response moveDataset(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {        
-        try{
+    public Response moveDataset(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {
+        try {
             User u = findUserOrDie();            
             Dataset ds = findDatasetOrDie(id);
             Dataverse target = dataverseService.findByAlias(targetDataverseAlias);
-            if (target == null){
-                return error(Response.Status.BAD_REQUEST, "Target Dataverse not found.");
-            }            
+            if (target == null) {
+                return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.moveDataset.error.targetDataverseNotFound"));
+            }
             //Command requires Super user - it will be tested by the command
             execCommand(new MoveDatasetCommand(
                     createDataverseRequest(u), ds, target, force
-                    ));
-            return ok("Dataset moved successfully");
+            ));
+            return ok(BundleUtil.getStringFromBundle("datasets.api.moveDataset.success"));
         } catch (WrappedResponse ex) {
-            return ex.getResponse();
+            if (ex.getCause() instanceof UnforcedCommandException) {
+                return ex.refineResponse(BundleUtil.getStringFromBundle("datasets.api.moveDataset.error.suggestForce"));
+            } else {
+                return ex.getResponse();
+            }
         }
     }
     
