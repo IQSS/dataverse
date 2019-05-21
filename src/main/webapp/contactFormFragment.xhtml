@@ -8,6 +8,7 @@
     <p:dialog id="contactDialog" header="#{sendFeedbackDialog.getFormHeader()}" widgetVar="contactForm" modal="true">
         <p:fragment>
             <h:form id="emailForm" class="form-horizontal">
+                <p:focus for="#{sendFeedbackDialog.isLoggedIn() ? 'messageSubject' : 'userEmail'}" />
                 <!-- to: Support -->
                 <div class="form-group">
                     <label for="messageTo" class="col-sm-3 control-label">#{bundle['contact.to']}</label>
