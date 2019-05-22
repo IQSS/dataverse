@@ -80,19 +80,16 @@ You can skip this step if you're fine with the values in the "main.yml" file in 
 Download and Run the "Create Instance" Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Once you have done the configuration above, you are ready to try running the "create instance" script to spin up Dataverse in AWS.
+Once you have done the configuration above, you are ready to try running the "ec2-create-instance.sh" script to spin up Dataverse in AWS.
 
 Download :download:`ec2-create-instance.sh <../../../../scripts/installer/ec2-create-instance.sh>` and put it somewhere reasonable. For the purpose of these instructions we'll assume it's in the "Downloads" directory in your home directory.
 
-You need to decide which branch you'd like to deploy to AWS. Select a branch from https://github.com/IQSS/dataverse/branches/all such as "develop" and pass it to the script with ``-b`` as in the following example. (Branches such as "master" and "develop" are described in the :doc:`version-control` section.)
+ec2-create-instance accepts a number few command-line switches:
 
-``bash ~/Downloads/ec2-create-instance.sh -b develop``
-
-You must specify the branch with ``-b`` but you can also specify a non-IQSS git repo URL with ``-r`` as in the following example.
-
-``bash ~/Downloads/ec2-create-instance.sh -b develop -r https://github.com/scholarsportal/dataverse.git``
-
-If you configured an Ansible file above and want to make use of it, add ``-g main.yml`` (or whatever you named your file) as in the following example.
+* -r: GitHub Repository (defaults to IQSS/dataverse)
+* -b: branch to build (defaults to develop)
+* -p: pemfile directory (defaults to $HOME)
+* -g: Ansible GroupVars file (if you wish to override role defaults)
 
 ``bash ~/Downloads/ec2-create-instance.sh -b develop -r https://github.com/scholarsportal/dataverse.git -g main.yml``
 
@@ -101,7 +98,7 @@ Now you will need to wait around 15 minutes until the deployment is finished. Ev
 Caveats
 ~~~~~~~
 
-Please note that while the script should work fine on newish branches, older branches that have different dependencies such as an older version of Solr are now expected to yield a working Dataverse installation. Your mileage may vary.
+Please note that while the script should work fine on newish branches, older branches that have different dependencies such as an older version of Solr may not produce a working Dataverse installation. Your mileage may vary.
 
 ----
 
