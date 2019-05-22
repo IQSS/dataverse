@@ -4,7 +4,7 @@ Welcome! New contributors should at least glance at [CONTRIBUTING.md](/CONTRIBUT
 
 ## Related Issues
 
-- connects to #ISSUE_NUMBER: ISSUE_TITLE
+- #ISSUE_NUMBER: ISSUE_TITLE
 
 ## Pull Request Checklist
 

@@ -29,37 +29,40 @@ public class ExternalToolHandler {
     private final ExternalTool externalTool;
     private final DataFile dataFile;
     private final Dataset dataset;
-    private final DatasetVersion version;
+    private final FileMetadata fileMetadata;
 
     private ApiToken apiToken;
 
     /**
      * @param externalTool The database entity.
      * @param dataFile Required.
-     * @param version 
      * @param apiToken The apiToken can be null because "explore" tools can be
      * used anonymously.
      */
-    public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, DatasetVersion version, ApiToken apiToken) {
+    public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken, FileMetadata fileMetadata) {
         this.externalTool = externalTool;
         if (dataFile == null) {
             String error = "A DataFile is required.";
             logger.warning("Error in ExternalToolHandler constructor: " + error);
             throw new IllegalArgumentException(error);
         }
-        if (version == null) {
-            String error = "A DatasetVersion is required.";
+        if (fileMetadata == null) {
+            String error = "A FileMetadata is required.";
             logger.warning("Error in ExternalToolHandler constructor: " + error);
             throw new IllegalArgumentException(error);
         }
         this.dataFile = dataFile;
         this.apiToken = apiToken;
-        this.version = version;
-        dataset = version.getDataset();
+        this.fileMetadata = fileMetadata;
+        dataset = fileMetadata.getDatasetVersion().getDataset();
     }
 
     public DataFile getDataFile() {
         return dataFile;
+    }
+
+    public FileMetadata getFileMetadata() {
+        return fileMetadata;
     }
 
     public ApiToken getApiToken() {
@@ -107,12 +110,14 @@ public class ExternalToolHandler {
             case DATASET_ID:
                 return key + "=" + dataset.getId();
             case DATASET_VERSION:
-                String versionString = version.getFriendlyVersionNumber();
+                String versionString = fileMetadata.getDatasetVersion().getFriendlyVersionNumber();
                 if (("DRAFT").equals(versionString)) {
                     versionString = ":draft"; // send the token needed in api calls that can be substituted for a numeric
                                               // version.
                 }
                 return key + "=" + versionString;
+            case FILE_METADATA_ID:
+                return key + "=" + fileMetadata.getId();
             default:
                 break;
         }

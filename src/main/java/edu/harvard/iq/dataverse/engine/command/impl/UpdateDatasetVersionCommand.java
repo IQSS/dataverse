@@ -46,8 +46,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, DataFile fileToDelete) {
         super(aRequest, theDataset);
 
-        // get the latest file metadata for the file; ensuring that it is a draft
-        // version
+        // get the latest file metadata for the file; ensuring that it is a draft version
         this.filesToDelete = new ArrayList<>();
         this.clone = null;
         for (FileMetadata fmd : theDataset.getEditVersion().getFileMetadatas()) {

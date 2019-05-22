@@ -37,14 +37,12 @@ public class ConfigureFragmentBean implements java.io.Serializable{
     
     private ExternalTool tool = null;
     private Long fileId = null;
-    private Long datasetVersionId = null;
     private ExternalToolHandler toolHandler = null;
     private String messageApi = "";
+    private Long fileMetadataId = null;
     
     @EJB
     DataFileServiceBean datafileService;
-    @EJB
-    DatasetVersionServiceBean datasetVersionService;
     @Inject
     DataverseSession session;
     @EJB
@@ -98,7 +96,8 @@ public class ConfigureFragmentBean implements java.io.Serializable{
         }
 
         
-        toolHandler = new ExternalToolHandler(tool, datafileService.find(fileId), datasetVersionService.find(datasetVersionId), apiToken);
+        toolHandler = new ExternalToolHandler(tool, datafileService.find(fileId), apiToken, datafileService.findFileMetadata(fileMetadataId));
+
         return toolHandler;
     }
 
@@ -118,10 +117,10 @@ public class ConfigureFragmentBean implements java.io.Serializable{
 
     }
     
-    public void configureToolInfo(Long setFileId, Long setDatasetVersionId)
-    {
+    public void setConfigureIds(Long setFileId, Long setFileMetadataId) {
+
         fileId = setFileId;
-        datasetVersionId = setDatasetVersionId;
+        fileMetadataId = setFileMetadataId;
     }
 
     public String getMessageApi() {
