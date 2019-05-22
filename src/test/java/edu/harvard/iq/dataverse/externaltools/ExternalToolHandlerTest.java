@@ -141,7 +141,7 @@ public class ExternalToolHandlerTest {
                         )
                 )
                 .build().toString());
-        ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, nullApiToken, nullFileMetadata);
+        ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, nullApiToken, fmd);
         String result4 = externalToolHandler4.getQueryParametersForUrl();
         System.out.println("result4: " + result4);
         assertEquals("?key1=42", result4);
@@ -159,7 +159,7 @@ public class ExternalToolHandlerTest {
                 .build().toString());
         Exception expectedException = null;
         try {
-            ExternalToolHandler externalToolHandler5 = new ExternalToolHandler(externalTool, dataFile, nullApiToken, nullFileMetadata);
+            ExternalToolHandler externalToolHandler5 = new ExternalToolHandler(externalTool, dataFile, nullApiToken, fmd);
             String result5 = externalToolHandler5.getQueryParametersForUrl();
             System.out.println("result5: " + result5);
         } catch (Exception ex) {
