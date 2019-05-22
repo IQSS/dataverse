@@ -22,17 +22,20 @@ public class TestDataverseEngine implements DataverseEngine {
 		this.ctxt = ctxt;
 	}
 	
-	@Override
-	public <R> R submit(Command<R> aCommand) throws CommandException {
+    @Override
+    public <R> R submit(Command<R> aCommand) throws CommandException {
         Map<String, DvObject> affectedDvs = aCommand.getAffectedDvObjects();
         final Map<String, Set<Permission>> requiredPermissions = aCommand.getRequiredPermissions();
         aCommand.getRequest();
-        for ( String dvObjKey : affectedDvs.keySet() ) {
-            requiredPermissionsForObjects.put( affectedDvs.get(dvObjKey), requiredPermissions.get(dvObjKey) );
+        for (String dvObjKey : affectedDvs.keySet()) {
+            requiredPermissionsForObjects.put(affectedDvs.get(dvObjKey), requiredPermissions.get(dvObjKey));
         }
-		return aCommand.execute(ctxt);
-	}
-
+        
+        R r = aCommand.execute(ctxt);
+        aCommand.onSuccess(ctxt, r);
+        return r;
+    }
+        
     public Map<DvObject, Set<Permission>> getReqiredPermissionsForObjects() {
         return requiredPermissionsForObjects;
     }

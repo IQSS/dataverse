@@ -145,7 +145,7 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         managedDv.setPermissionModificationTime(new Timestamp(new Date().getTime()));
         managedDv = ctxt.dataverses().save(managedDv);
 
-        ctxt.index().indexDataverse(managedDv);
+  //      ctxt.index().indexDataverse(managedDv);
         if (facetList != null) {
             ctxt.facets().deleteFacetsFor(managedDv);
             int i = 0;
@@ -162,6 +162,12 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
             }
         }
         return managedDv;
+    }
+    
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Dataverse r) {
+        ctxt.index().indexDataverse(r);
+        return true;
     }
 
 }

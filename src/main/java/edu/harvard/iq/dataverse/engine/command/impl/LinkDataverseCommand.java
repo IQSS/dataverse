@@ -54,7 +54,13 @@ public class LinkDataverseCommand extends AbstractCommand<DataverseLinkingDatave
         dataverseLinkingDataverse.setLinkingDataverse(linkingDataverse);
         dataverseLinkingDataverse.setLinkCreateTime(new Timestamp(new Date().getTime()));
         ctxt.dvLinking().save(dataverseLinkingDataverse);
-        ctxt.index().indexDataverse(linkedDataverse);
         return dataverseLinkingDataverse;
-    }   
+    }  
+    
+    @Override
+    public boolean onSuccess(CommandContext ctxt, DataverseLinkingDataverse r) {
+        ctxt.index().indexDataverse(r.getDataverse());
+        return true;
+    }
+    
 }

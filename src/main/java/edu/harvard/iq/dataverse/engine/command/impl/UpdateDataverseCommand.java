@@ -11,8 +11,10 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.search.IndexResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 import javax.persistence.TypedQuery;
 
 /**
@@ -79,19 +81,18 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
                 }
             }
             
-            ctxt.index().indexDataverse(result);
-            
-            //When these values are changed we need to reindex all children datasets
-            //This check is not recursive as all the values just report the immediate parent
-            //
-            //This runs async to not slow down editing --MAD 4.9.4
-            if(!oldDvType.equals(editedDv.getDataverseType()) 
-            || !oldDvName.equals(editedDv.getName())
-            || !oldDvAlias.equals(editedDv.getAlias())) {
-                List<Dataset> datasets = ctxt.datasets().findByOwnerId(editedDv.getId());
-                ctxt.index().asyncIndexDatasetList(datasets, true);
-            }
             
             return result;
 	}
+        
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Dataverse r) {
+        
+        Future<String> indResponse = ctxt.index().indexDataverse(r);
+        
+        List<Dataset> datasets = ctxt.datasets().findByOwnerId(r.getId());
+        ctxt.index().asyncIndexDatasetList(datasets, true);
+
+        return true;
+    }
 }

@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import java.util.Collections;
+import java.util.concurrent.Future;
 
 /**
  *
@@ -47,9 +48,18 @@ public class DeleteDataverseLinkingDataverseCommand extends AbstractCommand<Data
         ctxt.em().remove(doomedAndMerged);
         
         if (index) {
-            ctxt.index().indexDataverse(editedDv);
+            //can only index merged in the onSuccess method so must index doomed linking dataverse here
             ctxt.index().indexDataverse(doomed.getLinkingDataverse());
         }
         return merged;
     } 
+
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Dataverse r) {
+        
+        Future<String> retVal = ctxt.index().indexDataverse(r);
+        return true;
+
+    }
+
 }

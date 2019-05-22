@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import java.util.concurrent.Future;
 
 /**
  *
@@ -116,10 +117,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 		theDataset.getLatestVersion().setVersionState(RELEASED);
 	}
         
-        exportMetadata(ctxt.settings());
-        boolean doNormalSolrDocCleanUp = true;
-        ctxt.index().indexDataset(theDataset, doNormalSolrDocCleanUp);
-        ctxt.solrIndex().indexPermissionsForOneDvObject(theDataset);
 
         // Remove locks
         ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.Workflow));
@@ -146,6 +143,29 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
         
         return readyDataset;
+    }
+    
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Dataset r) {
+        boolean retVal = true;
+        Future<String> indexString = ctxt.index().indexDataset((Dataset) r, true);
+        
+        /*
+        
+        - trying to get a reasonable return to the admion when there's a failure
+        need some work here on the innards of the Future<String> return value of the indexDataset method
+        try {
+            System.out.print("Done?" + indexString.isDone());
+        } catch (Exception e) {
+            System.out.print("Done Exception" + e.getMessage());
+        }
+        
+        */
+
+
+        ctxt.solrIndex().indexPermissionsForOneDvObject(r);
+        exportMetadata(ctxt.settings());
+        return retVal;
     }
 
     /**
