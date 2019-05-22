@@ -89,7 +89,7 @@
         <script type="text/javascript" defer="defer" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersion()}"></script>
         <script type="text/javascript" defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>  
         <script type="text/javascript" defer="defer" src="#{resource['js/clipboard.min.js']}?version=#{systemConfig.getVersion()}"></script>          
-        <ui:fragment rendered="#{systemConfig.isShibPassiveLoginEnabled()}">
+        <ui:fragment rendered="#{settingsWrapper.shibPassiveLoginEnabled}">
             <script type="text/javascript" language="javascript" src="#{resource['js/shib/isPassive.js']}"></script>
         </ui:fragment>
         <script>

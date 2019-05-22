@@ -33,7 +33,7 @@ public class HomepageServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String nonNullDefaultIfKeyNotFound = "";
+
         String customFile = settingsService.getValueForKey(SettingsServiceBean.Key.HomePageCustomizationFile);
         String forwardPage = "";
         if (customFile.isEmpty()) {

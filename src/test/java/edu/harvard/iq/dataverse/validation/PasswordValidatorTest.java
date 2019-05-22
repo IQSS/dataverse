@@ -16,6 +16,8 @@ import java.util.logging.Logger;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
 
+import com.google.common.collect.Lists;
+
 /**
  * PasswordValidatorTest
  * <p>
@@ -146,14 +148,13 @@ public class PasswordValidatorTest {
         passwordValidatorService = new PasswordValidatorServiceBean();
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testDifferentPasswordsAndSettings() {
 
         long DAY = 86400000L;
         final Date expired = new Date(new Date().getTime() - DAY * 400);
         final Date notExpired = new Date(new Date().getTime() - DAY * 300);
-        List<CharacterRule> characterRulesDefault = PasswordValidatorUtil.getCharacterRulesDefault();
+        List<CharacterRule> characterRulesDefault = getCharacterRulesDefault();
         List<CharacterRule> characterRulesHarvardLevel3 = getCharacterRulesHarvardLevel3();
         final int numberOfCharactersDefault = 2;
         final int numberOfCharacters = 3;
@@ -252,6 +253,12 @@ public class PasswordValidatorTest {
     private String message(Params params, List<String> errors, int expected, int actual) {
         String details = (actual == 0) ? params.toString() : PasswordValidatorServiceBean.parseMessages(errors) + "\n" + params;
         return String.format("Expected errors: %s\nActual errors: %s\nDetails: %s", expected, actual, details);
+    }
+    
+    private List<CharacterRule> getCharacterRulesDefault() {
+        return Lists.newArrayList(
+                new CharacterRule(EnglishCharacterData.Alphabetical, 1),
+                new CharacterRule(EnglishCharacterData.Digit, 1));
     }
     
     public static List<CharacterRule> getCharacterRulesHarvardLevel3() {

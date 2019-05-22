@@ -33,14 +33,11 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import javax.ws.rs.core.Response;
 
 /**
  *
@@ -641,7 +638,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
     }
     
-    public String addRoleAssignmentsToChildren(Dataverse owner, ArrayList<String> rolesToInherit,
+    public String addRoleAssignmentsToChildren(Dataverse owner, List<String> rolesToInherit,
             boolean inheritAllRoles) {
         /*
          * This query recursively finds all Dataverses that are inside/children of the

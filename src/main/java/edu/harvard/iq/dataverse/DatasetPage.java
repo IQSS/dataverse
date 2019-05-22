@@ -248,7 +248,6 @@ public class DatasetPage implements java.io.Serializable {
     private String version;
     private String protocol = "";
     private String authority = "";
-    private String customFields="";
 
     private boolean noDVsAtAll = false;
 
@@ -453,7 +452,7 @@ public class DatasetPage implements java.io.Serializable {
         if (session.getUser() instanceof AuthenticatedUser) {
             AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
             String url = settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl);
-            if (url == null) {
+            if (StringUtils.isEmpty(url)) {
                 return "";
             }
             // url indicates that you are computing with multiple datasets
@@ -1374,7 +1373,7 @@ public class DatasetPage implements java.io.Serializable {
     
     private String init(boolean initFull) {
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
+        this.maxFileUploadSizeInBytes = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
 
         guestbookResponse = new GuestbookResponse();
@@ -2021,7 +2020,7 @@ public class DatasetPage implements java.io.Serializable {
             // If configured, and currently published version is archived, try to update archive copy as well
             DatasetVersion updateVersion = dataset.getLatestVersion();
             if (updateVersion.getArchivalCopyLocation() != null) {
-                String className = settingsService.get(SettingsServiceBean.Key.ArchiverClassName.toString());
+                String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
                 AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), updateVersion);
                 if (archiveCommand != null) {
                     // Delete the record of any existing copy since it is now out of date/incorrect
@@ -2707,7 +2706,7 @@ public class DatasetPage implements java.io.Serializable {
      
      public String save() {
          //Before dataset saved, write cached prov freeform to version
-        if(systemConfig.isProvCollectionEnabled()) {
+        if(settingsService.isTrueForKey(SettingsServiceBean.Key.ProvCollectionEnabled)) {
             provPopupFragmentBean.saveStageProvFreeformToLatestVersion();
         }
         
@@ -2862,7 +2861,7 @@ public class DatasetPage implements java.io.Serializable {
         ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) session.getUser());
 
         //After dataset saved, then persist prov json data
-        if(systemConfig.isProvCollectionEnabled()) {
+        if(settingsService.isTrueForKey(SettingsServiceBean.Key.ProvCollectionEnabled)) {
             try {
                 provPopupFragmentBean.saveStagedProvJson(false, dataset.getLatestVersion().getFileMetadatas());
             } catch (AbstractApiBean.WrappedResponse ex) {
@@ -3386,12 +3385,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getDatasetPublishCustomText(){
-        String datasetPublishCustomText = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
-        if( datasetPublishCustomText!= null && !datasetPublishCustomText.isEmpty()){
-            return datasetPublishCustomText;
-            
-        }
-        return "";
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
     }
     
     public Boolean isDatasetPublishPopupCustomTextOnAllVersions(){
@@ -4421,8 +4415,8 @@ public class DatasetPage implements java.io.Serializable {
      * @return the dataset fields to be shown in the dataset summary
      */
     public List<DatasetField> getDatasetSummaryFields() {
-        customFields = settingsService.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
-       
+        List<String> customFields = settingsService.getValueForKeyAsList(SettingsServiceBean.Key.CustomDatasetSummaryFields);
+        
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
 

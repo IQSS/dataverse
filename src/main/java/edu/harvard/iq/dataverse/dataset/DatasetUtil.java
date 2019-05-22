@@ -397,16 +397,10 @@ public class DatasetUtil {
         return false;
     }
 
-    public static List<DatasetField> getDatasetSummaryFields(DatasetVersion datasetVersion, String customFields) {
+    public static List<DatasetField> getDatasetSummaryFields(DatasetVersion datasetVersion, List<String> customFieldList) {
         
         List<DatasetField> datasetFields = new ArrayList<>();
         
-        //if customFields are empty, go with default fields. 
-        if(customFields==null || customFields.isEmpty()){
-               customFields="dsDescription,subject,keyword,publication,notesText";
-        }
-        
-        String[] customFieldList= customFields.split(",");
         Map<String,DatasetField> DatasetFieldsSet=new HashMap<>(); 
         
         for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {

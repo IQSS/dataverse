@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.confirmemail;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
@@ -40,9 +41,13 @@ public class ConfirmEmailServiceBean {
     MailServiceBean mailService;
 
     @EJB
+    SettingsServiceBean settingsService;
+    
+    @EJB
     SystemConfig systemConfig;
 
-    @EJB DataverseServiceBean dataverseService;
+    @EJB
+    DataverseServiceBean dataverseService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -72,7 +77,7 @@ public class ConfirmEmailServiceBean {
         aUser.setEmailConfirmed(null);
         aUser = em.merge(aUser);
         // create a fresh token for the user iff they don't have an existing token
-        ConfirmEmailData confirmEmailData = new ConfirmEmailData(aUser, systemConfig.getMinutesUntilConfirmEmailTokenExpires());
+        ConfirmEmailData confirmEmailData = new ConfirmEmailData(aUser, settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires));
         try {
             /**
              * @todo This "persist" is causing lots of noise in Glassfish's
@@ -102,7 +107,7 @@ public class ConfirmEmailServiceBean {
         String messageBody = BundleUtil.getStringFromBundle("notification.email.changeEmail", Arrays.asList(
                 aUser.getFirstName(),
                 confirmationUrl,
-                ConfirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires())
+                ConfirmEmailUtil.friendlyExpirationTime(settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires))
         ));
         logger.log(Level.FINE, "messageBody:{0}", messageBody);
 
@@ -228,7 +233,7 @@ public class ConfirmEmailServiceBean {
     }
 
     public ConfirmEmailData createToken(AuthenticatedUser au) {
-        ConfirmEmailData confirmEmailData = new ConfirmEmailData(au, systemConfig.getMinutesUntilConfirmEmailTokenExpires());
+        ConfirmEmailData confirmEmailData = new ConfirmEmailData(au, settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires));
         em.persist(confirmEmailData);
         return confirmEmailData;
     }
@@ -248,7 +253,7 @@ public class ConfirmEmailServiceBean {
             logger.info("Can't return confirm email message. No ConfirmEmailData for user id " + user.getId());
             return emptyString;
         }
-        String expTime = ConfirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires());
+        String expTime = ConfirmEmailUtil.friendlyExpirationTime(settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires));
         String confirmEmailUrl = systemConfig.getDataverseSiteUrl() + "/confirmemail.xhtml?token=" + confirmEmailData.getToken();
         List<String> args = Arrays.asList(confirmEmailUrl, expTime);
         String optionalConfirmEmailMsg = BundleUtil.getStringFromBundle("notification.email.welcomeConfirmEmailAddOn", args);

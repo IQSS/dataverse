@@ -358,38 +358,38 @@ public class FileRecordWriter extends AbstractItemWriter {
         dataset.getLatestVersion().addFileMetadata(fmd);
         fmd.setDatasetVersion(dataset.getLatestVersion());
 
-        String isFilePIDsEnabled = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.FilePIDsEnabled);
-	if ("true".contentEquals( isFilePIDsEnabled )) {
-	
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
-        if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
-            packageFile.setIdentifier(dataFileServiceBean.generateDataFileIdentifier(packageFile, idServiceBean));
-        }
-        String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol);
-        String authority = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Authority);
-        if (packageFile.getProtocol() == null) {
-            packageFile.setProtocol(protocol);
-        }
-        if (packageFile.getAuthority() == null) {
-            packageFile.setAuthority(authority);
-        }
-
-        if (!packageFile.isIdentifierRegistered()) {
-            String doiRetString = "";
-            idServiceBean = GlobalIdServiceBean.getBean(commandEngine.getContext());
-            try {
-                doiRetString = idServiceBean.createIdentifier(packageFile);
-            } catch (Throwable e) {
-                
+        boolean isFilePIDsEnabled = commandEngine.getContext().settings().isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled);
+        if (isFilePIDsEnabled) {
+            
+            GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
+            if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
+                packageFile.setIdentifier(dataFileServiceBean.generateDataFileIdentifier(packageFile, idServiceBean));
+            }
+            String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol);
+            String authority = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Authority);
+            if (packageFile.getProtocol() == null) {
+                packageFile.setProtocol(protocol);
+            }
+            if (packageFile.getAuthority() == null) {
+                packageFile.setAuthority(authority);
             }
 
-            // Check return value to make sure registration succeeded
-            if (!idServiceBean.registerWhenPublished() && doiRetString.contains(packageFile.getIdentifier())) {
-                packageFile.setIdentifierRegistered(true);
-                packageFile.setGlobalIdCreateTime(new Date());
+            if (!packageFile.isIdentifierRegistered()) {
+                String doiRetString = "";
+                idServiceBean = GlobalIdServiceBean.getBean(commandEngine.getContext());
+                try {
+                    doiRetString = idServiceBean.createIdentifier(packageFile);
+                } catch (Throwable e) {
+                    
+                }
+
+                // Check return value to make sure registration succeeded
+                if (!idServiceBean.registerWhenPublished() && doiRetString.contains(packageFile.getIdentifier())) {
+                    packageFile.setIdentifierRegistered(true);
+                    packageFile.setGlobalIdCreateTime(new Date());
+                }
             }
         }
-	}
 
         getJobLogger().log(Level.INFO, "Successfully created a file of type package");
         

@@ -917,7 +917,7 @@ public class Datasets extends AbstractApiBean {
                     successMsg = BundleUtil.getStringFromBundle("datasetversion.update.success");
 
                     // If configured, update archive copy as well
-                    String className = settingsService.get(SettingsServiceBean.Key.ArchiverClassName.toString());
+                    String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
                     DatasetVersion updateVersion = ds.getLatestVersion();
                     AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, createDataverseRequest(user), updateVersion);
                     if (archiveCommand != null) {
@@ -1478,7 +1478,7 @@ public class Datasets extends AbstractApiBean {
                                                 fileService,
                                                 permissionSvc,
                                                 commandEngine,
-                                                systemConfig,
+                                                settingsService,
                                                 termsOfUseFactory);
 
 

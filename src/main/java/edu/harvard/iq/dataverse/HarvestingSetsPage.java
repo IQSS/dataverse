@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OaiSetException;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -57,7 +58,9 @@ public class HarvestingSetsPage implements java.io.Serializable {
     @EJB
     EjbDataverseEngine engineService;
     @EJB
-    SystemConfig systemConfig; 
+    SystemConfig systemConfig;
+    @EJB
+    SettingsServiceBean settingsService;
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
@@ -161,14 +164,14 @@ public class HarvestingSetsPage implements java.io.Serializable {
     }
     
     public boolean isHarvestingServerEnabled() {
-        return systemConfig.isOAIServerEnabled();
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.OAIServerEnabled);
     }
     
     public void toggleHarvestingServerStatus() {
         if (isHarvestingServerEnabled()) {
-            systemConfig.disableOAIServer();
+            settingsService.setValueForKey(SettingsServiceBean.Key.OAIServerEnabled, "false");
         } else {
-            systemConfig.enableOAIServer();
+            settingsService.setValueForKey(SettingsServiceBean.Key.OAIServerEnabled, "true");
             JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("harvestserver.service.enable.success"));
             checkIfDefaultSetExists();
         }
@@ -191,7 +194,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
     }
     
     public void disableHarvestingServer() {
-        systemConfig.disableOAIServer();
+        settingsService.setValueForKey(SettingsServiceBean.Key.OAIServerEnabled, "false");
     }
     
     public void setSelectedSet(OAISet oaiSet) {

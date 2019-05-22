@@ -151,27 +151,6 @@ public class SearchPermissionsServiceBean {
         return peopleWhoCanSearch;
     }
 
-    @Deprecated
-    private List<String> findImplicitAssignments(DvObject dvObject) {
-        List<String> permStrings = new ArrayList<>();
-        DvObject parent = dvObject.getOwner();
-        while (parent != null) {
-            if (respectPermissionRoot()) {
-                if (parent.isEffectivelyPermissionRoot()) {
-                    return permStrings;
-                }
-            }
-            if (parent.isInstanceofDataverse()) {
-                permStrings.addAll(findDirectAssignments(parent));
-            } else if (parent.isInstanceofDataset()) {
-                // files get discoverability from their parent dataset
-                permStrings.addAll(findDirectAssignments(parent));
-            }
-            parent = parent.getOwner();
-        }
-        return permStrings;
-    }
-
     public Map<DatasetVersion.VersionState, Boolean> getDesiredCards(Dataset dataset) {
         Map<DatasetVersion.VersionState, Boolean> desiredCards = new LinkedHashMap<>();
         DatasetVersion latestVersion = dataset.getLatestVersion();
@@ -229,11 +208,6 @@ public class SearchPermissionsServiceBean {
             return Permission.ViewUnpublishedDataset;
         }
 
-    }
-
-    @Deprecated
-    private boolean respectPermissionRoot() {
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.SearchRespectPermissionRoot);
     }
 
     /**

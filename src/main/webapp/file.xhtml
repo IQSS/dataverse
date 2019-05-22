@@ -111,7 +111,7 @@
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
                                         </button>
                                         <ul class="dropdown-menu pull-right text-left" role="menu">
-                                            <ui:fragment rendered="#{systemConfig.provCollectionEnabled}">
+                                            <ui:fragment rendered="#{settingsWrapper.provCollectionEnabled}">
                                             <!--  Should be FilePage.isLockedFromEdits() ? -->
                                                 <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
                                                     <p:commandLink id="fileProvenanceButton"
@@ -460,8 +460,8 @@
                                                 <div class="col-sm-9">
                                                     <p class="help-block">
                                                         <h:outputFormat value="#{bundle['file.metadataTab.fileMetadata.downloadUrl.info']}" escape="false">
-                                                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                                            <f:param value="#{systemConfig.guidesVersion}"/>
+                                                            <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                                            <f:param value="#{settingsWrapper.guidesVersion}"/>
                                                         </h:outputFormat>
                                                     </p>
                                                     <code><h:outputText value="#{FilePage.publicDownloadUrl}"/></code>
@@ -604,7 +604,7 @@
                         </ui:include>
                     </p:dialog>
                     
-                    <ui:include rendered="#{systemConfig.provCollectionEnabled}" src="provenance-popups-fragment.xhtml">
+                    <ui:include rendered="#{settingsWrapper.provCollectionEnabled}" src="provenance-popups-fragment.xhtml">
                             <ui:param name="saveInPopup" value="true"/>
                     </ui:include>
                     

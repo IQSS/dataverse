@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.workflow.step.Pending;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
@@ -326,7 +327,7 @@ public class WorkflowServiceBean {
     }
 
     public List<Workflow> listWorkflows() {
-        return em.createNamedQuery("Workflow.listAll").getResultList();
+        return em.createNamedQuery("Workflow.listAll", Workflow.class).getResultList();
     }
 
     public Optional<Workflow> getWorkflow(long workflowId) {
@@ -355,7 +356,7 @@ public class WorkflowServiceBean {
             // validate that this is not the default workflow
             for ( WorkflowContext.TriggerType tp : WorkflowContext.TriggerType.values() ) {
                 String defaultWorkflowId = settings.get(workflowSettingKey(tp));
-                if (defaultWorkflowId != null
+                if (StringUtils.isNotEmpty(defaultWorkflowId)
                         && Long.parseLong(defaultWorkflowId) == doomedOpt.get().getId()) {
                     throw new IllegalArgumentException("Workflow " + workflowId + " cannot be deleted as it is the default workflow for trigger " + tp.name() );
                 }
@@ -379,7 +380,7 @@ public class WorkflowServiceBean {
 
     public Optional<Workflow> getDefaultWorkflow( WorkflowContext.TriggerType type ) {
         String defaultWorkflowId = settings.get(workflowSettingKey(type));
-        if (defaultWorkflowId == null) {
+        if (StringUtils.isEmpty(defaultWorkflowId)) {
             return Optional.empty();
         }
         return getWorkflow(Long.parseLong(defaultWorkflowId));

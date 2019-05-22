@@ -211,7 +211,6 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
             packageFile.setIdentifier(packageIdentifier);
         }
 
-        String nonNullDefaultIfKeyNotFound = "";
         String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol);
         String authority = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Authority);
 

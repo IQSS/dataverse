@@ -225,7 +225,7 @@ public class Files extends AbstractApiBean {
                                                 this.fileService,
                                                 this.permissionSvc,
                                                 this.commandEngine,
-                                                this.systemConfig,
+                                                this.settingsService,
                                                 this.termsOfUseFactory);
 
         //-------------------

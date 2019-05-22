@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.util;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import org.apache.commons.lang3.StringUtils;
+
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.SystemEmail;
 import java.util.Arrays;
 import java.util.List;
@@ -15,7 +17,7 @@ public class MailUtil {
     private static final Logger logger = Logger.getLogger(MailUtil.class.getCanonicalName());
 
     public static InternetAddress parseSystemAddress(String systemEmail) {
-        if (systemEmail != null) {
+        if (StringUtils.isNotEmpty(systemEmail)) {
             try {
                 InternetAddress parsedSystemEmail = new InternetAddress(systemEmail);
                 logger.fine("parsed system email: " + parsedSystemEmail);

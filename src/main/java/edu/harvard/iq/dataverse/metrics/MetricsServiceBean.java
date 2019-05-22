@@ -1,15 +1,16 @@
 package edu.harvard.iq.dataverse.metrics;
 
 import edu.harvard.iq.dataverse.Metric;
-import static edu.harvard.iq.dataverse.metrics.MetricsUtil.*;
-import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -21,7 +22,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.persistence.NoResultException;
+
+import static edu.harvard.iq.dataverse.metrics.MetricsUtil.DATA_LOCATION_ALL;
+import static edu.harvard.iq.dataverse.metrics.MetricsUtil.DATA_LOCATION_LOCAL;
+import static edu.harvard.iq.dataverse.metrics.MetricsUtil.DATA_LOCATION_REMOTE;
 
 @Stateless
 public class MetricsServiceBean implements Serializable {
@@ -33,7 +37,7 @@ public class MetricsServiceBean implements Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     @EJB
-    SystemConfig systemConfig;
+    private SettingsServiceBean settingsService;
 
     
     /** Dataverses */
@@ -403,7 +407,7 @@ public class MetricsServiceBean implements Serializable {
         Date lastCalled = queriedMetric.getLastCalledDate();
         LocalDateTime ldt = LocalDateTime.ofInstant((new Date()).toInstant(), ZoneId.systemDefault());
 
-        int minutesUntilNextQuery = systemConfig.getMetricsCacheTimeoutMinutes();
+        long minutesUntilNextQuery = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MetricsCacheTimeoutMinutes);
 
         if (yyyymm.equals(thisMonthYYYYMM)) { //if this month
             LocalDateTime ldtMinus = ldt.minusMinutes(minutesUntilNextQuery);
@@ -426,7 +430,7 @@ public class MetricsServiceBean implements Serializable {
             return true;
         }
 
-        int minutesUntilNextQuery = systemConfig.getMetricsCacheTimeoutMinutes();
+        long minutesUntilNextQuery = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MetricsCacheTimeoutMinutes);
         Date lastCalled = queriedMetric.getLastCalledDate();
         LocalDateTime ldt = LocalDateTime.ofInstant((new Date()).toInstant(), ZoneId.systemDefault());
 

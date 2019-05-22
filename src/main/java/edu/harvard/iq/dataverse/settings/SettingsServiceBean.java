@@ -1,23 +1,17 @@
 package edu.harvard.iq.dataverse.settings;
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
-import edu.harvard.iq.dataverse.branding.BrandingUtil;
-import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.mail.internet.InternetAddress;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import org.apache.commons.lang3.StringUtils;
-
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +27,6 @@ import java.util.logging.Logger;
  * @see FileBasedSettingsFetcher
  */
 @Stateless
-@Named
 public class SettingsServiceBean {
     
     /**
@@ -115,10 +108,6 @@ public class SettingsServiceBean {
          * old behavior by setting this to false.
          */
         SearchApiRequiresToken,
-        /**
-         * Experimental: Use Solr to power the file listing on the dataset page.
-         */
-        FilesOnDatasetPageFromSolr,
 
         /**
          * API endpoints that are not accessible. Comma separated list.
@@ -152,33 +141,22 @@ public class SettingsServiceBean {
          * to from the footer.
          */
         ApplicationPrivacyPolicyUrl,
-        /**
-         * A boolean defining if indexing and search should respect the concept
-         * of "permission root".
-         *
-         * <p>
-         *
-         * If we ignore permissionRoot at index time, we should blindly give
-         * search ("discoverability") access to people and group who have access
-         * defined in a parent dataverse, all the way back to the root.
-         *
-         * <p>
-         *
-         * If we respect permissionRoot, this means that the dataverse being
-         * indexed is an island of permissions all by itself. We should not look
-         * to its parent to see if more people and groups might be able to
-         * search the DvObjects within it. We would assume no implicit
-         * inheritance of permissions. In this mode, all permissions must be
-         * explicitly defined on DvObjects. No implied inheritance.
-         *
-         */
-        SearchRespectPermissionRoot,
         /** Solr hostname and port, such as "localhost:8983". */
         SolrHostColonPort,
-        /** Enable full-text indexing in solr up to max file size */
-        SolrFullTextIndexing, //true or false (default)
-        SolrMaxFileSizeForFullTextIndexing, //long - size in bytes (default unset/no limit)
-        /** Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
+        /** Enable full-text indexing in solr
+         *  Defaults to false
+         **/
+        SolrFullTextIndexing,
+        /**
+         * If file size of indexed file is greater than this value
+         * then full text indexing will not take place
+         * If set to 0 then no limit
+         * Defaults to 0
+         */
+        SolrMaxFileSizeForFullTextIndexing, //
+        /** Key for limiting the number of bytes uploaded via the Data Deposit API, UI
+         *  If not set then not limit
+         **/
         MaxFileUploadSizeInBytes,
         /** Key for if ScrubMigrationData is enabled or disabled. */
         ScrubMigrationData,
@@ -216,17 +194,31 @@ public class SettingsServiceBean {
         /* zip download size limit */
         /** Optionally override version number in guides. */
         GuidesVersion,
+        /**
+         * Download-as-zip size limit.
+         * If set to 0 then no limit.
+         * If set to -1 then zip downloads are disabled
+         */
         ZipDownloadLimit,
-        /* zip upload number of files limit */
+        /**
+         * Number of datafiles that we allow to be created through 
+         * zip file upload.
+         */
         ZipUploadFilesLimit,
-        /* the number of files the GUI user is allowed to upload in one batch, 
-            via drag-and-drop, or through the file select dialog */
+        /** 
+         *  the number of files the GUI user is allowed to upload in one batch, 
+         *  via drag-and-drop, or through the file select dialog
+         */
         MultipleUploadFilesLimit,
         /** Size limits for generating thumbnails on the fly
          *(i.e., we'll attempt to generate a thumbnail on the fly if the
          * size of the file is less than this)
+         * FIXME: this setting is currently taken from system environment
         */
         ThumbnailSizeLimitImage,
+        /**
+         * FIXME: this setting is currently taken from system environment
+         */
         ThumbnailSizeLimitPDF,
         /**
          * status message that will appear on the home page
@@ -236,13 +228,17 @@ public class SettingsServiceBean {
         StatusMessageText,
         /** return email address for system emails such as notifications */
         SystemEmail,
-        /** size limit for Tabular data file ingests
-         (can be set separately for specific ingestable formats; in which
-        case the actual stored option will be TabularIngestSizeLimit:{FORMAT_NAME}
-        where {FORMAT_NAME} is the format identification tag returned by the 
-        getFormatName() method in the format-specific plugin; "sav" for the 
-        SPSS/sav format, "RData" for R, etc.
-        for example: :TabularIngestSizeLimit:RData */
+        /** 
+         * size limit for Tabular data file ingests <br/>
+         * (can be set separately for specific ingestable formats; in which
+         * case the actual stored option will be TabularIngestSizeLimit:{FORMAT_NAME}
+         * where {FORMAT_NAME} is the format identification tag returned by the 
+         * getFormatName() method in the format-specific plugin; "sav" for the 
+         * SPSS/sav format, "RData" for R, etc.
+         * for example: :TabularIngestSizeLimit:RData <br/>
+         * -1 means no limit is set; 
+         * 0 on the other hand would mean that ingest is fully disabled for tabular data.
+         */
         TabularIngestSizeLimit,
         /**
         Whether to allow user to create GeoConnect Maps
@@ -328,35 +324,40 @@ public class SettingsServiceBean {
          */
         PVDictionaries,
 
-//        /**
-//         * The days and minimum length for when to apply an expiration date.
-//         */
-//        PVExpirationDays,
-//        PVValidatorExpirationMaxLength,
-
         /**
          * The minimum length of a good, long, strong password.
+         * Defaults to 20.
          */
         PVGoodStrength,
 
         /**
-         * A password minimum and maximum length
+         * A password minimum length
+         * Defaults to 6
          */
         PVMinLength,
+        /**
+         * A password maximum length
+         * If set to 0 then maximum length is disabled
+         */
         PVMaxLength,
 
         /**
-         * One letter, 2 special characters, etc.
+         * One letter, 2 special characters, etc. (string in form Alphabetical:1,Digit:1)
+         * Defaults to (string in form Alphabetical:1,Digit:1):
+         *  - one alphabetical
+         *  - one digit
          */
         PVCharacterRules,
 
         /**
-         * The number of M characteristics
+         * The number of M characteristics.
+         * Defaults to 2.
          */
         PVNumberOfCharacteristics,
         
         /**
-         * The number of consecutive digits allowed for a password
+         * The number of consecutive digits allowed for a password.
+         * Defaults to highest int
          */
         PVNumberOfConsecutiveDigitsAllowed,
         /**
@@ -438,9 +439,6 @@ public class SettingsServiceBean {
     @EJB
     private FileBasedSettingsFetcher fileBasedSettingsFetcher;
 
-    @Inject
-    private DataverseServiceBean dataverseService;
-
     // -------------------- LOGIC --------------------
 
     /**
@@ -471,8 +469,8 @@ public class SettingsServiceBean {
      * @param key
      * @return 
      */
-       public Long getValueForKeyAsLong(Key key){
-        
+    public Long getValueForKeyAsLong(Key key){
+
         String val = this.getValueForKey(key);
 
         if (StringUtils.isEmpty(val)){
@@ -486,9 +484,22 @@ public class SettingsServiceBean {
             logger.log(Level.WARNING, "Incorrect setting.  Could not convert \"{0}\" from setting {1} to long.", new Object[]{val, key.toString()});
             return null;
         }
-        
+
     }
-     
+    
+    public Integer getValueForKeyAsInt(Key key){
+        Long value = getValueForKeyAsLong(key);
+        if (value == null) {
+            return null;
+        }
+        return value.intValue();
+    }
+    
+    public List<String> getValueForKeyAsList(Key key) {
+        return Arrays.asList(StringUtils.split(getValueForKey(key), ","));
+    }
+    
+    
     public Setting set( String name, String content ) {
         Setting s = new Setting( name, content );
         s = em.merge(s);
@@ -538,16 +549,6 @@ public class SettingsServiceBean {
     	dbSettings.forEach(s -> mergedSettings.put(s.getName(), s.getContent()));
     	
     	return mergedSettings;
-    }
-
-    public String getGuidesBaseUrl() {
-        return getValueForKey(Key.GuidesBaseUrl) + "/en";
-    }
-
-    public String getSupportTeamName() {
-        String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
-        InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);
-        return BrandingUtil.getSupportTeamName(systemAddress, dataverseService.findRootDataverse().getName());
     }
     
 }

@@ -92,8 +92,6 @@ public class CustomizationFilesServlet extends HttpServlet {
     }
     
     private String getFilePath(String fileTypeParam){
-
-        String nonNullDefaultIfKeyNotFound = "";
         
         if (fileTypeParam.equals(CustomizationConstants.fileTypeHomePage)) {
             

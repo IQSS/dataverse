@@ -13,8 +13,8 @@
 
     <div jsf:rendered="#{datasetVersion.draft}">
         <h:outputFormat value=" #{bundle['file.dataFilesTab.dataAccess.info.draft']}" escape="false">
-            <f:param value="#{systemConfig.guidesBaseUrl}"/>
-            <f:param value="#{systemConfig.guidesVersion}"/>
+            <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+            <f:param value="#{settingsWrapper.guidesVersion}"/>
         </h:outputFormat>
     </div>
     <div jsf:rendered="#{not datasetVersion.draft}">
@@ -22,8 +22,8 @@
             <div class="col-xs-12">
                 <p class="help-block">
                     <h:outputFormat value=" #{bundle['file.dataFilesTab.dataAccess.info']}" escape="false">
-                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                        <f:param value="#{systemConfig.guidesVersion}"/>
+                        <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                        <f:param value="#{settingsWrapper.guidesVersion}"/>
                     </h:outputFormat>
                 </p>
             </div>

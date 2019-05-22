@@ -37,7 +37,7 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
     protected void executeImpl(CommandContext ctxt) throws CommandException {
 
 
-        if (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser()) {
+        if (!getUser().isSuperuser()) {
             throw new PermissionException(BundleUtil.getStringFromBundle("datasets.api.updatePIDMetadata.auth.mustBeSuperUser"),
                     this, Collections.singleton(Permission.EditDataset), target);
         }
@@ -58,7 +58,7 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
                 // didn't need updating.
                 String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol);
                 String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat);
-                boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabled();
+                boolean isFilePIDsEnabled = ctxt.settings().isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled);
                 // We will skip trying to update the global identifiers for datafiles if they
                 // aren't being used.
                 // If they are, we need to assure that there's an existing PID or, as when

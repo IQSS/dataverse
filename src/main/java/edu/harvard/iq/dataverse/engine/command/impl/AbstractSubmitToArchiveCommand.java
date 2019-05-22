@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -15,6 +14,7 @@ import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -33,9 +33,8 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
 
-        String settings = ctxt.settings().getValueForKey(SettingsServiceBean.Key.ArchiverSettings);
-        String[] settingsArray = settings.split(",");
-        for (String setting : settingsArray) {
+        List<String> settingNames = ctxt.settings().getValueForKeyAsList(SettingsServiceBean.Key.ArchiverSettings);
+        for (String setting : settingNames) {
             setting = setting.trim();
             if (!setting.startsWith(":")) {
                 logger.warning("Invalid Archiver Setting: " + setting);

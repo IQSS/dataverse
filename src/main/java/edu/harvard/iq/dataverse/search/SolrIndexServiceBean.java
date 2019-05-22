@@ -10,7 +10,22 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.response.UpdateResponse;
+import org.apache.solr.common.SolrInputDocument;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -22,18 +37,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
-import org.apache.solr.client.solrj.response.UpdateResponse;
-import org.apache.solr.common.SolrInputDocument;
 
 @Named
 @Stateless
@@ -42,7 +45,7 @@ public class SolrIndexServiceBean {
     private static final Logger logger = Logger.getLogger(SolrIndexServiceBean.class.getCanonicalName());
 
     @EJB
-    SystemConfig systemConfig;
+    SettingsServiceBean settingsService;
     @EJB
     DvObjectServiceBean dvObjectService;
     @EJB
@@ -62,7 +65,7 @@ public class SolrIndexServiceBean {
     
     @PostConstruct
     public void init() {
-        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
+        String urlString = "http://" + settingsService.getValueForKey(Key.SolrHostColonPort) + "/solr/collection1";
         solrServer = new HttpSolrClient.Builder(urlString).build();
         
     }

@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncrypti
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -49,12 +50,8 @@ public class BuiltinUsers extends AbstractApiBean {
     @GET
     @Path("{username}/api-token")
     public Response getApiToken( @PathParam("username") String username, @QueryParam("password") String password ) {
-        boolean disabled = true;
         boolean lookupAllowed = settingsSvc.isTrueForKey(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
-        if (lookupAllowed) {
-            disabled = false;
-        }
-        if (disabled) {
+        if (!lookupAllowed) {
             return error(Status.FORBIDDEN, "This API endpoint has been disabled.");
         }
         BuiltinUser u;
@@ -107,7 +104,7 @@ public class BuiltinUsers extends AbstractApiBean {
     private Response internalSave(BuiltinUser user, String password, String key) {
         String expectedKey = settingsSvc.get(API_KEY_IN_SETTINGS);
         
-        if (expectedKey == null) {
+        if (StringUtils.isEmpty(expectedKey)) {
             return error(Status.SERVICE_UNAVAILABLE, "Dataverse config issue: No API key defined for built in user management");
         }
         if (!expectedKey.equals(key)) {

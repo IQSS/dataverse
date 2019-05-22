@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.validation;
 
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+
+import org.apache.commons.lang3.StringUtils;
 import org.passay.CharacterCharacteristicsRule;
 import org.passay.CharacterRule;
 import org.passay.DictionaryRule;
@@ -83,8 +85,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         GoodStrengthValidator, StandardValidator
     }
 
-    @SuppressWarnings("unchecked")
-    private final static LinkedHashMap<ValidatorTypes, PasswordValidator> validators = new LinkedHashMap(2);
+    private final static LinkedHashMap<ValidatorTypes, PasswordValidator> validators = new LinkedHashMap<>(2);
     private int goodStrength;
     private int maxLength;
     private int minLength;
@@ -93,9 +94,10 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     List<CharacterRule> characterRules;
     private String dictionaries = DICTIONARY_FILES;
     private PropertiesMessageResolver messageResolver;
-
+    
     @EJB
-    SystemConfig systemConfig;
+    private SettingsServiceBean settingsService;
+
 
     public PasswordValidatorServiceBean() {
         final Properties properties = PropertiesMessageResolver.getDefaultProperties();
@@ -284,7 +286,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
      */
     private FileReader[] getDictionaries() {
 
-        setDictionaries(systemConfig == null ? this.dictionaries : systemConfig.getPVDictionaries());
+        setDictionaries(settingsService == null ? this.dictionaries : settingsService.getValueForKey(SettingsServiceBean.Key.PVDictionaries));
 
         List<String> files = Arrays.asList(this.dictionaries.split(","));
         List<FileReader> fileReaders = new ArrayList<>(files.size());
@@ -301,7 +303,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     }
 
     void setDictionaries(String dictionaries) {
-        if (dictionaries == null) {
+        if (StringUtils.isEmpty(dictionaries)) {
             final URL url = PasswordValidatorServiceBean.class.getResource(DICTIONARY_FILES);
             if (url == null) {
                 logger.fine(BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnDictionaryObj")+" " + DICTIONARY_FILES);
@@ -360,7 +362,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
      */
     public String getGoodPasswordDescription(List<String> errors) {
         boolean dictionaryEnabled = false;
-        String dictionariesSetting = systemConfig.getPVDictionaries();
+        String dictionariesSetting = settingsService.getValueForKey(SettingsServiceBean.Key.PVDictionaries);
         logger.fine("dictionariesSetting: " + dictionariesSetting);
         if (dictionariesSetting != null && !dictionariesSetting.isEmpty()) {
             dictionaryEnabled = true;
@@ -380,7 +382,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
      * @return A length
      */
     private int getGoodStrength() {
-        int goodStrength = systemConfig == null ? this.goodStrength : systemConfig.getPVGoodStrength();
+        int goodStrength = settingsService == null ? this.goodStrength : settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.PVGoodStrength);
         setGoodStrength(goodStrength);
         return this.goodStrength;
     }
@@ -410,7 +412,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
      * @return A length
      */
     private int getMaxLength() {
-        int maxLength = systemConfig == null ? this.maxLength : systemConfig.getPVMaxLength();
+        int maxLength = settingsService == null ? this.maxLength : settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.PVMaxLength);
         setMaxLength(maxLength);
         return this.maxLength;
     }
@@ -430,7 +432,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
      * @return A length
      */
     private int getMinLength() {
-        int minLength = systemConfig == null ? this.minLength : systemConfig.getPVMinLength();
+        int minLength = settingsService == null ? this.minLength : settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.PVMinLength);
         setMinLength(minLength);
         return this.minLength;
     }
@@ -450,7 +452,11 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     }
 
     public List<CharacterRule> getCharacterRules() {
-        List<CharacterRule> characterRules = systemConfig == null ? this.characterRules : systemConfig.getPVCharacterRules();
+        if (settingsService == null) {
+            return this.characterRules;
+        }
+        String characterRulesString = settingsService.getValueForKey(SettingsServiceBean.Key.PVCharacterRules);
+        List<CharacterRule> characterRules = PasswordValidatorUtil.parseConfigString(characterRulesString);
         setCharacterRules(characterRules);
         return this.characterRules;
     }
@@ -463,13 +469,13 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     }
 
     public int getNumberOfCharacteristics() {
-        int numberOfCharacteristics = systemConfig == null ? this.numberOfCharacteristics : systemConfig.getPVNumberOfCharacteristics();
+        int numberOfCharacteristics = settingsService == null ? this.numberOfCharacteristics : settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.PVNumberOfCharacteristics);
         setNumberOfCharacteristics(numberOfCharacteristics);
         return this.numberOfCharacteristics;
     }
 
     public int getNumberOfConsecutiveDigitsAllowed() {
-        int numConsecutiveDigitsAllowed = systemConfig == null ? this.numberOfConsecutiveDigitsAllowed : systemConfig.getPVNumberOfConsecutiveDigitsAllowed();
+        int numConsecutiveDigitsAllowed = settingsService == null ? this.numberOfConsecutiveDigitsAllowed : settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.PVNumberOfConsecutiveDigitsAllowed);
         setNumberOfConsecutiveDigitsAllowed(numConsecutiveDigitsAllowed);
         return this.numberOfConsecutiveDigitsAllowed;
     }

@@ -20,10 +20,9 @@ public class ConfirmEmailUtil {
         return GRANDFATHERED_TIME;
     }
 
-    public static String friendlyExpirationTime(int expirationInt) {
+    public static String friendlyExpirationTime(long expirationLong) {
         String measurement;
         String expirationString;
-        long expirationLong = Long.valueOf(expirationInt);
         boolean hasDecimal = false;
         double expirationDouble = Double.valueOf(expirationLong);
 

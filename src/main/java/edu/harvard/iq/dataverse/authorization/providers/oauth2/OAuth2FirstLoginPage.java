@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedExc
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.InstallationConfigService;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -70,6 +71,9 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     @EJB
     OAuth2TokenDataServiceBean oauth2Tokens;
     
+    @EJB
+    InstallationConfigService installationConfigService;
+    
     @Inject
     DataverseSession session;
 
@@ -83,6 +87,8 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     String selectedEmail;
 
     String password;
+    
+    String installationName;
 
     boolean authenticationFailed = false;
     private AuthenticationProvider authProvider;
@@ -173,6 +179,8 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         setSelectedEmail(emailToSuggest);
 
         authProvider = authenticationSvc.getAuthenticationProvider(newUser.getServiceId());
+        
+        installationName = installationConfigService.getNameOfInstallation();
     }
 
     public String createNewAccount() {
@@ -336,7 +344,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         if (authProvider == null) {
             return "Unknown identity provider. Are you a developer playing with :DebugOAuthAccountType? Try adding this provider to the authenticationproviderrow table: " + newUser.getServiceId();
         }
-        return BundleUtil.getStringFromBundle("oauth2.newAccount.explanation", Arrays.asList(authProvider.getInfo().getTitle(), systemConfig.getNameOfInstallation()));
+        return BundleUtil.getStringFromBundle("oauth2.newAccount.explanation", Arrays.asList(authProvider.getInfo().getTitle(), installationName));
     }
 
     public boolean isConvertFromBuiltinIsPossible() {
@@ -345,14 +353,14 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     }
 
     public String getSuggestConvertInsteadOfCreate() {
-        return BundleUtil.getStringFromBundle("oauth2.newAccount.suggestConvertInsteadOfCreate", Arrays.asList(systemConfig.getNameOfInstallation()));
+        return BundleUtil.getStringFromBundle("oauth2.newAccount.suggestConvertInsteadOfCreate", Arrays.asList(installationName));
     }
 
     public String getConvertTip() {
         if (authProvider == null) {
             return "";
         }
-        return BundleUtil.getStringFromBundle("oauth2.convertAccount.explanation", Arrays.asList(systemConfig.getNameOfInstallation(), authProvider.getInfo().getTitle(), systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion()));
+        return BundleUtil.getStringFromBundle("oauth2.convertAccount.explanation", Arrays.asList(installationName, authProvider.getInfo().getTitle(), systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion()));
     }
 
     public List<String> getEmailsToPickFrom() {

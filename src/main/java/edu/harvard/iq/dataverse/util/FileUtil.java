@@ -34,6 +34,7 @@ import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
 import edu.harvard.iq.dataverse.license.TermsOfUseFactory;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.license.FileTermsOfUse;
 import io.vavr.control.Try;
 import org.apache.commons.io.FileUtils;
@@ -592,7 +593,7 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType,
-            SystemConfig systemConfig, TermsOfUseFactory termsOfUseFactory) throws IOException {
+            SettingsServiceBean settingsService, TermsOfUseFactory termsOfUseFactory) throws IOException {
         List<DataFile> datafiles = new ArrayList<>(); 
         
         String warningMessage = null; 
@@ -600,7 +601,7 @@ public class FileUtil implements java.io.Serializable  {
         // save the file, in the temporary location for now: 
         Path tempFile = null; 
         
-        Long fileSizeLimit = systemConfig.getMaxFileUploadSize();
+        Long fileSizeLimit = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
         
         if (getFilesTempDirectory() != null) {
             tempFile = Files.createTempFile(Paths.get(getFilesTempDirectory()), "tmp", "upload");
@@ -703,7 +704,8 @@ public class FileUtil implements java.io.Serializable  {
             try {                
                 uncompressedIn = new GZIPInputStream(new FileInputStream(tempFile.toFile()));
                 File unZippedTempFile = saveInputStreamInTempFile(uncompressedIn, fileSizeLimit);
-                datafile = createSingleDataFile(version, unZippedTempFile, finalFileName, MIME_TYPE_UNDETERMINED_DEFAULT, systemConfig.getFileFixityChecksumAlgorithm(), termsOfUseFactory);
+                ChecksumType checksumType = ChecksumType.fromString(settingsService.getValueForKey(SettingsServiceBean.Key.FileFixityChecksumAlgorithm));
+                datafile = createSingleDataFile(version, unZippedTempFile, finalFileName, MIME_TYPE_UNDETERMINED_DEFAULT, checksumType, termsOfUseFactory);
             } catch (IOException | FileExceedsMaxSizeException ioex) {
                 datafile = null;
             } finally {
@@ -736,7 +738,7 @@ public class FileUtil implements java.io.Serializable  {
             ZipInputStream unZippedIn = null; 
             ZipEntry zipEntry = null; 
             
-            int fileNumberLimit = systemConfig.getZipUploadFilesLimit();
+            long fileNumberLimit = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.ZipUploadFilesLimit);
             
             try {
                 Charset charset = null;
@@ -813,7 +815,8 @@ public class FileUtil implements java.io.Serializable  {
                                 // to read it and create a DataFile with it:
 
                                 File unZippedTempFile = saveInputStreamInTempFile(unZippedIn, fileSizeLimit);
-                                DataFile datafile = createSingleDataFile(version, unZippedTempFile, shortName, MIME_TYPE_UNDETERMINED_DEFAULT, systemConfig.getFileFixityChecksumAlgorithm(), false, termsOfUseFactory);
+                                ChecksumType checksumType = ChecksumType.fromString(settingsService.getValueForKey(SettingsServiceBean.Key.FileFixityChecksumAlgorithm));
+                                DataFile datafile = createSingleDataFile(version, unZippedTempFile, shortName, MIME_TYPE_UNDETERMINED_DEFAULT, checksumType, false, termsOfUseFactory);
 
                                 if (!fileEntryName.equals(shortName)) {
                                     // If the filename looks like a hierarchical folder name (i.e., contains slashes and backslashes),
@@ -924,7 +927,8 @@ public class FileUtil implements java.io.Serializable  {
                     }
 
                     File unZippedShapeTempFile = saveInputStreamInTempFile(finalFileInputStream, fileSizeLimit);
-                    DataFile new_datafile = createSingleDataFile(version, unZippedShapeTempFile, finalFile.getName(), finalType, systemConfig.getFileFixityChecksumAlgorithm(), termsOfUseFactory);
+                    ChecksumType checksumType = ChecksumType.fromString(settingsService.getValueForKey(SettingsServiceBean.Key.FileFixityChecksumAlgorithm));
+                    DataFile new_datafile = createSingleDataFile(version, unZippedShapeTempFile, finalFile.getName(), finalType, checksumType, termsOfUseFactory);
                     if (new_datafile != null) {
                         datafiles.add(new_datafile);
                     } else {
@@ -962,8 +966,8 @@ public class FileUtil implements java.io.Serializable  {
         // Finally, if none of the special cases above were applicable (or 
         // if we were unable to unpack an uploaded file, etc.), we'll just 
         // create and return a single DataFile:
-        
-        DataFile datafile = createSingleDataFile(version, tempFile.toFile(), fileName, finalType, systemConfig.getFileFixityChecksumAlgorithm(), termsOfUseFactory);
+        ChecksumType checksumType = ChecksumType.fromString(settingsService.getValueForKey(SettingsServiceBean.Key.FileFixityChecksumAlgorithm));
+        DataFile datafile = createSingleDataFile(version, tempFile.toFile(), fileName, finalType, checksumType, termsOfUseFactory);
         
         if (datafile != null && tempFile.toFile() != null) {
        

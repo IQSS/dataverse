@@ -7,6 +7,8 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import org.apache.commons.lang.StringUtils;
@@ -59,6 +61,8 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     EjbDataverseEngine commandEngine;
     @EJB
     DataverseServiceBean dataverseServiceBean;
+    @EJB
+    SettingsServiceBean settingsService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     
@@ -260,6 +264,13 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     
     public String cancel() {
          return "dataverse.xhtml?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
+    }
+    
+    public boolean isThemeEnabled() {
+        if (editDv.getOwner() == null) { // is root dataverse
+            return !settingsService.isTrueForKey(Key.DisableRootDataverseTheme);
+        }
+        return true;
     }
     
     

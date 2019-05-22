@@ -3,6 +3,7 @@
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:o="http://omnifaces.org/ui"
+                xmlns:of="http://omnifaces.org/functions"
 >
 
     <div id="footer" class="#{widgetView ? 'widget-view' : ''}">
@@ -10,12 +11,15 @@
             <div class="row">
                 <div class="col-sm-8 small" jsf:rendered="#{!widgetView}">
                     <p>
-                        <h:outputText
-                                value="#{systemConfig.footerCopyrightAndYear}#{settingsWrapper.getSettingValue(':FooterCopyright')}"
-                                escape="false"/> <ui:fragment
-                            rendered="#{!empty settingsWrapper.getSettingValue(':ApplicationPrivacyPolicyUrl')}">&#160;|&#160;
-                        <h:outputLink value="#{settingsWrapper.getSettingValue(':ApplicationPrivacyPolicyUrl')}"
-                                      target="_blank">#{bundle['footer.privacyPolicy']}</h:outputLink></ui:fragment>
+                        <h:outputFormat value="#{bundle['footer.copyright']}" escape="false" >
+                            <o:param>#{of:formatDate(now, 'yyyy')}</o:param>
+                        </h:outputFormat>
+                        <h:outputText value="#{settingsWrapper.getSettingValue(':FooterCopyright')}" escape="false"/>
+                        <ui:fragment rendered="#{!empty settingsWrapper.getSettingValue(':ApplicationPrivacyPolicyUrl')}">
+                            &#160;|&#160;
+                            <h:outputLink value="#{settingsWrapper.getSettingValue(':ApplicationPrivacyPolicyUrl')}"
+                                      target="_blank">#{bundle['footer.privacyPolicy']}</h:outputLink>
+                        </ui:fragment>
                     </p>
                 </div>
                 <div class="col-xs-7 small" jsf:rendered="#{widgetView}">

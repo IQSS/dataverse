@@ -54,6 +54,7 @@ import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -154,7 +155,7 @@ public class Admin extends AbstractApiBean {
 	public Response getSetting(@PathParam("name") String name) {
 		String s = settingsSvc.get(name);
 
-		return (s != null) ? ok(s) : notFound("Setting " + name + " not found");
+		return (StringUtils.isNotEmpty(s)) ? ok(s) : notFound("Setting " + name + " not found");
 	}
 
 	@Path("settings/{name}")
@@ -1092,7 +1093,7 @@ public class Admin extends AbstractApiBean {
     public Response reregisterHdlToPID(@PathParam("id") String id) {
         logger.info("Starting to reregister  " + id + " Dataset Id. (from hdl to doi)" + new Date());
         try {
-            if (settingsSvc.get(SettingsServiceBean.Key.Protocol.toString()).equals(GlobalId.HDL_PROTOCOL)) {
+            if (settingsSvc.getValueForKey(SettingsServiceBean.Key.Protocol).equals(GlobalId.HDL_PROTOCOL)) {
                 logger.info("Bad Request protocol set to handle  " );
                 return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.set.for.doi"));
             }
@@ -1377,15 +1378,12 @@ public class Admin extends AbstractApiBean {
             return wr.getResponse();
         }
         boolean inheritAllRoles = false;
-        String rolesString = settingsSvc.getValueForKey(SettingsServiceBean.Key.InheritParentRoleAssignments);
-        if (rolesString.length() > 0) {
-            ArrayList<String> rolesToInherit = new ArrayList<String>(Arrays.asList(rolesString.split("\\s*,\\s*")));
-            if (!rolesToInherit.isEmpty()) {
-                if (rolesToInherit.contains("*")) {
-                    inheritAllRoles = true;
-                }
-                return ok(dataverseSvc.addRoleAssignmentsToChildren(owner, rolesToInherit, inheritAllRoles));
+        List<String> rolesToInherit = settingsSvc.getValueForKeyAsList(SettingsServiceBean.Key.InheritParentRoleAssignments);
+        if (!rolesToInherit.isEmpty()) {
+            if (rolesToInherit.contains("*")) {
+                inheritAllRoles = true;
             }
+            return ok(dataverseSvc.addRoleAssignmentsToChildren(owner, rolesToInherit, inheritAllRoles));
         }
         return error(Response.Status.BAD_REQUEST,
                 "InheritParentRoleAssignments does not list any roles on this instance");

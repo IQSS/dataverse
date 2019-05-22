@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -133,7 +134,7 @@ public class IndexServiceBean {
 
     @PostConstruct
     public void init() {
-        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
+        String urlString = "http://" + settingsService.getValueForKey(Key.SolrHostColonPort) + "/solr/collection1";
         solrServer = new HttpSolrClient.Builder(urlString).build();
 
         rootDataverseName = findRootDataverseCached().getName();
@@ -870,7 +871,7 @@ public class IndexServiceBean {
          */
         boolean doFullTextIndexing = settingsService.isTrueForKey(SettingsServiceBean.Key.SolrFullTextIndexing);
         Long maxFTIndexingSize = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.SolrMaxFileSizeForFullTextIndexing);
-        long maxSize = maxFTIndexingSize != null ? maxFTIndexingSize.longValue() : Long.MAX_VALUE;
+        long maxSize = (maxFTIndexingSize == 0) ? maxFTIndexingSize : Long.MAX_VALUE;
 
         List<String> filesIndexed = new ArrayList<>();
         if (datasetVersion != null) {

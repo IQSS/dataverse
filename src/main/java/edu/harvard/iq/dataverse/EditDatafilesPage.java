@@ -34,6 +34,7 @@ import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.search.FileView;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
@@ -89,6 +90,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 
@@ -190,7 +192,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
 
     private Long maxFileUploadSizeInBytes = null;
-    private Integer multipleUploadFilesLimit = null; 
+    private Long multipleUploadFilesLimit = null; 
     
     private List<SelectItem> termsOfUseSelectItems;
 
@@ -325,6 +327,13 @@ public class EditDatafilesPage implements java.io.Serializable {
         return this.maxFileUploadSizeInBytes;
     }
     
+    public String getHumanMaxFileUploadSize() {
+        if (getMaxFileUploadSizeInBytes() == null) {
+            return StringUtils.EMPTY;
+        }
+        return bytesToHumanReadable(getMaxFileUploadSizeInBytes());
+    }
+    
     public boolean isUnlimitedUploadFileSize() {
         
         return this.maxFileUploadSizeInBytes == null;
@@ -335,7 +344,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         via drag-and-drop, or through the file select dialog. Now configurable 
         in the Settings table. 
     */
-    public Integer getMaxNumberOfFiles() {
+    public Long getMaxNumberOfFiles() {
         return this.multipleUploadFilesLimit;
     }
     /**
@@ -459,8 +468,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             return permissionsWrapper.notFound();
         }
         
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
-        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
+        this.maxFileUploadSizeInBytes = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
+        this.multipleUploadFilesLimit = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MultipleUploadFilesLimit);
         
         workingVersion = version; 
         dataset = version.getDataset();
@@ -484,8 +493,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         newFiles = new ArrayList<>();
         uploadedFiles = new ArrayList<>(); 
         
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
-        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
+        this.maxFileUploadSizeInBytes = settingsService.getValueForKeyAsLong(Key.MaxFileUploadSizeInBytes);
+        this.multipleUploadFilesLimit = settingsService.getValueForKeyAsLong(Key.MultipleUploadFilesLimit);
         
         termsOfUseSelectItems = termsOfUseSelectItemsFactory.buildLicenseSelectItems();
 
@@ -541,7 +550,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                                                 datafileService,
                                                 permissionService,
                                                 commandEngine,
-                                                systemConfig,
+                                                settingsService,
                                                 termsOfUseFactory);
                         
             fileReplacePageHelper = new FileReplacePageHelper(addReplaceFileHelper,
@@ -1175,7 +1184,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         Boolean provJsonChanges = false;
         
-        if(systemConfig.isProvCollectionEnabled()) {
+        if(settingsService.isTrueForKey(SettingsServiceBean.Key.ProvCollectionEnabled)) {
             Boolean provFreeChanges = provPopupFragmentBean.updatePageMetadatasWithProvFreeform(fileMetadatas);
 
             try {
@@ -1222,7 +1231,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 
                 //Moves DataFile updates from popupFragment to page for saving
                 //This does not seem to collide with the tags updating below
-                if(systemConfig.isProvCollectionEnabled() && provJsonChanges) {
+                if(settingsService.isTrueForKey(SettingsServiceBean.Key.ProvCollectionEnabled) && provJsonChanges) {
                     HashMap<String,ProvPopupFragmentBean.UpdatesEntry> provenanceUpdates = provPopupFragmentBean.getProvenanceUpdates();
                     for (int i = 0; i < dataset.getFiles().size(); i++) {
                         for (ProvPopupFragmentBean.UpdatesEntry ue : provenanceUpdates.values()) { 
@@ -1726,7 +1735,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // for example, multiple files can be extracted from an uncompressed
                 // zip file.
                 //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
-                datafiles = FileUtil.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream", systemConfig, termsOfUseFactory);
+                datafiles = FileUtil.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream", settingsService, termsOfUseFactory);
                 
             } catch (IOException ex) {
                 this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
@@ -2082,7 +2091,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // Note: A single uploaded file may produce multiple datafiles - 
             // for example, multiple files can be extracted from an uncompressed
             // zip file. 
-            dFileList = FileUtil.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType(), systemConfig, termsOfUseFactory);
+            dFileList = FileUtil.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType(), settingsService, termsOfUseFactory);
             
         } catch (IOException ioex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());

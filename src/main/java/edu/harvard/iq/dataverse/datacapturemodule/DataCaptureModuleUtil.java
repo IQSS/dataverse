@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Arrays;
 import java.util.logging.Logger;
 import javax.json.Json;
@@ -18,7 +20,7 @@ public class DataCaptureModuleUtil {
 
     public static boolean rsyncSupportEnabled(String uploadMethodsSettings) {
         logger.fine("uploadMethodsSettings: " + uploadMethodsSettings);; 
-        if (uploadMethodsSettings==null){
+        if (StringUtils.isEmpty(uploadMethodsSettings)){
             return false;
         } else {
            return  Arrays.asList(uploadMethodsSettings.toLowerCase().split("\\s*,\\s*")).contains(SystemConfig.FileUploadMethods.RSYNC.toString());

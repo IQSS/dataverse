@@ -23,13 +23,13 @@
 
             <ui:define name="body">
                 <h:form id="manageGuestbooksForm">
-                    <p:fragment id="tooManyEntries" rendered="#{guestbookResponsesPage.guestbook.responseCount gt systemConfig.guestbookResponsesPageDisplayLimit}">
+                    <p:fragment id="tooManyEntries" rendered="#{guestbookResponsesPage.guestbook.responseCount gt guestbookResponsesPage.displayLimit}">
                         <div class="row">
                             <div class="col-xs-12">
                                 <div id="no-clients-message" class="alert alert-warning" role="alert">
                                     <span class="glyphicon glyphicon-warning-sign"/>
                                     <h:outputFormat value=" #{bundle['dataset.guestbooksResponses.tooManyResponses.message']}" escape="false">
-                                        <f:param value="#{systemConfig.guestbookResponsesPageDisplayLimit}"/>
+                                        <f:param value="#{guestbookResponsesPage.displayLimit}"/>
                                         <f:param value="#{guestbookResponsesPage.guestbook.responseCount}"/>
                                     </h:outputFormat>
                                 </div>
@@ -48,11 +48,11 @@
                         <div class="col-xs-6">
                             <!-- number of results -->
                             <div class="results-count margin-top">
-                                <h:outputFormat rendered="#{guestbookResponsesPage.guestbook.responseCount lt systemConfig.guestbookResponsesPageDisplayLimit}"
+                                <h:outputFormat rendered="#{guestbookResponsesPage.guestbook.responseCount lt guestbookResponsesPage.displayLimit}"
                                                 styleClass="highlightBold" value="#{bundle['dataset.guestbooksResponses.count.responses']}">
                                     <f:param value="#{guestbookResponsesPage.guestbook.responseCount}"/>
                                 </h:outputFormat>
-                                <h:outputFormat rendered="#{guestbookResponsesPage.guestbook.responseCount gt systemConfig.guestbookResponsesPageDisplayLimit}"
+                                <h:outputFormat rendered="#{guestbookResponsesPage.guestbook.responseCount gt guestbookResponsesPage.displayLimit}"
                                                 styleClass="highlightBold" value="#{bundle['dataset.guestbooksResponses.count.toofresults']}">
                                     <f:param value="#{guestbookResponsesPage.guestbook.responseCount - 5000}"/>
                                     <f:param value="#{guestbookResponsesPage.guestbook.responseCount}"/>

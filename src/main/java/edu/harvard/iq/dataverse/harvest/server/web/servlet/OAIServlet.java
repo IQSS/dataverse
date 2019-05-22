@@ -393,7 +393,7 @@ public class OAIServlet extends HttpServlet {
     
     
     public boolean isHarvestingServerEnabled() {
-        return systemConfig.isOAIServerEnabled();
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.OAIServerEnabled);
     }
     
     /**

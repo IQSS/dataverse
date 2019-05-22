@@ -15,6 +15,8 @@ import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
@@ -75,13 +77,15 @@ public class SearchServiceBean {
     @EJB
     GroupServiceBean groupService;
     @EJB
+    SettingsServiceBean settingsService;
+    @EJB
     SystemConfig systemConfig;
 
     private SolrClient solrServer;
     
     @PostConstruct
     public void init() {
-        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
+        String urlString = "http://" + settingsService.getValueForKey(Key.SolrHostColonPort) + "/solr/collection1";
         solrServer = new HttpSolrClient.Builder(urlString).build();
     }
     
@@ -163,9 +167,9 @@ public class SearchServiceBean {
 //        }
 //        solrQuery.setSort(sortClause);
         solrQuery.setHighlight(true).setHighlightSnippets(1);
-        Integer fragSize = systemConfig.getSearchHighlightFragmentSize();
+        Integer fragSize = settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.SearchHighlightFragmentSize);
         if (fragSize != null) {
-            solrQuery.setHighlightFragsize(fragSize);
+            solrQuery.setHighlightFragsize(fragSize.intValue());
         }
         solrQuery.setHighlightSimplePre("<span class=\"search-term-match\">");
         solrQuery.setHighlightSimplePost("</span>");
@@ -275,7 +279,7 @@ public class SearchServiceBean {
          */
         solrQuery.addFacetField(SearchFields.TYPE);
         solrQuery.addFacetField(SearchFields.FILE_TAG);
-        if (!systemConfig.isPublicInstall()) {
+        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall)) {
             solrQuery.addFacetField(SearchFields.ACCESS);
         }
         /**
@@ -860,7 +864,7 @@ public class SearchServiceBean {
         //          the filterqueries given to search
         // ----------------------------------------------------    
         if (onlyDatatRelatedToMe == true) {
-            if (systemConfig.myDataDoesNotUsePermissionDocs()) {
+            if (settingsService.isTrueForKey(SettingsServiceBean.Key.MyDataDoesNotUseSolrPermissionDocs)) {
                 logger.fine("old 4.2 behavior: MyData is not using Solr permission docs");
                 return dangerZoneNoSolrJoin;
             } else {

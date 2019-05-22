@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -36,7 +37,19 @@ public class SettingsWrapper implements java.io.Serializable {
     // -------------------- GETTERS --------------------
 
     public boolean isPublicInstall(){
-        return systemConfig.isPublicInstall();
+        return settingService.isTrueForKey(SettingsServiceBean.Key.PublicInstall);
+    }
+    
+    public String getMetricsUrl() {
+        return settingService.getValueForKey(SettingsServiceBean.Key.MetricsUrl);
+    }
+    
+    public boolean isShibPassiveLoginEnabled() {
+        return settingService.isTrueForKey(SettingsServiceBean.Key.ShibPassiveLoginEnabled);
+    }
+    
+    public boolean isProvCollectionEnabled() {
+        return settingService.isTrueForKey(SettingsServiceBean.Key.ProvCollectionEnabled);
     }
     
     public boolean isRsyncUpload() {
@@ -59,6 +72,14 @@ public class SettingsWrapper implements java.io.Serializable {
         return systemConfig.getUploadMethodCount();
     }
     
+    public String getGuidesBaseUrl() {
+        return systemConfig.getGuidesBaseUrl();
+    }
+
+    public String getGuidesVersion() {
+        return systemConfig.getGuidesVersion();
+    }
+    
     public String getDropBoxKey() {
 
         String configuredDropBoxKey = System.getProperty("dataverse.dropbox.key");
@@ -67,7 +88,7 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return "";
     }
-
+    
     // -------------------- LOGIC --------------------
 
     public Boolean isHasDropBoxKey() {

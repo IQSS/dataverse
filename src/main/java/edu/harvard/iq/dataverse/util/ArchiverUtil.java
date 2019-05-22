@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Simple class to reflectively get an instance of the desired class for
@@ -20,7 +21,7 @@ public class ArchiverUtil {
     }
 
     public static AbstractSubmitToArchiveCommand createSubmitToArchiveCommand(String className, DataverseRequest dvr, DatasetVersion version) {
-        if (className != null) {
+        if (StringUtils.isNotEmpty(className)) {
             try {
                 Class<?> clazz = Class.forName(className);
                 if (AbstractSubmitToArchiveCommand.class.isAssignableFrom(clazz)) {

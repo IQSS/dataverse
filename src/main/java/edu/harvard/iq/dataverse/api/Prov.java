@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.provenance.ProvEntityFileData;
 import edu.harvard.iq.dataverse.provenance.ProvInvestigator;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvFreeFormCommand;
@@ -42,7 +43,7 @@ public class Prov extends AbstractApiBean {
     @Path("{id}/prov-json")
     @Consumes("application/json")
     public Response addProvJson(String body, @PathParam("id") String idSupplied, @QueryParam("entityName") String entityName) {
-        if(!systemConfig.isProvCollectionEnabled()) {
+        if(!settingsSvc.isTrueForKey(SettingsServiceBean.Key.ProvCollectionEnabled)) {
             return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));
         }
         try {
@@ -80,7 +81,7 @@ public class Prov extends AbstractApiBean {
     @DELETE
     @Path("{id}/prov-json")
     public Response deleteProvJson(String body, @PathParam("id") String idSupplied) {
-        if(!systemConfig.isProvCollectionEnabled()) {
+        if(!settingsSvc.isTrueForKey(SettingsServiceBean.Key.ProvCollectionEnabled)) {
             return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));
         }
         try {
@@ -100,7 +101,7 @@ public class Prov extends AbstractApiBean {
     @Path("{id}/prov-freeform")
     @Consumes("application/json")
     public Response addProvFreeForm(String body, @PathParam("id") String idSupplied) {
-        if(!systemConfig.isProvCollectionEnabled()) {
+        if(!settingsSvc.isTrueForKey(SettingsServiceBean.Key.ProvCollectionEnabled)) {
             return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));
         }
         StringReader rdr = new StringReader(body);
@@ -138,7 +139,7 @@ public class Prov extends AbstractApiBean {
     @GET
     @Path("{id}/prov-freeform")
     public Response getProvFreeForm(String body, @PathParam("id") String idSupplied) {
-        if(!systemConfig.isProvCollectionEnabled()) {
+        if(!settingsSvc.isTrueForKey(SettingsServiceBean.Key.ProvCollectionEnabled)) {
             return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));
         }
         try {
@@ -157,7 +158,7 @@ public class Prov extends AbstractApiBean {
     @GET
     @Path("{id}/prov-json")
     public Response getProvJson(String body, @PathParam("id") String idSupplied) {
-        if(!systemConfig.isProvCollectionEnabled()) {
+        if(!settingsSvc.isTrueForKey(SettingsServiceBean.Key.ProvCollectionEnabled)) {
             return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));
         }
         try {

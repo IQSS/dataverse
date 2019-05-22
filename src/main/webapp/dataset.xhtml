@@ -775,8 +775,8 @@
                         <p:fragment id="privateUrlPanel" rendered="#{DatasetPage.userCanCreatePrivateURL}">
                             <p class="help-block">
                                 <h:outputFormat value="#{bundle['dataset.privateurl.tip']}" escape="false">
-                                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                    <f:param value="#{systemConfig.guidesVersion}"/>
+                                    <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                    <f:param value="#{settingsWrapper.guidesVersion}"/>
                                 </h:outputFormat>
                             </p>
                             <div>
@@ -1294,7 +1294,7 @@
                             <p class="help-block">
                                 <h:outputFormat value="#{bundle['dataverse.link.dataset.choose']}" escape="false">
                                     <o:param>
-                                        <p:commandLink value="#{settingsServiceBean.supportTeamName}"
+                                        <p:commandLink value="#{installationConfig.supportTeamName}"
                                                        oncomplete="PF('linkDatasetForm').hide();PF('contactForm').show()"
                                                        update=":contactDialog"
                                                        actionListener="#{sendFeedbackDialog.initUserInput}">

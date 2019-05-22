@@ -534,12 +534,12 @@
                             <div id="metrics-block" class="col-xs-3"
                                  jsf:rendered="#{DataversePage.isRootDataverse() and !settingsWrapper.rsyncOnly}">
                                 <div id="metrics-label" class="col-xs-4 small text-center">
-                                    <h:outputLink value="#{systemConfig.metricsUrl}" target="_blank"
+                                    <h:outputLink value="#{settingsWrapper.metricsUrl}" target="_blank"
                                                   title="#{bundle['metrics.title.tip']}"
-                                                  rendered="#{!empty systemConfig.metricsUrl}">
+                                                  rendered="#{not empty settingsWrapper.metricsUrl}">
                                         <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
                                     </h:outputLink>
-                                    <ui:fragment rendered="#{systemConfig.metricsUrl.equals('')}">
+                                    <ui:fragment rendered="#{empty settingsWrapper.metricsUrl}">
                                         <p:commandLink action="#{DatasetPage.redirectToMetrics}">
                                         <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
                                         </p:commandLink>

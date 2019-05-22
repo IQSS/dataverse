@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseDAO;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.Tuple;
@@ -38,6 +39,8 @@ public class DashboardPage implements java.io.Serializable {
     OAISetServiceBean oaiSetService;
     @EJB
     SystemConfig systemConfig;
+    @EJB
+    SettingsServiceBean settingsService;
      
     @Inject
     DataverseSession session;
@@ -113,10 +116,7 @@ public class DashboardPage implements java.io.Serializable {
     }
     
     public boolean isHarvestServerEnabled() {
-        if (systemConfig.isOAIServerEnabled()) {
-            return true;
-        }
-        return false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.OAIServerEnabled);
     }
     
     public int getNumberOfOaiSets() {
@@ -153,7 +153,7 @@ public class DashboardPage implements java.io.Serializable {
     
     @Deprecated
     public String getHarvestServerInfoLabel() {
-        if (!systemConfig.isOAIServerEnabled()) {
+        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.OAIServerEnabled)) {
             return "OAI server disabled.";
         }
 

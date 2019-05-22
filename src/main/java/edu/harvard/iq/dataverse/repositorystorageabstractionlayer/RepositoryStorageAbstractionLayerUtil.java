@@ -4,6 +4,8 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.locality.StorageSite;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +33,7 @@ public class RepositoryStorageAbstractionLayerUtil {
     }
 
     static String getLocalDataAccessDirectory(String localDataAccessParentDir, Dataset dataset) {
-        if (localDataAccessParentDir == null) {
+        if (StringUtils.isEmpty(localDataAccessParentDir)) {
             localDataAccessParentDir = File.separator + "UNCONFIGURED ( " + SettingsServiceBean.Key.LocalDataAccessPath + " )";
         }
         boolean leafDirectoryOnly = true;

@@ -18,25 +18,6 @@ public class PasswordValidatorUtil {
         TOO_SHORT, INSUFFICIENT_CHARACTERISTICS, ILLEGAL_MATCH, ILLEGAL_WORD
     };
 
-    public static List<CharacterRule> getCharacterRules(String configString) {
-        if (configString == null || configString.isEmpty()) {
-            return getCharacterRulesDefault(); //sane default
-        } else {
-            List<CharacterRule> rules = parseConfigString(configString);
-            return rules;
-        }
-    }
-
-    /**
-     * The default out-of-the-box character rules for Dataverse.
-     */
-    public static List<CharacterRule> getCharacterRulesDefault() {
-        List<CharacterRule> characterRules = new ArrayList<>();
-        characterRules.add(new CharacterRule(EnglishCharacterData.Alphabetical, 1));
-        characterRules.add(new CharacterRule(EnglishCharacterData.Digit, 1));
-        return characterRules;
-    }
-
     /**
      * Parses the list of character rules as defined in the database. Recall how
      * configString is formatted: "UpperCase:1,LowerCase:1,Digit:1,Special:1"

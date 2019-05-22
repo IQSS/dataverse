@@ -53,7 +53,6 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 
 import javax.ejb.EJB;
@@ -131,8 +130,6 @@ public class Access extends AbstractApiBean {
     VariableServiceBean variableService;
     @EJB
     SettingsServiceBean settingsService;
-    @EJB
-    SystemConfig systemConfig;
     @EJB
     DDIExportServiceBean ddiExportService;
     @EJB
@@ -489,12 +486,16 @@ public class Access extends AbstractApiBean {
     @Produces({"application/zip"})
     public Response datafiles(@PathParam("fileIds") String fileIds,  @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
 
-        long setLimit = systemConfig.getZipDownloadLimit();
-        if (!(setLimit > 0L)) {
-            setLimit = DataFileZipper.DEFAULT_ZIPFILE_LIMIT;
+        long zipDownloadSizeLimitConfig = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.ZipDownloadLimit);
+        
+        if (zipDownloadSizeLimitConfig == -1) {
+            throw new BadRequestException("Download zipped bundles of multiple files option is disabled in this installation");
+        }
+        if (zipDownloadSizeLimitConfig == 0) {
+            zipDownloadSizeLimitConfig = Long.MAX_VALUE;
         }
         
-        final long zipDownloadSizeLimit = setLimit; //to use via anon inner class
+        final long zipDownloadSizeLimit = zipDownloadSizeLimitConfig; //to use via anon inner class
         
         logger.fine("setting zip download size limit to " + zipDownloadSizeLimit + " bytes.");
         

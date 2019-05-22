@@ -5,9 +5,10 @@
  */
 package edu.harvard.iq.dataverse.datasetutility;
 
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
@@ -17,17 +18,14 @@ import java.util.logging.Logger;
 public class FileSizeChecker {
 
     private static final Logger logger = Logger.getLogger(FileSizeChecker.class.getCanonicalName());
-
-    SystemConfig systemConfig;
-           
+    
+    SettingsServiceBean settingsService;
+    
     /**
      * constructor
      */
-    public FileSizeChecker(SystemConfig systemConfig){
-        if (systemConfig == null){
-            throw new NullPointerException("systemConfig cannot be null");
-        }
-        this.systemConfig = systemConfig;
+    public FileSizeChecker(SettingsServiceBean settingsService){
+        this.settingsService = Objects.requireNonNull(settingsService);
     }
     
     public FileSizeResponse isAllowedFileSize(Long filesize){
@@ -37,7 +35,7 @@ public class FileSizeChecker {
             //return new FileSizeResponse(false, "The file size could not be found!");
         }
         
-        Long maxFileSize = systemConfig.getMaxFileUploadSize();
+        Long maxFileSize = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
         
         // If no maxFileSize in the database, set it to unlimited!
         //

@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchUtil;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +49,7 @@ public class OAISetServiceBean implements java.io.Serializable {
     private EntityManager em;
     
     @EJB
-    SystemConfig systemConfig;
+    SettingsServiceBean settingsService;
     
     @EJB
     OAIRecordServiceBean oaiRecordService;
@@ -136,10 +138,10 @@ public class OAISetServiceBean implements java.io.Serializable {
     
     private SolrClient solrServer = null;
     
-    private SolrClient getSolrServer () {
+    private SolrClient getSolrServer() {
         if (solrServer == null) {
         }
-        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
+        String urlString = "http://" + settingsService.getValueForKey(Key.SolrHostColonPort) + "/solr/collection1";
         solrServer = new HttpSolrClient.Builder(urlString).build();
         
         return solrServer;

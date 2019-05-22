@@ -16,6 +16,8 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -70,7 +72,7 @@ public class ShibServiceBean {
         DevShibAccountType saneDefault = DevShibAccountType.PRODUCTION;
         String settingReturned = settingsService.getValueForKey(SettingsServiceBean.Key.DebugShibAccountType);
         logger.fine("setting returned: " + settingReturned);
-        if (settingReturned != null) {
+        if (StringUtils.isNotEmpty(settingReturned)) {
             try {
                 DevShibAccountType parsedValue = DevShibAccountType.valueOf(settingReturned);
                 return parsedValue;

@@ -6,12 +6,10 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.util.List;
-import java.util.logging.Logger;
+
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -20,6 +18,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  *
@@ -42,6 +43,9 @@ public class GuestbookResponsesPage implements java.io.Serializable {
     @EJB
     SystemConfig systemConfig;
     
+    @EJB
+    SettingsServiceBean settingsService;
+    
     @Inject
     PermissionsWrapper permissionsWrapper;
     
@@ -53,6 +57,8 @@ public class GuestbookResponsesPage implements java.io.Serializable {
     private Guestbook guestbook;
     
     private Dataverse dataverse;
+
+    private long displayLimit;
 
     private String redirectString = "";
 
@@ -87,10 +93,14 @@ public class GuestbookResponsesPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
 
+        displayLimit = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.GuestbookResponsesPageDisplayLimit);
+
         guestbook.setResponseCount(guestbookResponseService.findCountByGuestbookId(guestbookId, dataverseId));
 
         logger.info("Guestbook responses count: " + guestbook.getResponseCount());
-        responsesAsArray = guestbookResponseService.findArrayByGuestbookIdAndDataverseId(guestbookId, dataverseId, systemConfig.getGuestbookResponsesPageDisplayLimit());
+        responsesAsArray = guestbookResponseService.findArrayByGuestbookIdAndDataverseId(guestbookId, dataverseId, displayLimit);
+
+        
 
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,
                 BundleUtil.getStringFromBundle("dataset.guestbooksResponses.tip.title"),
@@ -220,12 +230,8 @@ public class GuestbookResponsesPage implements java.io.Serializable {
         this.guestbook = guestbook;
     }
 
-    /*public List<GuestbookResponse> getResponses() {
-        return responses;
+    public long getDisplayLimit() {
+        return displayLimit;
     }
-
-    public void setResponses(List<GuestbookResponse> responses) {
-        this.responses = responses;
-    }*/
 
 }

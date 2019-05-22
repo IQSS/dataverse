@@ -16,6 +16,8 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import org.apache.commons.lang3.StringUtils;
+
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DataCaptureModuleUrl;
 import java.util.Collections;
 import java.util.logging.Logger;
@@ -50,7 +52,7 @@ public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResp
             throw new IllegalCommandException("Cannot get script for a dataset that already has a file", this);
         }
         String dcmBaseUrl = ctxt.settings().getValueForKey(DataCaptureModuleUrl);
-        if (dcmBaseUrl == null) {
+        if (StringUtils.isEmpty(dcmBaseUrl)) {
             throw new RuntimeException(DataCaptureModuleUrl + " is null!");
         }
         User user = request.getUser();

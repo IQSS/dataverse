@@ -90,7 +90,7 @@
                                                             <h:outputText value="#{dataverseServiceBean.findRootDataverse().name}"/>
                                                         </o:param>
                                                         <o:param>
-                                                            <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.guidesVersion}/user/index.html" title="#{dataverseServiceBean.findRootDataverse().name} #{bundle['header.guides.user']}" target="_blank">#{bundle['header.guides.user']}</a>
+                                                            <a href="#{settingsWrapper.guidesBaseUrl}/#{settingsWrapper.guidesVersion}/user/index.html" title="#{dataverseServiceBean.findRootDataverse().name} #{bundle['header.guides.user']}" target="_blank">#{bundle['header.guides.user']}</a>
                                                         </o:param>
                                                         <o:param>
                                                             <a href="https://demo.dataverse.org">#{bundle['notification.demoSite']}</a>
@@ -107,7 +107,7 @@
                                                             <a href="/dataverse/#{item.theObject.getOwner().getAlias()}" title="#{item.theObject.getOwner().getDisplayName()}">#{item.theObject.getOwner().getDisplayName()}</a>
                                                         </o:param>
                                                         <o:param>
-                                                            <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.guidesVersion}/user/dataverse-management.html" title="#{bundle['notification.dataverse.management.title']}" target="_blank">#{bundle['header.guides.user']}</a>
+                                                            <a href="#{settingsWrapper.guidesBaseUrl}/#{settingsWrapper.guidesVersion}/user/dataverse-management.html" title="#{bundle['notification.dataverse.management.title']}" target="_blank">#{bundle['header.guides.user']}</a>
                                                         </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
@@ -121,7 +121,7 @@
                                                             <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
                                                         </o:param>
                                                         <o:param>
-                                                            <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.guidesVersion}/user/dataset-management.html" title="#{bundle['notification.dataset.management.title']}" target="_blank">#{bundle['header.guides.user']}</a>
+                                                            <a href="#{settingsWrapper.guidesBaseUrl}/#{settingsWrapper.guidesVersion}/user/dataset-management.html" title="#{bundle['notification.dataset.management.title']}" target="_blank">#{bundle['header.guides.user']}</a>
                                                         </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
@@ -337,7 +337,7 @@
                                         <p class="help-block">
                                             <h:outputText value="#{bundle['user.isShibUser']}" />
                                             <h:outputText value=" #{bundle['user.helpShibUserMigrateOffShibBeforeLink']} " />
-                                            <p:commandLink value="#{settingsServiceBean.supportTeamName}"
+                                            <p:commandLink value="#{installationConfig.supportTeamName}"
                                                            oncomplete="PF('contactForm').show()" update=":contactDialog"
                                                            actionListener="#{sendFeedbackDialog.initUserInput}">
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
@@ -355,7 +355,7 @@
                                             <h:outputFormat value="#{bundle['user.helpOAuthBeforeLink']} ">
                                                 <f:param value="#{DataverseUserPage.userAuthProvider.info.title}"/>
                                             </h:outputFormat>
-                                            <p:commandLink value="#{settingsServiceBean.supportTeamName}"
+                                            <p:commandLink value="#{installationConfig.supportTeamName}"
                                                            oncomplete="PF('contactForm').show()" update=":contactDialog"
                                                            actionListener="#{sendFeedbackDialog.initUserInput}">
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
@@ -457,7 +457,7 @@
                         <p:tab id="apiTokenTab" title="#{bundle['apitoken.title']}">
                             <p class="help-block">
                                 <h:outputFormat value="#{bundle['apitoken.message']}" escape="false">
-                                    <f:param value="&lt;a href=&#34;#{systemConfig.guidesBaseUrl}/#{systemConfig.guidesVersion}/api&#34; target=&#34;_blank&#34;&gt;"/>
+                                    <f:param value="&lt;a href=&#34;#{settingsWrapper.guidesBaseUrl}/#{settingsWrapper.guidesVersion}/api&#34; target=&#34;_blank&#34;&gt;"/>
                                     <f:param value="&lt;/a&gt;"/>
                                 </h:outputFormat>
                             </p>

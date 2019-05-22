@@ -45,7 +45,6 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             //Only continue if you can successfully migrate the handle
             if (!processMigrateHandle(ctxt)) return;
         }
-        String nonNullDefaultIfKeyNotFound = "";
         String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol);
         String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority);
         // Get the idServiceBean that is configured to mint new IDs

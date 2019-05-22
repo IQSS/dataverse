@@ -25,7 +25,7 @@
                     <h:outputText value="#{flash['errorMsg']} " escape="false"/>
                     <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
                         <o:param>
-                            <p:commandLink value="#{settingsServiceBean.supportTeamName}"
+                            <p:commandLink value="#{installationConfig.supportTeamName}"
                                            oncomplete="PF('contactForm').show()" update=":contactDialog"
                                            actionListener="#{sendFeedbackDialog.initUserInput}">
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
@@ -64,13 +64,13 @@
                 <span class="glyphicon glyphicon-#{bsIcon}-sign"></span>&#160;<strong>#{msg.summary}</strong> – <h:outputText escape="false" value="#{msg.detail}" rendered="#{!empty msg.detail and (msg.detail != msg.summary)}"/>
                 <ui:fragment rendered="#{level eq 'FATAL'}">
                     Please contact <a href="#" onclick="event.preventDefault();PF('contactForm').show();"
-                                      title="Contact #{settingsServiceBean.supportTeamName}">#{settingsServiceBean.supportTeamName}</a> for assistance.
+                                      title="Contact #{installationConfig.supportTeamName}">#{installationConfig.supportTeamName}</a> for assistance.
                     <strong>Date/Time: </strong>
                     <h:outputText value="#{now}">
                         <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" type="date" />
                     </h:outputText>
                     <strong>Server: </strong>
-                    #{systemConfig.dataverseServer}
+                    #{settingsWrapper.dataverseServer}
                 </ui:fragment>
             </div>
             #{msg.rendered()}

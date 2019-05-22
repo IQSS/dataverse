@@ -13,7 +13,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -93,9 +92,6 @@ public class LoginPage implements java.io.Serializable {
 
     @EJB
     SettingsServiceBean settingsService;
-
-    @EJB
-    SystemConfig systemConfig;
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
@@ -118,7 +114,7 @@ public class LoginPage implements java.io.Serializable {
             setCredentialsAuthProviderId(credentialsIterator.next());
         }
         resetFilledCredentials(null);
-        authProvider = authSvc.getAuthenticationProvider(systemConfig.getDefaultAuthProvider());
+        authProvider = authSvc.getAuthenticationProvider(settingsService.getValueForKey(SettingsServiceBean.Key.DefaultAuthProvider));
         random = new Random();
     }
 
@@ -181,7 +177,7 @@ public class LoginPage implements java.io.Serializable {
             try {            
                 redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
             } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger(LoginPage.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, null, ex);
                 redirectPage = redirectToRoot();
             }
 

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.util.Arrays;
@@ -9,11 +10,14 @@ import javax.ejb.EJB;
 import org.swordapp.server.SwordConfiguration;
 
 public class SwordConfigurationImpl implements SwordConfiguration {
-
+    private static final Logger logger = Logger.getLogger(SwordConfigurationImpl.class.getCanonicalName());
+    
     @EJB
     SystemConfig systemConfig;
+    
+    @EJB
+    SettingsServiceBean settingsService;
 
-    private static final Logger logger = Logger.getLogger(SwordConfigurationImpl.class.getCanonicalName());
 
     public String getBaseUrlPathCurrent() {
         // see also url-pattern in web.xml
@@ -125,7 +129,7 @@ public class SwordConfigurationImpl implements SwordConfiguration {
         
         int unlimited = -1;
 
-        Long maxUploadInBytes = systemConfig.getMaxFileUploadSize();
+        Long maxUploadInBytes = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
 
         if (maxUploadInBytes == null){
             // (a) No setting, return unlimited           

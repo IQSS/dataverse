@@ -21,7 +21,7 @@
                         <h:outputText value="#{bundle['error.404.message']} " escape="false"/>
                         <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
                             <o:param>
-                                <p:commandLink value="#{settingsServiceBean.supportTeamName}"
+                                <p:commandLink value="#{installationConfig.supportTeamName}"
                                                oncomplete="PF('contactForm').show()" update=":contactDialog"
                                                actionListener="#{sendFeedbackDialog.initUserInput}">
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>

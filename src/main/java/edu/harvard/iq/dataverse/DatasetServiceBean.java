@@ -13,7 +13,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCo
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import org.apache.commons.lang.RandomStringUtils;
 import org.ocpsoft.common.util.Strings;
@@ -86,9 +85,6 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     @EJB
     EjbDataverseEngine commandEngine;
-    
-    @EJB
-    SystemConfig systemConfig;
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
@@ -753,8 +749,8 @@ public class DatasetServiceBean implements java.io.Serializable {
         //If the Id type is sequential and Dependent then write file idenitifiers outside the command
         String datasetIdentifier = dataset.getIdentifier();
         Long maxIdentifier = null;
-
-        if (systemConfig.isDataFilePIDSequentialDependent()) {
+        
+        if (isDataFilePIDSequentialDependent()) {
             maxIdentifier = getMaximumExistingDatafileIdentifier(dataset);
         }
 
@@ -802,5 +798,14 @@ public class DatasetServiceBean implements java.io.Serializable {
             }
 
         }
+    }
+    
+    private boolean isDataFilePIDSequentialDependent(){
+        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle);
+        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat);
+        if (doiIdentifierType.equals("sequentialNumber") && doiDataFileFormat.equals("DEPENDENT")){
+            return true;
+        }
+        return false;
     }
 }
