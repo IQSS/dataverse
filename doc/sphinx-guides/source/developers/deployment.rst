@@ -86,7 +86,7 @@ Download :download:`ec2-create-instance.sh <../../../../scripts/installer/ec2-cr
 
 ec2-create-instance accepts a number few command-line switches:
 
-* -r: GitHub Repository (defaults to IQSS/dataverse)
+* -r: GitHub Repository URL (defaults to https://github.com/IQSS/dataverse.git)
 * -b: branch to build (defaults to develop)
 * -p: pemfile directory (defaults to $HOME)
 * -g: Ansible GroupVars file (if you wish to override role defaults)
