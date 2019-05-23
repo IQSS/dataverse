@@ -24,6 +24,7 @@
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
                 <h:form id="datamove-form" class="form-horizontal">
+                    <p:focus for="sourceDatasetMenu"/>
                     <div class="col-md-6">
                         <div class="panel panel-default">
                             <div class="panel-heading text-info">#{bundle['dashboard.card.datamove.selectdataset.header']}</div>
@@ -125,7 +126,7 @@
                              prevents the confirm dialog to pop up (client side) if validation fails -->
                             <f:param name="DO_DATAMOVE_VALIDATION" value="true"/>
                         </p:commandLink>
-                        <p:button styleClass="btn btn-default" outcome="dashboard" value="#{bundle['cancel']}">
+                        <p:button styleClass="btn btn-link" outcome="dashboard" value="#{bundle['cancel']}">
                             <!-- dataverse.id resolves to null !
                                  <f:param name="dataverseId" value="#{dataverse.id}" />
                             -->
@@ -139,7 +140,7 @@
                                              onclick="PF('datamoveConfirmation').hide();" 
                                              action="#{DashboardDatamovePage.move()}"
                                              update=":datamove-form:dsPersistentIds,:datamove-form:move" />
-                            <button type="button" class="btn btn-default" value="#{bundle['no']}" 
+                            <button type="button" class="btn btn-link" value="#{bundle['no']}" 
                                     onclick="PF('datamoveConfirmation').hide();">#{bundle.no}</button>
                         </div>
                     </p:dialog>

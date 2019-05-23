@@ -184,8 +184,8 @@
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{harvestingSetsPage.deleteSet()}" update=":harvestingSetsForm :messagePanel" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" type="button" update=":harvestingSetsForm"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{harvestingSetsPage.deleteSet()}" update=":harvestingSetsForm :messagePanel" />
+                            <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" type="button" update=":harvestingSetsForm"/>
                         </div>
                     </p:dialog>
 
@@ -251,8 +251,8 @@
                                             <span class="glyphicon glyphicon-menu-right"/> #{bundle.next}
                                         </p:commandLink>
                                         <button type="button" 
+                                                class="btn btn-link" 
                                                 onclick="PF('newOAISetForm').hide()" 
-                                                class="btn btn-default" 
                                                 value="#{bundle.cancel}">
                                             #{bundle.cancel}
                                         </button>
@@ -318,7 +318,7 @@
                                                            update="newOAISetDialogContent :messagePanel :harvestingSetsForm setsTable emptySetsTable"
                                                            actionListener="#{harvestingSetsPage.saveSet}"
                                                            oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newOAISetForm').hide(); else PF('newOAISetForm').show();bind_bsui_components();"/>
-                                            <button type="button" jsf:rendered="#{harvestingSetsPage.setQueryValidated}" class="btn btn-default" onclick="PF('newOAISetForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
+                                            <button type="button" class="btn btn-link" jsf:rendered="#{harvestingSetsPage.setQueryValidated}" onclick="PF('newOAISetForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
                                         </div>
                                     </div>
                                 </fieldset>

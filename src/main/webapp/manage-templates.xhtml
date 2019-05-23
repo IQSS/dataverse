@@ -141,9 +141,10 @@
                             </p:column>
                         </p:dataTable>
                     </div>
-                    <p:dialog header="#{bundle['dataset.manageTemplates.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
+                    <p:dialog id="deleteTemplateConfirm" header="#{bundle['dataset.manageTemplates.tab.action.btn.delete.dialog.header']}" 
+                              widgetVar="deleteConfirmation" modal="true" focus="contDeleteTemplateBtn">
                         <p class="help-block">
-                            <span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> &#160;<h:outputText value="#{bundle['dataset.manageTemplates.tab.action.btn.delete.dialog.tip']}" /></span>
+                            <span class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> &#160;<h:outputText value="#{bundle['dataset.manageTemplates.tab.action.btn.delete.dialog.tip']}" /></span>
                         </p>
                         <ui:fragment rendered="#{manageTemplatesPage.selectedTemplate.isDefaultForDataverse}">
                             <p>
@@ -158,8 +159,8 @@
                             </ul>
                         </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageTemplatesPage.deleteTemplate()}" update="@all" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" type="button" />
+                            <p:commandButton id="contDeleteTemplateBtn" styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageTemplatesPage.deleteTemplate()}" update="@all" />
+                            <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" type="button" />
                         </div>
                     </p:dialog>
                     <p:dialog id="viewTemplate" styleClass="largePopUp" header="#{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.header']}" widgetVar="viewTemplate" modal="true">
@@ -184,7 +185,7 @@
                             <ui:param name="termsOfUseAndAccess" value="#{TemplatePage.template.termsOfUseAndAccess}" />
                         </ui:include>
                         <div class="button-block">
-                            <p:commandButton type="button" value="#{bundle.close}" onclick="PF('viewTemplate').hide()" />
+                            <p:commandButton type="button" styleClass="btn btn-default" value="#{bundle.close}" onclick="PF('viewTemplate').hide()" />
                         </div>
                     </p:dialog>
                 </h:form>

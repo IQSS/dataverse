@@ -145,13 +145,13 @@
                         </p:dataTable>
                         </div>
                     </div>
-                    <p:dialog header="#{bundle['dataset.manageGuestbooks.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
+                    <p:dialog id="deleteGuestbookConfirm" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="help-block">
                             <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['dataset.manageGuestbooks.tab.action.btn.delete.dialog.tip']}</span>
                         </p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageGuestbooksPage.deleteGuestbook()}" update="@all" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" type="button" />
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageGuestbooksPage.deleteGuestbook()}" update="@all" />
+                            <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" type="button" />
                         </div>
                     </p:dialog>
                     <p:dialog id="previewGuestbook" styleClass="largePopUp" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook" modal="true">
@@ -220,7 +220,7 @@
                             </div>
                         </div>
                         <div class="button-block">
-                            <p:commandButton type="button" value="#{bundle.close}" onclick="PF('viewGuestbook').hide()" />
+                            <p:commandButton type="button" styleClass="btn btn-default" value="#{bundle.close}" onclick="PF('viewGuestbook').hide()" />
                         </div>
                     </p:dialog>
                 </h:form>

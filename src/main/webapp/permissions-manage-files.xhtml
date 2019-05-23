@@ -200,7 +200,7 @@
                         </div>
                     </div>
                     <!-- View / Remove Users/Groups Popup -->
-                    <p:dialog id="viewRemoveDialog" width="65%" header="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.header']}" widgetVar="viewRemoveWidget" modal="true">
+                    <p:dialog id="viewRemoveDialog" styleClass="largePopUp" header="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.header']}" widgetVar="viewRemoveWidget" modal="true">
                         <div>
                             <p:outputPanel id="selectionRemoveCounter">
                                 <p>
@@ -236,11 +236,12 @@
                                 <span class="glyphicon glyphicon-remove"/>
                                 <h:outputText value="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.removeBtn']}"/>
                             </p:commandLink>
-                            <button type="button" class="btn btn-default" onclick="PF('viewRemoveWidget').hide()" value="Cancel">#{bundle.cancel}</button>
+                            <button type="button" class="btn btn-link" onclick="PF('viewRemoveWidget').hide()" value="Cancel">#{bundle.cancel}</button>
                         </div>
                     </p:dialog>
                     <!-- Assign Users/Groups Popup -->
-                    <p:dialog id="assignDialog" width="65%" header="#{bundle['dataverse.permissionsFiles.assignDialog.header']}" widgetVar="assignWidget" modal="true">
+                    <p:dialog id="assignDialog" styleClass="largePopUp" header="#{bundle['dataverse.permissionsFiles.assignDialog.header']}" widgetVar="assignWidget" modal="true">
+                        <p:focus for="userGroupNameAssign"/>
                         <p:fragment id="assignMessages">
                             <div class="messagePanel">
                                 <iqbs:messages collapsible="true" />
@@ -335,21 +336,21 @@
                                     <span class="glyphicon glyphicon-ban-circle"/>
                                     <h:outputText value="#{bundle['dataverse.permissionsFiles.assignDialog.rejectBtn']}"/>
                                 </p:commandLink>
-                                <button type="button" class="btn btn-default" onclick="PF('assignWidget').hide()" value="Cancel">#{bundle.cancel}</button>
+                                <button type="button" class="btn btn-link" onclick="PF('assignWidget').hide()" value="Cancel">#{bundle.cancel}</button>
                             </div>
                         </p:fragment>
                     </p:dialog>
-                    <p:dialog header="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.removeBtn']}" widgetVar="confirmation" modal="true">
+                    <p:dialog id="accessFileRemoveConfirm" header="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.removeBtn']}" widgetVar="confirmation" modal="true">
                         <p class="help-block">
-                            <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['dataverse.permissionsFiles.viewRemoveDialog.removeBtn.confirmation']}</span>
+                            <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['dataverse.permissionsFiles.viewRemoveDialog.removeBtn.confirmation']}</span>
                         </p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('confirmation').hide()"
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('confirmation').hide()"
                                              action="#{manageFilePermissionsPage.removeRoleAssignments()}"
                                              process="@this"
                                              update=":#{p:resolveClientId('rolesPermissionsForm:userGroups', view)} :#{p:resolveClientId('rolesPermissionsForm:restrictedFiles', view)} @([id$=Messages])"
                                              oncomplete="PF('viewRemoveWidget').hide();"/>
-                            <p:commandButton type="button" value="#{bundle.cancel}" onclick="PF('confirmation').hide()" />
+                            <p:commandLink type="button" styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('confirmation').hide()" />
                         </div>
                     </p:dialog>
                 </h:form>

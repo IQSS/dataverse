@@ -10,6 +10,7 @@
 
 
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
+        <p:focus for="guestbookuser_nameText"/>
         <p class="help-block">
             #{bundle['file.downloadDialog.tip']}
         </p>
@@ -182,6 +183,6 @@
                 #{bundle['acceptTerms']}
             </p:commandLink>
             
-            <button type="button" class="btn btn-default" onclick="PF('downloadPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
+            <button type="button" class="btn btn-link" onclick="PF('downloadPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
         </div>
 </ui:composition>

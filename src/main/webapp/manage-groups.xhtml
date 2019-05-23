@@ -87,16 +87,17 @@
                             </p:column>
                         </p:dataTable>
                     </div>
-                    <p:dialog rendered="#{manageGroupsPage.showDeletePopup}" header="#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
+                    <p:dialog id="deleteGroupConfirm" rendered="#{manageGroupsPage.showDeletePopup}" header="#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="help-block">
                             <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.tip']}</span>
                         </p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.deleteGroup()}" update="@all" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.unrenderDeletePopup()}" update="@all" type="button" />
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.deleteGroup()}" update="@all" />
+                            <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.unrenderDeletePopup()}" update="@all" type="button" />
                         </div>
                     </p:dialog>
                     <p:dialog id="viewGroup" styleClass="largePopUp" header="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.header']}" widgetVar="viewGroup" modal="true">
+                        <p:focus for="addRoleAssigneeName"/>
                         <div class="form-horizontal">
                             <div class="form-group">
                                 <label for="select_GroupName" class="col-sm-3 control-label">
@@ -175,7 +176,7 @@
                                            value="#{bundle.saveChanges}"
                                            update="@all">
                             </p:commandLink>
-                            <p:commandButton type="button" styleClass="btn btn-default" value="#{bundle.cancel}" onclick="PF('viewGroup').hide()" />
+                            <p:commandLink type="button" styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('viewGroup').hide()" />
                         </div>
                     </p:dialog>
                     <!-- Explicit Group Edit Popup -->

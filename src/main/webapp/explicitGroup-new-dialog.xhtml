@@ -5,6 +5,7 @@
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     
     <p:dialog id="explicitGroupNewDialog" width="65%" header="#{bundle['dataverse.permissions.explicitGroupEditDialog.title.new']}" widgetVar="explicitGroupForm" modal="true">
+        <p:focus for="explicitGroupName"/>
         <p:fragment id="explicitGroupNewDialogMessages">
             <div class="container messagePanel">
                 <iqbs:messages collapsible="true" />
@@ -90,7 +91,7 @@
                                oncomplete="if (args &amp;&amp; !args.validationFailed) PF('explicitGroupForm').hide();">
                     <f:param name="DO_GROUP_VALIDATION" value="true"/>
                 </p:commandLink>
-                <button type="button" class="btn btn-default" onclick="PF('explicitGroupForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
+                <button type="button" class="btn btn-link" onclick="PF('explicitGroupForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
             </div>
         </p:fragment>
     </p:dialog>

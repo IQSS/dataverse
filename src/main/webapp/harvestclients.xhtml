@@ -165,8 +165,8 @@
                             </h:outputFormat>
                         </p -->
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{harvestingClientsPage.deleteClient()}" update=":harvestingClientsForm :messagePanel" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" type="button" update=":harvestingClientsForm"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{harvestingClientsPage.deleteClient()}" update=":harvestingClientsForm :messagePanel" />
+                            <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" type="button" update=":harvestingClientsForm"/>
                         </div>
                     </p:dialog>
 
@@ -174,8 +174,8 @@
                     <p:dialog id="newHarvestingClientDialog" widgetVar="newHarvestingClientForm"
                               modal="true" width="85%"
                               header="#{harvestingClientsPage.createMode ? bundle['harvestclients.newClientDialog.title.new'] : bundle['harvestclients.viewEditDialog.title']}">
+                        <p:focus for="nickname"/>
                         <p:fragment id="newHarvestingClientDialogContent">
-                            <p:focus context="newHarvestingClientDialogContent"/>
                             <p class="help-block">
                                 <h:outputText value="#{bundle['harvestclients.newClientDialog.help']}"/>
                             </p>
@@ -287,9 +287,9 @@
                                             <span class="glyphicon glyphicon-menu-right"/> #{bundle.next}
                                         </p:commandLink>
                                         <button type="button"
+                                                class="btn btn-link"
                                                 jsf:rendered="#{!harvestingClientsPage.initialSettingsValidated}"
                                                 onclick="PF('newHarvestingClientForm').hide()"
-                                                class="btn btn-default"
                                                 value="#{bundle.cancel}">
                                             #{bundle.cancel}
                                         </button>
@@ -374,7 +374,7 @@
                                             <f:param name="DO_VALIDATION" value="true"/>
                                             <span class="glyphicon glyphicon-menu-right"/> #{bundle.next}
                                         </p:commandLink>
-                                        <button type="button" onclick="PF('newHarvestingClientForm').hide()" class="btn btn-default" value="#{bundle.cancel}">
+                                        <button type="button" class="btn btn-link" onclick="PF('newHarvestingClientForm').hide()" value="#{bundle.cancel}">
                                             #{bundle.cancel}
                                         </button>
                                     </div>
@@ -469,7 +469,7 @@
                                                         action="#{harvestingClientsPage.goToStepFour()}">
                                             <span class="glyphicon glyphicon-menu-right"/> #{bundle.next}
                                         </p:commandLink>
-                                        <button type="button" onclick="PF('newHarvestingClientForm').hide()" class="btn btn-default" value="#{bundle.cancel}">
+                                        <button type="button" class="btn btn-link" onclick="PF('newHarvestingClientForm').hide()" value="#{bundle.cancel}">
                                             #{bundle.cancel}
                                         </button>
                                     </div>
@@ -550,7 +550,7 @@
                                                        update="newHarvestingClientDialogContent :messagePanel :harvestingClientsForm clientsTable emptyClientsTable"
                                                        actionListener="#{harvestingClientsPage.saveClient}"
                                                        oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newHarvestingClientForm').hide(); else PF('newHarvestingClientForm').show();bind_bsui_components();"/>
-                                        <button type="button" jsf:rendered="#{harvestingClientsPage.initialSettingsValidated}" class="btn btn-default" onclick="PF('newHarvestingClientForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
+                                        <button type="button" class="btn btn-link" jsf:rendered="#{harvestingClientsPage.initialSettingsValidated}" onclick="PF('newHarvestingClientForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
                                     </div>
                                 </div>
                             </fieldset>

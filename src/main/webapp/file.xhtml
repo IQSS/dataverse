@@ -544,15 +544,15 @@
                         </p:tabView>
                     </div>
 
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
+                    <p:dialog id="deleteFileConfirm" styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
                         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.immediate']}</p>
                         <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.owner.released}">
                             <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
                         </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').hide()" 
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').hide()" 
                                              action="#{FilePage.deleteFile()}" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()" type="button" />
+                            <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()" type="button" />
                         </div>
                     </p:dialog>
                     <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
@@ -584,8 +584,8 @@
                         </ui:include>
                     </p:dialog>
                     
-                    <p:dialog header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true" 
-                        id="configureToolPopup" styleClass="smallPopUp" rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset()}">
+                    <p:dialog id="configureToolPopup" styleClass="smallPopUp" header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true" 
+                                rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset()}">
                         <ui:include src="file-configure-popup-fragment.xhtml">
                             <ui:param name="externalTools" value="#{FilePage.getExternalTools()}"/>
                             <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
@@ -597,7 +597,7 @@
                     </ui:include>
                     
                     <!-- Request Access Sign Up/Log In Button -->
-                    <p:dialog header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup" modal="true">
+                    <p:dialog id="accessGuest" header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup" modal="true">
                         <p class="help-block">
                             <span class="glyphicon glyphicon-exclamation-sign text-danger"/>&#160;
                             <h:outputFormat styleClass="text-danger" value="#{dataverseHeaderFragment.signupAllowed ? bundle['file.requestAccess.dialog.msg.signup'] : bundle['file.requestAccess.dialog.msg']}" escape="false">
@@ -644,8 +644,8 @@
                                 </div>
                             </div>
                             <div class="button-block">
-                                <p:commandButton value="#{bundle.continue}" onclick="PF('accessPopup').hide();" update=":messagePanel" action="#{FilePage.restrictFile(true)}" />
-                                <p:commandButton value="#{bundle.cancel}" onclick="PF('accessPopup').hide();" type="button" />
+                                <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('accessPopup').hide();" update=":messagePanel" action="#{FilePage.restrictFile(true)}" />
+                                <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('accessPopup').hide();" type="button" />
                             </div>
                         </ui:fragment>
                     </p:dialog>
@@ -668,7 +668,7 @@
                             <p:commandButton value="#{bundle.close}" onclick="PF('fileAlreadyReplacedPrevious').hide();"/>
                         </div>
                     </p:dialog>
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.compute.computeBtn']}" widgetVar="computeAccessDeniedPopup" modal="true">
+                    <p:dialog id="computeAccessDenied" styleClass="smallPopUp" header="#{bundle['dataset.compute.computeBtn']}" widgetVar="computeAccessDeniedPopup" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.compute.fileAccessDenied']}</p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.close}" onclick="PF('computeAccessDeniedPopup').hide();" type="button" />
