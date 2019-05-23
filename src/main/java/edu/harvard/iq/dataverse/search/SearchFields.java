@@ -178,6 +178,11 @@ public class SearchFields {
      * Indexed as text_en so it's searchable by lower case etc.
      */
     public static final String FILE_TAG_SEARCHABLE = "fileTags";
+    
+    /**
+     * Internal boolean indicating that the file has been deleted in the draft version.
+     */
+    public static final String FILE_DELETED = "fileDeleted";
     /*
      * (tabular) Data Tags are indexed as a string, since we are only planning to
      * use these in facet-like, exact searches:

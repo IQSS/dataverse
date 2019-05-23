@@ -64,6 +64,22 @@ View Files
 
 Files in Dataverse each have their own page that can be reached through the search results or through the Files table on their parent dataset's page. The dataset page and file page offer much the same functionality in terms of viewing and editing files, with a few small exceptions. The file page includes the file's persistent identifier (DOI or handle), which can be found under the Metadata tab. Also, the file page's Versions tab gives you a version history that is more focused on the individual file rather than the dataset as a whole. 
 
+File Search within Datasets
+---------------------------
+
+In addition to searching for files from the Home Page and indidvidual dataverse pages, users can run searches on files within individual datasets. A search form is provided on the Dataset page, at the top of the Files view. For the latest published version, and the draft of a dataset (if exists), search facets are also provided, for selecting files based on file type, tags and access restrictions (see the example below). 
+
+|image-file-search-facets|
+
+(To provide the search facets, we rely on the Solr search engine. Only the latest published, and the draft versions of datasets are indexed in Solr. Because of that facets cannot be offered for the older versions.
+
+Tree View
+---------
+
+Files can be organized in one or more folders (directories) within a dataset. If the folder structure is defined, the Dataset Page will present an option for switching between the traditional table view, and the tree-like view of the files, as in the example below: 
+
+|image-file-tree-view|
+
 Cite Data
 ---------
 
@@ -129,3 +145,9 @@ Explore Data
 ------------
 
 Please see the :doc:`/user/data-exploration/index`.
+
+.. |image-file-tree-view| image:: ./img/file-tree-view.png
+   :class: img-responsive
+.. |image-file-search-facets| image:: ./img/file-search-facets.png
+   :class: img-responsive
+
