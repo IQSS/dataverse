@@ -14,13 +14,13 @@ import java.util.Set;
  */
 public class TestDataverseEngine implements DataverseEngine {
 	
-	private final TestCommandContext ctxt;
-    
+    private final TestCommandContext ctxt;
+
     private final Map<DvObject, Set<Permission>> requiredPermissionsForObjects = new HashMap<>();
-    
-	public TestDataverseEngine(TestCommandContext ctxt) {
-		this.ctxt = ctxt;
-	}
+
+    public TestDataverseEngine(TestCommandContext ctxt) {
+        this.ctxt = ctxt;
+    }
 	
     @Override
     public <R> R submit(Command<R> aCommand) throws CommandException {
