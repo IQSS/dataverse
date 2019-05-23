@@ -276,7 +276,7 @@ Future Work on Unit Tests
 Future Work on Integration Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Automate testing of the Python client: https://github.com/IQSS/dataverse-client-python/issues/10
+- Automate testing of dataverse-client-python: https://github.com/IQSS/dataverse-client-python/issues/10
 - Work with @leeper on testing the R client: https://github.com/IQSS/dataverse-client-r
 - Review and attempt to implement "API Test Checklist" from @kcondon at https://docs.google.com/document/d/199Oq1YwQ4pYCguaeW48bIN28QAitSk63NbPYxJHCCAE/edit?usp=sharing
 - Attempt to use @openscholar approach for running integration tests using Travis https://github.com/openscholar/openscholar/blob/SCHOLAR-3.x/.travis.yml (probably requires using Ubuntu rather than CentOS)
