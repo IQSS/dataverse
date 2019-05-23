@@ -242,9 +242,15 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     public void explore(GuestbookResponse guestbookResponse, FileMetadata fmd, ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
-        if (user instanceof AuthenticatedUser) {
-            AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
-            apiToken = authService.findApiTokenByUser(authenticatedUser);
+        DatasetVersion version = fmd.getDatasetVersion();
+        if (version.isDraft() || (fmd.getDataFile().isRestricted())) {
+            if (user instanceof AuthenticatedUser) {
+                AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
+                apiToken = authService.findApiTokenByUser(authenticatedUser);
+                if ((apiToken == null) || (apiToken.getExpireTime().before(new Date()))) {
+                    apiToken = authService.generateApiTokenForUser(authenticatedUser);
+                }
+            }
         }
         DataFile dataFile = null;
         if (fmd != null) {
@@ -253,10 +259,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             if (guestbookResponse != null) {
                 dataFile = guestbookResponse.getDataFile();
             }
-        }
-        //For tools to get the dataset and datasetversion ids, we need a full DataFile object (not a findCheapAndEasy() copy)
-        if(dataFile.getFileMetadata()==null) {
-            dataFile=datafileService.find(dataFile.getId());
         }
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd);
         // Back when we only had TwoRavens, the downloadType was always "Explore". Now we persist the name of the tool (i.e. "TwoRavens", "Data Explorer", etc.)
@@ -476,7 +478,5 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         });
 
     }    
-
-
     
 }

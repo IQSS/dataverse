@@ -45,10 +45,15 @@ public class ExternalToolHandler {
             logger.warning("Error in ExternalToolHandler constructor: " + error);
             throw new IllegalArgumentException(error);
         }
+        if (fileMetadata == null) {
+            String error = "A FileMetadata is required.";
+            logger.warning("Error in ExternalToolHandler constructor: " + error);
+            throw new IllegalArgumentException(error);
+        }
         this.dataFile = dataFile;
         this.apiToken = apiToken;
-        dataset = getDataFile().getFileMetadata().getDatasetVersion().getDataset();
         this.fileMetadata = fileMetadata;
+        dataset = fileMetadata.getDatasetVersion().getDataset();
     }
 
     public DataFile getDataFile() {
@@ -104,17 +109,12 @@ public class ExternalToolHandler {
             case DATASET_ID:
                 return key + "=" + dataset.getId();
             case DATASET_VERSION:
-                String version = null;
-                if (getApiToken() != null) {
-                    version = dataset.getLatestVersion().getFriendlyVersionNumber();
-                } else {
-                    version = dataset.getLatestVersionForCopy().getFriendlyVersionNumber();
+                String versionString = fileMetadata.getDatasetVersion().getFriendlyVersionNumber();
+                if (("DRAFT").equals(versionString)) {
+                    versionString = ":draft"; // send the token needed in api calls that can be substituted for a numeric
+                                              // version.
                 }
-                if (("DRAFT").equals(version)) {
-                    version = ":draft"; // send the token needed in api calls that can be substituted for a numeric
-                                        // version.
-                }
-                return key + "=" + version;
+                return key + "=" + versionString;
             case FILE_METADATA_ID:
                 return key + "=" + fileMetadata.getId();
             default:
