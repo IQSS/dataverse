@@ -19,6 +19,8 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.S3BigDataUpload;
+import edu.harvard.iq.dataverse.S3BigDataUploadServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
@@ -101,6 +103,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URL;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -124,6 +127,7 @@ import javax.json.JsonObjectBuilder;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -182,6 +186,9 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     S3PackageImporter s3PackageImporter;
+
+    @EJB
+    S3BigDataUploadServiceBean s3BigDataUploadServiceBean;
      
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -1217,7 +1224,10 @@ public class Datasets extends AbstractApiBean {
     @POST
     @Path("{id}/getOneTimeUrl")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response getOneTimeUrl(@PathParam("id")String idSupplied, @FormDataParam("jsonData") String jsonData){
+    public Response getOneTimeUrl(@PathParam("id")String idSupplied,
+            @FormDataParam("FileName") String fileName, @FormDataParam("jsonData") String jsonData,
+            @FormDataParam("checksum") String checksum, @FormDataParam("checksumType") String checksumType,
+            @FormDataParam("contentType") String contentType){
         // -------------------------------------
         // (1) Get the user from the API key
         // -------------------------------------
@@ -1260,10 +1270,17 @@ public class Datasets extends AbstractApiBean {
         }
 
         URL url = dataAccess.generateS3PreSignedUrl(emptyFile.getStorageIdentifier());
+        Timestamp creationTime = new Timestamp(System.currentTimeMillis());
 
         // -------------------------------------
         // (3) //todo: Save the pre-signed URL and provided JSON-Data in database
         // -------------------------------------
+        s3BigDataUploadServiceBean.addS3BigDataUpload(url.toString(), authUser, jsonData, idSupplied, emptyFile.getStorageIdentifier(),
+                fileName, checksum, checksumType, contentType, creationTime);
+        //Todo: wieder raus, ist nur für mich zum Test
+        S3BigDataUpload test = s3BigDataUploadServiceBean.getS3BigDataUploadByUrl(url.toString());
+        logger.info("From Database Url is: " + test.getPreSignedUrl());
+        logger.info("From Database File name is: " + test.getFileName());
 
         // -------------------------------------
         // (4) Return the pre-signed URL
