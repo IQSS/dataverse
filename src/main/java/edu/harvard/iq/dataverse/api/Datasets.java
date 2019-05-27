@@ -1251,14 +1251,6 @@ public class Datasets extends AbstractApiBean {
         // -------------------------------------
         // (2) Generate pre-signed URL for uploading file to S3
         // -------------------------------------
-
-        //Todo: Remove Logging below; just for checking if s3 configuration is correct
-        String endpoint = System.getProperty("dataverse.files.s3-endpoint");
-        Logger.getLogger(Files.class.getName()).info("Endpoint is: " + endpoint);
-        String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
-        Logger.getLogger(Files.class.getName()).info("Bucketname is: " + bucketName);
-
-
         StorageIO<DataFile> dataAccess = null;
         DataFile emptyFile = new DataFile();
         emptyFile.setOwner(dataset);
@@ -1273,14 +1265,10 @@ public class Datasets extends AbstractApiBean {
         Timestamp creationTime = new Timestamp(System.currentTimeMillis());
 
         // -------------------------------------
-        // (3) //todo: Save the pre-signed URL and provided JSON-Data in database
+        // (3) Save the pre-signed URL and provided JSON-Data in database
         // -------------------------------------
         s3BigDataUploadServiceBean.addS3BigDataUpload(url.toString(), authUser, jsonData, idSupplied, emptyFile.getStorageIdentifier(),
                 fileName, checksum, checksumType, contentType, creationTime);
-        //Todo: wieder raus, ist nur für mich zum Test
-        S3BigDataUpload test = s3BigDataUploadServiceBean.getS3BigDataUploadByUrl(url.toString());
-        logger.info("From Database Url is: " + test.getPreSignedUrl());
-        logger.info("From Database File name is: " + test.getFileName());
 
         // -------------------------------------
         // (4) Return the pre-signed URL

@@ -49,7 +49,6 @@ public class S3BigDataUploadServiceBean {
 
   public S3BigDataUpload getS3BigDataUploadByUrl(String preSignedUrl) {
     try {
-      //todo: Query als named Query auslagern
       Query query = em.createQuery("SELECT s FROM S3BigDataUpload s WHERE s.preSignedUrl = :preSignedUrl");
       query.setParameter("preSignedUrl", preSignedUrl);
       return (S3BigDataUpload) query.getSingleResult();
