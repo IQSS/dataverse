@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.DeleteOneTimeUrlTask;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
@@ -1225,7 +1226,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/getOneTimeUrl")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response getOneTimeUrl(@PathParam("id")String idSupplied,
-            @FormDataParam("FileName") String fileName, @FormDataParam("jsonData") String jsonData,
+            @FormDataParam("fileName") String fileName, @FormDataParam("jsonData") String jsonData,
             @FormDataParam("checksum") String checksum, @FormDataParam("checksumType") String checksumType,
             @FormDataParam("contentType") String contentType){
         // -------------------------------------
@@ -1269,6 +1270,10 @@ public class Datasets extends AbstractApiBean {
         // -------------------------------------
         s3BigDataUploadServiceBean.addS3BigDataUpload(url.toString(), authUser, jsonData, idSupplied, emptyFile.getStorageIdentifier(),
                 fileName, checksum, checksumType, contentType, creationTime);
+
+        DeleteOneTimeUrlTask task = new DeleteOneTimeUrlTask(url.toString(), 90 * 60 * 1000,
+                s3BigDataUploadServiceBean);
+        task.schedule();
 
         // -------------------------------------
         // (4) Return the pre-signed URL

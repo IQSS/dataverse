@@ -1,8 +1,6 @@
 package edu.harvard.iq.dataverse;
 
-import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.logging.Logger;
 
 import javax.annotation.PreDestroy;
@@ -25,22 +23,24 @@ public class S3BigDataUploadServiceBean {
   private EntityManager em;
 
 
-  public void addS3BigDataUpload(String preSignedUrl, User user, String jsonData, String datasetId, String stroageId,
+  public void addS3BigDataUpload(String preSignedUrl, User user, String jsonData, String datasetId, String storageId,
           String fileName, String checksum, String checksumType, String contentType, Timestamp creationTime) {
 
     try {
+      em.getTransaction().begin();
       S3BigDataUpload bigData = new S3BigDataUpload();
       bigData.setPreSignedUrl(preSignedUrl);
       bigData.setUser(user);
       bigData.setJsonData(jsonData);
       bigData.setDatasetId(datasetId);
-      bigData.setStorageId(stroageId);
+      bigData.setStorageId(storageId);
       bigData.setFileName(fileName);
       bigData.setChecksum(checksum);
       bigData.setChecksumType(checksumType);
       bigData.setContentType(contentType);
       bigData.setCreationTime(creationTime);
       em.persist(bigData);
+      em.getTransaction().commit();
     } catch (ConstraintViolationException e) {
       logger.warning("Exception: ");
       e.getConstraintViolations().forEach(err->logger.warning(err.toString()));
@@ -57,6 +57,22 @@ public class S3BigDataUploadServiceBean {
       e.getConstraintViolations().forEach(err->logger.warning(err.toString()));
     }
     return null;
+  }
+
+  public boolean deleteS3BigDataUploadByUrl(String preSignedUrl) {
+    try {
+      em.getTransaction().begin();
+      Query query = em.createQuery("DELETE FROM S3BigDataUpload s WHERE s.preSignedUrl = :preSignedUrl");
+      query.setParameter("preSignedUrl", preSignedUrl);
+      int i = query.executeUpdate();
+      em.getTransaction().commit();
+      if (i >= 1) {
+        return true;
+      }
+    } catch (Exception e) {
+      logger.warning(e.getMessage());
+    }
+    return false;
   }
 
   @PreDestroy
