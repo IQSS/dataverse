@@ -364,7 +364,18 @@ public class XLSXFileReader extends TabularDataFileReader {
             if (columnTag.length() == 1 && columnTag.matches("[A-Z]")) {
                 count = columnTag.charAt(0) - 'A';
             } else {
-                dbglog.warning("Unsupported column index tag: "+columnTag);
+                if (columnTag.length() == 2) {
+                    int c1 = columnTag.charAt(0) - 'A';
+                    int c2 = columnTag.charAt(1) - 'A';
+                    if (c1 >= 0 && c1 < 26 && c2 >= 0 && c2 < 26) {
+                        dbglog.info(columnTag + ": " + (c1 + 1) * 26 + c2);
+                        return ((c1 + 1) * 26 + c2);
+                    } else {
+                        dbglog.warning("Unsupported column index tag: " + columnTag);
+                    }
+                } else {
+                    dbglog.warning("Unsupported column index tag: " + columnTag);
+                }
             }
             
             return count;
@@ -372,8 +383,18 @@ public class XLSXFileReader extends TabularDataFileReader {
         
         private String getColumnLetterTag(int columnCount) {
             if (columnCount < 0 || columnCount > 25) {
+                if(columnCount >25 && columnCount < 675) { //AA-ZZ
+                    int code1 = 'A' + columnCount/26 -1;
+                    int code2 = 'A' + columnCount%26;
+                    char[] letterTag = new char[2]; 
+                    letterTag[0] = (char)code1;
+                    letterTag[1] = (char)code2;
+                    dbglog.info(columnCount + ": " + new String(letterTag));
+                    return new String(letterTag);
+                } else {
                 dbglog.warning("Multi-letter column codes not yet supported.");
-                return null; 
+                return null;
+                }
             }
             int letterCode = 'A' + columnCount;
             char[] letterTag = new char[1]; 
