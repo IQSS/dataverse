@@ -61,7 +61,7 @@ Tip: The metadata fields you select as required will appear on the Create Datase
 Theme 
 ---------
 
-The Theme feature provides you with a way to customize the look of your dataverse. You can decide either to use the theme from the dataverse containing your dataverse (even up to the root dataverse, AKA the homepage), or upload your own image file. Supported image types are JPEG, TIFF, or PNG and should be no larger than 500 KB. The maximum display size for an image file in a dataverse's theme is 940 pixels wide by 120 pixels high. Additionally, you can select the colors for the header of your dataverse and the text that appears in your dataverse. You can also add a link to your personal website, the website for your organization or institution, your department, journal, etc.
+The Theme feature provides you with a way to customize the look of your dataverse. You can decide either to use the theme from the dataverse containing your dataverse (even up to the root dataverse), or upload your own image file. Supported image types are JPEG, TIFF, or PNG and should be no larger than 500 KB. The maximum display size for an image file in a dataverse's theme is 940 pixels wide by 120 pixels high. Additionally, you can select the colors for the header of your dataverse and the text that appears in your dataverse. You can also add a link to your personal website, the website for your organization or institution, your department, journal, etc.
 
 .. _dataverse-widgets:
 
