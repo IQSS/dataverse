@@ -135,39 +135,40 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             }
             // we have to merge to update the database but not flush because
             // we don't want to create two draft versions!
-            Dataset tempDataset = ctxt.em().merge(getDataset());
-
+          //  Dataset tempDataset = ctxt.em().merge(getDataset());
+          //SEK 05/29/2019 not merging here while continuing to edit the current dataset
+          //to fix downstream merge issue 
             for (FileMetadata fmd : filesToDelete) {
                 if (!fmd.getDataFile().isReleased()) {
                     // if file is draft (ie. new to this version, delete; otherwise just remove
                     // filemetadata object)
                     ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getRequest()));
-                    tempDataset.getFiles().remove(fmd.getDataFile());
-                    tempDataset.getEditVersion().getFileMetadatas().remove(fmd);
+                    getDataset().getFiles().remove(fmd.getDataFile());
+                    getDataset().getEditVersion().getFileMetadatas().remove(fmd);
                     // added this check to handle issue where you could not deleter a file that
                     // shared a category with a new file
                     // the relation ship does not seem to cascade, yet somehow it was trying to
                     // merge the filemetadata
                     // todo: clean this up some when we clean the create / update dataset methods
-                    for (DataFileCategory cat : tempDataset.getCategories()) {
+                    for (DataFileCategory cat : getDataset().getCategories()) {
                         cat.getFileMetadatas().remove(fmd);
                     }
                 } else {
                     FileMetadata mergedFmd = ctxt.em().merge(fmd);
                     ctxt.em().remove(mergedFmd);
-                    fmd.getDataFile().getFileMetadatas().remove(fmd);
-                    tempDataset.getEditVersion().getFileMetadatas().remove(fmd);
+                    fmd.getDataFile().getFileMetadatas().remove(mergedFmd);
+                    getDataset().getEditVersion().getFileMetadatas().remove(mergedFmd);
                 }
             }
 
             if (recalculateUNF) {
-                ctxt.ingest().recalculateDatasetVersionUNF(tempDataset.getEditVersion());
+                ctxt.ingest().recalculateDatasetVersionUNF(getDataset().getEditVersion());
             }
 
-            tempDataset.getEditVersion().setLastUpdateTime(getTimestamp());
-            tempDataset.setModificationTime(getTimestamp());
+            getDataset().getEditVersion().setLastUpdateTime(getTimestamp());
+            getDataset().setModificationTime(getTimestamp());
 
-            savedDataset = ctxt.em().merge(tempDataset);
+            savedDataset = ctxt.em().merge(getDataset());
             ctxt.em().flush();
 
             updateDatasetUser(ctxt);
