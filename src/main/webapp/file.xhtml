@@ -211,7 +211,38 @@
                             });
                         </script>
                     </p:fragment>
-                    
+                    <script>
+                        function editTimedOut(xhr) {
+                          if(xhr!=null) {
+                            if(xhr.status==500) {
+                              reportEditContinues();
+                            }
+                          }
+                        }
+                        //These functions mirror those in dataset.xhtml
+                        function refreshIfStillLocked() {
+                          if ($('input[id$="datasetLockedForAnyReasonVariable"]').val() === 'true') {
+                            // if dataset is locked, instruct the page to
+                            // wait and check again:
+                                                waitAndCheckLockAgain();
+                          } else {
+                            // if not locked, has it just been unlocked?
+                            if ($('input[id$="datasetStateChangedVariable"]').val() === 'true') {
+                              //Then refresh page
+                              refreshAllCommand();
+                            } 
+                          }
+                        }
+
+                        function waitAndCheckLockAgain() {
+                          setTimeout(function () {
+                            // refresh the lock in the
+                            // backing bean; i.e., check, if the ingest has
+                            // already completed in the background:
+                            refreshAllLocksCommand();
+                          }, 10000);
+                        }
+                    </script>
                     <div id="fileImageTitle" class="row">
                         <div id="file-preview-icon-block" class="col-xs-4">
                             <div id="border-block">
@@ -374,37 +405,6 @@
                                                     console.log(e);
                                                 });
                                             });
-                                            
-                                            function editTimedOut(xhr) {
-                                              if(xhr!=null) {
-                                                if(xhr.status==500) {
-                                                  reportEditContinues();
-                                                }
-                                              }
-                                            }
-                                            //These functions mirror those in dataset.xhtml
-                                            function refreshIfStillLocked() {
-                                              if ($('input[id$="datasetLockedForAnyReasonVariable"]').val() === 'true') {
-                                                // if dataset is locked, instruct the page to
-                                                // wait and check again:
-                                                waitAndCheckLockAgain();
-                                              } else {
-                                                // if not locked, has it just been unlocked?
-                                                if ($('input[id$="datasetStateChangedVariable"]').val() === 'true') {
-                                                  //Then refresh page
-                                                  refreshAllCommand();
-                                                } 
-                                              }
-                                            }
-
-                                            function waitAndCheckLockAgain() {
-                                              setTimeout(function () {
-                                                // refresh the lock in the
-                                                // backing bean; i.e., check, if the ingest has
-                                                // already completed in the background:
-                                                refreshAllLocksCommand();
-                                              }, 10000);
-                                            }
                                         </script>
 
                                         </div>
