@@ -368,7 +368,7 @@ public class XLSXFileReader extends TabularDataFileReader {
                     int c1 = columnTag.charAt(0) - 'A';
                     int c2 = columnTag.charAt(1) - 'A';
                     if (c1 >= 0 && c1 < 26 && c2 >= 0 && c2 < 26) {
-                        dbglog.info(columnTag + ": " + (c1 + 1) * 26 + c2);
+                        dbglog.info(columnTag + ": " + ((c1 + 1) * 26 + c2));
                         return ((c1 + 1) * 26 + c2);
                     } else {
                         dbglog.warning("Unsupported column index tag: " + columnTag);
