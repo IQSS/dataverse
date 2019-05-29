@@ -359,7 +359,7 @@ public class XLSXFileReader extends TabularDataFileReader {
             cellContents = "";
         }
 
-        /* Works from 1-675 columns. Could be made recursive to work beyond that*/
+        /* Works from 1-702 columns. Could be made recursive to work beyond that*/
         private int getColumnCount(String columnTag) {
             int count = -1;
             if (columnTag.length() == 1 && columnTag.matches("[A-Z]")) {
@@ -381,10 +381,10 @@ public class XLSXFileReader extends TabularDataFileReader {
             
             return count;
         }
-        
+        /* Supports A-Z and AA-ZZ (0-701 column count/position) */
         private String getColumnLetterTag(int columnCount) {
             if (columnCount < 0 || columnCount > 25) {
-                if(columnCount >25 && columnCount < 675) { //AA-ZZ
+                if(columnCount >25 && columnCount < 702) { //AA-ZZ
                     int code1 = 'A' + columnCount/26 -1;
                     int code2 = 'A' + columnCount%26;
                     char[] letterTag = new char[2]; 
@@ -393,8 +393,8 @@ public class XLSXFileReader extends TabularDataFileReader {
                     dbglog.fine(columnCount + ": " + new String(letterTag));
                     return new String(letterTag);
                 } else {
-                dbglog.warning("Multi-letter column codes not yet supported.");
-                return null;
+                    dbglog.warning("3+ letter column codes not yet supported.");
+                    return null;
                 }
             }
             int letterCode = 'A' + columnCount;
