@@ -515,33 +515,31 @@
     <!-- TODO: a message panel informing the unauthorized, or unauthenticated user that they don't have permission - should it be here? L.A. 4.2 -->
 
     <!-- Popups -->
-    <p:dialog styleClass="smallPopUp" header="#{bundle['file.addreplace.content_type.header']}" widgetVar="fileTypeDifferentPopup" id="fileTypeDifferentPopup" modal="true">
+    <p:dialog id="fileTypeDifferentPopup" styleClass="smallPopUp" header="#{bundle['file.addreplace.content_type.header']}" widgetVar="fileTypeDifferentPopup" modal="true">
         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{EditDatafilesPage.warningMessageForPopUp}</p>
         <div class="button-block">
-            <p:commandButton value="#{bundle['file.delete']}" onclick="PF('fileTypeDifferentPopup').hide()" 
+            <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}" onclick="PF('fileTypeDifferentPopup').hide()" 
                              action="#{EditDatafilesPage.deleteFiles()}"
                              update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage"/>
-            <p:commandButton value="#{bundle.continue}" onclick="PF('fileTypeDifferentPopup').hide()" type="button" />
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('fileTypeDifferentPopup').hide()" type="button" />
         </div>
     </p:dialog>
-    
     <p:dialog id="selectFilesForDeleteFragment" styleClass="smallPopUp"
               header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDeleteFragment" modal ="true">
         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForDelete']}</p>
         <div class="button-block">
-            <p:commandButton value="#{bundle.close}" onclick="PF('selectFilesForDeleteFragment').hide();"/>
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.close}" onclick="PF('selectFilesForDeleteFragment').hide();"/>
         </div>
     </p:dialog>
-    
-    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
+    <p:dialog id="deleteFileConfirmDialog" styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
         <ui:fragment rendered="#{EditDatafilesPage.dataset.released}">
             <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
         </ui:fragment>
         <div class="button-block">
-            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteFileConfirmation').hide()" oncomplete="window.scrollTo(0, 0);deleteFinished();"
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteFileConfirmation').hide()" oncomplete="window.scrollTo(0, 0);deleteFinished();"
                              update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage" action="#{EditDatafilesPage.deleteFiles()}" />
-            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()" type="button" />
+            <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()" type="button" />
         </div>
     </p:dialog>
     <p:dialog id="editFileAccessPopup" header="#{bundle['dataset.access.accessHeader']}" widgetVar="editFileAccessPopup" modal="true">
@@ -588,6 +586,7 @@
         </div>
     </p:dialog>
     <p:dialog id="fileAdvancedOptions" styleClass="dialog-submenu smallPopUp" header="#{bundle['file.advancedIngestOptions']}" widgetVar="fileAdvancedOptions" modal="true">
+        <p:focus for="spssSavEncodingLanguage"/>
         <div class="form-horizontal">
             <!-- select text encoding, for SPSS-SAV (and, and possibly, other) (this option is only available during ingest) data files; not implemented yet -->
             <div class="form-group" jsf:rendered="#{!(empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup) and (empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.id) and dataFileServiceBean.isSpssSavFile(EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.dataFile)}">
@@ -764,11 +763,13 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton id="fileAdvancedOptionsSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileAdvancedOptions').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.saveAdvancedOptions()}"/>
-            <p:commandButton id="fileAdvancedOptionsCancelButton" value="#{bundle.cancel}" onclick="PF('fileAdvancedOptions').hide();PF('blockFileForm').hide();" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForIngestOptionsPopup()}"/>        </div>
+            <p:commandButton styleClass="btn btn-default" id="fileAdvancedOptionsSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileAdvancedOptions').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.saveAdvancedOptions()}"/>
+            <p:commandLink styleClass="btn btn-link" id="fileAdvancedOptionsCancelButton" value="#{bundle.cancel}" onclick="PF('fileAdvancedOptions').hide();PF('blockFileForm').hide();" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForIngestOptionsPopup()}"/>
+        </div>
     </p:dialog>
     <!-- end of "advanced options" dialogue -->
     <p:dialog id="fileSetThumbnail" styleClass="smallPopUp" header="#{bundle['file.setThumbnail.header']}" widgetVar="fileSetThumbnail" modal="true">
+        <p:focus for="datasetThumbnailImage"/>
         <div class="form-horizontal">
             <div class="form-group">
                 <label for="datasetThumbnailImage" class="col-sm-4 control-label">
@@ -783,8 +784,8 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton id="fileSetThumbnailSaveBtn" value="#{bundle.saveChanges}" oncomplete="PF('fileSetThumbnail').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.saveAsDesignatedThumbnail()}"/>
-            <p:commandButton id="fileSetThumbnailCancelBtn" value="#{bundle.cancel}" onclick="PF('fileSetThumbnail').hide();PF('blockFileForm').hide();" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForThumbnailPopup()}"/>
+            <p:commandButton styleClass="btn btn-default" id="fileSetThumbnailSaveBtn" value="#{bundle.saveChanges}" oncomplete="PF('fileSetThumbnail').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.saveAsDesignatedThumbnail()}"/>
+            <p:commandLink styleClass="btn btn-link" id="fileSetThumbnailCancelBtn" value="#{bundle.cancel}" onclick="PF('fileSetThumbnail').hide();PF('blockFileForm').hide();" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForThumbnailPopup()}"/>
         </div>
     </p:dialog>
     <p:dialog id="fileThumbnailConfirm" styleClass="smallPopUp" header="#{bundle['file.setThumbnail.header']}" widgetVar="fileThumbnailConfirm" modal="true">
@@ -794,14 +795,14 @@
             </p>
         </div>
         <div class="button-block">
-            <p:commandButton id="fileThumbnailConfirmCntBtn" value="#{bundle.continue}" oncomplete="PF('fileThumbnailConfirm').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead()}"/>
-            <p:commandButton id="fileThumbnailConfirmCancelBtn" value="#{bundle.cancel}" onclick="PF('fileThumbnailConfirm').hide();PF('blockFileForm').hide();"/>
+            <p:commandButton styleClass="btn btn-default" id="fileThumbnailConfirmCntBtn" value="#{bundle.continue}" oncomplete="PF('fileThumbnailConfirm').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead()}"/>
+            <p:commandLink styleClass="btn btn-link" id="fileThumbnailConfirmCancelBtn" value="#{bundle.cancel}" onclick="PF('fileThumbnailConfirm').hide();PF('blockFileForm').hide();"/>
         </div>
     </p:dialog>
     <ui:include rendered="#{systemConfig.provCollectionEnabled}" src="provenance-popups-fragment.xhtml"/>
     <p:dialog id="editFileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="editFileTagsPopup" modal="true">
+        <p:focus for="fileTagsMenu"/>
         <p class="help-block">#{bundle['file.editTagsDialog.tip']}</p>
-
         <div class="form-horizontal" jsf:rendered="#{!(empty EditDatafilesPage.fileMetadataSelectedForTagsPopup)}">
             <div class="form-group text-left">
                 <label for="selectedTagsListEFF" class="col-sm-4 control-label">
@@ -882,7 +883,7 @@
         </div>
         <div class="button-block">
             <p:commandButton styleClass="btn btn-default" id="editFileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('editFileTagsPopup').hide()" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.saveFileTagsAndCategories()}"/>
-            <p:commandButton styleClass="btn btn-default" id="editFileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('editFileTagsPopup').hide();PF('blockFileForm').hide();"  update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
+            <p:commandLink styleClass="btn btn-link" id="editFileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('editFileTagsPopup').hide();PF('blockFileForm').hide();" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
         </div>
     </p:dialog>
     <script type="text/javascript" src="/resources/js/dropins.js" id="dropboxjs" data-app-key="#{EditDatafilesPage.dropBoxKey}"/>

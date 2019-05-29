@@ -1573,7 +1573,8 @@ public class DatasetPage implements java.io.Serializable {
             }
             
             if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)){
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.message.publicInstall"));
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.message.label.fileAccess"), 
+                        BundleUtil.getStringFromBundle("dataset.message.publicInstall"));
             }
 
             resetVersionUI();
@@ -1585,7 +1586,8 @@ public class DatasetPage implements java.io.Serializable {
         try {
             privateUrl = commandEngine.submit(new GetPrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
             if (privateUrl != null) {
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageAuthor", Arrays.asList(getPrivateUrlLink(privateUrl))));
+                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.privateurl.header"), 
+                        BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageAuthor", Arrays.asList(getPrivateUrlLink(privateUrl))));
             }
         } catch (CommandException ex) {
             // No big deal. The user simply doesn't have access to create or delete a Private URL.
@@ -1593,7 +1595,8 @@ public class DatasetPage implements java.io.Serializable {
         if (session.getUser() instanceof PrivateUrlUser) {
             PrivateUrlUser privateUrlUser = (PrivateUrlUser) session.getUser();
             if (dataset != null && dataset.getId().equals(privateUrlUser.getDatasetId())) {
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageReviewer"));
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.privateurl.header"), 
+                        BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageReviewer"));
             }
         }
                 
