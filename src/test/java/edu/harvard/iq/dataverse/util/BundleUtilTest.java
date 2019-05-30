@@ -1,26 +1,27 @@
 package edu.harvard.iq.dataverse.util;
 
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+import org.apache.commons.lang.StringUtils;
+import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.Arrays;
+
 import static org.junit.Assert.assertEquals;
 
 public class BundleUtilTest {
 
     @Test
     public void testGetStringFromBundle() {
-        assertEquals(null, BundleUtil.getStringFromBundle(null));
-        assertEquals(null, BundleUtil.getStringFromBundle(""));
-        assertEquals(null, BundleUtil.getStringFromBundle("junkKeyWeDoNotExpectToFind"));
+        assertEquals(StringUtils.EMPTY, BundleUtil.getStringFromBundle(null));
+        assertEquals(StringUtils.EMPTY, BundleUtil.getStringFromBundle(""));
+        assertEquals(StringUtils.EMPTY, BundleUtil.getStringFromBundle("junkKeyWeDoNotExpectToFind"));
         assertEquals("Search", BundleUtil.getStringFromBundle("search"));
         assertEquals("Error validating the username, email address, or password. Please try again. If the problem persists, contact an administrator.", BundleUtil.getStringFromBundle("login.error"));
     }
 
     @Test
     public void testGetStringFromBundleWithArguments() {
-        assertEquals(null, BundleUtil.getStringFromBundle(null, null));
+        assertEquals(StringUtils.EMPTY, BundleUtil.getStringFromBundle(null, null));
         String actual = BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList("http://guides.dataverse.org/en", "4.0"));
         String expected = "You have successfully created your dataverse! To learn more about what you can do with your dataverse, check out the <a href=\"http://guides.dataverse.org/en/4.0/user/dataverse-management.html\" title=\"Dataverse Management - Dataverse User Guide\" target=\"_blank\">User Guide</a>.";
         assertEquals(expected, actual);
@@ -65,27 +66,15 @@ public class BundleUtilTest {
                 BundleUtil.getStringFromBundle("shib.welcomeExistingUserMessage",
                         Arrays.asList(BundleUtil.getStringFromBundle("shib.welcomeExistingUserMessageDefaultInstitution"))));
     }
-
-    @Test
-    public void testGetStringFromBundleWithArgumentsAndSpecificBundle() {
-        assertEquals(null, BundleUtil.getStringFromBundle(null, null, null));
-        assertEquals("Search", BundleUtil.getStringFromBundle("search", null, ResourceBundle.getBundle("Bundle", Locale.US)));
-    }
     
     @Test
     public void testStringFromPropertyFile() {
         assertEquals("ZIP", BundleUtil.getStringFromPropertyFile("application/zip","MimeTypeFacets"));
     }
 
-    //To assure that the MissingResourceException bubble up from this call
-    @Test(expected = MissingResourceException.class)
-    public void testStringFromPropertyFileException() {
-        BundleUtil.getStringFromPropertyFile("FAKE","MimeTypeFacets");
-    }
-    
-    //To assure MissingResourceException is caught when calling normal bundle calls
     @Test
-    public void testNoErrorNonExistentStringBundle() {
-        BundleUtil.getStringFromBundle("FAKE", null, BundleUtil.getResourceBundle("MimeTypeFacets")); 
+    public void testStringFromPropertyFileException() {
+        String stringFromPropertyFile = BundleUtil.getStringFromPropertyFile("FAKE", "MimeTypeFacets");
+        Assert.assertEquals(StringUtils.EMPTY, stringFromPropertyFile);
     }
 }

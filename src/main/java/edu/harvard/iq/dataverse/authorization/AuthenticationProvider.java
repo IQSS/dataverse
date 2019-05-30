@@ -109,7 +109,7 @@ public interface AuthenticationProvider {
         }
         
         String friendlyName = BundleUtil.getStringFromBundle("authenticationProvider.name." + authProviderId);
-        if (friendlyName == null){
+        if (friendlyName.isEmpty()) {
             return authProviderId;
         }
         return friendlyName;

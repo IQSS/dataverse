@@ -1,11 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.util.BundleUtil;
-
-import java.io.Serializable;
-import java.util.List;
-import java.util.MissingResourceException;
-import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -21,6 +15,9 @@ import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import java.io.Serializable;
+import java.util.List;
+import java.util.Objects;
 
 import static edu.harvard.iq.dataverse.util.BundleUtil.getStringFromBundle;
 import static java.lang.String.format;
@@ -186,14 +183,5 @@ public class MetadataBlock implements Serializable {
     @Override
     public String toString() {
         return "edu.harvard.iq.dataverse.MetadataBlock[ id=" + id + " ]";
-    }
-
-    public String getLocaleDisplayName()
-    {
-        try {
-            return BundleUtil.getStringFromPropertyFile("metadatablock.displayName", getName());
-        } catch (MissingResourceException e) {
-            return displayName;
-        }
     }
 }

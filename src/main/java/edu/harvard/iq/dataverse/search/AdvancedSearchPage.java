@@ -41,16 +41,16 @@ public class AdvancedSearchPage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(AdvancedSearchPage.class.getCanonicalName());
 
     @EJB
-    DataverseServiceBean dataverseServiceBean;
+    private DataverseServiceBean dataverseServiceBean;
 
     @EJB
-    DatasetFieldServiceBean datasetFieldService;
+    private DatasetFieldServiceBean datasetFieldService;
 
     @Inject
-    WidgetWrapper widgetWrapper;
+    private WidgetWrapper widgetWrapper;
 
     @Inject
-    SolrQueryCreator solrQueryCreator;
+    private SolrQueryCreator solrQueryCreator;
 
     private Dataverse dataverse;
     private String dataverseIdentifier;
@@ -122,7 +122,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
             List<SearchField> searchFields = mapMetadataBlockFieldsToSearchFields(filteredDatasetFields, mdb);
 
-            metadataSearchBlocks.add(new SearchBlock(mdb.getName(), mdb.getLocaleDisplayName(), searchFields));
+            metadataSearchBlocks.add(new SearchBlock(mdb.getName(), mdb.getDisplayName(), searchFields));
         }
         addExtraFieldsToCitationMetadataBlock();
     }

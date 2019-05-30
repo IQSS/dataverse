@@ -239,8 +239,9 @@
                                                         <p:ajax update="@widgetVar(optionBlock)" />
                                                     </input>
 
-                                                    <h:outputText value="#{mdb.localeDisplayName} #{mdb.required ? bundle['dataverse.field.required']: ''}"
-                                                                  styleClass="#{DataversePage.inheritMetadataBlockFromParent ? 'text-muted' : ''}"/>
+                                                    <h:outputText
+                                                            value="#{mdb.displayName} #{mdb.required ? bundle['dataverse.field.required']: ''}"
+                                                            styleClass="#{DataversePage.inheritMetadataBlockFromParent ? 'text-muted' : ''}"/>
                                                     <p:commandLink id="showDSFT" style="margin-left:1em;"
                                                                    update="@widgetVar(optionBlock)"
                                                                    process="@this"
@@ -334,7 +335,9 @@
                                                                  disabled="#{!DataversePage.dataverse.facetRoot and DataversePage.dataverse.owner != null}"
                                                                  value="#{DataversePage.facetMetadataBlockId}">
                                                     <f:selectItem itemLabel="#{bundle['dataverse.facetPickList.metadataBlockList.all']}" itemValue=""/>
-                                                    <f:selectItems value="#{DataversePage.allMetadataBlocks}" var="mdb" itemLabel="#{mdb.localeDisplayName}" itemValue="#{mdb.id}" />
+                                                    <f:selectItems value="#{DataversePage.allMetadataBlocks}" var="mdb"
+                                                                   itemLabel="#{mdb.displayName}"
+                                                                   itemValue="#{mdb.id}"/>
                                                     <p:ajax process="editFacets" update="editFacets" listener="#{DataversePage.changeFacetsMetadataBlock}"/>
                                                 </p:selectOneMenu>
                                             </f:facet>
