@@ -137,9 +137,9 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             }
             // we have to merge to update the database but not flush because
             // we don't want to create two draft versions!
-            //  Dataset tempDataset = ctxt.em().merge(getDataset());
-            //SEK 05/29/2019 not merging here while continuing to edit the current dataset
-            //to fix downstream merge issue 
+            // Dataset tempDataset = ctxt.em().merge(theDataset);
+            theDataset = ctxt.em().merge(theDataset);
+
             for (FileMetadata fmd : filesToDelete) {
                 if (!fmd.getDataFile().isReleased()) {
                     // if file is draft (ie. new to this version, delete; otherwise just remove
