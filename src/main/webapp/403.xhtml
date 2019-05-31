@@ -24,7 +24,7 @@
                                                oncomplete="PF('contactForm').show()" update=":contactDialog"
                                                actionListener="#{sendFeedbackDialog.initUserInput}">
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}"
-                                                                 value="#{}"/>
+                                                                 value=""/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
