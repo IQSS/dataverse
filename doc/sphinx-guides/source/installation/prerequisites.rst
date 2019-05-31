@@ -224,7 +224,9 @@ On operating systems which use systemd such as RHEL or CentOS 7, you may then ad
 
         # sudo prlimit --pid pid --nofile=65000:65000
 
-Solr launches asynchronously and attempts to use the ``lsof`` binary to watch for its own availability. Installation of this package isn't required but will prevent a warning in the log at startup.
+Solr launches asynchronously and attempts to use the ``lsof`` binary to watch for its own availability. Installation of this package isn't required but will prevent a warning in the log at startup:
+
+	# yum install lsof
 
 Finally, you may start Solr and create the core that will be used to manage search information::
 
@@ -259,7 +261,12 @@ jq
 Installing jq
 =============
 
-``jq`` is a command line tool for parsing JSON output that is used by the Dataverse installation script. https://stedolan.github.io/jq explains various ways of installing it, but a relatively straightforward method is described below. Please note that you must download the 64- or 32-bit version based on your architecture. In the example below, the 64-bit version is installed. We confirm it's executable and in our ``$PATH`` by checking the version (1.4 or higher should be fine):: 
+``jq`` is a command line tool for parsing JSON output that is used by the Dataverse installation script. It is available in the EPEL repository:
+
+	# yum install epel-release
+	# yum install jq
+
+or you may install it manually:
 
         # cd /usr/bin
         # wget http://stedolan.github.io/jq/download/linux64/jq
@@ -370,11 +377,12 @@ for the daemon (:fixedwidthplain:`/etc/init.d/rserve`), so that it
 gets started automatically when the system boots.  This is an
 :fixedwidthplain:`init.d`-style startup file. If this is a
 RedHat/CentOS 7 system, you may want to use the
-:fixedwidthplain:`systemctl`-style file
-:fixedwidthplain:`rserve.service` instead. (Copy it into the
-:fixedwidthplain:`/usr/lib/systemd/system/` directory)
+:download:`rserve.service<../../../../scripts/r/rserve/rserve.service>`
+systemd unit file instead. Copy it into the /usr/lib/systemd/system/ directory, then:
 
-
+	# systemctl daemon-reload
+	# systemctl enable rserve
+	# systemctl start rserve
 
 Note that the setup will also set the Rserve password to
 ":fixedwidthplain:`rserve`".  Rserve daemon runs under a
