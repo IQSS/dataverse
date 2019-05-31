@@ -224,7 +224,7 @@ On operating systems which use systemd such as RHEL or CentOS 7, you may then ad
 
         # sudo prlimit --pid pid --nofile=65000:65000
 
-Solr launches asynchronously and attempts to use the ``lsof`` binary to watch for its own availability. Installation of this package isn't required but will prevent a warning in the log at startup:
+Solr launches asynchronously and attempts to use the ``lsof`` binary to watch for its own availability. Installation of this package isn't required but will prevent a warning in the log at startup::
 
 	# yum install lsof
 
@@ -261,12 +261,12 @@ jq
 Installing jq
 =============
 
-``jq`` is a command line tool for parsing JSON output that is used by the Dataverse installation script. It is available in the EPEL repository:
+``jq`` is a command line tool for parsing JSON output that is used by the Dataverse installation script. It is available in the EPEL repository::
 
 	# yum install epel-release
 	# yum install jq
 
-or you may install it manually:
+or you may install it manually::
 
         # cd /usr/bin
         # wget http://stedolan.github.io/jq/download/linux64/jq
@@ -378,7 +378,7 @@ gets started automatically when the system boots.  This is an
 :fixedwidthplain:`init.d`-style startup file. If this is a
 RedHat/CentOS 7 system, you may want to use the
 :download:`rserve.service<../../../../scripts/r/rserve/rserve.service>`
-systemd unit file instead. Copy it into the /usr/lib/systemd/system/ directory, then:
+systemd unit file instead. Copy it into the /usr/lib/systemd/system/ directory, then::
 
 	# systemctl daemon-reload
 	# systemctl enable rserve
