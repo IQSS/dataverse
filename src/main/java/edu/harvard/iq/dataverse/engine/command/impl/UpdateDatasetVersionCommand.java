@@ -138,7 +138,13 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             // we have to merge to update the database but not flush because
             // we don't want to create two draft versions!
             // Dataset tempDataset = ctxt.em().merge(theDataset);
-            theDataset = ctxt.em().merge(theDataset);
+            //SEK 5/30/2019
+            // This interim merge is causing:
+            // java.lang.IllegalArgumentException: Cannot merge an entity that has been removed: edu.harvard.iq.dvn.core.study.FileMetadata
+            // at the merge at line 177
+            //Is this merge needed to add the lock?  - seems to be 'no' so what is it needed for?
+            
+        //    theDataset = ctxt.em().merge(theDataset);
 
             for (FileMetadata fmd : filesToDelete) {
                 if (!fmd.getDataFile().isReleased()) {
