@@ -13,12 +13,13 @@
         </p>
         
         <div class="button-block">
-            <p:commandLink type="button" styleClass="btn btn-default"
+            <p:commandButton styleClass="btn btn-default" value="#{bundle['continue']}"
                 action="#{configureFragmentBean.configureExternalAlert()}" 
-                value="#{bundle['continue']}" 
                 onclick="PF('configureToolPopup').hide();"
                 update=":messagePanel">
-            </p:commandLink>
-            <button type="button" class="btn btn-link" onclick="PF('configureToolPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
+            </p:commandButton>
+            <button class="btn btn-link" onclick="PF('configureToolPopup').hide();PF('blockDatasetForm').hide();" type="button">
+                #{bundle.cancel}
+            </button>
         </div>
 </ui:composition>

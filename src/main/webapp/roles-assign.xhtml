@@ -91,13 +91,15 @@
                 </div>
             </div>
             <div class="button-block">
-                <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.saveChanges}"
+                <p:commandButton styleClass="btn btn-default" value="#{bundle.saveChanges}"
                                update="assignRoleContent assignedRoles @([id$=Messages])"
                                actionListener="#{managePermissionsPage.assignRole}" 
                                oncomplete="if (args &amp;&amp; !args.validationFailed) PF('userGroupsForm').hide();">
                     <f:param name="DO_ASSIGN_VALIDATION" value="true"/>
-                </p:commandLink>
-                <button type="button" class="btn btn-link" onclick="PF('userGroupsForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
+                </p:commandButton>
+                <button type="button" class="btn btn-link" onclick="PF('userGroupsForm').hide()">
+                    #{bundle.cancel}
+                </button>
             </div>
         </p:fragment>
     </p:dialog>
@@ -112,7 +114,9 @@
             <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confirmFileDownloader').hide()"
                              action="#{managePermissionsPage.assignRole}"
                              update="assignRoleContent assignedRoles @([id$=Messages])" />
-            <button type="button" class="btn btn-link" onclick="PF('confirmFileDownloader').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
+            <button class="btn btn-link" onclick="PF('confirmFileDownloader').hide()" type="button">
+                #{bundle.cancel}
+            </button>
         </div>
     </p:dialog>
 </ui:composition>

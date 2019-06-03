@@ -10,7 +10,7 @@
    <div class="text-right margin-bottom" 
         jsf:rendered="#{dataverseSession.user.authenticated and empty editMode and !widgetWrapper.widgetView
                         and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}">
-       <p:commandLink type="button" styleClass="btn btn-default btn-access" actionListener="#{DatasetPage.edit('LICENSE')}" 
+       <p:commandLink styleClass="btn btn-default btn-access" actionListener="#{DatasetPage.edit('LICENSE')}" 
                       update="@form,:messagePanel" oncomplete="javascript:bind_bsui_components();" disabled="#{DatasetPage.lockedFromEdits}">
            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
            <span class="glyphicon glyphicon-briefcase"/> #{bundle['file.dataFilesTab.terms.editTermsBtn']}
@@ -477,7 +477,7 @@
                                    <div class="panel panel-default">
                                        <div class="panel-body">
                                            <p class="form-control-static pull-left">#{DatasetPage.dataset.guestbook.name}</p>
-                                           <p:commandLink type="button" styleClass="btn btn-default pull-right"
+                                           <p:commandButton styleClass="btn btn-default pull-right"
                                                           value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
                                                           action="#{DatasetPage.viewSelectedGuestbook(DatasetPage.dataset.guestbook)}"
                                                           update=":datasetForm" oncomplete="PF('viewGuestbook').show();bind_bsui_components();"/>
@@ -498,19 +498,20 @@
                                </ui:fragment>
 
                                <ui:fragment rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
-                                   <p:commandButton value="#{bundle['file.dataFilesTab.terms.list.guestbook.clearBtn']}" 
+                                   <p:commandButton styleClass="btn btn-default"
+                                                    value="#{bundle['file.dataFilesTab.terms.list.guestbook.clearBtn']}" 
                                                     rendered="#{!empty DatasetPage.dataset.guestbook}"
                                                     update="guestbookTable" process="@this" actionListener="#{DatasetPage.reset}"/>
                                    <p:dataTable id="guestbookTable" styleClass="headerless-table margin-top"
                                                 value="#{DatasetPage.dataset.dataverseContext.availableGuestbooks}" var="guestbook" widgetVar="guestbookTable"
                                                 rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}"
                                                 rowIndexVar="rowNum" selection="#{DatasetPage.dataset.guestbook}" rowKey="#{guestbook}">
-                                       <p:column  selectionMode="single" class="col-select-width text-center" rendered="true"  />
+                                       <p:column selectionMode="single" class="col-select-width text-center"/>
                                        <p:column>
                                            <p class="form-control-static pull-left">
-                                               <h:outputText value="#{guestbook.name}" />
+                                               <h:outputText value="#{guestbook.name}"/>
                                            </p>
-                                           <p:commandLink type="button" styleClass="btn btn-default pull-right"
+                                           <p:commandButton styleClass="btn btn-default pull-right"
                                                           value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
                                                           action="#{DatasetPage.viewSelectedGuestbook(guestbook)}"
                                                           update=":datasetForm" oncomplete="PF('viewGuestbook').show();bind_bsui_components();"/>
@@ -586,7 +587,7 @@
             </div>
         </div>
         <div class="button-block">
-            <button type="button" onclick="PF('viewGuestbook').hide()" class="btn btn-default" value="#{bundle.close}">
+            <button class="btn btn-default" onclick="PF('viewGuestbook').hide()" type="button">
                 #{bundle.close}
             </button>
         </div>

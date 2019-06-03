@@ -22,7 +22,7 @@
                 <h:form id="manageGroupsForm">
                     <div class="form-group clearfix">
                         <div class="pull-right">
-                            <p:commandLink type="button" id="createGroup" styleClass="btn btn-default"
+                            <p:commandLink id="createGroup" styleClass="btn btn-default"
                                            actionListener="#{manageGroupsPage.initExplicitGroupDialog}"
                                            update="explicitGroupNewDialog" oncomplete="PF('explicitGroupForm').show();handleResizeDialog('explicitGroupNewDialog');bind_bsui_components();">
                                 <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.manageGroups.createBtn']}
@@ -68,16 +68,16 @@
                             <p:column width="30%" class="col-manage-action col-button-action text-center" headerText="#{bundle['dataverse.manageGroups.tab.header.action']}">
                                 <div class="button-block">
                                     <div class="btn-group" role="group">
-                                        <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                        <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                        action="#{manageGroupsPage.viewSelectedGroup(explicitGroup)}"
                                                        oncomplete="PF('viewGroup').show();bind_bsui_components();"
                                                        update=":manageGroupsForm"
                                                        title="#{bundle['dataverse.manageGroups.tab.action.btn.edit']}">
                                             <span class="glyphicon glyphicon-edit"></span>
                                         </p:commandLink>
-                                        <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                        <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                        action="#{manageGroupsPage.setSelectedGroup(explicitGroup)}"
-                                                       update="@all"
+                                                       update="@form"
                                                        oncomplete="PF('deleteConfirmation').show()"
                                                        title="#{bundle['dataverse.manageGroups.tab.action.btn.delete']}">
                                             <span class="glyphicon glyphicon-trash"></span>
@@ -92,8 +92,8 @@
                             <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.tip']}</span>
                         </p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.deleteGroup()}" update="@all" />
-                            <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.unrenderDeletePopup()}" update="@all" type="button" />
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.deleteGroup()}" update="@all"/>
+                            <p:commandButton styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.unrenderDeletePopup()}" update="@all"/>
                         </div>
                     </p:dialog>
                     <p:dialog id="viewGroup" styleClass="largePopUp" header="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.header']}" widgetVar="viewGroup" modal="true">
@@ -158,8 +158,7 @@
                             <!-- Action  -->
                             <p:column width="13%"
                                       headerText="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.groupView.action']}">
-                                <p:commandLink type="button"
-                                               styleClass="btn btn-default bootstrap-button-tooltip"
+                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                update="groupMembers"
                                                action="#{manageGroupsPage.removeMemberFromSelectedGroup(groupMember)}"
                                                title="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.groupView.delete']}">
@@ -169,14 +168,14 @@
                         </p:dataTable>
                         <!-- Add Group Members -->
                         <div class="button-block">
-                            <p:commandLink type="button"
-                                           id="saveGroup"
+                            <p:commandButton id="saveGroup" styleClass="btn btn-default"
                                            actionListener="#{manageGroupsPage.saveExplicitGroup}"
-                                           styleClass="btn btn-default"
                                            value="#{bundle.saveChanges}"
                                            update="@all">
-                            </p:commandLink>
-                            <p:commandLink type="button" styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('viewGroup').hide()" />
+                            </p:commandButton>
+                            <button class="btn btn-link" onclick="PF('viewGroup').hide()" type="button">
+                                #{bundle.cancel}
+                            </button>
                         </div>
                     </p:dialog>
                     <!-- Explicit Group Edit Popup -->

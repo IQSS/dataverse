@@ -135,28 +135,28 @@
                                                             and DatasetPage.canUpdateDataset()
                                                             and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset))}">
                                     <!-- Publish Buttons -->
-                                    <p:commandLink type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('publishConfirm').show()"
+                                    <p:commandLink styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('publishConfirm').show()"
                                                    rendered="#{!DatasetPage.dataset.released
                                                                and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
                                                                and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
-                                    <p:commandLink type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('releaseDraft').show()"
+                                    <p:commandLink styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('releaseDraft').show()"
                                                    rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
                                                                and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
                                     <!-- 4.2.1:  replaced permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse') with DatasetPage.canPublishDataverse() -->
-                                    <p:commandLink type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('mayNotRelease').show()"
+                                    <p:commandLink styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('mayNotRelease').show()"
                                                    rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                                and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
                                                                and !DatasetPage.canPublishDataverse()}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
-                                    <p:commandLink type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('publishParent').show()"
+                                    <p:commandLink styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('publishParent').show()"
                                                    rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                                and DatasetPage.canPublishDataverse()
                                                                and (DatasetPage.dataset.owner.owner == null or (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released))
@@ -164,7 +164,7 @@
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
-                                    <p:commandLink type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
+                                    <p:commandLink styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
                                                    rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                                and DatasetPage.canPublishDataverse()
                                                                and (DatasetPage.dataset.owner.owner != null and !DatasetPage.dataset.owner.owner.released)
@@ -175,7 +175,7 @@
                                     <!-- END: Publish Buttons -->
 
                                     <!-- Return to Author Button -->
-                                    <p:commandLink type="button" styleClass="btn btn-default btn-access #{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview)                                                                                                           
+                                    <p:commandLink styleClass="btn btn-default btn-access #{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview)                                                                                                           
                                                                                                           ? 'disabled' : ''}" onclick="PF('sendBackToContributor').show()"
                                                    rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview
                                                                and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
@@ -199,7 +199,7 @@
                                 <!-- END: Publish/Submit for Review/Return to Author Button Group -->
                                 
                                 <p:commandLink rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned and DatasetPage.dataset.released}"
-                                               type="button" styleClass="btn btn-default btn-access"                                              
+                                               styleClass="btn btn-default btn-access"                                              
                                                oncomplete="PF('linkDatasetForm').show();bind_bsui_components();"
                                                update="linkDatasetForm">
                                     <span class="glyphicon glyphicon-link"/> #{bundle['link']}
@@ -321,7 +321,7 @@
                                 <div id="sharrre-widget" data-url="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
 
                                 <div class="button-block">
-                                    <button type="button" onclick="PF('shareDialog').hide()" class="btn btn-default" value="#{bundle.close}">
+                                    <button class="btn btn-default" onclick="PF('shareDialog').hide()" type="button">
                                         #{bundle.close}
                                     </button>
                                 </div>
@@ -450,6 +450,7 @@
 
                     <!-- Create/Edit editMode -->
                     <ui:fragment rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
+                        <!--<p:focus context="datasetForm"/>-->
                         <div class="form-group">
                             <label for="select_HostDataverse" class="col-sm-2 control-label">
                                 #{bundle.hostDataverse}
@@ -510,8 +511,8 @@
 
                     <!-- Edit editMode -->
                     <div class="button-block form-top" jsf:rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE'}">
-                        <p:commandButton id="saveTop" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockDatasetForm').show();" />
-                        <p:commandButton id="cancelTop" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();">
+                        <p:commandButton id="saveTop" styleClass="btn btn-default" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockDatasetForm').show();"/>
+                        <p:commandButton id="cancelTop" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
                     </div>
@@ -608,14 +609,14 @@
                                              and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
 
                                 <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{empty DatasetPage.editMode}">
-                                    <p:commandLink type="button" styleClass="btn btn-default btn-access" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:messagePanel" oncomplete="javascript:bind_bsui_components();" 
+                                    <p:commandLink styleClass="btn btn-default btn-access" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:messagePanel" oncomplete="javascript:bind_bsui_components();" 
                                                    disabled="#{DatasetPage.locked}" rendered="#{!widgetWrapper.widgetView and (DatasetPage.sessionUserAuthenticated and empty DatasetPage.editMode and !widgetWrapper.widgetView
                                                                and DatasetPage.canUpdateDataset() and !DatasetPage.dataset.deaccessioned)}">
-                                        <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                        <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0"/>
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
-                                    </p:commandLink>                                   
-                                    <div class="btn-group" jsf:rendered="#{DatasetPage.dataset.released and !DatasetPage.dataset.deaccessioned}" >
-                                        <button class="btn btn-default btn-export dropdown-toggle" type="button" styleClass="btn btn-default" data-toggle="dropdown">
+                                    </p:commandLink>
+                                    <div class="btn-group" jsf:rendered="#{DatasetPage.dataset.released and !DatasetPage.dataset.deaccessioned}">
+                                        <button class="btn btn-default btn-export dropdown-toggle" type="button" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-export"/> #{bundle['dataset.exportBtn']} <span class="caret"/></button>
                                         <ul class="dropdown-menu" role="menu">
                                             <ui:repeat var="exporter" value="#{DatasetPage.exporters}">
@@ -662,16 +663,16 @@
 
                     <!-- Create/Save Dataset Button Panel -->
                     <div class="button-block" jsf:rendered="#{!empty DatasetPage.editMode}">
-                        <p:commandButton tabindex="1000" id="save" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockDatasetForm').show();" />
-                        <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:bind_bsui_components();">
+                        <p:commandButton id="save" styleClass="btn btn-default" tabindex="1000" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockDatasetForm').show();"/>
+                        <p:commandButton id="cancel" styleClass="btn btn-link" tabindex="1000" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:bind_bsui_components();">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
-                        <p:button id="cancelCreate" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" rendered="#{DatasetPage.editMode == 'CREATE'}" />
+                        <p:button id="cancelCreate" styleClass="btn btn-link" tabindex="1000" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" rendered="#{DatasetPage.editMode == 'CREATE'}"/>
                         <p:commandButton value="Direct" id="datasetSave"
                                          style="display:none"
                                          update=":datasetForm,:messagePanel"
                                          oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
-                                         action="#{DatasetPage.save}" />
+                                         action="#{DatasetPage.save}"/>
                     </div>
                     <!-- END: Create/Save Dataset Button Panel -->
 
@@ -684,7 +685,9 @@
                             <p class="help-block">#{bundle['dataset.requestAccessToRestrictedFiles']}</p>
                         </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.close}" onclick="PF('downloadInvalid').hide();" type="button" />
+                            <button class="btn btn-default" onclick="PF('downloadInvalid').hide();" type="button">
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
                     <p:dialog id="downloadMixed" styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
@@ -698,28 +701,33 @@
                         </table>
                         <div class="button-block">
                             <p class="help-block">#{bundle['dataset.downloadUnrestricted']}</p>
-                            <ui:fragment rendered="#{!DatasetPage.downloadPopupRequired}">
-                                <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" action="#{DatasetPage.startMultipleFileDownload()}" />
-                            </ui:fragment>
-                            <ui:fragment rendered="#{DatasetPage.downloadPopupRequired and !settingsWrapper.rsyncDownload}">
-                                <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadMixed').hide()"
-                                                 action="#{DatasetPage.openDownloadPopupForMultipleFileDownload()}" update="@form" />
-                            </ui:fragment>
-                            <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('downloadMixed').hide();" type="button" />
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" 
+                                             rendered="#{!DatasetPage.downloadPopupRequired}"
+                                             action="#{DatasetPage.startMultipleFileDownload()}"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadMixed').hide()"
+                                             rendered="#{DatasetPage.downloadPopupRequired and !settingsWrapper.rsyncDownload}"
+                                             action="#{DatasetPage.openDownloadPopupForMultipleFileDownload()}" update="@form"/>
+                            <button class="btn btn-link" onclick="PF('downloadMixed').hide();" type="button">
+                                #{bundle.cancel}
+                            </button>
                         </div>
                     </p:dialog>
                     <p:dialog id="deleteConfirmation" styleClass="smallPopUp" header="#{bundle['file.deleteDialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteDialog.tip']}</p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{DatasetPage.deleteDataset()}" />
-                            <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide();PF('blockDatasetForm').hide();" type="button" />
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{DatasetPage.deleteDataset()}"/>
+                            <button class="btn btn-link" onclick="PF('deleteConfirmation').hide();PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.cancel}
+                            </button>
                         </div>
                     </p:dialog>
                     <p:dialog id="deleteVersionConfirmation" styleClass="smallPopUp" header="#{bundle['file.deleteDraftDialog.header']}" widgetVar="deleteVersionConfirmation" modal="true">
                         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteDraftDialog.tip']}</p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteVersionConfirmation').hide()" action="#{DatasetPage.deleteDatasetVersion()}" />
-                            <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('deleteVersionConfirmation').hide();PF('blockDatasetForm').hide();" type="button" />
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteVersionConfirmation').hide()" action="#{DatasetPage.deleteDatasetVersion()}"/>
+                            <button class="btn btn-link" onclick="PF('deleteVersionConfirmation').hide();PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.cancel}
+                            </button>
                         </div>
                     </p:dialog>
                     <p:dialog id="privateUrlId" styleClass="smallPopUp" header="#{bundle['dataset.privateurl.header']}" widgetVar="privateUrlConfirmation" modal="true">
@@ -747,15 +755,19 @@
                                 </div>
                             </div>
                             <div class="button-block">
-                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.createPrivateUrl']}" action="#{DatasetPage.createPrivateUrl()}" update="privateUrlPanel,:messagePanel" rendered="#{empty(DatasetPage.privateUrl)}" />
+                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.createPrivateUrl']}" action="#{DatasetPage.createPrivateUrl()}" update="privateUrlPanel,:messagePanel" rendered="#{empty(DatasetPage.privateUrl)}"/>
                                 <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disablePrivateUrl']}" action="#{DatasetPage.setPrivateUrlJustCreatedToFalse()}" onclick="PF('privateUrlConfirmation').hide();PF('disablePrivateUrlConfirmation').show()" rendered="#{!empty(DatasetPage.privateUrl)}" update="privateUrlPanel"/>
-                                <p:commandButton styleClass="btn btn-default" value="#{bundle.close}" onclick="PF('privateUrlConfirmation').hide();PF('blockDatasetForm').hide();" update="privateUrlPanel"/>
+                                <button class="btn btn-link" onclick="PF('privateUrlConfirmation').hide();PF('blockDatasetForm').hide();" type="button">
+                                    #{bundle.close}
+                                </button>
                             </div>
                         </p:fragment>
                         <p:fragment id="privateUrlPanelCannotCreate" rendered="#{!DatasetPage.userCanCreatePrivateURL}">
                             <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.privateurl.cannotCreate']}</p>
                             <div class="button-block">
-                                <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('privateUrlConfirmation').hide();PF('blockDatasetForm').hide();" type="button" />
+                                <button class="btn btn-link" onclick="PF('privateUrlConfirmation').hide();PF('blockDatasetForm').hide();" type="button">
+                                    #{bundle.cancel}
+                                </button>
                             </div>
                         </p:fragment>
                     </p:dialog>
@@ -763,7 +775,9 @@
                         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.privateurl.disableConfirmationText']}</p>
                         <div class="button-block">
                             <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disablePrivateUrlConfirm']}" action="#{DatasetPage.disablePrivateUrl()}" update="privateUrlPanel,:messagePanel" onclick="PF('disablePrivateUrlConfirmation').hide();"/>
-                            <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('disablePrivateUrlConfirmation').hide();PF('privateUrlConfirmation').show();" type="button" />
+                            <button class="btn btn-link" onclick="PF('disablePrivateUrlConfirmation').hide();PF('privateUrlConfirmation').show();" type="button">
+                                #{bundle.cancel}
+                            </button>
                         </div>
                     </p:dialog>
                     <p:dialog id="deleteSelectedFileConfirmation" styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteSelectedFileConfirmation" modal="true">
@@ -774,14 +788,17 @@
                         <div class="button-block">
                             <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}" onclick="PF('deleteSelectedFileConfirmation').hide()"
                                              action="#{DatasetPage.deleteFilesAndSave()}" />
-                            <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('deleteSelectedFileConfirmation').hide();
-                                    PF('blockDatasetForm').hide();" type="button" />
+                            <button class="btn btn-link" onclick="PF('deleteSelectedFileConfirmation').hide();PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.cancel}
+                            </button>
                         </div>
                     </p:dialog>
                     <p:dialog id="computeInvalid" styleClass="smallPopUp" header="#{bundle['dataset.compute.computeBtn']}" widgetVar="computeInvalid" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.compute.computeBatchRestricted']}</p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.close}" onclick="PF('computeInvalid').hide();" type="button" />
+                            <button class="btn btn-default" onclick="PF('computeInvalid').hide();" type="button">
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
                     <p:outputPanel autoUpdate="true">
@@ -814,18 +831,17 @@
                             </div>
                             <div class="form-group">
                                 <label for="reasonForDeaccession">
-                                #{bundle['file.deaccessionDialog.enterInfo']}
+                                    #{bundle['file.deaccessionDialog.enterInfo']}
                                 </label>
                                 <p:inputTextarea id="reasonForDeaccession" styleClass="form-control"  autoResize="false" rows="2" cols="40"                                           
-                                                 value="#{DatasetPage.deaccessionReasonText}" widgetVar="reasonForDeaccession" validator="#{DatasetPage.validateDeaccessionReason}"                                              
-                                                 > 
+                                                 value="#{DatasetPage.deaccessionReasonText}" widgetVar="reasonForDeaccession" validator="#{DatasetPage.validateDeaccessionReason}"> 
                                     <f:attribute name="reasonRadio" value="#{reasonRadio}" />
                                 </p:inputTextarea>
                                 <p:message for="reasonForDeaccession"/>
                             </div>
                             <div class="form-group">
                                 <label for="forwardURLForDeaccession">
-                                #{bundle['file.deaccessionDialog.leaveURL']}
+                                    #{bundle['file.deaccessionDialog.leaveURL']}
                                 </label>
                                 <p:inputText id="forwardURLForDeaccession" styleClass="form-control" value="#{DatasetPage.deaccessionForwardURLFor}" widgetVar="forwardURLForDeaccession"
                                              validator="#{DatasetPage.validateForwardURL}"/>
@@ -833,11 +849,11 @@
                                 <p:watermark for="forwardURLForDeaccession" value="#{bundle['file.deaccessionDialog.leaveURL.watermark']}" id="watermark" />
                             </div>
                             <div class="button-block">
-                                <p:commandLink styleClass="btn btn-default" value="#{bundle.deaccession}"  
+                                <p:commandButton styleClass="btn btn-default" value="#{bundle.deaccession}"  
                                                oncomplete="if (args &amp;&amp; !args.validationFailed) PF('deaccessionConfirmation').show();">
                                     <f:param name="DO_DEACCESSION_VALIDATION" value="true"/>
-                                </p:commandLink>
-                                <p:commandLink type="button" styleClass="btn btn-link" immediate ="true" value="#{bundle.cancel}" action="#{DatasetPage.setRenderDeaccessionPopup(false)}" onclick="PF('deaccessionBlock').hide();PF('blockDatasetForm').hide();"/>
+                                </p:commandButton>
+                                <p:commandButton styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.setRenderDeaccessionPopup(false)}" onclick="PF('deaccessionBlock').hide();PF('blockDatasetForm').hide();" immediate="true"/>
                             </div>
                         </p:dialog>
                     </p:outputPanel>
@@ -846,17 +862,20 @@
                         <div class="button-block">
                             <h:commandButton styleClass="btn btn-default" value="#{bundle.yes}" onclick="PF('deaccessionConfirmation').hide();
                                     PF('deaccessionBlock').hide()" action="#{DatasetPage.deaccessionVersions}" />
-                            <button type="button" class="btn btn-link" value="No" onclick="PF('deaccessionConfirmation').hide()">#{bundle.no}</button>
+                            <button class="btn btn-link" onclick="PF('deaccessionConfirmation').hide();" type="button">
+                                #{bundle.no}
+                            </button>
                         </div>
                     </p:dialog>
                     <p:dialog id="deaccessionAllConfirmation" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionAllConfirmation" modal="true">
                         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.deaccessionDataset.tip']}</p>
                         <div class="button-block">
-                            <h:commandButton styleClass="btn btn-default" value="Yes" onclick="PF('deaccessionAllConfirmation').hide();
-                                    PF('deaccessionBlock').hide();
-                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.deaccessionVersions}" />
-                            <button type="button" class="btn btn-link" value="No" onclick="PF('deaccessionAllConfirmation').hide();
-                                    PF('blockDatasetForm').hide();">#{bundle.no}</button>
+                            <h:commandButton styleClass="btn btn-default" value="#{bundle.yes}" 
+                                            onclick="PF('deaccessionAllConfirmation').hide();PF('deaccessionBlock').hide();PF('blockDatasetForm').hide();" 
+                                            action="#{DatasetPage.deaccessionVersions}"/>
+                            <button class="btn btn-link" onclick="PF('deaccessionAllConfirmation').hide();PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.no}
+                            </button>
                         </div>
                     </p:dialog>
                     <p:confirmDialog id="selectDeaccessionVersion" message="#{bundle['file.deaccessionDialog.dialog.selectVersion.tip']}" header="#{bundle['file.deaccessionDialog.dialog.selectVersion.header']}" widgetVar="selectDeaccessionVersion"> </p:confirmDialog>
@@ -868,7 +887,9 @@
                     <p:dialog id="compareTwo" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="compareTwo" modal="true">
                         <p class="help-block"><span class="glyphicon glyphicon-exclamation-sign text-danger"/> <span class="text-danger">#{bundle['file.viewDiffDialog.dialog.warning']}</span></p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" onclick="PF('compareTwo').hide();PF('blockDatasetForm').hide();" type="button" />
+                            <button class="btn btn-default" onclick="PF('compareTwo').hide();PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
                     <p:dialog id="detailsBlocks" styleClass="largePopUp" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="detailsBlocks" modal="true">
@@ -990,15 +1011,15 @@
                             </p:dataTable>
                         </div>
                         <div class="panel panel-default" jsf:rendered="#{!empty(DatasetPage.datasetVersionDifference.changedTermsAccess)}">
-                            <div class="panel-heading text-info" >
+                            <div class="panel-heading text-info">
                                 <h:outputText id="outputTextTOU" value="#{bundle['dataset.versionDifferences.termsOfUseAccess']}"/>
                             </div>
                             <p:dataTable id="changedTermsAccessTable" styleClass="dvnDifferanceTable" var="diffArray" value="#{DatasetPage.datasetVersionDifference.changedTermsAccess}">
                                 <p:column styleClass="versionValue">
-                                    <h:outputText value="#{diffArray[0]}" />
+                                    <h:outputText value="#{diffArray[0]}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails">
-                                    <h:outputText value="#{diffArray[1]}" />
+                                    <h:outputText value="#{diffArray[1]}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" >
                                     <h:outputText value="#{diffArray[2]}"/>
@@ -1006,64 +1027,79 @@
                             </p:dataTable>
                         </div>
                         <div class="button-block margin-bottom">
-                            <p:commandButton value="#{bundle.done}" onclick="PF('detailsBlocks').hide();PF('blockDatasetForm').hide();" type="button" />
+                            <button class="btn btn-default" onclick="PF('detailsBlocks').hide();PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.done}
+                            </button>
                         </div>
                     </p:dialog>
                     
                     <p:dialog id="selectFilesForDownload" styleClass="smallPopUp"
-                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDownload" modal ="true">
+                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDownload" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForDownload']}</p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" onclick="PF('selectFilesForDownload').hide();PF('blockDatasetForm').hide();"/>
+                            <button class="btn btn-default" onclick="PF('selectFilesForDownload').hide();PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
 
                     <p:dialog id="selectFilesForRequestAccess" styleClass="smallPopUp"
-                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForRequestAccess" modal ="true">
+                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForRequestAccess" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForRequestAccess']}</p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" onclick="PF('selectFilesForRequestAccess').hide();
-                                    PF('blockDatasetForm').hide();"/>
+                            <button class="btn btn-default" onclick="PF('selectFilesForRequestAccess').hide();PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
 
                     <p:dialog id="selectFilesForDelete" styleClass="smallPopUp"
-                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDelete" modal ="true">
+                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDelete" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForDelete']}</p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" onclick="PF('selectFilesForDelete').hide();PF('blockDatasetForm').hide();"/>
+                            <button class="btn btn-default" onclick="PF('selectFilesForDelete').hide();PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
 
                     <p:dialog id="selectFilesForRestrict" styleClass="smallPopUp"
-                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForRestrict" modal ="true">
+                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForRestrict" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForRestrict']}</p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" onclick="PF('selectFilesForRestrict').hide();PF('blockDatasetForm').hide();"/>
+                            <button class="btn btn-default" onclick="PF('selectFilesForRestrict').hide();PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
 
                     <p:dialog id="selectFilesForUnRestrict" styleClass="smallPopUp"
-                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForUnRestrict" modal ="true">
+                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForUnRestrict" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForUnRestrict']}</p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" onclick="PF('selectFilesForUnRestrict').hide();PF('blockDatasetForm').hide();"/>
+                            <button class="btn btn-default" onclick="PF('selectFilesForUnRestrict').hide();PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
 
                     <p:dialog id="selectFilesForEditMetadata" styleClass="smallPopUp"
-                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForEditMetadata" modal ="true">
+                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForEditMetadata" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForMetadataEdit']}</p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" onclick="PF('selectFilesForEditMetadata').hide();PF('blockDatasetForm').hide();"/>
+                            <button class="btn btn-default" onclick="PF('selectFilesForEditMetadata').hide();PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
 
                     <p:dialog id="selectFilesForEditTags" styleClass="smallPopUp"
-                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForEditTags" modal ="true">
+                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForEditTags" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForMetadataEdit']}</p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" onclick="PF('selectFilesForEditTags').hide();PF('blockDatasetForm').hide();"/>
+                            <button class="btn btn-default" onclick="PF('selectFilesForEditTags').hide();PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
 
@@ -1122,10 +1158,8 @@
                                             <p:inputText id="fileTagAddNewDS" styleClass="form-control"
                                                          type="text" value="#{DatasetPage.newCategoryName}"
                                                          placeholder="#{bundle['file.editTagsDialog.newName']}"
-                                                         onkeypress="if (event.keyCode == 13) {
-                                                                     return false;
-                                                                 }" />
-                                            <p:commandLink styleClass="btn btn-default" style="margin-left:.5em;" value="#{bundle.apply}" action="#{DatasetPage.saveNewCategory}" update="selectedTagsList, fileTagAddNewDS, fileTagsMenuDS"/>
+                                                         onkeypress="if (event.keyCode == 13) {return false;}"/>
+                                            <p:commandButton styleClass="btn btn-default" style="margin-left:.5em;" value="#{bundle.apply}" action="#{DatasetPage.saveNewCategory}" update="selectedTagsList, fileTagAddNewDS, fileTagsMenuDS"/>
                                         </div>
                                     </div>
                                     <p:message for="fileTagAddNewDS" display="text" />
@@ -1161,7 +1195,7 @@
                         </div>
                         <div class="button-block">
                             <p:commandButton styleClass="btn btn-default" id="fileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileTagsPopup').hide()" update=":datasetForm:tabView:filesTable, :datasetForm" action="#{DatasetPage.saveFileTagsAndCategories()}"/>
-                            <p:commandLink styleClass="btn btn-link" id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileTagsPopup').hide();PF('blockDatasetForm').hide();" actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>
+                            <p:commandButton styleClass="btn btn-link" id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileTagsPopup').hide();PF('blockDatasetForm').hide();" actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>
                         </div>
                     </p:dialog>
                     <!-- Request Access Sign Up/Log In Button -->
@@ -1175,8 +1209,9 @@
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" onclick="PF('accessSignUpLogIn_popup').hide();
-                                    PF('blockDatasetForm').hide();"/>
+                            <button class="btn btn-default" onclick="PF('accessSignUpLogIn_popup').hide();PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
                     <!-- END: Request Access Sign Up/Log In Button -->
@@ -1269,13 +1304,13 @@
                             </div>
                         </div>
                         <div class="button-block">
-                            <p:commandLink id="saveLinkButton" type="button" styleClass="btn btn-default"    
+                            <p:commandButton id="saveLinkButton" styleClass="btn btn-default"    
                                            update="linkNameContent @([id$=Messages])" 
                                            oncomplete="if (args &amp;&amp; !args.validationFailed) linkDatasetCommand();"
                                            value="#{bundle['dataset.link.save']}">  
                                 <f:param name="DO_DS_LINK_VALIDATION" value="true"/>
-                             </p:commandLink>
-                            <button type="button" class="btn btn-link" onclick="PF('linkDatasetForm').hide();PF('blockDatasetForm').hide();">                              
+                            </p:commandButton>
+                            <button class="btn btn-link" onclick="PF('linkDatasetForm').hide();PF('blockDatasetForm').hide();" type="button">                              
                                 #{bundle.cancel}
                             </button>
                         </div>
@@ -1286,9 +1321,9 @@
                     <p:dialog id="computeBatchListPopup" header="#{bundle['dataset.compute.computeBatchListHeader']}" widgetVar="computeBatchListPopup" modal="true">
                         <div class="text-right">
                             <!-- Clear link -->
-                            <p:commandLink type="button" styleClass="btn btn-default" action="#{DatasetPage.clearCart()}" update=":datasetForm,:messagePanel">
+                            <p:commandButton styleClass="btn btn-default" action="#{DatasetPage.clearCart()}" update=":datasetForm,:messagePanel">
                                 <span class="glyphicon glyphicon-remove"/> <h:outputText value="#{bundle['dataset.compute.computeBatchClear']}"/>
-                            </p:commandLink>
+                            </p:commandButton>
                         </div>
                         <h:dataTable id="computeBatch" class="table table-striped" value="#{DatasetPage.cartList}" var='computeCartDatasetList'>
                             <h:column>
@@ -1307,7 +1342,9 @@
                             <h:outputLink styleClass="btn btn-default" value="#{DatasetPage.cartComputeUrl}" onclick="PF('computeBatchListPopup').hide()" target="_blank">
                                 <h:outputText value="#{bundle['dataset.compute.computeBatchCompute']}"/>
                             </h:outputLink>
-                            <h:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('computeBatchListPopup').hide();" type="button" />
+                            <button class="btn btn-link" onclick="PF('computeBatchListPopup').hide();" type="button">                              
+                                #{bundle.cancel}
+                            </button>
                         </div>
                     </p:dialog>
 
@@ -1322,7 +1359,7 @@
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
                                     </label>
                                     <div class="col-sm-9">
-                                        <p:inputTextarea id="termsAccessInput" value="#{DatasetPage.workingVersion.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa" />
+                                        <p:inputTextarea id="termsAccessInput" value="#{DatasetPage.workingVersion.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa"/>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -1338,13 +1375,13 @@
                                 </div>
                             </div>
                             <div class="button-block">
-                                <ui:fragment rendered="#{DatasetPage.editMode != 'CREATE'}">
-                                    <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('accessPopup').hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.restrictSelectedFiles(true)}" />
-                                </ui:fragment>
-                                <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
-                                    <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('accessPopup').hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.save()}" />
-                                </ui:fragment>
-                                <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('accessPopup').hide();PF('blockDatasetForm').hide();" type="button" />
+                                <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" rendered="#{DatasetPage.editMode != 'CREATE'}"
+                                                    onclick="PF('accessPopup').hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.restrictSelectedFiles(true)}"/>
+                                <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" rendered="#{DatasetPage.editMode == 'CREATE'}"
+                                                    onclick="PF('accessPopup').hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.save()}"/>
+                                <button class="btn btn-link" onclick="PF('accessPopup').hide();PF('blockDatasetForm').hide();" type="button">                              
+                                    #{bundle.cancel}
+                                </button>
                             </div>
                         </ui:fragment>
                     </p:dialog>
@@ -1354,9 +1391,11 @@
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.submitMessage']}
                         </p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.submit}" onclick="PF('inreview').hide();
-                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.submitDataset}" immediate="true"  />
-                            <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('inreview').hide();PF('blockDatasetForm').hide();" type="button" immediate="true"  />
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.submit}" 
+                                             onclick="PF('inreview').hide();PF('blockDatasetForm').hide();" action="#{DatasetPage.submitDataset}" immediate="true"/>
+                            <button class="btn btn-link" onclick="PF('inreview').hide();PF('blockDatasetForm').hide();" type="button">                              
+                                #{bundle.cancel}
+                            </button>
                         </div>
                     </p:dialog>
 
@@ -1369,9 +1408,11 @@
                             <h:outputText value="#{DatasetPage.datasetPublishCustomText}" escape="false"/>
                         </div>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('publishConfirm').hide();
-                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDataset}" immediate="true"  />
-                            <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('publishConfirm').hide();PF('blockDatasetForm').hide();" type="button" />
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" 
+                                             onclick="PF('publishConfirm').hide();PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDataset}" immediate="true"/>
+                            <button class="btn btn-link" onclick="PF('publishConfirm').hide();PF('blockDatasetForm').hide();" type="button">                              
+                                #{bundle.cancel}
+                            </button>
                         </div>
                     </p:dialog>
 
@@ -1393,9 +1434,11 @@
                             #{bundle['dataset.publishBoth.tip']}
                         </p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.mayNotBePublished.both.button']}" onclick="PF('publishParent').hide();
-                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseParentDVAndDataset}" immediate="true"  />
-                            <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('publishParent').hide();PF('blockDatasetForm').hide();" type="button" immediate="true"  />
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.mayNotBePublished.both.button']}" 
+                                             onclick="PF('publishParent').hide();PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseParentDVAndDataset}" immediate="true"/>
+                            <button class="btn btn-link" onclick="PF('publishParent').hide();PF('blockDatasetForm').hide();" type="button">                              
+                                #{bundle.cancel}
+                            </button>
                         </div>
                     </p:dialog>
 
@@ -1425,10 +1468,15 @@
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();" rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseDraft}" />
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('releaseDraft').hide();
-                                    PF('blockDatasetForm').hide();" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseMajor}" immediate="true" />
-                            <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();" type="button" />
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" 
+                                             rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}"
+                                             onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDraft}"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" 
+                                             rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}"
+                                             onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseMajor}" immediate="true"/>
+                            <button class="btn btn-link" onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();" type="button">                              
+                                #{bundle.cancel}
+                            </button>
                         </div>
                     </p:dialog>
 
@@ -1444,8 +1492,9 @@
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.close}" onclick="PF('mayNotRelease').hide();
-                                    PF('blockDatasetForm').hide();" type="button" />
+                            <button class="btn btn-default" onclick="PF('mayNotRelease').hide();PF('blockDatasetForm').hide();" type="button">                              
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
 
@@ -1466,8 +1515,9 @@
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.close}" onclick="PF('maynotPublishParent').hide();
-                                    PF('blockDatasetForm').hide();" type="button" />
+                            <button class="btn btn-default" onclick="PF('maynotPublishParent').hide();PF('blockDatasetForm').hide();" type="button">                              
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
 
@@ -1477,26 +1527,27 @@
                         </p>
                         <ui:remove>
                         <!--FIXME update for new comments table -->
-                        <p:inputTextarea id="returnReason" rows="3"  value="#{DatasetPage.workingVersion.returnReason}" maxlength="200" widgetVar="returnReason"
-                                         cols="70" counter="display"  counterTemplate="{0} characters remaining." autoResize="false"/>
+                        <p:inputTextarea id="returnReason" rows="3" value="#{DatasetPage.workingVersion.returnReason}" maxlength="200" widgetVar="returnReason"
+                                         cols="70" counter="display" counterTemplate="{0} characters remaining." autoResize="false"/>
                         <p>
-                        <h:outputText id="display" />
+                            <h:outputText id="display"/>
                         </p>
-                        <p:watermark for="returnReason" value="#{bundle['dataset.rejectWatermark']}" id="returnReasonwatermark" />
+                        <p:watermark for="returnReason" value="#{bundle['dataset.rejectWatermark']}" id="returnReasonwatermark"/>
                         </ui:remove>
 
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('sendBackToContributor').hide()" action="#{DatasetPage.sendBackToContributor}" />
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('sendBackToContributor').hide()" action="#{DatasetPage.sendBackToContributor}"/>
                             <ui:remove>
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="testReturnReason();"  />
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="testReturnReason();"/>
                             </ui:remove>
-                            <p:commandLink styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('sendBackToContributor').hide();PF('blockDatasetForm').hide();" type="button" />
+                            <button class="btn btn-link" onclick="PF('sendBackToContributor').hide();PF('blockDatasetForm').hide();" type="button">                              
+                                #{bundle.cancel}
+                            </button>
                         </div>
                     </p:dialog>
-                    <p:remoteCommand name="returnToAuthorCommand"   action="#{DatasetPage.sendBackToContributor}"/>
-                    <p:confirmDialog id="enterReturnReason" message="#{bundle['dataset.reject.enterReason']}" header="#{bundle['dataset.reject.enterReason.header']}" widgetVar="enterReturnReason"> </p:confirmDialog>                   
-                    
-                     <!-- END: Publish/Submit for Review Dialogs -->
+                    <p:remoteCommand name="returnToAuthorCommand" action="#{DatasetPage.sendBackToContributor}"/>
+                    <p:confirmDialog id="enterReturnReason" message="#{bundle['dataset.reject.enterReason']}" header="#{bundle['dataset.reject.enterReason.header']}" widgetVar="enterReturnReason"></p:confirmDialog>                   
+                    <!-- END: Publish/Submit for Review Dialogs -->
                 </h:form>
                 <script type="text/javascript">
                     $(document).ready(function () {

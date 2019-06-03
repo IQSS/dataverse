@@ -63,12 +63,14 @@
                 </h:selectManyCheckbox>
             </p:panel>
             <div id="editRoleButtonPanel" class="button-block">
-                <p:commandLink type="button" styleClass="btn btn-default" 
+                <p:commandButton styleClass="btn btn-default" 
                                value="#{bundle.saveChanges}" 
                                oncomplete="PF('roleForm').hide()"
                                update="roleDisplay availableRoles @([id$=Messages])"
                                actionListener="#{managePermissionsPage.updateRole}"/>
-                <button type="button" class="btn btn-link" onclick="PF('roleForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
+                <button class="btn btn-link" onclick="PF('roleForm').hide()" type="button">
+                    #{bundle.cancel}
+                </button>
             </div>
         </p:panel>
     </p:dialog>

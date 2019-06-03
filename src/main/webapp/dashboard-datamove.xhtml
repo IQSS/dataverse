@@ -117,7 +117,7 @@
                     </div>
 
                     <div class="col-sm-12 button-block">
-                        <p:commandLink id="move" styleClass="btn btn-default" 
+                        <p:commandButton id="move" styleClass="btn btn-default" 
                                        value="#{bundle['saveChanges']}"
                                        update="datamove-form"
                                        validateClient="true"
@@ -125,7 +125,7 @@
                             <!-- if (args &amp;&amp; !args.validationFailed) 
                              prevents the confirm dialog to pop up (client side) if validation fails -->
                             <f:param name="DO_DATAMOVE_VALIDATION" value="true"/>
-                        </p:commandLink>
+                        </p:commandButton>
                         <p:button styleClass="btn btn-link" outcome="dashboard" value="#{bundle['cancel']}">
                             <!-- dataverse.id resolves to null !
                                  <f:param name="dataverseId" value="#{dataverse.id}" />
@@ -136,12 +136,13 @@
                     <p:dialog id="datamoveConfirmation" header="#{bundle['dashboard.card.datamove.manage']}" widgetVar="datamoveConfirmation" modal="true">
                         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dashboard.card.datamove.confirm.dialog']}</p>
                         <div class="button-block">
-                            <h:commandButton styleClass="btn btn-default" value="#{bundle['dashboard.card.datamove.confirm.yes']}"
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dashboard.card.datamove.confirm.yes']}"
                                              onclick="PF('datamoveConfirmation').hide();" 
                                              action="#{DashboardDatamovePage.move()}"
-                                             update=":datamove-form:dsPersistentIds,:datamove-form:move" />
-                            <button type="button" class="btn btn-link" value="#{bundle['no']}" 
-                                    onclick="PF('datamoveConfirmation').hide();">#{bundle.no}</button>
+                                             update="@form,:messagePanel" partialSubmit="true"/>
+                            <button class="btn btn-link" onclick="PF('datamoveConfirmation').hide();" type="button">
+                                #{bundle.no}
+                            </button>
                         </div>
                     </p:dialog>
                 </h:form>

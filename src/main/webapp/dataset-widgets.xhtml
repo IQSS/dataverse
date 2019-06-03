@@ -45,7 +45,9 @@
                                         <span class="text-muted" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail == null}"><em>#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.default']}</em></span>
                                         <p:commandButton update="@all" value="#{bundle.remove}" action="#{DatasetWidgetsPage.flagDatasetThumbnailForRemoval()}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null and DatasetWidgetsPage.datasetThumbnail.fromDataFile != true}" oncomplete="bind_bsui_components();"/>
                                         <div jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail.fromDataFile == true}">
-                                            <button type="button" class="btn btn-default" onclick="PF('confrmRemove').show()">#{bundle.remove}</button>
+                                            <button class="btn btn-default" onclick="PF('confrmRemove').show()" type="button">
+                                                #{bundle.remove}
+                                            </button>
                                         </div>
                                     </div>
                                     <div class="col-sm-8">
@@ -56,7 +58,9 @@
                                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectAvailable.title']}"></span>
                                             </label>
                                             <div>
-                                                <button type="button" class="btn btn-default" onclick="PF('selectFileThumbnail').show()">#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectThumbnail']}</button>
+                                                <button class="btn btn-default" onclick="PF('selectFileThumbnail').show()" type="button">
+                                                    #{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectThumbnail']}
+                                                </button>
                                             </div>
                                         </div>
                                         <div class="form-group">
@@ -74,8 +78,8 @@
                                 </div>
                             </div>
                             <div class="button-block">
-                                <p:commandButton styleClass="btn btn-default" update="@all" value="#{bundle.saveChanges}" action="#{DatasetWidgetsPage.save()}"/>
-                                <p:commandLink styleClass="btn btn-link" update="@all" value="#{bundle.cancel}" action="#{DatasetWidgetsPage.cancel()}"/>
+                                <p:commandButton styleClass="btn btn-default" update="@form" value="#{bundle.saveChanges}" action="#{DatasetWidgetsPage.save()}"/>
+                                <p:commandButton styleClass="btn btn-link" update="@form" value="#{bundle.cancel}" action="#{DatasetWidgetsPage.cancel()}"/>
                             </div>
 
                             <p:dialog id="confrmRemove" header="#{bundle['dataset.thumbnailsAndWidget.removeThumbnail']}" widgetVar="confrmRemove" modal="true">
@@ -83,10 +87,12 @@
                                     <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['dataset.thumbnailsAndWidget.removeThumbnail.tip']}</span>
                                 </p>
                                 <div class="button-block">
-                                    <p:commandLink value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confrmRemove').hide()"
+                                    <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confrmRemove').hide()"
                                                    action="#{DatasetWidgetsPage.flagDatasetThumbnailForRemoval()}"
-                                                   update="@all"/>
-                                    <button type="button" class="btn btn-link" onclick="PF('confrmRemove').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
+                                                   update="@form"/>
+                                    <button class="btn btn-link" onclick="PF('confrmRemove').hide()" type="button">
+                                        #{bundle.cancel}
+                                    </button>
                                 </div> 
                             </p:dialog>
                             <p:dialog id="selectFileThumbnail" header="#{bundle['dataset.thumbnailsAndWidget.availableThumbnails']}" widgetVar="selectFileThumbnail" modal="true">
@@ -110,8 +116,8 @@
                                     </div>
                                 </div>
                                 <div class="button-block">
-                                    <p:commandLink styleClass="btn btn-default" update="@all" value="#{bundle.continue}" action="#{DatasetWidgetsPage.setDataFileAsThumbnail()}"/>
-                                    <button type="button" onclick="PF('selectFileThumbnail').hide()" class="btn btn-link" value="#{bundle.cancel}">
+                                    <p:commandButton styleClass="btn btn-default" update="@form" value="#{bundle.continue}" action="#{DatasetWidgetsPage.setDataFileAsThumbnail()}"/>
+                                    <button class="btn btn-link" onclick="PF('selectFileThumbnail').hide()" type="button">
                                         #{bundle.cancel}
                                     </button>
                                 </div>

@@ -84,14 +84,16 @@
                 </div>
             </div>
             <div class="button-block">
-                <p:commandLink type="button" styleClass="btn btn-default" 
+                <p:commandButton styleClass="btn btn-default" 
                                value="#{bundle['dataverse.permissions.explicitGroupEditDialog.createGroup']}"
                                update="explicitGroupNewDialogContent allGroups :messagePanel"
                                actionListener="#{manageGroupsPage.createExplicitGroup}"
                                oncomplete="if (args &amp;&amp; !args.validationFailed) PF('explicitGroupForm').hide();">
                     <f:param name="DO_GROUP_VALIDATION" value="true"/>
-                </p:commandLink>
-                <button type="button" class="btn btn-link" onclick="PF('explicitGroupForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
+                </p:commandButton>
+                <button class="btn btn-link" onclick="PF('explicitGroupForm').hide()" type="button">
+                    #{bundle.cancel}
+                </button>
             </div>
         </p:fragment>
     </p:dialog>
