@@ -14,7 +14,7 @@ A user can search within a specific dataverse for the dataverses, datasets, and 
 
 Basic Search
 ------------
-You can search the entire contents of the Dataverse installation, including dataverses, datasets, and files. You can access the search through the search bar on the homepage, or by clicking the magnifying glass icon in the header of every page. The search bar accepts search terms, queries, or exact phrases (in quotations).
+You can search the entire contents of the Dataverse installation, including dataverses, datasets, and files. You can access the search by clicking the "Search" button in the header of every page. The search bar accepts search terms, queries, or exact phrases (in quotations).
 
 Sorting and Viewing Search Results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -42,7 +42,7 @@ out more about what each field searches, hover over the field name for a detaile
 Browsing Dataverse
 ------------------
 
-In Dataverse, browsing is the default view when a user hasn't begun a search on the homepage or on a specific dataverse's page.  When browsing, only dataverses and datasets appear in the results list and the results can be sorted by Name (A-Z or Z-A) and by Newest or Oldest.
+In Dataverse, browsing is the default view when a user hasn't begun a search on the root dataverse page or on a specific dataverse's page.  When browsing, only dataverses and datasets appear in the results list and the results can be sorted by Name (A-Z or Z-A) and by Newest or Oldest. You can toggle the "Files" facet on the left to include files in the results list.
 
 Saved Search
 ------------
@@ -67,16 +67,18 @@ Files in Dataverse each have their own page that can be reached through the sear
 File Search within Datasets
 ---------------------------
 
-In addition to searching for files from the Home Page and indidvidual dataverse pages, users can run searches on files within individual datasets. A search form is provided on the Dataset page, at the top of the Files view. For the latest published version, and the draft of a dataset (if exists), search facets are also provided, for selecting files based on file type, tags and access restrictions (see the example below). 
+Datasets containing multiple files offer a file search function. On the Dataset page, under the Files tab, you'll see a search bar you can use to locate an individual file. It searches within the filename and file description. Performing a search will filter the file table to list only files matching your search. After you perform a search, if you'd like to return to the full list of files, just perform an empty search. 
+
+Under the search bar, you'll see file search facets you can use to filter the dataset's files by file type, access level, and file tags (see the example below). 
 
 |image-file-search-facets|
 
-(To provide the search facets, we rely on the Solr search engine. Only the latest published, and the draft versions of datasets are indexed in Solr. Because of that facets cannot be offered for the older versions.
+(To provide these search facets, we rely on the Solr search engine. Only the latest published version and any draft version of each dataset are indexed in Solr. Because of that, facets cannot be offered for older versions of a dataset.)
 
 Tree View
 ---------
 
-Files can be organized in one or more folders (directories) within a dataset. If the folder structure is defined, the Dataset Page will present an option for switching between the traditional table view, and the tree-like view of the files, as in the example below: 
+Files can be organized in one or more folders (directories) within a dataset. If the folder structure is defined, the Dataset Page will present an option for switching between the traditional table view, and the tree-like view showing folder and file hierarchy, as in the example below: 
 
 |image-file-tree-view|
 
