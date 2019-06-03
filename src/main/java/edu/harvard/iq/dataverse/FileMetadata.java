@@ -661,8 +661,23 @@ public class FileMetadata implements Serializable {
 
     public void copyVariableMetadata(Collection<VariableMetadata> vml) {
 
+        if (variableMetadatas == null) {
+            variableMetadatas = new ArrayList<VariableMetadata>();
+        }
+
         for (VariableMetadata vm : vml) {
-            VariableMetadata vmNew = new VariableMetadata(vm.getDataVariable(), this);
+            VariableMetadata vmNew = null;
+            boolean flagNew = true;
+            for (VariableMetadata vmThis: variableMetadatas) {
+                if (vmThis.getDataVariable().getId().equals(vm.getDataVariable().getId())) {
+                    vmNew = vmThis;
+                    flagNew = false;
+                    break;
+                }
+            }
+            if (flagNew) {
+                vmNew = new VariableMetadata(vm.getDataVariable(), this);
+            }
             vmNew.setIsweightvar(vm.isIsweightvar());
             vmNew.setWeighted(vm.isWeighted());
             vmNew.setWeightvariable(vm.getWeightvariable());
@@ -674,22 +689,37 @@ public class FileMetadata implements Serializable {
             vmNew.setPostquestion(vm.getPostquestion());
 
             Collection<CategoryMetadata> cms = vm.getCategoriesMetadata();
-            for (CategoryMetadata cm : cms) {
-                CategoryMetadata cmNew = new CategoryMetadata(vmNew, cm.getCategory());
-                cmNew.setWfreq(cm.getWfreq());
-                vmNew.getCategoriesMetadata().add(cmNew);
+            if (flagNew) {
+                for (CategoryMetadata cm : cms) {
+                    CategoryMetadata cmNew = new CategoryMetadata(vmNew, cm.getCategory());
+                    cmNew.setWfreq(cm.getWfreq());
+                    vmNew.getCategoriesMetadata().add(cmNew);
+                }
+                variableMetadatas.add(vmNew);
+            } else {
+                Collection<CategoryMetadata> cmlThis = vm.getCategoriesMetadata();
+                for (CategoryMetadata cm : cms) {
+                    for (CategoryMetadata cmThis : cmlThis) {
+                        if (cm.getCategory().getId().equals(cmThis.getCategory().getId())) {
+                            cmThis.setWfreq(cm.getWfreq());
+                        }
+                    }
+                }
             }
-            if (variableMetadatas == null) {
-                variableMetadatas = new ArrayList<VariableMetadata>();
-            }
-            variableMetadatas.add(vmNew);
+
         }
     }
 
     public void copyVarGroups(Collection<VarGroup> vgl) {
+        if (varGroups != null) {
+            varGroups.clear();
+        }
 
         for (VarGroup vg : vgl) {
-            VarGroup vgNew = new VarGroup(this, vg.getVarsInGroup());
+            VarGroup vgNew = new VarGroup(this);
+            for (DataVariable dv : vg.getVarsInGroup()) {
+                vgNew.getVarsInGroup().add(dv);
+            }
             vgNew.setLabel(vg.getLabel());
             if (varGroups == null) {
                 varGroups = new ArrayList<VarGroup>();

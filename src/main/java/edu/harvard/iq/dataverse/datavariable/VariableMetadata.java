@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.ArrayList;
 
 import edu.harvard.iq.dataverse.FileMetadata;
+import io.searchbox.core.Cat;
 
 @Entity
 @Table(indexes = {@Index(columnList="datavariable_id"), @Index(columnList="filemetadata_id"),
@@ -201,7 +202,7 @@ public class VariableMetadata implements Serializable  {
         return categoriesMetadata;
     }
 
-    public void setCategoriesMetadata(ArrayList<CategoryMetadata> categoriesMetadata) {
+    public void setCategoriesMetadata(Collection<CategoryMetadata> categoriesMetadata) {
         this.categoriesMetadata = categoriesMetadata;
 
     }
