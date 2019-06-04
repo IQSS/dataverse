@@ -433,19 +433,20 @@ public class FilePage implements java.io.Serializable {
         }
 
         commandEngine.submit(new UningestFileCommand(dvRequestService.getDataverseRequest(), dataFile));
-        Long dataFileId = dataFile.getId();
-        dataFile = datafileService.find(dataFileId);
-        Dataset theDataset = dataFile.getOwner();
-        try {
-            ExportService instance = ExportService.getInstance(settingsService);
-            instance.exportAllFormats(theDataset);
 
-        } catch (ExportException ex) {
-            // Something went wrong!
-            // Just like with indexing, a failure to export is not a fatal
-            // condition. We'll just log the error as a warning and keep
-            // going:
-            logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", ex.getMessage());
+        Dataset theDataset = dataFile.getOwner();
+        if (theDataset.isReleased()) {
+            try {
+                ExportService instance = ExportService.getInstance(settingsService);
+                instance.exportAllFormats(theDataset);
+
+            } catch (ExportException ex) {
+                // Something went wrong!
+                // Just like with indexing, a failure to export is not a fatal
+                // condition. We'll just log the error as a warning and keep
+                // going:
+                logger.log(Level.WARNING, "Uningest: Exception while exporting:{0}", ex.getMessage());
+            }
         }
         save();
         JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("file.uningest.complete"));
