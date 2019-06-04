@@ -307,6 +307,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
         String allTypesFilterQuery = SearchFields.TYPE + ":(dataverses OR datasets OR files)";
         filterQueriesFinalAllTypes.add(allTypesFilterQuery);
 
+        if (page == 0) {
+            logger.info("Variable 'page' was zero. Changing it one. What does this have to do with upgrading from Glassfish 4.1 to Payara 5?");
+            page = 1;
+        }
         int paginationStart = (page - 1) * paginationGuiRows;
         /**
          * @todo
