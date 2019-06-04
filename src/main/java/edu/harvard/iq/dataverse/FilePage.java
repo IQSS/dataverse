@@ -425,7 +425,7 @@ public class FilePage implements java.io.Serializable {
     public String uningestFile() throws CommandException {
 
 
-        editDataset = file.getOwner();
+
         
         if (!file.isTabularData()) {
             JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
@@ -435,11 +435,11 @@ public class FilePage implements java.io.Serializable {
         commandEngine.submit(new UningestFileCommand(dvRequestService.getDataverseRequest(), file));
         Long dataFileId = file.getId();
         file = datafileService.find(dataFileId);
-        Dataset theDataset = file.getOwner();
-        if (theDataset.isReleased()) {
+        editDataset = file.getOwner();
+        if (editDataset.isReleased()) {
             try {
                 ExportService instance = ExportService.getInstance(settingsService);
-                instance.exportAllFormats(theDataset);
+                instance.exportAllFormats(editDataset);
 
             } catch (ExportException ex) {
                 // Something went wrong!
