@@ -78,8 +78,9 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         }
 
         ctxt.permissions().checkEditDatasetLock(getDataset(), getRequest(), this);
-        Dataset savedDataset = null;
+        Dataset currentDataset = null;
         try {
+            currentDataset=getDataset();
             // Invariant: Dataset has no locks preventing the update
             String lockInfoMessage = "saving current edits";
             DatasetLock lock = ctxt.datasets().addDatasetLock(getDataset().getId(), DatasetLock.Reason.EditInProgress, ((AuthenticatedUser) getUser()).getId(), lockInfoMessage);
@@ -136,7 +137,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             // we have to merge to update the database but not flush because
             // we don't want to create two draft versions!
             Dataset tempDataset = ctxt.em().merge(getDataset());
-
+            currentDataset=tempDataset;
             for (FileMetadata fmd : filesToDelete) {
                 if (!fmd.getDataFile().isReleased()) {
                     // if file is draft (ie. new to this version, delete; otherwise just remove
@@ -167,11 +168,11 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             tempDataset.getEditVersion().setLastUpdateTime(getTimestamp());
             tempDataset.setModificationTime(getTimestamp());
 
-            savedDataset = ctxt.em().merge(tempDataset);
+            currentDataset = ctxt.em().merge(tempDataset);
             ctxt.em().flush();
 
             updateDatasetUser(ctxt);
-            ctxt.index().indexDataset(savedDataset, true);
+            ctxt.index().indexDataset(currentDataset, true);
             if (clone != null) {
                 DatasetVersionDifference dvd = new DatasetVersionDifference(editVersion, clone);
                 AuthenticatedUser au = (AuthenticatedUser) getUser();
@@ -179,9 +180,9 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             }
         } finally {
             // We're done making changes - remove the lock...
-            ctxt.datasets().removeDatasetLocks(savedDataset, DatasetLock.Reason.EditInProgress);
+            ctxt.datasets().removeDatasetLocks(currentDataset, DatasetLock.Reason.EditInProgress);
         }
-        return savedDataset;
+        return currentDataset;
     }
 
 }
