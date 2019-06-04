@@ -424,17 +424,18 @@ public class FilePage implements java.io.Serializable {
 
     public String uningestFile() throws CommandException {
 
-        DataFile dataFile = fileMetadata.getDataFile();
-        editDataset = dataFile.getOwner();
+
+        editDataset = file.getOwner();
         
-        if (!dataFile.isTabularData()) {
+        if (!file.isTabularData()) {
             JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
             return null;
         }
 
-        commandEngine.submit(new UningestFileCommand(dvRequestService.getDataverseRequest(), dataFile));
-
-        Dataset theDataset = dataFile.getOwner();
+        commandEngine.submit(new UningestFileCommand(dvRequestService.getDataverseRequest(), file));
+        Long dataFileId = file.getId();
+        file = datafileService.find(dataFileId);
+        Dataset theDataset = file.getOwner();
         if (theDataset.isReleased()) {
             try {
                 ExportService instance = ExportService.getInstance(settingsService);
