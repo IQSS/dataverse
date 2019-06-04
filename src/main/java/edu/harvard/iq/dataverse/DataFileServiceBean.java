@@ -66,20 +66,6 @@ public class DataFileServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
-    // File type "classes" tags:
-    
-    private static final String FILE_CLASS_AUDIO = "audio";
-    private static final String FILE_CLASS_CODE = "code";
-    private static final String FILE_CLASS_DOCUMENT = "document";
-    private static final String FILE_CLASS_ASTRO = "astro";
-    private static final String FILE_CLASS_IMAGE = "image";
-    private static final String FILE_CLASS_NETWORK = "network";
-    private static final String FILE_CLASS_GEO = "geodata";
-    private static final String FILE_CLASS_TABULAR = "tabular";
-    private static final String FILE_CLASS_VIDEO = "video";
-    private static final String FILE_CLASS_PACKAGE = "package";
-    private static final String FILE_CLASS_OTHER = "other";
-
     // Assorted useful mime types:
     
     // 3rd-party and/or proprietary tabular data formasts that we know
@@ -1135,51 +1121,23 @@ public class DataFileServiceBean implements java.io.Serializable {
             return null; 
         }
         
-        return getFileClass(file);
+        return getFileThumbnailClass(file);
     }
     
-    public String getFileClass (DataFile file) {
-        if (isFileClassImage(file)) {
-            return FILE_CLASS_IMAGE;
-        }
-        
-        if (isFileClassVideo(file)) {
-            return FILE_CLASS_VIDEO;
-        }
-        
-        if (isFileClassAudio(file)) {
-            return FILE_CLASS_AUDIO;
-        }
-        
-        if (isFileClassCode(file)) {
-            return FILE_CLASS_CODE;
-        }
-        
-        if (isFileClassDocument(file)) {
-            return FILE_CLASS_DOCUMENT;
-        }
-        
-        if (isFileClassAstro(file)) {
-            return FILE_CLASS_ASTRO;
-        }
-        
-        if (isFileClassNetwork(file)) {
-            return FILE_CLASS_NETWORK;
-        }
-        
-        if (isFileClassGeo(file)) {
-            return FILE_CLASS_GEO;
-        }
-        
-        if (isFileClassTabularData(file)) {
-            return FILE_CLASS_TABULAR;
-        }
-        
+    public String getFileThumbnailClass (DataFile file) {
+        // there's no solr search facet for "package files", but
+        // there is a special thumbnail icon:
         if (isFileClassPackage(file)) {
-            return FILE_CLASS_PACKAGE;
+            return FileUtil.FILE_THUMBNAIL_CLASS_PACKAGE;
         }
         
-        return FILE_CLASS_OTHER;
+        String fileTypeFacet = FileUtil.getFacetFileType(file);
+        
+        if (fileTypeFacet != null && FileUtil.FILE_THUMBNAIL_CLASSES.containsKey(fileTypeFacet)) {
+            return FileUtil.FILE_THUMBNAIL_CLASSES.get(fileTypeFacet);
+        }
+        
+        return FileUtil.FILE_THUMBNAIL_CLASS_OTHER;
     }
     
     
