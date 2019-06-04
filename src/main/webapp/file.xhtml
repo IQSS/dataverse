@@ -144,14 +144,14 @@
                                                 </ui:fragment>  
                                                 <ui:fragment rendered="#{dataverseSession.user.superuser and (FilePage.fileMetadata.dataFile.isTabularData() or FilePage.fileMetadata.dataFile.isIngestProblem())}">
                                                     <li>
-                                                        <p:commandLink update="@form" actionListener="#{FilePage.uningestFile()}">
+                                                        <p:commandLink update="@form,:messagePanel" actionListener="#{FilePage.uningestFile()}">
                                                             <h:outputText value="#{bundle['file.uningest']}"/>
                                                         </p:commandLink>
                                                     </li>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{dataverseSession.user.superuser and FilePage.isIngestable()}">
                                                     <li>
-                                                        <p:commandLink update="@form" actionListener="#{FilePage.ingestFile()}">
+                                                        <p:commandLink update="@form,:messagePanel" actionListener="#{FilePage.ingestFile()}">
                                                             <h:outputText value="#{bundle['file.ingest']}"/>
                                                         </p:commandLink>
                                                     </li>
