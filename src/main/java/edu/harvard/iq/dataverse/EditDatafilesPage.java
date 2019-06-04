@@ -153,8 +153,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     private Long ownerId;
     private Long versionId;
-    private List<DataFile> newFiles = new ArrayList<>();;
-    private List<DataFile> uploadedFiles = new ArrayList<>();;
+    private List<DataFile> newFiles = new ArrayList<>();
+    private List<DataFile> uploadedFiles = new ArrayList<>();
     private DatasetVersion workingVersion;
     private DatasetVersion clone;
     private String dropBoxSelection = "";

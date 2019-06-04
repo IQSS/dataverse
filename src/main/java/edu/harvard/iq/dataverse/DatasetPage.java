@@ -75,7 +75,6 @@ import javax.faces.event.ValueChangeEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.mail.internet.InternetAddress;
 
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
@@ -84,7 +83,6 @@ import org.apache.commons.httpclient.HttpClient;
 import org.primefaces.context.RequestContext;
 import java.util.Arrays;
 import java.util.HashSet;
-
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
@@ -104,7 +102,6 @@ import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import java.util.Collections;
-
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 
@@ -120,7 +117,6 @@ import org.primefaces.event.CloseEvent;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.event.data.PageEvent;
 
-import java.util.TimeZone;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
@@ -215,7 +211,6 @@ public class DatasetPage implements java.io.Serializable {
     ProvPopupFragmentBean provPopupFragmentBean;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
-
 
     private Dataset dataset = new Dataset();
     private EditMode editMode;
