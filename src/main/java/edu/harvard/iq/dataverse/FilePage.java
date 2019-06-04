@@ -400,8 +400,8 @@ public class FilePage implements java.io.Serializable {
         dataFile.getIngestRequest().setForceTypeCheck(true);
         
         // update the datafile, to save the newIngest request in the database:
-        dataFile = datafileService.save(dataFile);
-        
+        save();
+
         // queue the data ingest job for asynchronous execution: 
         String status = ingestService.startIngestJobs(new ArrayList<>(Arrays.asList(dataFile)), (AuthenticatedUser) session.getUser());
         
@@ -417,7 +417,7 @@ public class FilePage implements java.io.Serializable {
         }
         logger.info("File: " + dataFile.getId() + " ingest queued");
 
-        save();
+
         JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("file.ingest.ingestQueued"));
         return returnToDraftVersion();
     }
