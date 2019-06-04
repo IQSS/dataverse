@@ -450,6 +450,8 @@ public class FilePage implements java.io.Serializable {
             }
         }
         save();
+        //Refresh filemetadata with file title, etc.
+        init();
         JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("file.uningest.complete"));
         return returnToDraftVersion();
     }
