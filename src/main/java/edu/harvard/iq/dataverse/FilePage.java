@@ -371,6 +371,7 @@ public class FilePage implements java.io.Serializable {
     public String ingestFile() throws CommandException{
         
         DataFile dataFile = fileMetadata.getDataFile();
+        editDataset = dataFile.getOwner();
         
         if (dataFile.isTabularData()) {
             JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.alreadyIngestedWarning"));
@@ -424,7 +425,8 @@ public class FilePage implements java.io.Serializable {
     public String uningestFile() throws CommandException {
 
         DataFile dataFile = fileMetadata.getDataFile();
-
+        editDataset = dataFile.getOwner();
+        
         if (!dataFile.isTabularData()) {
             JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
             return null;
