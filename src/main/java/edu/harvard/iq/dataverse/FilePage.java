@@ -6,23 +6,29 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersionResponse;
+import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import edu.harvard.iq.dataverse.ingest.IngestRequest;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
@@ -30,10 +36,15 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.StringUtil;
+
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -46,6 +57,8 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.validation.ConstraintViolation;
+import javax.ws.rs.core.Response;
+
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
 
@@ -90,7 +103,8 @@ public class FilePage implements java.io.Serializable {
     GuestbookResponseServiceBean guestbookResponseService;
     @EJB
     AuthenticationServiceBean authService;
-    
+    @EJB
+    IngestServiceBean ingestService;
     @EJB
     SystemConfig systemConfig;
 
@@ -353,6 +367,89 @@ public class FilePage implements java.io.Serializable {
         init();
         return returnToDraftVersion();
     }
+    
+    public String ingestFile() throws CommandException{
+        
+        DataFile dataFile = fileMetadata.getDataFile();
+        
+        if (dataFile.isTabularData()) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.alreadyIngestedWarning"));
+            return null;
+        }
+        
+        boolean ingestLock = dataset.isLockedFor(DatasetLock.Reason.Ingest);
+        
+        if (ingestLock) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.ingestInProgressWarning"));
+            return null;
+        }
+        
+        if (!FileUtil.canIngestAsTabular(dataFile)) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantIngestFileWarning"));
+            return null;
+            
+        }
+        
+        dataFile.SetIngestScheduled();
+                
+        if (dataFile.getIngestRequest() == null) {
+            dataFile.setIngestRequest(new IngestRequest(dataFile));
+        }
+
+        dataFile.getIngestRequest().setForceTypeCheck(true);
+        
+        // update the datafile, to save the newIngest request in the database:
+        dataFile = datafileService.save(dataFile);
+        
+        // queue the data ingest job for asynchronous execution: 
+        String status = ingestService.startIngestJobs(new ArrayList<>(Arrays.asList(dataFile)), (AuthenticatedUser) session.getUser());
+        
+        if (!StringUtil.isEmpty(status)) {
+            // This most likely indicates some sort of a problem (for example, 
+            // the ingest job was not put on the JMS queue because of the size
+            // of the file). But we are still returning the OK status - because
+            // from the point of view of the API, it's a success - we have 
+            // successfully gone through the process of trying to schedule the 
+            // ingest job...
+            
+            logger.warning("Ingest Status for file: " + dataFile.getId() + " : " + status);
+        }
+        logger.info("File: " + dataFile.getId() + " ingest queued");
+
+        save();
+        JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("file.ingest.ingestQueued"));
+        return returnToDraftVersion();
+    }
+
+    public String uningestFile() throws CommandException {
+
+        DataFile dataFile = fileMetadata.getDataFile();
+
+        if (!dataFile.isTabularData()) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
+            return null;
+        }
+
+        commandEngine.submit(new UningestFileCommand(dvRequestService.getDataverseRequest(), dataFile));
+        Long dataFileId = dataFile.getId();
+        dataFile = datafileService.find(dataFileId);
+        Dataset theDataset = dataFile.getOwner();
+        try {
+            ExportService instance = ExportService.getInstance(settingsService);
+            instance.exportAllFormats(theDataset);
+
+        } catch (ExportException ex) {
+            // Something went wrong!
+            // Just like with indexing, a failure to export is not a fatal
+            // condition. We'll just log the error as a warning and keep
+            // going:
+            logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", ex.getMessage());
+        }
+        save();
+        JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("file.uningest.complete"));
+        return returnToDraftVersion();
+    }
+    
     
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
 
@@ -840,6 +937,11 @@ public class FilePage implements java.io.Serializable {
         return FileUtil.isPubliclyDownloadable(fileMetadata);
     }
     
+    public boolean isIngestable() {
+        DataFile f = fileMetadata.getDataFile();
+        //Datafile is an ingestable type and hasn't been ingested yet or had an ingest fail
+        return (FileUtil.canIngestAsTabular(f)&&!(f.isTabularData() || f.isIngestProblem()));
+    }
     
     private Boolean lockedFromEditsVar;
     private Boolean lockedFromDownloadVar; 
