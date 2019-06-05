@@ -423,19 +423,22 @@ public class FilePage implements java.io.Serializable {
     }
 
     public String uningestFile() throws CommandException {
-
-
-
         
         if (!file.isTabularData()) {
-            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
-            return null;
-        }
+            if(file.isIngestProblem()) {
+              file.setIngestDone();
+              file.setIngestReport(null);
+            } else {
+              JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
+              return null;
+            }
+        } else {
 
-        commandEngine.submit(new UningestFileCommand(dvRequestService.getDataverseRequest(), file));
-        Long dataFileId = file.getId();
-        file = datafileService.find(dataFileId);
-        editDataset = file.getOwner();
+            commandEngine.submit(new UningestFileCommand(dvRequestService.getDataverseRequest(), file));
+            Long dataFileId = file.getId();
+            file = datafileService.find(dataFileId);
+            editDataset = file.getOwner();
+        }
         if (editDataset.isReleased()) {
             try {
                 ExportService instance = ExportService.getInstance(settingsService);
