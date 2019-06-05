@@ -1131,10 +1131,12 @@ public class DataFileServiceBean implements java.io.Serializable {
             return FileUtil.FILE_THUMBNAIL_CLASS_PACKAGE;
         }
         
-        String fileTypeFacet = FileUtil.getFacetFileType(file);
+        if (file != null) {
+            String fileTypeFacet = FileUtil.getFacetFileType(file);
         
-        if (fileTypeFacet != null && FileUtil.FILE_THUMBNAIL_CLASSES.containsKey(fileTypeFacet)) {
-            return FileUtil.FILE_THUMBNAIL_CLASSES.get(fileTypeFacet);
+            if (fileTypeFacet != null && FileUtil.FILE_THUMBNAIL_CLASSES.containsKey(fileTypeFacet)) {
+                return FileUtil.FILE_THUMBNAIL_CLASSES.get(fileTypeFacet);
+            }
         }
         
         return FileUtil.FILE_THUMBNAIL_CLASS_OTHER;
