@@ -417,8 +417,8 @@ public class FilePage implements java.io.Serializable {
         }
         logger.info("File: " + dataFile.getId() + " ingest queued");
 
-
-        JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("file.ingest.ingestQueued"));
+        init();
+        JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("file.ingest.ingestQueued"));
         return returnToDraftVersion();
     }
 
