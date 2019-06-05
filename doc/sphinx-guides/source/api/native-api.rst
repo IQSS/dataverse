@@ -21,9 +21,11 @@ Create a Dataverse
 ~~~~~~~~~~~~~~~~~~
 
 Generates a new dataverse under ``$id``. Expects a JSON content describing the dataverse, as in the example below.
-If ``$id`` is omitted, a root dataverse is created. ``$id`` can either be a dataverse id (long) or a dataverse alias (more robust). ::
+If ``$id`` is omitted, a root dataverse is created. ``$id`` can either be a dataverse id (long) or a dataverse alias (more robust). In the example below, "root" is the id, which means that the dataverse will be created as a child of the root dataverse::
 
-    POST http://$SERVER/api/dataverses/$id?key=$apiKey
+``export id=root`
+
+``curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/dataverses/$id --upload-file dataverse-complete.json``
 
 Download the :download:`JSON example <../_static/api/dataverse-complete.json>` file and modified to create dataverses to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The controlled vocabulary for ``dataverseType`` is
 

@@ -270,7 +270,23 @@ public class DataFileServiceBean implements java.io.Serializable {
                 + " order by o." + sortField + " " + sortOrder)
                 .getResultList();
     }
+    
+    public List<Long> findDataFileIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
+        FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
         
+        searchTerm=searchTerm.trim();
+        String sortField = sortFieldAndOrder.getSortField();
+        String sortOrder = sortFieldAndOrder.getSortOrder();
+        String searchClause = "";
+        if(searchTerm != null && !searchTerm.isEmpty()){
+            searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
+        }
+        
+        return em.createNativeQuery("select o.datafile_id from FileMetadata o where o.datasetVersion_id = "  + datasetVersionId
+                + searchClause
+                + " order by o." + sortField + " " + sortOrder)
+                .getResultList();
+    }
     
     public List<FileMetadata> findFileMetadataByDatasetVersionIdLazy(Long datasetVersionId, int maxResults, String userSuppliedSortField, String userSuppliedSortOrder, int firstResult) {
         FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
