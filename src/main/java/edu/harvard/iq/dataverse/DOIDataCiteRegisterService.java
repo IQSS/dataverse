@@ -5,7 +5,19 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.AbstractGlobalIdServiceBean.GlobalIdMetadataTemplate;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,17 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 /**
  *
@@ -46,6 +47,9 @@ public class DOIDataCiteRegisterService {
 
     @EJB
     DOIDataCiteServiceBean doiDataCiteServiceBean;
+
+    @Inject
+    private SettingsServiceBean settingsService;
     
         
     //A singleton since it, and the httpClient in it can be reused.
@@ -53,7 +57,9 @@ public class DOIDataCiteRegisterService {
     
     private DataCiteRESTfullClient getClient() throws IOException {
         if (client == null) {
-            client = new DataCiteRESTfullClient(System.getProperty("doi.baseurlstring"), System.getProperty("doi.username"), System.getProperty("doi.password"));
+            client = new DataCiteRESTfullClient(settingsService.getValueForKey(SettingsServiceBean.Key.DoiBaseUrlString),
+                    settingsService.getValueForKey(SettingsServiceBean.Key.DoiUsername),
+                    settingsService.getValueForKey(SettingsServiceBean.Key.DoiPassword));
         }
         return client;
     }

@@ -3,34 +3,36 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObject;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import edu.harvard.iq.dataverse.util.FileUtil;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
 import java.io.File;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
-import javax.json.JsonArray;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import org.hamcrest.CoreMatchers;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import static junit.framework.Assert.assertEquals;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import static java.lang.Thread.sleep;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
-import org.hamcrest.Matchers;
-import org.junit.After;
+import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 public class SearchIT {
 
@@ -50,7 +52,7 @@ public class SearchIT {
         removeSearchApiNonPublicAllowed.then().assertThat()
                 .statusCode(200);
 
-        Response remove = UtilIT.deleteSetting(SettingsServiceBean.Key.ThumbnailSizeLimitImage);
+        Response remove = UtilIT.deleteSetting(SettingsServiceBean.Key.ThumbnailImageSizeLimit);
         remove.then().assertThat()
                 .statusCode(200);
 

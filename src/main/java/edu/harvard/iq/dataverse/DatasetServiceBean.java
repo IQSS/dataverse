@@ -1,10 +1,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -506,45 +504,6 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         
         return ret;        
-    }
-    
-    
-    
-    public boolean isDatasetCardImageAvailable(DatasetVersion datasetVersion, User user) {        
-        if (datasetVersion == null) {
-            return false; 
-        }
-                
-        // First, check if this dataset has a designated thumbnail image: 
-        
-        if (datasetVersion.getDataset() != null) {
-            DataFile dataFile = datasetVersion.getDataset().getThumbnailFile();
-            if (dataFile != null) {
-                return ImageThumbConverter.isThumbnailAvailable(dataFile, 48);
-            }
-        }
-        
-        // If not, we'll try to use one of the files in this dataset version:
-        // (the first file with an available thumbnail, really)
-        
-        List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
-
-        for (FileMetadata fileMetadata : fileMetadatas) {
-            DataFile dataFile = fileMetadata.getDataFile();
-            
-            // TODO: use permissionsWrapper here - ? 
-            // (we are looking up these download permissions on individual files, 
-            // true, and those are unique... but the wrapper may be able to save 
-            // us some queries when it determines the download permission on the
-            // dataset as a whole? -- L.A. 4.2.1
-            
-            if (fileService.isThumbnailAvailable(dataFile) && permissionService.userOn(user, dataFile).has(Permission.DownloadFile)) { //, user)) {
-                return true;
-            }
- 
-        }
-        
-        return false;
     }
     
     

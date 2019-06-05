@@ -1,12 +1,17 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.ucsb.nceas.ezid.EZIDException;
 import edu.ucsb.nceas.ezid.EZIDService;
 import edu.ucsb.nceas.ezid.EZIDServiceRequest;
-import java.util.*;
+
+import javax.ejb.Stateless;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.Stateless;
 
 /**
  *
@@ -17,19 +22,19 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
 
     EZIDService ezidService;
     EZIDServiceRequest ezidServiceRequest;
-    String baseURLString = "https://ezid.cdlib.org";
+    String baseURLString;
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dvn.core.index.DOIEZIdServiceBean");
 
     // get username and password from system properties
-    private String USERNAME = "";
-    private String PASSWORD = "";
+    private String USERNAME;
+    private String PASSWORD;
 
     public DOIEZIdServiceBean() {
         logger.log(Level.FINE,"Constructor");
-        baseURLString = System.getProperty("doi.baseurlstring");
+        baseURLString = settingsService.getValueForKey(SettingsServiceBean.Key.DoiBaseUrlString);
         ezidService = new EZIDService(baseURLString);
-        USERNAME = System.getProperty("doi.username");
-        PASSWORD = System.getProperty("doi.password");
+        USERNAME = settingsService.getValueForKey(SettingsServiceBean.Key.DoiUsername);
+        PASSWORD = settingsService.getValueForKey(SettingsServiceBean.Key.DoiPassword);
         logger.log(Level.FINE, "Using baseURLString {0}", baseURLString);
         try {
             ezidService.login(USERNAME, PASSWORD);

@@ -77,6 +77,28 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
+import javax.inject.Named;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.Queue;
+import javax.jms.QueueConnection;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.QueueSender;
+import javax.jms.QueueSession;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.SumStatCalculator;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.dataverse.unf.UNFUtil;
+import org.dataverse.unf.UnfException;
+
+import javax.annotation.Resource;
+import javax.ejb.Asynchronous;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.faces.application.FacesMessage;
+import javax.faces.bean.ManagedBean;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Queue;
@@ -128,6 +150,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
@@ -1474,39 +1498,7 @@ public class IngestServiceBean {
             }
         }
     }
-    
-    public void performPostProcessingTasks(DataFile dataFile) {
-        /*
-         * At this point (4.0 beta) the only ingest "post-processing task" performed 
-         * is pre-generation of image thumbnails in a couple of popular sizes. 
-         * -- L.A. 
-         */
-        if (dataFile != null && dataFile.isImage()) {
-            try {
-                StorageIO<DataFile> dataAccess = dataFile.getStorageIO();
-                if (dataAccess != null) { // && storageIO.isLocalFile()) {
 
-                    if (ImageThumbConverter.isThumbnailAvailable(dataFile, ImageThumbConverter.DEFAULT_PREVIEW_SIZE)) {
-                        dataFile.setPreviewImageAvailable(true);
-                    }
-                }
-            } catch (IOException ioEx) {
-            }
-        }
-    }
- 
-    private Set<Integer> selectContinuousVariableColumns(DataFile dataFile) {
-        Set<Integer> contVarFields = new LinkedHashSet<Integer>();
-
-        for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
-            if (dataFile.getDataTable().getDataVariables().get(i).isIntervalContinuous()) {
-                contVarFields.add(i);
-            }
-        }
-
-        return contVarFields;
-    }
-    
     private void calculateContinuousSummaryStatistics(DataFile dataFile, int varnum, Number[] dataVector) throws IOException {
         double[] sumStats = SumStatCalculator.calculateSummaryStatistics(dataVector);
         assignContinuousSummaryStatistics(dataFile.getDataTable().getDataVariables().get(varnum), sumStats);

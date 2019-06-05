@@ -21,19 +21,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import java.security.PrivateKey;
-
-/* Handlenet imports: */
 import net.handle.hdllib.AbstractMessage;
 import net.handle.hdllib.AbstractResponse;
 import net.handle.hdllib.AdminRecord;
@@ -50,6 +37,20 @@ import net.handle.hdllib.ResolutionRequest;
 import net.handle.hdllib.Util;
 import org.apache.commons.lang.NotImplementedException;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import java.io.File;
+import java.io.FileInputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.security.PrivateKey;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author Leonid Andreev
@@ -63,13 +64,12 @@ import org.apache.commons.lang.NotImplementedException;
 public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
 
     @EJB
-    DataverseServiceBean dataverseService;
-    @EJB 
-    SettingsServiceBean settingsService;    
+    private SettingsServiceBean settingsService;
+
     private static final Logger logger = Logger.getLogger(HandlenetServiceBean.class.getCanonicalName());
     
     private static final String HANDLE_PROTOCOL_TAG = "hdl";
-    int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
+    int handlenetIndex = settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.HandleNetIndex);
     
     public HandlenetServiceBean() {
         logger.log(Level.FINE,"Constructor");
@@ -227,8 +227,8 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     private PublicKeyAuthenticationInfo getAuthInfo(String handlePrefix) {
         logger.log(Level.FINE,"getAuthInfo");
         byte[] key = null;
-        String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
-        int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
+        String adminCredFile = settingsService.getValueForKey(SettingsServiceBean.Key.HandleNetAdmCredFile);
+        int handlenetIndex = settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.HandleNetIndex);
        
         key = readKey(adminCredFile);        
         PrivateKey privkey = null;
@@ -284,8 +284,8 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     private PrivateKey readPrivKey(byte[] key, final String file) {
         logger.log(Level.FINE,"readPrivKey");
         PrivateKey privkey=null;
-        
-        String secret = System.getProperty("dataverse.handlenet.admprivphrase");
+
+        String secret = settingsService.getValueForKey(SettingsServiceBean.Key.HandleNetAdmPrivPhrase);
         byte secKey[] = null;
         try {
             if ( Util.requiresSecretKey(key) ) {
@@ -361,8 +361,8 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
         String handle = getDvObjectHandle(dvObject);
         String authHandle = getAuthenticationHandle(dvObject);
 
-        String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
-        int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
+        String adminCredFile = settingsService.getValueForKey(SettingsServiceBean.Key.HandleNetAdmCredFile);
+        int handlenetIndex = settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.HandleNetIndex);
        
         byte[] key = readKey(adminCredFile);
         PrivateKey privkey = readPrivKey(key, adminCredFile);

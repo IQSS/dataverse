@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -243,35 +242,6 @@ public class DataverseServiceBean implements java.io.Serializable {
                 .setParameter("dataverse_id", dataverse_id).getResultList();
     }
 
-    public DataverseFacet findFacet(Long id) {
-        return em.find(DataverseFacet.class, id);
-    }
-    
-    public List<DataverseFacet> findAllDataverseFacets() {
-        return em.createQuery("select object(o) from DataverseFacet as o order by o.display", DataverseFacet.class).getResultList();
-    }
-    
-    public String getDataverseLogoThumbnailAsBase64(Dataverse dataverse, User user) {
-        
-        if (dataverse == null) {
-            return null;
-        }
-
-        File dataverseLogoFile = getLogo(dataverse);
-        if (dataverseLogoFile != null) {
-            String logoThumbNailPath;
-
-            if (dataverseLogoFile.exists()) {
-                logoThumbNailPath = ImageThumbConverter.generateImageThumbnailFromFile(dataverseLogoFile.getAbsolutePath(), 48);
-                if (logoThumbNailPath != null) {
-                    return ImageThumbConverter.getImageAsBase64FromFile(new File(logoThumbNailPath));
-
-                }
-            }
-        } 
-        return null;
-    }
-    
     public String getDataverseLogoThumbnailAsBase64ById(Long dvId) {
      
         File dataverseLogoFile = getLogoById(dvId);

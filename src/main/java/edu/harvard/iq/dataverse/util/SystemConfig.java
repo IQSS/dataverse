@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.apache.commons.io.IOUtils;
@@ -33,12 +31,6 @@ public class SystemConfig {
     @EJB
     SettingsServiceBean settingsService;
 
-    @EJB
-    DataverseServiceBean dataverseService;
-
-    @EJB
-    AuthenticationServiceBean authenticationService;
-    
    public static final String DATAVERSE_PATH = "/dataverse/";
 
     /**
@@ -49,11 +41,11 @@ public class SystemConfig {
      * The equivalent in DVN 3.x was "dvn.inetAddress".
      */
     public static final String FQDN = "dataverse.fqdn";
-    
+
     /**
-     * A JVM option for specifying the "official" URL of the site. 
-     * Unlike the FQDN option above, this would be a complete URL, 
-     * with the protocol, port number etc. 
+     * A JVM option for specifying the "official" URL of the site.
+     * Unlike the FQDN option above, this would be a complete URL,
+     * with the protocol, port number etc.
      */
     public static final String SITE_URL = "dataverse.siteUrl";
 
@@ -74,17 +66,15 @@ public class SystemConfig {
      */
     private static final String PASSWORD_RESET_TIMEOUT_IN_MINUTES = "dataverse.auth.password-reset-timeout-in-minutes";
 
-    private static String appVersionString = null; 
-    private static String buildNumberString = null; 
-    
-    private static final String JVM_TIMER_SERVER_OPTION = "dataverse.timerServer";
-    
+    private static String appVersionString = null;
+    private static String buildNumberString = null;
+
     public String getVersion() {
         return getVersion(false);
     }
-    
+
     public String getVersion(boolean withBuildNumber) {
-        
+
         if (appVersionString == null) {
 
             // The Version Number is no longer supplied in a .properties file - so
@@ -96,7 +86,7 @@ public class SystemConfig {
             // (this is considered a better practice, and will also allow us
             // to maintain this number in only one place - the pom.xml file)
             // -- L.A. 4.0.2
-            
+
             // One would assume, that once the version is in the MANIFEST.MF, 
             // as Implementation-Version:, it would be possible to obtain 
             // said version simply as 
@@ -120,8 +110,8 @@ public class SystemConfig {
             // So, long story short, I'm resorting to the convoluted steps below. 
             // It may look hacky, but it should actually be pretty solid and 
             // reliable. 
-            
-            
+
+
             // First, find the absolute path url of the application persistence file
             // always supplied with the Dataverse app:
             java.net.URL fileUrl = Thread.currentThread().getContextClassLoader().getResource("META-INF/persistence.xml");
@@ -132,79 +122,79 @@ public class SystemConfig {
                 filePath = fileUrl.getFile();
                 if (filePath != null) {
                     InputStream mavenPropertiesInputStream = null;
-                    String mavenPropertiesFilePath; 
+                    String mavenPropertiesFilePath;
                     Properties mavenProperties = new Properties();
 
-                    
+
                     filePath = filePath.replaceFirst("/[^/]*$", "/");
                     // Using a relative path, find the location of the maven pom.properties file. 
                     // First, try to look for it in the app-level META-INF. This will only be 
                     // available if it's a war file deployment: 
-                    mavenPropertiesFilePath = filePath.concat("../../../META-INF/maven/edu.harvard.iq/dataverse/pom.properties");                                     
-                    
+                    mavenPropertiesFilePath = filePath.concat("../../../META-INF/maven/edu.harvard.iq/dataverse/pom.properties");
+
                     try {
                         mavenPropertiesInputStream = new FileInputStream(mavenPropertiesFilePath);
                     } catch (IOException ioex) {
                         // OK, let's hope this is a local dev. build. 
                         // In that case the properties file should be available in 
                         // the maven-archiver directory: 
-                        
+
                         mavenPropertiesFilePath = filePath.concat("../../../../maven-archiver/pom.properties");
-                        
+
                         // try again: 
-                        
+
                         try {
                             mavenPropertiesInputStream = new FileInputStream(mavenPropertiesFilePath);
                         } catch (IOException ioex2) {
                             logger.warning("Failed to find and/or open for reading the pom.properties file.");
-                            mavenPropertiesInputStream = null; 
+                            mavenPropertiesInputStream = null;
                         }
                     }
-                    
+
                     if (mavenPropertiesInputStream != null) {
                         try {
                             mavenProperties.load(mavenPropertiesInputStream);
-                            appVersionString = mavenProperties.getProperty("version");                        
+                            appVersionString = mavenProperties.getProperty("version");
                         } catch (IOException ioex) {
                             logger.warning("caught IOException trying to read and parse the pom properties file.");
                         } finally {
                             IOUtils.closeQuietly(mavenPropertiesInputStream);
                         }
                     }
-                    
+
                 } else {
-                    logger.warning("Null file path representation of the location of persistence.xml in the webapp root directory!"); 
+                    logger.warning("Null file path representation of the location of persistence.xml in the webapp root directory!");
                 }
             } else {
                 logger.warning("Could not find the location of persistence.xml in the webapp root directory!");
             }
 
-            
+
             if (appVersionString == null) {
                 // still null? - defaulting to 4.0:    
                 appVersionString = "4.0";
             }
         }
-            
+
         if (withBuildNumber) {
             if (buildNumberString == null) {
                 // (build number is still in a .properties file in the source tree; it only 
                 // contains a real build number if this war file was built by 
                 // Jenkins) 
-                        
+
                 try {
                     buildNumberString = ResourceBundle.getBundle("BuildNumber").getString("build.number");
                 } catch (MissingResourceException ex) {
-                    buildNumberString = null; 
+                    buildNumberString = null;
                 }
             }
-            
+
             if (buildNumberString != null && !buildNumberString.equals("")) {
-                return appVersionString + " build " + buildNumberString; 
-            } 
-        }        
-        
-        return appVersionString; 
+                return appVersionString + " build " + buildNumberString;
+            }
+        }
+
+        return appVersionString;
     }
 
     /**
@@ -230,10 +220,10 @@ public class SystemConfig {
         }
         return reasonableDefault;
     }
-    
+
     /**
      * The "official", designated URL of the site;
-     * can be defined as a complete URL; or derived from the 
+     * can be defined as a complete URL; or derived from the
      * "official" hostname. If none of these options is set,
      * defaults to the InetAddress.getLocalHOst() and https;
      * These are legacy JVM options. Will be eventualy replaced
@@ -242,7 +232,7 @@ public class SystemConfig {
     public String getDataverseSiteUrl() {
         return getDataverseSiteUrlStatic();
     }
-    
+
     public static String getDataverseSiteUrlStatic() {
         String hostUrl = System.getProperty(SITE_URL);
         if (hostUrl != null && !"".equals(hostUrl)) {
@@ -261,7 +251,7 @@ public class SystemConfig {
     }
 
     /**
-     * The "official" server's fully-qualified domain name: 
+     * The "official" server's fully-qualified domain name:
      */
     public String getDataverseServer() {
         // still reliese on a JVM option: 
@@ -286,7 +276,7 @@ public class SystemConfig {
 
         return guidesVersion.equals(StringUtils.EMPTY) ? getVersion() : guidesVersion;
     }
-    
+
     public long getUploadLogoSizeLimit(){
         return 500000;
     }
@@ -296,52 +286,52 @@ public class SystemConfig {
     public long getThumbnailSizeLimitImage() {
         long limit = getThumbnailSizeLimit("Image");
         return limit == 0 ? 500000 : limit;
-    } 
-    
+    }
+
     public long getThumbnailSizeLimitPDF() {
         long limit = getThumbnailSizeLimit("PDF");
         return limit == 0 ? 500000 : limit;
     }
-    
+
     public long getThumbnailSizeLimit(String type) {
-        String option = null; 
-        
+        String option = null;
+
         //get options via jvm options
-        
+
         if ("Image".equals(type)) {
             option = System.getProperty("dataverse.dataAccess.thumbnail.image.limit");
         } else if ("PDF".equals(type)) {
             option = System.getProperty("dataverse.dataAccess.thumbnail.pdf.limit");
         }
-        Long limit = null; 
-        
+        Long limit = null;
+
         if (option != null && !option.equals("")) {
             try {
                 limit = new Long(option);
             } catch (NumberFormatException nfe) {
-                limit = null; 
+                limit = null;
             }
         }
-        
+
         if (limit != null) {
             return limit.longValue();
         }
-        
+
         return 0l;
     }
-    
+
     public boolean isThumbnailGenerationDisabledForType(String type) {
         return getThumbnailSizeLimit(type) == -1l;
     }
-    
+
     public boolean isThumbnailGenerationDisabledForImages() {
         return isThumbnailGenerationDisabledForType("Image");
     }
-    
+
     public boolean isThumbnailGenerationDisabledForPDF() {
         return isThumbnailGenerationDisabledForType("PDF");
     }
-    
+
     public String getApplicationTermsOfUse() {
         String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse);
 
@@ -353,25 +343,25 @@ public class SystemConfig {
 
         return apiTermsOfUse.equals(StringUtils.EMPTY) ? BundleUtil.getStringFromBundle("system.api.terms") : apiTermsOfUse;
     }
-    
+
     public long getTabularIngestSizeLimit() {
         // This method will return the blanket ingestable size limit, if 
         // set on the system. I.e., the universal limit that applies to all 
         // tabular ingests, regardless of fromat: 
         return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.TabularIngestSizeLimit);
     }
-    
+
     public long getTabularIngestSizeLimit(String formatName) {
         // This method returns the size limit set specifically for this format name,
         // if available, otherwise - the blanket limit that applies to all tabular 
         // ingests regardless of a format. 
-        
+
         if (StringUtils.isEmpty(formatName)) {
-            return getTabularIngestSizeLimit(); 
+            return getTabularIngestSizeLimit();
         }
-        
-        String limitEntry = settingsService.get(SettingsServiceBean.Key.TabularIngestSizeLimit.toString() + ":" + formatName); 
-                
+
+        String limitEntry = settingsService.get(SettingsServiceBean.Key.TabularIngestSizeLimit.toString() + ":" + formatName);
+
         if (StringUtils.isNotEmpty(limitEntry)) {
             try {
                 Long sizeOption = new Long(limitEntry);
@@ -380,16 +370,12 @@ public class SystemConfig {
                 logger.warning("Invalid value for TabularIngestSizeLimit:" + formatName + "? - " + limitEntry );
             }
         }
-        
-        return getTabularIngestSizeLimit();        
+
+        return getTabularIngestSizeLimit();
     }
-    
+
     public boolean isTimerServer() {
-        String optionValue = System.getProperty(JVM_TIMER_SERVER_OPTION);
-        if ("true".equalsIgnoreCase(optionValue)) {
-            return true;
-        }
-        return false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.TimerServer);
     }
 
 //    public String getNameOfInstallation() {
@@ -470,8 +456,8 @@ public class SystemConfig {
         public String toString() {
             return text;
         }
-        
-        
+
+
     }
 
     /**
@@ -508,9 +494,9 @@ public class SystemConfig {
         public String toString() {
             return text;
         }
-        
+
     }
-    
+
     public enum DataFilePIDFormat {
         DEPENDENT("DEPENDENT"),
         INDEPENDENT("INDEPENDENT");
@@ -519,16 +505,16 @@ public class SystemConfig {
         public String getText() {
             return text;
         }
-        
+
         private DataFilePIDFormat(final String text){
             this.text = text;
         }
-        
+
         @Override
         public String toString() {
             return text;
         }
-        
+
     }
 
     /**
@@ -567,17 +553,17 @@ public class SystemConfig {
         }
 
     }
-    
+
     public boolean isRsyncUpload(){
         return getUploadMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString());
     }
-    
+
     // Controls if HTTP upload is enabled for both GUI and API.
-    public boolean isHTTPUpload(){       
-        return getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());       
+    public boolean isHTTPUpload() {
+        return getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());
     }
-    
-    public boolean isRsyncOnly(){       
+
+    public boolean isRsyncOnly() {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
         if(StringUtils.isEmpty(downloadMethods)){
             return false;
@@ -590,35 +576,35 @@ public class SystemConfig {
             return false;
         } else {
            return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
-        }        
+        }
     }
-    
+
     public boolean isRsyncDownload() {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
         return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.RSYNC.toString());
     }
-    
+
     public boolean isHTTPDownload() {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
         logger.warning("Download Methods:" + downloadMethods);
         return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.NATIVE.toString());
     }
-    
+
     private Boolean getUploadMethodAvailable(String method){
-        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods); 
+        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
         if (StringUtils.isEmpty(uploadMethods)){
             return false;
         } else {
            return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).contains(method);
         }
     }
-    
+
     public Integer getUploadMethodCount(){
-        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods); 
+        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
         if (StringUtils.isEmpty(uploadMethods)){
             return 0;
         } else {
            return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
-        }       
+        }
     }
 }

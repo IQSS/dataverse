@@ -10,7 +10,6 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -210,16 +209,7 @@ public class SettingsServiceBean {
          *  via drag-and-drop, or through the file select dialog
          */
         MultipleUploadFilesLimit,
-        /** Size limits for generating thumbnails on the fly
-         *(i.e., we'll attempt to generate a thumbnail on the fly if the
-         * size of the file is less than this)
-         * FIXME: this setting is currently taken from system environment
-        */
-        ThumbnailSizeLimitImage,
-        /**
-         * FIXME: this setting is currently taken from system environment
-         */
-        ThumbnailSizeLimitPDF,
+
         /**
          * status message that will appear on the home page
          */
@@ -420,7 +410,26 @@ public class SettingsServiceBean {
          * Indicates if other terms of use are active or not.
          */
         AllRightsReservedTermsOfUseActive,
-        RestrictedAccessTermsOfUseActive;
+        RestrictedAccessTermsOfUseActive,
+
+        /**
+         * Size limits for generating thumbnails on the fly
+         * (i.e., we'll attempt to generate a thumbnail on the fly if the
+         * size of the file is less than this)
+         */
+        ThumbnailImageSizeLimit,
+        ThumbnailPDFSizeLimit,
+
+        DropboxKey,
+        DoiBaseUrlString,
+        DoiUsername,
+        DoiPassword,
+
+        HandleNetAdmCredFile,
+        HandleNetAdmPrivPhrase,
+        HandleNetIndex,
+
+        TimerServer;
 
         @Override
         public String toString() {
@@ -444,7 +453,7 @@ public class SettingsServiceBean {
     /**
      * Basic functionality - get the name, return the setting from db if present or from properties file if not.
      * @param name of the setting
-     * @return the actual setting.
+     * @return the actual setting or empty string.
      */
     public String get( String name ) {
         Setting s = em.find( Setting.class, name );
@@ -454,7 +463,7 @@ public class SettingsServiceBean {
     /**
      * Same as {@link #get(java.lang.String)}, but with static checking.
      * @param key Enum value of the name.
-     * @return The setting, or {@code null}.
+     * @return The setting, or  empty string.
      */
     public String getValueForKey(Key key) {
         return get(key.toString());
