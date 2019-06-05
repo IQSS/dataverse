@@ -58,8 +58,9 @@ public class LinkDataverseCommand extends AbstractCommand<DataverseLinkingDatave
     }  
     
     @Override
-    public boolean onSuccess(CommandContext ctxt, DataverseLinkingDataverse r) {
-        ctxt.index().indexDataverse(r.getDataverse());
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        DataverseLinkingDataverse result = (DataverseLinkingDataverse) r;
+        ctxt.index().indexDataverse(result.getDataverse());
         return true;
     }
     

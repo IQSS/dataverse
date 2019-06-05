@@ -86,11 +86,11 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
 	}
         
     @Override
-    public boolean onSuccess(CommandContext ctxt, Dataverse r) {
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        Dataverse result = (Dataverse) r;
+        Future<String> indResponse = ctxt.index().indexDataverse(result);
         
-        Future<String> indResponse = ctxt.index().indexDataverse(r);
-        
-        List<Dataset> datasets = ctxt.datasets().findByOwnerId(r.getId());
+        List<Dataset> datasets = ctxt.datasets().findByOwnerId(result.getId());
         ctxt.index().asyncIndexDatasetList(datasets, true);
 
         return true;

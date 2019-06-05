@@ -60,9 +60,10 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
     }
     
     @Override
-    public boolean onSuccess(CommandContext ctxt, Dataverse r) {
-       IndexResponse permsResponse =  ctxt.solrIndex().indexPermissionsForOneDvObject(r);
-        ctxt.solrIndex().indexPermissionsOnSelfAndChildren(r.getId());
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        Dataverse ret = (Dataverse) r;
+        IndexResponse permsResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(ret);
+        ctxt.solrIndex().indexPermissionsOnSelfAndChildren(ret.getId());
         return true;
     }
 

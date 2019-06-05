@@ -55,9 +55,9 @@ public class DeleteDataverseLinkingDataverseCommand extends AbstractCommand<Data
     } 
 
     @Override
-    public boolean onSuccess(CommandContext ctxt, Dataverse r) {
+    public boolean onSuccess(CommandContext ctxt, Object r) {
         
-        Future<String> retVal = ctxt.index().indexDataverse(r);
+        Future<String> retVal = ctxt.index().indexDataverse((Dataverse)r);
         return true;
 
     }

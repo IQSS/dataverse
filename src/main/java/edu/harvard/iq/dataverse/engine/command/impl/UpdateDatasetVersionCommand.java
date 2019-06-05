@@ -185,7 +185,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
     }
     
     @Override
-    public boolean onSuccess(CommandContext ctxt, Dataset r){
+    public boolean onSuccess(CommandContext ctxt, Object r){
         ctxt.index().indexDataset((Dataset) r, true);
         return true;
     }

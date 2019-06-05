@@ -146,7 +146,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     }
     
     @Override
-    public boolean onSuccess(CommandContext ctxt, Dataset r) {
+    public boolean onSuccess(CommandContext ctxt, Object r) {
         boolean retVal = true;
         Future<String> indexString = ctxt.index().indexDataset((Dataset) r, true);
         
@@ -163,7 +163,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         */
 
 
-        ctxt.solrIndex().indexPermissionsForOneDvObject(r);
+        ctxt.solrIndex().indexPermissionsForOneDvObject((Dataset) r);
         exportMetadata(ctxt.settings());
         return retVal;
     }

@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
@@ -31,7 +32,9 @@ import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
@@ -191,11 +194,19 @@ public class EjbDataverseEngine {
     public <R> R submitInNewTransaction(Command<R> aCommand) throws CommandException {
         return submit(aCommand);
     }
+    
+    private DvObject getRetType(Object r){
+
+        return (DvObject) r;
+       
+    }
+
 
     @TransactionAttribute(SUPPORTS)
     public <R> R submit(Command<R> aCommand) throws CommandException {
         
         final ActionLogRecord logRec = new ActionLogRecord(ActionLogRecord.ActionType.Command, aCommand.getClass().getCanonicalName());
+
         try {
             logRec.setUserIdentifier( aCommand.getRequest().getUser().getIdentifier() );
             
@@ -237,8 +248,13 @@ public class EjbDataverseEngine {
                 }
             }
             try {
-                R r = innerEngine.submit(aCommand, getContext());
-                aCommand.onSuccess(getContext(), r);
+                if (getContext().getCommandsCalled() == null){
+                    getContext().beginCommandSequence();
+                }
+                getContext().addCommand(aCommand);
+                R r = innerEngine.submit(aCommand, getContext());              
+                System.out.print(getContext().getCommandsCalled());
+                this.myCompleteCommand(aCommand, r, getContext().getCommandsCalled());
                 return r;
                 
             } catch ( EJBException ejbe ) {
@@ -287,10 +303,41 @@ public class EjbDataverseEngine {
             logSvc.log(logRec);
         }
     }
+    
+    protected boolean myCompleteCommand(Command command, Object r, List<Command> called) {
+
+        Command test = called.get(0);
+        if (!test.equals(command)) {
+            System.out.print("inner command");
+            return true;
+        }
+                
+        
+        for (Command commandLoop : called) {
+            commandLoop.onSuccess(ctxt, r);
+        }
+        called.clear();
+        return true;
+
+    }
+    
 
     public CommandContext getContext() {
         if (ctxt == null) {
             ctxt = new CommandContext() {
+                
+                public List<Command> commandsCalled;
+                
+                @Override
+                public void addCommand (Command command){
+                    commandsCalled.add(command);
+                }
+                
+                @Override
+                public List<Command> getCommandsCalled(){
+                    return commandsCalled;
+                }
+                
                 
                 @Override
                 public DatasetServiceBean datasets() {
@@ -504,6 +551,33 @@ public class EjbDataverseEngine {
                 @Override
                 public ActionLogServiceBean actionLog() {
                     return logSvc;
+                }
+
+                @Override
+                public void beginCommandSequence() {
+                    this.commandsCalled = new ArrayList();
+                }
+
+                @Override
+                public boolean completeCommandSequence(Command command) {
+                    if (this.commandsCalled.isEmpty()){
+                        return true;
+                    }
+                    Command test = this.commandsCalled.get(0);
+                    if(!test.equals(command)){
+                        System.out.print("inner command");
+                        return true;
+                    }
+                    for (Command commandLoop: this.commandsCalled){
+                        commandLoop.onSuccess(ctxt, null);
+                    }
+                    this.commandsCalled.clear();
+                    return true;
+                }
+
+                @Override
+                public void cancelCommandSequence() {
+                    this.commandsCalled = new ArrayList();
                 }
 
             };

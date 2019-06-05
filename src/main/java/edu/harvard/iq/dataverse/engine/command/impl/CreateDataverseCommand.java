@@ -165,8 +165,8 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
     }
     
     @Override
-    public boolean onSuccess(CommandContext ctxt, Dataverse r) {
-        ctxt.index().indexDataverse(r);
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        ctxt.index().indexDataverse((Dataverse) r);
         return true;
     }
 

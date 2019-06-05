@@ -44,5 +44,5 @@ public interface Command<R> {
 
     public String describe();
     
-    public boolean onSuccess(CommandContext ctxt, R r);
+    public boolean onSuccess(CommandContext ctxt, Object r);
 }
