@@ -1,7 +1,7 @@
 Solr Search Index
 =================
 
-Dataverse requires Solr to be operational at all times. If you stop Solr, you should see a error about this on the home page, which is powered by the search index Solr provides. You can set up Solr by following the steps in our Installation Guide's :doc:`/installation/prerequisites` and :doc:`/installation/config` sections explaining how to configure it. This section you're reading now is about the care and feeding of the search index. PostgreSQL is the "source of truth" and the Dataverse application will copy data from PostgreSQL into Solr. For this reason, the search index can be rebuilt at any time. Depending on the amount of data you have, this can be a slow process. You are encouraged to experiment with production data to get a sense of how long a full reindexing will take.
+Dataverse requires Solr to be operational at all times. If you stop Solr, you should see a error about this on the root dataverse page, which is powered by the search index Solr provides. You can set up Solr by following the steps in our Installation Guide's :doc:`/installation/prerequisites` and :doc:`/installation/config` sections explaining how to configure it. This section you're reading now is about the care and feeding of the search index. PostgreSQL is the "source of truth" and the Dataverse application will copy data from PostgreSQL into Solr. For this reason, the search index can be rebuilt at any time. Depending on the amount of data you have, this can be a slow process. You are encouraged to experiment with production data to get a sense of how long a full reindexing will take.
 
 .. contents:: Contents:
 	:local:
@@ -17,7 +17,7 @@ Clear and Reindex
 Clearing Data from Solr
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Please note that the moment you issue this command, it will appear to end users looking at the home page that all data is gone! This is because the home page is powered by the search index.
+Please note that the moment you issue this command, it will appear to end users looking at the root dataverse page that all data is gone! This is because the root dataverse page is powered by the search index.
 
 ``curl http://localhost:8080/api/admin/index/clear``
 
