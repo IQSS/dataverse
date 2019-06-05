@@ -433,12 +433,11 @@ public class FilePage implements java.io.Serializable {
               return null;
             }
         } else {
-
             commandEngine.submit(new UningestFileCommand(dvRequestService.getDataverseRequest(), file));
             Long dataFileId = file.getId();
             file = datafileService.find(dataFileId);
-            editDataset = file.getOwner();
         }
+        editDataset = file.getOwner();
         if (editDataset.isReleased()) {
             try {
                 ExportService instance = ExportService.getInstance(settingsService);
