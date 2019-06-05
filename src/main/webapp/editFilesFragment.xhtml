@@ -394,7 +394,7 @@
                                 <p:message for="fileDescription"/>
                             </ui:fragment>
                         </div>
-                        <div jsf:rendered="#{datasetPage}">
+                        <div jsf:rendered="#{createDataset or EditDatafilesPage.mode eq 'UPLOAD' }">
                             <ui:fragment id="fileTermsOfUse">
 
                                 <p:outputLabel styleClass="control-label" for="fileLicense" value="#{bundle['file.editTermsOfUseDialog.license']}" />
