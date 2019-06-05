@@ -1,18 +1,16 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
-
+import edu.harvard.iq.dataverse.MetadataBlockDao;
 import edu.harvard.iq.dataverse.api.imports.ImportException;
+import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import java.io.IOException;
-import java.io.PrintWriter;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.json.JsonObjectBuilder;
@@ -21,6 +19,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 @Stateless
 @Path("batch")
@@ -33,7 +33,7 @@ public class BatchImport extends AbstractApiBean {
     @EJB
     DatasetFieldServiceBean datasetfieldService;
     @EJB
-    MetadataBlockServiceBean metadataBlockService;
+    MetadataBlockDao metadataBlockService;
     @EJB
     SettingsServiceBean settingsService;
     @EJB

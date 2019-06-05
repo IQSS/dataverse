@@ -6,8 +6,8 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
@@ -16,7 +16,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import edu.harvard.iq.dataverse.MetadataBlockDao;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess.License;
 import edu.harvard.iq.dataverse.api.Util;
@@ -29,6 +29,14 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonString;
+import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -42,13 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonString;
-import javax.json.JsonValue;
-import javax.json.JsonValue.ValueType;
 
 /**
  * Parses JSON objects into domain objects.
@@ -60,15 +61,15 @@ public class JsonParser {
     private static final Logger logger = Logger.getLogger(JsonParser.class.getCanonicalName());
 
     DatasetFieldServiceBean datasetFieldSvc;
-    MetadataBlockServiceBean blockService;
+    MetadataBlockDao blockService;
     SettingsServiceBean settingsService;
     
     /**
      * if lenient, we will accept alternate spellings for controlled vocabulary values
      */
-    boolean lenient = false;  
+    boolean lenient = false;
 
-    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService) {
+    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockDao blockService, SettingsServiceBean settingsService) {
         this.datasetFieldSvc = datasetFieldSvc;
         this.blockService = blockService;
         this.settingsService = settingsService;

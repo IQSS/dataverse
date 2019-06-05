@@ -5,16 +5,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.Expose;
-import java.io.Serializable;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse;
+import edu.harvard.iq.dataverse.license.TermsOfUseForm;
+import edu.harvard.iq.dataverse.util.DateUtil;
+import org.hibernate.validator.constraints.NotBlank;
+
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.persistence.CascadeType;
@@ -34,12 +29,17 @@ import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.Version;
-
-import edu.harvard.iq.dataverse.license.FileTermsOfUse;
-import edu.harvard.iq.dataverse.license.TermsOfUseForm;
-import edu.harvard.iq.dataverse.util.DateUtil;
-import org.hibernate.validator.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+import java.io.Serializable;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**

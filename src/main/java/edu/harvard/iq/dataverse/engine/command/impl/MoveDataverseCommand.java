@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -150,7 +151,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         List<Dataverse> mbParentsToCheck = new ArrayList<>();
         mbParentsToCheck.addAll(ownersToCheck);
         mbParentsToCheck.addAll(dataverseChildren);
-        if (moved.getMetadataBlocks() != null) {
+        if (moved.getRootMetadataBlocks() != null) {
             inheritMbValue = !destination.isMetadataBlockRoot();
         }
                 
@@ -177,7 +178,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
             // but then the dataverse is moved outside of that parent-child structure
             if (inheritMbValue != null) {
                 List<MetadataBlock> metadataBlocksToKeep = new ArrayList<>();
-                List<MetadataBlock> movedMbs = dv.getMetadataBlocks(true);
+                List<MetadataBlock> movedMbs = dv.getMetadataBlocks();
                 Iterator<MetadataBlock> iter = movedMbs.iterator();
                 while (iter.hasNext()) {
                     MetadataBlock mb = iter.next();

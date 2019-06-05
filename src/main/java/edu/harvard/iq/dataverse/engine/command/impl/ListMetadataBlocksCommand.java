@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class ListMetadataBlocksCommand extends AbstractCommand<List<MetadataBloc
 
     @Override
     public List<MetadataBlock> execute(CommandContext ctxt) throws CommandException {
-        return dv.getMetadataBlocks();
+        return dv.getRootMetadataBlocks();
     }
     
     @Override

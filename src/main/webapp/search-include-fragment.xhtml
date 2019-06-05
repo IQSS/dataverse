@@ -45,10 +45,14 @@
                         </button>
                         <ul class="dropdown-menu pull-right text-left" role="menu">
                             <ui:fragment rendered="#{permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse) }">
-                                <li><a href="/dataverse.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">#{bundle['dataverse.results.btn.addData.newDataverse']}</a></li>
+                                <li>
+                                    <a href="${pageContext.request.contextPath}/createEditDataverse.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}&amp;dataverseOwnerAlias=#{SearchIncludeFragment.dataverse.alias}">
+                                        #{bundle['dataverse.results.btn.addData.newDataverse']}</a></li>
                             </ui:fragment>
                             <ui:fragment rendered="#{permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse) }">
-                                <li><a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">#{bundle['dataverse.results.btn.addData.newDataset']}</a></li>
+                                <li>
+                                    <a href="${pageContext.request.contextPath}/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">#{bundle['dataverse.results.btn.addData.newDataset']}</a>
+                                </li>
                             </ui:fragment>
                         </ul>
                     </div>

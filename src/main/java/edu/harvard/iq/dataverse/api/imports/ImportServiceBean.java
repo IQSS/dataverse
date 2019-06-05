@@ -20,7 +20,7 @@ import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FieldType;
-import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import edu.harvard.iq.dataverse.MetadataBlockDao;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -91,7 +91,7 @@ public class ImportServiceBean {
     DatasetFieldServiceBean datasetfieldService;
 
     @EJB
-    MetadataBlockServiceBean metadataBlockService;
+    MetadataBlockDao metadataBlockService;
     @EJB
     SettingsServiceBean settingsService;
     

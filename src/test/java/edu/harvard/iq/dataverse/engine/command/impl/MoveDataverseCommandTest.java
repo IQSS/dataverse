@@ -16,23 +16,25 @@ import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import org.junit.Before;
+import org.junit.Test;
+
+import javax.persistence.EntityManager;
+import javax.servlet.http.HttpServletRequest;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Future;
-import javax.persistence.EntityManager;
-import javax.servlet.http.HttpServletRequest;
+
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  *
@@ -422,7 +424,7 @@ public class MoveDataverseCommandTest {
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
                         new MoveDataverseCommand(aRequest, childE, childB, null));
-        assertEquals(Arrays.asList(mbB), childE.getMetadataBlocks());
+        assertEquals(Arrays.asList(mbB), childE.getRootMetadataBlocks());
         
         // move back
         testEngine.submit(
@@ -445,7 +447,7 @@ public class MoveDataverseCommandTest {
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
                         new MoveDataverseCommand(aRequest, grandchildEE, root, true));
-        assertEquals(Arrays.asList(mbA), grandchildEE.getMetadataBlocks(true));
+        assertEquals(Arrays.asList(mbA), grandchildEE.getMetadataBlocks());
         // move back
         testEngine.submit(
                         new MoveDataverseCommand(aRequest, grandchildEE, childE, true));

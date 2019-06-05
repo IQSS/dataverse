@@ -1403,7 +1403,7 @@ public class DatasetVersion implements Serializable {
         //Test to see that there are values for 
         // all fields in this dataset via metadata blocks
         //only add if not added above
-        for (MetadataBlock mdb : this.getDataset().getOwner().getMetadataBlocks()) {
+        for (MetadataBlock mdb : this.getDataset().getOwner().getRootMetadataBlocks()) {
             for (DatasetFieldType dsfType : mdb.getDatasetFieldTypes()) {
                 if (!dsfType.isSubField()) {
                     boolean add = true;

@@ -1,15 +1,7 @@
 package edu.harvard.iq.dataverse;
 
-import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import org.hibernate.validator.constraints.NotBlank;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -26,7 +18,16 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.validation.constraints.Size;
-import org.hibernate.validator.constraints.NotBlank;
+import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -180,7 +181,7 @@ public class Template implements Serializable {
         //Test to see that there are values for 
         // all fields in this dataset via metadata blocks
         //only add if not added above
-        for (MetadataBlock mdb : this.getDataverse().getMetadataBlocks()) {
+        for (MetadataBlock mdb : this.getDataverse().getRootMetadataBlocks()) {
             for (DatasetFieldType dsfType : mdb.getDatasetFieldTypes()) {
                 if (!dsfType.isSubField()) {
                     boolean add = true;
@@ -225,7 +226,7 @@ public class Template implements Serializable {
     private void initMetadataBlocksForCreate() {
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
-        for (MetadataBlock mdb : this.getDataverse().getMetadataBlocks()) {
+        for (MetadataBlock mdb : this.getDataverse().getRootMetadataBlocks()) {
             List<DatasetField> datasetFieldsForView = new ArrayList<>();
             List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
             for (DatasetField dsf : this.getDatasetFields()) {
@@ -252,8 +253,8 @@ public class Template implements Serializable {
         
         
         List <MetadataBlock> actualMDB = new ArrayList<>();
-            
-        actualMDB.addAll(this.getDataverse().getMetadataBlocks());
+
+        actualMDB.addAll(this.getDataverse().getRootMetadataBlocks());
         for (DatasetField dsfv : filledInFields) {
             if (!dsfv.isEmptyForDisplay()) {
                 MetadataBlock mdbTest = dsfv.getDatasetFieldType().getMetadataBlock();

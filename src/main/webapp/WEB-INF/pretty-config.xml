@@ -6,7 +6,12 @@
         <pattern value="/dataverse/#{alias}" />
         <view-id value="/dataverse.xhtml" />
     </url-mapping>
-    
+
+    <url-mapping id="editDataverse">
+        <pattern value="/editDataverse/#{dataverseId}"/>
+        <view-id value="/createEditDataverse.xhtml"/>
+    </url-mapping>
+
     <url-mapping id="dataverseslash">
         <pattern value="/dataverse/#{alias}/" />
         <view-id value="/dataverse.xhtml" />

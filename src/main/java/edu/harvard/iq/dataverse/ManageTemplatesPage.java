@@ -1,18 +1,14 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.dataverse.DataversePage;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateRootCommand;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.event.ActionEvent;
@@ -21,7 +17,14 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 /**
  *
  * @author skraffmiller
@@ -74,7 +77,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }  
         dvpage.setDataverse(dataverse);
-        if (dataverse.getOwner() != null && dataverse.getMetadataBlocks().equals(dataverse.getOwner().getMetadataBlocks())){
+        if (dataverse.getOwner() != null && dataverse.getRootMetadataBlocks().equals(dataverse.getOwner().getRootMetadataBlocks())) {
            setInheritTemplatesAllowed(true); 
         }
  

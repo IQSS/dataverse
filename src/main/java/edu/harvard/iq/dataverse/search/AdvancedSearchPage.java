@@ -72,7 +72,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
         if (dataverse == null) {
             dataverse = dataverseServiceBean.findRootDataverse();
         }
-        List<MetadataBlock> metadataBlocks = dataverse.getMetadataBlocks();
+        List<MetadataBlock> metadataBlocks = dataverse.getRootMetadataBlocks();
         List<DatasetFieldType> metadataFieldList = datasetFieldService.findAllAdvancedSearchFieldTypes();
 
         mapAllMetadataBlocks(metadataFieldList, metadataBlocks);

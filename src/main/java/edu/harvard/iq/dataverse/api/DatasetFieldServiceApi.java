@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.FieldType;
 import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import edu.harvard.iq.dataverse.MetadataBlockDao;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import org.apache.commons.lang.StringUtils;
@@ -52,7 +52,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     DataverseServiceBean dataverseService;
 
     @EJB
-    MetadataBlockServiceBean metadataBlockService;
+    MetadataBlockDao metadataBlockService;
 
     @EJB
     ControlledVocabularyValueServiceBean controlledVocabularyValueService;

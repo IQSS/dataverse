@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.dataverse.DataversePage;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteGuestbookCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
