@@ -55,7 +55,6 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
-import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.IOException;
@@ -79,7 +78,6 @@ import java.util.logging.Logger;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 
 @Stateless
-@Named
 public class IndexServiceBean {
 
     private static final Logger logger = Logger.getLogger(IndexServiceBean.class.getCanonicalName());

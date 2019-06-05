@@ -8,23 +8,22 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.logging.Logger;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  *
  * @author xyang
  */
 @Stateless
-@Named
 public class UserNotificationServiceBean {
 
     private static final Logger logger = Logger.getLogger(UserNotificationServiceBean.class.getCanonicalName());

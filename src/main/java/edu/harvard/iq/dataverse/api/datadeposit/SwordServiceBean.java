@@ -9,19 +9,18 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
 import org.apache.commons.lang.StringUtils;
 import org.swordapp.server.SwordEntry;
 import org.swordapp.server.SwordError;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+
 @Stateless
-@Named
 public class SwordServiceBean {
 
     private static final Logger logger = Logger.getLogger(SwordServiceBean.class.getCanonicalName());

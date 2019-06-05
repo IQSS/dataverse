@@ -2,26 +2,6 @@ package edu.harvard.iq.dataverse.validation;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-
 import org.apache.commons.lang3.StringUtils;
 import org.passay.CharacterCharacteristicsRule;
 import org.passay.CharacterRule;
@@ -38,6 +18,25 @@ import org.passay.RuleResultDetail;
 import org.passay.dictionary.WordListDictionary;
 import org.passay.dictionary.WordLists;
 import org.passay.dictionary.sort.ArraysSort;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * PasswordValidatorServiceBean
@@ -72,7 +71,6 @@ import org.passay.dictionary.sort.ArraysSort;
  *
  * @author Lucien van Wouw <lwo@iisg.nl>
  */
-@Named
 @Stateless
 public class PasswordValidatorServiceBean implements java.io.Serializable {
 

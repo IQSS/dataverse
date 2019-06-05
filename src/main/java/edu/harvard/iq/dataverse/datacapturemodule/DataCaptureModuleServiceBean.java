@@ -1,20 +1,19 @@
 package edu.harvard.iq.dataverse.datacapturemodule;
 
-import java.util.logging.Logger;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import java.io.Serializable;
+
 import javax.ejb.Stateless;
-import javax.inject.Named;
+import java.io.Serializable;
+import java.util.logging.Logger;
 
 /**
  * This class contains all the methods that have external runtime dependencies
  * such as the Data Capture Module itself.
  */
 @Stateless
-@Named
 public class DataCaptureModuleServiceBean implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DataCaptureModuleServiceBean.class.getCanonicalName());

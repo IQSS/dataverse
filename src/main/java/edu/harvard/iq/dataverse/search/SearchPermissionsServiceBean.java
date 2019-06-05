@@ -19,7 +19,6 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,7 +30,6 @@ import java.util.logging.Logger;
  * Determine whether items should be searchable.
  */
 @Stateless
-@Named
 public class SearchPermissionsServiceBean {
 
     private static final Logger logger = Logger.getLogger(SearchPermissionsServiceBean.class.getCanonicalName());

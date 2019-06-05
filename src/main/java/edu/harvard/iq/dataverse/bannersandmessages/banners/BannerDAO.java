@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.ImageWithLinkDto;
 import org.primefaces.model.DefaultStreamedContent;
 
 import javax.ejb.Stateless;
-import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.ByteArrayInputStream;
@@ -13,7 +12,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Stateless
-@Named
 public class BannerDAO {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")

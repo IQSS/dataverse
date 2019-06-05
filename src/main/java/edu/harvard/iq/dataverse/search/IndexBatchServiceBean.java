@@ -1,29 +1,27 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.Future;
-import java.util.logging.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
+
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import org.apache.solr.client.solrj.SolrServerException;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.Future;
+import java.util.logging.Logger;
 
-@Named
 @Stateless
 public class IndexBatchServiceBean {
 

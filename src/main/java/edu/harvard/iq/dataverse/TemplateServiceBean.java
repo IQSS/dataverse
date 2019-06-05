@@ -1,22 +1,20 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  *
  * @author skraffmiller
  */
 @Stateless
-@Named
 public class TemplateServiceBean {
 
     private static final Logger logger = Logger.getLogger(DatasetServiceBean.class.getCanonicalName());

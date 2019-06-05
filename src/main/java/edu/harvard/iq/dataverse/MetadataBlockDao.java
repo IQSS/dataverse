@@ -21,7 +21,7 @@ public class MetadataBlockDao {
     public MetadataBlock save(MetadataBlock mdb) {
        return em.merge(mdb);
     }
-    
+
     public List<MetadataBlock> listMetadataBlocks() {
         return em.createNamedQuery("MetadataBlock.listAll", MetadataBlock.class).getResultList();
     }

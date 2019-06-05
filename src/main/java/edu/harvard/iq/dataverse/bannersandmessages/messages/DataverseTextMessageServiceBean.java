@@ -2,14 +2,12 @@ package edu.harvard.iq.dataverse.bannersandmessages.messages;
 
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseMessagesMapper;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseTextMessageDto;
 import edu.harvard.iq.dataverse.bannersandmessages.validation.DataverseTextMessageValidator;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
@@ -21,7 +19,6 @@ import java.util.logging.Logger;
  * @author tjanek
  */
 @Stateless
-@Named
 public class DataverseTextMessageServiceBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(DataverseTextMessageServiceBean.class.getCanonicalName());

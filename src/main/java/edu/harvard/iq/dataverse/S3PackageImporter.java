@@ -22,7 +22,6 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.inject.Named;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -41,7 +40,6 @@ import java.util.logging.Logger;
  * @author matthew
  */
 
-@Named
 @Stateless
 public class S3PackageImporter extends AbstractApiBean implements java.io.Serializable{
     

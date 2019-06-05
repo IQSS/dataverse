@@ -5,19 +5,7 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Type;
 
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DESCRIPTION;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DISPLAY_NAME;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_PARAMETERS;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_URL;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TYPE;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.CONTENT_TYPE;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Logger;
 import javax.ejb.Stateless;
-import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -27,9 +15,20 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.CONTENT_TYPE;
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DESCRIPTION;
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DISPLAY_NAME;
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_PARAMETERS;
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_URL;
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TYPE;
 
 @Stateless
-@Named
 public class ExternalToolServiceBean {
 
     private static final Logger logger = Logger.getLogger(ExternalToolServiceBean.class.getCanonicalName());

@@ -34,7 +34,6 @@ import javax.ejb.EJBContext;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
-import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.validation.ConstraintViolation;
@@ -53,7 +52,6 @@ import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
  * @author michael
  */
 @Stateless
-@Named
 public class EjbDataverseEngine {
     private static final Logger logger = Logger.getLogger(EjbDataverseEngine.class.getCanonicalName());
     

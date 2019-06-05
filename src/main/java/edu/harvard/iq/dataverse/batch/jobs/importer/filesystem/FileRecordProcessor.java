@@ -33,14 +33,12 @@ import javax.batch.runtime.context.JobContext;
 import javax.ejb.EJB;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
-import javax.inject.Named;
 import java.io.File;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-@Named
 @Dependent
 public class FileRecordProcessor implements ItemProcessor {
     

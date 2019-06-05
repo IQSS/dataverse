@@ -6,13 +6,11 @@
 
 package edu.harvard.iq.dataverse.datavariable;
 
-import java.util.List;
-import java.util.logging.Logger;
 import javax.ejb.Stateless;
-import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import java.util.List;
 
 /**
  *
@@ -22,7 +20,6 @@ import javax.persistence.TypedQuery;
  */
 
 @Stateless
-@Named
 public class VariableServiceBean {
     public static final String[] summaryStatisticTypes = {"mean", "medn", "mode", "vald", "invd", "min", "max", "stdev"};
     

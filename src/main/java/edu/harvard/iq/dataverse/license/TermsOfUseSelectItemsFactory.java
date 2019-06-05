@@ -1,26 +1,23 @@
 package edu.harvard.iq.dataverse.license;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse.RestrictType;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
+import edu.harvard.iq.dataverse.settings.SettingsWrapper;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import javax.ejb.EJB;
 import javax.faces.model.SelectItem;
 import javax.faces.model.SelectItemGroup;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
-import javax.inject.Named;
-
-import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.license.FileTermsOfUse.RestrictType;
-import edu.harvard.iq.dataverse.settings.SettingsWrapper;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 
 @ViewScoped
-@Named
 public class TermsOfUseSelectItemsFactory implements Serializable {
 
     @EJB

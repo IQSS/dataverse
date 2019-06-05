@@ -1,13 +1,11 @@
 package edu.harvard.iq.dataverse.license;
 
 import javax.ejb.Stateless;
-import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
 
 @Stateless
-@Named
 public class LicenseDAO {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")

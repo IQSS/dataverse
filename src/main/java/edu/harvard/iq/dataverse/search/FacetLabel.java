@@ -1,8 +1,5 @@
 package edu.harvard.iq.dataverse.search;
 
-import javax.inject.Named;
-
-@Named
 public class FacetLabel {
 
     private String name;

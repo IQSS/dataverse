@@ -47,7 +47,6 @@ import javax.batch.runtime.context.StepContext;
 import javax.ejb.EJB;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.Serializable;
@@ -60,7 +59,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@Named
 @Dependent
 public class FileRecordWriter extends AbstractItemWriter {
     
