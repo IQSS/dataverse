@@ -226,7 +226,7 @@ public class FileDownloadHelper implements java.io.Serializable {
      public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse) {
          RequestContext requestContext = RequestContext.getCurrentInstance();
          boolean valid = validateGuestbookResponse(guestbookResponse);
-
+logger.info("Called wgbasd");
          if (!valid) {
              JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
          } else {
