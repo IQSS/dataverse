@@ -253,7 +253,6 @@ public class EjbDataverseEngine {
                 }
                 getContext().addCommand(aCommand);
                 R r = innerEngine.submit(aCommand, getContext());              
-                System.out.print(getContext().getCommandsCalled());
                 this.myCompleteCommand(aCommand, r, getContext().getCommandsCalled());
                 return r;
                 
@@ -289,6 +288,9 @@ public class EjbDataverseEngine {
             throw re;
             
         } finally {
+            //when we get here we need to wipe out the command list so that
+            //failed commands don't have their onSuccess methods run.
+            getContext().cancelCommandSequence();
             if (logRec.getActionResult() == null) {
                 logRec.setActionResult(ActionLogRecord.Result.OK);
             } else {
@@ -296,8 +298,7 @@ public class EjbDataverseEngine {
                      ejbCtxt.setRollbackOnly();
                 } catch (IllegalStateException isEx){
                     //Not in a transaction nothing to rollback
-                }
-                   
+                }                  
             }
             logRec.setEndTime(new java.util.Date());
             logSvc.log(logRec);
@@ -308,7 +309,6 @@ public class EjbDataverseEngine {
 
         Command test = called.get(0);
         if (!test.equals(command)) {
-            System.out.print("inner command");
             return true;
         }
                 
@@ -316,6 +316,7 @@ public class EjbDataverseEngine {
         for (Command commandLoop : called) {
             commandLoop.onSuccess(ctxt, r);
         }
+        
         called.clear();
         return true;
 
@@ -560,17 +561,6 @@ public class EjbDataverseEngine {
 
                 @Override
                 public boolean completeCommandSequence(Command command) {
-                    if (this.commandsCalled.isEmpty()){
-                        return true;
-                    }
-                    Command test = this.commandsCalled.get(0);
-                    if(!test.equals(command)){
-                        System.out.print("inner command");
-                        return true;
-                    }
-                    for (Command commandLoop: this.commandsCalled){
-                        commandLoop.onSuccess(ctxt, null);
-                    }
                     this.commandsCalled.clear();
                     return true;
                 }
