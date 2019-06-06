@@ -1,0 +1,11 @@
+{
+  "name": "dataverse-tests",
+  "version": "0.0.1",
+  "scripts": {
+    "cypress:dev": "cypress open",
+    "cypress:ci": "cypress run"
+  },
+  "devDependencies": {
+    "cypress": "3.3.1"
+  }
+}
