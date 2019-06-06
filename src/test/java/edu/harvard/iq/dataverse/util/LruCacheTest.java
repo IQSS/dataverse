@@ -1,9 +1,7 @@
 package edu.harvard.iq.dataverse.util;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -15,17 +13,6 @@ public class LruCacheTest {
     
     LruCache<Long, String> sut;
     
-    public LruCacheTest() {
-    }
-    
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
     @Before
     public void setUp() {
         sut = new LruCache<>();
@@ -33,6 +20,7 @@ public class LruCacheTest {
     
     @After
     public void tearDown() {
+        sut = null;
     }
 
     /**
