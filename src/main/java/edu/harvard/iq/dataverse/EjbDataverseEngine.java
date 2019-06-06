@@ -306,7 +306,9 @@ public class EjbDataverseEngine {
     }
     
     protected boolean myCompleteCommand(Command command, Object r, List<Command> called) {
-
+        if (called.isEmpty()){
+            return true;
+        }
         Command test = called.get(0);
         if (!test.equals(command)) {
             return true;
