@@ -12,7 +12,8 @@ public class URLValidatorTest {
 
     @Test
     public void testIsURLValid() {
-
+        assertEquals(true, URLValidator.isURLValid(null));
+        assertEquals(true, URLValidator.isURLValid(""));
         assertEquals(true, URLValidator.isURLValid("https://twitter.com/"));
 
         assertEquals(false, URLValidator.isURLValid("cnn.com"));
