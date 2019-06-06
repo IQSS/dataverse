@@ -23,11 +23,12 @@ public class DatasetTest {
     @Test
     public void testIsLockedFor() {
         Dataset sut = new Dataset();
-        assertFalse( sut.isLockedFor(DatasetLock.Reason.Ingest) );
+        assertFalse( "Initially verify that the dataset is not locked because data being ingested", sut.isLockedFor(DatasetLock.Reason.Ingest) );
+
         DatasetLock dl = new DatasetLock(DatasetLock.Reason.Ingest, MocksFactory.makeAuthenticatedUser("jane", "doe"));
         sut.addLock(dl);
-        assertTrue( sut.isLockedFor(DatasetLock.Reason.Ingest) );
-        assertFalse( sut.isLockedFor(DatasetLock.Reason.Workflow) );
+        assertTrue( "Verify that the dataset now has an ingest lock", sut.isLockedFor(DatasetLock.Reason.Ingest) );
+        assertFalse( "Verify that the dataset does not have a workflow lock", sut.isLockedFor(DatasetLock.Reason.Workflow) );
     }
     
     @Test
