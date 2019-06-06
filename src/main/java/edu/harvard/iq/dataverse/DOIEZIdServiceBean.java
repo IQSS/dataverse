@@ -3,8 +3,8 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.ucsb.nceas.ezid.EZIDException;
 import edu.ucsb.nceas.ezid.EZIDService;
-import edu.ucsb.nceas.ezid.EZIDServiceRequest;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +21,6 @@ import java.util.logging.Logger;
 public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
 
     EZIDService ezidService;
-    EZIDServiceRequest ezidServiceRequest;
     String baseURLString;
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dvn.core.index.DOIEZIdServiceBean");
 
@@ -29,23 +28,16 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
     private String USERNAME;
     private String PASSWORD;
 
-    public DOIEZIdServiceBean() {
-        logger.log(Level.FINE,"Constructor");
+    @PostConstruct
+    private void loginToEZId() {
         baseURLString = settingsService.getValueForKey(SettingsServiceBean.Key.DoiBaseUrlString);
         ezidService = new EZIDService(baseURLString);
         USERNAME = settingsService.getValueForKey(SettingsServiceBean.Key.DoiUsername);
         PASSWORD = settingsService.getValueForKey(SettingsServiceBean.Key.DoiPassword);
-        logger.log(Level.FINE, "Using baseURLString {0}", baseURLString);
         try {
             ezidService.login(USERNAME, PASSWORD);
-        } catch (EZIDException e) {
-            logger.log(Level.WARNING, "login failed ");
-            logger.log(Level.WARNING, "Exception String: {0}", e.toString());
-            logger.log(Level.WARNING, "localized message: {0}", e.getLocalizedMessage());
-            logger.log(Level.WARNING, "cause: ", e.getCause());
-            logger.log(Level.WARNING, "message {0}", e.getMessage());
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Other Error on ezidService.login(USERNAME, PASSWORD) - not EZIDException ", e.getMessage());
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
@@ -62,12 +54,12 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
         }
         return alreadyExists(dvObject.getGlobalId());
     }
-    
+
     @Override
     public boolean alreadyExists(GlobalId pid) throws Exception {
         logger.log(Level.FINE,"alreadyExists");
         try {
-            HashMap<String, String> result = ezidService.getMetadata(pid.asString());            
+            HashMap<String, String> result = ezidService.getMetadata(pid.asString());
             return result != null && !result.isEmpty();
             // TODO just check for HTTP status code 200/404, sadly the status code is swept under the carpet
         } catch (EZIDException e ){
@@ -157,7 +149,7 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
             throw e;
         }
     }
-        
+
     @Override
     public void deleteIdentifier(DvObject dvObject) throws Exception {
                 logger.log(Level.FINE,"deleteIdentifier");
@@ -212,7 +204,7 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
             }
         }
     }
-    
+
     @Override
     public boolean publicizeIdentifier(DvObject dvObject) {
         logger.log(Level.FINE,"publicizeIdentifier - dvObject");
@@ -220,7 +212,7 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
             try {
                 createIdentifier(dvObject);
             } catch (Throwable e){
-                return false; 
+                return false;
             }
         }
         return updateIdentifierStatus(dvObject, "public");
@@ -251,7 +243,7 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
             return false;
         }
     }
-    
+
     @Override
     public List<String> getProviderInformation(){
         ArrayList <String> providerInfo = new ArrayList<>();
@@ -291,11 +283,11 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
             throw e;
         }
     }
-    
-     /**
+
+    /**
      * Returns a HashMap with the same values as {@code map}. This can be either
      * {@code map} itself, or a new instance with the same values.
-     * 
+     *
      * This is needed as some of the internal APIs here require HashMap, but we
      * don't want the external APIs to use an implementation class.
      * @param <T>

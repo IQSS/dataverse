@@ -37,6 +37,7 @@ import net.handle.hdllib.ResolutionRequest;
 import net.handle.hdllib.Util;
 import org.apache.commons.lang.NotImplementedException;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.io.File;
@@ -69,10 +70,11 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     private static final Logger logger = Logger.getLogger(HandlenetServiceBean.class.getCanonicalName());
     
     private static final String HANDLE_PROTOCOL_TAG = "hdl";
-    int handlenetIndex = settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.HandleNetIndex);
-    
-    public HandlenetServiceBean() {
-        logger.log(Level.FINE,"Constructor");
+    private int handlenetIndex;
+
+    @PostConstruct
+    private void loadHandlenetIndex() {
+        handlenetIndex = settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.HandleNetIndex);
     }
 
     @Override
