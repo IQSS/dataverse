@@ -236,8 +236,6 @@ public class FileDownloadHelper implements java.io.Serializable {
              // Note that this method is only ever called from the file-download-popup - 
              // meaning we know for the fact that we DO want to save this 
              // guestbookResponse permanently in the database.
-             logger.info(guestbookResponse.getSelectedFileIds());
-             logger.info("Id: " + guestbookResponse.getDataFile().getId());
              if (guestbookResponse.getSelectedFileIds() != null) {
                  // this is a batch (multiple file) download.
                  // Although here's a chance that this is not really a batch download - i.e., 
