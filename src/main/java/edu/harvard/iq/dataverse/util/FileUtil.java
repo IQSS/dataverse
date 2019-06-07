@@ -298,7 +298,7 @@ public class FileUtil implements java.io.Serializable  {
                 // in order to capitalize all the unknown types that are not called
                 // out in MimeTypeFacets.properties
                 String typeClass = fileType.split("/")[0];
-                if ("Application".equals(typeClass)) {
+                if ("application".equalsIgnoreCase(typeClass)) {
                     return FILE_FACET_CLASS_OTHER;
                 }
                 return Character.toUpperCase(typeClass.charAt(0)) + typeClass.substring(1);
