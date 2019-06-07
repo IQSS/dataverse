@@ -142,14 +142,14 @@
                                                         </p:commandLink>
                                                     </li>
                                                 </ui:fragment>  
-                                                <ui:fragment rendered="#{dataverseSession.user.superuser and (FilePage.fileMetadata.dataFile.isTabularData() or FilePage.fileMetadata.dataFile.isIngestProblem())}">
+                                                <ui:fragment rendered="#{permissionsWrapper.canIssuePublishDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) and (FilePage.fileMetadata.dataFile.isTabularData() or FilePage.fileMetadata.dataFile.isIngestProblem())}">
                                                     <li>
                                                         <p:commandLink update="@form,:messagePanel,:fileForm:fileTitleFragment, :fileForm:topDatasetBlockFragment" action="#{FilePage.uningestFile()}">
                                                             <h:outputText value="#{bundle['file.uningest']}"/>
                                                         </p:commandLink>
                                                     </li>
                                                 </ui:fragment>
-                                                <ui:fragment rendered="#{dataverseSession.user.superuser and FilePage.isIngestable()}">
+                                                <ui:fragment rendered="#{permissionsWrapper.canIssuePublishDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) and FilePage.isIngestable()}">
                                                     <li>
                                                         <p:commandLink update="@form,:messagePanel" actionListener="#{FilePage.ingestFile()}">
                                                             <h:outputText value="#{bundle['file.ingest']}"/>

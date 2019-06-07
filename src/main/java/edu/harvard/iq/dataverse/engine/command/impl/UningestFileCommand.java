@@ -34,7 +34,7 @@ import javax.persistence.Query;
  * @author skraffmi
  * @author Leonid Andreev 
  */
-@RequiredPermissions({})
+@RequiredPermissions(Permission.PublishDataset)
 public class UningestFileCommand extends AbstractVoidCommand  {
 
     private static final Logger logger = Logger.getLogger(UningestFileCommand.class.getCanonicalName());
@@ -49,8 +49,8 @@ public class UningestFileCommand extends AbstractVoidCommand  {
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         
         // first check if  user is a superuser
-        if ( (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser() ) ) {      
-            throw new PermissionException("Uningest File can only be called by Superusers.",
+        if (!(getUser() instanceof AuthenticatedUser)) {      
+            throw new PermissionException("Uningest File can only be called by User with the PublishDataset permission.",
                 this,  Collections.singleton(Permission.EditDataset), uningest);                
         }
         

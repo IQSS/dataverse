@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -197,7 +198,7 @@ public class FilePage implements java.io.Serializable {
            // If this DatasetVersion is unpublished and permission is doesn't have permissions:
            //  > Go to the Login page
            //
-            // Check permisisons       
+            // Check permissions       
 
             
             Boolean authorized = (fileMetadata.getDatasetVersion().isReleased()) ||
@@ -370,6 +371,14 @@ public class FilePage implements java.io.Serializable {
     
     public String ingestFile() throws CommandException{
         
+        User u = session.getUser();
+        if(!u.isAuthenticated() ||  !(permissionService.permissionsFor(u, file).contains(Permission.PublishDataset))) {
+            //Shouldn't happen (choice not displayed for users who don't have the right permission), but check anyway
+            logger.warning("User: " + u.getIdentifier() + " tried to ingest a file");
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantIngestFileWarning"));
+            return null;
+        }
+
         DataFile dataFile = fileMetadata.getDataFile();
         editDataset = dataFile.getOwner();
         
@@ -426,6 +435,13 @@ public class FilePage implements java.io.Serializable {
         
         if (!file.isTabularData()) {
             if(file.isIngestProblem()) {
+                User u = session.getUser();
+                if(!u.isAuthenticated() ||  !(permissionService.permissionsFor(u, file).contains(Permission.PublishDataset))) {
+                    logger.warning("User: " + u.getIdentifier() + " tried to uningest a file");
+                    //Shouldn't happen (choice not displayed for users who don't have the right permission), but check anyway
+                    JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
+                    return null;
+                }
               file.setIngestDone();
               file.setIngestReport(null);
             } else {
