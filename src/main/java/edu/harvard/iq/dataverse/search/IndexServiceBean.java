@@ -579,6 +579,10 @@ public class IndexServiceBean {
 
                 IndexableDataset indexableDraftVersion = new IndexableDataset(latestVersion);
                 desiredCards.put(DatasetVersion.VersionState.DRAFT, true);
+                Set<Long> datafilesInDraftVersion = new HashSet<>();
+                for (FileMetadata fm : latestVersion.getFileMetadatas()) {
+                    datafilesInDraftVersion.add(fm.getDataFile().getId());
+                }
                 String indexDraftResult = addOrUpdateDataset(indexableDraftVersion);
                 results.append("The latest version is a working copy (latestVersionState: ")
                         .append(latestVersionStateString).append(") and will be indexed as ")
@@ -586,7 +590,7 @@ public class IndexServiceBean {
 
                 desiredCards.put(DatasetVersion.VersionState.RELEASED, true);
                 IndexableDataset indexableReleasedVersion = new IndexableDataset(releasedVersion);
-                String indexReleasedVersionResult = addOrUpdateDataset(indexableReleasedVersion);
+                String indexReleasedVersionResult = addOrUpdateDataset(indexableReleasedVersion, datafilesInDraftVersion);
                 results.append("There is a published version we will attempt to index. Result: ").append(indexReleasedVersionResult).append("\n");
 
                 desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, false);
@@ -657,6 +661,10 @@ public class IndexServiceBean {
     }
 
     private String addOrUpdateDataset(IndexableDataset indexableDataset) {
+        return addOrUpdateDataset(indexableDataset, null);
+    }
+    
+    private String addOrUpdateDataset(IndexableDataset indexableDataset, Set<Long> datafilesInDraftVersion) {
         IndexableDataset.DatasetState state = indexableDataset.getDatasetState();
         Dataset dataset = indexableDataset.getDatasetVersion().getDataset();
         logger.fine("adding or updating Solr document for dataset id " + dataset.getId());
@@ -1071,6 +1079,10 @@ public class IndexServiceBean {
                         datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
                         // datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
                         addDatasetReleaseDateToSolrDoc(datafileSolrInputDocument, dataset);
+                        // has this published file been deleted from the current draft version? 
+                        if (datafilesInDraftVersion != null && !datafilesInDraftVersion.contains(datafile.getId())) {
+                            datafileSolrInputDocument.addField(SearchFields.FILE_DELETED, true);
+                        }
                     } else if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().WORKING_COPY)) {
                         fileSolrDocId = solrDocIdentifierFile + fileEntityId + indexableDataset.getDatasetState().getSuffix();
                         datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
