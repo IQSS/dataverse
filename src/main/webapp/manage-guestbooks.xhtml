@@ -103,13 +103,13 @@
                                                    rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and !guestbook.enabled}"
                                                    action="#{manageGuestbooksPage.enableGuestbook(guestbook)}"
                                                    update="@form,:messagePanel"
-                                                   oncomplete="bind_tooltip_popover();"/>
+                                                   oncomplete="bind_bsui_components();"/>
                                     <p:commandLink styleClass="btn btn-default"
                                                    value="#{bundle['dataset.manageGuestbooks.tab.action.btn.disable']}"
                                                    rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and guestbook.enabled}"
                                                    action="#{manageGuestbooksPage.disableGuestbook(guestbook)}"
                                                    update="@form,:messagePanel"
-                                                   oncomplete="bind_tooltip_popover();"/>
+                                                   oncomplete="bind_bsui_components();"/>
                                     <div class="btn-group" role="group">
                                         <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                        action="#{manageGuestbooksPage.viewSelectedGuestbook(guestbook)}"

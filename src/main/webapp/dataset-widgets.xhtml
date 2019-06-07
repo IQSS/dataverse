@@ -43,7 +43,7 @@
                                             <h:graphicImage value="#{DatasetWidgetsPage.datasetThumbnail.base64image}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null}"/>
                                         </p>
                                         <span class="text-muted" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail == null}"><em>#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.default']}</em></span>
-                                        <p:commandButton update="@all" value="#{bundle.remove}" action="#{DatasetWidgetsPage.flagDatasetThumbnailForRemoval()}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null and DatasetWidgetsPage.datasetThumbnail.fromDataFile != true}" oncomplete="bind_bsui_components();"/>
+                                        <p:commandButton update="@form" value="#{bundle.remove}" action="#{DatasetWidgetsPage.flagDatasetThumbnailForRemoval()}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null and DatasetWidgetsPage.datasetThumbnail.fromDataFile != true}" oncomplete="bind_bsui_components();"/>
                                         <div jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail.fromDataFile == true}">
                                             <button class="btn btn-default" onclick="PF('confrmRemove').show()" type="button">
                                                 #{bundle.remove}
@@ -69,7 +69,7 @@
                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.uploadNew.title']}"></span>
                                             </label>
-                                            <p:fileUpload invalidFileMessage="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update="@all" 
+                                            <p:fileUpload invalidFileMessage="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update="@form" 
                                                           sizeLimit="#{systemConfig.uploadLogoSizeLimit}" 
                                                           oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false" 
                                                           fileUploadListener="#{DatasetWidgetsPage.handleImageFileUpload}" label="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload']}"/>

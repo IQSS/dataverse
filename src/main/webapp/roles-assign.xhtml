@@ -6,7 +6,7 @@
     xmlns:jsf="http://xmlns.jcp.org/jsf"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <p:dialog id="userGroupDialog" styleClass="largePopUp" header="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.header']}" widgetVar="userGroupsForm" modal="true">
-        <p:focus for="userGroupNameAssign"/>
+        <p:focus context="userGroupDialog"/>
         <p:fragment id="assignRoleMessages">
             <div class="container messagePanel">
                 <iqbs:messages collapsible="true" />

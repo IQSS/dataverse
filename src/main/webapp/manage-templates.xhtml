@@ -88,20 +88,20 @@
                                                rendered="#{manageTemplatesPage.dataverse.defaultTemplate != template}"
                                                actionListener="#{manageTemplatesPage.makeDefault(template)}"
                                                update="@form,:messagePanel"
-                                               oncomplete="bind_tooltip_popover();bind_bsui_components();"/>
+                                               oncomplete="bind_bsui_components();"/>
                                 <p:commandLink styleClass="btn btn-default"
                                                value="#{bundle['dataset.manageTemplates.tab.action.btn.default']}"
                                                rendered="#{manageTemplatesPage.dataverse.defaultTemplate == template}"
                                                actionListener="#{manageTemplatesPage.unselectDefault(template)}"
                                                update="@form,:messagePanel"
-                                               oncomplete="bind_tooltip_popover();bind_bsui_components();">
+                                               oncomplete="bind_bsui_components();">
                                     <span class="glyphicon glyphicon-eye-open"></span>
                                 </p:commandLink>
                                 <div class="btn-group" role="group">
                                     <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    title="#{bundle['dataset.manageTemplates.tab.action.btn.view']}"
                                                    action="#{manageTemplatesPage.viewSelectedTemplate(template)}"
-                                                   oncomplete="PF('viewTemplate').show();bind_tooltip_popover();bind_bsui_components();"
+                                                   oncomplete="PF('viewTemplate').show();bind_bsui_components();"
                                                    update=":manageTemplatesForm">
                                         <span class="glyphicon glyphicon-eye-open"></span>
                                     </p:commandLink>
@@ -109,7 +109,7 @@
                                                    title="#{bundle['dataset.manageTemplates.tab.action.btn.copy']}"
                                                    action="#{manageTemplatesPage.cloneTemplate(template)}"
                                                    update="@form"
-                                                   oncomplete="bind_tooltip_popover();bind_bsui_components();">
+                                                   oncomplete="bind_bsui_components();">
                                         <span class="glyphicon glyphicon-duplicate"></span>
                                     </p:commandLink>
                                     <div class="btn-group" jsf:rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}">
@@ -134,7 +134,7 @@
                                                    update="@form,:messagePanel"
                                                    action="#{manageTemplatesPage.setSelectedTemplate(template)}"
                                                    rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}"
-                                                   oncomplete="PF('deleteConfirmation').show();bind_tooltip_popover();bind_bsui_components();">
+                                                   oncomplete="PF('deleteConfirmation').show();bind_bsui_components();">
                                         <span class="glyphicon glyphicon-trash"></span>
                                     </p:commandLink>
                                 </div>

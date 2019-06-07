@@ -69,7 +69,7 @@
                                                     <h:outputText value="#{access.key.email}" rendered="#{!empty access.key.email}"/>
                                                 </p:column>
                                                 <p:column width="10%" class="text-center" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.files']}">
-                                                    <p:commandLink type="button" id="viewUserGroups"
+                                                    <p:commandLink id="viewUserGroups"
                                                                    actionListener="#{manageFilePermissionsPage.initAssignDialogForFileRequester(access.key)}"
                                                                    update=":#{p:resolveClientId('rolesPermissionsForm:assignDialog', view)}"
                                                                    oncomplete="PF('assignWidget').show();">
@@ -180,7 +180,8 @@
                                             <h:outputText value="#{bundle['dataverse.permissionsFiles.files.public']}" rendered="#{fileVersion eq dsLatestVersion and !latestVersionRestricted}"/>
                                         </p:column>
                                         <p:column width="18%" class="text-center" headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.roleAssignees']}">
-                                            <p:commandLink type="button" id="viewUserGroups" rendered="#{fileEntry.value.size() > 0}"
+                                            <p:commandLink id="viewUserGroups" styleClass="btn btn-default"
+                                                           rendered="#{fileEntry.value.size() > 0}"
                                                            actionListener="#{manageFilePermissionsPage.initViewRemoveDialogByFile(fileEntry.key, fileEntry.value)}"
                                                            update=":#{p:resolveClientId('rolesPermissionsForm:viewRemoveDialog', view)}"
                                                            oncomplete="PF('viewRemoveWidget').show();">

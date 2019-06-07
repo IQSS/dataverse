@@ -202,6 +202,7 @@
                     <!-- Users/Groups Popup -->
                     <!-- Defined this way as we may reuse the include not in a popup -->
                     <p:dialog id="accessDialog" styleClass="largePopUp" header="#{bundle['dataverse.permissions.accessDialog.header']}" widgetVar="accessForm" modal="true">
+                        <p:focus context="accessDialog"/>
                         <ui:include src="permissions-configure.xhtml"/>
                         <div class="button-block">
                             <p:commandButton value="#{bundle['saveChanges']}" styleClass="btn btn-default"

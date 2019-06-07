@@ -6,7 +6,7 @@
     <p:dialog id="rolesPermissionsDialog" header="#{bundle['dataverse.permissions.roles.header']}" widgetVar="roleForm" modal="true" styleClass="largePopUp"> 
         <p:panel id="editRolePanel" styleClass="panelLayoutBlock" widgetVar="editRole">
             <p:panel id="editRolePropertiesPanel" styleClass="panelLayoutBlock" widgetVar="roleProperties">
-                <p:focus for="roleName"/>
+                <p:focus context="rolesPermissionsDialog"/>
                 <div class="row form-horizontal">
                     <div class="col-sm-6 form-group">
                         <label class="control-label" for="roleName">

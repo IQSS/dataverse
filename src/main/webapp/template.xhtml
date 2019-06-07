@@ -99,7 +99,6 @@
                                 <ui:param name="metadataBlocks" value="#{!empty TemplatePage.editMode ? TemplatePage.template.metadataBlocksForEdit.entrySet().toArray() : TemplatePage.template.metadataBlocksForView.entrySet().toArray()}"/>   
                             </ui:include>  
                         </ui:fragment>
-                        
                         <ui:fragment rendered="#{TemplatePage.editMode == 'LICENSE' or TemplatePage.editMode == 'LICENSEADD'}">
                             <ui:include src="dataset-license-terms.xhtml" >
                                 <ui:param name="datasetPage" value="false"/>
@@ -108,8 +107,7 @@
                                 <ui:param name="termsOfUseAndAccess" value="#{TemplatePage.template.termsOfUseAndAccess}"/>   
                             </ui:include> 
                         </ui:fragment>
-
-                        </ui:fragment>
+                    </ui:fragment>
                     <!-- Create/Save Dataset Button Panel -->
                     <div class="button-block" jsf:rendered="#{!empty TemplatePage.editMode}">
                         <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save('Terms')}" update="@all"

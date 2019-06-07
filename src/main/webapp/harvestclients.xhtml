@@ -449,23 +449,21 @@
 
                                 <div class="form-group">
                                     <div class="col-sm-6 col-sm-offset-3 button-block">
-                                        <p:commandLink type="button"
-                                                        id="createStepThreePrevious"
+                                        <p:commandLink id="createStepThreePrevious"
                                                         styleClass="btn btn-default"
                                                         update=":harvestingClientsForm:newHarvestingClientDialog"
                                                         oncomplete="PF('newHarvestingClientForm').show();bind_bsui_components();"
                                                         action="#{harvestingClientsPage.backToStepTwo()}">
                                             <span class="glyphicon glyphicon-menu-left"/> #{bundle.previous}
                                         </p:commandLink>
-                                        <p:commandLink type="button"
-                                                        id="createStepThreeNext"
+                                        <p:commandLink id="createStepThreeNext"
                                                         styleClass="btn btn-default"
                                                         update=":harvestingClientsForm:newHarvestingClientDialog"
                                                         oncomplete="PF('newHarvestingClientForm').show();bind_bsui_components();"
                                                         action="#{harvestingClientsPage.goToStepFour()}">
                                             <span class="glyphicon glyphicon-menu-right"/> #{bundle.next}
                                         </p:commandLink>
-                                        <button type="button" class="btn btn-link" onclick="PF('newHarvestingClientForm').hide()" value="#{bundle.cancel}">
+                                        <button class="btn btn-link" onclick="PF('newHarvestingClientForm').hide()" type="button">
                                             #{bundle.cancel}
                                         </button>
                                     </div>

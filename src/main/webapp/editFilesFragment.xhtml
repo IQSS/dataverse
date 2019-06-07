@@ -549,6 +549,7 @@
         </div>
     </p:dialog>
     <p:dialog id="editFileAccessPopup" header="#{bundle['dataset.access.accessHeader']}" widgetVar="editFileAccessPopup" modal="true">
+        <p:focus context="editFileAccessPopup"/>
         <div class="form-horizontal">
             <div class="form-group">
                 <label for="metadata_TermsAccess" class="col-sm-3 control-label">
@@ -581,7 +582,7 @@
         </div>
     </p:dialog>
     <p:dialog id="fileAdvancedOptions" styleClass="dialog-submenu smallPopUp" header="#{bundle['file.advancedIngestOptions']}" widgetVar="fileAdvancedOptions" modal="true">
-        <p:focus for="spssSavEncodingLanguage"/>
+        <p:focus context="fileAdvancedOptions"/>
         <div class="form-horizontal">
             <!-- select text encoding, for SPSS-SAV (and, and possibly, other) (this option is only available during ingest) data files; not implemented yet -->
             <div class="form-group" jsf:rendered="#{!(empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup) and (empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.id) and dataFileServiceBean.isSpssSavFile(EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.dataFile)}">
@@ -764,7 +765,7 @@
     </p:dialog>
     <!-- end of "advanced options" dialogue -->
     <p:dialog id="fileSetThumbnail" styleClass="smallPopUp" header="#{bundle['file.setThumbnail.header']}" widgetVar="fileSetThumbnail" modal="true">
-        <p:focus for="datasetThumbnailImage"/>
+        <p:focus context="fileSetThumbnail"/>
         <div class="form-horizontal">
             <div class="form-group">
                 <label for="datasetThumbnailImage" class="col-sm-4 control-label">
@@ -798,7 +799,7 @@
     </p:dialog>
     <ui:include rendered="#{systemConfig.provCollectionEnabled}" src="provenance-popups-fragment.xhtml"/>
     <p:dialog id="editFileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="editFileTagsPopup" modal="true">
-        <p:focus for="fileTagsMenu"/>
+        <p:focus context="editFileTagsPopup"/>
         <p class="help-block">#{bundle['file.editTagsDialog.tip']}</p>
         <div class="form-horizontal" jsf:rendered="#{!(empty EditDatafilesPage.fileMetadataSelectedForTagsPopup)}">
             <div class="form-group text-left">

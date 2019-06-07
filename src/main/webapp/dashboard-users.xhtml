@@ -4,7 +4,6 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
-      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
     <h:head>
@@ -101,8 +100,8 @@
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
-                            <p:commandButton tabindex="1" styleClass="btn btn-default" value="#{bundle.yes}" action="#{DashboardUsersPage.saveSuperuserStatus()}" update="userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
-                            <p:commandButton tabindex="1" styleClass="btn btn-link" value="#{bundle.no}" action="#{DashboardUsersPage.cancelSuperuserStatusChange()}" update=":dashboardUsersForm:userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.yes}" action="#{DashboardUsersPage.saveSuperuserStatus()}" update="userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
+                            <p:commandButton styleClass="btn btn-link" value="#{bundle.no}" action="#{DashboardUsersPage.cancelSuperuserStatusChange()}" update=":dashboardUsersForm:userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
                         </div>
                     </p:dialog>
                     <p:dialog id="removeRolesConfirm" header="#{bundle['dashboard.list_users.tbl_header.roles.removeAll.header']}" widgetVar="removeRolesConfirm" modal="true" closable="false">
