@@ -62,6 +62,10 @@
                     <f:viewParam name="showIngestSuccess" value="#{DatasetPage.showIngestSuccess}"/>
                     <f:viewParam name="fileSortField" value="#{DatasetPage.fileSortField}"/>
                     <f:viewParam name="fileSortOrder" value="#{DatasetPage.fileSortOrder}"/>
+                    <f:viewParam name="q" value="#{DatasetPage.fileLabelSearchTerm}"/>
+                    <f:viewParam name="fileTypeGroupFacet" value="#{DatasetPage.fileTypeFacet}"/>
+                    <f:viewParam name="fileAccess" value="#{DatasetPage.fileAccessFacet}"/>
+                    <f:viewParam name="fileTag" value="#{DatasetPage.fileTagsFacet}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetPage.dataset)}"/>
