@@ -37,9 +37,9 @@
                         <div class="col-sm-6 col-sm-offset-3">
                             <div class="input-group">
                                 <input jsf:id="search404" type="text" class="form-control" size="28" value="" placeholder="#{bundle['header.search.title']}"
-                                       style="font-size:1em;" onkeypress="if (event.keyCode == 13) {window.location = '/?q=' + document.getElementById('search404').value; return false;}"/>
+                                       style="font-size:1em;" onkeypress="if (event.keyCode == 13) {window.location = '/dataverse/#{dataverseServiceBean.findRootDataverse().alias}/?q=' + this.value; return false;}"/>
                                 <span class="input-group-btn">
-                                    <button id="search404button" class="btn btn-default" onclick="window.location = '/?q=' + document.getElementById('search404').value; return false;" type="button">
+                                    <button id="search404button" class="btn btn-default" onclick="window.location = '/dataverse/#{dataverseServiceBean.findRootDataverse().alias}/?q=' + this.parentNode.previousElementSibling.value; return false;" type="button">
                                         <span class="glyphicon glyphicon-search"/> #{bundle.find}
                                     </button>
                                 </span>
