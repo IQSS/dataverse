@@ -46,7 +46,7 @@ if (exists($ENV{'MY_POD_NAME'}))
 my $jq_exec_path = "";
 my $psql_exec_path = "";
 my $cwd;
-my $WARFILE_LOCATION = "dataverse.war"; 
+my $WARFILE_LOCATION = "dataverse-webapp.war"; 
 
 
 my @CONFIG_VARIABLES;
@@ -332,9 +332,9 @@ unless ($postgresonly)
     print "\nChecking if the application .war file is available... ";
 
 # if this installer section is running out of the installer zip bundle directory,
-# the war file will be sitting right here, named "dataverse.war": 
+# the war file will be sitting right here, named "dataverse-webapp.war": 
 
-    $WARFILE_LOCATION = "dataverse.war"; 
+    $WARFILE_LOCATION = "dataverse-webapp.war"; 
 
 # but if it's not here, this is probably a personal development 
 # setup, so their build should be up in their source tree:
@@ -358,7 +358,7 @@ unless ($postgresonly)
 	    close DPF;
 	    
 	    if ($DATAVERSE_VERSION ne "") {
-		$WARFILE_LOCATION = "../../target/dataverse-" . $DATAVERSE_VERSION . ".war";
+		$WARFILE_LOCATION = "../../dataverse-webapp/target/dataverse-webapp-" . $DATAVERSE_VERSION . ".war";
 	    }
 	}
     }

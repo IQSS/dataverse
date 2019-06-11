@@ -1,0 +1,15 @@
+{
+  "name": "Scientific Research",
+  "alias": "science",
+  "dataverseContacts": [
+    {
+      "contactEmail": "pi@example.edu"
+    },
+    {
+      "contactEmail": "student@example.edu"
+    }
+  ],
+  "affiliation": "Scientific Research University",
+  "description": "We do all the science.",
+  "dataverseType": "LABORATORY"
+}
