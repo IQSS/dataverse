@@ -42,14 +42,14 @@
                     </li>
                     <c:forEach begin="#{Math:max(1,SearchIncludeFragment.page-Math:max(2,SearchIncludeFragment.page-SearchIncludeFragment.totalPages+4))}"
                                end="#{Math:min(SearchIncludeFragment.totalPages,SearchIncludeFragment.page+Math:max(2,5-SearchIncludeFragment.page))}"
-                               varStatus="pageStatus">
-                        <li class="#{SearchIncludeFragment.page == pageStatus.index ? 'active' : ''}">
+                               var="pIter">
+                        <li class="#{SearchIncludeFragment.page == pIter ? 'active' : ''}">
                             <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
-                                <h:outputText value="#{pageStatus.index}">
+                                <h:outputText value="#{pIter}">
                                     <f:convertNumber pattern="###,###" />
                                 </h:outputText>
-                                <span class="#{SearchIncludeFragment.page == pageStatus.index ? 'sr-only' : ''}">
-                                    <h:outputText value="#{SearchIncludeFragment.page == pageStatus.index ? bundle['dataverse.results.paginator.current'] : ''}"/>
+                                <span class="#{SearchIncludeFragment.page == pIter ? 'sr-only' : ''}">
+                                    <h:outputText value="#{SearchIncludeFragment.page == pIter ? bundle['dataverse.results.paginator.current'] : ''}"/>
                                 </span>
                                 <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                 <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -58,7 +58,7 @@
                                 <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                 <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                                 <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-                                <f:param name="page" value="#{pageStatus.index}"/>
+                                <f:param name="page" value="${pIter}"/>
                             </h:outputLink>
                         </li>
                     </c:forEach>
