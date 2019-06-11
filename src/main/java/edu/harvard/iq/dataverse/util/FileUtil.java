@@ -938,7 +938,7 @@ public class FileUtil implements java.io.Serializable  {
             }
             
             // Delete the temp directory used for unzipping
-            // The try-catch is due to error encounterd in using NFS for stocking file,
+            // The try-catch is due to error encountered in using NFS for stocking file,
             // cf. https://github.com/IQSS/dataverse/issues/5909
             try {
             	FileUtils.deleteDirectory(rezipFolder);
