@@ -1015,7 +1015,14 @@ public class FileUtil implements java.io.Serializable  {
             }
             
             // Delete the temp directory used for unzipping
-            FileUtils.deleteDirectory(rezipFolder);
+            // The try-catch is due to error encountered in using NFS for stocking file,
+            // cf. https://github.com/IQSS/dataverse/issues/5909
+            try {
+            	FileUtils.deleteDirectory(rezipFolder);
+            } catch (IOException ioex) {
+                // do nothing - it's a tempo folder.
+                logger.warning("Could not remove temp folder, error message : " + ioex.getMessage());
+            }
             
             if (datafiles.size() > 0) {
                 // remove the uploaded zip file:
