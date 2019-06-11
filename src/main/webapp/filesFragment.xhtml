@@ -370,7 +370,7 @@
                         </span>
 
                         <!-- Default Icon -->
-                        <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !DatasetPage.isThumbnailAvailable(fileMetadata)) or (empty fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType))}"/>
+                        <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !DatasetPage.isThumbnailAvailable(fileMetadata)) or (empty fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType))}"/>
 
                         <!-- the "temp preview" is for new, not yet saved files; these should never appear on this page - as we now have the editfilespage for that, correct? -->
                         <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.storageIdentifier and dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType)}">
@@ -631,7 +631,7 @@
 
         <p:treeNode type="customFileNode">
             <!-- For a file, the payload data ("node") is the corresponding FileMetadata object: -->
-            <span class="icon-#{dataFileServiceBean.getFileClass(node.dataFile)} text-muted" />
+            <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(node.dataFile)} text-muted" />
             
             <!-- same approach to rendering file page links, as in the file table above: -->
             <!-- if the file has the global id, we use that; if not, we use the database id in the url. -->

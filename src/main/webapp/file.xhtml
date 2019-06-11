@@ -198,7 +198,7 @@
                         <div id="file-preview-icon-block" class="col-xs-4">
                             <div id="border-block">
                                 <div id="preview-square">
-                                    <span class="icon-#{dataFileServiceBean.getFileClass(FilePage.fileMetadata.dataFile)} text-muted" jsf:rendered="#{!FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
+                                    <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(FilePage.fileMetadata.dataFile)} text-muted" jsf:rendered="#{!FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
                                     <p:graphicImage styleClass="img-responsive" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" rendered="#{FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
                                 </div>
                             </div>
