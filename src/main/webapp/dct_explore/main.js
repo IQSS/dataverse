@@ -218,7 +218,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ChartComponent = /** @class */ (function () {
     function ChartComponent() {
-        this.color_array = [
+        this.colorArray = [
             '#3366cc',
             '#dc3912',
             '#ff9900',
@@ -251,7 +251,7 @@ var ChartComponent = /** @class */ (function () {
             '#0c5922',
             '#743411'
         ];
-        this.max_string_length = 13;
+        this.maxStringLength = 13;
     }
     ChartComponent.prototype.ngOnInit = function () {
         this.createChart(this.data);
@@ -262,11 +262,11 @@ var ChartComponent = /** @class */ (function () {
         data = [];
         console.log(_data);
         for (var i = 0; i < _data.length; i++) {
-            console.log('chart: data.length ' + _data.length);
+            //console.log('chart: data.length ' + _data.length);
             var freq = null;
-            var freq_weight = null;
+            var freqWeight = null;
             if (typeof _data[i].catStat !== 'undefined') {
-                console.log(_data[i].catStat);
+                //console.log(_data[i].catStat);
                 for (var j = 0; j < _data[i].catStat.length; j++) {
                     var sub_obj = _data[i].catStat[j];
                     if (sub_obj['@type'] === 'freq' && !sub_obj['@wgtd']) {
@@ -274,7 +274,7 @@ var ChartComponent = /** @class */ (function () {
                     }
                     else {
                         if (sub_obj['@type'] === 'freq' && sub_obj['@wgtd'] && sub_obj['#text'] !== '') {
-                            freq_weight = sub_obj['#text'];
+                            freqWeight = sub_obj['#text'];
                         }
                     }
                 }
@@ -284,13 +284,13 @@ var ChartComponent = /** @class */ (function () {
                 }
             }
             var short_name = _data[i].labl['#text'];
-            if (short_name.length > this.max_string_length) {
-                short_name = short_name.substring(0, this.max_string_length) + '...';
+            if (short_name.length > this.maxStringLength) {
+                short_name = short_name.substring(0, this.maxStringLength) + '...';
             }
             short_name = short_name;
             // switching to weighted frequencies
-            if (freq_weight != null) {
-                freq = freq_weight;
+            if (freqWeight != null) {
+                freq = freqWeight;
             }
             data.push({
                 name: short_name,
@@ -361,8 +361,8 @@ var ChartComponent = /** @class */ (function () {
     };
     ChartComponent.prototype.getColor = function (num) {
         var color;
-        if (num < this.color_array.length) {
-            color = this.color_array[num];
+        if (num < this.colorArray.length) {
+            color = this.colorArray[num];
         }
         else {
             color = this.getRandomColor();
@@ -492,7 +492,7 @@ module.exports = ".interface-header {\n  padding-top: 5px;\n}\n\n.mat-toolbar-ro
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"loading-details\" *ngIf=\"!ddi_loaded\" class=\"row content-area\">\n  <mat-progress-spinner mode=\"indeterminate\"></mat-progress-spinner>\n</div>\n\n<ng-container class=\"interface-container\">\n\n  <mat-toolbar class=\"interface-header\">\n    <mat-toolbar-row>\n      <h1 class=\"headertext title\">{{title}}</h1>\n      <span class=\"fill-space\"></span>\n      <span class=\"actionbuttons\">\n        <button mat-icon-button color=\"accent\" (click)=\"onSave()\" i18n-matTooltip matTooltip=\"Download\">\n          <mat-icon i18n-aria-label aria-label=\"Download\">get_app</mat-icon>\n        </button>\n        <span i18n>Download</span>\n      </span>\n      <span class=\"actionbuttons\">\n        <button mat-icon-button color=\"accent\" (click)=\"sendToDV()\" i18n-matTooltip matTooltip=\"Save\">\n          <mat-icon i18n-aria-label aria-label=\"Save\">save</mat-icon>\n        </button>\n        <span i18n>Save</span>\n      </span>\n    </mat-toolbar-row>\n    <mat-toolbar-row class=\"headertext citation\">\n      <span>{{firstCitat}}<a href=\"{{doi}}\">{{doi}}</a>{{secondCitat}}</span>\n    </mat-toolbar-row>\n    <mat-toolbar-row class=\"headertext\">\n      {{filename}}\n    </mat-toolbar-row>\n  </mat-toolbar>\n\n  <mat-sidenav-container>\n    <mat-sidenav mode=\"side\" opened class=\"side_nav\" #scrollMe>\n      <app-var-group [_variable_groups]=\"_variable_groups\" (subSetRows)=\"broadcastSubSetRows($event)\" (selectGroup)=\"broadcastSelect($event)\" (draggedGroup)=\"broadcastDraggedGroup($event)\" (disableSelectGroup)=\"broadcastDeselectGroup()\"\n      (parentScrollNav)=\"scrollNav()\"\n      ></app-var-group>\n    </mat-sidenav>\n    <mat-sidenav-content>\n      <app-var [_variable_groups]=\"_variable_groups\"></app-var>\n    </mat-sidenav-content>\n  </mat-sidenav-container>\n\n</ng-container>\n"
+module.exports = "<div id=\"loading-details\" *ngIf=\"!ddiLoaded\" class=\"row content-area\">\n  <mat-progress-spinner mode=\"indeterminate\"></mat-progress-spinner>\n</div>\n\n<ng-container class=\"interface-container\">\n\n  <mat-toolbar class=\"interface-header\">\n    <mat-toolbar-row>\n      <h1 class=\"headertext title\">{{title}}</h1>\n      <span class=\"fill-space\"></span>\n      <span class=\"actionbuttons\">\n        <button mat-icon-button color=\"accent\" (click)=\"onSave()\" i18n-matTooltip matTooltip=\"Download\">\n          <mat-icon i18n-aria-label aria-label=\"Download\">get_app</mat-icon>\n        </button>\n        <span i18n>Download</span>\n      </span>\n      <span class=\"actionbuttons\">\n        <button mat-icon-button color=\"accent\" (click)=\"sendToDV()\" i18n-matTooltip matTooltip=\"Save\">\n          <mat-icon i18n-aria-label aria-label=\"Save\">save</mat-icon>\n        </button>\n        <span i18n>Save</span>\n      </span>\n    </mat-toolbar-row>\n    <mat-toolbar-row class=\"headertext citation\">\n      <span>{{firstCitat}}<a href=\"{{doi}}\">{{doi}}</a>{{secondCitat}}</span>\n    </mat-toolbar-row>\n    <mat-toolbar-row class=\"headertext\">\n      {{filename}}\n    </mat-toolbar-row>\n  </mat-toolbar>\n\n  <mat-sidenav-container>\n    <mat-sidenav mode=\"side\" opened class=\"side_nav\" #scrollMe>\n      <app-var-group [variableGroups]=\"variableGroups\" (subSetRows)=\"broadcastSubSetRows($event)\" (selectGroup)=\"broadcastSelect($event)\" (draggedGroup)=\"broadcastDraggedGroup($event)\" (disableSelectGroup)=\"broadcastDeselectGroup()\"\n      (parentScrollNav)=\"scrollNav()\"\n      ></app-var-group>\n    </mat-sidenav>\n    <mat-sidenav-content>\n      <app-var [variableGroups]=\"variableGroups\"></app-var>\n    </mat-sidenav-content>\n  </mat-sidenav-container>\n\n</ng-container>\n"
 
 /***/ }),
 
@@ -526,35 +526,35 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var InterfaceComponent = /** @class */ (function () {
-    function InterfaceComponent(ddiService) {
+    function InterfaceComponent(ddiService, snackBar) {
         this.ddiService = ddiService;
+        this.snackBar = snackBar;
         this.data = null; // store the xml
-        this.ddi_loaded = false; // show the loading
-        this._variable_groups = []; // store the variables in an array display
+        this.ddiLoaded = false; // show the loading
+        this.variableGroups = []; // store the variables in an array display
         this._variables = []; // store the variables to be broadcast to child
         this._id = null; // file id
-        this._metaId = null;
-        this._base_url = null;
+        this.metaId = null;
+        this.baseUrl = null;
     }
     InterfaceComponent.prototype.ngOnInit = function () {
         var uri = null;
         uri = this.ddiService.getParameterByName('uri');
         this._id = this.ddiService.getParameterByName('dfId');
-        this._metaId = this.ddiService.getParameterByName('fileMetadataId');
-        console.log(this._metaId);
-        this._base_url = this.ddiService.getBaseUrl();
+        this.metaId = this.ddiService.getParameterByName('fileMetadataId');
+        this.baseUrl = this.ddiService.getBaseUrl();
         if (!uri && this._id != null) {
-            uri = this._base_url + '/api/access/datafile/' + this._id + '/metadata/ddi';
-            if (this._metaId != null) {
-                uri = uri + '?fileMetadataId=' + this._metaId;
+            uri = this.baseUrl + '/api/access/datafile/' + this._id + '/metadata/ddi';
+            if (this.metaId != null) {
+                uri = uri + '?fileMetadataId=' + this.metaId;
             }
         }
         else {
             if (!uri) {
                 // Just for testing purposes
-                //uri = this._base_url + '/assets/FOCN_SPSS_20150525_FORMATTED-ddi.xml';
-                uri = this._base_url + '/assets/test_groups.xml';
-                // uri = this._base_url + '/assets/arg-drones-E-2014-can.xml';
+                //uri = this.baseUrl + '/assets/FOCN_SPSS_20150525_FORMATTED-ddi.xml';
+                uri = this.baseUrl + '/assets/test_groups.xml';
+                // uri = this.baseUrl + '/assets/arg-drones-E-2014-can.xml';
             }
         }
         this.getDDI(uri);
@@ -601,7 +601,7 @@ var InterfaceComponent = /** @class */ (function () {
         for (var _i = 0, elm_1 = elm; _i < elm_1.length; _i++) {
             var elmIn = elm_1[_i];
             var obj = JSON.parse(Object(_assets_js_xml2json__WEBPACK_IMPORTED_MODULE_3__["xml2json"])(elmIn, ''));
-            this._variable_groups.push(obj);
+            this.variableGroups.push(obj);
         }
     };
     InterfaceComponent.prototype.showVars = function () {
@@ -668,7 +668,7 @@ var InterfaceComponent = /** @class */ (function () {
         this.child.disableSelectGroup();
     };
     InterfaceComponent.prototype.showDDI = function () {
-        this.ddi_loaded = true;
+        this.ddiLoaded = true;
     };
     // Create the XML File
     InterfaceComponent.prototype.makeXML = function () {
@@ -676,7 +676,7 @@ var InterfaceComponent = /** @class */ (function () {
         doc.startDocument();
         doc.startElement('dataDscr');
         // add groups
-        for (var _i = 0, _a = this._variable_groups; _i < _a.length; _i++) {
+        for (var _i = 0, _a = this.variableGroups; _i < _a.length; _i++) {
             var group = _a[_i];
             if (group.varGrp.labl !== null && group.varGrp.labl.trim() !== '') {
                 doc.startElement('varGrp');
@@ -835,10 +835,11 @@ var InterfaceComponent = /** @class */ (function () {
     };
     // Send the XML to Dataverse
     InterfaceComponent.prototype.sendToDV = function () {
+        var _this = this;
         var key = this.ddiService.getParameterByName('key');
         var doc = this.makeXML();
         if (key !== null) {
-            var url = this._base_url + '/api/edit/' + this._id; // + "/" + this._metaId;
+            var url = this.baseUrl + '/api/edit/' + this._id; // + "/" + this.metaId;
             this.ddiService
                 .putDDI(url, doc.toString(), key)
                 .subscribe(function (data) {
@@ -847,7 +848,12 @@ var InterfaceComponent = /** @class */ (function () {
             }, function (error) {
                 console.log('Error');
                 console.log(error);
-            }, function () { return console.log('Ok'); });
+            }, function () {
+                console.log('Ok');
+                _this.snackBar.open('Saved to Dataverse', '', {
+                    duration: 1000
+                });
+            });
         }
         else {
             console.log('API Key missing');
@@ -871,7 +877,8 @@ var InterfaceComponent = /** @class */ (function () {
             imports: [_angular_material__WEBPACK_IMPORTED_MODULE_4__["MatButtonModule"]],
             exports: [_angular_material__WEBPACK_IMPORTED_MODULE_4__["MatButtonModule"]]
         }),
-        tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [_ddi_service__WEBPACK_IMPORTED_MODULE_2__["DdiService"]])
+        tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [_ddi_service__WEBPACK_IMPORTED_MODULE_2__["DdiService"],
+            _angular_material__WEBPACK_IMPORTED_MODULE_4__["MatSnackBar"]])
     ], InterfaceComponent);
     return InterfaceComponent;
 }());
@@ -898,7 +905,7 @@ module.exports = ".text-inside-grid > div {\n  justify-content: flex-start !impo
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div mat-dialog-content >\n  <form [formGroup]=\"form\" (ngSubmit)=\"submit(form)\">\n    <h1 mat-dialog-title i18n>Variable Information</h1>\n\n    <mat-dialog-content>\n      <mat-grid-list class=\"table-controls\" cols=\"2\" rowHeight=\"62\">\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <mat-form-field>\n            <input matInput formControlName=\"id\" i18n-placeholder placeholder=\"ID\" value=\"{{data['@ID']}}\"  >\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <mat-form-field>\n            <input matInput formControlName=\"name\" i18n-placeholder placeholder=\"Name\" value=\"{{data['@name']}}\" >\n          </mat-form-field>\n        </mat-grid-tile>\n\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n             <input matInput formControlName=\"labl\" i18n-placeholder placeholder=\"Label\" value=\"{{data.labl['#text']}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"qstnLit\" i18n-placeholder placeholder=\"Literal Question\" value=\"{{data.qstn.qstnLit}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"ivuInstr\" i18n-placeholder placeholder=\"Interviewer Instructions\" value=\"{{data.qstn.ivuInstr}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"postQTxt\" i18n-placeholder placeholder=\"Post Question\" value=\"{{data.qstn.postQTxt}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"universe\" i18n-placeholder placeholder=\"Universe\" value=\"{{data.universe['#text']}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"2\">\n          <mat-form-field class=\"field_width\" >\n            <textarea matInput formControlName=\"notes\" class=\"textarea_height\" i18n-placeholder placeholder=\"Notes\" value=\"{{data.notes['#cdata']}}\" ></textarea>\n          </mat-form-field>\n        </mat-grid-tile>\n        <!--Group chip list-->\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\" class=\"field_width\">\n          <mat-form-field class=\"field_width\">\n            <mat-select formControlName=\"_groups\" [(value)]=\"data['_groups']\"  i18n-placeholder placeholder=\"Group\" multiple=\"true\">\n              <mat-option *ngFor=\"let g of _variable_groups\" [value]=\"g.varGrp['@ID']\" >\n                {{ g.varGrp.labl}}\n              </mat-option>\n            </mat-select>\n          </mat-form-field>\n        </mat-grid-tile>\n\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <mat-form-field>\n            <mat-select formControlName=\"wgt_var\" [(value)]=\"data['@wgt-var']\" i18n-placeholder placeholder=\"Weight Variable\">\n              <mat-option *ngFor=\"let w of weights\" [value]=\"w\">\n                {{ w }}\n              </mat-option>\n              <mat-option i18n>Unweighted</mat-option>\n            </mat-select>\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <section class=\"example-section\">\n            <mat-checkbox formControlName=\"wgt\" align=\"end\" checked=\"{{data['@wgt']}}\" i18n>Is Weight</mat-checkbox>\n          </section>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <button mat-button type=\"submit\" i18n>Update</button>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <button mat-button type=\"button\" (click)=\"dialogRef.close()\" i18n>Cancel</button>\n        </mat-grid-tile>\n      </mat-grid-list>\n    </mat-dialog-content>\n  </form>\n</div>\n"
+module.exports = "<div mat-dialog-content >\n  <form [formGroup]=\"form\" (ngSubmit)=\"submit(form)\">\n    <h1 mat-dialog-title i18n>Variable Information</h1>\n\n    <mat-dialog-content>\n      <mat-grid-list class=\"table-controls\" cols=\"2\" rowHeight=\"62\">\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <mat-form-field>\n            <input matInput formControlName=\"id\" i18n-placeholder placeholder=\"ID\" value=\"{{data['@ID']}}\"  >\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <mat-form-field>\n            <input matInput formControlName=\"name\" i18n-placeholder placeholder=\"Name\" value=\"{{data['@name']}}\" >\n          </mat-form-field>\n        </mat-grid-tile>\n\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n             <input matInput formControlName=\"labl\" i18n-placeholder placeholder=\"Label\" value=\"{{data.labl['#text']}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"qstnLit\" i18n-placeholder placeholder=\"Literal Question\" value=\"{{data.qstn.qstnLit}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"ivuInstr\" i18n-placeholder placeholder=\"Interviewer Instructions\" value=\"{{data.qstn.ivuInstr}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"postQTxt\" i18n-placeholder placeholder=\"Post Question\" value=\"{{data.qstn.postQTxt}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\">\n          <mat-form-field  class=\"field_width\">\n            <input matInput formControlName=\"universe\" i18n-placeholder placeholder=\"Universe\" value=\"{{data.universe['#text']}}\">\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"2\" rowspan=\"2\">\n          <mat-form-field class=\"field_width\" >\n            <textarea matInput formControlName=\"notes\" class=\"textarea_height\" i18n-placeholder placeholder=\"Notes\" value=\"{{data.notes['#cdata']}}\" ></textarea>\n          </mat-form-field>\n        </mat-grid-tile>\n        <!--Group chip list-->\n        <mat-grid-tile colspan=\"2\" rowspan=\"1\" class=\"field_width\">\n          <mat-form-field class=\"field_width\">\n            <mat-select formControlName=\"_groups\" [(value)]=\"data['_groups']\"  i18n-placeholder placeholder=\"Group\" multiple=\"true\">\n              <mat-option *ngFor=\"let g of variableGroups\" [value]=\"g.varGrp['@ID']\" >\n                {{ g.varGrp.labl}}\n              </mat-option>\n            </mat-select>\n          </mat-form-field>\n        </mat-grid-tile>\n\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <mat-form-field>\n            <mat-select formControlName=\"wgt_var\" [(value)]=\"data['@wgt-var']\" i18n-placeholder placeholder=\"Weight Variable\">\n              <mat-option *ngFor=\"let w of weights\" [value]=\"w\">\n                {{ w }}\n              </mat-option>\n              <mat-option i18n>Unweighted</mat-option>\n            </mat-select>\n          </mat-form-field>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <section class=\"example-section\">\n            <mat-checkbox formControlName=\"wgt\" align=\"end\" checked=\"{{data['@wgt']}}\" i18n>Is Weight</mat-checkbox>\n          </section>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <button mat-button type=\"submit\" i18n>Update</button>\n        </mat-grid-tile>\n        <mat-grid-tile colspan=\"1\" rowspan=\"1\">\n          <button mat-button type=\"button\" (click)=\"dialogRef.close()\" i18n>Cancel</button>\n        </mat-grid-tile>\n      </mat-grid-list>\n    </mat-dialog-content>\n  </form>\n</div>\n"
 
 /***/ }),
 
@@ -952,15 +959,15 @@ var VarDialogComponent = /** @class */ (function () {
         }
         // add the groups - create an id with all of them
         var groups = [];
-        for (var i = 0; i < this._variable_groups.length; i++) {
-            var group_vars = this._variable_groups[i].varGrp['@var'].split(' ');
+        for (var i = 0; i < this.variableGroups.length; i++) {
+            var group_vars = this.variableGroups[i].varGrp['@var'].split(' ');
             if (group_vars.indexOf(this.data['@ID']) > -1) {
-                groups.push(this._variable_groups[i].varGrp['@ID']);
+                groups.push(this.variableGroups[i].varGrp['@ID']);
             }
         }
         this.data['_groups'] = [groups]; // groups;
         this.addOmittedProperties(this.data);
-        console.log('Universe text ' + this.data.universe['#text']);
+        //console.log('Universe text ' + this.data.universe['#text']);
         this.form = this.formBuilder.group({
             id: [
                 { value: this.data ? this.data['@ID'] : '', disabled: true },
@@ -1046,9 +1053,9 @@ var VarDialogComponent = /** @class */ (function () {
     };
     VarDialogComponent.prototype.getVariableGroup = function (_id) {
         // loop though all the variables in the varaible groups and create a complete list
-        for (var i = 0; i < this._variable_groups.length; i++) {
-            if (this._variable_groups[i].varGrp['@ID'] === _id) {
-                return this._variable_groups[i].varGrp;
+        for (var i = 0; i < this.variableGroups.length; i++) {
+            if (this.variableGroups[i].varGrp['@ID'] === _id) {
+                return this.variableGroups[i].varGrp;
             }
         }
     };
@@ -1202,7 +1209,7 @@ module.exports = "\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<mat-nav-list class=\"button-header\" xmlns=\"http://www.w3.org/1999/html\">\n\n  <a mat-list-item (click)=\"addTab()\"><span i18n>Add Group</span><span class=\"fill-space\"></span><mat-icon>playlist_add</mat-icon></a>\n\n</mat-nav-list>\n<mat-nav-list>\n\n  <a mat-list-item (click)=\"showAll()\" [ngClass]=\"{'active': all_active }\" i18n>All</a>\n\n  <a mat-list-item id=\"{{tab.varGrp['@ID']}}\" draggable=\"true\" [disableRipple]=\"true\"  (dragstart)=\"dragstart($event);onGroupClick(tab);trackDragRow(tab)\" (dragenter)=\"dragenter($event,tab)\" (dragend)=\"dragend($event)\"  *ngFor=\"let tab of _variable_groups\" (click)=\"onGroupClick(tab)\" (dblclick)=\"onGroupDblClick(tab)\" [ngClass]=\"{'active': tab.active }\" >\n    <mat-icon aria-label=\"drag\" i18n-matTooltip matTooltip=\"Drag Me\" style=\"margin-left:-7px\">drag_indicator</mat-icon>\n    <span *ngIf=\"!tab.editable\">{{tab.varGrp.labl}}</span>\n    <mat-form-field *ngIf=\"tab.editable\" class=\"fixed_width\">\n      <input matInput maxLength=\"50\" value=\"{{tab.varGrp.labl}}\" #titleInput  (keyup.enter) =\"renameGroupComplete(tab,titleInput.value )\">\n        <span button mat-icon-button matSuffix color=\"primary\"> <mat-icon i18n-aria-label aria-label=\"Done\" (click)=\"renameGroupComplete(tab,titleInput.value )\">done</mat-icon></span>\n        <span button mat-icon-button matSuffix color=\"primary\"> <mat-icon i18n-aria-label aria-label=\"Clear\" (click)=\"renameGroupCancel(tab)\">clear</mat-icon></span>\n        <span button mat-icon-button matSuffix color=\"primary\"> <mat-icon i18n-aria-label aria-label=\"Delete\" (click)=\"groupDelete(tab)\">delete</mat-icon></span>\n    </mat-form-field>\n\n    <span class=\"fill-space\"></span>\n    <button *ngIf=\"!tab.editable\" mat-icon-button color=\"primary\"><mat-icon aria-label=\"Edit\" (click)=\"renameGroup(tab)\">edit</mat-icon></button>\n\n  </a>\n\n</mat-nav-list>\n"
+module.exports = "<mat-nav-list class=\"button-header\" xmlns=\"http://www.w3.org/1999/html\">\n\n  <a mat-list-item (click)=\"addTab()\"><span i18n>Add Group</span><span class=\"fill-space\"></span><mat-icon>playlist_add</mat-icon></a>\n\n</mat-nav-list>\n<mat-nav-list>\n\n  <a mat-list-item (click)=\"showAll()\" [ngClass]=\"{'active': allActive }\" i18n>All</a>\n\n  <a mat-list-item id=\"{{tab.varGrp['@ID']}}\" draggable=\"true\" [disableRipple]=\"true\"  (dragstart)=\"dragstart($event);onGroupClick(tab);trackDragRow(tab)\" (dragenter)=\"dragenter($event,tab)\" (dragend)=\"dragend($event)\"  *ngFor=\"let tab of variableGroups\" (click)=\"onGroupClick(tab)\" (dblclick)=\"onGroupDblClick(tab)\" [ngClass]=\"{'active': tab.active }\" >\n    <mat-icon aria-label=\"drag\" i18n-matTooltip matTooltip=\"Drag Me\" style=\"margin-left:-7px\">drag_indicator</mat-icon>\n    <span *ngIf=\"!tab.editable\">{{tab.varGrp.labl}}</span>\n    <mat-form-field *ngIf=\"tab.editable\" class=\"fixed_width\">\n      <input matInput maxLength=\"50\" value=\"{{tab.varGrp.labl}}\" #titleInput  (keyup.enter) =\"renameGroupComplete(tab,titleInput.value )\">\n        <span button mat-icon-button matSuffix color=\"primary\"> <mat-icon i18n-aria-label aria-label=\"Done\" (click)=\"renameGroupComplete(tab,titleInput.value )\">done</mat-icon></span>\n        <span button mat-icon-button matSuffix color=\"primary\"> <mat-icon i18n-aria-label aria-label=\"Clear\" (click)=\"renameGroupCancel(tab)\">clear</mat-icon></span>\n        <span button mat-icon-button matSuffix color=\"primary\"> <mat-icon i18n-aria-label aria-label=\"Delete\" (click)=\"groupDelete(tab)\">delete</mat-icon></span>\n    </mat-form-field>\n\n    <span class=\"fill-space\"></span>\n    <button *ngIf=\"!tab.editable\" mat-icon-button color=\"primary\"><mat-icon aria-label=\"Edit\" (click)=\"renameGroup(tab)\">edit</mat-icon></button>\n\n  </a>\n\n</mat-nav-list>\n"
 
 /***/ }),
 
@@ -1222,7 +1229,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var VarGroupComponent = /** @class */ (function () {
     function VarGroupComponent() {
-        this.all_active = true;
+        this.allActive = true;
         this.subSetRows = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["EventEmitter"]();
         this.parentScrollNav = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["EventEmitter"]();
         this.selectGroup = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["EventEmitter"]();
@@ -1233,13 +1240,13 @@ var VarGroupComponent = /** @class */ (function () {
     VarGroupComponent.prototype.ngOnInit = function () { };
     // Add a new group to the list and scroll to show it!
     VarGroupComponent.prototype.addTab = function () {
-        var numberOfGroups = this._variable_groups.length;
+        var numberOfGroups = this.variableGroups.length;
         if (numberOfGroups === 0 ||
-            (this._variable_groups[numberOfGroups - 1].varGrp.labl !== 'undefined' &&
-                this._variable_groups[numberOfGroups - 1].varGrp.labl.trim() !== '')) {
+            (this.variableGroups[numberOfGroups - 1].varGrp.labl !== 'undefined' &&
+                this.variableGroups[numberOfGroups - 1].varGrp.labl.trim() !== '')) {
             // get the next id
             var ids = [];
-            for (var _i = 0, _a = this._variable_groups; _i < _a.length; _i++) {
+            for (var _i = 0, _a = this.variableGroups; _i < _a.length; _i++) {
                 var i = _a[_i];
                 ids.push(Number(i.varGrp['@ID'].substring(2)));
             }
@@ -1258,9 +1265,9 @@ var VarGroupComponent = /** @class */ (function () {
                 '@ID': _id
             };
             var_group_1.varGrp['@var'] = '';
-            this._variable_groups.push(var_group_1);
+            this.variableGroups.push(var_group_1);
             var obj_1 = this;
-            obj_1._variable_groups[numberOfGroups].editable = true;
+            obj_1.variableGroups[numberOfGroups].editable = true;
             setTimeout(function () {
                 obj_1.titleInput.nativeElement.focus();
                 console.log('set time out');
@@ -1298,27 +1305,27 @@ var VarGroupComponent = /** @class */ (function () {
     };
     VarGroupComponent.prototype.groupDelete = function (_obj) {
         console.log('delete group');
-        for (var i = 0; i < this._variable_groups.length; i++) {
-            if (this._variable_groups[i].varGrp['@ID'] === _obj.varGrp['@ID']) {
-                this._variable_groups.splice(i, 1);
+        for (var i = 0; i < this.variableGroups.length; i++) {
+            if (this.variableGroups[i].varGrp['@ID'] === _obj.varGrp['@ID']) {
+                this.variableGroups.splice(i, 1);
             }
         }
     };
     VarGroupComponent.prototype.showActive = function (_id) {
-        this.all_active = false;
+        this.allActive = false;
         // show it's active
-        for (var i = 0; i < this._variable_groups.length; i++) {
-            if (this._variable_groups[i].varGrp['@ID'] === _id) {
-                this._variable_groups[i].active = true;
+        for (var i = 0; i < this.variableGroups.length; i++) {
+            if (this.variableGroups[i].varGrp['@ID'] === _id) {
+                this.variableGroups[i].active = true;
             }
             else {
-                this._variable_groups[i].active = false;
+                this.variableGroups[i].active = false;
             }
         }
     };
     VarGroupComponent.prototype.showAll = function () {
         this.showActive();
-        this.all_active = true;
+        this.allActive = true;
         this.subSetRows.emit();
         this.disableSelectGroup.emit();
     };
@@ -1327,7 +1334,7 @@ var VarGroupComponent = /** @class */ (function () {
         $event.dataTransfer.effectAllowed = 'move';
     };
     VarGroupComponent.prototype.trackDragRow = function (_row) {
-        this.dragged_obj = _row;
+        this.draggedObj = _row;
     };
     VarGroupComponent.prototype.dragenter = function ($event, _row) {
         var target = $event.currentTarget;
@@ -1336,7 +1343,7 @@ var VarGroupComponent = /** @class */ (function () {
             this.draggedGroup.emit($event.currentTarget.id);
             return;
         }
-        if (_row === this.dragged_obj) {
+        if (_row === this.draggedObj) {
             return;
         }
         this.dragged_over_obj = _row; // keep track of the dragged over obj to later update the list
@@ -1367,29 +1374,29 @@ var VarGroupComponent = /** @class */ (function () {
         }
         // update the master list
         // remove the object
-        this._variable_groups.splice(this._variable_groups
+        this.variableGroups.splice(this.variableGroups
             .map(function (e) {
             return e.varGrp['@ID'];
         })
-            .indexOf(this.dragged_obj.varGrp['@ID']), 1);
-        var index = this._variable_groups
+            .indexOf(this.draggedObj.varGrp['@ID']), 1);
+        var index = this.variableGroups
             .map(function (e) {
             return e.varGrp['@ID'];
         })
             .indexOf(this.dragged_over_obj.varGrp['@ID']);
         if (this.dragged_over_dir === 'before') {
-            this._variable_groups.splice(index, 0, this.dragged_obj);
+            this.variableGroups.splice(index, 0, this.draggedObj);
         }
         else {
-            this._variable_groups.splice(index + 1, 0, this.dragged_obj);
+            this.variableGroups.splice(index + 1, 0, this.draggedObj);
         }
-        delete this.dragged_obj;
+        delete this.draggedObj;
         delete this.source; // remove reference
     };
     tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
         tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", Object)
-    ], VarGroupComponent.prototype, "_variable_groups", void 0);
+    ], VarGroupComponent.prototype, "variableGroups", void 0);
     tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Output"])(),
         tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", _angular_core__WEBPACK_IMPORTED_MODULE_1__["EventEmitter"])
@@ -1447,7 +1454,7 @@ module.exports = ".table-bordered {\n  border: 1px solid #ddd;\n  width: 100%;\n
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div mat-dialog-content>\n\n  <h1 mat-dialog-title>{{data[\"@name\"]}}: {{data[\"labl\"][\"#text\"]}}</h1>\n\n  <app-chart [data]=\"sortedCategories\"></app-chart>\n\n  <table class=\"table-bordered\">\n  <tr>\n      <th i18n>Values</th>\n      <th i18n>Categories</th>\n      <th i18n>Count</th>\n      <th i18n>Weighted Count</th>\n  </tr>\n    <tr *ngFor=\"let row of sortedCategories\">\n      <td>{{row.catValu}}</td>\n      <td>{{row.labl[\"#text\"]}}</td>\n      <td *ngIf=\"isUndefined(row.catStat); else elseBlock\"></td>\n      <ng-template #elseBlock>\n        <td *ngIf=\"isUndefined(row.catStat.length); else elseBlock2\"></td>\n        <ng-template #elseBlock2>\n          <td>{{row.catStat[0][\"#text\"] | number}}</td>\n        </ng-template>\n      </ng-template>\n      <td *ngIf=\"isUndefined(row.catStat); else elseBloc\"></td>\n      <ng-template #elseBloc>\n        <td *ngIf=\"doesExist(row.catStat.length); else elseBloc2\">{{row.catStat[1][\"#text\"] | number }}</td>\n        <ng-template #elseBloc2>\n          <td></td>\n        </ng-template>\n      </ng-template>\n    </tr>\n  </table>\n\n  <mat-dialog-actions>\n      <button mat-button mat-dialog-close i18n>Close</button>\n  </mat-dialog-actions>\n\n</div>\n"
+module.exports = "<div mat-dialog-content>\n\n  <h1 mat-dialog-title>{{data[\"@name\"]}}: {{data[\"labl\"][\"#text\"]}}</h1>\n\n  <app-chart [data]=\"sortedCategories\"></app-chart>\n\n  <table class=\"table-bordered\">\n  <tr>\n      <th i18n>Values</th>\n      <th i18n>Categories</th>\n      <th i18n>Count</th>\n      <th i18n>Weighted Count</th>\n  </tr>\n    <tr *ngFor=\"let row of sortedCategories\">\n      <td>{{row.catValu}}</td>\n      <td>{{row.labl[\"#text\"]}}</td>\n      <td *ngIf=\"isUndefined(row.catStat); else elseBlock\"></td>\n      <ng-template #elseBlock>\n        <td *ngIf=\"isUndefined(row.catStat.length); else elseBlock2\"></td>\n        <ng-template #elseBlock2>\n          <td>{{row.catStat[0][\"#text\"] | number}}</td>\n        </ng-template>\n      </ng-template>\n      <td *ngIf=\"isUndefined(row.catStat); else elseBloc\"></td>\n      <ng-template #elseBloc>\n        <td *ngIf=\"doesExist(row.catStat.length); else elseBloc2\">{{row.catStat[1][\"#text\"] | number }}</td>\n        <ng-template #elseBloc2>\n          <td></td>\n        </ng-template>\n      </ng-template>\n    </tr>\n  </table>\n\n  <mat-dialog-actions>\n    <button mat-button mat-dialog-close i18n>Close</button>\n  </mat-dialog-actions>\n\n</div>\n"
 
 /***/ }),
 
@@ -1474,18 +1481,18 @@ var VarStatDialogComponent = /** @class */ (function () {
     }
     VarStatDialogComponent.prototype.ngOnInit = function () {
         if (typeof this.data.catgry !== 'undefined') {
-            console.log(this.data.catgry);
+            //console.log(this.data.catgry);
             if (typeof this.data.catgry.length === 'undefined') {
                 this.sortedCategories.push(this.data.catgry);
             }
             else {
                 for (var _i = 0, _a = this.data.catgry; _i < _a.length; _i++) {
                     var i = _a[_i];
-                    console.log(i);
+                    //console.log(i);
                     this.sortedCategories.push(i);
                 }
             }
-            console.log(this.sortedCategories);
+            //console.log(this.sortedCategories);
             this.sortedCategories.sort(function (a, b) {
                 return a.catValu - b.catValu;
             });
@@ -1520,7 +1527,7 @@ var VarStatDialogComponent = /** @class */ (function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = ".grey {\n  background: #f4f4f4;\n}\n\n.active {\n  background: #6d9cff;\n}\n\n.mat-header-cell {\n  color: rgba(0,0,0,.6);\n}\n\n.mat-column-drag {\n  flex:  0 1 50px;\n}\n\n.mat-column-select {\n  flex:  0 1 50px;\n}\n\n.mat-column-control {\n  flex:  0 1 50px;\n}\n\n.mat-column-id {\n  flex:  0 1 100px;\n}\n\n.mat-column-name {\n  flex:  1 1 100px;\n}\n\n.mat-column-labl {\n  flex:  1 1 600px;\n}\n\n.mat-column-wgt-var {\n  flex:  0 1 100px;\n}\n\n.mat-column-view {\n  flex:  0 1 75px;\n}\n\n.mat-column-action {\n  flex:  0 1 75px;\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvdmFyL3Zhci5jb21wb25lbnQuY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0VBQ0UsbUJBQW1CO0FBQ3JCOztBQUVBO0VBQ0UsbUJBQW1CO0FBQ3JCOztBQUVBO0VBQ0UscUJBQXFCO0FBQ3ZCOztBQUVBO0VBQ0UsZUFBZTtBQUNqQjs7QUFFQTtFQUNFLGVBQWU7QUFDakI7O0FBRUE7RUFDRSxlQUFlO0FBQ2pCOztBQUVBO0VBQ0UsZ0JBQWdCO0FBQ2xCOztBQUVBO0VBQ0UsZ0JBQWdCO0FBQ2xCOztBQUVBO0VBQ0UsZ0JBQWdCO0FBQ2xCOztBQUVBO0VBQ0UsZ0JBQWdCO0FBQ2xCOztBQUVBO0VBQ0UsZUFBZTtBQUNqQjs7QUFFQTtFQUNFLGVBQWU7QUFDakIiLCJmaWxlIjoic3JjL2FwcC92YXIvdmFyLmNvbXBvbmVudC5jc3MiLCJzb3VyY2VzQ29udGVudCI6WyIuZ3JleSB7XG4gIGJhY2tncm91bmQ6ICNmNGY0ZjQ7XG59XG5cbi5hY3RpdmUge1xuICBiYWNrZ3JvdW5kOiAjNmQ5Y2ZmO1xufVxuXG4ubWF0LWhlYWRlci1jZWxsIHtcbiAgY29sb3I6IHJnYmEoMCwwLDAsLjYpO1xufVxuXG4ubWF0LWNvbHVtbi1kcmFnIHtcbiAgZmxleDogIDAgMSA1MHB4O1xufVxuXG4ubWF0LWNvbHVtbi1zZWxlY3Qge1xuICBmbGV4OiAgMCAxIDUwcHg7XG59XG5cbi5tYXQtY29sdW1uLWNvbnRyb2wge1xuICBmbGV4OiAgMCAxIDUwcHg7XG59XG5cbi5tYXQtY29sdW1uLWlkIHtcbiAgZmxleDogIDAgMSAxMDBweDtcbn1cblxuLm1hdC1jb2x1bW4tbmFtZSB7XG4gIGZsZXg6ICAxIDEgMTAwcHg7XG59XG5cbi5tYXQtY29sdW1uLWxhYmwge1xuICBmbGV4OiAgMSAxIDYwMHB4O1xufVxuXG4ubWF0LWNvbHVtbi13Z3QtdmFyIHtcbiAgZmxleDogIDAgMSAxMDBweDtcbn1cblxuLm1hdC1jb2x1bW4tdmlldyB7XG4gIGZsZXg6ICAwIDEgNzVweDtcbn1cblxuLm1hdC1jb2x1bW4tYWN0aW9uIHtcbiAgZmxleDogIDAgMSA3NXB4O1xufSJdfQ== */"
+module.exports = ".grey .mat-cell {\n  color: #767676;\n}\n\n.active {\n  background: #6d9cff;\n}\n\n.mat-header-cell {\n  color: rgba(0,0,0,.6);\n}\n\n.mat-column-drag {\n  flex:  0 1 50px;\n}\n\n.mat-column-select {\n  flex:  0 1 50px;\n}\n\n.mat-column-control {\n  flex:  0 1 50px;\n}\n\n.mat-column-id {\n  flex:  0 1 100px;\n}\n\n.mat-column-name {\n  flex:  1 1 100px;\n}\n\n.mat-column-labl {\n  flex:  1 1 600px;\n}\n\n.mat-column-wgt-var {\n  flex:  0 1 100px;\n}\n\n.mat-column-view {\n  flex:  0 1 75px;\n}\n\n.mat-column-action {\n  flex:  0 1 75px;\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvdmFyL3Zhci5jb21wb25lbnQuY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0VBQ0UsY0FBYztBQUNoQjs7QUFFQTtFQUNFLG1CQUFtQjtBQUNyQjs7QUFFQTtFQUNFLHFCQUFxQjtBQUN2Qjs7QUFFQTtFQUNFLGVBQWU7QUFDakI7O0FBRUE7RUFDRSxlQUFlO0FBQ2pCOztBQUVBO0VBQ0UsZUFBZTtBQUNqQjs7QUFFQTtFQUNFLGdCQUFnQjtBQUNsQjs7QUFFQTtFQUNFLGdCQUFnQjtBQUNsQjs7QUFFQTtFQUNFLGdCQUFnQjtBQUNsQjs7QUFFQTtFQUNFLGdCQUFnQjtBQUNsQjs7QUFFQTtFQUNFLGVBQWU7QUFDakI7O0FBRUE7RUFDRSxlQUFlO0FBQ2pCIiwiZmlsZSI6InNyYy9hcHAvdmFyL3Zhci5jb21wb25lbnQuY3NzIiwic291cmNlc0NvbnRlbnQiOlsiLmdyZXkgLm1hdC1jZWxsIHtcbiAgY29sb3I6ICM3Njc2NzY7XG59XG5cbi5hY3RpdmUge1xuICBiYWNrZ3JvdW5kOiAjNmQ5Y2ZmO1xufVxuXG4ubWF0LWhlYWRlci1jZWxsIHtcbiAgY29sb3I6IHJnYmEoMCwwLDAsLjYpO1xufVxuXG4ubWF0LWNvbHVtbi1kcmFnIHtcbiAgZmxleDogIDAgMSA1MHB4O1xufVxuXG4ubWF0LWNvbHVtbi1zZWxlY3Qge1xuICBmbGV4OiAgMCAxIDUwcHg7XG59XG5cbi5tYXQtY29sdW1uLWNvbnRyb2wge1xuICBmbGV4OiAgMCAxIDUwcHg7XG59XG5cbi5tYXQtY29sdW1uLWlkIHtcbiAgZmxleDogIDAgMSAxMDBweDtcbn1cblxuLm1hdC1jb2x1bW4tbmFtZSB7XG4gIGZsZXg6ICAxIDEgMTAwcHg7XG59XG5cbi5tYXQtY29sdW1uLWxhYmwge1xuICBmbGV4OiAgMSAxIDYwMHB4O1xufVxuXG4ubWF0LWNvbHVtbi13Z3QtdmFyIHtcbiAgZmxleDogIDAgMSAxMDBweDtcbn1cblxuLm1hdC1jb2x1bW4tdmlldyB7XG4gIGZsZXg6ICAwIDEgNzVweDtcbn1cblxuLm1hdC1jb2x1bW4tYWN0aW9uIHtcbiAgZmxleDogIDAgMSA3NXB4O1xufSJdfQ== */"
 
 /***/ }),
 
@@ -1531,7 +1538,7 @@ module.exports = ".grey {\n  background: #f4f4f4;\n}\n\n.active {\n  background:
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<mat-grid-list class=\"table-controls\" cols=\"3\" rowHeight=\"64\">\n  <mat-grid-tile>\n    <mat-form-field>\n      <input matInput [formControl]=\"searchFilter\" placeholder=\"Search\" />\n      <span matSuffix><mat-icon>search</mat-icon></span>\n    </mat-form-field>\n  </mat-grid-tile>\n  <mat-paginator [pageSizeOptions]=\"[25, 50, 100]\"></mat-paginator>\n  <mat-divider [vertical]=\"true\"></mat-divider>\n  <mat-grid-tile>\n    <mat-select\n      color=\"primary\"\n      (change)=\"addToGroup($event.value)\"\n      placeholder=\"Add Selected to Group\"\n      #group_select\n      disabled=\"true\"\n      [hidden]=\"group_select.hidden\"\n    >\n      <mat-option *ngFor=\"let g of _variable_groups\" [value]=\"g.varGrp['@ID']\">\n        {{ g.varGrp.labl }}\n      </mat-option>\n    </mat-select>\n  </mat-grid-tile>\n</mat-grid-list>\n\n<mat-table class=\"mat-elevation-z8\" [dataSource]=\"datasource\" matSort>\n  <!-- drag Icon Column -->\n  <ng-container matColumnDef=\"drag\">\n    <mat-header-cell *matHeaderCellDef> </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\">\n      <mat-icon aria-label=\"drag\" matTooltip=\"Drag Me\">drag_indicator</mat-icon>\n    </mat-cell>\n  </ng-container>\n\n  <!-- Checkbox Column -->\n  <ng-container matColumnDef=\"select\">\n    <mat-header-cell *matHeaderCellDef>\n      <mat-checkbox\n        (change)=\"$event ? masterToggle() : null\"\n        [checked]=\"selection.hasValue() && isAllSelected()\"\n        [indeterminate]=\"selection.hasValue() && !isAllSelected()\"\n      >\n      </mat-checkbox>\n    </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\">\n      <mat-checkbox\n        (click)=\"$event.stopPropagation()\"\n        (change)=\"$event ? selection.toggle(row) : null; checkSelection()\"\n        [checked]=\"selection.isSelected(row)\"\n      >\n      </mat-checkbox>\n    </mat-cell>\n  </ng-container>\n\n  <!-- MINUS PLUS Column -->\n  <ng-container matColumnDef=\"control\">\n    <mat-header-cell *matHeaderCellDef\n      ><div style=\"width:40px;\"></div\n    ></mat-header-cell>\n    <mat-cell *matCellDef=\"let row; let i = index\">\n      <button\n        *ngIf=\"row._show\"\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onRemove(row['@ID'])\"\n      >\n        <mat-icon aria-label=\"remove\">indeterminate_check_box</mat-icon>\n      </button>\n      <button\n        *ngIf=\"!row._show\"\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onAdd(row['@ID'])\"\n      >\n        <mat-icon aria-label=\"add\">add_box</mat-icon>\n      </button>\n    </mat-cell>\n  </ng-container>\n\n  <!-- ID Column -->\n  <ng-container matColumnDef=\"id\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header i18n> ID </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\">\n      <mat-chip-list>\n        <mat-chip\n          [color]=\"row['_in_group'] == true ? 'accent' : 'primary'\"\n          selected=\"true\"\n        >\n          {{ row['id'] }}\n        </mat-chip></mat-chip-list\n      >\n    </mat-cell>\n  </ng-container>\n\n  <ng-container matColumnDef=\"_order\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header> order </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\"> {{ row['_order'] }} </mat-cell>\n  </ng-container>\n\n  <ng-container matColumnDef=\"name\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header i18n> Name </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\"> {{ row['@name'] }} </mat-cell>\n  </ng-container>\n\n  <ng-container matColumnDef=\"labl\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header i18n> Label </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\"> {{ (row.labl['#text'].length>150)? (row.labl['#text'] | slice:0:150)+'...':(row.labl['#text'])}} </mat-cell>\n  </ng-container>\n\n  <ng-container matColumnDef=\"catgry\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header i18n>\n      Category\n    </mat-header-cell>\n    <!--\n      <mat-cell *matCellDef=\"let row\"> <span *ngIf=\"row.catgry\">{{row.catgry.length}}</span> </mat-cell>\n  --></ng-container>\n\n  <ng-container matColumnDef=\"wgt-var\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header i18n>\n      Weight\n    </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\">\n      <span *ngIf=\"row['@wgt-var']\">{{ row['@wgt-var'] }}</span></mat-cell\n    >\n  </ng-container>\n\n  <ng-container matColumnDef=\"view\">\n    <mat-header-cell *matHeaderCellDef i18n>View</mat-header-cell>\n\n    <mat-cell *matCellDef=\"let row; let i = index\">\n      <button\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onView(row['@ID'])\"\n        i18n-matTooltip\n        matTooltip=\"View\"\n      >\n        <mat-icon i18n-aria-label aria-label=\"View\">visibility</mat-icon>\n      </button>\n    </mat-cell>\n  </ng-container>\n\n  <ng-container matColumnDef=\"action\">\n    <mat-header-cell *matHeaderCellDef>\n      <button\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onEditSelected()\"\n        i18n-matTooltip\n        matTooltip=\"Group Edit\"\n        #group_edit\n        disabled=\"true\"\n      >\n        <mat-icon i18n-aria-label aria-label=\"Group Edit\">edit</mat-icon>\n      </button>\n    </mat-header-cell>\n\n    <mat-cell *matCellDef=\"let row; let i = index\">\n      <button\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onEdit(row['@ID'])\"\n        i18n-matTooltip\n        matTooltip=\"Edit\"\n      >\n        <mat-icon i18n-aria-label aria-label=\"Edit\">edit</mat-icon>\n      </button>\n    </mat-cell>\n  </ng-container>\n\n  <mat-header-row *matHeaderRowDef=\"getDisplayedColumns()\"></mat-header-row>\n  <mat-row\n    *matRowDef=\"let row; columns: getDisplayedColumns()\"\n    draggable=\"true\"\n    (dragstart)=\"dragstart($event); highlightRow(row); trackDragRow(row)\"\n    (dragend)=\"dragend($event)\"\n    (dragenter)=\"dragenter($event, row)\"\n    [ngClass]=\"{ grey: row._show != true, active: row._active == true }\"\n  >\n  </mat-row>\n</mat-table>\n"
+module.exports = "<mat-grid-list class=\"table-controls\" cols=\"3\" rowHeight=\"64\">\n  <mat-grid-tile>\n    <mat-form-field>\n      <input matInput [formControl]=\"searchFilter\" placeholder=\"Search\" />\n      <span matSuffix><mat-icon>search</mat-icon></span>\n    </mat-form-field>\n  </mat-grid-tile>\n  <mat-paginator [pageSizeOptions]=\"[25, 50, 100]\"></mat-paginator>\n  <mat-divider [vertical]=\"true\"></mat-divider>\n  <mat-grid-tile>\n    <mat-select\n      color=\"primary\"\n      (change)=\"addToGroup($event.value)\"\n      placeholder=\"Add Selected to Group\"\n      #group_select\n      disabled=\"true\"\n      [hidden]=\"group_select.hidden\"\n    >\n      <mat-option *ngFor=\"let g of variableGroups\" [value]=\"g.varGrp['@ID']\">\n        {{ g.varGrp.labl }}\n      </mat-option>\n    </mat-select>\n  </mat-grid-tile>\n</mat-grid-list>\n\n<mat-table class=\"mat-elevation-z8\" [dataSource]=\"datasource\" matSort>\n  <!-- drag Icon Column -->\n  <ng-container matColumnDef=\"drag\">\n    <mat-header-cell *matHeaderCellDef> </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\">\n      <mat-icon aria-label=\"drag\" matTooltip=\"Drag Me\">drag_indicator</mat-icon>\n    </mat-cell>\n  </ng-container>\n\n  <!-- Checkbox Column -->\n  <ng-container matColumnDef=\"select\">\n    <mat-header-cell *matHeaderCellDef>\n      <mat-checkbox\n        (change)=\"$event ? masterToggle() : null\"\n        [checked]=\"selection.hasValue() && isAllSelected()\"\n        [indeterminate]=\"selection.hasValue() && !isAllSelected()\"\n      >\n      </mat-checkbox>\n    </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\">\n      <mat-checkbox\n        (click)=\"$event.stopPropagation()\"\n        (change)=\"$event ? selection.toggle(row) : null; checkSelection()\"\n        [checked]=\"selection.isSelected(row)\"\n        i18n-matTooltip\n        matTooltip=\"Select\"\n      >\n      </mat-checkbox>\n    </mat-cell>\n  </ng-container>\n\n  <!-- MINUS PLUS Column -->\n  <ng-container matColumnDef=\"control\">\n    <mat-header-cell *matHeaderCellDef\n      ><div style=\"width:40px;\"></div\n    ></mat-header-cell>\n    <mat-cell *matCellDef=\"let row; let i = index\">\n      <button\n        *ngIf=\"row._show\"\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onRemove(row['@ID'])\"\n        i18n-matTooltip\n        matTooltip=\"Remove from Group\"\n      >\n        <mat-icon aria-label=\"remove\">indeterminate_check_box</mat-icon>\n      </button>\n      <button\n        *ngIf=\"!row._show\"\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onAdd(row['@ID'])\"\n        i18n-matTooltip\n        matTooltip=\"Add to Group\"\n      >\n        <mat-icon aria-label=\"add\">add_box</mat-icon>\n      </button>\n    </mat-cell>\n  </ng-container>\n\n  <!-- ID Column -->\n  <ng-container matColumnDef=\"id\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header i18n> ID </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\"> {{ row['id'] }} </mat-cell>\n  </ng-container>\n\n  <ng-container matColumnDef=\"_order\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header> order </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\"> {{ row['_order'] }} </mat-cell>\n  </ng-container>\n\n  <ng-container matColumnDef=\"name\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header i18n> Name </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\">{{ (row['@name'].length > 30) ? (row['@name'] | slice:0:30) + '...' : (row['@name']) }}  </mat-cell>\n  </ng-container>\n\n  <ng-container matColumnDef=\"labl\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header i18n> Label </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\"> {{ (row.labl['#text'].length > 150) ? (row.labl['#text'] | slice:0:150) + '...' : (row.labl['#text'])}} </mat-cell>\n  </ng-container>\n\n  <ng-container matColumnDef=\"catgry\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header i18n> Category </mat-header-cell>\n    <!--\n      <mat-cell *matCellDef=\"let row\"> <span *ngIf=\"row.catgry\">{{row.catgry.length}}</span> </mat-cell>-->\n    </ng-container>\n\n  <ng-container matColumnDef=\"wgt-var\">\n    <mat-header-cell *matHeaderCellDef mat-sort-header i18n> Weight </mat-header-cell>\n    <mat-cell *matCellDef=\"let row\">\n      <span *ngIf=\"row['@wgt-var']\">{{ row['@wgt-var'] }}</span>\n    </mat-cell>\n  </ng-container>\n\n  <ng-container matColumnDef=\"view\">\n    <mat-header-cell *matHeaderCellDef i18n> View </mat-header-cell>\n    <mat-cell *matCellDef=\"let row; let i = index\">\n      <button\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onView(row['@ID'])\"\n        i18n-matTooltip\n        matTooltip=\"View\"\n      >\n        <mat-icon i18n-aria-label aria-label=\"View\">visibility</mat-icon>\n      </button>\n    </mat-cell>\n  </ng-container>\n\n  <ng-container matColumnDef=\"action\">\n    <mat-header-cell *matHeaderCellDef>\n      <button\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onEditSelected()\"\n        i18n-matTooltip\n        matTooltip=\"Group Edit\"\n        #group_edit\n        disabled=\"true\"\n      >\n        <mat-icon i18n-aria-label aria-label=\"Group Edit\">edit</mat-icon>\n      </button>\n    </mat-header-cell>\n\n    <mat-cell *matCellDef=\"let row; let i = index\">\n      <button\n        mat-icon-button\n        color=\"accent\"\n        (click)=\"onEdit(row['@ID'])\"\n        i18n-matTooltip\n        matTooltip=\"Edit\"\n      >\n        <mat-icon i18n-aria-label aria-label=\"Edit\">edit</mat-icon>\n      </button>\n    </mat-cell>\n  </ng-container>\n\n  <mat-header-row *matHeaderRowDef=\"getDisplayedColumns()\"></mat-header-row>\n  <mat-row\n    *matRowDef=\"let row; columns: getDisplayedColumns()\"\n    draggable=\"true\"\n    (dragstart)=\"dragstart($event); highlightRow(row); trackDragRow(row)\"\n    (dragend)=\"dragend($event)\"\n    (dragenter)=\"dragenter($event, row)\"\n    [ngClass]=\"{ grey: row._show != true, active: row._active == true }\"\n  >\n  </mat-row>\n</mat-table>\n"
 
 /***/ }),
 
@@ -1565,12 +1572,11 @@ var VarComponent = /** @class */ (function () {
         this.ref = ref;
         this.snackBar = snackBar;
         this.searchFilter = new _angular_forms__WEBPACK_IMPORTED_MODULE_5__["FormControl"]();
+        this.selection = new _angular_cdk_collections__WEBPACK_IMPORTED_MODULE_6__["SelectionModel"](true, []);
         this.filterValues = { search: '', _show: true };
         this.mode = 'all';
         this.dragged_over_dir = 'before';
-        //
-        this._variable_groups_vars = [];
-        this.selection = new _angular_cdk_collections__WEBPACK_IMPORTED_MODULE_6__["SelectionModel"](true, []);
+        this.variableGroupsVars = [];
     }
     VarComponent.prototype.getDisplayedColumns = function () {
         var displayedColumns = []; // 'order_arrows'
@@ -1699,7 +1705,7 @@ var VarComponent = /** @class */ (function () {
             this.mode = 'group';
         }
         var data = [];
-        var ungrouped_count = 0;
+        var ungroupedCount = 0;
         var obj;
         for (var i = 0; i < this._variables.length; i++) {
             obj = this._variables[i];
@@ -1709,8 +1715,8 @@ var VarComponent = /** @class */ (function () {
                     obj._show = true;
                 }
                 else {
-                    ungrouped_count += 1;
-                    obj._order = 99999 + ungrouped_count;
+                    ungroupedCount += 1;
+                    obj._order = 99999 + ungroupedCount;
                     obj._show = false;
                 }
             }
@@ -1739,14 +1745,14 @@ var VarComponent = /** @class */ (function () {
     VarComponent.prototype.removeWeightedFreq = function () {
         console.log('Start removeWeightedFreq');
         var weights = this.getWeights();
-        var weights_set = new Set(weights);
+        var weightsSet = new Set(weights);
         console.log(weights);
         console.log(this._variables);
         for (var i = 0; i < this._variables.length; i++) {
             console.log('wgt-var:' + this._variables[i]['@wgt-var']);
             if (typeof this._variables[i]['@wgt-var'] !== 'undefined') {
                 if (this._variables[i]['@wgt-var'] !== '') {
-                    if (!weights_set.has(this._variables[i]['@wgt-var'])) {
+                    if (!weightsSet.has(this._variables[i]['@wgt-var'])) {
                         this._variables[i]['@wgt-var'] = '';
                         for (var k = 0; k < this._variables[i].catgry.length; k++) {
                             this._variables[i].catgry[k].catStat.splice(1, 1);
@@ -1769,8 +1775,9 @@ var VarComponent = /** @class */ (function () {
     };
     // get the group
     VarComponent.prototype.getObjByIDNested = function (_id, _data) {
-        for (var i = 0; i < _data.length; i++) {
-            var obj = _data[i];
+        for (var _i = 0, _data_2 = _data; _i < _data_2.length; _i++) {
+            var i = _data_2[_i];
+            var obj = i;
             if (obj.varGrp['@ID'] === _id) {
                 return obj;
             }
@@ -1799,7 +1806,7 @@ var VarComponent = /** @class */ (function () {
         var weights = this.getWeights();
         console.log('w ' + weights.length);
         this.dialogRef.componentInstance.weights = weights;
-        this.dialogRef.componentInstance._variable_groups = this._variable_groups;
+        this.dialogRef.componentInstance.variableGroups = this.variableGroups;
         var sub = this.dialogRef.componentInstance.parentUpdateVar.subscribe(function () {
             _this.onUpdateVar();
         });
@@ -1825,7 +1832,7 @@ var VarComponent = /** @class */ (function () {
     };
     VarComponent.prototype.addToGroup = function (_id) {
         // first get the group
-        var obj = this.getObjByIDNested(_id, this._variable_groups);
+        var obj = this.getObjByIDNested(_id, this.variableGroups);
         var vars = obj.varGrp['@var'].split(' ');
         for (var _i = 0, _a = this.selection.selected; _i < _a.length; _i++) {
             var i = _a[_i];
@@ -1851,7 +1858,7 @@ var VarComponent = /** @class */ (function () {
     VarComponent.prototype.updateGroupsVars = function () {
         this.getVariableGroupsVars();
         for (var i = 0; i < this._variables.length; i++) {
-            if (this._variable_groups_vars.indexOf(this._variables[i]['@ID']) > -1) {
+            if (this.variableGroupsVars.indexOf(this._variables[i]['@ID']) > -1) {
                 this._variables[i]._in_group = true;
             }
             else {
@@ -1860,14 +1867,14 @@ var VarComponent = /** @class */ (function () {
         }
     };
     VarComponent.prototype.getVariableGroupsVars = function () {
-        this._variable_groups_vars = [];
+        this.variableGroupsVars = [];
         // loop though all the variables in the varaible groups and create a complete list
-        for (var i = 0; i < this._variable_groups.length; i++) {
-            var obj = this._variable_groups[i];
+        for (var i = 0; i < this.variableGroups.length; i++) {
+            var obj = this.variableGroups[i];
             var vars = obj.varGrp['@var'].split(' ');
             for (var j = 0; j < vars.length; j++) {
-                if (this._variable_groups_vars.indexOf(vars[j]) === -1) {
-                    this._variable_groups_vars.push(vars[j]);
+                if (this.variableGroupsVars.indexOf(vars[j]) === -1) {
+                    this.variableGroupsVars.push(vars[j]);
                 }
             }
         }
@@ -1881,13 +1888,13 @@ var VarComponent = /** @class */ (function () {
         $event.dataTransfer.effectAllowed = 'move';
     };
     VarComponent.prototype.trackDragRow = function (_row) {
-        this.dragged_obj = _row;
+        this.draggedObj = _row;
     };
     //
     VarComponent.prototype.dragenter = function ($event, _row) {
         var target = $event.currentTarget;
         // let new_dragged_over_obj=false;
-        if (_row === this.dragged_obj) {
+        if (_row === this.draggedObj) {
             return;
         }
         this.dragged_over_obj = _row; // keep track of the dragged over obj to later update the list
@@ -1916,11 +1923,11 @@ var VarComponent = /** @class */ (function () {
         _row._active = true;
     };
     VarComponent.prototype.dragend = function ($event) {
-        this.dragged_obj._active = false; // remove the highlight
-        var id = this.dragged_obj['@ID'];
+        this.draggedObj._active = false; // remove the highlight
+        var id = this.draggedObj['@ID'];
         if (this.dragged_group) {
             // add the dragged var to the dragged group
-            var objgr = this.getObjByIDNested(this.dragged_group, this._variable_groups);
+            var objgr = this.getObjByIDNested(this.dragged_group, this.variableGroups);
             var vars = objgr.varGrp['@var'].split(' ');
             vars.push(id);
             objgr.varGrp['@var'] = vars.join(' ');
@@ -1945,7 +1952,7 @@ var VarComponent = /** @class */ (function () {
         this.showMSG('Removed ' + _id + ' from ' + obj.varGrp.labl);
     };
     VarComponent.prototype.updateGroupVars = function (_type, _id) {
-        var obj = this.getObjByIDNested(this.group_select['value'], this._variable_groups);
+        var obj = this.getObjByIDNested(this.group_select['value'], this.variableGroups);
         var vars = obj.varGrp['@var'].split(' ');
         //
         if (_type === 'remove') {
@@ -1980,14 +1987,14 @@ var VarComponent = /** @class */ (function () {
         return obj;
     };
     VarComponent.prototype.onEditSelected = function () {
-        var selected_objs = [];
+        var selectedObjs = [];
         // show the popup but only allow certain fields be be updated
         for (var _i = 0, _a = this.selection.selected; _i < _a.length; _i++) {
             var i = _a[_i];
             var selected = i;
-            selected_objs.push(selected);
+            selectedObjs.push(selected);
         }
-        this.openDialog(selected_objs);
+        this.openDialog(selectedObjs);
     };
     VarComponent.prototype.draggedGroup = function (_id) {
         this.dragged_group = _id;
@@ -2009,7 +2016,7 @@ var VarComponent = /** @class */ (function () {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
         tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", Object)
-    ], VarComponent.prototype, "_variable_groups", void 0);
+    ], VarComponent.prototype, "variableGroups", void 0);
     tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ViewChild"])('group_select'),
         tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", _angular_core__WEBPACK_IMPORTED_MODULE_1__["ElementRef"])
