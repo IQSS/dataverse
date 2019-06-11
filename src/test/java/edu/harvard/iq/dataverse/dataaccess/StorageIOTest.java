@@ -9,9 +9,10 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import org.junit.Test;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-//import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,10 +20,14 @@ import java.io.RandomAccessFile;
 import java.nio.channels.Channel;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
+//import java.io.FileNotFoundException;
 //import org.apache.commons.httpclient.Header;
 //import org.apache.commons.httpclient.methods.GetMethod;
-import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -34,7 +39,7 @@ public class StorageIOTest {
     @Test
     public void testGetChannel() throws IOException {
         assertEquals(null, instance.getChannel());
-        Channel c = new RandomAccessFile("src/main/java/Bundle_en.properties", "r").getChannel();
+        Channel c = new RandomAccessFile("src/main/resources/Bundle_en.properties", "r").getChannel();
         instance.setChannel(c);
         assertEquals(c, instance.getChannel());
     }

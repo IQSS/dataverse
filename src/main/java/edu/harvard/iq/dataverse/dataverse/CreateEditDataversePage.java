@@ -15,7 +15,10 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.bannersandmessages.DataverseUtil;
 import edu.harvard.iq.dataverse.error.DataverseError;
+import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Either;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.event.TransferEvent;
@@ -31,8 +34,11 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 @ViewScoped
 @Named("CreateEditDataversePage")
@@ -61,6 +67,12 @@ public class CreateEditDataversePage implements Serializable {
 
     @Inject
     private DataverseSession session;
+
+    @Inject
+    private SettingsWrapper settingsWrapper;
+
+    @Inject
+    private SystemConfig systemConfig;
 
     private Long dataverseId;
     private Long ownerId;
@@ -281,12 +293,31 @@ public class CreateEditDataversePage implements Serializable {
 
     private String saveEditedDataverse(List<DataverseFieldTypeInputLevel> dftilForSave) {
         Either<DataverseError, Dataverse> editResult = metadataBlockSaveManager.saveEditedDataverse(dftilForSave, dataverse, facets);
-        return editResult.isLeft() ? StringUtils.EMPTY : returnRedirect();
+
+        if (editResult.isLeft()) {
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, editResult.getLeft().getErrorMsg());
+            return StringUtils.EMPTY;
+        }
+
+        JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.update.success"));
+        return returnRedirect();
     }
 
     private String saveNewDataverse(List<DataverseFieldTypeInputLevel> dftilForSave) {
         Either<DataverseError, Dataverse> saveResult = metadataBlockSaveManager.saveNewDataverse(dftilForSave, dataverse, facets);
-        return saveResult.isLeft() ? StringUtils.EMPTY : "/dataverse.xhtml?alias=" + saveResult.get().getAlias() + "&faces-redirect=true";
+
+        if (saveResult.isLeft()) {
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, saveResult.getLeft().getErrorMsg());
+            return StringUtils.EMPTY;
+        }
+
+        showSuccessMessage();
+        return "/dataverse.xhtml?alias=" + saveResult.get().getAlias() + "&faces-redirect=true";
+    }
+
+    private void showSuccessMessage() {
+        JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.create.success",
+                Arrays.asList(settingsWrapper.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
     }
 
     private String setupViewForDataverseEdit() {
