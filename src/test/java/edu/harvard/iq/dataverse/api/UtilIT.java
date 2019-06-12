@@ -2129,5 +2129,17 @@ public class UtilIT {
 
         return requestSpecification.post("/api/admin/makeDataCount/" + idInPath + "/updateCitationsForDataset"+ optionalQueryParam);
     }
-
+    
+    /**
+     * Determine the "payload" storage size of a dataverse
+     *
+     * @param dataverseId
+     * @param apiToken
+     * @return response
+     */
+    static Response findDataverseStorageSize(String dataverseId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/" + dataverseId + "/storagesize");
+    }
 }

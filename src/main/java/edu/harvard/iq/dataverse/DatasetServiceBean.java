@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
@@ -11,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
+import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -866,10 +868,11 @@ public class DatasetServiceBean implements java.io.Serializable {
      * 
      * @param dataset
      * @param countCachedExtras boolean indicating if the cached disposable extras should also be counted
-     * (experimental; trying to figure out if it's worth implementing?)
      * @return total size 
-     * @throws java.lang.Exception if a DataFile has more than 1 replacement
-     *         or is unpublished and has a replacement.
+     * @throws IOException if it can't access the objects via StorageIO 
+     * (in practice, this can only happen when called with countCachedExtras=true; when run in the 
+     * default mode, the method doesn't need to access the storage system, as the 
+     * sizes of the main files are recorded in the database)
      */
     public long findStorageSize(Dataset dataset, boolean countCachedExtras) throws IOException {
         long total = 0L; 
@@ -887,6 +890,22 @@ public class DatasetServiceBean implements java.io.Serializable {
                 for (String cachedFileTag : storageIO.listAuxObjects()) {
                     total += storageIO.getAuxObjectSize(cachedFileTag);
                 }                
+            }
+        }
+        
+        // and finally,
+        if (countCachedExtras) {
+            // count the sizes of the files cached for the dataset itself
+            // (i.e., the metadata exports):
+            StorageIO<Dataset> datasetSIO = DataAccess.getStorageIO(dataset);
+            
+            for (String[] exportProvider : ExportService.getInstance(settingsService).getExportersLabels()) {
+                String exportLabel = "export_" + exportProvider[1] + ".cached";
+                try {
+                    total += datasetSIO.getAuxObjectSize(exportLabel);
+                } catch (IOException ioex) {
+                    // safe to ignore; object not cached
+                }
             }
         }
         

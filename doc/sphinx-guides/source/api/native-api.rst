@@ -75,6 +75,8 @@ Shows the combined size in bytes of all the files uploaded into the dataverse ``
     GET http://$SERVER/api/dataverses/$id/storagesize
 
 Both published and unpublished files will be counted, in the dataverse specified, and in all its sub-dataverses, recursively. 
+By default, only the archival files are counted - i.e., the files uploaded by users (plus the tab-delimited versions generated for tabular data files on ingest). If the optional argument ``includeCached=true`` is specified, the API will also add the sizes of all the extra files generated and cached by Dataverse - the resized thumbnail versions for image files, the metadata exports for published datasets, etc. 
+
 
 List Roles Defined in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

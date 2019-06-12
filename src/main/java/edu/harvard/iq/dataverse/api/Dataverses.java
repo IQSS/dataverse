@@ -598,10 +598,10 @@ public class Dataverses extends AbstractApiBean {
 
     @GET
     @Path("{identifier}/storagesize")
-    public Response getStorageSize(@PathParam("identifier") String dvIdtf) throws WrappedResponse {
+    public Response getStorageSize(@PathParam("identifier") String dvIdtf, @QueryParam("includeCached") boolean includeCached) throws WrappedResponse {
                 
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.datasize"),
-                execCommand(new GetDataverseStorageSizeCommand(req, findDataverseOrDie(dvIdtf))))));
+                execCommand(new GetDataverseStorageSizeCommand(req, findDataverseOrDie(dvIdtf), includeCached)))));
     }
     
     
