@@ -66,6 +66,16 @@ Show Contents of a Dataverse
 
     GET http://$SERVER/api/dataverses/$id/contents
 
+
+Report the data (file) size of a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Shows the combined size in bytes of all the files uploaded into the dataverse ``id``. ::
+
+    GET http://$SERVER/api/dataverses/$id/storagesize
+
+Both published and unpublished files will be counted, in the dataverse specified, and in all its sub-dataverses, recursively. 
+
 List Roles Defined in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
