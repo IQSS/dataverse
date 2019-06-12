@@ -132,7 +132,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                             }).start();
                             //Have seen broken pipe in PostPublishDataset workflow without this delay
                             i=0;
-                            while(digestInputStream.available()<=0 && i<100) {
+                            while(digestInputStream2.available()<=0 && i<100) {
                                 Thread.sleep(10);
                                 i++;
                             }
