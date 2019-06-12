@@ -4,7 +4,6 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
     <h:head>
     </h:head>
@@ -44,8 +43,8 @@
                         <h:outputLink styleClass="btn btn-default" value="/manage-templates.xhtml?dataverseId=#{TemplatePage.ownerId}">
                             <h:outputText value="#{bundle['dataset.template.returnBtn']}"/>
                         </h:outputLink>
-                        
-                        <h:outputText value="#{TeplatePage.template.name}"/>
+
+                        <h:outputText value="#{TemplatePage.template.name}"/>
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{TemplatePage.selectedTabIndex}">
                             <p:tab id="metadataMapTab" title="#{bundle['file.dataFilesTab.metadata.header']}"
                                    rendered="#{empty TemplatePage.editMode or TemplatePage.editMode == 'METADATA'}">
@@ -56,14 +55,6 @@
                                     <ui:param name="metadataBlocks" value="#{!empty TemplatePage.editMode ? TemplatePage.template.metadataBlocksForEdit.entrySet().toArray() : TemplatePage.template.metadataBlocksForView.entrySet().toArray()}"/>   
                                 </ui:include>
                             </p:tab>
-                                <p:tab id="termsTab" title="#{bundle['file.dataFilesTab.terms.header']}"
-                                   rendered="#{empty TemplatePage.editMode or TemplatePage.editMode == 'LICENSE' or TemplatePage.editMode == 'LICENSEADD'}}">
-                                    <ui:include src="dataset-license-terms.xhtml" >
-                                        <ui:param name="editMode" value="#{!empty TemplatePage.editMode ? 'LICENSE': ''}"/>
-                                        <ui:param name="termsOfUseAndAccess" value="#{TemplatePage.template.termsOfUseAndAccess}"/>
-                                        <ui:param name="datasetPage" value="false"/>               
-                                    </ui:include>
-                                </p:tab>                           
                         </p:tabView>
                     </ui:fragment>
                     <!-- Tabs -->
@@ -98,32 +89,23 @@
                                 <ui:param name="metadataBlocks" value="#{!empty TemplatePage.editMode ? TemplatePage.template.metadataBlocksForEdit.entrySet().toArray() : TemplatePage.template.metadataBlocksForView.entrySet().toArray()}"/>   
                             </ui:include>  
                         </ui:fragment>
-                        
-                        <ui:fragment rendered="#{TemplatePage.editMode == 'LICENSE' or TemplatePage.editMode == 'LICENSEADD'}">
-                            <ui:include src="dataset-license-terms.xhtml" >
-                                <ui:param name="datasetPage" value="false"/>
-                                <ui:param name="templatePage" value="true"/>
-                                <ui:param name="editMode" value="#{!empty TemplatePage.editMode ? 'LICENSE' : ''}"/>
-                                <ui:param name="termsOfUseAndAccess" value="#{TemplatePage.template.termsOfUseAndAccess}"/>   
-                            </ui:include> 
-                        </ui:fragment>
 
                         </ui:fragment>
                     <!-- Create/Save Dataset Button Panel -->
                     <ui:fragment rendered="#{TemplatePage.editMode == 'CREATE'}" >
                     <div class="button-block" jsf:rendered="#{!empty TemplatePage.editMode}">
-                        <p:commandButton styleClass="btn btn-default"  action="#{TemplatePage.save('Terms')}" update="@all"
-                                         value="#{bundle['dataset.create.add.terms'] }">  
+                        <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save()}" update="@all"
+                                         value="#{bundle.save}">
                              <f:ajax onerror="window.scrollTo(0, 0)" />
                         </p:commandButton>
                         <h:button styleClass="btn btn-default" value="#{bundle.cancel}" 
                                   outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}"></h:button>
                     </div>
                     </ui:fragment>
-                    <ui:fragment rendered="#{TemplatePage.editMode == 'METADATA' or TemplatePage.editMode == 'LICENSE' or TemplatePage.editMode == 'LICENSEADD'}" >
+                    <ui:fragment rendered="#{TemplatePage.editMode == 'METADATA'}">
                     <div class="button-block" jsf:rendered="#{!empty TemplatePage.editMode}">
-                        <p:commandButton styleClass="btn btn-default"  action="#{TemplatePage.save('')}" update="@all"
-                                         value="#{TemplatePage.editMode == 'LICENSEADD' ? bundle['dataset.manageTemplates.saveNewTerms'] : bundle.saveChanges}">
+                        <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save()}" update="@all"
+                                         value="#{bundle.saveChanges}">
                             <f:ajax onerror="window.scrollTo(0, 0)" />
                         </p:commandButton>
                         <h:button styleClass="btn btn-default" value="#{bundle.cancel}" 

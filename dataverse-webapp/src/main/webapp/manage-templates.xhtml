@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:jsf="http://xmlns.jcp.org/jsf">
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:head>
     </h:head>
     <h:body>
@@ -95,7 +95,7 @@
                                                actionListener="#{manageTemplatesPage.unselectDefault(template)}"
                                                update="@form,:messagePanel"
                                                oncomplete="bind_tooltip_popover();bind_bsui_components();">
-                                    <span class="glyphicon glyphicon-eye-open"></span>
+                                    <span class="glyphicon glyphicon-eye-open"/>
                                 </p:commandLink>
                                 <div class="btn-group" role="group">
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
@@ -103,28 +103,26 @@
                                                    action="#{manageTemplatesPage.viewSelectedTemplate(template)}"
                                                    oncomplete="PF('viewTemplate').show();bind_tooltip_popover();bind_bsui_components();"
                                                    update=":manageTemplatesForm">
-                                        <span class="glyphicon glyphicon-eye-open"></span>
+                                        <span class="glyphicon glyphicon-eye-open"/>
                                     </p:commandLink>
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                    title="#{bundle['dataset.manageTemplates.tab.action.btn.copy']}"
                                                    action="#{manageTemplatesPage.cloneTemplate(template)}"
                                                    update="@form"
                                                    oncomplete="bind_tooltip_popover();bind_bsui_components();">
-                                        <span class="glyphicon glyphicon-duplicate"></span>
+                                        <span class="glyphicon glyphicon-duplicate"/>
                                     </p:commandLink>
                                     <div class="btn-group" jsf:rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}">
-                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
+                                        <button type="button" class="btn btn-default dropdown-toggle"
+                                                data-toggle="dropdown"
+                                                aria-expanded="false">
+                                            <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']}
+                                            <span class="caret"/>
                                         </button>
                                         <ul class="dropdown-menu">
                                             <li>
                                                 <h:outputLink value="/template.xhtml?id=#{template.id}&#38;ownerId=#{manageTemplatesPage.dataverse.id}&#38;editMode=METADATA">
                                                     <h:outputText value="#{bundle['dataset.manageTemplates.tab.action.btn.edit.metadata']}" />
-                                                </h:outputLink>
-                                            </li>
-                                            <li>
-                                                <h:outputLink value="/template.xhtml?id=#{template.id}&#38;ownerId=#{manageTemplatesPage.dataverse.id}&#38;editMode=LICENSE">
-                                                    <h:outputText value="#{bundle['dataset.manageTemplates.tab.action.btn.edit.terms']}" />
                                                 </h:outputLink>
                                             </li>
                                         </ul>
@@ -135,7 +133,7 @@
                                                    action="#{manageTemplatesPage.setSelectedTemplate(template)}"
                                                    rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}"
                                                    oncomplete="PF('deleteConfirmation').show();bind_tooltip_popover();bind_bsui_components();">
-                                        <span class="glyphicon glyphicon-trash"></span>
+                                        <span class="glyphicon glyphicon-trash"/>
                                     </p:commandLink>
                                 </div>
                             </p:column>
@@ -165,7 +163,7 @@
                     <p:dialog id="viewTemplate" styleClass="largePopUp" header="#{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.header']}" widgetVar="viewTemplate" modal="true">
                         <div class="form-horizontal">
                             <div class="form-group">
-                                <label for="select_DatasetTemplate" class="col-sm-3 control-label">
+                                <label class="col-sm-3 control-label">
                                     #{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate']}
                                 </label>
                                 <div class="col-sm-7">
@@ -178,10 +176,6 @@
                         <ui:include src="metadataFragment.xhtml">
                             <ui:param name="managePage" value="true"/>
                             <ui:param name="metadataBlocks" value="#{TemplatePage.template.metadataBlocksForView.entrySet().toArray()}"/>
-                        </ui:include>
-                        <ui:include src="dataset-license-terms.xhtml">
-                            <ui:param name="managePage" value="true"/>
-                            <ui:param name="termsOfUseAndAccess" value="#{TemplatePage.template.termsOfUseAndAccess}" />
                         </ui:include>
                         <div class="button-block">
                             <p:commandButton type="button" value="#{bundle.close}" onclick="PF('viewTemplate').hide()" />
