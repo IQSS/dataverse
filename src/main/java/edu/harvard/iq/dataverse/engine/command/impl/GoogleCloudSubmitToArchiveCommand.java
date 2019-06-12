@@ -126,6 +126,11 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                                         logger.severe("Error creating bag: " + e.getMessage());
                                         // TODO Auto-generated catch block
                                         e.printStackTrace();
+                                        try {
+                                            digestInputStream.close();
+                                        } catch(Exception ex) {
+                                            logger.warning(ex.getLocalizedMessage());
+                                        }
                                         throw new RuntimeException("Error creating bag: " + e.getMessage());
                                     }
                                 }
@@ -136,7 +141,13 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                                 Thread.sleep(10);
                                 i++;
                             }
+                            if(i==100) {
+                                throw new IOException("Stream not available");
+                            }
                             Blob bag = bucket.create(spaceName + "/" + fileName, digestInputStream2, "application/zip", Bucket.BlobWriteOption.doesNotExist());
+                            if(bag.getSize()==0) {
+                                throw new IOException("Empty Bag");
+                            }
                             blobIdString = bag.getBlobId().getBucket() + "/" + bag.getBlobId().getName();
                             checksum = bag.getMd5ToHexString();
                             logger.fine("Bag: " + fileName + " added with checksum: " + checksum);
