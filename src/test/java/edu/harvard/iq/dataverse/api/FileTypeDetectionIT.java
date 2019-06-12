@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import javax.json.Json;
@@ -9,9 +10,15 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class FileTypeDetectionIT {
+
+    @BeforeClass
+    public static void setUp() {
+        RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+    }
 
     @Test
     public void testOverrideMimeType() {
