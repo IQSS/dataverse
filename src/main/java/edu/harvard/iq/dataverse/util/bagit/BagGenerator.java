@@ -818,7 +818,7 @@ public class BagGenerator {
         } else {
             info.append(
                     // FixMe - handle description having subfields better
-                    WordUtils.wrap(getSingleValue(aggregation.getAsJsonObject(descriptionTerm.getLabel()),
+                    WordUtils.wrap(getSingleValue(aggregation.get(descriptionTerm.getLabel()),
                             descriptionTextTerm.getLabel()), 78, CRLF + " ", true));
 
             info.append(CRLF);
@@ -854,32 +854,39 @@ public class BagGenerator {
     }
 
     /**
-     * Kludge - handle when a single string is sent as an array of 1 string and, for
-     * cases where multiple values are sent when only one is expected, create a
-     * concatenated string so that information is not lost.
+     * Kludge - compound values (e.g. for descriptions) are sent as an array of
+     * objects containing key/values whereas a single value is sent as one object.
+     * For cases where multiple values are sent, create a concatenated string so
+     * that information is not lost.
      * 
-     * @param jsonObject
+     * @param jsonElement
      *            - the root json object
      * @param key
      *            - the key to find a value(s) for
      * @return - a single string
      */
-    String getSingleValue(JsonObject jsonObject, String key) {
+    String getSingleValue(JsonElement jsonElement, String key) {
         String val = "";
-        if (jsonObject.get(key).isJsonPrimitive()) {
-            val = jsonObject.get(key).getAsString();
-        } else if (jsonObject.get(key).isJsonArray()) {
-            Iterator<JsonElement> iter = jsonObject.getAsJsonArray(key).iterator();
+        if (jsonElement.isJsonObject()) {
+            if (((JsonObject) jsonElement).get(key).isJsonPrimitive()) {
+                val = ((JsonObject) jsonElement).get(key).getAsString();
+            } else {
+                // shouldn't happen
+                logger.warning("Unexpected non-primative element");
+            }
+        } else {
+            //Should always be an array of objects
+            Iterator<JsonElement> iter = ((JsonArray) jsonElement).iterator();
             ArrayList<String> stringArray = new ArrayList<String>();
             while (iter.hasNext()) {
-                stringArray.add(iter.next().getAsString());
+                stringArray.add(((JsonObject) iter.next()).get(key).getAsString());
             }
             if (stringArray.size() > 1) {
                 val = StringUtils.join((String[]) stringArray.toArray(), ",");
             } else {
                 val = stringArray.get(0);
             }
-            logger.warning("Multiple values found for: " + key + ": " + val);
+            logger.fine("Multiple values found for: " + key + ": " + val);
         }
         return val;
     }
