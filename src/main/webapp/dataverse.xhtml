@@ -17,7 +17,7 @@
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
-                    <f:viewParam name="alias" value="#{DataversePage.dataverse.alias}"/>
+                    <o:viewParam name="alias" value="#{DataversePage.dataverse.alias}" default="root"/>
                     <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
                     <f:viewParam name="editMode" value="#{DataversePage.editMode}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
