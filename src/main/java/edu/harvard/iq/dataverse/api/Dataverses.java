@@ -98,6 +98,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
@@ -599,8 +600,8 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/storagesize")
     public Response getStorageSize(@PathParam("identifier") String dvIdtf) throws WrappedResponse {
                 
-        return response(req -> ok("total size of the stored files: " 
-                + execCommand(new GetDataverseStorageSizeCommand(req, findDataverseOrDie(dvIdtf)))));
+        return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.datasize"),
+                execCommand(new GetDataverseStorageSizeCommand(req, findDataverseOrDie(dvIdtf))))));
     }
     
     
