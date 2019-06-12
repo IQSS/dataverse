@@ -181,24 +181,12 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                     logger.warning("GoogleCloud Submision Workflow aborted: Dataset locked for pidRegister");
                     return new Failure("Dataset locked");
                 }
-            } catch (FileNotFoundException e1) {
-                logger.warning(e1.getLocalizedMessage());
-
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            } catch (IOException e1) {
-                // TODO Auto-generated catch block
-                logger.warning(e1.getLocalizedMessage());
-
-                e1.printStackTrace();
-            } catch (NoSuchAlgorithmException e1) {
-                // TODO Auto-generated catch block
-                logger.warning(e1.getLocalizedMessage());
-
-                e1.printStackTrace();
-                
             } catch (Exception e) {
                 logger.warning(e.getLocalizedMessage());
+                e.printStackTrace();
+                return new Failure("GoogleCloud Submission Failure",
+                        e.getLocalizedMessage() + ": check log for details");
+
             }
             return WorkflowStepResult.OK;
         } else {
