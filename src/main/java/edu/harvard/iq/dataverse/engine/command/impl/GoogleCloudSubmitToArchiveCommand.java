@@ -126,17 +126,28 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                                         logger.severe("Error creating bag: " + e.getMessage());
                                         // TODO Auto-generated catch block
                                         e.printStackTrace();
+                                        try {
+                                            digestInputStream.close();
+                                        } catch(Exception ex) {
+                                            logger.warning(ex.getLocalizedMessage());
+                                        }
                                         throw new RuntimeException("Error creating bag: " + e.getMessage());
                                     }
                                 }
                             }).start();
                             //Have seen broken pipe in PostPublishDataset workflow without this delay
                             i=0;
-                            while(digestInputStream.available()<=0 && i<100) {
+                            while(digestInputStream2.available()<=0 && i<100) {
                                 Thread.sleep(10);
                                 i++;
                             }
+                            if(i==100) {
+                                throw new IOException("Stream not available");
+                            }
                             Blob bag = bucket.create(spaceName + "/" + fileName, digestInputStream2, "application/zip", Bucket.BlobWriteOption.doesNotExist());
+                            if(bag.getSize()==0) {
+                                throw new IOException("Empty Bag");
+                            }
                             blobIdString = bag.getBlobId().getBucket() + "/" + bag.getBlobId().getName();
                             checksum = bag.getMd5ToHexString();
                             logger.fine("Bag: " + fileName + " added with checksum: " + checksum);
@@ -170,24 +181,12 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                     logger.warning("GoogleCloud Submision Workflow aborted: Dataset locked for pidRegister");
                     return new Failure("Dataset locked");
                 }
-            } catch (FileNotFoundException e1) {
-                logger.warning(e1.getLocalizedMessage());
-
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            } catch (IOException e1) {
-                // TODO Auto-generated catch block
-                logger.warning(e1.getLocalizedMessage());
-
-                e1.printStackTrace();
-            } catch (NoSuchAlgorithmException e1) {
-                // TODO Auto-generated catch block
-                logger.warning(e1.getLocalizedMessage());
-
-                e1.printStackTrace();
-                
             } catch (Exception e) {
                 logger.warning(e.getLocalizedMessage());
+                e.printStackTrace();
+                return new Failure("GoogleCloud Submission Failure",
+                        e.getLocalizedMessage() + ": check log for details");
+
             }
             return WorkflowStepResult.OK;
         } else {
