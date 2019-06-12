@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -854,5 +855,41 @@ public class DatasetServiceBean implements java.io.Serializable {
             }
 
         }
+    }
+    
+    public long findStorageSize(Dataset dataset) throws IOException {
+        return findStorageSize(dataset, false);
+    }
+    
+    /**
+     * Returns the total byte size of the files in this dataset 
+     * 
+     * @param dataset
+     * @param countCachedExtras boolean indicating if the cached disposable extras should also be counted
+     * (experimental; trying to figure out if it's worth implementing?)
+     * @return total size 
+     * @throws java.lang.Exception if a DataFile has more than 1 replacement
+     *         or is unpublished and has a replacement.
+     */
+    public long findStorageSize(Dataset dataset, boolean countCachedExtras) throws IOException {
+        long total = 0L; 
+        
+        for (DataFile datafile : dataset.getFiles()) {
+            total += datafile.getFilesize(); 
+            
+            if (!countCachedExtras) {
+                if (datafile.isTabularData()) {
+                    // count the size of the stored original, in addition to the main tab-delimited file:
+                    total += datafile.getDataTable().getOriginalFileSize(); 
+                }
+            } else {
+                StorageIO<DataFile> storageIO = datafile.getStorageIO();
+                for (String cachedFileTag : storageIO.listAuxObjects()) {
+                    total += storageIO.getAuxObjectSize(cachedFileTag);
+                }                
+            }
+        }
+        
+        return total; 
     }
 }

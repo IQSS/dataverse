@@ -37,6 +37,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseLinkingDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseStorageSizeCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ImportDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
@@ -594,6 +595,15 @@ public class Dataverses extends AbstractApiBean {
         ));
     }
 
+    @GET
+    @Path("{identifier}/storagesize")
+    public Response getStorageSize(@PathParam("identifier") String dvIdtf) throws WrappedResponse {
+                
+        return response(req -> ok("total size of the stored files: " 
+                + execCommand(new GetDataverseStorageSizeCommand(req, findDataverseOrDie(dvIdtf)))));
+    }
+    
+    
     @GET
     @Path("{identifier}/roles")
     public Response listRoles(@PathParam("identifier") String dvIdtf) {
