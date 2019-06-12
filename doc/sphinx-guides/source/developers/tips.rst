@@ -150,6 +150,14 @@ Git on Mac
 
 On a Mac, you won't have git installed unless you have "Command Line Developer Tools" installed but running ``git clone`` for the first time will prompt you to install them.
 
+Sample Data
+-----------
+
+You may want to populate your installation of Dataverse with sample data. You have a couple options:
+
+- Code in https://github.com/IQSS/dataverse-sample-data (recommended).
+- Scripts called from ``scripts/deploy/phoenix.dataverse.org/post``.
+
 ----
 
 Previous: :doc:`dev-environment` | Next: :doc:`troubleshooting`

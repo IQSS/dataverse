@@ -145,6 +145,7 @@
     <field name="dvObjectType" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="metadataSource" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="isHarvested" type="boolean" stored="true" indexed="true" multiValued="false"/>
+    <field name="fileDeleted" type="boolean" stored="true" indexed="true" multiValued="false"/>
 
     <field name="dvName" type="text_en" stored="true" indexed="true" multiValued="false"/>
     <field name="dvAlias" type="text_en" stored="true" indexed="true" multiValued="false"/>

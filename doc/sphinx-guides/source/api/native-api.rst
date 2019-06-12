@@ -21,9 +21,11 @@ Create a Dataverse
 ~~~~~~~~~~~~~~~~~~
 
 Generates a new dataverse under ``$id``. Expects a JSON content describing the dataverse, as in the example below.
-If ``$id`` is omitted, a root dataverse is created. ``$id`` can either be a dataverse id (long) or a dataverse alias (more robust). ::
+If ``$id`` is omitted, a root dataverse is created. ``$id`` can either be a dataverse id (long) or a dataverse alias (more robust). In the example below, "root" is the id, which means that the dataverse will be created as a child of the root dataverse::
 
-``curl -H "X-Dataverse-key:$API_TOKEN" http://$SERVER/api/dataverses/$id --upload-file sample.json``
+``export id=root`
+
+``curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/dataverses/$id --upload-file dataverse-complete.json``
 
 Download the :download:`JSON example <../_static/api/dataverse-complete.json>` file and modified to create dataverses to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The controlled vocabulary for ``dataverseType`` is
 
@@ -444,6 +446,8 @@ A more detailed "add" example using curl::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"true"}' "https://example.dataverse.edu/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
 
+Please note that it's possible to "trick" Dataverse into giving a file a content type (MIME type) of your choosing. For example, you can make a text file be treated like a video file with ``-F 'file=@README.txt;type=video/mpeg4'``, for example. If Dataverse does not properly detect a file type, specifying the content type via API like this a potential workaround.
+
 Example python code to add a file. This may be run by changing these parameters in the sample code:
 
 * ``dataverse_server`` - e.g. https://demo.dataverse.org
@@ -737,6 +741,25 @@ Note that this requires "superuser" credentials::
 (``{id}`` is the database id of the file to process)
 
 Note: at present, the API cannot be used on a file that's already successfully ingested as tabular.
+
+.. _redetect-file-type:
+
+Redetect File Type
+~~~~~~~~~~~~~~~~~~
+
+Dataverse uses a variety of methods for determining file types (MIME types or content types) and these methods (listed below) are updated periodically. If you have files that have an unknown file type, you can have Dataverse attempt to redetect the file type.
+
+When using the curl command below, you can pass ``dryRun=true`` if you don't want any changes to be saved to the database. Change this to ``dryRun=false`` (or omit it) to save the change. In the example below, the file is identified by database id "42".
+
+``export FILE_ID=42``
+
+``curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/files/$FILE_ID/redetect?dryRun=true``
+
+Currently the following methods are used to detect file types:
+
+- The file type detected by the browser (or sent via API).
+- JHOVE: http://jhove.openpreservation.org
+- As a last resort the file extension (e.g. ".ipybn") is used, defined in a file called ``MimeTypeDetectionByFileExtension.properties``.
 
 Replacing Files
 ~~~~~~~~~~~~~~~
