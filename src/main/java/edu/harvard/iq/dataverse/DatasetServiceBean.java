@@ -877,6 +877,10 @@ public class DatasetServiceBean implements java.io.Serializable {
     public long findStorageSize(Dataset dataset, boolean countCachedExtras) throws IOException {
         long total = 0L; 
         
+        if (dataset.isHarvested()) {
+            return 0L;
+        }
+        
         for (DataFile datafile : dataset.getFiles()) {
             total += datafile.getFilesize(); 
             
