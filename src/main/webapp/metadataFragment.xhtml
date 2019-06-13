@@ -124,7 +124,7 @@
                                                     we wrap them in a ui:repeat that iterates on a single list. Note: dummyVar is never used--></ui:remove>
                                                 <ui:repeat value="#{Collections:singletonList('')}" var="dummyVar">
                                                     <div class="form-col-container col-sm-12">
-                                                        <ui:repeat value="#{dsf.datasetFieldValues}" var="dsfv" varStatus="valCount" >
+                                                        <ui:repeat value="#{dsf.datasetFieldValues}" var="dsfv" varStatus="valCount">
                                                             <div class="form-group dataset-field-values">
                                                                 <div class="form-col-container col-sm-9 edit-field">
                                                                     <ui:include src="datasetFieldForEditFragment.xhtml">
@@ -134,14 +134,14 @@
                                                                 </div>
                                                                 <!-- Add / Remove buttons -->
                                                                 <div class="col-xs-3 field-add-delete" jsf:rendered="#{dsf.datasetFieldType.allowMultiples and !dsf.datasetFieldType.controlledVocabulary}">
-                                                                    <p:commandLink tabindex="#{block.index+1}" title="#{bundle.add}"
+                                                                    <p:commandLink title="#{bundle.add}"
                                                                                    styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
                                                                                    actionListener="#{dsf.addDatasetFieldValue(valCount.index + 1)}"
                                                                                    update=":#{p:resolveClientIds('@id(editPrimitiveValueFragment)', view)}"
                                                                                    oncomplete="javascript:bind_bsui_components();">
                                                                         <span class="glyphicon glyphicon-plus no-text"/>
                                                                     </p:commandLink>
-                                                                    <p:commandLink tabindex="#{block.index+1}" title="#{bundle.delete}"
+                                                                    <p:commandLink title="#{bundle.delete}"
                                                                                    styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
                                                                                    rendered="#{dsf.datasetFieldValues.size() > 1}"
                                                                                    actionListener="#{dsf.removeDatasetFieldValue(valCount.index)}"
@@ -153,17 +153,16 @@
                                                             </div>
                                                         </ui:repeat>
                                                         <ui:fragment rendered="#{dsf.datasetFieldType.controlledVocabulary}">
-                                                            <p:selectOneMenu tabindex="#{block.index+1}"
-                                                                             value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" styleClass="form-control primitive SELECT TESTTEST"
+                                                            <p:selectOneMenu value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" styleClass="form-control primitive"
                                                                              rendered="#{!dsf.datasetFieldType.allowMultiples}">
                                                                 <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
-                                                                <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
+                                                                <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
                                                             </p:selectOneMenu>
                                                             <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{dsf.datasetFieldType.allowMultiples}">
                                                                 <p:selectManyCheckbox value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
                                                                                       layout="pageDirection">
                                                                     <f:selectItem itemLabel="#{bundle.select}" class="chkbox-label-margin" itemValue="" noSelectionOption="true"/>
-                                                                    <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
+                                                                    <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
                                                                 </p:selectManyCheckbox>
                                                             </div>
                                                             <div class="alert-danger" jsf:rendered="#{!empty dsf.validationMessage}">
@@ -204,7 +203,7 @@
                                                                 </ui:fragment>
                                                                 <!-- MOVED SELECT ONE TO dataFieldForEdit -->
                                                                 <div jsf:rendered="#{subdsf.datasetFieldType.controlledVocabulary}">
-                                                                    <p:selectOneMenu tabindex="#{block.index+1}" value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;"
+                                                                    <p:selectOneMenu value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;"
                                                                                      rendered="#{!subdsf.datasetFieldType.allowMultiples}">
                                                                         <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
                                                                         <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
@@ -223,14 +222,14 @@
                                                         </ui:repeat>
                                                     </div>
                                                     <div class="col-sm-3 field-add-delete" jsf:rendered="#{dsf.datasetFieldType.allowMultiples and !dsf.datasetFieldType.controlledVocabulary}">
-                                                        <p:commandLink tabindex="#{block.index+1}" title="#{bundle.add}"
+                                                        <p:commandLink title="#{bundle.add}"
                                                                        styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
                                                                        actionListener="#{dsf.addDatasetFieldCompoundValue(valCount.index + 1)}"   
                                                                        update=":#{p:resolveClientIds('@id(editCompoundValueFragment)', view)}"
                                                                        oncomplete="javascript:bind_bsui_components();">
                                                             <span class="glyphicon glyphicon-plus no-text"/>
                                                         </p:commandLink>
-                                                        <p:commandLink tabindex="#{block.index+1}" title="#{bundle.delete}"
+                                                        <p:commandLink title="#{bundle.delete}"
                                                                        styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
                                                                        rendered="#{dsf.datasetFieldCompoundValues.size() > 1}"
                                                                        actionListener="#{dsf.removeDatasetFieldCompoundValue(valCount.index)}"
