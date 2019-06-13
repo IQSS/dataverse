@@ -481,7 +481,8 @@
                             </script>
                             <div>
                                 <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
-                                    #{ApiTokenPage.checkForApiToken() ? bundle['apitoken.regenerateBtn'] : bundle['apitoken.generateBtn']}                                </button>
+                                    #{ApiTokenPage.checkForApiToken() ? bundle['apitoken.regenerateBtn'] : bundle['apitoken.generateBtn']}
+                                </button>
                             </div>
                         </p:tab>
                         <ui:remove>
@@ -649,10 +650,10 @@
                                     <div class="col-sm-12 button-block">
                                         <p:commandButton id="save" styleClass="btn btn-default"
                                                          value="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn']:bundle.saveChanges}"
-                                                         action="#{DataverseUserPage.save}" update="@form,:messagePanel,:userDisplayInfoTitle" />
-                                        <p:commandButton id="cancel" styleClass="btn btn-default" value="#{bundle.cancel}"
+                                                         action="#{DataverseUserPage.save}" update="@form,:messagePanel,:userDisplayInfoTitle"/>
+                                        <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}"
                                                          action="#{DataverseUserPage.cancel}" process="@this" update="@form">
-                                            <p:resetInput target="@form" />
+                                            <p:resetInput target="@form"/>
                                         </p:commandButton>
                                     </div>
                                 </div>
