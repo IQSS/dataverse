@@ -293,8 +293,7 @@
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
-            <!-- "For users who are still on JSF 2.2, use 2.7.1 instead." http://omnifaces.org -->
-            <version>2.7.1</version>
+            <version>1.7</version> <!-- Or 1.8-SNAPSHOT -->
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
