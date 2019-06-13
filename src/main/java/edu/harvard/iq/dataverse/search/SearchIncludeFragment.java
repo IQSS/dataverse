@@ -307,7 +307,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         String allTypesFilterQuery = SearchFields.TYPE + ":(dataverses OR datasets OR files)";
         filterQueriesFinalAllTypes.add(allTypesFilterQuery);
 
-        if (page == 0) {
+        if (page <= 1) {
             // http://balusc.omnifaces.org/2015/10/the-empty-string-madness.html
             page = 1;
         }
