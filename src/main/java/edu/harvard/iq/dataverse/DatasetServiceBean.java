@@ -883,7 +883,10 @@ public class DatasetServiceBean implements java.io.Serializable {
             if (!countCachedExtras) {
                 if (datafile.isTabularData()) {
                     // count the size of the stored original, in addition to the main tab-delimited file:
-                    total += datafile.getDataTable().getOriginalFileSize(); 
+                    Long originalFileSize = datafile.getDataTable().getOriginalFileSize();
+                    if (originalFileSize != null) { 
+                        total += originalFileSize;
+                    }
                 }
             } else {
                 StorageIO<DataFile> storageIO = datafile.getStorageIO();
