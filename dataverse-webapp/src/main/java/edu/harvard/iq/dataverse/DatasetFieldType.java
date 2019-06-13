@@ -530,13 +530,12 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         if (fieldType != null) {
 
             /**
-             * @todo made more decisions based on fieldType: index as dates,
-             * integers, and floats so we can do range queries etc.
+             * make more decisions based on fieldType: index as dates, url (?)
              */
-            if (fieldType.equals(FieldType.DATE)) {
-                solrType = SolrField.SolrType.DATE;
-            } else if (fieldType.equals(FieldType.EMAIL)) {
-                solrType = SolrField.SolrType.EMAIL;
+            if(fieldType.equals(FieldType.INT)) {
+                solrType = SolrField.SolrType.INTEGER;
+            } else if(fieldType.equals(FieldType.FLOAT)) {
+                solrType = SolrField.SolrType.FLOAT;
             }
 
             Boolean parentAllowsMultiplesBoolean = false;
@@ -555,7 +554,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
                 makeSolrFieldMultivalued = false;
             }
 
-            return new SolrField(name, solrType, makeSolrFieldMultivalued, facetable);
+            return new SolrField(name, solrType, makeSolrFieldMultivalued, facetable, true);
 
         } else {
             /**
@@ -563,7 +562,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
              */
             String oddValue = name + getTmpNullFieldTypeIdentifier();
             boolean makeSolrFieldMultivalued = false;
-            SolrField solrField = new SolrField(oddValue, solrType, makeSolrFieldMultivalued, facetable);
+            SolrField solrField = new SolrField(oddValue, solrType, makeSolrFieldMultivalued, facetable, true);
             return solrField;
         }
     }

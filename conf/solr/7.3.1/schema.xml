@@ -40,34 +40,34 @@
 
 <schema name="default-config" version="1.6">
     <!-- attribute "name" is the name of this schema and is only used for display purposes.
-       version="x.y" is Solr's version number for the schema syntax and 
+       version="x.y" is Solr's version number for the schema syntax and
        semantics.  It should not normally be changed by applications.
 
-       1.0: multiValued attribute did not exist, all fields are multiValued 
+       1.0: multiValued attribute did not exist, all fields are multiValued
             by nature
-       1.1: multiValued attribute introduced, false by default 
-       1.2: omitTermFreqAndPositions attribute introduced, true by default 
+       1.1: multiValued attribute introduced, false by default
+       1.2: omitTermFreqAndPositions attribute introduced, true by default
             except for text fields.
        1.3: removed optional field compress feature
        1.4: autoGeneratePhraseQueries attribute introduced to drive QueryParser
-            behavior when a single string produces multiple tokens.  Defaults 
+            behavior when a single string produces multiple tokens.  Defaults
             to off for version >= 1.4
-       1.5: omitNorms defaults to true for primitive field types 
+       1.5: omitNorms defaults to true for primitive field types
             (int, float, boolean, string...)
        1.6: useDocValuesAsStored defaults to true.
     -->
 
     <!-- Valid attributes for fields:
      name: mandatory - the name for the field
-     type: mandatory - the name of a field type from the 
+     type: mandatory - the name of a field type from the
        fieldTypes section
      indexed: true if this field should be indexed (searchable or sortable)
      stored: true if this field should be retrievable
      docValues: true if this field should have doc values. Doc Values is
        recommended (required, if you are using *Point fields) for faceting,
        grouping, sorting and function queries. Doc Values will make the index
-       faster to load, more NRT-friendly and more memory-efficient. 
-       They are currently only supported by StrField, UUIDField, all 
+       faster to load, more NRT-friendly and more memory-efficient.
+       They are currently only supported by StrField, UUIDField, all
        *PointFields, and depending on the field type, they might require
        the field to be single-valued, be required or have a default value
        (check the documentation of the field type you're interested in for
@@ -82,9 +82,9 @@
        given field.
        When using MoreLikeThis, fields used for similarity should be
        stored for best performance.
-     termPositions: Store position information with the term vector.  
+     termPositions: Store position information with the term vector.
        This will increase storage costs.
-     termOffsets: Store offset information with the term vector. This 
+     termOffsets: Store offset information with the term vector. This
        will increase storage costs.
      required: The field is required.  It will throw an error if the
        value does not exist
@@ -102,10 +102,10 @@
     <!-- In this _default configset, only four fields are pre-declared:
          id, _version_, and _text_ and _root_. All other fields will be type guessed and added via the
          "add-unknown-fields-to-the-schema" update request processor chain declared in solrconfig.xml.
-         
-         Note that many dynamic fields are also defined - you can use them to specify a 
+
+         Note that many dynamic fields are also defined - you can use them to specify a
          field's type via field naming conventions - see below.
-  
+
          WARNING: The _text_ catch-all field will significantly increase your index size.
          If you don't need it, consider removing it and the corresponding copyField directive."
     -->
@@ -115,12 +115,12 @@
     <field name="_version_" type="plong" indexed="false" stored="false"/>
     <field name="_root_" type="string" indexed="true" stored="false" docValues="false" />
 
-    
-     
-    
-    
-<!-- Start: Dataverse-specific -->    
-    
+
+
+
+
+<!-- Start: Dataverse-specific -->
+
     <!-- catchall field, containing all other searchable text fields (implemented
         via copyField further on in this schema  -->
     <!-- Dataverse solr 7.3.0: for some reason the old text wasn't working so switched to _text_ for copyfields -->
@@ -128,8 +128,8 @@
         <field name="_text_" type="text_general" indexed="true" stored="false" multiValued="true"/>
     <!-- catchall text field that indexes tokens both normally and in reverse for efficient
         leading wildcard queries. -->
-    <field name="text_rev" type="text_general_rev" indexed="true" stored="false" multiValued="true"/>    
-    <field name="name" type="text_en" indexed="true" stored="true"/> 
+    <field name="text_rev" type="text_general_rev" indexed="true" stored="false" multiValued="true"/>
+    <field name="name" type="text_en" indexed="true" stored="true"/>
 
 
 
@@ -154,7 +154,7 @@
     <field name="dvCategory" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="categoryOfDataverse" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="identifierOfDataverse" type="string" stored="true" indexed="true" multiValued="false"/>
-    
+
     <field name="publicationDate" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="dsPublicationDate" type="string" stored="true" indexed="true" multiValued="false"/>
 
@@ -222,234 +222,21 @@
     <field name="dsPersistentId" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="filePersistentId" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <!-- Dynamic Dataverse fields from http://localhost:8080/api/admin/index/solr/schema -->
-    <field name="ARCS1" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="ARCS2" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="ARCS3" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="ARCS4" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="ARCS5" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI1" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI10" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI11" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI2" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI3" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI4" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI5" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI6" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI7" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI8" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI9" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="accessToSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="actionsToMinimizeLoss" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="alternativeTitle" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="alternativeURL" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="astroFacility" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="astroInstrument" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="astroObject" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="astroType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="author" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="authorAffiliation" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="authorIdentifier" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="authorIdentifierScheme" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="authorName" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="characteristicOfSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="city" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="classificationSchemaCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="cleaningOperations" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="collectionMode" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="collectorTraining" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="contributor" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="contributorName" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="contributorType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="controlOperations" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="country" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Depth" type="tfloat" multiValued="false" stored="true" indexed="true"/>
-    <field name="coverage.ObjectCount" type="tint" multiValued="false" stored="true" indexed="true"/>
-    <field name="coverage.ObjectDensity" type="tfloat" multiValued="false" stored="true" indexed="true"/>
-    <field name="coverage.Polarization" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="coverage.Redshift.MaximumValue" type="tfloat" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Redshift.MinimumValue" type="tfloat" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.RedshiftValue" type="tfloat" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.SkyFraction" type="tfloat" multiValued="false" stored="true" indexed="true"/>
-    <field name="coverage.Spatial" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Spectral.Bandpass" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Spectral.CentralWavelength" type="tfloat" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Spectral.MaximumWavelength" type="tfloat" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Spectral.MinimumWavelength" type="tfloat" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Spectral.Wavelength" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Temporal" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Temporal.StartTime" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Temporal.StopTime" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="dataCollectionSituation" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="dataCollector" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="dataSources" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="datadePublicao" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="datasetContact" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="datasetContactAffiliation" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="datasetContactEmail" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="datasetContactName" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="datasetLevelErrorNotes" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="dateOfCollection" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="dateOfCollectionEnd" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="dateOfCollectionStart" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="dateOfDeposit" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="datesAdditionalInformationCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="depositor" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="deviationsFromSampleDesign" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="distributionDate" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="distributor" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="distributorAbbreviation" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="distributorAffiliation" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="distributorLogoURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="distributorName" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="distributorURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="dsDescription" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="dsDescriptionDate" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="dsDescriptionValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="eastLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="frequencyOfDataCollection" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="geographicBoundingBox" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="geographicCoverage" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="geographicUnit" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="grantNumber" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="grantNumberAgency" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="grantNumberValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="gsdAccreditation" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="gsdCoordinator" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="gsdCourseName" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="gsdFacultyName" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="gsdPrizes" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="gsdProgramBrief" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="gsdRecommendation" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="gsdSemester" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="gsdSiteType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="gsdStudentName" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="gsdStudentProgram" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="gsdTags" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="gsdTypes" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="hbgdkiAnthropometry" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiBiosampleType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="hbgdkiBirthWeight" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiFeedingCare" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiGestationalAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiImmunizations" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiInfantChildhoodMorbidity" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiIntervention" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiLowerLimitAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiMaternalChar" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiNeurocognitiveDev" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiOther" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiPregnancyBirth" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiSocioeconomicChar" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiStudyName" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiStudyRegistry" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="hbgdkiStudyRegistryNumber" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="hbgdkiStudyRegistryType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="hbgdkiStudyType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="hbgdkiUnitsLowerLimitAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiUnitsUpperLimitAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiUpperLimitAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiWaterSanHygiene" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="journalArticleType" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="journalIssue" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="journalPubDate" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="journalVolume" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="journalVolumeIssue" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="keyword" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="keywordValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="keywordVocabulary" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="keywordVocabularyURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="kindOfData" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="language" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="localdePublicao" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="mraCollection" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="northLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="notesText" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="numero" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="originOfSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="otherDataAppraisal" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="otherGeographicCoverage" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="otherId" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="otherIdAgency" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="otherIdValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="otherReferences" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="producer" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="producerAbbreviation" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="producerAffiliation" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="producerLogoURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="producerName" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="producerURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="productionDate" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="productionPlace" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="proprietrio" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="provenanceCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="psiBehavior" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="psiDonor" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="psiHealthArea" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="psiIntervention" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="psiPopulation" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="psiProductsServices" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="psiStudyDesignElement" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="psiStudyType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="publication" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="publicationCitation" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="publicationIDNumber" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="publicationIDType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="publicationURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="redshiftType" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="relatedDatasets" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="relatedMaterial" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="researchInstrument" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="resolution.Redshift" type="tfloat" multiValued="false" stored="true" indexed="true"/>
-    <field name="resolution.Spatial" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="resolution.Spectral" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="resolution.Temporal" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="responseRate" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="rightsAvailabilityCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="samplingErrorEstimates" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="samplingProcedure" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="series" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="seriesInformation" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="seriesName" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="socialScienceNotes" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="socialScienceNotesSubject" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="socialScienceNotesText" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="socialScienceNotesType" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="software" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="softwareName" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="softwareVersion" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="sourceCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="southLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="state" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="studyAssayCellType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="studyAssayMeasurementType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="studyAssayOrganism" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="studyAssayOtherMeasurmentType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="studyAssayOtherOrganism" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="studyAssayPlatform" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="studyAssayTechnologyType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="studyDesignType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="studyFactorType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="subject" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="subtitle" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="targetSampleActualSize" type="tint" multiValued="false" stored="true" indexed="true"/>
-    <field name="targetSampleSize" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="targetSampleSizeFormula" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="timeMethod" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="timePeriodCovered" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="timePeriodCoveredEnd" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="timePeriodCoveredStart" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="title" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="titulo" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="topicClassValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="topicClassVocab" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="topicClassVocabURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="topicClassification" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="unitOfAnalysis" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="universe" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="variablesCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="weighting" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="westLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
 
+    <!--    Dynamic data fields with respective copy fields for catchall -->
+    <dynamicField name="dsf_txt_*" type="text_en" indexed="true" stored="true" multiValued="true" />
+    <dynamicField name="dsf_str_*" type="string" indexed="true" stored="true" multiValued="true" />
+    <dynamicField name="dsf_int_*" type="pint" indexed="true" stored="true" multiValued="true" />
+    <dynamicField name="dsf_flt_*" type="pfloat" indexed="true" stored="true" multiValued="true" />
+<!--    <dynamicField name="dsf_eml_*" type="text_en" indexed="true" stored="true" multiValued="true" />-->
+<!--    <dynamicField name="dsf_dat_*" type="text_en" indexed="true" stored="true" multiValued="true" />-->
+
+    <copyField source="dsf_txt_*" dest="_text_" maxChars="3000" />
+    <copyField source="dsf_str_*" dest="_text_" maxChars="3000" />
+    <copyField source="dsf_int_*" dest="_text_" maxChars="3000" />
+    <copyField source="dsf_flt_*" dest="_text_" maxChars="3000" />
+<!--    <copyField source="dsf_eml_*" dest="_text_" maxChars="3000" />-->
+<!--    <copyField source="dsf_dat_*" dest="_text_" maxChars="3000" />-->
 
 
     <copyField source="description" dest="_text_" maxChars="3000"/>
@@ -493,9 +280,9 @@
     <!-- Create a string version of author for faceting -->
     <!-- <copyField source="author" dest="author_s"/> -->
 
-    <!-- Above, multiple source fields are copied to the [text] field. 
-        Another way to map multiple source fields to the same 
-        destination field is to use the dynamic field syntax. 
+    <!-- Above, multiple source fields are copied to the [text] field.
+        Another way to map multiple source fields to the same
+        destination field is to use the dynamic field syntax.
         copyField also supports a maxChars to copy setting.  -->
 
     <!-- <copyField source="*_t" dest="_text_" maxChars="3000"/> -->
@@ -507,235 +294,9 @@
     <!-- <copyField source="*_i" dest="_text_" maxChars="3000"/> -->
 
     <!-- Dataverse copyField from http://localhost:8080/api/admin/index/solr/schema -->
-    <copyField source="ARCS1" dest="_text_" maxChars="3000"/>
-    <copyField source="ARCS2" dest="_text_" maxChars="3000"/>
-    <copyField source="ARCS3" dest="_text_" maxChars="3000"/>
-    <copyField source="ARCS4" dest="_text_" maxChars="3000"/>
-    <copyField source="ARCS5" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI1" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI10" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI11" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI2" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI3" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI4" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI5" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI6" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI7" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI8" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI9" dest="_text_" maxChars="3000"/>
-    <copyField source="accessToSources" dest="_text_" maxChars="3000"/>
-    <copyField source="actionsToMinimizeLoss" dest="_text_" maxChars="3000"/>
-    <copyField source="alternativeTitle" dest="_text_" maxChars="3000"/>
-    <copyField source="alternativeURL" dest="_text_" maxChars="3000"/>
-    <copyField source="astroFacility" dest="_text_" maxChars="3000"/>
-    <copyField source="astroInstrument" dest="_text_" maxChars="3000"/>
-    <copyField source="astroObject" dest="_text_" maxChars="3000"/>
-    <copyField source="astroType" dest="_text_" maxChars="3000"/>
-    <copyField source="author" dest="_text_" maxChars="3000"/>
-    <copyField source="authorAffiliation" dest="_text_" maxChars="3000"/>
-    <copyField source="authorIdentifier" dest="_text_" maxChars="3000"/>
-    <copyField source="authorIdentifierScheme" dest="_text_" maxChars="3000"/>
-    <copyField source="authorName" dest="_text_" maxChars="3000"/>
-    <copyField source="characteristicOfSources" dest="_text_" maxChars="3000"/>
-    <copyField source="city" dest="_text_" maxChars="3000"/>
-    <copyField source="classificationSchemaCHIA" dest="_text_" maxChars="3000"/>
-    <copyField source="cleaningOperations" dest="_text_" maxChars="3000"/>
-    <copyField source="collectionMode" dest="_text_" maxChars="3000"/>
-    <copyField source="collectorTraining" dest="_text_" maxChars="3000"/>
-    <copyField source="contributor" dest="_text_" maxChars="3000"/>
-    <copyField source="contributorName" dest="_text_" maxChars="3000"/>
-    <copyField source="contributorType" dest="_text_" maxChars="3000"/>
-    <copyField source="controlOperations" dest="_text_" maxChars="3000"/>
-    <copyField source="country" dest="_text_" maxChars="3000"/>
-    <copyField source="coverage.Depth" dest="_text_" maxChars="3000"/>
-    <copyField source="coverage.ObjectCount" dest="_text_" maxChars="3000"/>
-    <copyField source="coverage.ObjectDensity" dest="_text_" maxChars="3000"/>
-    <copyField source="coverage.Polarization" dest="_text_" maxChars="3000"/>
-    <copyField source="coverage.Redshift.MaximumValue" dest="_text_" maxChars="3000"/>
-    <copyField source="coverage.Redshift.MinimumValue" dest="_text_" maxChars="3000"/>
-    <copyField source="coverage.RedshiftValue" dest="_text_" maxChars="3000"/>
-    <copyField source="coverage.SkyFraction" dest="_text_" maxChars="3000"/>
-    <copyField source="coverage.Spatial" dest="_text_" maxChars="3000"/>
-    <copyField source="coverage.Spectral.Bandpass" dest="_text_" maxChars="3000"/>
-    <copyField source="coverage.Spectral.CentralWavelength" dest="_text_" maxChars="3000"/>
-    <copyField source="coverage.Spectral.MaximumWavelength" dest="_text_" maxChars="3000"/>
-    <copyField source="coverage.Spectral.MinimumWavelength" dest="_text_" maxChars="3000"/>
-    <copyField source="coverage.Spectral.Wavelength" dest="_text_" maxChars="3000"/>
-    <copyField source="coverage.Temporal" dest="_text_" maxChars="3000"/>
-    <copyField source="coverage.Temporal.StartTime" dest="_text_" maxChars="3000"/>
-    <copyField source="coverage.Temporal.StopTime" dest="_text_" maxChars="3000"/>
-    <copyField source="dataCollectionSituation" dest="_text_" maxChars="3000"/>
-    <copyField source="dataCollector" dest="_text_" maxChars="3000"/>
-    <copyField source="dataSources" dest="_text_" maxChars="3000"/>
-    <copyField source="datadePublicao" dest="_text_" maxChars="3000"/>
-    <copyField source="datasetContact" dest="_text_" maxChars="3000"/>
-    <copyField source="datasetContactAffiliation" dest="_text_" maxChars="3000"/>
-    <copyField source="datasetContactEmail" dest="_text_" maxChars="3000"/>
-    <copyField source="datasetContactName" dest="_text_" maxChars="3000"/>
-    <copyField source="datasetLevelErrorNotes" dest="_text_" maxChars="3000"/>
-    <copyField source="dateOfCollection" dest="_text_" maxChars="3000"/>
-    <copyField source="dateOfCollectionEnd" dest="_text_" maxChars="3000"/>
-    <copyField source="dateOfCollectionStart" dest="_text_" maxChars="3000"/>
-    <copyField source="dateOfDeposit" dest="_text_" maxChars="3000"/>
-    <copyField source="datesAdditionalInformationCHIA" dest="_text_" maxChars="3000"/>
-    <copyField source="depositor" dest="_text_" maxChars="3000"/>
-    <copyField source="deviationsFromSampleDesign" dest="_text_" maxChars="3000"/>
-    <copyField source="distributionDate" dest="_text_" maxChars="3000"/>
-    <copyField source="distributor" dest="_text_" maxChars="3000"/>
-    <copyField source="distributorAbbreviation" dest="_text_" maxChars="3000"/>
-    <copyField source="distributorAffiliation" dest="_text_" maxChars="3000"/>
-    <copyField source="distributorLogoURL" dest="_text_" maxChars="3000"/>
-    <copyField source="distributorName" dest="_text_" maxChars="3000"/>
-    <copyField source="distributorURL" dest="_text_" maxChars="3000"/>
-    <copyField source="dsDescription" dest="_text_" maxChars="3000"/>
-    <copyField source="dsDescriptionDate" dest="_text_" maxChars="3000"/>
-    <copyField source="dsDescriptionValue" dest="_text_" maxChars="3000"/>
-    <copyField source="eastLongitude" dest="_text_" maxChars="3000"/>
-    <copyField source="frequencyOfDataCollection" dest="_text_" maxChars="3000"/>
-    <copyField source="geographicBoundingBox" dest="_text_" maxChars="3000"/>
-    <copyField source="geographicCoverage" dest="_text_" maxChars="3000"/>
-    <copyField source="geographicUnit" dest="_text_" maxChars="3000"/>
-    <copyField source="grantNumber" dest="_text_" maxChars="3000"/>
-    <copyField source="grantNumberAgency" dest="_text_" maxChars="3000"/>
-    <copyField source="grantNumberValue" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdAccreditation" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdCoordinator" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdCourseName" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdFacultyName" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdPrizes" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdProgramBrief" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdRecommendation" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdSemester" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdSiteType" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdStudentName" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdStudentProgram" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdTags" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdTypes" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiAnthropometry" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiBiosampleType" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiBirthWeight" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiFeedingCare" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiGestationalAge" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiImmunizations" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiInfantChildhoodMorbidity" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiIntervention" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiLowerLimitAge" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiMaternalChar" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiNeurocognitiveDev" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiOther" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiPregnancyBirth" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiSocioeconomicChar" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiStudyName" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiStudyRegistry" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiStudyRegistryNumber" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiStudyRegistryType" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiStudyType" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiUnitsLowerLimitAge" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiUnitsUpperLimitAge" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiUpperLimitAge" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiWaterSanHygiene" dest="_text_" maxChars="3000"/>
-    <copyField source="journalArticleType" dest="_text_" maxChars="3000"/>
-    <copyField source="journalIssue" dest="_text_" maxChars="3000"/>
-    <copyField source="journalPubDate" dest="_text_" maxChars="3000"/>
-    <copyField source="journalVolume" dest="_text_" maxChars="3000"/>
-    <copyField source="journalVolumeIssue" dest="_text_" maxChars="3000"/>
-    <copyField source="keyword" dest="_text_" maxChars="3000"/>
-    <copyField source="keywordValue" dest="_text_" maxChars="3000"/>
-    <copyField source="keywordVocabulary" dest="_text_" maxChars="3000"/>
-    <copyField source="keywordVocabularyURI" dest="_text_" maxChars="3000"/>
-    <copyField source="kindOfData" dest="_text_" maxChars="3000"/>
-    <copyField source="language" dest="_text_" maxChars="3000"/>
-    <copyField source="localdePublicao" dest="_text_" maxChars="3000"/>
-    <copyField source="mraCollection" dest="_text_" maxChars="3000"/>
-    <copyField source="northLongitude" dest="_text_" maxChars="3000"/>
-    <copyField source="notesText" dest="_text_" maxChars="3000"/>
-    <copyField source="numero" dest="_text_" maxChars="3000"/>
-    <copyField source="originOfSources" dest="_text_" maxChars="3000"/>
-    <copyField source="otherDataAppraisal" dest="_text_" maxChars="3000"/>
-    <copyField source="otherGeographicCoverage" dest="_text_" maxChars="3000"/>
-    <copyField source="otherId" dest="_text_" maxChars="3000"/>
-    <copyField source="otherIdAgency" dest="_text_" maxChars="3000"/>
-    <copyField source="otherIdValue" dest="_text_" maxChars="3000"/>
-    <copyField source="otherReferences" dest="_text_" maxChars="3000"/>
-    <copyField source="producer" dest="_text_" maxChars="3000"/>
-    <copyField source="producerAbbreviation" dest="_text_" maxChars="3000"/>
-    <copyField source="producerAffiliation" dest="_text_" maxChars="3000"/>
-    <copyField source="producerLogoURL" dest="_text_" maxChars="3000"/>
-    <copyField source="producerName" dest="_text_" maxChars="3000"/>
-    <copyField source="producerURL" dest="_text_" maxChars="3000"/>
-    <copyField source="productionDate" dest="_text_" maxChars="3000"/>
-    <copyField source="productionPlace" dest="_text_" maxChars="3000"/>
-    <copyField source="proprietrio" dest="_text_" maxChars="3000"/>
-    <copyField source="provenanceCHIA" dest="_text_" maxChars="3000"/>
-    <copyField source="psiBehavior" dest="_text_" maxChars="3000"/>
-    <copyField source="psiDonor" dest="_text_" maxChars="3000"/>
-    <copyField source="psiHealthArea" dest="_text_" maxChars="3000"/>
-    <copyField source="psiIntervention" dest="_text_" maxChars="3000"/>
-    <copyField source="psiPopulation" dest="_text_" maxChars="3000"/>
-    <copyField source="psiProductsServices" dest="_text_" maxChars="3000"/>
-    <copyField source="psiStudyDesignElement" dest="_text_" maxChars="3000"/>
-    <copyField source="psiStudyType" dest="_text_" maxChars="3000"/>
-    <copyField source="publication" dest="_text_" maxChars="3000"/>
-    <copyField source="publicationCitation" dest="_text_" maxChars="3000"/>
-    <copyField source="publicationIDNumber" dest="_text_" maxChars="3000"/>
-    <copyField source="publicationIDType" dest="_text_" maxChars="3000"/>
-    <copyField source="publicationURL" dest="_text_" maxChars="3000"/>
-    <copyField source="redshiftType" dest="_text_" maxChars="3000"/>
-    <copyField source="relatedDatasets" dest="_text_" maxChars="3000"/>
-    <copyField source="relatedMaterial" dest="_text_" maxChars="3000"/>
-    <copyField source="researchInstrument" dest="_text_" maxChars="3000"/>
-    <copyField source="resolution.Redshift" dest="_text_" maxChars="3000"/>
-    <copyField source="resolution.Spatial" dest="_text_" maxChars="3000"/>
-    <copyField source="resolution.Spectral" dest="_text_" maxChars="3000"/>
-    <copyField source="resolution.Temporal" dest="_text_" maxChars="3000"/>
-    <copyField source="responseRate" dest="_text_" maxChars="3000"/>
-    <copyField source="rightsAvailabilityCHIA" dest="_text_" maxChars="3000"/>
-    <copyField source="samplingErrorEstimates" dest="_text_" maxChars="3000"/>
-    <copyField source="samplingProcedure" dest="_text_" maxChars="3000"/>
-    <copyField source="series" dest="_text_" maxChars="3000"/>
-    <copyField source="seriesInformation" dest="_text_" maxChars="3000"/>
-    <copyField source="seriesName" dest="_text_" maxChars="3000"/>
-    <copyField source="socialScienceNotes" dest="_text_" maxChars="3000"/>
-    <copyField source="socialScienceNotesSubject" dest="_text_" maxChars="3000"/>
-    <copyField source="socialScienceNotesText" dest="_text_" maxChars="3000"/>
-    <copyField source="socialScienceNotesType" dest="_text_" maxChars="3000"/>
-    <copyField source="software" dest="_text_" maxChars="3000"/>
-    <copyField source="softwareName" dest="_text_" maxChars="3000"/>
-    <copyField source="softwareVersion" dest="_text_" maxChars="3000"/>
-    <copyField source="sourceCHIA" dest="_text_" maxChars="3000"/>
-    <copyField source="southLongitude" dest="_text_" maxChars="3000"/>
-    <copyField source="state" dest="_text_" maxChars="3000"/>
-    <copyField source="studyAssayCellType" dest="_text_" maxChars="3000"/>
-    <copyField source="studyAssayMeasurementType" dest="_text_" maxChars="3000"/>
-    <copyField source="studyAssayOrganism" dest="_text_" maxChars="3000"/>
-    <copyField source="studyAssayOtherMeasurmentType" dest="_text_" maxChars="3000"/>
-    <copyField source="studyAssayOtherOrganism" dest="_text_" maxChars="3000"/>
-    <copyField source="studyAssayPlatform" dest="_text_" maxChars="3000"/>
-    <copyField source="studyAssayTechnologyType" dest="_text_" maxChars="3000"/>
-    <copyField source="studyDesignType" dest="_text_" maxChars="3000"/>
-    <copyField source="studyFactorType" dest="_text_" maxChars="3000"/>
-    <copyField source="subject" dest="_text_" maxChars="3000"/>
-    <copyField source="subtitle" dest="_text_" maxChars="3000"/>
-    <copyField source="targetSampleActualSize" dest="_text_" maxChars="3000"/>
-    <copyField source="targetSampleSize" dest="_text_" maxChars="3000"/>
-    <copyField source="targetSampleSizeFormula" dest="_text_" maxChars="3000"/>
-    <copyField source="timeMethod" dest="_text_" maxChars="3000"/>
-    <copyField source="timePeriodCovered" dest="_text_" maxChars="3000"/>
-    <copyField source="timePeriodCoveredEnd" dest="_text_" maxChars="3000"/>
-    <copyField source="timePeriodCoveredStart" dest="_text_" maxChars="3000"/>
-    <copyField source="title" dest="_text_" maxChars="3000"/>
-    <copyField source="titulo" dest="_text_" maxChars="3000"/>
-    <copyField source="topicClassValue" dest="_text_" maxChars="3000"/>
-    <copyField source="topicClassVocab" dest="_text_" maxChars="3000"/>
-    <copyField source="topicClassVocabURI" dest="_text_" maxChars="3000"/>
-    <copyField source="topicClassification" dest="_text_" maxChars="3000"/>
-    <copyField source="unitOfAnalysis" dest="_text_" maxChars="3000"/>
-    <copyField source="universe" dest="_text_" maxChars="3000"/>
-    <copyField source="variablesCHIA" dest="_text_" maxChars="3000"/>
-    <copyField source="weighting" dest="_text_" maxChars="3000"/>
-    <copyField source="westLongitude" dest="_text_" maxChars="3000"/>
+
 <!-- End: Dataverse Specific -->
-    
+
     <!-- This can be enabled, in case the client does not know what fields may be searched. It isn't enabled by default
          because it's very expensive to index everything twice. -->
     <!--<copyField source="*" dest="_text_"/>-->
@@ -744,7 +305,7 @@
        for fields via the specification of patterns to match field names.
        EXAMPLE:  name="*_i" will match any field ending in _i (like myid_i, z_i)
        RESTRICTION: the glob-like pattern in the name attribute must have a "*" only at the start or the end.  -->
-   
+
     <dynamicField name="*_i"  type="pint"    indexed="true"  stored="true"/>
     <dynamicField name="*_is" type="pints"    indexed="true"  stored="true"/>
     <dynamicField name="*_s"  type="string"  indexed="true"  stored="true" />
@@ -766,7 +327,7 @@
     <dynamicField name="*_dts" type="pdate"    indexed="true"  stored="true" multiValued="true"/>
     <dynamicField name="*_p"  type="location" indexed="true" stored="true"/>
     <dynamicField name="*_srpt"  type="location_rpt" indexed="true" stored="true"/>
-    
+
     <!-- payloaded dynamic fields -->
     <dynamicField name="*_dpf" type="delimited_payloads_float" indexed="true"  stored="true"/>
     <dynamicField name="*_dpi" type="delimited_payloads_int" indexed="true"  stored="true"/>
@@ -821,7 +382,7 @@
 
 <!-- The format for this date field is of the form 1995-12-31T23:59:59Z, and
         is a more restricted form of the canonical representation of dateTime
-        http://www.w3.org/TR/xmlschema-2/#dateTime    
+        http://www.w3.org/TR/xmlschema-2/#dateTime
         The trailing "Z" designates UTC time and is mandatory.
         Optional fractional seconds are allowed: 1995-12-31T23:59:59.999Z
         All other components are mandatory.
@@ -836,7 +397,7 @@
             NOW/DAY+6MONTHS+3DAYS
                 ... 6 months and 3 days in the future from the start of
                     the current day
-                    
+
         Consult the DateField javadocs for more information.
 
         Note: For faster range queries, consider the tdate type
@@ -864,7 +425,7 @@
         <filter class="solr.TrimFilterFactory" />
         <!-- The PatternReplaceFilter gives you the flexibility to use
                 Java Regular expression to replace any sequence of characters
-                matching a pattern with an arbitrary replacement string, 
+                matching a pattern with an arbitrary replacement string,
                 which may include back references to portions of the original
                 string matched by the pattern.
 
@@ -877,8 +438,8 @@
         <!-- https://redmine.hmdc.harvard.edu/issues/3482#note-11 -->
         <!-- <filter class="solr.PatternReplaceFilterFactory" pattern="([^a-z])" replacement="" replace="all" /> -->
         </analyzer>
-    </fieldType>   
-    
+    </fieldType>
+
     <!-- The StrField type is not analyzed, but indexed/stored verbatim. -->
     <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
     <fieldType name="strings" class="solr.StrField" sortMissingLast="true" multiValued="true" docValues="true" />
@@ -895,7 +456,7 @@
     <fieldType name="pfloat" class="solr.FloatPointField" docValues="true"/>
     <fieldType name="plong" class="solr.LongPointField" docValues="true"/>
     <fieldType name="pdouble" class="solr.DoublePointField" docValues="true"/>
-    
+
     <fieldType name="pints" class="solr.IntPointField" docValues="true" multiValued="true"/>
     <fieldType name="pfloats" class="solr.FloatPointField" docValues="true" multiValued="true"/>
     <fieldType name="plongs" class="solr.LongPointField" docValues="true" multiValued="true"/>
@@ -903,7 +464,7 @@
 
     <!-- The format for this date field is of the form 1995-12-31T23:59:59Z, and
          is a more restricted form of the canonical representation of dateTime
-         http://www.w3.org/TR/xmlschema-2/#dateTime    
+         http://www.w3.org/TR/xmlschema-2/#dateTime
          The trailing "Z" designates UTC time and is mandatory.
          Optional fractional seconds are allowed: 1995-12-31T23:59:59.999Z
          All other components are mandatory.
@@ -918,12 +479,12 @@
                NOW/DAY+6MONTHS+3DAYS
                   ... 6 months and 3 days in the future from the start of
                       the current day
-                      
+
       -->
     <!-- KD-tree versions of date fields -->
     <fieldType name="pdate" class="solr.DatePointField" docValues="true"/>
     <fieldType name="pdates" class="solr.DatePointField" docValues="true" multiValued="true"/>
-    
+
     <!--Binary data type. The data should be sent/retrieved in as Base64 encoded Strings -->
     <fieldType name="binary" class="solr.BinaryField"/>
 
@@ -996,13 +557,13 @@
                     ignoreCase="true"
                     words="lang/stopwords_en.txt"
                 />
-            
+
             <filter class="solr.LowerCaseFilterFactory"/>
             <filter class="solr.EnglishPossessiveFilterFactory"/>
             <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
-            
-            <!-- Solved highlighting breaking after upgrade #4836. Applied to query analyzer below too: 
-                https://stackoverflow.com/questions/26287321/solr-stemming-breaks-highlighting 
+
+            <!-- Solved highlighting breaking after upgrade #4836. Applied to query analyzer below too:
+                https://stackoverflow.com/questions/26287321/solr-stemming-breaks-highlighting
                 Solution was to ensure original word is kept by stemmer -MAD 4.9.2 -->
             <filter class="solr.KeywordRepeatFilterFactory" />
             <filter class="solr.PorterStemFilterFactory"/>
@@ -1010,16 +571,16 @@
         </analyzer>
         <analyzer type="query">
             <tokenizer class="solr.StandardTokenizerFactory"/>
-            
-            <!-- MAD 4.9.2: Solr recommends doing synonym expansion at index not query, why do we do it here tho? 
-                    https://stackoverflow.com/questions/10185079/ 
+
+            <!-- MAD 4.9.2: Solr recommends doing synonym expansion at index not query, why do we do it here tho?
+                    https://stackoverflow.com/questions/10185079/
                     To me it looks like we we copied something that works-->
             <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
             <filter class="solr.StopFilterFactory"
                     ignoreCase="true"
                     words="lang/stopwords_en.txt"
                 />
-            
+
             <filter class="solr.LowerCaseFilterFactory"/>
             <filter class="solr.EnglishPossessiveFilterFactory"/>
             <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
@@ -1140,7 +701,7 @@
       </analyzer>
     </fieldType>
 
-    <!-- 
+    <!--
       Example of using PathHierarchyTokenizerFactory at index time, so
       queries for paths match documents at that path, or in descendent paths
     -->
@@ -1170,7 +731,7 @@
 
     <!-- This point type indexes the coordinates as separate fields (subFields)
       If subFieldType is defined, it references a type, and a dynamic field
-      definition is created matching *___<typename>.  Alternately, if 
+      definition is created matching *___<typename>.  Alternately, if
       subFieldSuffix is defined, that is used to create the subFields.
       Example: if subFieldType="double", then the coordinates would be
         indexed in fields myloc_0___double,myloc_1___double.
@@ -1217,7 +778,7 @@
     <!-- Arabic -->
     <dynamicField name="*_txt_ar" type="text_ar"  indexed="true"  stored="true"/>
     <fieldType name="text_ar" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <!-- for any non-arabic -->
         <filter class="solr.LowerCaseFilterFactory"/>
@@ -1231,27 +792,27 @@
     <!-- Bulgarian -->
     <dynamicField name="*_txt_bg" type="text_bg"  indexed="true"  stored="true"/>
     <fieldType name="text_bg" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
-        <tokenizer class="solr.StandardTokenizerFactory"/> 
+      <analyzer>
+        <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
-        <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_bg.txt" /> 
-        <filter class="solr.BulgarianStemFilterFactory"/>       
+        <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_bg.txt" />
+        <filter class="solr.BulgarianStemFilterFactory"/>
       </analyzer>
     </fieldType>
-    
+
     <!-- Catalan -->
     <dynamicField name="*_txt_ca" type="text_ca"  indexed="true"  stored="true"/>
     <fieldType name="text_ca" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <!-- removes l', etc -->
         <filter class="solr.ElisionFilterFactory" ignoreCase="true" articles="lang/contractions_ca.txt"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_ca.txt" />
-        <filter class="solr.SnowballPorterFilterFactory" language="Catalan"/>       
+        <filter class="solr.SnowballPorterFilterFactory" language="Catalan"/>
       </analyzer>
     </fieldType>
-    
+
     <!-- CJK bigram (see text_ja for a Japanese configuration using morphological analysis) -->
     <dynamicField name="*_txt_cjk" type="text_cjk"  indexed="true"  stored="true"/>
     <fieldType name="text_cjk" class="solr.TextField" positionIncrementGap="100">
@@ -1268,29 +829,29 @@
     <!-- Czech -->
     <dynamicField name="*_txt_cz" type="text_cz"  indexed="true"  stored="true"/>
     <fieldType name="text_cz" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_cz.txt" />
-        <filter class="solr.CzechStemFilterFactory"/>       
+        <filter class="solr.CzechStemFilterFactory"/>
       </analyzer>
     </fieldType>
-    
+
     <!-- Danish -->
     <dynamicField name="*_txt_da" type="text_da"  indexed="true"  stored="true"/>
     <fieldType name="text_da" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_da.txt" format="snowball" />
-        <filter class="solr.SnowballPorterFilterFactory" language="Danish"/>       
+        <filter class="solr.SnowballPorterFilterFactory" language="Danish"/>
       </analyzer>
     </fieldType>
-    
+
     <!-- German -->
     <dynamicField name="*_txt_de" type="text_de"  indexed="true"  stored="true"/>
     <fieldType name="text_de" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_de.txt" format="snowball" />
@@ -1300,11 +861,11 @@
         <!-- more aggressive: <filter class="solr.SnowballPorterFilterFactory" language="German2"/> -->
       </analyzer>
     </fieldType>
-    
+
     <!-- Greek -->
     <dynamicField name="*_txt_el" type="text_el"  indexed="true"  stored="true"/>
     <fieldType name="text_el" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <!-- greek specific lowercase for sigma -->
         <filter class="solr.GreekLowerCaseFilterFactory"/>
@@ -1312,11 +873,11 @@
         <filter class="solr.GreekStemFilterFactory"/>
       </analyzer>
     </fieldType>
-    
+
     <!-- Spanish -->
     <dynamicField name="*_txt_es" type="text_es"  indexed="true"  stored="true"/>
     <fieldType name="text_es" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_es.txt" format="snowball" />
@@ -1324,18 +885,18 @@
         <!-- more aggressive: <filter class="solr.SnowballPorterFilterFactory" language="Spanish"/> -->
       </analyzer>
     </fieldType>
-    
+
     <!-- Basque -->
     <dynamicField name="*_txt_eu" type="text_eu"  indexed="true"  stored="true"/>
     <fieldType name="text_eu" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_eu.txt" />
         <filter class="solr.SnowballPorterFilterFactory" language="Basque"/>
       </analyzer>
     </fieldType>
-    
+
     <!-- Persian -->
     <dynamicField name="*_txt_fa" type="text_fa"  indexed="true"  stored="true"/>
     <fieldType name="text_fa" class="solr.TextField" positionIncrementGap="100">
@@ -1349,11 +910,11 @@
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_fa.txt" />
       </analyzer>
     </fieldType>
-    
+
     <!-- Finnish -->
     <dynamicField name="*_txt_fi" type="text_fi"  indexed="true"  stored="true"/>
     <fieldType name="text_fi" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_fi.txt" format="snowball" />
@@ -1361,11 +922,11 @@
         <!-- less aggressive: <filter class="solr.FinnishLightStemFilterFactory"/> -->
       </analyzer>
     </fieldType>
-    
+
     <!-- French -->
     <dynamicField name="*_txt_fr" type="text_fr"  indexed="true"  stored="true"/>
     <fieldType name="text_fr" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <!-- removes l', etc -->
         <filter class="solr.ElisionFilterFactory" ignoreCase="true" articles="lang/contractions_fr.txt"/>
@@ -1376,11 +937,11 @@
         <!-- more aggressive: <filter class="solr.SnowballPorterFilterFactory" language="French"/> -->
       </analyzer>
     </fieldType>
-    
+
     <!-- Irish -->
     <dynamicField name="*_txt_ga" type="text_ga"  indexed="true"  stored="true"/>
     <fieldType name="text_ga" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <!-- removes d', etc -->
         <filter class="solr.ElisionFilterFactory" ignoreCase="true" articles="lang/contractions_ga.txt"/>
@@ -1391,11 +952,11 @@
         <filter class="solr.SnowballPorterFilterFactory" language="Irish"/>
       </analyzer>
     </fieldType>
-    
+
     <!-- Galician -->
     <dynamicField name="*_txt_gl" type="text_gl"  indexed="true"  stored="true"/>
     <fieldType name="text_gl" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_gl.txt" />
@@ -1403,11 +964,11 @@
         <!-- less aggressive: <filter class="solr.GalicianMinimalStemFilterFactory"/> -->
       </analyzer>
     </fieldType>
-    
+
     <!-- Hindi -->
     <dynamicField name="*_txt_hi" type="text_hi"  indexed="true"  stored="true"/>
     <fieldType name="text_hi" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <!-- normalizes unicode representation -->
@@ -1418,34 +979,34 @@
         <filter class="solr.HindiStemFilterFactory"/>
       </analyzer>
     </fieldType>
-    
+
     <!-- Hungarian -->
     <dynamicField name="*_txt_hu" type="text_hu"  indexed="true"  stored="true"/>
     <fieldType name="text_hu" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_hu.txt" format="snowball" />
         <filter class="solr.SnowballPorterFilterFactory" language="Hungarian"/>
-        <!-- less aggressive: <filter class="solr.HungarianLightStemFilterFactory"/> -->   
+        <!-- less aggressive: <filter class="solr.HungarianLightStemFilterFactory"/> -->
       </analyzer>
     </fieldType>
-    
+
     <!-- Armenian -->
     <dynamicField name="*_txt_hy" type="text_hy"  indexed="true"  stored="true"/>
     <fieldType name="text_hy" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_hy.txt" />
         <filter class="solr.SnowballPorterFilterFactory" language="Armenian"/>
       </analyzer>
     </fieldType>
-    
+
     <!-- Indonesian -->
     <dynamicField name="*_txt_id" type="text_id"  indexed="true"  stored="true"/>
     <fieldType name="text_id" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_id.txt" />
@@ -1453,11 +1014,11 @@
         <filter class="solr.IndonesianStemFilterFactory" stemDerivational="true"/>
       </analyzer>
     </fieldType>
-    
+
     <!-- Italian -->
   <dynamicField name="*_txt_it" type="text_it"  indexed="true"  stored="true"/>
   <fieldType name="text_it" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <!-- removes l', etc -->
         <filter class="solr.ElisionFilterFactory" ignoreCase="true" articles="lang/contractions_it.txt"/>
@@ -1467,7 +1028,7 @@
         <!-- more aggressive: <filter class="solr.SnowballPorterFilterFactory" language="Italian"/> -->
       </analyzer>
     </fieldType>
-    
+
     <!-- Japanese using morphological analysis (see text_cjk for a configuration using bigramming)
 
          NOTE: If you want to optimize search for precision, use default operator AND in your request
@@ -1518,22 +1079,22 @@
         <filter class="solr.LowerCaseFilterFactory"/>
       </analyzer>
     </fieldType>
-    
+
     <!-- Latvian -->
     <dynamicField name="*_txt_lv" type="text_lv"  indexed="true"  stored="true"/>
     <fieldType name="text_lv" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_lv.txt" />
         <filter class="solr.LatvianStemFilterFactory"/>
       </analyzer>
     </fieldType>
-    
+
     <!-- Dutch -->
     <dynamicField name="*_txt_nl" type="text_nl"  indexed="true"  stored="true"/>
     <fieldType name="text_nl" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_nl.txt" format="snowball" />
@@ -1541,11 +1102,11 @@
         <filter class="solr.SnowballPorterFilterFactory" language="Dutch"/>
       </analyzer>
     </fieldType>
-    
+
     <!-- Norwegian -->
     <dynamicField name="*_txt_no" type="text_no"  indexed="true"  stored="true"/>
     <fieldType name="text_no" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_no.txt" format="snowball" />
@@ -1554,11 +1115,11 @@
         <!-- singular/plural: <filter class="solr.NorwegianMinimalStemFilterFactory"/> -->
       </analyzer>
     </fieldType>
-    
+
     <!-- Portuguese -->
   <dynamicField name="*_txt_pt" type="text_pt"  indexed="true"  stored="true"/>
   <fieldType name="text_pt" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_pt.txt" format="snowball" />
@@ -1568,22 +1129,22 @@
         <!-- most aggressive: <filter class="solr.PortugueseStemFilterFactory"/> -->
       </analyzer>
     </fieldType>
-    
+
     <!-- Romanian -->
     <dynamicField name="*_txt_ro" type="text_ro"  indexed="true"  stored="true"/>
     <fieldType name="text_ro" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_ro.txt" />
         <filter class="solr.SnowballPorterFilterFactory" language="Romanian"/>
       </analyzer>
     </fieldType>
-    
+
     <!-- Russian -->
     <dynamicField name="*_txt_ru" type="text_ru"  indexed="true"  stored="true"/>
     <fieldType name="text_ru" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_ru.txt" format="snowball" />
@@ -1591,11 +1152,11 @@
         <!-- less aggressive: <filter class="solr.RussianLightStemFilterFactory"/> -->
       </analyzer>
     </fieldType>
-    
+
     <!-- Swedish -->
     <dynamicField name="*_txt_sv" type="text_sv"  indexed="true"  stored="true"/>
     <fieldType name="text_sv" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_sv.txt" format="snowball" />
@@ -1603,7 +1164,7 @@
         <!-- less aggressive: <filter class="solr.SwedishLightStemFilterFactory"/> -->
       </analyzer>
     </fieldType>
-    
+
     <!-- Thai -->
     <dynamicField name="*_txt_th" type="text_th"  indexed="true"  stored="true"/>
     <fieldType name="text_th" class="solr.TextField" positionIncrementGap="100">
@@ -1613,11 +1174,11 @@
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_th.txt" />
       </analyzer>
     </fieldType>
-    
+
     <!-- Turkish -->
     <dynamicField name="*_txt_tr" type="text_tr"  indexed="true"  stored="true"/>
     <fieldType name="text_tr" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
+      <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.TurkishLowerCaseFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="false" words="lang/stopwords_tr.txt" />
@@ -1626,8 +1187,8 @@
     </fieldType>
 
     <!-- Similarity is the scoring routine for each document vs. a query.
-       A custom Similarity or SimilarityFactory may be specified here, but 
-       the default is fine for most applications.  
+       A custom Similarity or SimilarityFactory may be specified here, but
+       the default is fine for most applications.
        For more info: http://lucene.apache.org/solr/guide/other-schema-elements.html#OtherSchemaElements-Similarity
     -->
     <!--

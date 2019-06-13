@@ -393,12 +393,9 @@ public class SearchServiceBean {
             String persistentUrl = (String) solrDocument.getFieldValue(SearchFields.PERSISTENT_URL);
             String name = (String) solrDocument.getFieldValue(SearchFields.NAME);
             String nameSort = (String) solrDocument.getFieldValue(SearchFields.NAME_SORT);
-//            ArrayList titles = (ArrayList) solrDocument.getFieldValues(SearchFields.TITLE);
-            String title = (String) solrDocument.getFieldValue(titleSolrField);
+            ArrayList titles = (ArrayList) solrDocument.getFieldValues(titleSolrField);
             Long datasetVersionId = (Long) solrDocument.getFieldValue(SearchFields.DATASET_VERSION_ID);
             String deaccessionReason = (String) solrDocument.getFieldValue(SearchFields.DATASET_DEACCESSION_REASON);
-//            logger.info("titleSolrField: " + titleSolrField);
-//            logger.info("title: " + title);
             String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE_FRIENDLY);
             String fileContentType = (String) solrDocument.getFieldValue(SearchFields.FILE_CONTENT_TYPE);
             Date release_or_create_date = (Date) solrDocument.getFieldValue(SearchFields.RELEASE_OR_CREATE_DATE);
@@ -425,7 +422,7 @@ public class SearchServiceBean {
                          * right... knit the SolrField object more into the
                          * highlighting stuff
                          */
-                        SolrField solrField = new SolrField(field, SolrField.SolrType.STRING, true, true);
+                        SolrField solrField = new SolrField(field, SolrField.SolrType.STRING, true, true, false);
                         Highlight highlight = new Highlight(solrField, highlightSnippets, displayName);
                         highlights.add(highlight);
                         highlightsMap.put(solrField, highlight);
@@ -504,7 +501,7 @@ public class SearchServiceBean {
                 /**
                  * @todo Could use getFieldValues (plural) here.
                  */
-                List<String> datasetDescriptions = (List<String>) solrDocument.getFieldValue(SearchFields.DATASET_DESCRIPTION);
+                List<String> datasetDescriptions = (List) solrDocument.getFieldValues(SearchFields.DATASET_DESCRIPTION);
                 if (datasetDescriptions != null) {
                     String firstDatasetDescription = datasetDescriptions.get(0);
                     if (firstDatasetDescription != null) {
@@ -519,9 +516,8 @@ public class SearchServiceBean {
                 solrSearchResult.setIdentifierOfDataverse(identifierOfDataverse);
                 solrSearchResult.setNameOfDataverse(nameOfDataverse);
                 
-                if (title != null) {
-//                    solrSearchResult.setTitle((String) titles.get(0));
-                    solrSearchResult.setTitle(title);
+                if (titles != null) {
+                    solrSearchResult.setTitle((String) titles.get(0));
                 } else {
                     logger.fine("No title indexed. Setting to empty string to prevent NPE. Dataset id " + entityid + " and version id " + datasetVersionId);
                     solrSearchResult.setTitle("");
