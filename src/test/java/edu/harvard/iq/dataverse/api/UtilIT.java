@@ -103,6 +103,28 @@ public class UtilIT {
         return createRandomUser("user");
     }
 
+    public static Response createUser(String username, String email) {
+        logger.info("Creating user " + username);
+        String userAsJson = getUserAsJsonString(username, username, username, email);
+        String password = getPassword(userAsJson);
+        Response response = given()
+                .body(userAsJson)
+                .contentType(ContentType.JSON)
+                .post("/api/builtin-users?key=" + BUILTIN_USER_KEY + "&password=" + password);
+        return response;
+    }
+
+    private static String getUserAsJsonString(String username, String firstName, String lastName, String email) {
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        builder.add(USERNAME_KEY, username);
+        builder.add("firstName", firstName);
+        builder.add("lastName", lastName);
+        builder.add(EMAIL_KEY, email);
+        String userAsJson = builder.build().toString();
+        logger.fine("User to create: " + userAsJson);
+        return userAsJson;
+    }
+
     private static String getUserAsJsonString(String username, String firstName, String lastName) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add(USERNAME_KEY, username);
@@ -536,10 +558,15 @@ public class UtilIT {
     }
 
     static Response uploadFileViaNative(String datasetId, String pathToFile, String jsonAsString, String apiToken) {
+        String nullMimeType = null;
+        return uploadFileViaNative(datasetId, pathToFile, jsonAsString, nullMimeType, apiToken);
+    }
+
+    static Response uploadFileViaNative(String datasetId, String pathToFile, String jsonAsString, String mimeType, String apiToken) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("datasetId", datasetId)
-                .multiPart("file", new File(pathToFile));
+                .multiPart("file", new File(pathToFile), mimeType);
         if (jsonAsString != null) {
             requestSpecification.multiPart("jsonData", jsonAsString);
         }
@@ -679,6 +706,12 @@ public class UtilIT {
                 .get("/api/ingest/test/file?fileName=" + fileName + "&fileType=" + fileType);
     }
 
+    static Response redetectFileType(String fileId, boolean dryRun, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/files/" + fileId + "/redetect?dryRun=" + dryRun);
+    }
+
     static Response getSwordAtomEntry(String persistentId, String apiToken) {
         Response response = given()
                 .auth().basic(apiToken, EMPTY_STRING)
@@ -800,7 +833,14 @@ public class UtilIT {
                 .delete("/api/admin/authenticatedUsers/" + username + "/");
         return deleteUserResponse;
     }
-    
+
+    public static Response reingestFile(Long fileId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/files/" + fileId + "/reingest");
+        return response;
+    }
+
     public static Response uningestFile(Long fileId, String apiToken) {
         
         Response uningestFileResponse = given()
@@ -2089,5 +2129,17 @@ public class UtilIT {
 
         return requestSpecification.post("/api/admin/makeDataCount/" + idInPath + "/updateCitationsForDataset"+ optionalQueryParam);
     }
-
+    
+    /**
+     * Determine the "payload" storage size of a dataverse
+     *
+     * @param dataverseId
+     * @param apiToken
+     * @return response
+     */
+    static Response findDataverseStorageSize(String dataverseId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/" + dataverseId + "/storagesize");
+    }
 }

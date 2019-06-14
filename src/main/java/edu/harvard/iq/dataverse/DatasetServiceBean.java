@@ -4,12 +4,15 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
+import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -325,7 +328,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         Long dsId = dataset.getId();
         if (dsId != null) {
             try {
-                idResults = em.createNamedQuery("Dataset.findIdByOwnerId")
+                idResults = em.createNamedQuery("Dataset.findIdentifierByOwnerId")
                                 .setParameter("ownerId", dsId).getResultList();
             } catch (NoResultException ex) {
                 logger.log(Level.FINE, "No files found in dataset id {0}. Returning a count of zero.", dsId);
@@ -854,5 +857,65 @@ public class DatasetServiceBean implements java.io.Serializable {
             }
 
         }
+    }
+    
+    public long findStorageSize(Dataset dataset) throws IOException {
+        return findStorageSize(dataset, false);
+    }
+    
+    /**
+     * Returns the total byte size of the files in this dataset 
+     * 
+     * @param dataset
+     * @param countCachedExtras boolean indicating if the cached disposable extras should also be counted
+     * @return total size 
+     * @throws IOException if it can't access the objects via StorageIO 
+     * (in practice, this can only happen when called with countCachedExtras=true; when run in the 
+     * default mode, the method doesn't need to access the storage system, as the 
+     * sizes of the main files are recorded in the database)
+     */
+    public long findStorageSize(Dataset dataset, boolean countCachedExtras) throws IOException {
+        long total = 0L; 
+        
+        if (dataset.isHarvested()) {
+            return 0L;
+        }
+        
+        for (DataFile datafile : dataset.getFiles()) {
+            total += datafile.getFilesize(); 
+            
+            if (!countCachedExtras) {
+                if (datafile.isTabularData()) {
+                    // count the size of the stored original, in addition to the main tab-delimited file:
+                    Long originalFileSize = datafile.getDataTable().getOriginalFileSize();
+                    if (originalFileSize != null) { 
+                        total += originalFileSize;
+                    }
+                }
+            } else {
+                StorageIO<DataFile> storageIO = datafile.getStorageIO();
+                for (String cachedFileTag : storageIO.listAuxObjects()) {
+                    total += storageIO.getAuxObjectSize(cachedFileTag);
+                }                
+            }
+        }
+        
+        // and finally,
+        if (countCachedExtras) {
+            // count the sizes of the files cached for the dataset itself
+            // (i.e., the metadata exports):
+            StorageIO<Dataset> datasetSIO = DataAccess.getStorageIO(dataset);
+            
+            for (String[] exportProvider : ExportService.getInstance(settingsService).getExportersLabels()) {
+                String exportLabel = "export_" + exportProvider[1] + ".cached";
+                try {
+                    total += datasetSIO.getAuxObjectSize(exportLabel);
+                } catch (IOException ioex) {
+                    // safe to ignore; object not cached
+                }
+            }
+        }
+        
+        return total; 
     }
 }

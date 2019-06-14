@@ -66,8 +66,23 @@ Removes a link between a dataset and a dataverse. Only accessible to superusers.
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$linked-dataset-id/deleteLink/$linking-dataverse-alias
 
-Mint new PID for a Dataset
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Mint a PID for a File That Does Not Have One
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In the following example, the database id of the file is 42::
+
+    export FILE_ID=42
+    curl http://localhost:8080/api/admin/$FILE_ID/registerDataFile
+
+Mint PIDs for Files That Do Not Have Them
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you have a large number of files, you might want to consider miniting PIDs for files individually using the ``registerDataFile`` endpoint above in a for loop, sleeping between each registration::
+
+    curl http://localhost:8080/api/admin/registerDataFileAll
+
+Mint a New DOI for a Dataset with a Handle
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Mints a new identifier for a dataset previously registered with a handle. Only accessible to superusers. ::
 
@@ -88,5 +103,5 @@ As a superuser, click "Update Current Version" when publishing. (This option is 
 Diagnose Constraint Violations Issues in Datasets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To identifiy invalid data values in specific datasets (if, for example, an attempt to edit a dataset results in a ConstraintViolationException in the server log), or to check all the datasets in the Dataverse for constraint violations, see :ref:`Dataset Validation <dataset-validation-api>` in the :doc:`/api/native-api` section of the User Guide.
+To identify invalid data values in specific datasets (if, for example, an attempt to edit a dataset results in a ConstraintViolationException in the server log), or to check all the datasets in the Dataverse for constraint violations, see :ref:`Dataset Validation <dataset-validation-api>` in the :doc:`/api/native-api` section of the User Guide.
 

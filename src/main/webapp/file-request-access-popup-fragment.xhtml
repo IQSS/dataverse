@@ -41,11 +41,12 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandLink type="button" styleClass="btn btn-default"  
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}" 
                            action="#{fileDownloadHelper.requestAccessIndirect()}"    
                            update="@([id$=requestAccessPopupButton])" oncomplete="PF('requestAccessPopup').hide();">
-                #{bundle['acceptTerms']}
-            </p:commandLink>
-            <button type="button" class="btn btn-default" onclick="PF('requestAccessPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
+            </p:commandButton>
+            <button class="btn btn-link" onclick="PF('requestAccessPopup').hide();PF('blockDatasetForm').hide();" type="button">
+                #{bundle.cancel}
+            </button>
         </div>
 </ui:composition>

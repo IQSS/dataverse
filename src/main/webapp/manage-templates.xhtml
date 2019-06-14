@@ -33,7 +33,7 @@
                         </ui:fragment>
 
                         <div class="pull-right">
-                            <h:outputLink type="button" styleClass="btn btn-default"
+                            <h:outputLink styleClass="btn btn-default"
                                           value="/template.xhtml?ownerId=#{manageTemplatesPage.dataverse.id}">
                                 <span class="glyphicon glyphicon-plus"/> <h:outputText value="#{bundle['dataset.manageTemplates.createBtn']}"/>
                             </h:outputLink>
@@ -83,33 +83,33 @@
                                         </h:outputFormat>
                                     </em>
                                 </div>
-                                <p:commandLink type="button" styleClass="btn btn-default"
+                                <p:commandLink styleClass="btn btn-default"
                                                value="#{bundle['dataset.manageTemplates.tab.action.btn.makeDefault']}"
                                                rendered="#{manageTemplatesPage.dataverse.defaultTemplate != template}"
                                                actionListener="#{manageTemplatesPage.makeDefault(template)}"
                                                update="@form,:messagePanel"
-                                               oncomplete="bind_tooltip_popover();bind_bsui_components();"/>
-                                <p:commandLink type="button" styleClass="btn btn-default"
+                                               oncomplete="bind_bsui_components();"/>
+                                <p:commandLink styleClass="btn btn-default"
                                                value="#{bundle['dataset.manageTemplates.tab.action.btn.default']}"
                                                rendered="#{manageTemplatesPage.dataverse.defaultTemplate == template}"
                                                actionListener="#{manageTemplatesPage.unselectDefault(template)}"
                                                update="@form,:messagePanel"
-                                               oncomplete="bind_tooltip_popover();bind_bsui_components();">
+                                               oncomplete="bind_bsui_components();">
                                     <span class="glyphicon glyphicon-eye-open"></span>
                                 </p:commandLink>
                                 <div class="btn-group" role="group">
-                                    <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    title="#{bundle['dataset.manageTemplates.tab.action.btn.view']}"
                                                    action="#{manageTemplatesPage.viewSelectedTemplate(template)}"
-                                                   oncomplete="PF('viewTemplate').show();bind_tooltip_popover();bind_bsui_components();"
+                                                   oncomplete="PF('viewTemplate').show();bind_bsui_components();"
                                                    update=":manageTemplatesForm">
                                         <span class="glyphicon glyphicon-eye-open"></span>
                                     </p:commandLink>
-                                    <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    title="#{bundle['dataset.manageTemplates.tab.action.btn.copy']}"
                                                    action="#{manageTemplatesPage.cloneTemplate(template)}"
                                                    update="@form"
-                                                   oncomplete="bind_tooltip_popover();bind_bsui_components();">
+                                                   oncomplete="bind_bsui_components();">
                                         <span class="glyphicon glyphicon-duplicate"></span>
                                     </p:commandLink>
                                     <div class="btn-group" jsf:rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}">
@@ -129,21 +129,22 @@
                                             </li>
                                         </ul>
                                     </div>
-                                    <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    title="#{bundle['dataset.manageTemplates.tab.action.btn.delete']}"
                                                    update="@form,:messagePanel"
                                                    action="#{manageTemplatesPage.setSelectedTemplate(template)}"
                                                    rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}"
-                                                   oncomplete="PF('deleteConfirmation').show();bind_tooltip_popover();bind_bsui_components();">
+                                                   oncomplete="PF('deleteConfirmation').show();bind_bsui_components();">
                                         <span class="glyphicon glyphicon-trash"></span>
                                     </p:commandLink>
                                 </div>
                             </p:column>
                         </p:dataTable>
                     </div>
-                    <p:dialog header="#{bundle['dataset.manageTemplates.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
+                    <p:dialog id="deleteTemplateConfirm" header="#{bundle['dataset.manageTemplates.tab.action.btn.delete.dialog.header']}" 
+                              widgetVar="deleteConfirmation" modal="true" focus="contDeleteTemplateBtn">
                         <p class="help-block">
-                            <span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> &#160;<h:outputText value="#{bundle['dataset.manageTemplates.tab.action.btn.delete.dialog.tip']}" /></span>
+                            <span class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> &#160;<h:outputText value="#{bundle['dataset.manageTemplates.tab.action.btn.delete.dialog.tip']}" /></span>
                         </p>
                         <ui:fragment rendered="#{manageTemplatesPage.selectedTemplate.isDefaultForDataverse}">
                             <p>
@@ -158,8 +159,10 @@
                             </ul>
                         </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageTemplatesPage.deleteTemplate()}" update="@all" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" type="button" />
+                            <p:commandButton id="contDeleteTemplateBtn" styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageTemplatesPage.deleteTemplate()}" update="@all"/>
+                            <button class="btn btn-link" onclick="PF('deleteConfirmation').hide();" type="button">
+                                #{bundle.cancel}
+                            </button>
                         </div>
                     </p:dialog>
                     <p:dialog id="viewTemplate" styleClass="largePopUp" header="#{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.header']}" widgetVar="viewTemplate" modal="true">
@@ -184,7 +187,9 @@
                             <ui:param name="termsOfUseAndAccess" value="#{TemplatePage.template.termsOfUseAndAccess}" />
                         </ui:include>
                         <div class="button-block">
-                            <p:commandButton type="button" value="#{bundle.close}" onclick="PF('viewTemplate').hide()" />
+                            <button class="btn btn-default" onclick="PF('viewTemplate').hide()" type="button">
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
                 </h:form>
