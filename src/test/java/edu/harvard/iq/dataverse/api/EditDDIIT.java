@@ -40,7 +40,7 @@ public class EditDDIIT {
     }
 
     @Test
-    public void testUpdateVariableMetadata() {
+    public void testUpdateVariableMetadata() throws InterruptedException {
 
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
@@ -66,9 +66,14 @@ public class EditDDIIT {
 
         String origFileId = JsonPath.from(uploadIngestableFile.body().asString()).getString("data.files[0].dataFile.id");
 
+        System.out.println("Orig file id " + origFileId);
+
         logger.fine("Orig file id: " + origFileId);
         assertNotNull(origFileId);
         assertNotEquals("",origFileId);
+
+        // Give file time to ingest
+        Thread.sleep(10000);
 
         Response origXml = UtilIT.getFileMetadata(origFileId, null, apiToken);
         assertEquals(200, origXml.getStatusCode());
