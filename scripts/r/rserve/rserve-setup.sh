@@ -52,6 +52,13 @@ else
     echo "Rserve startup file already in place."
 fi
 
+if [ ! -d /var/run/rserve ]
+then
+    echo "Creating /var/run/rserve"
+    mkdir /var/run/rserve
+    chown rserve:rserve /var/run/rserve
+fi
+
 echo 
 echo "Successfully installed Dataverse Rserve framework."
 echo

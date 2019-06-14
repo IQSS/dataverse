@@ -9,15 +9,11 @@ import javax.ejb.Startup;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.sql.DataSource;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Properties;
 
 @Startup
 @Singleton
 @TransactionManagement(value = TransactionManagementType.BEAN)
-class StartupFlywayMigrator {
+public class StartupFlywayMigrator {
 
     @Resource(lookup = "jdbc/VDCNetDS")
     private DataSource dataSource;
