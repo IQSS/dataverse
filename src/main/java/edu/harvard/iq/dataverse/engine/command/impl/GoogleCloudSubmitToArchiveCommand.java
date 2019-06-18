@@ -137,16 +137,42 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                                 }
                             });
                             writeThread.start();
-                            logger.info("Bag: writing started");
-                            //Have seen broken pipe in PostPublishDataset workflow without this delay
+                            /*
+                             * The following loop handles two issues. First, with no delay, the
+                             * bucket.create() call below can get started before the piped streams are set
+                             * up, causing a failure (seen when triggered in a PostPublishDataset workflow).
+                             * A minimal initial wait, e.g. until some bytes are available, would address
+                             * this. Second, the BagGenerator class, due to it's use of parallel streaming
+                             * creation of the zip file, has the characteristic that it makes a few bytes
+                             * available - from setting up the directory structure for the zip file -
+                             * significantly earlier than it is ready to stream file content (e.g. for
+                             * thousands of files and GB of content). If, for these large datasets,
+                             * bucket.create() is called as soon as bytes are available, the call can
+                             * timeout before the bytes for all the zipped files are available. To manage
+                             * this, the loop waits until 90K bytes are available, larger than any expected
+                             * dir structure for the zip and implying that the main zipped content is
+                             * available, or until the thread terminates, with all of its content written to
+                             * the pipe. (Note the PipedInputStream buffer is set at 100K above - I didn't
+                             * want to test whether that means that exactly 100K bytes will be available()
+                             * for large datasets or not, so the test below is at 90K.)
+                             * 
+                             * An additional sanity check limits the wait to 2K seconds. The BagGenerator
+                             * has been used to archive >120K files, 2K directories, and ~600GB files on the
+                             * SEAD project (streaming content to disk rather than over an internet
+                             * connection) which would take longer than 2K seconds (10+ hours) and might
+                             * produce an initial set of bytes for directories > 90K. If Dataverse ever
+                             * needs to support datasets of this size, the numbers here would need to be
+                             * increased, and/or a change in how archives are sent to google (e.g. as
+                             * multiple blobs that get aggregated) would be required.
+                             */
                             i=0;
-                            while(digestInputStream2.available()<=80000 && i<1000 && writeThread.isAlive()) {
+                            while(digestInputStream2.available()<=90000 && i<2000 && writeThread.isAlive()) {
                                 Thread.sleep(1000);
-                                logger.info("avail: " + digestInputStream2.available() + " : " + writeThread.getState().toString());
+                                logger.fine("avail: " + digestInputStream2.available() + " : " + writeThread.getState().toString());
                                 i++;
                             }
-                            logger.info("Bag: transfer started, i=" + i + ", avail = " + digestInputStream2.available());
-                            if(i==1000) {
+                            logger.fine("Bag: transfer started, i=" + i + ", avail = " + digestInputStream2.available());
+                            if(i==2000) {
                                 throw new IOException("Stream not available");
                             }
                             Blob bag = bucket.create(spaceName + "/" + fileName, digestInputStream2, "application/zip", Bucket.BlobWriteOption.doesNotExist());
