@@ -137,11 +137,11 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                             }).start();
                             //Have seen broken pipe in PostPublishDataset workflow without this delay
                             i=0;
-                            while(digestInputStream2.available()<=0 && i<100) {
-                                Thread.sleep(10);
+                            while(digestInputStream2.available()<=0 && i<10000) {
+                                Thread.sleep(100);
                                 i++;
                             }
-                            if(i==100) {
+                            if(i==10000) {
                                 throw new IOException("Stream not available");
                             }
                             Blob bag = bucket.create(spaceName + "/" + fileName, digestInputStream2, "application/zip", Bucket.BlobWriteOption.doesNotExist());
