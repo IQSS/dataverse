@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -114,8 +115,8 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                         // Google uses MD5 as one way to verify the
                         // transfer
                         messageDigest = MessageDigest.getInstance("MD5");
-                        try (PipedInputStream in = new PipedInputStream(); DigestInputStream digestInputStream2 = new DigestInputStream(in, messageDigest)) {
-                            new Thread(new Runnable() {
+                        try (PipedInputStream in = new PipedInputStream(); DigestInputStream digestInputStream2 = new DigestInputStream(in, messageDigest); BufferedInputStream bufInputStream= new BufferedInputStream(digestInputStream2, 100000)) {
+                            Thread writeThread = new Thread(new Runnable() {
                                 public void run() {
                                     try (PipedOutputStream out = new PipedOutputStream(in)) {
                                         // Generate bag
@@ -127,20 +128,23 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                                         // TODO Auto-generated catch block
                                         e.printStackTrace();
                                         try {
-                                            digestInputStream.close();
+                                            bufInputStream.close();
                                         } catch(Exception ex) {
                                             logger.warning(ex.getLocalizedMessage());
                                         }
                                         throw new RuntimeException("Error creating bag: " + e.getMessage());
                                     }
                                 }
-                            }).start();
+                            });
+                            writeThread.start();
+                            logger.info("Bag: writing started");
                             //Have seen broken pipe in PostPublishDataset workflow without this delay
                             i=0;
-                            while(digestInputStream2.available()<=0 && i<10000) {
+                            while(bufInputStream.available()<=80000 && i<10000 && writeThread.isAlive()) {
                                 Thread.sleep(100);
                                 i++;
                             }
+                            logger.info("Bag: transfer started, i=" + i + ", avail = " + bufInputStream.available());
                             if(i==10000) {
                                 throw new IOException("Stream not available");
                             }
