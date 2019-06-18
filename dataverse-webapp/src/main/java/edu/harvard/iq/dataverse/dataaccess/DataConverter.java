@@ -28,6 +28,8 @@ import edu.harvard.iq.dataverse.rserve.RJobRequest;
 import edu.harvard.iq.dataverse.rserve.RemoteDataFrameService;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
+import javax.ejb.Stateless;
+import javax.inject.Inject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -55,19 +57,20 @@ import java.util.logging.Logger;
  *
  * @author Leonid Andreev
  */
+
+@Stateless
 public class DataConverter {
     private static Logger logger = Logger.getLogger(DataConverter.class.getPackage().getName());
+
+    @Inject
+    private RemoteDataFrameService dfs;
 
     public DataConverter() {
     }
 
-    public static String FILE_TYPE_TAB = "tab";
-    public static String FILE_TYPE_RDATA = "RData";
+    private String FILE_TYPE_TAB = "tab";
 
-    public static String SERVICE_REQUEST_CONVERT = "convert";
-
-
-    public static StorageIO<DataFile> performFormatConversion(DataFile file, StorageIO<DataFile> storageIO, String formatRequested, String formatType) {
+    public StorageIO<DataFile> performFormatConversion(DataFile file, StorageIO<DataFile> storageIO, String formatRequested, String formatType) {
         if (!file.isTabularData()) {
             return null;
         }
@@ -195,7 +198,7 @@ public class DataConverter {
     // (possibly running on a remote host) and gets back the transformed copy,
     // providing error-checking and diagnostics in the process.
     // This is mostly Akio Sone's code from DVN3.
-    private static File runFormatConversion(DataFile file, File tabFile, String formatRequested) {
+    private File runFormatConversion(DataFile file, File tabFile, String formatRequested) {
 
         if (formatRequested.equals(FILE_TYPE_TAB)) {
             // if the *requested* format is TAB-delimited, we don't
@@ -212,8 +215,7 @@ public class DataConverter {
         }
 
         File formatConvertedFile;
-        // create the service instance
-        RemoteDataFrameService dfs = new RemoteDataFrameService();
+        String pid = dfs.generateRandomPID();
 
         if ("RData".equals(formatRequested)) {
             String origFormat = file.getOriginalFileFormat();
@@ -231,7 +233,7 @@ public class DataConverter {
                     StorageIO<DataFile> storageIO = file.getStorageIO();
                     long size = storageIO.getAuxObjectSize("orig");
                     File origFile = downloadFromByteChannel((ReadableByteChannel) storageIO.openAuxChannel("orig"), size);
-                    resultInfo = dfs.directConvert(origFile, origFormat);
+                    resultInfo = dfs.directConvert(origFile, origFormat, pid);
                 } catch (IOException ex) {
                     ex.printStackTrace();
                     return null;
@@ -246,11 +248,11 @@ public class DataConverter {
                 RJobRequest sro = new RJobRequest(dataVariables, vls);
 
                 sro.setTabularDataFileName(tabFile.getAbsolutePath());
-                sro.setRequestType(SERVICE_REQUEST_CONVERT);
-                sro.setFormatRequested(FILE_TYPE_RDATA);
+                sro.setRequestType("convert");
+                sro.setFormatRequested("RData");
 
                 // execute the service
-                resultInfo = dfs.execute(sro);
+                resultInfo = dfs.execute(sro, pid);
             }
 
             //resultInfo.put("offlineCitation", citation);
@@ -267,7 +269,7 @@ public class DataConverter {
 
             formatConvertedFile = new File(dataFrameFileName);
         } else if ("prep".equals(formatRequested)) {
-            formatConvertedFile = dfs.runDataPreprocessing(file);
+            formatConvertedFile = dfs.runDataPreprocessing(file, pid);
         } else {
             logger.warning("Unsupported file format requested: " + formatRequested);
             return null;

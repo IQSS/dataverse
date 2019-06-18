@@ -531,7 +531,9 @@ public class FileMetadata implements Serializable {
 
         if (this.getDescription() != null) {
             return this.getDescription().equals(other.getDescription());
-        } else return other.getDescription() == null;
+        } else {
+            return other.getDescription() == null;
+        }
 
     }
 

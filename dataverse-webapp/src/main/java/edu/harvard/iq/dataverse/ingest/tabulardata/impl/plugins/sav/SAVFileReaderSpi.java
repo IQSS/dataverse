@@ -20,11 +20,9 @@
 
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav;
 
-import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import org.apache.commons.codec.binary.Hex;
 
-import javax.imageio.IIOException;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,7 +38,7 @@ import java.util.logging.Logger;
 
 /**
  * Service Provider registration class for the SPSS/SAV ingest plugin.
- * Based on the code originally developed by Akio Sone, HMDC/ODUM
+ * Based on the code originally developed by Akio Sone, HMDC/ODUM 
  * for v.2 of the DVN.
  *
  * @author Leonid Andreev
@@ -206,10 +204,5 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi {
 
     public String getDescription(Locale locale) {
         return "HU-IQSS-DataVerse-project SPSS/SAV File Ingest plugin";
-    }
-
-    @Override
-    public TabularDataFileReader createReaderInstance(Object ext) throws IIOException {
-        return new SAVFileReader(this);
     }
 }

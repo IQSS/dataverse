@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 
+import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.RedirectionException;
 import javax.ws.rs.WebApplicationException;
@@ -51,6 +52,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
     private static final Logger logger = Logger.getLogger(DownloadInstanceWriter.class.getCanonicalName());
 
+    @Inject
+    private DataConverter dataConverter;
 
     @Override
     public boolean isWriteable(Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType) {
@@ -138,7 +141,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     requestedMimeType = "application/octet-stream";
                                 }
                                 storageIO =
-                                        DataConverter.performFormatConversion(dataFile,
+                                        dataConverter.performFormatConversion(dataFile,
                                                                               storageIO,
                                                                               di.getConversionParamValue(), requestedMimeType);
                             }

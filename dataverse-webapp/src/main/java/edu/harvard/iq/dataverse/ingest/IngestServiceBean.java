@@ -24,7 +24,6 @@ import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
@@ -62,6 +61,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReade
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx.XLSXFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx.XLSXFileReaderSpi;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -96,7 +96,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -132,6 +131,9 @@ public class IngestServiceBean {
     DataFileServiceBean fileService;
     @EJB
     SystemConfig systemConfig;
+
+    @EJB
+    private SettingsServiceBean settingsService;
 
     @Resource(mappedName = "jms/DataverseIngest")
     Queue queue;
@@ -1039,7 +1041,7 @@ public class IngestServiceBean {
         */
     /* }*/
 
-    public static TabularDataFileReader getTabDataReaderByMimeType(String mimeType) { //DataFile dataFile) {
+    public TabularDataFileReader getTabDataReaderByMimeType(String mimeType) { //DataFile dataFile) {
         /*
          * Same as the comment above; since we don't have any ingest plugins loadable
          * in real times yet, we can select them by a fixed list of mime types.
@@ -1063,7 +1065,11 @@ public class IngestServiceBean {
         } else if (mimeType.equals(FileUtil.MIME_TYPE_STATA15)) {
             ingestPlugin = new NewDTAFileReader(new DTAFileReaderSpi(), 119);
         } else if (mimeType.equals(FileUtil.MIME_TYPE_RDATA)) {
-            ingestPlugin = new RDATAFileReader(new RDATAFileReaderSpi());
+            ingestPlugin = new RDATAFileReader(new RDATAFileReaderSpi(),
+                                               settingsService.getValueForKey(SettingsServiceBean.Key.RserveHost),
+                                               settingsService.getValueForKey(SettingsServiceBean.Key.RserveUser),
+                                               settingsService.getValueForKey(SettingsServiceBean.Key.RservePassword),
+                                               settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.RservePort));
         } else if (mimeType.equals(FileUtil.MIME_TYPE_CSV) || mimeType.equals(FileUtil.MIME_TYPE_CSV_ALT)) {
             ingestPlugin = new CSVFileReader(new CSVFileReaderSpi(), ',');
         } else if (mimeType.equals(FileUtil.MIME_TYPE_TSV) || mimeType.equals(FileUtil.MIME_TYPE_TSV_ALT)) {
@@ -1803,106 +1809,4 @@ public class IngestServiceBean {
             logger.warning("DataFile id=" + fileId + ": No such DataFile!");
         }
     }
-
-    public static void main(String[] args) {
-
-        String file = args[0];
-        String type = args[1];
-
-        if (file == null || type == null || "".equals(file) || "".equals(type)) {
-            System.err.println("Usage: java edu.harvard.iq.dataverse.ingest.IngestServiceBean <file> <type>.");
-            System.exit(1);
-        }
-
-        BufferedInputStream fileInputStream = null;
-
-        try {
-            fileInputStream = new BufferedInputStream(new FileInputStream(new File(file)));
-        } catch (FileNotFoundException notfoundEx) {
-            fileInputStream = null;
-        }
-
-        if (fileInputStream == null) {
-            System.err.println("Could not open file " + file + ".");
-            System.exit(1);
-        }
-
-        TabularDataFileReader ingestPlugin = getTabDataReaderByMimeType(type);
-
-        if (ingestPlugin == null) {
-            System.err.println("Could not locate an ingest plugin for type " + type + ".");
-            System.exit(1);
-        }
-
-        TabularDataIngest tabDataIngest = null;
-
-        try {
-            tabDataIngest = ingestPlugin.read(fileInputStream, null);
-        } catch (IOException ingestEx) {
-            System.err.println("Caught an exception trying to ingest file " + file + ".");
-            System.exit(1);
-        }
-
-        try {
-            if (tabDataIngest != null) {
-                File tabFile = tabDataIngest.getTabDelimitedFile();
-
-                if (tabDataIngest.getDataTable() != null
-                        && tabFile != null
-                        && tabFile.exists()) {
-
-                    String tabFilename = FileUtil.replaceExtension(file, "tab");
-
-                    Files.copy(Paths.get(tabFile.getAbsolutePath()), Paths.get(tabFilename), StandardCopyOption.REPLACE_EXISTING);
-
-                    DataTable dataTable = tabDataIngest.getDataTable();
-
-                    System.out.println("NVARS: " + dataTable.getVarQuantity());
-                    System.out.println("NOBS: " + dataTable.getCaseQuantity());
-                    System.out.println("UNF: " + dataTable.getUnf());
-
-                    for (int i = 0; i < dataTable.getVarQuantity(); i++) {
-                        String vartype = "";
-
-                        if (dataTable.getDataVariables().get(i).isIntervalContinuous()) {
-                            vartype = "numeric-continuous";
-                        } else {
-                            if (dataTable.getDataVariables().get(i).isTypeNumeric()) {
-                                vartype = "numeric-discrete";
-                            } else {
-                                vartype = "character";
-                            }
-                        }
-
-                        System.out.print("VAR" + i + " ");
-                        System.out.print(dataTable.getDataVariables().get(i).getName() + " ");
-                        System.out.print(vartype + " ");
-                        System.out.print(dataTable.getDataVariables().get(i).getUnf());
-                        System.out.println();
-
-                    }
-
-                } else {
-                    System.err.println("Ingest failed to produce tab file or data table for file " + file + ".");
-                    System.exit(1);
-                }
-            } else {
-                System.err.println("Ingest resulted in a null tabDataIngest object for file " + file + ".");
-                System.exit(1);
-            }
-        } catch (IOException ex) {
-            System.err.println("Caught an exception trying to save ingested data for file " + file + ".");
-            System.exit(1);
-        }
-
-    }
-    /*
-    private class InternalIngestException extends Exception {
-        
-    }
-    
-    public class IngestServiceException extends Exception {
-        
-    }
-    */
 }

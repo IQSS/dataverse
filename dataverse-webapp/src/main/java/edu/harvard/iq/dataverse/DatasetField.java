@@ -632,7 +632,9 @@ public class DatasetField implements Serializable {
 
         if (this.datasetFieldType.getFieldType().equals(FieldType.TEXT)) {
             return true;
-        } else return this.datasetFieldType.getFieldType().equals(FieldType.TEXTBOX);
+        } else {
+            return this.datasetFieldType.getFieldType().equals(FieldType.TEXTBOX);
+        }
 
     } // end: needsTextCleaning
 

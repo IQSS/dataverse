@@ -19,7 +19,6 @@
 */
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata;
 
-import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 
 import java.io.BufferedInputStream;
@@ -73,12 +72,7 @@ public class RDATAFileReaderSpi extends TabularDataFileReaderSpi {
         return true;
     }
 
-    public boolean fileIsValid() throws IOException {
+    public boolean fileIsValid() {
         return false;
-    }
-
-    @Override
-    public TabularDataFileReader createReaderInstance(Object ext) throws IOException {
-        return new RDATAFileReader(this);
     }
 }

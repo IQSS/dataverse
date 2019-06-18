@@ -19,11 +19,9 @@
 */
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por;
 
-import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import org.apache.commons.codec.binary.Hex;
 
-import javax.imageio.IIOException;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -481,10 +479,5 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
 
     public String getDescription(Locale locale) {
         return "HU-IQSS-DataVerse-project SPSS/POR (\"portable\") File Ingest plugin";
-    }
-
-    @Override
-    public TabularDataFileReader createReaderInstance(Object ext) throws IIOException {
-        return new PORFileReader(this);
     }
 }

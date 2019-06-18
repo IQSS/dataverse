@@ -1476,7 +1476,9 @@ public class IndexServiceBean {
         Timestamp modificationTime = dvObject.getModificationTime();
         if (indexTime == null) {
             return true;
-        } else return indexTime.before(modificationTime);
+        } else {
+            return indexTime.before(modificationTime);
+        }
     }
 
     public List<Long> findDataversesInSolrOnly() throws SearchException {

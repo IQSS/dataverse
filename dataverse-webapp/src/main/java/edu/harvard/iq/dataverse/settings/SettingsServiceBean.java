@@ -460,7 +460,13 @@ public class SettingsServiceBean {
 
         TimerServer,
 
-        MinutesUntilPasswordResetTokenExpires;
+        MinutesUntilPasswordResetTokenExpires,
+
+        RserveHost,
+        RservePort,
+        RserveUser,
+        RservePassword,
+        RserveTempDir;
 
         @Override
         public String toString() {

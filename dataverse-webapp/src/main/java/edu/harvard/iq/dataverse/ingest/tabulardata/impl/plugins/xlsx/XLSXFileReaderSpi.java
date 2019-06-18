@@ -19,7 +19,6 @@
 */
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx;
 
-import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 
 import java.io.BufferedInputStream;
@@ -79,10 +78,5 @@ public class XLSXFileReaderSpi extends TabularDataFileReaderSpi {
 
     public boolean fileIsValid() throws IOException {
         return false;
-    }
-
-    @Override
-    public TabularDataFileReader createReaderInstance(Object ext) throws IOException {
-        return new XLSXFileReader(this);
     }
 }

@@ -671,7 +671,9 @@ public class AddReplaceFileHelper {
 
         if (this.currentOperation.equals(FILE_REPLACE_OPERATION)) {
             return true;
-        } else return this.currentOperation.equals(FILE_REPLACE_FORCE_OPERATION);
+        } else {
+            return this.currentOperation.equals(FILE_REPLACE_FORCE_OPERATION);
+        }
     }
 
     /**

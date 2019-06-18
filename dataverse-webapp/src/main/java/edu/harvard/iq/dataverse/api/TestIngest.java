@@ -57,8 +57,6 @@ public class TestIngest {
     private static final Logger logger = Logger.getLogger(TestIngest.class.getCanonicalName());
 
     @EJB
-    DatasetServiceBean datasetService;
-    @EJB
     IngestServiceBean ingestService;
 
     //@EJB
@@ -88,7 +86,7 @@ public class TestIngest {
             return output;
         }
 
-        TabularDataFileReader ingestPlugin = IngestServiceBean.getTabDataReaderByMimeType(fileType);
+        TabularDataFileReader ingestPlugin = ingestService.getTabDataReaderByMimeType(fileType);
 
         if (ingestPlugin == null) {
             output = output.concat("Could not locate an ingest plugin for type " + fileType + ".");

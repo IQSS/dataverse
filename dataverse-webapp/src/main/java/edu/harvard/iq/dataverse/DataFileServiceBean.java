@@ -1085,7 +1085,9 @@ public class DataFileServiceBean implements java.io.Serializable {
             return false;
             // blow up -- this shouldn't happen!
             //throw new FileReplaceException(errMSg);
-        } else return df.getPreviousDataFileId() > 0;
+        } else {
+            return df.getPreviousDataFileId() > 0;
+        }
     }  // end: isReplacementFile
 
     public List<Long> selectFilesWithMissingOriginalTypes() {

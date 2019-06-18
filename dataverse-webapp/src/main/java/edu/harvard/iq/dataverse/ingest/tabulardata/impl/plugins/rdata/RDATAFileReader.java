@@ -52,14 +52,12 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
-// Rosuda Wrappers and Methods for R-calls to Rserve
 
 /**
  * Dataverse 4.0 implementation of <code>TabularDataFileReader</code> for the
@@ -78,53 +76,27 @@ import java.util.logging.Logger;
  * <p>
  * This implementation uses external R-Scripts to do the bulk of the processing.
  */
+
 public class RDATAFileReader extends TabularDataFileReader {
 
-    // Date-time things
-    public static final String[] FORMATS = {"other", "date", "date-time", "date-time-timezone"};
-
-    // R-ingest recognition files
-    private static final String[] FORMAT_NAMES = {"RDATA", "Rdata", "rdata"};
-    private static final String[] EXTENSIONS = {"Rdata", "rdata"};
-    private static final String[] MIME_TYPE = {"application/x-rlang-transport"};
-
     // R Scripts
-    static private String RSCRIPT_CREATE_WORKSPACE = "";
-    static private String RSCRIPT_DATASET_INFO_SCRIPT = "";
-    static private String RSCRIPT_GET_DATASET = "";
-    static private String RSCRIPT_GET_LABELS = "";
-    static private String RSCRIPT_WRITE_DVN_TABLE = "";
+    private static String RSCRIPT_CREATE_WORKSPACE = "";
+    private static String RSCRIPT_DATASET_INFO_SCRIPT = "";
+    private static String RSCRIPT_GET_DATASET = "";
+    private static String RSCRIPT_GET_LABELS = "";
+    private static String RSCRIPT_WRITE_DVN_TABLE = "";
 
-    // RServe static variables
-    private static String RSERVE_HOST = System.getProperty("dataverse.rserve.host");
-    private static String RSERVE_USER = System.getProperty("dataverse.rserve.user");
-    private static String RSERVE_PASSWORD = System.getProperty("dataverse.rserve.password");
-    private static int RSERVE_PORT;
+    private String rserveHost;
+    private String rserveUser;
+    private String rservePassword;
+    private int rservePort;
 
-    // TODO:
-    // we're not using these time/data formats for anything, are we?
-    // DATE FORMATS
-    private static SimpleDateFormat[] DATE_FORMATS = new SimpleDateFormat[]{
-            new SimpleDateFormat("yyyy-MM-dd")
-    };
-
-    // TIME FORMATS
-    private static SimpleDateFormat[] TIME_FORMATS = new SimpleDateFormat[]{
-            // Date-time up to milliseconds with timezone, e.g. 2013-04-08 13:14:23.102 -0500
-            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS z"),
-            // Date-time up to milliseconds, e.g. 2013-04-08 13:14:23.102
-            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"),
-            // Date-time up to seconds with timezone, e.g. 2013-04-08 13:14:23 -0500
-            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z"),
-            // Date-time up to seconds and no timezone, e.g. 2013-04-08 13:14:23
-            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-    };
+    private RRequestBuilder mRequestBuilder;
 
     // Logger
     private static final Logger LOG = Logger.getLogger(RDATAFileReader.class.getPackage().getName());
 
-
-    TabularDataIngest ingesteddata = new TabularDataIngest();
+    private TabularDataIngest ingesteddata = new TabularDataIngest();
     private DataTable dataTable = new DataTable();
 
     // Process ID, used partially in the generation of temporary directories
@@ -134,12 +106,42 @@ public class RDATAFileReader extends TabularDataFileReader {
     // temporary directories on and off server)
     private RWorkspace mRWorkspace;
 
+    public RDATAFileReader(TabularDataFileReaderSpi originatingProvider, String rserveHost, String rserveUser, String rservePassword, int rservePort) {
+        super(originatingProvider);
+        this.rserveHost = rserveHost;
+        this.rserveUser = rserveUser;
+        this.rservePassword = rservePassword;
+        this.rservePort = rservePort;
+
+        mRequestBuilder = new RRequestBuilder()
+                .host(rserveHost)
+                .port(rservePort)
+                .user(rserveUser)
+                .password(rservePassword);
+
+        mRWorkspace = new RWorkspace();
+        mPID = RandomStringUtils.randomNumeric(6);
+
+    }
+
+    public String getRserveHost() {
+        return rserveHost;
+    }
+
+    public String getRserveUser() {
+        return rserveUser;
+    }
+
+    public String getRservePassword() {
+        return rservePassword;
+    }
+
+    public int getRservePort() {
+        return rservePort;
+    }
 
     // Number formatter
     NumberFormat doubleNumberFormatter = new DecimalFormat();
-
-    // Builds R Requests for an R-server
-    private RRequestBuilder mRequestBuilder;
 
     /*
      * Initialize Static Variables
@@ -149,24 +151,6 @@ public class RDATAFileReader extends TabularDataFileReader {
         /*
          * Set defaults fallbacks for class properties
          */
-        if (RSERVE_HOST == null) {
-            RSERVE_HOST = "localhost";
-        }
-
-        if (RSERVE_USER == null) {
-            RSERVE_USER = "rserve";
-        }
-
-        if (RSERVE_PASSWORD == null) {
-            RSERVE_PASSWORD = "rserve";
-        }
-
-        if (System.getProperty("dataverse.ingest.rserve.port") == null) {
-            RSERVE_PORT = 6311;
-        } else {
-            RSERVE_PORT = Integer.parseInt(System.getProperty("dataverse.rserve.port"));
-        }
-
 
         // Load R Scripts into memory, so that we can run them via R-serve
         RSCRIPT_WRITE_DVN_TABLE = readLocalResource("scripts/write.table.R");
@@ -373,10 +357,10 @@ public class RDATAFileReader extends TabularDataFileReader {
 
             try {
                 LOG.fine("RDATAFileReader: Opening R connection");
-                rServerConnection = new RConnection(RSERVE_HOST, RSERVE_PORT);
+                rServerConnection = new RConnection(rserveHost, rservePort);
 
                 LOG.fine("RDATAFileReader: Logging into R connection");
-                rServerConnection.login(RSERVE_USER, RSERVE_PASSWORD);
+                rServerConnection.login(rserveUser, rservePassword);
 
                 LOG.fine("RDATAFileReader: Attempting to create file");
                 outStream = rServerConnection.createFile(mDataFile.getAbsolutePath());
@@ -456,32 +440,6 @@ public class RDATAFileReader extends TabularDataFileReader {
         public String getRdataAbsolutePath() {
             return mDataFile.getAbsolutePath();
         }
-    }
-
-    /**
-     * Constructs a <code>RDATAFileReader</code> instance from its "Spi" Class
-     *
-     * @param originator a <code>StatDataFileReaderSpi</code> object.
-     */
-    public RDATAFileReader(TabularDataFileReaderSpi originator) {
-
-        super(originator);
-
-
-        LOG.fine("RDATAFileReader: INSIDE RDATAFileReader");
-
-        // Create request builder.
-        // This object is used throughout as an RRequest factory
-        mRequestBuilder = new RRequestBuilder()
-                .host(RSERVE_HOST)
-                .port(RSERVE_PORT)
-                .user(RSERVE_USER)
-                .password(RSERVE_PASSWORD);
-
-        // Create R Workspace
-        mRWorkspace = new RWorkspace();
-
-        mPID = RandomStringUtils.randomNumeric(6);
     }
 
     private void init() throws IOException {
@@ -576,8 +534,8 @@ public class RDATAFileReader extends TabularDataFileReader {
 
         try {
             // Open connection to R-serve
-            RConnection rServeConnection = new RConnection(RSERVE_HOST, RSERVE_PORT);
-            rServeConnection.login(RSERVE_USER, RSERVE_PASSWORD);
+            RConnection rServeConnection = new RConnection(rserveHost, rservePort);
+            rServeConnection.login(rserveUser, rservePassword);
 
             // Open file for reading from R-serve
             RFileInputStream rServeInputStream = rServeConnection.openFile(target.getAbsolutePath());

@@ -21,7 +21,6 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta;
 
 
-import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import org.apache.commons.codec.binary.Hex;
 
@@ -222,10 +221,5 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi {
                                 "(No in HEX=" + hdr4[0] + ")");
             return true;
         }
-    }
-
-    @Override
-    public TabularDataFileReader createReaderInstance(Object ext) throws IIOException {
-        return new DTAFileReader(this);
     }
 }

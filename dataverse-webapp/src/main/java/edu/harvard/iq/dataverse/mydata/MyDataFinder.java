@@ -324,10 +324,12 @@ public class MyDataFinder {
 
         } else // only parentIdClause
             if (entityIdClause != null) {
-            // only entityIdClause
-            return entityIdClause;
+                // only entityIdClause
+                return entityIdClause;
 
-        } else return parentIdClause;
+            } else {
+                return parentIdClause;
+            }
 
         // Shouldn't get here...
     }

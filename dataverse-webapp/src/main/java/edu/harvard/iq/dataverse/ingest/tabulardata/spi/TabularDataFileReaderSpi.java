@@ -132,29 +132,6 @@ public abstract class TabularDataFileReaderSpi extends TabularDataFileReaderWrit
     public abstract boolean canDecodeInput(BufferedInputStream stream) throws IOException;
 
     /**
-     * Returns an instance of <code>StatDataFileReader</code> implementation associated with
-     * this service provider.
-     *
-     * @param extension a plug-in specific extension object.
-     * @return a <code>StatDataFileReader</code> instance.
-     * @throws IOException if the instantiation attempt of the reader fails.
-     */
-    public abstract TabularDataFileReader createReaderInstance(Object extension)
-            throws IOException;
-
-    /**
-     * Returns an instance of <code>StatDataFileReader</code> implementation
-     * associated with his service provider.
-     *
-     * @return a <code>StatDataFileReader</code> instance.
-     * @throws java.io.IOException if an error occurs during the
-     *                             reader instantiation.
-     */
-    public TabularDataFileReader createReaderInstance() throws IOException {
-        return createReaderInstance(null);
-    }
-
-    /**
      * Returns <code>true</code> if the <code>StatDataFileReader</code> object
      * supplied in is an instance of the <code>StatDataFileReader</code>
      * associated with this service provider.
