@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.license.TermsOfUseFactory;
+import edu.harvard.iq.dataverse.license.TermsOfUseFormMapper;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -67,6 +68,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     UrlManager urlManager;
     @Inject
     private TermsOfUseFactory termsOfUseFactory;
+    @Inject
+    private TermsOfUseFormMapper termsOfUseFormMapper;
 
     private HttpServletRequest httpRequest;
 
@@ -301,7 +304,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             List<DataFile> dataFiles = new ArrayList<>();
             try {
                 try {
-                    dataFiles = FileUtil.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, settingsSvc, termsOfUseFactory);
+                    dataFiles = FileUtil.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe,
+                            settingsSvc, termsOfUseFactory, termsOfUseFormMapper);
                 } catch (EJBException ex) {
                     Throwable cause = ex.getCause();
                     if (cause != null) {

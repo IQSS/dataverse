@@ -77,6 +77,7 @@ import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.license.TermsOfUseFactory;
+import edu.harvard.iq.dataverse.license.TermsOfUseFormMapper;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -182,6 +183,9 @@ public class Datasets extends AbstractApiBean {
 
     @Inject
     private TermsOfUseFactory termsOfUseFactory;
+
+    @Inject
+    private TermsOfUseFormMapper termsOfUseFormMapper;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -1482,7 +1486,8 @@ public class Datasets extends AbstractApiBean {
                                                                       permissionSvc,
                                                                       commandEngine,
                                                                       settingsService,
-                                                                      termsOfUseFactory);
+                                                                      termsOfUseFactory,
+                                                                      termsOfUseFormMapper);
 
 
         //-------------------

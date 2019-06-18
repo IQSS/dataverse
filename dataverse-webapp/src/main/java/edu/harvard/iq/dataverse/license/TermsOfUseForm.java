@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.license;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Terms of use used to populate values of
@@ -55,5 +56,29 @@ public class TermsOfUseForm implements Serializable {
 
     public void setCustomRestrictText(String customRestrictText) {
         this.customRestrictText = customRestrictText;
+    }
+
+    // -------------------- hashCode & equals --------------------
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(customRestrictText, restrictType, typeWithLicenseId);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        TermsOfUseForm other = (TermsOfUseForm) obj;
+        return Objects.equals(customRestrictText, other.customRestrictText)
+                && Objects.equals(restrictType, other.restrictType)
+                && Objects.equals(typeWithLicenseId, other.typeWithLicenseId);
     }
 }

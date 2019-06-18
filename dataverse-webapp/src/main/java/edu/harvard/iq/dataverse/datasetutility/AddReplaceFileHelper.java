@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.license.TermsOfUseFactory;
+import edu.harvard.iq.dataverse.license.TermsOfUseFormMapper;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -30,6 +31,8 @@ import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.ocpsoft.common.util.Strings;
+
+import com.google.common.base.Preconditions;
 
 import javax.ejb.EJBException;
 import javax.json.JsonObjectBuilder;
@@ -110,6 +113,7 @@ public class AddReplaceFileHelper {
     private EjbDataverseEngine commandEngine;
     private SettingsServiceBean settingsService;
     private TermsOfUseFactory termsOfUseFactory;
+    private TermsOfUseFormMapper termsOfUseFormMapper;
 
     // -----------------------------------
     // Instance variables directly added
@@ -192,53 +196,28 @@ public class AddReplaceFileHelper {
                                 PermissionServiceBean permissionService,
                                 EjbDataverseEngine commandEngine,
                                 SettingsServiceBean settingsService,
-                                TermsOfUseFactory termsOfUseFactory) {
+                                TermsOfUseFactory termsOfUseFactory,
+                                TermsOfUseFormMapper termsOfUseFormMapper) {
 
         // ---------------------------------
         // make sure DataverseRequest isn't null and has a user
         // ---------------------------------
-        if (dvRequest == null) {
-            throw new NullPointerException("dvRequest cannot be null");
-        }
-        if (dvRequest.getUser() == null) {
-            throw new NullPointerException("dvRequest cannot have a null user");
-        }
+        Preconditions.checkNotNull(dvRequest, "dvRequest cannot be null");
+        Preconditions.checkNotNull(dvRequest.getUser(), "dvRequest cannot have a null user");
 
         // ---------------------------------
         // make sure services aren't null
         // ---------------------------------
-        if (ingestService == null) {
-            throw new NullPointerException("ingestService cannot be null");
-        }
-        if (datasetService == null) {
-            throw new NullPointerException("datasetService cannot be null");
-        }
-        if (fileService == null) {
-            throw new NullPointerException("fileService cannot be null");
-        }
-        if (permissionService == null) {
-            throw new NullPointerException("ingestService cannot be null");
-        }
-        if (commandEngine == null) {
-            throw new NullPointerException("commandEngine cannot be null");
-        }
-        if (settingsService == null) {
-            throw new NullPointerException("settingsService cannot be null");
-        }
-        if (termsOfUseFactory == null) {
-            throw new NullPointerException("TermsOfUseFactory cannot be null");
-        }
+        this.ingestService = Objects.requireNonNull(ingestService, "ingestService cannot be null");
+        this.datasetService = Objects.requireNonNull(datasetService, "datasetService cannot be null");
+        this.fileService = Objects.requireNonNull(fileService, "fileService cannot be null");
+        this.permissionService = Objects.requireNonNull(permissionService, "permissionService cannot be null");
+        this.commandEngine = Objects.requireNonNull(commandEngine, "commandEngine cannot be null");
+        this.settingsService = Objects.requireNonNull(settingsService, "settingsService cannot be null");
+        this.termsOfUseFactory = Objects.requireNonNull(termsOfUseFactory, "TermsOfUseFactory cannot be null");
+        this.termsOfUseFormMapper = Objects.requireNonNull(termsOfUseFormMapper, "TermsOfUseFormMapper cannot be null");
 
         // ---------------------------------
-
-        this.ingestService = ingestService;
-        this.datasetService = datasetService;
-        this.fileService = fileService;
-        this.permissionService = permissionService;
-        this.commandEngine = commandEngine;
-        this.settingsService = settingsService;
-        this.termsOfUseFactory = termsOfUseFactory;
-
 
         initErrorHandling();
 
@@ -1038,7 +1017,8 @@ public class AddReplaceFileHelper {
                                                        this.newFileName,
                                                        this.newFileContentType,
                                                        this.settingsService,
-                                                       this.termsOfUseFactory);
+                                                       this.termsOfUseFactory,
+                                                       this.termsOfUseFormMapper);
 
         } catch (IOException ex) {
             if (!Strings.isNullOrEmpty(ex.getMessage())) {
@@ -1240,13 +1220,11 @@ public class AddReplaceFileHelper {
         if (this.hasError()){
             return false;
         }
-
         // Not a FILE REPLACE operation -- skip this step!!
         //
         if (!isFileReplaceOperation()){
             return true;
         }
-
         
         if (finalFileList.isEmpty()){
             // This error shouldn't happen if steps called in sequence....
@@ -1267,7 +1245,6 @@ public class AddReplaceFileHelper {
                 this.addError(getBundleErr("replace.new_file_same_as_replacement"));                                
                 break;
             }
-
             // Has the content type of the file changed?
             //
             if (!df.getContentType().equalsIgnoreCase(fileToReplace.getContentType())){
@@ -1286,7 +1263,6 @@ public class AddReplaceFileHelper {
                     this.addError(contentTypeErr);
                 }
             }
-
         }
         
         if (hasError()){
@@ -1897,7 +1873,6 @@ public class AddReplaceFileHelper {
         }
     
         (3) processUploadedFileList(dFileList);
-
     (C) EditDataFilesPage.java -> processUploadedFileList
         - iterate through list of DataFile objects -- which COULD happen with a single .zip
             - isDuplicate check
@@ -1925,7 +1900,6 @@ public class AddReplaceFileHelper {
             // in the ingest service bean, when the files get uploaded.)
             // Finally, save the files permanently: 
             ingestService.saveAndAddFilesToDataset(workingVersion, newFiles);
-
          (3) Use the API to save the dataset
             - make new CreateDatasetCommand
                 - check if dataset has a template
