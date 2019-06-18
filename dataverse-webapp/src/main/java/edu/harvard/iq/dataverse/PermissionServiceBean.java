@@ -786,7 +786,7 @@ public class PermissionServiceBean {
             return false;
         }
 
-        return isUserAdminForDataverse(user, dataverse) && dataverse.isAllowMessagesBanners();
+        return (isUserAdminForDataverse(user, dataverse) || user.isSuperuser()) && dataverse.isAllowMessagesBanners();
     }
 
 }
