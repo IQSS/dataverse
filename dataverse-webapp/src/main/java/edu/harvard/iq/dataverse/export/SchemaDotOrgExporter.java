@@ -4,14 +4,16 @@ import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringReader;
-import java.util.logging.Logger;
+
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.ws.rs.core.MediaType;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.util.logging.Logger;
 
 /**
  * Schema.org JSON-LD is used by Google Dataset Search and other services to
@@ -77,10 +79,10 @@ public class SchemaDotOrgExporter implements Exporter {
     @Override
     public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
         String jsonLdAsString = version.getJsonLd();
-        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonLdAsString));) {
+        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonLdAsString))) {
             JsonObject jsonLdJsonObject = jsonReader.readObject();
             try {
-                outputStream.write(jsonLdJsonObject.toString().getBytes("UTF8"));
+                outputStream.write(jsonLdJsonObject.toString().getBytes(StandardCharsets.UTF_8));
             } catch (IOException ex) {
                 logger.info("IOException calling outputStream.write: " + ex);
             }
@@ -137,7 +139,7 @@ public class SchemaDotOrgExporter implements Exporter {
     public void setParam(String name, Object value) {
         // this exporter doesn't need/doesn't currently take any parameters
     }
-    
+
 
     @Override
     public String getMediaType() {

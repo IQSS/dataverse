@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
  * @author skraffmiller
  */
 @ViewScoped
@@ -31,8 +30,8 @@ public class DatasetVersionUI implements Serializable {
     @EJB
     DataverseServiceBean dataverseService;
     @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;   
-    
+    private EntityManager em;
+
     public DatasetVersionUI() {
     }
 
@@ -54,13 +53,13 @@ public class DatasetVersionUI implements Serializable {
     public void setMetadataBlocksForEdit(Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit) {
         this.metadataBlocksForEdit = metadataBlocksForEdit;
     }
-    
-    public DatasetVersionUI  initDatasetVersionUI(DatasetVersion datasetVersion, boolean createBlanks) {
+
+    public DatasetVersionUI initDatasetVersionUI(DatasetVersion datasetVersion, boolean createBlanks) {
         /*takes in the values of a dataset version 
          and apportions them into lists for 
          viewing and editng in the dataset page.
          */
-        
+
         setDatasetVersion(datasetVersion);
         //this.setDatasetAuthors(new ArrayList());
         this.setDatasetRelPublications(new ArrayList<>());
@@ -73,35 +72,35 @@ public class DatasetVersionUI implements Serializable {
             } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.description)) {
                 setDescription(dsf);
                 String descriptionString = "";
-                if(dsf.getDatasetFieldCompoundValues() != null && dsf.getDatasetFieldCompoundValues().get(0) != null){
-                    DatasetFieldCompoundValue descriptionValue = dsf.getDatasetFieldCompoundValues().get(0);               
+                if (dsf.getDatasetFieldCompoundValues() != null && dsf.getDatasetFieldCompoundValues().get(0) != null) {
+                    DatasetFieldCompoundValue descriptionValue = dsf.getDatasetFieldCompoundValues().get(0);
                     for (DatasetField subField : descriptionValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.descriptionText) && !subField.isEmptyForDisplay()) {                          
-                                descriptionString = subField.getValue();                             
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.descriptionText) && !subField.isEmptyForDisplay()) {
+                            descriptionString = subField.getValue();
                         }
                     }
-                }                 
-                setDescriptionDisplay(MarkupChecker.sanitizeBasicHTML(descriptionString) );
+                }
+                setDescriptionDisplay(MarkupChecker.sanitizeBasicHTML(descriptionString));
             } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.keyword)) {
                 setKeyword(dsf);
                 String keywordString = "";
                 for (DatasetFieldCompoundValue keywordValue : dsf.getDatasetFieldCompoundValues()) {
                     for (DatasetField subField : keywordValue.getChildDatasetFields()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.keywordValue) && !subField.isEmptyForDisplay()) {
-                            if (keywordString.isEmpty()){
+                            if (keywordString.isEmpty()) {
                                 keywordString = subField.getValue();
                             } else {
-                                keywordString += ", " +  subField.getValue();
-                            }                               
+                                keywordString += ", " + subField.getValue();
+                            }
                         }
                     }
-                } 
+                }
                 setKeywordDisplay(keywordString);
             } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject) && !dsf.isEmptyForDisplay()) {
                 setSubject(dsf);
             } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.notesText) && !dsf.isEmptyForDisplay()) {
-                this.setNotes(dsf);                
-            }  else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.publication)) {
+                this.setNotes(dsf);
+            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.publication)) {
                 //Special handling for Related Publications
                 // Treated as below the tabs for editing, but must get first value for display above tabs    
                 if (this.datasetRelPublications.isEmpty()) {
@@ -128,11 +127,11 @@ public class DatasetVersionUI implements Serializable {
                 }
             }
         }
-        
+
         datasetVersion.setDatasetFields(initDatasetFields(createBlanks));
-        
+
         setMetadataValueBlocks(datasetVersion);
-        
+
         return this;
     }
 
@@ -154,7 +153,7 @@ public class DatasetVersionUI implements Serializable {
     private DatasetField description;
     private DatasetField keyword;
     private DatasetField subject;
-    private DatasetField notes; 
+    private DatasetField notes;
     private String keywordDisplay;
 
     public String getKeywordDisplay() {
@@ -164,6 +163,7 @@ public class DatasetVersionUI implements Serializable {
     public void setKeywordDisplay(String keywordDisplay) {
         this.keywordDisplay = keywordDisplay;
     }
+
     private String descriptionDisplay;
 
     public String getDescriptionDisplay() {
@@ -173,9 +173,9 @@ public class DatasetVersionUI implements Serializable {
     public void setDescriptionDisplay(String descriptionDisplay) {
         this.descriptionDisplay = descriptionDisplay;
     }
-            
-  
-    private List<DatasetRelPublication> datasetRelPublications;    
+
+
+    private List<DatasetRelPublication> datasetRelPublications;
 
     public DatasetField getTitle() {
         return title;
@@ -184,14 +184,14 @@ public class DatasetVersionUI implements Serializable {
     public void setTitle(DatasetField title) {
         this.title = title;
     }
-    
+
     public DatasetField getDescription() {
         return description;
     }
 
     public void setDescription(DatasetField description) {
         this.description = description;
-    }    
+    }
 
     public DatasetField getKeyword() {
         return keyword;
@@ -218,9 +218,6 @@ public class DatasetVersionUI implements Serializable {
     }
 
 
-
-
-
     public List<DatasetRelPublication> getDatasetRelPublications() {
         return datasetRelPublications;
     }
@@ -228,7 +225,6 @@ public class DatasetVersionUI implements Serializable {
     public void setDatasetRelPublications(List<DatasetRelPublication> datasetRelPublications) {
         this.datasetRelPublications = datasetRelPublications;
     }
-
 
 
     public String getRelPublicationCitation() {
@@ -241,8 +237,8 @@ public class DatasetVersionUI implements Serializable {
 
     public String getRelPublicationId() {
         if (!this.datasetRelPublications.isEmpty()) {
-            if (!(this.getDatasetRelPublications().get(0).getIdNumber() == null)  && !this.getDatasetRelPublications().get(0).getIdNumber().isEmpty()){
-                            return this.getDatasetRelPublications().get(0).getIdType() + ": " + this.getDatasetRelPublications().get(0).getIdNumber();
+            if (!(this.getDatasetRelPublications().get(0).getIdNumber() == null) && !this.getDatasetRelPublications().get(0).getIdNumber().isEmpty()) {
+                return this.getDatasetRelPublications().get(0).getIdType() + ": " + this.getDatasetRelPublications().get(0).getIdNumber();
             } else {
                 return "";
             }
@@ -250,7 +246,7 @@ public class DatasetVersionUI implements Serializable {
             return "";
         }
     }
-    
+
     public String getRelPublicationUrl() {
         if (!this.datasetRelPublications.isEmpty()) {
             return this.getDatasetRelPublications().get(0).getUrl();
@@ -282,7 +278,7 @@ public class DatasetVersionUI implements Serializable {
         }
         return "";
     }
-    
+
     public String getCreateDate() {
         if (datasetVersion.getCreateTime() != null) {
             Date relDate = datasetVersion.getCreateTime();
@@ -310,8 +306,8 @@ public class DatasetVersionUI implements Serializable {
         }
         return "";
     }
-    
- // TODO: clean up init methods and get them to work, cascading all the way down.
+
+    // TODO: clean up init methods and get them to work, cascading all the way down.
     // right now, only work for one level of compound objects
     private DatasetField initDatasetField(DatasetField dsf, boolean createBlanks) {
         if (dsf.getDatasetFieldType().isCompound()) {
@@ -330,7 +326,7 @@ public class DatasetVersionUI implements Serializable {
                         cv.getChildDatasetFields().add(DatasetField.createNewEmptyChildDatasetField(dsfType, cv));
                     }
                 }
-                
+
                 sortDatasetFields(cv.getChildDatasetFields());
             }
         }
@@ -344,7 +340,7 @@ public class DatasetVersionUI implements Serializable {
         for (DatasetField dsf : this.datasetVersion.getDatasetFields()) {
             retList.add(initDatasetField(dsf, createBlanks));
         }
-     
+
 
         //Test to see that there are values for 
         // all fields in this dataset via metadata blocks
@@ -378,9 +374,9 @@ public class DatasetVersionUI implements Serializable {
         });
 
         return sortDatasetFields(retList);
-    }  
-    
-    private List<DatasetField> sortDatasetFields (List<DatasetField> dsfList) {
+    }
+
+    private List<DatasetField> sortDatasetFields(List<DatasetField> dsfList) {
         Collections.sort(dsfList, new Comparator<DatasetField>() {
             public int compare(DatasetField d1, DatasetField d2) {
                 int a = d1.getDatasetFieldType().getDisplayOrder();
@@ -389,24 +385,24 @@ public class DatasetVersionUI implements Serializable {
             }
         });
         return dsfList;
-    }    
+    }
 
     public void setMetadataValueBlocks(DatasetVersion datasetVersion) {
         //TODO: A lot of clean up on the logic of this method
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
         Long dvIdForInputLevel = datasetVersion.getDataset().getOwner().getId();
-        
-        if (!dataverseService.find(dvIdForInputLevel).isMetadataBlockRoot()){
+
+        if (!dataverseService.find(dvIdForInputLevel).isMetadataBlockRoot()) {
             dvIdForInputLevel = dataverseService.find(dvIdForInputLevel).getMetadataRootId();
         }
-        
-        List<DatasetField> filledInFields = this.datasetVersion.getDatasetFields(); 
-        
-        List <MetadataBlock> actualMDB = new ArrayList<>();
+
+        List<DatasetField> filledInFields = this.datasetVersion.getDatasetFields();
+
+        List<MetadataBlock> actualMDB = new ArrayList<>();
 
         actualMDB.addAll(this.datasetVersion.getDataset().getOwner().getRootMetadataBlocks());
-        
+
         for (DatasetField dsfv : filledInFields) {
             if (!dsfv.isEmptyForDisplay()) {
                 MetadataBlock mdbTest = dsfv.getDatasetFieldType().getMetadataBlock();
@@ -414,8 +410,8 @@ public class DatasetVersionUI implements Serializable {
                     actualMDB.add(mdbTest);
                 }
             }
-        }       
-        
+        }
+
         for (MetadataBlock mdb : actualMDB) {
             mdb.setEmpty(true);
             mdb.setHasRequired(false);

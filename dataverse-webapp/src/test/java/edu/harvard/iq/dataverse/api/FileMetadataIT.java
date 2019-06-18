@@ -44,11 +44,11 @@ public class FileMetadataIT {
             // create user and set token
             token = given()
                     .body("{"
-                            + "   \"userName\": \"" + testName + "\","
-                            + "   \"firstName\": \"" + testName + "\","
-                            + "   \"lastName\": \"" + testName + "\","
-                            + "   \"email\": \"" + testName + "@mailinator.com\""
-                            + "}")
+                                  + "   \"userName\": \"" + testName + "\","
+                                  + "   \"firstName\": \"" + testName + "\","
+                                  + "   \"lastName\": \"" + testName + "\","
+                                  + "   \"email\": \"" + testName + "@mailinator.com\""
+                                  + "}")
                     .contentType(ContentType.JSON)
                     .request()
                     .post("/api/builtin-users/secret/" + builtinUserKey)
@@ -57,20 +57,20 @@ public class FileMetadataIT {
             System.out.println("TOKEN: " + token);
             // create dataverse
             given().body("{"
-                    + "    \"name\": \"" + testName + "\","
-                    + "    \"alias\": \"" + testName + "\","
-                    + "    \"affiliation\": \"Test-Driven University\","
-                    + "    \"dataverseContacts\": ["
-                    + "        {"
-                    + "            \"contactEmail\": \"test@example.com\""
-                    + "        },"
-                    + "        {"
-                    + "            \"contactEmail\": \"test@example.org\""
-                    + "        }"
-                    + "    ],"
-                    + "    \"permissionRoot\": true,"
-                    + "    \"description\": \"test Description.\""
-                    + "}")
+                                 + "    \"name\": \"" + testName + "\","
+                                 + "    \"alias\": \"" + testName + "\","
+                                 + "    \"affiliation\": \"Test-Driven University\","
+                                 + "    \"dataverseContacts\": ["
+                                 + "        {"
+                                 + "            \"contactEmail\": \"test@example.com\""
+                                 + "        },"
+                                 + "        {"
+                                 + "            \"contactEmail\": \"test@example.org\""
+                                 + "        }"
+                                 + "    ],"
+                                 + "    \"permissionRoot\": true,"
+                                 + "    \"description\": \"test Description.\""
+                                 + "}")
                     .contentType(ContentType.JSON).request()
                     .post("/api/dataverses/:root?key=" + token)
                     .then().assertThat().statusCode(201);

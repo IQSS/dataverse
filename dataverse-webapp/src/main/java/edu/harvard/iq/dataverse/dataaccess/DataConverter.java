@@ -21,81 +21,74 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-
-import java.util.logging.Logger;
-import java.util.List; 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.LinkedHashMap; 
-
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
+import edu.harvard.iq.dataverse.rserve.RJobRequest;
+import edu.harvard.iq.dataverse.rserve.RemoteDataFrameService;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.rserve.*;
+
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
-import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
-
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 
 /**
- * 4.0 implementation of the Data Access "optional service" that offers 
- * access to "subsettable" (tabular) data files in alternative formats. 
- * In reality, there will only be 1 alternative format supported in 4.0: 
- * R data. The module will still provide functionality for supporting 
- * multiple alternative formats. 
- * 
+ * 4.0 implementation of the Data Access "optional service" that offers
+ * access to "subsettable" (tabular) data files in alternative formats.
+ * In reality, there will only be 1 alternative format supported in 4.0:
+ * R data. The module will still provide functionality for supporting
+ * multiple alternative formats.
+ *
  * @author Leonid Andreev
  */
 public class DataConverter {
     private static Logger logger = Logger.getLogger(DataConverter.class.getPackage().getName());
-    
+
     public DataConverter() {
     }
-    
+
     public static String FILE_TYPE_TAB = "tab";
     public static String FILE_TYPE_RDATA = "RData";
-    
+
     public static String SERVICE_REQUEST_CONVERT = "convert";
-    
-    
+
+
     public static StorageIO<DataFile> performFormatConversion(DataFile file, StorageIO<DataFile> storageIO, String formatRequested, String formatType) {
         if (!file.isTabularData()) {
             return null;
         }
-        
+
         // if the format requested is "D00", and it's already a TAB file,
         // we don't need to do anything:
         if (formatRequested.equals(FILE_TYPE_TAB) && file.getContentType().equals("text/tab-separated-values")) {
 
             return storageIO;
         }
-        
+
         InputStream convertedFileStream = null;
         long convertedFileSize = 0;
-        
+
         // We may already have a cached copy of this
         // format:
         try {
             convertedFileStream = Channels.newInputStream((ReadableByteChannel) storageIO.openAuxChannel(formatRequested));
             convertedFileSize = storageIO.getAuxObjectSize(formatRequested);
         } catch (IOException ioex) {
-            logger.fine("No cached copy for file format "+formatRequested+", file "+file.getStorageIdentifier());
+            logger.fine("No cached copy for file format " + formatRequested + ", file " + file.getStorageIdentifier());
             convertedFileStream = null;
         }
 
@@ -161,7 +154,7 @@ public class DataConverter {
     }
 
     public static File downloadFromStorageIO(StorageIO<DataFile> storageIO) {
-        if (storageIO.isLocalFile()){
+        if (storageIO.isLocalFile()) {
             try {
                 Path tabFilePath = storageIO.getFileSystemPath();
                 return tabFilePath.toFile();
@@ -182,7 +175,7 @@ public class DataConverter {
     private static File downloadFromByteChannel(ReadableByteChannel tabFileChannel, long size) {
         try {
             logger.fine("opening datafFileIO for the source tabular file...");
-            
+
             File tabFile = File.createTempFile("tempTabFile", ".tmp");
             FileChannel tempFileChannel = new FileOutputStream(tabFile).getChannel();
             tempFileChannel.transferFrom(tabFileChannel, 0, size);
@@ -202,13 +195,13 @@ public class DataConverter {
     // (possibly running on a remote host) and gets back the transformed copy,
     // providing error-checking and diagnostics in the process.
     // This is mostly Akio Sone's code from DVN3.
-    private static File runFormatConversion (DataFile file, File tabFile, String formatRequested) {
+    private static File runFormatConversion(DataFile file, File tabFile, String formatRequested) {
 
-        if ( formatRequested.equals (FILE_TYPE_TAB) ) {
+        if (formatRequested.equals(FILE_TYPE_TAB)) {
             // if the *requested* format is TAB-delimited, we don't
             // need to call R to do any conversions, we can just
             // send back the TAB file we have just produced.
-            
+
             // (OK, so that the assumption is, if this is a fixed-field file -- 
             // from ICPSR or otherwise -- the Access service has already 
             // converted it to tab-delimited... TODO: review this logic; 
@@ -221,19 +214,19 @@ public class DataConverter {
         File formatConvertedFile;
         // create the service instance
         RemoteDataFrameService dfs = new RemoteDataFrameService();
-        
+
         if ("RData".equals(formatRequested)) {
             String origFormat = file.getOriginalFileFormat();
             Map<String, String> resultInfo;
-            if (origFormat.contains("stata") || origFormat.contains("spss")){
-                if (origFormat.contains("stata")){
+            if (origFormat.contains("stata") || origFormat.contains("spss")) {
+                if (origFormat.contains("stata")) {
                     origFormat = "dta";
-                } else if (origFormat.contains("sav")){
+                } else if (origFormat.contains("sav")) {
                     origFormat = "sav";
-                } else if (origFormat.contains("por")){
+                } else if (origFormat.contains("por")) {
                     origFormat = "por";
                 }
-                    
+
                 try {
                     StorageIO<DataFile> storageIO = file.getStorageIO();
                     long size = storageIO.getAuxObjectSize("orig");
@@ -243,8 +236,8 @@ public class DataConverter {
                     ex.printStackTrace();
                     return null;
                 }
-                
-            } else{
+
+            } else {
                 List<DataVariable> dataVariables = file.getDataTable().getDataVariables();
                 Map<String, Map<String, String>> vls = getValueTableForRequestedVariables(dataVariables);
                 logger.fine("format conversion: variables(getDataVariableForRequest())=" + dataVariables + "\n");
@@ -261,25 +254,25 @@ public class DataConverter {
             }
 
             //resultInfo.put("offlineCitation", citation);
-            logger.fine("resultInfo="+resultInfo+"\n");
+            logger.fine("resultInfo=" + resultInfo + "\n");
 
             // check whether a requested file is actually created
 
-            if ("true".equals(resultInfo.get("RexecError"))){
+            if ("true".equals(resultInfo.get("RexecError"))) {
                 logger.fine("R-runtime error trying to convert a file.");
-                return  null;
+                return null;
             }
             String dataFrameFileName = resultInfo.get("dataFrameFileName");
-            logger.fine("data frame file name: "+dataFrameFileName);
+            logger.fine("data frame file name: " + dataFrameFileName);
 
             formatConvertedFile = new File(dataFrameFileName);
         } else if ("prep".equals(formatRequested)) {
             formatConvertedFile = dfs.runDataPreprocessing(file);
         } else {
-            logger.warning("Unsupported file format requested: "+formatRequested);
-            return null; 
+            logger.warning("Unsupported file format requested: " + formatRequested);
+            return null;
         }
-            
+
 
         if (formatConvertedFile == null || !formatConvertedFile.exists()) {
             logger.warning("Format-converted file was not properly created.");
@@ -289,22 +282,22 @@ public class DataConverter {
         return formatConvertedFile;
     }
 
-    private static Map<String, Map<String, String>> getValueTableForRequestedVariables(List<DataVariable> dataVariables){
+    private static Map<String, Map<String, String>> getValueTableForRequestedVariables(List<DataVariable> dataVariables) {
         Map<String, Map<String, String>> allVarLabels = new LinkedHashMap<>();
-        for (DataVariable dataVar : dataVariables){
+        for (DataVariable dataVar : dataVariables) {
             Map<String, String> varLabels = new HashMap<>();
-            for (VariableCategory varCatagory : dataVar.getCategories()){
-                if (varCatagory.getLabel() != null){
+            for (VariableCategory varCatagory : dataVar.getCategories()) {
+                if (varCatagory.getLabel() != null) {
                     varLabels.put(varCatagory.getValue(), varCatagory.getLabel());
                 }
             }
-            if (!varLabels.isEmpty()){
-                allVarLabels.put("v"+dataVar.getId(), varLabels);
+            if (!varLabels.isEmpty()) {
+                allVarLabels.put("v" + dataVar.getId(), varLabels);
             }
         }
         return allVarLabels;
     }
-        
+
     private static String generateAltFileName(String formatRequested, String xfileId) {
         String altFileName = xfileId;
 
@@ -312,11 +305,11 @@ public class DataConverter {
             altFileName = "Converted";
         }
         // Fixme:" should this be else if?
-        if ( formatRequested != null ) {
+        if (formatRequested != null) {
             altFileName = FileUtil.replaceExtension(altFileName, formatRequested);
         }
 
         return altFileName;
     }
-    
+
 }

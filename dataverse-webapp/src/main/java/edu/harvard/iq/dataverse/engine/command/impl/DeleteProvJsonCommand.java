@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.util.logging.Logger;
@@ -20,7 +21,7 @@ public class DeleteProvJsonCommand extends AbstractCommand<DataFile> {
 
     private DataFile dataFile;
     private final boolean saveContext;
-    
+
     public DeleteProvJsonCommand(DataverseRequest aRequest, DataFile dataFile, boolean saveContext) {
         super(aRequest, dataFile);
         this.dataFile = dataFile;
@@ -29,7 +30,7 @@ public class DeleteProvJsonCommand extends AbstractCommand<DataFile> {
 
     @Override
     public DataFile execute(CommandContext ctxt) throws CommandException {
-        
+
         final String provJsonExtension = "prov-json.json";
 
         try {
@@ -42,9 +43,9 @@ public class DeleteProvJsonCommand extends AbstractCommand<DataFile> {
             String error = "Exception caught deleting provenance aux object: " + ex;
             throw new IllegalCommandException(error, this);
         }
-        
+
         dataFile.setProvEntityName("");
-        if(saveContext) {
+        if (saveContext) {
             dataFile = ctxt.files().save(dataFile);
         }
         return dataFile;

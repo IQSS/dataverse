@@ -3,17 +3,16 @@ package edu.harvard.iq.dataverse.repositorystorageabstractionlayer;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.locality.StorageSite;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 
 public class RepositoryStorageAbstractionLayerUtil {
 
@@ -48,10 +47,10 @@ public class RepositoryStorageAbstractionLayerUtil {
 
     /**
      * @param leafDirectoryOnly By "leaf" directory, we mean "4LKKNW" rather
-     * than "10.5072/FK2/4LKKNW". On Unix if you run `basename /usr/local/bin`
-     * you get `bin`, which is what we want when we specify "true" for
-     * leafDirectoryOnly. See also
-     * http://www.gnu.org/software/coreutils/manual/html_node/basename-invocation.html
+     *                          than "10.5072/FK2/4LKKNW". On Unix if you run `basename /usr/local/bin`
+     *                          you get `bin`, which is what we want when we specify "true" for
+     *                          leafDirectoryOnly. See also
+     *                          http://www.gnu.org/software/coreutils/manual/html_node/basename-invocation.html
      */
     public static String getDirectoryContainingTheData(Dataset dataset, boolean leafDirectoryOnly) {
         /**
@@ -66,8 +65,8 @@ public class RepositoryStorageAbstractionLayerUtil {
         if (onlyOnPackagePerDatasetIsSupported) {
             String leafDirectory = dataset.getIdentifierForFileStorage();
             if (leafDirectoryOnly) {
-		    File f = new File( leafDirectory );
-		    return f.getName();
+                File f = new File(leafDirectory);
+                return f.getName();
             } else {
                 // The "authority" is something like "FK2".
                 String relativePathToLeafDir = dataset.getAuthorityForFileStorage();
@@ -95,8 +94,8 @@ public class RepositoryStorageAbstractionLayerUtil {
                 countOfPrimarySites++;
             }
             arraybuilder.add(Json.createObjectBuilder()
-                    .add("fqdn", storageSite.getHostname())
-                    .add("name", storageSite.getName()));
+                                     .add("fqdn", storageSite.getHostname())
+                                     .add("name", storageSite.getName()));
         }
         int numExpectedPrimarySites = 1;
         if (countOfPrimarySites != numExpectedPrimarySites) {

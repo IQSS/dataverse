@@ -10,7 +10,6 @@ public class SolrField {
 
 
     /**
-     *
      * @param name
      * @param solrType
      * @param allowedToBeMultivalued
@@ -20,7 +19,7 @@ public class SolrField {
     public SolrField(String name, SolrType solrType, boolean allowedToBeMultivalued, boolean facetable, boolean isDatasetField) {
 
         this.facetable = facetable;
-        if(isDatasetField) {
+        if (isDatasetField) {
             /**
              * prefixes for Solr dynamicField's specified in schema.xml
              */
@@ -39,8 +38,7 @@ public class SolrField {
                 nameSearchable = "dsf_flt_" + name;
                 nameFacetable = name;
                 this.facetable = false;
-            }
-            else {
+            } else {
                 nameSearchable = name;
                 nameFacetable = name;
             }
@@ -98,7 +96,7 @@ public class SolrField {
          * @todo: make this configurable from text_en to text_general or
          * non-English languages? We changed it to text_en to improve English
          * language searching in https://github.com/IQSS/dataverse/issues/444
-         *
+         * <p>
          * We want to get away from always using "text_en" (especially to
          * support range queries) in
          * https://github.com/IQSS/dataverse/issues/370
@@ -109,7 +107,7 @@ public class SolrField {
 
         private String type;
 
-        private SolrType(String string) {
+        SolrType(String string) {
             type = string;
         }
 

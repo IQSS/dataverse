@@ -1,27 +1,28 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
-import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import java.util.UUID;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
+import java.util.UUID;
+
+import static com.jayway.restassured.RestAssured.given;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 public class UsersIT {
 
     @BeforeClass
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
-        
+
         Response removeAllowApiTokenLookupViaApi = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
         removeAllowApiTokenLookupViaApi.then().assertThat()
                 .statusCode(200);
@@ -50,11 +51,11 @@ public class UsersIT {
         Response setAllowApiTokenLookupViaApi = UtilIT.setSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi, "true");
         setAllowApiTokenLookupViaApi.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         password = "sha-1Pass";
         Response getApiTokenUsingUsername = UtilIT.getApiTokenUsingUsername(usernameOfNonBcryptUserToConvert, password);
         assertEquals(200, getApiTokenUsingUsername.getStatusCode());
-        
+
         Response removeAllowApiTokenLookupViaApi = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
         removeAllowApiTokenLookupViaApi.then().assertThat()
                 .statusCode(200);

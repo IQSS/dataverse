@@ -1,15 +1,16 @@
 package edu.harvard.iq.dataverse.engine;
 
-import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author michael
  */
 public class PermissionTest {
@@ -19,13 +20,13 @@ public class PermissionTest {
      */
     @Test
     public void testAppliesTo() {
-        assertFalse( Permission.EditDataverse.appliesTo(DvObject.class) );
-        assertTrue( Permission.EditDataverse.appliesTo(Dataverse.class) );
-        assertFalse( Permission.EditDataverse.appliesTo(DataFile.class) );
-        
-        assertTrue( Permission.EditDataset.appliesTo(Dataset.class) );
-        assertFalse( Permission.EditDataset.appliesTo(DvObject.class) );
-        assertFalse( Permission.EditDataset.appliesTo(Dataverse.class) );
+        assertFalse(Permission.EditDataverse.appliesTo(DvObject.class));
+        assertTrue(Permission.EditDataverse.appliesTo(Dataverse.class));
+        assertFalse(Permission.EditDataverse.appliesTo(DataFile.class));
+
+        assertTrue(Permission.EditDataset.appliesTo(Dataset.class));
+        assertFalse(Permission.EditDataset.appliesTo(DvObject.class));
+        assertFalse(Permission.EditDataset.appliesTo(Dataverse.class));
     }
-    
+
 }

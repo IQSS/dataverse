@@ -131,7 +131,7 @@ public class SavedSearchServiceBean {
      * periodic execution can be triggered via a cron job but we'd like to put
      * it on an EJB timer as part of
      * https://github.com/IQSS/dataverse/issues/2543 .
-     *
+     * <p>
      * The commands are executed by the creator of the SavedSearch. What happens
      * if the users loses the permission that the command requires? Should the
      * commands continue to be executed periodically as some "system" user?

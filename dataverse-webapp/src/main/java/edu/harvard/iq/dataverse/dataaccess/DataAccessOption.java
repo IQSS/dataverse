@@ -21,11 +21,10 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 /**
- *
  * @author Leonid Andreev
  */
 public enum DataAccessOption {
     READ_ACCESS,
-    WRITE_ACCESS;
-    
+    WRITE_ACCESS
+
 }

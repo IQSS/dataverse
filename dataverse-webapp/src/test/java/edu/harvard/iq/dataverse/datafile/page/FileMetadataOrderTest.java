@@ -74,7 +74,7 @@ public class FileMetadataOrderTest {
                 .filter(fm -> fm.getLabel().equals(label))
                 .findFirst()
                 .orElseThrow(IllegalArgumentException::new);
-        assertEquals(displayOrder, fileMetadata.getDisplayOrder(),"Wrong display order for: " + label);
+        assertEquals(displayOrder, fileMetadata.getDisplayOrder(), "Wrong display order for: " + label);
     }
 
     private void verifyChangesSize(List<FileMetadata> changes, int size) {

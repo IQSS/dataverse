@@ -7,13 +7,15 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import org.junit.Test;
 
 public class FileUtilTest {
 
@@ -28,8 +30,8 @@ public class FileUtilTest {
         assertEquals("trees.png.bib", FileUtil.getCiteDataFileFilename(fileName, FileUtil.FileCitationExtension.BIBTEX));
         assertEquals(null, FileUtil.getCiteDataFileFilename(fileName, null));
 
-        
-        String tabFileName="50by1000.tab";
+
+        String tabFileName = "50by1000.tab";
         assertEquals("50by1000-endnote.xml", FileUtil.getCiteDataFileFilename(tabFileName, FileUtil.FileCitationExtension.ENDNOTE));
         assertEquals("50by1000.ris", FileUtil.getCiteDataFileFilename(tabFileName, FileUtil.FileCitationExtension.RIS));
         assertEquals("50by1000.bib", FileUtil.getCiteDataFileFilename(tabFileName, FileUtil.FileCitationExtension.BIBTEX));
@@ -199,11 +201,13 @@ public class FileUtilTest {
         }
 
     }
-    
+
     // isThumbnailSuppported() has been moved from DataFileService to FileUtil:
+
     /**
      * Expect that {@code null}, a DataFile without content type and a DataFile
      * with bogus content type are not files that thumbnails can be created for.
+     *
      * @throws Exception when the test is in error.
      */
     @Test
@@ -216,6 +220,6 @@ public class FileUtilTest {
         assertFalse(FileUtil.isThumbnailSupported(filewNoContentType));
         DataFile filewBogusContentType = new DataFile("");
         filewBogusContentType.setStorageIdentifier("");
-        assertFalse(FileUtil.isThumbnailSupported(filewBogusContentType));    
+        assertFalse(FileUtil.isThumbnailSupported(filewBogusContentType));
     }
 }

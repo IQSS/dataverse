@@ -11,6 +11,10 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable.VariableInterval;
 import edu.harvard.iq.dataverse.datavariable.DataVariable.VariableType;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import org.dataverse.unf.UNFUtil;
+import org.dataverse.unf.UnfException;
+import org.junit.Test;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,13 +24,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.Logger;
-import org.dataverse.unf.UNFUtil;
-import org.dataverse.unf.UnfException;
-import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
- *
  * @author oscardssmith
  */
 public class CSVFileReaderTest {
@@ -41,12 +45,12 @@ public class CSVFileReaderTest {
     public void testRead() {
         String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/IngestCSV.csv";
         String[] expResult = {"-199	\"hello\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"2017/06/20\"	0.0	1	\"2\"	\"823478788778713\"",
-            "2	\"Sdfwer\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"1100/06/20\"	Inf	2	\"NaN\"	\",1,2,3\"",
-            "0	\"cjlajfo.\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"3000/06/20\"	-Inf	3	\"inf\"	\"\\casdf\"",
-            "-1	\"Mywer\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"06-20-2011\"	3.141592653	4	\"4.8\"	\"　 \\\"  \"",
-            "266128	\"Sf\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"06-20-1917\"	0	5	\"Inf+11\"	\"\"",
-            "0	\"null\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"03/03/1817\"	123	6.000001	\"11-2\"	\"\\\"adf\\0\\na\\td\\nsf\\\"\"",
-            "-2389	\"\"	2013-04-08 13:14:23	2013-04-08 13:14:72	2017-06-20	\"2017-03-12\"	NaN	2	\"nap\"	\"💩⌛👩🏻■\""};
+                "2	\"Sdfwer\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"1100/06/20\"	Inf	2	\"NaN\"	\",1,2,3\"",
+                "0	\"cjlajfo.\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"3000/06/20\"	-Inf	3	\"inf\"	\"\\casdf\"",
+                "-1	\"Mywer\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"06-20-2011\"	3.141592653	4	\"4.8\"	\"　 \\\"  \"",
+                "266128	\"Sf\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"06-20-1917\"	0	5	\"Inf+11\"	\"\"",
+                "0	\"null\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"03/03/1817\"	123	6.000001	\"11-2\"	\"\\\"adf\\0\\na\\td\\nsf\\\"\"",
+                "-2389	\"\"	2013-04-08 13:14:23	2013-04-08 13:14:72	2017-06-20	\"2017-03-12\"	NaN	2	\"nap\"	\"💩⌛👩🏻■\""};
         BufferedReader result = null;
         try (BufferedInputStream stream = new BufferedInputStream(
                 new FileInputStream(testFile))) {
@@ -83,15 +87,15 @@ public class CSVFileReaderTest {
         String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/IngestCSV.csv";
 
         String[] expectedVariableNames = {"ints", "Strings", "Times", "Not quite Times", "Dates", "Not quite Dates",
-            "Numbers", "Not quite Ints", "Not quite Numbers", "Column that hates you, contains many comas, and is verbose and long enough that it would cause ingest to fail if ingest failed when a header was more than 256 characters long. Really, it's just sadistic.　Also to make matters worse, the space at the begining of this sentance was a special unicode space designed to make you angry."};
+                "Numbers", "Not quite Ints", "Not quite Numbers", "Column that hates you, contains many comas, and is verbose and long enough that it would cause ingest to fail if ingest failed when a header was more than 256 characters long. Really, it's just sadistic.　Also to make matters worse, the space at the begining of this sentance was a special unicode space designed to make you angry."};
 
         VariableType[] expectedVariableTypes = {VariableType.NUMERIC, VariableType.CHARACTER,
-            VariableType.CHARACTER, VariableType.CHARACTER, VariableType.CHARACTER, VariableType.CHARACTER,
-            VariableType.NUMERIC, VariableType.NUMERIC, VariableType.CHARACTER, VariableType.CHARACTER};
+                VariableType.CHARACTER, VariableType.CHARACTER, VariableType.CHARACTER, VariableType.CHARACTER,
+                VariableType.NUMERIC, VariableType.NUMERIC, VariableType.CHARACTER, VariableType.CHARACTER};
 
         VariableInterval[] expectedVariableIntervals = {VariableInterval.DISCRETE, VariableInterval.DISCRETE,
-            VariableInterval.DISCRETE, VariableInterval.DISCRETE, VariableInterval.DISCRETE, VariableInterval.DISCRETE,
-            VariableInterval.CONTINUOUS, VariableInterval.CONTINUOUS, VariableInterval.DISCRETE, VariableInterval.DISCRETE};
+                VariableInterval.DISCRETE, VariableInterval.DISCRETE, VariableInterval.DISCRETE, VariableInterval.DISCRETE,
+                VariableInterval.CONTINUOUS, VariableInterval.CONTINUOUS, VariableInterval.DISCRETE, VariableInterval.DISCRETE};
 
         String[] expectedVariableFormatCategories = {null, null, "time", "time", "date", null, null, null, null, null};
 
@@ -176,8 +180,8 @@ public class CSVFileReaderTest {
         int[] floatColumns = {2};
 
         Double[][] floatVectors = {
-            {1.0, 3.0, 4.0, 6.0, 7.0, 8.0, 11.0, 12.0, 76.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0},
-};
+                {1.0, 3.0, 4.0, 6.0, 7.0, 8.0, 11.0, 12.0, 76.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0},
+        };
 
         int vectorCount = 0;
         for (int i : floatColumns) {
@@ -203,15 +207,15 @@ public class CSVFileReaderTest {
         int[] integerColumns = {1, 4, 6, 7, 8, 9, 10, 11, 12};
 
         Long[][] longVectors = {
-            {1L, 3L, 4L, 6L, 7L, 8L, 11L, 12L, 76L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L},
-            {1L, 2L, 3L, 4L, 5L, 11L, 13L, 15L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L},
-            {85729227L, 85699791L, 640323976L, 85695847L, 637089796L, 637089973L, 85695001L, 85695077L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
-            {205871733L, 205871735L, 205871283L, 258627915L, 257444575L, 205871930L, 260047422L, 262439738L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
-            {205871673L, 205871730L, 205871733L, 205872857L, 258627915L, 257444584L, 205873413L, 262439738L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
-            {25025000201L, 25025081001L, 25025000701L, 25025050901L, 25025040600L, 25025000502L, 25025040401L, 25025100900L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
-            {250250502002L, 250250502003L, 250250501013L, 250250408011L, 250250503001L, 250250103001L, 250250406002L, 250250406001L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
-            {250251011024001L, 250251011013003L, 250251304041007L, 250251011013006L, 250251010016000L, 250251011024002L, 250251001005004L, 250251002003002L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
-            {2109L, 2110L, 2111L, 2120L, 2121L, 2115L, 2116L, 2122L, 11111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L}
+                {1L, 3L, 4L, 6L, 7L, 8L, 11L, 12L, 76L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L},
+                {1L, 2L, 3L, 4L, 5L, 11L, 13L, 15L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L},
+                {85729227L, 85699791L, 640323976L, 85695847L, 637089796L, 637089973L, 85695001L, 85695077L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
+                {205871733L, 205871735L, 205871283L, 258627915L, 257444575L, 205871930L, 260047422L, 262439738L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
+                {205871673L, 205871730L, 205871733L, 205872857L, 258627915L, 257444584L, 205873413L, 262439738L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
+                {25025000201L, 25025081001L, 25025000701L, 25025050901L, 25025040600L, 25025000502L, 25025040401L, 25025100900L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
+                {250250502002L, 250250502003L, 250250501013L, 250250408011L, 250250503001L, 250250103001L, 250250406002L, 250250406001L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
+                {250251011024001L, 250251011013003L, 250251304041007L, 250251011013006L, 250251010016000L, 250251011024002L, 250251001005004L, 250251002003002L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
+                {2109L, 2110L, 2111L, 2120L, 2121L, 2115L, 2116L, 2122L, 11111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L}
         };
 
         vectorCount = 0;
@@ -237,9 +241,9 @@ public class CSVFileReaderTest {
         int[] stringColumns = {0, 3, 5};
 
         String[][] stringVectors = {
-            {"Dog", "Squirrel", "Antelope", "Zebra", "Lion", "Gazelle", "Cat", "Giraffe", "Cat", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey"},
-            {"East Boston", "Charlestown", "South Boston", "Bronx", "Roslindale", "Mission Hill", "Jamaica Plain", "Hyde Park", "Fenway/Kenmore", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens"},
-            {"2-06", "1-09", "1-1A", "1-1B", "2-04", "3-05", "1-1C", "1-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A",}
+                {"Dog", "Squirrel", "Antelope", "Zebra", "Lion", "Gazelle", "Cat", "Giraffe", "Cat", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey"},
+                {"East Boston", "Charlestown", "South Boston", "Bronx", "Roslindale", "Mission Hill", "Jamaica Plain", "Hyde Park", "Fenway/Kenmore", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens"},
+                {"2-06", "1-09", "1-1A", "1-1B", "2-04", "3-05", "1-1C", "1-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A",}
         };
 
         vectorCount = 0;
@@ -274,19 +278,19 @@ public class CSVFileReaderTest {
         Long expectedNumberOfCases = 24L; // aka the number of lines in the TAB file produced by the ingest plugin
 
         String[] expectedUNFs = {
-            "UNF:6:wb7OATtNC/leh1sOP5IGDQ==",
-            "UNF:6:0V3xQ3ea56rzKwvGt9KBCA==",
-            "UNF:6:0V3xQ3ea56rzKwvGt9KBCA==",
-            "UNF:6:H9inAvq5eiIHW6lpqjjKhQ==",
-            "UNF:6:Bh0M6QvunZwW1VoTyioRCQ==",
-            "UNF:6:o5VTaEYz+0Kudf6hQEEupQ==",
-            "UNF:6:eJRvbDJkIeDPrfN2dYpRfA==",
-            "UNF:6:JD1wrtM12E7evrJJ3bRFGA==",
-            "UNF:6:xUKbK9hb5o0nL5/mYiy7Bw==",
-            "UNF:6:Mvq3BrdzoNhjndMiVr92Ww==",
-            "UNF:6:KkHM6Qlyv3QlUd+BKqqB3Q==",
-            "UNF:6:EWUVuyXKSpyllsrjHnheig==",
-            "UNF:6:ri9JsRJxM2xpWSIq17oWNw=="};
+                "UNF:6:wb7OATtNC/leh1sOP5IGDQ==",
+                "UNF:6:0V3xQ3ea56rzKwvGt9KBCA==",
+                "UNF:6:0V3xQ3ea56rzKwvGt9KBCA==",
+                "UNF:6:H9inAvq5eiIHW6lpqjjKhQ==",
+                "UNF:6:Bh0M6QvunZwW1VoTyioRCQ==",
+                "UNF:6:o5VTaEYz+0Kudf6hQEEupQ==",
+                "UNF:6:eJRvbDJkIeDPrfN2dYpRfA==",
+                "UNF:6:JD1wrtM12E7evrJJ3bRFGA==",
+                "UNF:6:xUKbK9hb5o0nL5/mYiy7Bw==",
+                "UNF:6:Mvq3BrdzoNhjndMiVr92Ww==",
+                "UNF:6:KkHM6Qlyv3QlUd+BKqqB3Q==",
+                "UNF:6:EWUVuyXKSpyllsrjHnheig==",
+                "UNF:6:ri9JsRJxM2xpWSIq17oWNw=="};
 
         TabularDataIngest ingestResult = null;
 
@@ -415,7 +419,7 @@ public class CSVFileReaderTest {
             fail("IOException was not thrown when collumns do not align.");
         } catch (IOException ex) {
             String expMessage = BundleUtil.getStringFromBundle("ingest.csv.recordMismatch",
-                                                               Arrays.asList(new String[]{"3", "6", "4"}));
+                                                               Arrays.asList("3", "6", "4"));
             assertEquals(expMessage, ex.getMessage());
         }
     }

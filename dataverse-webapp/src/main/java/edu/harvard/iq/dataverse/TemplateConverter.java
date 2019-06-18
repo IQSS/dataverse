@@ -13,12 +13,11 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 
 /**
- *
  * @author skraffmiller
  */
 @FacesConverter("templateConverter")
 public class TemplateConverter implements Converter {
-    
+
     @EJB
     TemplateServiceBean templateService;
 
@@ -34,5 +33,5 @@ public class TemplateConverter implements Converter {
             return ((Template) value).getId().toString();
         }
     }
-    
+
 }

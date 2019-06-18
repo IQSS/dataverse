@@ -64,7 +64,7 @@ import java.util.Set;
  * The <code>iterator</code> method provides the elements in
  * topologically sorted order.  Elements participating in a cycle
  * are not returned.
- *
+ * <p>
  * Unlike the <code>SortedSet</code> and <code>SortedMap</code>
  * interfaces, which require their elements to implement the
  * <code>Comparable</code> interface, this class receives ordering
@@ -76,7 +76,6 @@ import java.util.Set;
  * service provider registry situation, an application might allow the
  * user to set a preference order for service provider objects
  * supplied by a trusted vendor over those supplied by another.
- *
  */
 class PartiallyOrderedSet extends AbstractSet {
 
@@ -93,7 +92,8 @@ class PartiallyOrderedSet extends AbstractSet {
     /**
      * Constructs a <code>PartiallyOrderedSet</code>.
      */
-    public PartiallyOrderedSet() {}
+    public PartiallyOrderedSet() {
+    }
 
     public int size() {
         return nodes.size();
@@ -131,7 +131,7 @@ class PartiallyOrderedSet extends AbstractSet {
      * <code>PartiallyOrderedSet</code>.
      */
     public boolean remove(Object o) {
-        DigraphNode node = (DigraphNode)poNodes.get(o);
+        DigraphNode node = (DigraphNode) poNodes.get(o);
         if (node == null) {
             return false;
         }
@@ -156,9 +156,9 @@ class PartiallyOrderedSet extends AbstractSet {
      */
     public boolean setOrdering(Object first, Object second) {
         DigraphNode firstPONode =
-            (DigraphNode)poNodes.get(first);
+                (DigraphNode) poNodes.get(first);
         DigraphNode secondPONode =
-            (DigraphNode)poNodes.get(second);
+                (DigraphNode) poNodes.get(second);
 
         secondPONode.removeEdge(firstPONode);
         return firstPONode.addEdge(secondPONode);
@@ -171,12 +171,12 @@ class PartiallyOrderedSet extends AbstractSet {
      */
     public boolean unsetOrdering(Object first, Object second) {
         DigraphNode firstPONode =
-            (DigraphNode)poNodes.get(first);
+                (DigraphNode) poNodes.get(first);
         DigraphNode secondPONode =
-            (DigraphNode)poNodes.get(second);
+                (DigraphNode) poNodes.get(second);
 
         return firstPONode.removeEdge(secondPONode) ||
-            secondPONode.removeEdge(firstPONode);
+                secondPONode.removeEdge(firstPONode);
     }
 
     /**
@@ -185,9 +185,9 @@ class PartiallyOrderedSet extends AbstractSet {
      */
     public boolean hasOrdering(Object preferred, Object other) {
         DigraphNode preferredPONode =
-            (DigraphNode)poNodes.get(preferred);
+                (DigraphNode) poNodes.get(preferred);
         DigraphNode otherPONode =
-            (DigraphNode)poNodes.get(other);
+                (DigraphNode) poNodes.get(other);
 
         return preferredPONode.hasEdge(otherPONode);
     }
@@ -201,7 +201,7 @@ class PartialOrderIterator implements Iterator {
     public PartialOrderIterator(Iterator iter) {
         // Initialize scratch in-degree values, zero list
         while (iter.hasNext()) {
-            DigraphNode node = (DigraphNode)iter.next();
+            DigraphNode node = (DigraphNode) iter.next();
             int inDegree = node.getInDegree();
             inDegrees.put(node, new Integer(inDegree));
 
@@ -217,13 +217,13 @@ class PartialOrderIterator implements Iterator {
     }
 
     public Object next() {
-        DigraphNode first = (DigraphNode)zeroList.removeFirst();
+        DigraphNode first = (DigraphNode) zeroList.removeFirst();
 
         // For each out node of the output node, decrement its in-degree
         Iterator outNodes = first.getOutNodes();
         while (outNodes.hasNext()) {
-            DigraphNode node = (DigraphNode)outNodes.next();
-            int inDegree = ((Integer)inDegrees.get(node)).intValue() - 1;
+            DigraphNode node = (DigraphNode) outNodes.next();
+            int inDegree = ((Integer) inDegrees.get(node)).intValue() - 1;
             inDegrees.put(node, new Integer(inDegree));
 
             // If the in-degree has fallen to 0, place the node on the list

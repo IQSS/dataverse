@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.authorization.users;
 
-import java.io.Serializable;
-import java.sql.Timestamp;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,13 +12,15 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.sql.Timestamp;
 
 @Entity
 @NamedQueries({
-    @NamedQuery( name="ApiToken.findByTokenString", query="SELECT t FROM ApiToken t WHERE t.tokenString = :tokenString" ),
-    @NamedQuery( name="ApiToken.findByUser",        query="SELECT t FROM ApiToken t WHERE t.authenticatedUser = :user")
+        @NamedQuery(name = "ApiToken.findByTokenString", query = "SELECT t FROM ApiToken t WHERE t.tokenString = :tokenString"),
+        @NamedQuery(name = "ApiToken.findByUser", query = "SELECT t FROM ApiToken t WHERE t.authenticatedUser = :user")
 })
-@Table(indexes = {@Index(columnList="authenticateduser_id")})
+@Table(indexes = {@Index(columnList = "authenticateduser_id")})
 public class ApiToken implements Serializable {
 
     @Id
@@ -64,7 +64,7 @@ public class ApiToken implements Serializable {
     public AuthenticatedUser getAuthenticatedUser() {
         return authenticatedUser;
     }
-    
+
     public boolean isDisabled() {
         return disabled;
     }
@@ -92,5 +92,5 @@ public class ApiToken implements Serializable {
     public void setExpireTime(Timestamp expireTime) {
         this.expireTime = expireTime;
     }
-    
+
 }

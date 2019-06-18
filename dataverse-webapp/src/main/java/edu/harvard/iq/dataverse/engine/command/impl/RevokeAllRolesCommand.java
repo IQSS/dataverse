@@ -16,10 +16,10 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 
 /**
- *
  * Revokes all roles for a assignee.
- * (Note that in addition to deleting the explicit role assignments, 
+ * (Note that in addition to deleting the explicit role assignments,
  * it also strips the assignee of membership in any groups!)
+ *
  * @author Leonid Andreev
  */
 // the permission annotation is open, since this is a superuser-only command - 
@@ -30,7 +30,7 @@ public class RevokeAllRolesCommand extends AbstractVoidCommand {
     private final RoleAssignee assignee;
 
     public RevokeAllRolesCommand(RoleAssignee assignee, DataverseRequest aRequest) {
-        super(aRequest, (Dataverse)null);
+        super(aRequest, (Dataverse) null);
         this.assignee = assignee;
     }
 
@@ -38,14 +38,14 @@ public class RevokeAllRolesCommand extends AbstractVoidCommand {
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         if (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser()) {
             throw new PermissionException("Revoke Superuser status command can only be called by superusers.",
-                    this, null, null);
+                                          this, null, null);
         }
-        
+
         try {
             ctxt.roles().revokeAll(assignee);
-            
+
             ctxt.explicitGroups().revokeAllGroupsForAssignee(assignee);
-            
+
         } catch (Exception ex) {
             throw new CommandException("Failed to revoke role assignments and/or group membership", this);
         }

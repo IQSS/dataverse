@@ -10,11 +10,12 @@ import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+
+import javax.mail.internet.InternetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.mail.internet.InternetAddress;
 
 public class FeedbackUtil {
 
@@ -159,7 +160,7 @@ public class FeedbackUtil {
      * When contacts are people we suggest that they be stored as "Simpson,
      * Homer" so the idea of this method is that it returns "Homer Simpson", if
      * it can.
-     *
+     * <p>
      * Contacts don't necessarily have to be people, however. They can be
      * organizations. We ran into similar trouble (but for authors) when
      * implementing Schema.org JSON-LD support. See getJsonLd on DatasetVersion.

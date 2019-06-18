@@ -24,7 +24,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
     private final DatasetVersion version;
     private final Map<String, String> requestedSettings = new HashMap<String, String>();
     private static final Logger logger = Logger.getLogger(AbstractSubmitToArchiveCommand.class.getName());
-    
+
     public AbstractSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
         super(aRequest, version.getDataset());
         this.version = version;
@@ -42,7 +42,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
                 requestedSettings.put(setting, ctxt.settings().get(setting));
             }
         }
-        
+
         AuthenticatedUser user = getRequest().getAuthenticatedUser();
         ApiToken token = ctxt.authentication().findApiTokenByUser(user);
         if ((token == null) || (token.getExpireTime().before(new Date()))) {
@@ -58,9 +58,9 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
      * workflow in which execute() is never called and therefore in which all
      * variables must be sent as method parameters. (Nominally version is set in the
      * constructor and could be dropped from the parameter list.)
-     * 
-     * @param version - the DatasetVersion to archive
-     * @param token - an API Token for the user performing this action
+     *
+     * @param version           - the DatasetVersion to archive
+     * @param token             - an API Token for the user performing this action
      * @param requestedSettings - a map of the names/values for settings required by this archiver (sent because this class is not part of the EJB context (by design) and has no direct access to service beans).
      */
     abstract public WorkflowStepResult performArchiveSubmission(DatasetVersion version, ApiToken token, Map<String, String> requestedSetttings);
@@ -68,7 +68,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
     @Override
     public String describe() {
         return super.describe() + "DatasetVersion: [" + version.getId() + " (v"
-                + version.getFriendlyVersionNumber()+")]";
+                + version.getFriendlyVersionNumber() + ")]";
     }
 
 }

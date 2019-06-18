@@ -12,7 +12,7 @@ import java.util.Objects;
 /**
  * JPA embeddable model class representing some
  * text with assigned locale.
- * 
+ *
  * @author madryk
  */
 @Embeddable
@@ -20,29 +20,30 @@ public class LocaleText implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Column(nullable=false)
-    @Convert(converter=LocaleConverter.class)
+    @Column(nullable = false)
+    @Convert(converter = LocaleConverter.class)
     private Locale locale;
 
-    
-    @Column(nullable=false)
+
+    @Column(nullable = false)
     private String text;
-    
-    
+
+
     //-------------------- CONSTRUCTORS --------------------
-    
-    @SuppressWarnings("unused") /** for jpa only **/
+
+    @SuppressWarnings("unused")
+    /** for jpa only **/
     protected LocaleText() {
     }
-    
-    
+
+
     public LocaleText(Locale locale, String text) {
         this.locale = Objects.requireNonNull(locale);
         this.text = Objects.requireNonNull(text);
     }
-    
+
     //-------------------- GETTERS --------------------
-    
+
     /**
      * Returns locale of text
      */

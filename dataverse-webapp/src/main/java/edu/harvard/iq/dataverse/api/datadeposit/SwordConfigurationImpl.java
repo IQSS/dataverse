@@ -2,19 +2,20 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.swordapp.server.SwordConfiguration;
+
+import javax.ejb.EJB;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import org.swordapp.server.SwordConfiguration;
 
 public class SwordConfigurationImpl implements SwordConfiguration {
     private static final Logger logger = Logger.getLogger(SwordConfigurationImpl.class.getCanonicalName());
-    
+
     @EJB
     SystemConfig systemConfig;
-    
+
     @EJB
     SettingsServiceBean settingsService;
 
@@ -126,20 +127,20 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 
     @Override
     public int getMaxUploadSize() {
-        
+
         int unlimited = -1;
 
         Long maxUploadInBytes = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
 
-        if (maxUploadInBytes == null){
+        if (maxUploadInBytes == null) {
             // (a) No setting, return unlimited           
-            return unlimited;      
-        
-        }else if (maxUploadInBytes > Integer.MAX_VALUE){
+            return unlimited;
+
+        } else if (maxUploadInBytes > Integer.MAX_VALUE) {
             // (b) setting returns the limit of int, return max int value  (BUG)
             return Integer.MAX_VALUE;
-            
-        }else{            
+
+        } else {
             // (c) Return the setting as an int
             return maxUploadInBytes.intValue();
 

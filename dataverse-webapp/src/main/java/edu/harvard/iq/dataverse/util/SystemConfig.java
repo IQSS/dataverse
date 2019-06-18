@@ -31,13 +31,13 @@ public class SystemConfig {
     @EJB
     SettingsServiceBean settingsService;
 
-   public static final String DATAVERSE_PATH = "/dataverse/";
+    public static final String DATAVERSE_PATH = "/dataverse/";
 
     /**
      * A JVM option for the advertised fully qualified domain name (hostname) of
      * the Dataverse installation, such as "dataverse.example.com", which may
      * differ from the hostname that the server knows itself as.
-     *
+     * <p>
      * The equivalent in DVN 3.x was "dvn.inetAddress".
      */
     public static final String FQDN = "dataverse.fqdn";
@@ -251,7 +251,7 @@ public class SystemConfig {
         return guidesVersion.equals(StringUtils.EMPTY) ? getVersion() : guidesVersion;
     }
 
-    public long getUploadLogoSizeLimit(){
+    public long getUploadLogoSizeLimit() {
         return 500000;
     }
 
@@ -341,7 +341,7 @@ public class SystemConfig {
                 Long sizeOption = new Long(limitEntry);
                 return sizeOption;
             } catch (NumberFormatException nfe) {
-                logger.warning("Invalid value for TabularIngestSizeLimit:" + formatName + "? - " + limitEntry );
+                logger.warning("Invalid value for TabularIngestSizeLimit:" + formatName + "? - " + limitEntry);
             }
         }
 
@@ -386,13 +386,13 @@ public class SystemConfig {
 
     /**
      * Below are three related enums having to do with big data support:
-     *
+     * <p>
      * - FileUploadMethods
-     *
+     * <p>
      * - FileDownloadMethods
-     *
+     * <p>
      * - TransferProtocols
-     *
+     * <p>
      * There is a good chance these will be consolidated in the future.
      */
     public enum FileUploadMethods {
@@ -411,7 +411,7 @@ public class SystemConfig {
 
         private final String text;
 
-        private FileUploadMethods(final String text) {
+        FileUploadMethods(final String text) {
             this.text = text;
         }
 
@@ -436,7 +436,7 @@ public class SystemConfig {
 
     /**
      * See FileUploadMethods.
-     *
+     * <p>
      * TODO: Consider if dataverse.files.s3-download-redirect belongs here since
      * it's a way to bypass Glassfish when downloading.
      */
@@ -449,7 +449,7 @@ public class SystemConfig {
         NATIVE("native/http");
         private final String text;
 
-        private FileDownloadMethods(final String text) {
+        FileDownloadMethods(final String text) {
             this.text = text;
         }
 
@@ -480,7 +480,7 @@ public class SystemConfig {
             return text;
         }
 
-        private DataFilePIDFormat(final String text){
+        DataFilePIDFormat(final String text) {
             this.text = text;
         }
 
@@ -506,7 +506,7 @@ public class SystemConfig {
 
         private final String text;
 
-        private TransferProtocols(final String text) {
+        TransferProtocols(final String text) {
             this.text = text;
         }
 
@@ -528,7 +528,7 @@ public class SystemConfig {
 
     }
 
-    public boolean isRsyncUpload(){
+    public boolean isRsyncUpload() {
         return getUploadMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString());
     }
 
@@ -539,46 +539,46 @@ public class SystemConfig {
 
     public boolean isRsyncOnly() {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
-        if(StringUtils.isEmpty(downloadMethods)){
+        if (StringUtils.isEmpty(downloadMethods)) {
             return false;
         }
-        if (!downloadMethods.toLowerCase().equals(SystemConfig.FileDownloadMethods.RSYNC.toString())){
+        if (!downloadMethods.toLowerCase().equals(SystemConfig.FileDownloadMethods.RSYNC.toString())) {
             return false;
         }
         String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
-        if (StringUtils.isEmpty(uploadMethods)){
+        if (StringUtils.isEmpty(uploadMethods)) {
             return false;
         } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+            return Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
         }
     }
 
     public boolean isRsyncDownload() {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
-        return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.RSYNC.toString());
+        return downloadMethods != null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.RSYNC.toString());
     }
 
     public boolean isHTTPDownload() {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
         logger.warning("Download Methods:" + downloadMethods);
-        return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.NATIVE.toString());
+        return downloadMethods != null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.NATIVE.toString());
     }
 
-    private Boolean getUploadMethodAvailable(String method){
+    private Boolean getUploadMethodAvailable(String method) {
         String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
-        if (StringUtils.isEmpty(uploadMethods)){
+        if (StringUtils.isEmpty(uploadMethods)) {
             return false;
         } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).contains(method);
+            return Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).contains(method);
         }
     }
 
-    public Integer getUploadMethodCount(){
+    public Integer getUploadMethodCount() {
         String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
-        if (StringUtils.isEmpty(uploadMethods)){
+        if (StringUtils.isEmpty(uploadMethods)) {
             return 0;
         } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
+            return Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
         }
     }
 }

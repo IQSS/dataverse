@@ -4,7 +4,6 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
-
 import java.io.Serializable;
 
 @ViewScoped
@@ -13,14 +12,14 @@ public class InstallationConfig implements Serializable {
 
     @EJB
     private InstallationConfigService installationConfigService;
-    
+
     private String supportTeamName;
-    
+
     private String installationName;
-    
-    
+
+
     // -------------------- GETTERS --------------------
-    
+
     public String getSupportTeamName() {
         return supportTeamName;
     }
@@ -28,13 +27,13 @@ public class InstallationConfig implements Serializable {
     public String getInstallationName() {
         return installationName;
     }
-    
+
     // -------------------- LOGIC --------------------
-    
+
     @PostConstruct
     public void postConstruct() {
         this.supportTeamName = installationConfigService.getSupportTeamName();
         this.installationName = installationConfigService.getNameOfInstallation();
     }
-    
+
 }

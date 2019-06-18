@@ -20,26 +20,26 @@
 
 package edu.harvard.iq.dataverse.ingest.tabulardata.spi;
 
+import edu.harvard.iq.dataverse.ingest.plugin.spi.IngestServiceProvider;
+
 import java.nio.MappedByteBuffer;
 import java.util.logging.Logger;
-import static java.lang.System.*;
 
-import edu.harvard.iq.dataverse.ingest.plugin.spi.*;
+import static java.lang.System.out;
 
 
 /**
- * 
  * @author landreev
  * @author akio sone at UNC-Odum
  */
 
-public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvider{
+public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvider {
 
-    private static Logger dbgLog = 
-    Logger.getLogger(TabularDataFileReaderWriterSpi.class.getPackage().getName());
+    private static Logger dbgLog =
+            Logger.getLogger(TabularDataFileReaderWriterSpi.class.getPackage().getName());
     /**
      * A <code>String</code> array that contains human-readable format names
-     * and are used by the <code>StatDataFileReader</code> or 
+     * and are used by the <code>StatDataFileReader</code> or
      * <code>StatDataFileWriter</code> implementation related to this
      * class.
      */
@@ -47,47 +47,48 @@ public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvid
 
     /**
      * Gets the value of names.
+     *
      * @return the value of names.
      */
     public String[] getFormatNames() {
-        return (String[])names.clone();
+        return names.clone();
     }
 
     /**
-     * A <code>String</code> array that contains format extensions 
-     *  and are used by the <code>StatDataFileReader</code> or 
+     * A <code>String</code> array that contains format extensions
+     * and are used by the <code>StatDataFileReader</code> or
      * <code>StatDataFileWriter</code> implementation related to this
      * class.
      */
     protected String[] suffixes = null;
-    
+
     /**
      * Gets the value of suffixes
      *
      * @return the value of suffixes
      */
     public String[] getFileSuffixes() {
-        return suffixes == null ? null : (String[])suffixes.clone();
+        return suffixes == null ? null : suffixes.clone();
     }
-    
-    
+
+
     /**
-     * A <code>String</code> array that contains MIME types 
-     * and are used by the <code>StatDataFileReader</code> or 
+     * A <code>String</code> array that contains MIME types
+     * and are used by the <code>StatDataFileReader</code> or
      * <code>StatDataFileWriter</code> implementation related to this
      * class.
      */
     protected String[] MIMETypes = null;
-    
+
     /**
      * Gets the value of MIMETypes
      *
      * @return the value of MIMETypes
      */
     public String[] getMIMETypes() {
-        return MIMETypes == null ? null : (String[])MIMETypes.clone();
+        return MIMETypes == null ? null : MIMETypes.clone();
     }
-    
+
     /**
      * A <code>String</code> that contains the name of the plug-in class.
      */
@@ -102,22 +103,22 @@ public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvid
         return pluginClassName;
     }
 
-    
+
     public TabularDataFileReaderWriterSpi() {
     }
 
     /**
      * Constructs an empty <code>TabularDataFileReaderWriterSpi</code> instance
      * with given values.
-     * 
-     * @param vendorName  the vendor name.
-     * @param version     a version identifier.
-     * @param names       at least one format name or more.
-     * @param suffixes    at least one format extensions or more.
-     * @param MIMETypes   at least one format's MIME type or more.
+     *
+     * @param vendorName      the vendor name.
+     * @param version         a version identifier.
+     * @param names           at least one format name or more.
+     * @param suffixes        at least one format extensions or more.
+     * @param MIMETypes       at least one format's MIME type or more.
      * @param pluginClassName the fully qualified name of the associated
-     * <code>StatDataFileReaderSpi</code> or 
-     * <code>StatDataFileWriterSpi</code> class.
+     *                        <code>StatDataFileReaderSpi</code> or
+     *                        <code>StatDataFileWriterSpi</code> class.
      */
     public TabularDataFileReaderWriterSpi(
             String vendorName,
@@ -126,7 +127,7 @@ public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvid
             String[] suffixes,
             String[] MIMETypes,
             String pluginClassName
-            ) {
+    ) {
         super(vendorName, version);
 
         dbgLog.fine("TabularDataFileReaderWriterSpi is called");
@@ -138,17 +139,17 @@ public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvid
         if (names.length == 0) {
             throw new IllegalArgumentException("names.length is 0!");
         }
-        this.names = (String[])names.clone();
+        this.names = names.clone();
         if (pluginClassName == null) {
             throw new IllegalArgumentException("pluginClassName is null!");
         }
 
         if (suffixes != null && suffixes.length > 0) {
-            this.suffixes = (String[])suffixes.clone();
+            this.suffixes = suffixes.clone();
         }
 
         if (MIMETypes != null && MIMETypes.length > 0) {
-            this.MIMETypes = (String[])MIMETypes.clone();
+            this.MIMETypes = MIMETypes.clone();
         }
 
         this.pluginClassName = pluginClassName;
@@ -158,7 +159,7 @@ public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvid
      * Writes a <code>MappedByteBuffer</code> object in hexadecimal.
      *
      * @param buff a MappedByteBuffer object.
-     * @param hdr the title string.
+     * @param hdr  the title string.
      */
     public void printHexDump(MappedByteBuffer buff, String hdr) {
         int counter = 0;
@@ -179,11 +180,12 @@ public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvid
         out.println();
         buff.rewind();
     }
+
     /**
      * Writes the <code>byte</code> array in hexadecimal.
      *
      * @param buff a <code>byte</code> array.
-     * @param hdr the title string.
+     * @param hdr  the title string.
      */
     public void printHexDump(byte[] buff, String hdr) {
         int counter = 0;

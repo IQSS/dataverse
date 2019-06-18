@@ -2,14 +2,16 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
-import java.io.IOException;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.OK;
 import org.hamcrest.CoreMatchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+import java.io.IOException;
+
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.OK;
 
 public class ExternalToolsIT {
 
@@ -42,11 +44,11 @@ public class ExternalToolsIT {
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()
-                                .add("fileid", "{fileId}")
-                                .build())
+                                     .add("fileid", "{fileId}")
+                                     .build())
                         .add(Json.createObjectBuilder()
-                                .add("key", "{apiToken}")
-                                .build())
+                                     .add("key", "{apiToken}")
+                                     .build())
                         .build())
                 .build());
         Response addExternalTool = UtilIT.addExternalTool(job.build());
@@ -65,8 +67,8 @@ public class ExternalToolsIT {
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()
-                                .add("key", "{apiToken}")
-                                .build())
+                                     .add("key", "{apiToken}")
+                                     .build())
                         .build())
                 .build());
         Response addExternalTool = UtilIT.addExternalTool(job.build());
@@ -93,14 +95,14 @@ public class ExternalToolsIT {
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()
-                                .add("fileid", "{fileId}")
-                                .build())
+                                     .add("fileid", "{fileId}")
+                                     .build())
                         .add(Json.createObjectBuilder()
-                                .add("key", "{apiToken}")
-                                .build())
+                                     .add("key", "{apiToken}")
+                                     .build())
                         .add(Json.createObjectBuilder()
-                                .add("mode", "mode1")
-                                .build())
+                                     .add("mode", "mode1")
+                                     .build())
                         .build())
                 .build());
         Response addExternalTool = UtilIT.addExternalTool(job.build());

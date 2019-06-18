@@ -5,17 +5,17 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.lang.annotation.Documented;
-import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
-import static java.lang.annotation.ElementType.TYPE;
-import java.lang.annotation.Retention;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- *
  * @author skraffmi
  */
 
@@ -26,14 +26,14 @@ import javax.validation.Payload;
 @Documented
 public @interface ValidateVersionNote {
 
-  String message() default "Failed Validation for DatasetVersionNote";
+    String message() default "Failed Validation for DatasetVersionNote";
 
-  Class<?>[] groups() default {};
+    Class<?>[] groups() default {};
 
-  Class<? extends Payload>[] payload() default {};
-  
-  String versionNote();
-  
-  String versionState();
+    Class<? extends Payload>[] payload() default {};
+
+    String versionNote();
+
+    String versionState();
 
 }

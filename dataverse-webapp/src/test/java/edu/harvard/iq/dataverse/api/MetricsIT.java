@@ -3,12 +3,12 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.OK;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.OK;
 import static org.junit.Assert.assertEquals;
 
 //TODO: These tests are fairly flawed as they don't actually add data to compare on.
@@ -41,9 +41,9 @@ public class MetricsIT {
         String postcache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         assertEquals(precache, postcache);
-        
+
         //Test error when passing extra query params
         response = UtilIT.metricsDataversesToMonth(yyyymm, "dataLocation=local");
         response.then().assertThat()
@@ -67,7 +67,7 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test ok when passing extra query params
         response = UtilIT.metricsDatasetsToMonth(yyyymm, "dataLocation=local");
         response.then().assertThat()
@@ -90,7 +90,7 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test error when passing extra query params
         response = UtilIT.metricsFilesToMonth(yyyymm, "dataLocation=local");
         response.then().assertThat()
@@ -113,14 +113,14 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test error when passing extra query params
         response = UtilIT.metricsDownloadsToMonth(yyyymm, "dataLocation=local");
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
     }
-    
-        
+
+
     @Test
     public void testGetDataversesPastDays() {
         String days = "30";
@@ -137,13 +137,13 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test error when passing extra query params
         response = UtilIT.metricsDataversesPastDays(days, "dataLocation=local");
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
     }
-    
+
     @Test
     public void testGetDatasetsPastDays() {
         String days = "30";
@@ -160,14 +160,14 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test ok when passing extra query params
         response = UtilIT.metricsDatasetsPastDays(days, "dataLocation=local");
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
     }
-    
-    
+
+
     @Test
     public void testGetFilesPastDays() {
         String days = "30";
@@ -184,13 +184,13 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test error when passing extra query params
         response = UtilIT.metricsFilesPastDays(days, "dataLocation=local");
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
     }
-    
+
     @Test
     public void testGetDownloadsPastDays() {
         String days = "30";
@@ -207,13 +207,13 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test error when passing extra query params
         response = UtilIT.metricsDownloadsPastDays(days, "dataLocation=local");
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
-    }    
-    
+    }
+
 
     @Test
     public void testGetDataverseByCategory() {
@@ -229,13 +229,13 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test error when passing extra query params
         response = UtilIT.metricsDataversesByCategory("dataLocation=local");
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
     }
-    
+
     @Test
     public void testGetDataverseBySubject() {
         Response response = UtilIT.metricsDataversesBySubject(null);
@@ -250,7 +250,7 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test error when passing extra query params
         response = UtilIT.metricsDataversesBySubject("dataLocation=local");
         response.then().assertThat()
@@ -271,7 +271,7 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test ok when passing extra query params
         response = UtilIT.metricsDatasetsBySubject("dataLocation=local");
         response.then().assertThat()
@@ -295,7 +295,7 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test ok passing extra query params
         response = UtilIT.metricsDatasetsBySubjectToMonth(thismonth, "dataLocation=local");
         response.then().assertThat()

@@ -8,6 +8,7 @@ import java.util.Date;
 
 /**
  * Validator for new and reuse dataverse text messages.
+ *
  * @author tjanek
  */
 public class DataverseTextMessageValidator {

@@ -7,8 +7,7 @@
 package edu.harvard.iq.dataverse.ingest;
 
 import edu.harvard.iq.dataverse.DataFile;
-import java.io.Serializable;
-import java.util.Date;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -20,13 +19,14 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
- *
  * @author Leonid Andreev
  */
 @Entity
-@Table(indexes = {@Index(columnList="datafile_id")})
+@Table(indexes = {@Index(columnList = "datafile_id")})
 public class IngestReport implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -49,7 +49,7 @@ public class IngestReport implements Serializable {
     public static int INGEST_STATUS_FAILURE = 3;
 
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DataFile dataFile;
 
     @Lob
@@ -135,10 +135,7 @@ public class IngestReport implements Serializable {
             return false;
         }
         IngestReport other = (IngestReport) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
 
     @Override

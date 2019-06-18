@@ -3,8 +3,8 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
 import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -14,6 +14,12 @@ import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
+import org.apache.commons.codec.binary.Hex;
+import org.duracloud.client.ContentStore;
+import org.duracloud.client.ContentStoreManager;
+import org.duracloud.client.ContentStoreManagerImpl;
+import org.duracloud.common.model.Credential;
+import org.duracloud.error.ContentStoreException;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -24,13 +30,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.logging.Logger;
-
-import org.apache.commons.codec.binary.Hex;
-import org.duracloud.client.ContentStore;
-import org.duracloud.client.ContentStoreManager;
-import org.duracloud.client.ContentStoreManagerImpl;
-import org.duracloud.common.model.Credential;
-import org.duracloud.error.ContentStoreException;
 
 @RequiredPermissions(Permission.PublishDataset)
 public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand implements Command<DatasetVersion> {
@@ -58,7 +57,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                 // Use Duracloud client classes to login
                 ContentStoreManager storeManager = new ContentStoreManagerImpl(host, port, dpnContext);
                 Credential credential = new Credential(System.getProperty("duracloud.username"),
-                        System.getProperty("duracloud.password"));
+                                                       System.getProperty("duracloud.password"));
                 storeManager.login(credential);
 
                 String spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
@@ -100,13 +99,13 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         }).start();
 
                         String checksum = store.addContent(spaceName, "datacite.xml", digestInputStream, -1l, null, null,
-                                null);
+                                                           null);
                         logger.fine("Content: datacite.xml added with checksum: " + checksum);
                         String localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
                         if (!checksum.equals(localchecksum)) {
                             logger.severe(checksum + " not equal to " + localchecksum);
                             return new Failure("Error in transferring DataCite.xml file to DuraCloud",
-                                    "DuraCloud Submission Failure: incomplete metadata transfer");
+                                               "DuraCloud Submission Failure: incomplete metadata transfer");
                         }
 
                         // Store BagIt file
@@ -116,10 +115,10 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         // Although DuraCloud uses SHA-256 internally, it's API uses MD5 to verify the
                         // transfer
                         messageDigest = MessageDigest.getInstance("MD5");
-                        try (PipedInputStream in = new PipedInputStream();  DigestInputStream digestInputStream2 = new DigestInputStream(in, messageDigest)) {
+                        try (PipedInputStream in = new PipedInputStream(); DigestInputStream digestInputStream2 = new DigestInputStream(in, messageDigest)) {
                             new Thread(new Runnable() {
                                 public void run() {
-                                    try (PipedOutputStream out = new PipedOutputStream(in)){
+                                    try (PipedOutputStream out = new PipedOutputStream(in)) {
                                         // Generate bag
                                         BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
                                         bagger.setAuthenticationKey(token.getTokenString());
@@ -134,18 +133,18 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                             }).start();
 
                             checksum = store.addContent(spaceName, fileName, digestInputStream2, -1l, null, null,
-                                    null);
+                                                        null);
                             logger.fine("Content: " + fileName + " added with checksum: " + checksum);
                             localchecksum = Hex.encodeHexString(digestInputStream2.getMessageDigest().digest());
                             if (!checksum.equals(localchecksum)) {
                                 logger.severe(checksum + " not equal to " + localchecksum);
                                 return new Failure("Error in transferring Zip file to DuraCloud",
-                                        "DuraCloud Submission Failure: incomplete archive transfer");
+                                                   "DuraCloud Submission Failure: incomplete archive transfer");
                             }
                         } catch (RuntimeException rte) {
                             logger.severe(rte.getMessage());
                             return new Failure("Error in generating Bag",
-                                    "DuraCloud Submission Failure: archive file not created");
+                                               "DuraCloud Submission Failure: archive file not created");
                         }
 
                         logger.fine("DuraCloud Submission step: Content Transferred");
@@ -168,11 +167,11 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         logger.warning(e.getMessage());
                         e.printStackTrace();
                         return new Failure("Error in transferring file to DuraCloud",
-                                "DuraCloud Submission Failure: archive file not transferred");
-                    }  catch (RuntimeException rte) {
+                                           "DuraCloud Submission Failure: archive file not transferred");
+                    } catch (RuntimeException rte) {
                         logger.severe(rte.getMessage());
                         return new Failure("Error in generating datacite.xml file",
-                                "DuraCloud Submission Failure: metadata file not created");
+                                           "DuraCloud Submission Failure: metadata file not created");
                     }
                 } catch (ContentStoreException e) {
                     logger.warning(e.getMessage());
@@ -194,5 +193,5 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
             return new Failure("DuraCloud Submission not configured - no \":DuraCloudHost\".");
         }
     }
-    
+
 }

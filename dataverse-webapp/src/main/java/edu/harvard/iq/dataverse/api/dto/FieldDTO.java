@@ -1,10 +1,10 @@
-
 package edu.harvard.iq.dataverse.api.dto;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,73 +14,78 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
 /**
- *
  * @author ellenk
  */
 public class FieldDTO {
 
     public FieldDTO() {
     }
-    
+
     public static FieldDTO createPrimitiveFieldDTO(String typeName, String value) {
         FieldDTO primitive = new FieldDTO();
-        primitive.typeName=typeName;
+        primitive.typeName = typeName;
         primitive.setSinglePrimitive(value);
         return primitive;
     }
+
     public static FieldDTO createMultiplePrimitiveFieldDTO(String typeName, List<String> values) {
         FieldDTO primitive = new FieldDTO();
-        primitive.typeName=typeName;
+        primitive.typeName = typeName;
         primitive.setMultiplePrimitive(values);
         return primitive;
     }
- public static FieldDTO createMultipleVocabFieldDTO(String typeName, List<String> values) {
+
+    public static FieldDTO createMultipleVocabFieldDTO(String typeName, List<String> values) {
         FieldDTO primitive = new FieldDTO();
-        primitive.typeName=typeName;
+        primitive.typeName = typeName;
         primitive.setMultipleVocab(values);
         return primitive;
-    }   
+    }
+
     public static FieldDTO createVocabFieldDTO(String typeName, String value) {
         FieldDTO field = new FieldDTO();
-        field.typeName=typeName;
+        field.typeName = typeName;
         field.setSingleVocab(value);
         return field;
-        
+
     }
-   
+
     public static FieldDTO createCompoundFieldDTO(String typeName, FieldDTO... value) {
         FieldDTO field = new FieldDTO();
-        field.typeName=typeName;
+        field.typeName = typeName;
         field.setSingleCompound(value);
         return field;
-        
+
     }
-    
-     
+
+
     /**
-     * Creates a FieldDTO that contains a size=1 list of compound values 
+     * Creates a FieldDTO that contains a size=1 list of compound values
+     *
      * @param typeName
      * @param value
-     * @return 
-     */  
+     * @return
+     */
     public static FieldDTO createMultipleCompoundFieldDTO(String typeName, FieldDTO... value) {
         FieldDTO field = new FieldDTO();
         field.typeName = typeName;
         field.setMultipleCompound(value);
         return field;
-    } 
-    public static FieldDTO createMultipleCompoundFieldDTO(String typeName,List<HashSet<FieldDTO>> compoundList) {
+    }
+
+    public static FieldDTO createMultipleCompoundFieldDTO(String typeName, List<HashSet<FieldDTO>> compoundList) {
         FieldDTO field = new FieldDTO();
-        field.typeName=typeName;
+        field.typeName = typeName;
         field.setMultipleCompound(compoundList);
         return field;
     }
-    
+
     String typeName;
     Boolean multiple;
     String typeClass;
-        // The contents of value depend on the field attributes
+    // The contents of value depend on the field attributes
     // if single/primitive, value is a String
     // if multiple, value is a JSonArray
     //      multiple/primitive: each JSonArray element will contain String
@@ -113,14 +118,14 @@ public class FieldDTO {
     }
 
     public String getSinglePrimitive() {
-        
-        return value==null? "": value.getAsString();
+
+        return value == null ? "" : value.getAsString();
     }
-    
+
     String getSingleVocab() {
-        return value==null? "": value.getAsString();
+        return value == null ? "" : value.getAsString();
     }
-    
+
     public Set<FieldDTO> getSingleCompound() {
         Gson gson = new Gson();
         JsonObject elem = (JsonObject) value;
@@ -186,32 +191,34 @@ public class FieldDTO {
     }
 
     public void setSingleVocab(String value) {
-         Gson gson = new Gson();
-         typeClass = "controlledVocabulary";
+        Gson gson = new Gson();
+        typeClass = "controlledVocabulary";
         multiple = false;
         this.value = gson.toJsonTree(value);
     }
-    
+
     public void setSingleCompound(FieldDTO... compoundField) {
         Gson gson = new Gson();
         this.typeClass = "compound";
         this.multiple = false;
-       
+
         JsonObject obj = new JsonObject();
         for (FieldDTO fieldDTO : compoundField) {
-            if (fieldDTO!=null) {
-                obj.add(fieldDTO.typeName,gson.toJsonTree(fieldDTO, FieldDTO.class));
+            if (fieldDTO != null) {
+                obj.add(fieldDTO.typeName, gson.toJsonTree(fieldDTO, FieldDTO.class));
             }
         }
-  
+
         this.value = obj;
     }
+
     public void setMultiplePrimitive(String[] value) {
         Gson gson = new Gson();
         typeClass = "primitive";
         multiple = true;
         this.value = gson.toJsonTree(Arrays.asList(value));
     }
+
     public void setMultiplePrimitive(List<String> value) {
         Gson gson = new Gson();
         typeClass = "primitive";
@@ -220,8 +227,8 @@ public class FieldDTO {
     }
 
     public void setMultipleVocab(List<String> value) {
-       Gson gson = new Gson();
-       typeClass = "controlledVocabulary";
+        Gson gson = new Gson();
+        typeClass = "controlledVocabulary";
         multiple = true;
         this.value = gson.toJsonTree(value);
     }
@@ -230,27 +237,29 @@ public class FieldDTO {
      * Set value to a size 1 list of compound fields, that is a single set of primitives
      */
     public void setMultipleCompound(FieldDTO... fieldList) {
-         Gson gson = new Gson();
+        Gson gson = new Gson();
         this.typeClass = "compound";
         this.multiple = true;
         List<Map<String, FieldDTO>> mapList = new ArrayList<Map<String, FieldDTO>>();
-            Map<String, FieldDTO> fieldMap = new HashMap<>();
-            for (FieldDTO fieldDTO : fieldList) {
-                if (fieldDTO!=null){
-                    fieldMap.put(fieldDTO.typeName, fieldDTO);
-                }
+        Map<String, FieldDTO> fieldMap = new HashMap<>();
+        for (FieldDTO fieldDTO : fieldList) {
+            if (fieldDTO != null) {
+                fieldMap.put(fieldDTO.typeName, fieldDTO);
             }
-            mapList.add(fieldMap);
-        
+        }
+        mapList.add(fieldMap);
+
         this.value = gson.toJsonTree(mapList);
 
     }
+
     /**
      * Set value to a list of compound fields (each member of the list is a set of fields)
-     * @param compoundFieldList 
+     *
+     * @param compoundFieldList
      */
     public void setMultipleCompound(List<HashSet<FieldDTO>> compoundFieldList) {
-         Gson gson = new Gson();
+        Gson gson = new Gson();
         this.typeClass = "compound";
         this.multiple = true;
         List<Map<String, FieldDTO>> mapList = new ArrayList<Map<String, FieldDTO>>();
@@ -266,7 +275,6 @@ public class FieldDTO {
     }
 
     /**
-     *
      * @return the value of this field, translated from a JsonElement to the
      * appropriate DTO format
      */
@@ -274,15 +282,17 @@ public class FieldDTO {
         if (multiple) {
             if (typeClass.equals("compound")) {
                 return getMultipleCompound();
-            } else if (typeClass.equals("controlledVocabulary")){
+            } else if (typeClass.equals("controlledVocabulary")) {
                 return getMultipleVocab();
-            } else return getMultiplePrimitive();
-            
+            } else {
+                return getMultiplePrimitive();
+            }
+
 
         } else {
             if (typeClass.equals("compound")) {
                 return getSingleCompound();
-            } else if (typeClass.equals("controlledVocabulary")){
+            } else if (typeClass.equals("controlledVocabulary")) {
                 return getSingleVocab();
             } else {
                 return getSinglePrimitive();
@@ -318,10 +328,7 @@ public class FieldDTO {
         if (!Objects.equals(this.typeClass, other.typeClass)) {
             return false;
         }
-        if (!Objects.equals(this.value, other.value)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.value, other.value);
     }
 
     @Override

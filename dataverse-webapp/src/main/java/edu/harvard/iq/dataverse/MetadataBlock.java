@@ -19,9 +19,6 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.List;
-import java.util.Objects;
-import java.io.Serializable;
-import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Objects;
 
@@ -30,35 +27,35 @@ import static java.lang.String.format;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 /**
- *
  * @author skraffmiller
  */
-@Table(indexes = {@Index(columnList="name")
-		, @Index(columnList="owner_id")})
+@Table(indexes = {@Index(columnList = "name")
+        , @Index(columnList = "owner_id")})
 @NamedQueries({
-    @NamedQuery( name="MetadataBlock.listAll", query = "SELECT mdb FROM MetadataBlock mdb"),
-    @NamedQuery( name="MetadataBlock.findByName", query = "SELECT mdb FROM MetadataBlock mdb WHERE mdb.name=:name")
+        @NamedQuery(name = "MetadataBlock.listAll", query = "SELECT mdb FROM MetadataBlock mdb"),
+        @NamedQuery(name = "MetadataBlock.findByName", query = "SELECT mdb FROM MetadataBlock mdb WHERE mdb.name=:name")
 })
 @Entity
 public class MetadataBlock implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column( nullable = false )
+    @Column(nullable = false)
     private String name;
-    @Column( nullable = false )
+    @Column(nullable = false)
     private String displayName;
 
-    @Column( name = "namespaceuri", columnDefinition = "TEXT")
+    @Column(name = "namespaceuri", columnDefinition = "TEXT")
     private String namespaceUri;
-    
+
     public Long getId() {
         return id;
     }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -66,6 +63,7 @@ public class MetadataBlock implements Serializable {
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -73,6 +71,7 @@ public class MetadataBlock implements Serializable {
     public String getNamespaceUri() {
         return namespaceUri;
     }
+
     public void setNamespaceUri(String namespaceUri) {
         this.namespaceUri = namespaceUri;
     }
@@ -80,14 +79,15 @@ public class MetadataBlock implements Serializable {
     @OneToMany(mappedBy = "metadataBlock", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder")
     private List<DatasetFieldType> datasetFieldTypes;
+
     public List<DatasetFieldType> getDatasetFieldTypes() {
         return datasetFieldTypes;
     }
-    
+
     public void setDatasetFieldTypes(List<DatasetFieldType> datasetFieldTypes) {
         this.datasetFieldTypes = datasetFieldTypes;
     }
-    
+
     public boolean isDisplayOnCreate() {
         for (DatasetFieldType dsfType : datasetFieldTypes) {
             if (dsfType.isDisplayOnCreate()) {
@@ -101,6 +101,7 @@ public class MetadataBlock implements Serializable {
         String bundleDisplayName = getStringFromBundle(format("metadata.type.%s.title", this.name));
         return isNotBlank(bundleDisplayName) ? bundleDisplayName : displayName;
     }
+
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
@@ -109,9 +110,9 @@ public class MetadataBlock implements Serializable {
         // eventually this will be dynamic, for now only citation is required
         return "citation".equals(name);
     }
-    
+
     @OneToOne
-    @JoinColumn(name="owner_id", unique=false, nullable=true, insertable=true, updatable=true)
+    @JoinColumn(name = "owner_id", unique = false, nullable = true, insertable = true, updatable = true)
     private Dataverse owner;
 
     public Dataverse getOwner() {
@@ -121,7 +122,7 @@ public class MetadataBlock implements Serializable {
     public void setOwner(Dataverse owner) {
         this.owner = owner;
     }
- 
+
     @Transient
     private boolean empty;
 
@@ -132,30 +133,30 @@ public class MetadataBlock implements Serializable {
     public void setEmpty(boolean empty) {
         this.empty = empty;
     }
-    
+
     @Transient
     private boolean selected;
 
     public void setSelected(boolean selected) {
         this.selected = selected;
     }
-    
-    public boolean isSelected() {         
+
+    public boolean isSelected() {
         return selected;
     }
-    
+
     @Transient
     private boolean hasRequired;
 
     public void setHasRequired(boolean hasRequired) {
         this.hasRequired = hasRequired;
     }
-    
-    public boolean isHasRequired() {         
+
+    public boolean isHasRequired() {
         return hasRequired;
     }
 
-    public String getIdString(){
+    public String getIdString() {
         return id.toString();
     }
 
@@ -165,11 +166,11 @@ public class MetadataBlock implements Serializable {
     public void setShowDatasetFieldTypes(boolean showDatasetFieldTypes) {
         this.showDatasetFieldTypes = showDatasetFieldTypes;
     }
-    
-    public boolean isShowDatasetFieldTypes() {         
+
+    public boolean isShowDatasetFieldTypes() {
         return showDatasetFieldTypes;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -184,15 +185,14 @@ public class MetadataBlock implements Serializable {
         }
         MetadataBlock other = (MetadataBlock) object;
         return !(!Objects.equals(this.id, other.id) && (this.id == null || !this.id.equals(other.id)));
-    }    
-    
+    }
+
     @Override
     public String toString() {
         return "edu.harvard.iq.dataverse.MetadataBlock[ id=" + id + " ]";
     }
 
-    public String getLocaleDisplayName()
-    {
+    public String getLocaleDisplayName() {
         try {
             return BundleUtil.getStringFromPropertyFile("metadatablock.displayName", getName());
         } catch (MissingResourceException e) {

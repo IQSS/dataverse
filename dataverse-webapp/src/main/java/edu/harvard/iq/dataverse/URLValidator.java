@@ -1,13 +1,13 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.net.MalformedURLException;
-import java.net.URL;
+
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
- *
  * @author skraffmi
  */
 public class URLValidator implements ConstraintValidator<ValidateURL, String> {

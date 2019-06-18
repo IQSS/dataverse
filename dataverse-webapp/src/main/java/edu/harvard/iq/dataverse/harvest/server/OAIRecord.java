@@ -19,17 +19,16 @@
  */
 package edu.harvard.iq.dataverse.harvest.server;
 
-import java.io.Serializable;
-import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
- *
  * @author Leonid Andreev
  * based on the DVN implementation of "HarvestStudy" by
  * @author Gustavo Durand
@@ -52,13 +51,13 @@ public class OAIRecord implements Serializable {
 
     public OAIRecord() {
     }
-        
+
     public OAIRecord(String setName, String globalId, Date lastUpdateTime) {
         this.setName = setName;
         this.globalId = globalId;
         this.lastUpdateTime = lastUpdateTime;
     }
-        
+
     private String globalId;
     private String setName;
     @Temporal(value = TemporalType.TIMESTAMP)
@@ -81,7 +80,7 @@ public class OAIRecord implements Serializable {
     public void setSetName(String setName) {
         this.setName = setName;
     }
-    
+
     public Date getLastUpdateTime() {
         return lastUpdateTime;
     }
@@ -97,8 +96,8 @@ public class OAIRecord implements Serializable {
     public void setRemoved(boolean removed) {
         this.removed = removed;
     }
-    
-    
+
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -113,15 +112,12 @@ public class OAIRecord implements Serializable {
             return false;
         }
         OAIRecord other = (OAIRecord) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
 
     @Override
     public String toString() {
         return "edu.harvard.iq.dataverse.harvest.server.OAIRecord[ id=" + id + " ]";
     }
-    
+
 }

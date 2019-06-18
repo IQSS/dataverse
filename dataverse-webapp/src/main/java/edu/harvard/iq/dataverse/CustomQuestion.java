@@ -1,10 +1,21 @@
 package edu.harvard.iq.dataverse;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.List;
-import javax.persistence.*;
 
 /**
- *
  * @author skraffmiller
  */
 @Entity
@@ -26,23 +37,23 @@ public class CustomQuestion implements Serializable {
     }
 
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private Guestbook guestbook;
-    
-    @OneToMany(mappedBy="customQuestion",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval=true)
+
+    @OneToMany(mappedBy = "customQuestion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
     private List<CustomQuestionResponse> customQuestionResponses;
 
-    @OneToMany(mappedBy="customQuestion",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval=true)
-    @OrderBy("displayOrder")    
+    @OneToMany(mappedBy = "customQuestion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
+    @OrderBy("displayOrder")
     private List<CustomQuestionValue> customQuestionValues;
-    
-    @Column( nullable = false )
+
+    @Column(nullable = false)
     private String questionType;
-    
-    @Column( nullable = false )
+
+    @Column(nullable = false)
     private String questionString;
     private boolean required;
-    
+
     private boolean hidden;  //when a question is marked for removal, but it has data it is set to hidden
 
     private int displayOrder;
@@ -54,7 +65,7 @@ public class CustomQuestion implements Serializable {
     public void setDisplayOrder(int displayOrder) {
         this.displayOrder = displayOrder;
     }
-    
+
     public boolean isHidden() {
         return hidden;
     }
@@ -90,13 +101,13 @@ public class CustomQuestion implements Serializable {
     public List<CustomQuestionValue> getCustomQuestionValues() {
         return customQuestionValues;
     }
-    
-    public String getCustomQuestionValueString(){
+
+    public String getCustomQuestionValueString() {
         String retString = "";
-        
-        if (customQuestionValues != null && !this.customQuestionValues.isEmpty()){
-            for (CustomQuestionValue customQuestionValue : this.customQuestionValues){
-                if (!retString.isEmpty()){
+
+        if (customQuestionValues != null && !this.customQuestionValues.isEmpty()) {
+            for (CustomQuestionValue customQuestionValue : this.customQuestionValues) {
+                if (!retString.isEmpty()) {
                     retString += ", ";
                 } else {
                     retString += "Answers:  ";
@@ -104,7 +115,7 @@ public class CustomQuestion implements Serializable {
                 retString += customQuestionValue.getValueString();
             }
         }
-        
+
         return retString;
     }
 
@@ -119,7 +130,7 @@ public class CustomQuestion implements Serializable {
     public void setQuestionType(String questionType) {
         this.questionType = questionType;
     }
-    
+
     public List<CustomQuestionResponse> getCustomQuestionResponses() {
         return customQuestionResponses;
     }
@@ -127,16 +138,16 @@ public class CustomQuestion implements Serializable {
     public void setCustomQuestionResponses(List<CustomQuestionResponse> customQuestionResponses) {
         this.customQuestionResponses = customQuestionResponses;
     }
-    
-    public void removeCustomQuestionValue(int index){
+
+    public void removeCustomQuestionValue(int index) {
         customQuestionValues.remove(index);
     }
-    
-    public void addCustomQuestionValue(int index, CustomQuestionValue cq){
+
+    public void addCustomQuestionValue(int index, CustomQuestionValue cq) {
         customQuestionValues.add(index, cq);
     }
-    
-       
+
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -151,16 +162,13 @@ public class CustomQuestion implements Serializable {
             return false;
         }
         CustomQuestion other = (CustomQuestion) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
 
     @Override
     public String toString() {
         return "edu.harvard.iq.dvn.core.vdc.CustomQuestion[ id=" + id + " ]";
     }
-    
+
 }
 

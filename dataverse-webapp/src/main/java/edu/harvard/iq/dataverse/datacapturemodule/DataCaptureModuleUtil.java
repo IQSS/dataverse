@@ -8,22 +8,22 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
-import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import java.util.Arrays;
+import java.util.logging.Logger;
 
 public class DataCaptureModuleUtil {
 
     private static final Logger logger = Logger.getLogger(DataCaptureModuleUtil.class.getCanonicalName());
 
     public static boolean rsyncSupportEnabled(String uploadMethodsSettings) {
-        logger.fine("uploadMethodsSettings: " + uploadMethodsSettings);; 
-        if (StringUtils.isEmpty(uploadMethodsSettings)){
+        logger.fine("uploadMethodsSettings: " + uploadMethodsSettings);
+        if (StringUtils.isEmpty(uploadMethodsSettings)) {
             return false;
         } else {
-           return  Arrays.asList(uploadMethodsSettings.toLowerCase().split("\\s*,\\s*")).contains(SystemConfig.FileUploadMethods.RSYNC.toString());
+            return Arrays.asList(uploadMethodsSettings.toLowerCase().split("\\s*,\\s*")).contains(SystemConfig.FileUploadMethods.RSYNC.toString());
         }
     }
 

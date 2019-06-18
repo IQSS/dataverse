@@ -14,15 +14,15 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import org.junit.Before;
-import org.junit.Test;
-import static edu.harvard.iq.dataverse.mocks.MocksFactory.*;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,16 +31,24 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDatasetFieldType;
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataverse;
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataverseFieldTypeInputLevel;
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRole;
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.nextId;
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.timestamp;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author michael
  */
 public class CreateDataverseCommandTest {
-    
+
     boolean indexCalled = false;
     Map<String, Dataverse> dvByAliasStore = new HashMap<>();
     Map<Long, Dataverse> dvStore = new HashMap<>();
@@ -49,8 +57,8 @@ public class CreateDataverseCommandTest {
     boolean dftilsDeleted;
     List<DataverseFieldTypeInputLevel> createdDftils;
     List<DataverseFacet> createdFacets;
-    
-    DataverseServiceBean dataverses = new DataverseServiceBean(){
+
+    DataverseServiceBean dataverses = new DataverseServiceBean() {
         @Override
         public boolean isRootDataverseExists() {
             return isRootDvExists;
@@ -63,31 +71,31 @@ public class CreateDataverseCommandTest {
 
         @Override
         public Dataverse save(Dataverse dataverse) {
-            if ( dataverse.getId() == null ) {
-                dataverse.setId( nextId() );
+            if (dataverse.getId() == null) {
+                dataverse.setId(nextId());
             }
-            dvStore.put( dataverse.getId(), dataverse);
-            if ( dataverse.getAlias() != null ) {
-                dvByAliasStore.put( dataverse.getAlias(), dataverse);
+            dvStore.put(dataverse.getId(), dataverse);
+            if (dataverse.getAlias() != null) {
+                dvByAliasStore.put(dataverse.getAlias(), dataverse);
             }
             return dataverse;
         }
-        
+
     };
-    
-    DataverseRoleServiceBean roles = new DataverseRoleServiceBean(){
-        
+
+    DataverseRoleServiceBean roles = new DataverseRoleServiceBean() {
+
         List<RoleAssignment> assignments = new LinkedList<>();
-        
+
         Map<String, DataverseRole> builtInRoles;
-        
+
         {
             builtInRoles = new HashMap<>();
-            builtInRoles.put( DataverseRole.EDITOR, makeRole("default-editor"));
-            builtInRoles.put( DataverseRole.ADMIN, makeRole("default-admin"));
-            builtInRoles.put( DataverseRole.MANAGER, makeRole("default-manager"));
+            builtInRoles.put(DataverseRole.EDITOR, makeRole("default-editor"));
+            builtInRoles.put(DataverseRole.ADMIN, makeRole("default-admin"));
+            builtInRoles.put(DataverseRole.MANAGER, makeRole("default-manager"));
         }
-        
+
         @Override
         public DataverseRole findBuiltinRoleByAlias(String alias) {
             return builtInRoles.get(alias);
@@ -95,7 +103,7 @@ public class CreateDataverseCommandTest {
 
         @Override
         public RoleAssignment save(RoleAssignment assignment) {
-            assignment.setId( nextId() );
+            assignment.setId(nextId());
             assignments.add(assignment);
             return assignment;
         }
@@ -106,23 +114,22 @@ public class CreateDataverseCommandTest {
             // of this unit test.
             return assignments;
         }
-        
-        
-        
+
+
     };
-    
-    IndexServiceBean index = new IndexServiceBean(){
+
+    IndexServiceBean index = new IndexServiceBean() {
         @Override
         public Future<String> indexDataverse(Dataverse dataverse) {
             indexCalled = true;
             return null;
         }
     };
-    
-    DataverseFieldTypeInputLevelServiceBean dfils = new DataverseFieldTypeInputLevelServiceBean(){
+
+    DataverseFieldTypeInputLevelServiceBean dfils = new DataverseFieldTypeInputLevelServiceBean() {
         @Override
         public void create(DataverseFieldTypeInputLevel dataverseFieldTypeInputLevel) {
-            createdDftils.add( dataverseFieldTypeInputLevel );
+            createdDftils.add(dataverseFieldTypeInputLevel);
         }
 
         @Override
@@ -130,7 +137,7 @@ public class CreateDataverseCommandTest {
             dftilsDeleted = true;
         }
     };
-    
+
     DataverseFacetServiceBean facets = new DataverseFacetServiceBean() {
         @Override
         public DataverseFacet create(int displayOrder, DatasetFieldType fieldType, Dataverse ownerDv) {
@@ -141,18 +148,18 @@ public class CreateDataverseCommandTest {
             createdFacets.add(df);
             return df;
         }
-        
+
 
         @Override
         public void deleteFacetsFor(Dataverse d) {
             facetsDeleted = true;
         }
-        
+
     };
-    
+
     TestDataverseEngine engine;
-    
-    
+
+
     @Before
     public void setUp() {
         indexCalled = false;
@@ -162,8 +169,8 @@ public class CreateDataverseCommandTest {
         facetsDeleted = false;
         createdDftils = new ArrayList<>();
         createdFacets = new ArrayList<>();
-        
-        engine = new TestDataverseEngine( new TestCommandContext(){
+
+        engine = new TestDataverseEngine(new TestCommandContext() {
             @Override
             public IndexServiceBean index() {
                 return index;
@@ -188,10 +195,10 @@ public class CreateDataverseCommandTest {
             public DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels() {
                 return dfils;
             }
-            
-        } );
+
+        });
     }
-    
+
 
     @Test
     public void testDefaultOptions() throws CommandException {
@@ -200,118 +207,118 @@ public class CreateDataverseCommandTest {
         dv.setId(null);
         dv.setCreator(null);
         dv.setDefaultContributorRole(null);
-        dv.setOwner( makeDataverse() );
+        dv.setOwner(makeDataverse());
         final DataverseRequest request = makeRequest(makeAuthenticatedUser("jk", "rollin'"));
-        
+
         CreateDataverseCommand sut = new CreateDataverseCommand(dv, request, null, null);
         Dataverse result = engine.submit(sut);
-        
-        assertNotNull( result.getCreateDate() );
-        assertNotNull( result.getId() );
-        
-        assertEquals( result.getCreator(), request.getUser() );
-        assertEquals( Dataverse.DataverseType.UNCATEGORIZED, result.getDataverseType() );
-        assertEquals( roles.findBuiltinRoleByAlias(DataverseRole.EDITOR), result.getDefaultContributorRole() );
-        
+
+        assertNotNull(result.getCreateDate());
+        assertNotNull(result.getId());
+
+        assertEquals(result.getCreator(), request.getUser());
+        assertEquals(Dataverse.DataverseType.UNCATEGORIZED, result.getDataverseType());
+        assertEquals(roles.findBuiltinRoleByAlias(DataverseRole.EDITOR), result.getDefaultContributorRole());
+
         // Assert that the creator is admin.
         final RoleAssignment roleAssignment = roles.directRoleAssignments(dv).get(0);
-        assertEquals( roles.findBuiltinRoleByAlias(DataverseRole.ADMIN), roleAssignment.getRole() );
-        assertEquals( dv, roleAssignment.getDefinitionPoint() );
-        assertEquals( roleAssignment.getAssigneeIdentifier(), request.getUser().getIdentifier() );
-        
+        assertEquals(roles.findBuiltinRoleByAlias(DataverseRole.ADMIN), roleAssignment.getRole());
+        assertEquals(dv, roleAssignment.getDefinitionPoint());
+        assertEquals(roleAssignment.getAssigneeIdentifier(), request.getUser().getIdentifier());
+
         // The following is a pretty wierd way to test that the create date defaults to 
         // now, but it works across date changes.
-        assertTrue( "When the supplied creation date is null, date shuld default to command execution time",
-                        Math.abs(System.currentTimeMillis() - result.getCreateDate().toInstant().toEpochMilli()) < 1000 );
-        
-        assertTrue( result.isPermissionRoot() );
-        assertTrue( result.isThemeRoot() );
-        assertTrue( indexCalled );
+        assertTrue("When the supplied creation date is null, date shuld default to command execution time",
+                   Math.abs(System.currentTimeMillis() - result.getCreateDate().toInstant().toEpochMilli()) < 1000);
+
+        assertTrue(result.isPermissionRoot());
+        assertTrue(result.isThemeRoot());
+        assertTrue(indexCalled);
     }
 
     @Test
     public void testCustomOptions() throws CommandException {
         Dataverse dv = makeDataverse();
-        
-        Timestamp creation = timestamp(1990,12,12);
+
+        Timestamp creation = timestamp(1990, 12, 12);
         AuthenticatedUser creator = makeAuthenticatedUser("Joe", "Walsh");
-        
+
         dv.setCreateDate(creation);
-        
+
         dv.setId(null);
         dv.setCreator(creator);
         dv.setDefaultContributorRole(null);
-        dv.setOwner( makeDataverse() );
+        dv.setOwner(makeDataverse());
         dv.setDataverseType(Dataverse.DataverseType.JOURNALS);
-        dv.setDefaultContributorRole( roles.findBuiltinRoleByAlias(DataverseRole.MANAGER) );
-        
+        dv.setDefaultContributorRole(roles.findBuiltinRoleByAlias(DataverseRole.MANAGER));
+
         final DataverseRequest request = makeRequest();
-        List<DatasetFieldType> expectedFacets = Arrays.asList( makeDatasetFieldType(), makeDatasetFieldType(), makeDatasetFieldType());
-        List<DataverseFieldTypeInputLevel> dftils = Arrays.asList( makeDataverseFieldTypeInputLevel(makeDatasetFieldType()),
-                                                                    makeDataverseFieldTypeInputLevel(makeDatasetFieldType()),
-                                                                    makeDataverseFieldTypeInputLevel(makeDatasetFieldType()));
-        
-        CreateDataverseCommand sut = new CreateDataverseCommand(dv, request, new LinkedList(expectedFacets), new LinkedList(dftils) );
+        List<DatasetFieldType> expectedFacets = Arrays.asList(makeDatasetFieldType(), makeDatasetFieldType(), makeDatasetFieldType());
+        List<DataverseFieldTypeInputLevel> dftils = Arrays.asList(makeDataverseFieldTypeInputLevel(makeDatasetFieldType()),
+                                                                  makeDataverseFieldTypeInputLevel(makeDatasetFieldType()),
+                                                                  makeDataverseFieldTypeInputLevel(makeDatasetFieldType()));
+
+        CreateDataverseCommand sut = new CreateDataverseCommand(dv, request, new LinkedList(expectedFacets), new LinkedList(dftils));
         Dataverse result = engine.submit(sut);
-        
-        assertEquals( creation, result.getCreateDate() );
-        assertNotNull( result.getId() );
-        
-        assertEquals( creator, result.getCreator() );
-        assertEquals( Dataverse.DataverseType.JOURNALS, result.getDataverseType() );
-        assertEquals( roles.findBuiltinRoleByAlias(DataverseRole.MANAGER), result.getDefaultContributorRole() );
-        
+
+        assertEquals(creation, result.getCreateDate());
+        assertNotNull(result.getId());
+
+        assertEquals(creator, result.getCreator());
+        assertEquals(Dataverse.DataverseType.JOURNALS, result.getDataverseType());
+        assertEquals(roles.findBuiltinRoleByAlias(DataverseRole.MANAGER), result.getDefaultContributorRole());
+
         // Assert that the creator is admin.
         final RoleAssignment roleAssignment = roles.directRoleAssignments(dv).get(0);
-        assertEquals( roles.findBuiltinRoleByAlias(DataverseRole.ADMIN), roleAssignment.getRole() );
-        assertEquals( dv, roleAssignment.getDefinitionPoint() );
-        assertEquals( roleAssignment.getAssigneeIdentifier(), request.getUser().getIdentifier() );
-        
-        assertTrue( result.isPermissionRoot() );
-        assertTrue( result.isThemeRoot() );
-        assertTrue( indexCalled );
-        
-        assertTrue( facetsDeleted );
-        int i=0;
-        for ( DataverseFacet df : createdFacets ) {
-            assertEquals( i, df.getDisplayOrder() );
-            assertEquals( result, df.getDataverse() );
-            assertEquals( expectedFacets.get(i), df.getDatasetFieldType() );
-            
+        assertEquals(roles.findBuiltinRoleByAlias(DataverseRole.ADMIN), roleAssignment.getRole());
+        assertEquals(dv, roleAssignment.getDefinitionPoint());
+        assertEquals(roleAssignment.getAssigneeIdentifier(), request.getUser().getIdentifier());
+
+        assertTrue(result.isPermissionRoot());
+        assertTrue(result.isThemeRoot());
+        assertTrue(indexCalled);
+
+        assertTrue(facetsDeleted);
+        int i = 0;
+        for (DataverseFacet df : createdFacets) {
+            assertEquals(i, df.getDisplayOrder());
+            assertEquals(result, df.getDataverse());
+            assertEquals(expectedFacets.get(i), df.getDatasetFieldType());
+
             i++;
         }
-        
-        assertTrue( dftilsDeleted );
-        for ( DataverseFieldTypeInputLevel dftil : createdDftils ) {
-            assertEquals( result, dftil.getDataverse() );
+
+        assertTrue(dftilsDeleted);
+        for (DataverseFieldTypeInputLevel dftil : createdDftils) {
+            assertEquals(result, dftil.getDataverse());
         }
     }
-    
-    @Test( expected=IllegalCommandException.class )
+
+    @Test(expected = IllegalCommandException.class)
     public void testCantCreateAdditionalRoot() throws Exception {
-        engine.submit( new CreateDataverseCommand(makeDataverse(), makeRequest(), null, null) );
-    }
-    
-    @Test( expected=IllegalCommandException.class )
-    public void testGuestCantCreateDataverse() throws Exception {
-        final DataverseRequest request = new DataverseRequest( GuestUser.get(), IpAddress.valueOf("::") );
-        isRootDvExists = false;
-        engine.submit(new CreateDataverseCommand(makeDataverse(), request, null, null) );
+        engine.submit(new CreateDataverseCommand(makeDataverse(), makeRequest(), null, null));
     }
 
-    @Test( expected=IllegalCommandException.class )
+    @Test(expected = IllegalCommandException.class)
+    public void testGuestCantCreateDataverse() throws Exception {
+        final DataverseRequest request = new DataverseRequest(GuestUser.get(), IpAddress.valueOf("::"));
+        isRootDvExists = false;
+        engine.submit(new CreateDataverseCommand(makeDataverse(), request, null, null));
+    }
+
+    @Test(expected = IllegalCommandException.class)
     public void testCantCreateAnotherWithSameAlias() throws Exception {
-        
+
         String alias = "alias";
         final Dataverse dvFirst = makeDataverse();
         dvFirst.setAlias(alias);
-        dvFirst.setOwner( makeDataverse() );
-        engine.submit(new CreateDataverseCommand(dvFirst, makeRequest(), null, null) );
-        
+        dvFirst.setOwner(makeDataverse());
+        engine.submit(new CreateDataverseCommand(dvFirst, makeRequest(), null, null));
+
         final Dataverse dv = makeDataverse();
-        dv.setOwner( makeDataverse() );
+        dv.setOwner(makeDataverse());
         dv.setAlias(alias);
-        engine.submit(new CreateDataverseCommand(dv, makeRequest(), null, null) );
+        engine.submit(new CreateDataverseCommand(dv, makeRequest(), null, null));
     }
-    
+
 }

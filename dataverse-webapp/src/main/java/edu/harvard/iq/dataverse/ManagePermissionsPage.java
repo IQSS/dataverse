@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -361,7 +360,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                     JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.defaultPermissionDataverseUpdated"));
                 } catch (PermissionException ex) {
                     JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.CannotAssigntDefaultPermissions"),
-                            BundleUtil.getStringFromBundle("permission.permissionsMissing", Arrays.asList(ex.getRequiredPermissions().toString())));
+                                  BundleUtil.getStringFromBundle("permission.permissionsMissing", Arrays.asList(ex.getRequiredPermissions().toString())));
 
                 } catch (CommandException ex) {
                     JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("permission.CannotAssigntDefaultPermissions"));
@@ -480,8 +479,12 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
     public String getDefinitionLevelString() {
         if (dvObject != null) {
-            if (dvObject instanceof Dataverse) return BundleUtil.getStringFromBundle("dataverse");
-            if (dvObject instanceof Dataset) return BundleUtil.getStringFromBundle("dataset");
+            if (dvObject instanceof Dataverse) {
+                return BundleUtil.getStringFromBundle("dataverse");
+            }
+            if (dvObject instanceof Dataset) {
+                return BundleUtil.getStringFromBundle("dataset");
+            }
         }
         return null;
     }

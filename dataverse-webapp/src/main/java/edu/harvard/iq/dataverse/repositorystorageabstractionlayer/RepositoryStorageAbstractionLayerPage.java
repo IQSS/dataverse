@@ -1,15 +1,16 @@
 package edu.harvard.iq.dataverse.repositorystorageabstractionlayer;
 
-import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.locality.StorageSite;
+import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import java.util.List;
-import java.util.logging.Logger;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.json.JsonArray;
+import java.util.List;
+import java.util.logging.Logger;
 
 @Stateless
 @Named

@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
+
 import java.util.List;
 
 @RequiredPermissions(Permission.PublishDataset)
@@ -28,15 +29,15 @@ public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset
     public Dataset execute(CommandContext ctxt) throws CommandException {
 
         final Dataset dataset = getDataset();
-        
+
         if (!dataset.getLatestVersion().isInReview()) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.reject.datasetNotInReview"), this);
         }
-        
+
         dataset.getEditVersion().setLastUpdateTime(getTimestamp());
         dataset.setModificationTime(getTimestamp());
-        
-        ctxt.engine().submit( new RemoveLockCommand(getRequest(), getDataset(), DatasetLock.Reason.InReview) );
+
+        ctxt.engine().submit(new RemoveLockCommand(getRequest(), getDataset(), DatasetLock.Reason.InReview));
         WorkflowComment workflowComment = new WorkflowComment(dataset.getEditVersion(), WorkflowComment.Type.RETURN_TO_AUTHOR, comment, (AuthenticatedUser) this.getUser());
         ctxt.datasets().addWorkflowComment(workflowComment);
 
@@ -52,17 +53,17 @@ public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset
             Finally send a notification to the remaining (non-reviewing) authors - Hey! your dataset was rejected.
         */
         List<AuthenticatedUser> reviewers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, savedDataset);
-        List<AuthenticatedUser> authors   = ctxt.permissions().getUsersWithPermissionOn(Permission.EditDataset, savedDataset);
+        List<AuthenticatedUser> authors = ctxt.permissions().getUsersWithPermissionOn(Permission.EditDataset, savedDataset);
         authors.removeAll(reviewers);
         for (AuthenticatedUser au : authors) {
             ctxt.notifications().sendNotification(au, getTimestamp(), UserNotification.Type.RETURNEDDS, savedDataset.getLatestVersion().getId(), comment);
         }
-        
-        
+
+
         ctxt.index().indexDataset(savedDataset, true);
-        
+
         return savedDataset;
-        
+
     }
 
 

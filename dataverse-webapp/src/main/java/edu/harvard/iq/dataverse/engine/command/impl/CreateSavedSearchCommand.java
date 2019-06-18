@@ -10,9 +10,10 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
+
+import javax.json.JsonObjectBuilder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.JsonObjectBuilder;
 
 @RequiredPermissions(Permission.PublishDataverse)
 public class CreateSavedSearchCommand extends AbstractCommand<SavedSearch> {

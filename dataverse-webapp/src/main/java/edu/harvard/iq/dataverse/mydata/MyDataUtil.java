@@ -6,32 +6,31 @@
 package edu.harvard.iq.dataverse.mydata;
 
 /**
- *
  * @author rmp553
  */
 public class MyDataUtil {
-    
-    
-    public static String formatUserIdentifierAsAssigneeIdentifier(String userIdentifier){
-        if (userIdentifier == null){
+
+
+    public static String formatUserIdentifierAsAssigneeIdentifier(String userIdentifier) {
+        if (userIdentifier == null) {
             return null;
         }
-        if (userIdentifier.startsWith("@")){
+        if (userIdentifier.startsWith("@")) {
             return userIdentifier;
         }
         return "@" + userIdentifier;
     }
-    
-    public static String formatUserIdentifierForMyDataForm(String userIdentifier){
-        if (userIdentifier == null){
+
+    public static String formatUserIdentifierForMyDataForm(String userIdentifier) {
+        if (userIdentifier == null) {
             return null;
         }
-        if (userIdentifier.startsWith("@")){
-            if (userIdentifier.length() == 1){
+        if (userIdentifier.startsWith("@")) {
+            if (userIdentifier.length() == 1) {
                 return null;
             }
             return userIdentifier.substring(1);
-        }else{
+        } else {
             return userIdentifier;
         }
     }

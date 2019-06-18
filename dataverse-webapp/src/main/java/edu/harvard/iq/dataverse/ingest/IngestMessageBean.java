@@ -20,14 +20,12 @@
 
 package edu.harvard.iq.dataverse.ingest;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DataFile; 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 
-import java.util.Iterator;
-import java.util.logging.Logger;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
@@ -37,38 +35,42 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
+import java.util.Iterator;
+import java.util.logging.Logger;
 
 /**
- *
- * This is an experimental, JMS-based implementation of asynchronous 
+ * This is an experimental, JMS-based implementation of asynchronous
  * ingest. (experimental is the key! it may go away!)
- * 
- * @author Leonid Andreev 
+ *
+ * @author Leonid Andreev
  */
-@MessageDriven(mappedName = "jms/DataverseIngest", activationConfig =  {@ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"), @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue")})
+@MessageDriven(mappedName = "jms/DataverseIngest", activationConfig = {@ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"), @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue")})
 public class IngestMessageBean implements MessageListener {
     private static final Logger logger = Logger.getLogger(IngestMessageBean.class.getCanonicalName());
-    @EJB DatasetServiceBean datasetService;
-    @EJB DataFileServiceBean datafileService;
-    @EJB IngestServiceBean ingestService; 
+    @EJB
+    DatasetServiceBean datasetService;
+    @EJB
+    DataFileServiceBean datafileService;
+    @EJB
+    IngestServiceBean ingestService;
 
-   
+
     public IngestMessageBean() {
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void onMessage(Message message) {
         IngestMessage ingestMessage = null;
 
-        Long datafile_id = null; 
-        
+        Long datafile_id = null;
+
         try {
             ObjectMessage om = (ObjectMessage) message;
             ingestMessage = (IngestMessage) om.getObject();
 
             Iterator iter = ingestMessage.getFileIds().iterator();
-            datafile_id = null; 
-            
+            datafile_id = null;
+
             while (iter.hasNext()) {
                 datafile_id = (Long) iter.next();
 
@@ -117,7 +119,7 @@ public class IngestMessageBean implements MessageListener {
                     }
                 }
             }
-            
+
             // Remove the dataset lock: 
             // (note that the assumption here is that all of the datafiles
             // packed into this IngestMessage belong to the same dataset) 
@@ -128,8 +130,8 @@ public class IngestMessageBean implements MessageListener {
                     if (dataset != null && dataset.getId() != null) {
                         datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.Ingest);
                     }
-                } 
-            } 
+                }
+            }
 
         } catch (JMSException ex) {
             ex.printStackTrace(); // error in getting object from message; can't send e-mail
@@ -143,6 +145,6 @@ public class IngestMessageBean implements MessageListener {
             }
         }
     }
- 
-    
+
+
 }

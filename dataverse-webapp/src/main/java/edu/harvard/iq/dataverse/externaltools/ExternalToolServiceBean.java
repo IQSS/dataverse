@@ -43,27 +43,27 @@ public class ExternalToolServiceBean {
 
 
     /**
-     * @param type 
+     * @param type
      * @return A list of tools or an empty list.
      */
     public List<ExternalTool> findByType(Type type) {
         return findByType(type, null);
     }
-    
+
     /**
-     * @param type 
-     * @param contentType  - mimetype
+     * @param type
+     * @param contentType - mimetype
      * @return A list of tools or an empty list.
      */
     public List<ExternalTool> findByType(Type type, String contentType) {
 
         List<ExternalTool> externalTools = new ArrayList<>();
-        
+
         //If contentType==null, get all tools of the given ExternalTool.Type 
-        TypedQuery<ExternalTool> typedQuery = contentType != null ? em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type AND o.contentType = :contentType", ExternalTool.class):
-            em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type", ExternalTool.class);
+        TypedQuery<ExternalTool> typedQuery = contentType != null ? em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type AND o.contentType = :contentType", ExternalTool.class) :
+                em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type", ExternalTool.class);
         typedQuery.setParameter("type", type);
-        if(contentType!=null) {
+        if (contentType != null) {
             typedQuery.setParameter("contentType", contentType);
         }
         List<ExternalTool> toolsFromQuery = typedQuery.getResultList();
@@ -72,7 +72,6 @@ public class ExternalToolServiceBean {
         }
         return externalTools;
     }
-
 
 
     public ExternalTool findById(long id) {
@@ -116,7 +115,7 @@ public class ExternalToolServiceBean {
                 externalTools.add(externalTool);
             }
         });
-        
+
         return externalTools;
     }
 
@@ -132,10 +131,10 @@ public class ExternalToolServiceBean {
         String typeUserInput = getRequiredTopLevelField(jsonObject, TYPE);
         String contentType = getOptionalTopLevelField(jsonObject, CONTENT_TYPE);
         //Legacy support - assume tool manifests without any mimetype are for tabular data
-        if(contentType==null) {
-            contentType=DataFileServiceBean.MIME_TYPE_TSV_ALT;
+        if (contentType == null) {
+            contentType = DataFileServiceBean.MIME_TYPE_TSV_ALT;
         }
-        
+
         // Allow IllegalArgumentException to bubble up from ExternalTool.Type.fromString
         ExternalTool.Type type = ExternalTool.Type.fromString(typeUserInput);
         String toolUrl = getRequiredTopLevelField(jsonObject, TOOL_URL);
@@ -167,7 +166,7 @@ public class ExternalToolServiceBean {
             throw new IllegalArgumentException(key + " is required.");
         }
     }
-    
+
     private static String getOptionalTopLevelField(JsonObject jsonObject, String key) {
         try {
             return jsonObject.getString(key);
@@ -175,8 +174,6 @@ public class ExternalToolServiceBean {
             return null;
         }
     }
-
-
 
 
 }

@@ -5,7 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.io.Serializable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,16 +15,16 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 /**
- *
  * @author Leonid Andreev
  */
 @Entity
-@Table(indexes = {@Index(columnList="dataverse_id")
-		, @Index(columnList="harvesttype")
-		, @Index(columnList="harveststyle")
-		, @Index(columnList="harvestingurl")})
+@Table(indexes = {@Index(columnList = "dataverse_id")
+        , @Index(columnList = "harvesttype")
+        , @Index(columnList = "harveststyle")
+        , @Index(columnList = "harvestingurl")})
 public class HarvestingDataverseConfig implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -39,32 +38,32 @@ public class HarvestingDataverseConfig implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
-    public static final String HARVEST_TYPE_OAI="oai";
-    public static final String HARVEST_TYPE_NESSTAR="nesstar";
-    
-    public static final String HARVEST_STYLE_DATAVERSE="dataverse";
-    // pre-4.0 remote Dataverse:
-    public static final String HARVEST_STYLE_VDC="vdc";
-    public static final String HARVEST_STYLE_ICPSR="icpsr";
-    public static final String HARVEST_STYLE_NESSTAR="nesstar";
-    public static final String HARVEST_STYLE_ROPER="roper";
-    public static final String HARVEST_STYLE_HGL="hgl";
-    public static final String HARVEST_STYLE_DEFAULT="default";
 
-    public static final String REMOTE_ARCHIVE_URL_LEVEL_DATAVERSE="dataverse";
-    public static final String REMOTE_ARCHIVE_URL_LEVEL_DATASET="dataset";
-    public static final String REMOTE_ARCHIVE_URL_LEVEL_FILE="file";
-    
+    public static final String HARVEST_TYPE_OAI = "oai";
+    public static final String HARVEST_TYPE_NESSTAR = "nesstar";
+
+    public static final String HARVEST_STYLE_DATAVERSE = "dataverse";
+    // pre-4.0 remote Dataverse:
+    public static final String HARVEST_STYLE_VDC = "vdc";
+    public static final String HARVEST_STYLE_ICPSR = "icpsr";
+    public static final String HARVEST_STYLE_NESSTAR = "nesstar";
+    public static final String HARVEST_STYLE_ROPER = "roper";
+    public static final String HARVEST_STYLE_HGL = "hgl";
+    public static final String HARVEST_STYLE_DEFAULT = "default";
+
+    public static final String REMOTE_ARCHIVE_URL_LEVEL_DATAVERSE = "dataverse";
+    public static final String REMOTE_ARCHIVE_URL_LEVEL_DATASET = "dataset";
+    public static final String REMOTE_ARCHIVE_URL_LEVEL_FILE = "file";
+
     public HarvestingDataverseConfig() {
         this.harvestType = HARVEST_TYPE_OAI; // default harvestType
         this.harvestStyle = HARVEST_STYLE_DATAVERSE; // default harvestStyle
     }
 
-    
-    @OneToOne (cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST })
-    @JoinColumn(name="dataverse_id")
-    private  Dataverse dataverse;
+
+    @OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinColumn(name = "dataverse_id")
+    private Dataverse dataverse;
 
     public Dataverse getDataverse() {
         return this.dataverse;
@@ -93,7 +92,7 @@ public class HarvestingDataverseConfig implements Serializable {
     public void setHarvestStyle(String harvestStyle) {
         this.harvestStyle = harvestStyle;
     }
-    
+
     private String harvestingUrl;
 
     public String getHarvestingUrl() {
@@ -103,28 +102,28 @@ public class HarvestingDataverseConfig implements Serializable {
     public void setHarvestingUrl(String harvestingUrl) {
         this.harvestingUrl = harvestingUrl.trim();
     }
-    
-    private String archiveUrl; 
-    
+
+    private String archiveUrl;
+
     public String getArchiveUrl() {
         return this.archiveUrl;
     }
-    
+
     public void setArchiveUrl(String archiveUrl) {
-        this.archiveUrl = archiveUrl; 
+        this.archiveUrl = archiveUrl;
     }
 
-    @Column(columnDefinition="TEXT")
-    private String archiveDescription; 
-    
+    @Column(columnDefinition = "TEXT")
+    private String archiveDescription;
+
     public String getArchiveDescription() {
         return this.archiveDescription;
     }
-    
+
     public void setArchiveDescription(String archiveDescription) {
-        this.archiveDescription = archiveDescription; 
+        this.archiveDescription = archiveDescription;
     }
-    
+
     private String harvestingSet;
 
     public String getHarvestingSet() {
@@ -135,10 +134,7 @@ public class HarvestingDataverseConfig implements Serializable {
         this.harvestingSet = harvestingSet;
     }
 
-    
-    
 
-    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -153,15 +149,12 @@ public class HarvestingDataverseConfig implements Serializable {
             return false;
         }
         HarvestingDataverseConfig other = (HarvestingDataverseConfig) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
 
     @Override
     public String toString() {
         return "edu.harvard.iq.dataverse.HarvestingDataverse[ id=" + id + " ]";
     }
-    
+
 }

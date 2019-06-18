@@ -5,10 +5,10 @@
  */
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
-import com.lyncode.xoai.model.xoai.Element;
-import com.lyncode.xoai.dataprovider.repository.SetRepository;
 import com.lyncode.xoai.dataprovider.handlers.results.ListSetsResult;
 import com.lyncode.xoai.dataprovider.model.Set;
+import com.lyncode.xoai.dataprovider.repository.SetRepository;
+import com.lyncode.xoai.model.xoai.Element;
 import com.lyncode.xoai.model.xoai.XOAIMetadata;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
@@ -18,23 +18,22 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- *
  * @author Leonid Andreev
  */
 public class XsetRepository implements SetRepository {
     private static Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.xoai.XsetRepository");
-    
+
     private OAISetServiceBean setService;
 
-    public XsetRepository (OAISetServiceBean setService) {
+    public XsetRepository(OAISetServiceBean setService) {
         super();
         this.setService = setService;
     }
-    
+
     public OAISetServiceBean getSetService() {
         return setService;
     }
-    
+
     public void setSetService(OAISetServiceBean setService) {
         this.setService = setService;
     }
@@ -44,11 +43,8 @@ public class XsetRepository implements SetRepository {
     public boolean supportSets() {
         logger.fine("calling supportSets()");
         List<OAISet> dataverseOAISets = setService.findAllNamedSets();
-        
-        if (dataverseOAISets == null || dataverseOAISets.isEmpty()) {
-            return false;
-        }
-        return true;
+
+        return dataverseOAISets != null && !dataverseOAISets.isEmpty();
     }
 
     @Override
@@ -56,7 +52,7 @@ public class XsetRepository implements SetRepository {
         logger.fine("calling retrieveSets()");
         List<OAISet> dataverseOAISets = setService.findAllNamedSets();
         List<Set> XOAISets = new ArrayList<Set>();
-        
+
         if (dataverseOAISets != null) {
             for (int i = 0; i < dataverseOAISets.size(); i++) {
                 OAISet dataverseSet = dataverseOAISets.get(i);
@@ -70,7 +66,7 @@ public class XsetRepository implements SetRepository {
                 XOAISets.add(xoaiSet);
             }
         }
-        
+
         return new ListSetsResult(offset + length < XOAISets.size(), XOAISets.subList(offset, Math.min(offset + length, XOAISets.size())));
     }
 
@@ -82,5 +78,5 @@ public class XsetRepository implements SetRepository {
 
         return false;
     }
-    
+
 }

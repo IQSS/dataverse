@@ -19,23 +19,26 @@
  */
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv;
 
-import java.io.FileReader;
-import java.io.InputStreamReader;
-
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
-
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
-import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
+import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang.StringUtils;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.ParseException;
@@ -49,19 +52,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.CSVRecord;
 
 /**
  * Dataverse 4.0 implementation of <code>TabularDataFileReader</code> for the
  * plain CSV file with a variable name header.
  *
- *
  * @author Oscar Smith
- *
+ * <p>
  * This implementation uses the Apache CSV Parser
  */
 public class CSVFileReader extends TabularDataFileReader {
@@ -75,31 +72,31 @@ public class CSVFileReader extends TabularDataFileReader {
 
     // DATE FORMATS
     private static SimpleDateFormat[] DATE_FORMATS = new SimpleDateFormat[]{
-        new SimpleDateFormat("yyyy-MM-dd"), //new SimpleDateFormat("yyyy/MM/dd"),
-    //new SimpleDateFormat("MM/dd/yyyy"),
-    //new SimpleDateFormat("MM-dd-yyyy"),
+            new SimpleDateFormat("yyyy-MM-dd"), //new SimpleDateFormat("yyyy/MM/dd"),
+            //new SimpleDateFormat("MM/dd/yyyy"),
+            //new SimpleDateFormat("MM-dd-yyyy"),
     };
 
     // TIME FORMATS
     private static SimpleDateFormat[] TIME_FORMATS = new SimpleDateFormat[]{
-        // Date-time up to seconds with timezone, e.g. 2013-04-08 13:14:23 -0500
-        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z"),
-        // Date-time up to seconds and no timezone, e.g. 2013-04-08 13:14:23
-        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+            // Date-time up to seconds with timezone, e.g. 2013-04-08 13:14:23 -0500
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z"),
+            // Date-time up to seconds and no timezone, e.g. 2013-04-08 13:14:23
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     };
 
     public CSVFileReader(TabularDataFileReaderSpi originator, char delim) {
         super(originator);
-        if (delim == ','){
+        if (delim == ',') {
             inFormat = CSVFormat.EXCEL;
-        } else if (delim == '\t'){
+        } else if (delim == '\t') {
             inFormat = CSVFormat.TDF;
         }
     }
 
     private void init() throws IOException {
         doubleMathContext = new MathContext(DIGITS_OF_PRECISION_DOUBLE, RoundingMode.HALF_EVEN);
-        firstNumCharSet.addAll(Arrays.asList(new Character[]{'+', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}));
+        firstNumCharSet.addAll(Arrays.asList('+', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'));
     }
 
     /**
@@ -195,20 +192,20 @@ public class CSVFileReader extends TabularDataFileReader {
             for (CSVRecord record : parser.getRecords()) {
                 // Checks if #records = #columns in header
                 if (!record.isConsistent()) {
-                    List<String> args = Arrays.asList(new String[]{"" + (parser.getCurrentLineNumber() - 1),
-                                                                   "" + headers.size(),
-                                                                   "" + record.size()});
+                    List<String> args = Arrays.asList("" + (parser.getCurrentLineNumber() - 1),
+                                                      "" + headers.size(),
+                                                      "" + record.size());
                     throw new IOException(BundleUtil.getStringFromBundle("ingest.csv.recordMismatch", args));
                 }
 
                 for (i = 0; i < headers.size(); i++) {
                     String varString = record.get(i);
                     isIntegerVariable[i] = isIntegerVariable[i]
-                                           && varString != null
-                                           && (varString.isEmpty()
-                                               || varString.equals("null")
-                                               || (firstNumCharSet.contains(varString.charAt(0))
-                                                   && StringUtils.isNumeric(varString.substring(1))));
+                            && varString != null
+                            && (varString.isEmpty()
+                            || varString.equals("null")
+                            || (firstNumCharSet.contains(varString.charAt(0))
+                            && StringUtils.isNumeric(varString.substring(1))));
                     if (isNumericVariable[i]) {
                         // If variable might be "numeric" test to see if this value is a parsable number:
                         if (varString != null && !varString.isEmpty()) {
@@ -217,11 +214,11 @@ public class CSVFileReader extends TabularDataFileReader {
                             boolean isInteger = false;
 
                             if (varString.equalsIgnoreCase("NaN")
-                                || varString.equalsIgnoreCase("NA")
-                                || varString.equalsIgnoreCase("Inf")
-                                || varString.equalsIgnoreCase("+Inf")
-                                || varString.equalsIgnoreCase("-Inf")
-                                || varString.equalsIgnoreCase("null")) {
+                                    || varString.equalsIgnoreCase("NA")
+                                    || varString.equalsIgnoreCase("Inf")
+                                    || varString.equalsIgnoreCase("+Inf")
+                                    || varString.equalsIgnoreCase("-Inf")
+                                    || varString.equalsIgnoreCase("null")) {
                                 continue;
                             } else {
                                 try {
@@ -344,9 +341,9 @@ public class CSVFileReader extends TabularDataFileReader {
 
             for (CSVRecord record : parser) {
                 if (!record.isConsistent()) {
-                    List<String> args = Arrays.asList(new String[]{"" + (parser.getCurrentLineNumber() - 1),
-                                                                   "" + headers.size(),
-                                                                   "" + record.size()});
+                    List<String> args = Arrays.asList("" + (parser.getCurrentLineNumber() - 1),
+                                                      "" + headers.size(),
+                                                      "" + record.size());
                     throw new IOException(BundleUtil.getStringFromBundle("ingest.csv.recordMismatch", args));
                 }
 
@@ -457,8 +454,8 @@ public class CSVFileReader extends TabularDataFileReader {
         // Firstpass file is deleted to prevent tmp from filling up.
         firstPassTempFile.delete();
         if (dataTable.getCaseQuantity().intValue() != linecount) {
-            List<String> args = Arrays.asList(new String[]{"" + dataTable.getCaseQuantity().intValue(),
-                                                           "" + linecount});
+            List<String> args = Arrays.asList("" + dataTable.getCaseQuantity().intValue(),
+                                              "" + linecount);
             throw new IOException(BundleUtil.getStringFromBundle("ingest.csv.line_mismatch", args));
         }
         return (int) linecount;

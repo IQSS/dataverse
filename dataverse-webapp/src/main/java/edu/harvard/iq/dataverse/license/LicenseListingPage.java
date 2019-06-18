@@ -99,7 +99,7 @@ public class LicenseListingPage implements Serializable {
     public void uploadImageForNewLicenseEvent(FileUploadEvent event) {
         UploadedFile uploadedImage = event.getFile();
         freshLicense.getIcon().setContent(new ByteArrayContent(uploadedImage.getContents(),
-                uploadedImage.getContentType()));
+                                                               uploadedImage.getContentType()));
     }
 
     /**
@@ -110,7 +110,7 @@ public class LicenseListingPage implements Serializable {
     public void editLicenseImageEvent(FileUploadEvent event) {
         UploadedFile uploadedImage = event.getFile();
         licenseForEdit.getIcon().setContent(new ByteArrayContent(uploadedImage.getContents(),
-                uploadedImage.getContentType()));
+                                                                 uploadedImage.getContentType()));
     }
 
     /**
@@ -174,7 +174,7 @@ public class LicenseListingPage implements Serializable {
         LicenseDto licenseDto = new LicenseDto();
 
         settingsWrapper.getConfiguredLocales().keySet().forEach(localeKey ->
-                licenseDto.getLocalizedNames().add(new LocaleTextDto(Locale.forLanguageTag(localeKey), StringUtils.EMPTY)));
+                                                                        licenseDto.getLocalizedNames().add(new LocaleTextDto(Locale.forLanguageTag(localeKey), StringUtils.EMPTY)));
 
         licenseDto.setIcon(new LicenseIconDto());
         return licenseDto;
@@ -192,8 +192,8 @@ public class LicenseListingPage implements Serializable {
     private void displayNoLicensesActiveWarningMessage() {
         FacesContext.getCurrentInstance().
                 addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                        StringUtils.EMPTY,
-                        BundleUtil.getStringFromBundle("dashboard.license.noActiveLicensesWarning")));
+                                                  StringUtils.EMPTY,
+                                                  BundleUtil.getStringFromBundle("dashboard.license.noActiveLicensesWarning")));
     }
 
     // -------------------- SETTERS --------------------

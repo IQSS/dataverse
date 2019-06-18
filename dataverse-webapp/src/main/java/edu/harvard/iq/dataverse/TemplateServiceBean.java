@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- *
  * @author skraffmiller
  */
 @Stateless

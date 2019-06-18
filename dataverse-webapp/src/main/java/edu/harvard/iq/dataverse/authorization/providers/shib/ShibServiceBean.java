@@ -16,7 +16,6 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -57,7 +56,7 @@ public class ShibServiceBean {
         UID_WITH_LEADING_SPACE,
         IDENTIFIER_WITH_LEADING_SPACE,
         MISSING_REQUIRED_ATTR,
-    };
+    }
 
     public DevShibAccountType getDevShibAccountType() {
         DevShibAccountType saneDefault = DevShibAccountType.PRODUCTION;
@@ -81,15 +80,15 @@ public class ShibServiceBean {
      * This method exists so developers don't have to run Shibboleth locally.
      * You can populate the request with Shibboleth attributes by changing a
      * setting like this:
-     *
+     * <p>
      * curl -X PUT -d RANDOM
      * http://localhost:8080/api/admin/settings/:DebugShibAccountType
-     *
+     * <p>
      * When you're done, feel free to delete the setting:
-     *
+     * <p>
      * curl -X DELETE
      * http://localhost:8080/api/admin/settings/:DebugShibAccountType
-     *
+     * <p>
      * Note that setting ShibUseHeaders to true will make this "dev mode" stop
      * working.
      */
@@ -195,7 +194,7 @@ public class ShibServiceBean {
         JsonParser jp = new JsonParser();
         JsonElement root = null;
         try {
-            root = jp.parse(new InputStreamReader((InputStream) discoFeedRequest.getInputStream()));
+            root = jp.parse(new InputStreamReader(discoFeedRequest.getInputStream()));
         } catch (IOException ex) {
             logger.info(ex.toString());
             return null;

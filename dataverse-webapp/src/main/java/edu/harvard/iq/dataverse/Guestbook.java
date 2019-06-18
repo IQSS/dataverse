@@ -1,59 +1,57 @@
-
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
+import edu.harvard.iq.dataverse.util.DateUtil;
+
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import java.util.List;
-import java.util.Objects;
-import javax.persistence.Column;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
-
-import edu.harvard.iq.dataverse.util.DateUtil;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 
 /**
- *
  * @author skraffmiller
  */
 @Entity
 public class Guestbook implements Serializable {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-     /**
+
+    /**
      * Holds value of the Dataverse
      */
     @ManyToOne
-    @JoinColumn(nullable=true)
+    @JoinColumn(nullable = true)
     private Dataverse dataverse;
-    
-    @OneToMany(mappedBy="guestbook",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval=true)
+
+    @OneToMany(mappedBy = "guestbook", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
     @OrderBy("displayOrder")
     private List<CustomQuestion> customQuestions;
-    
+
     private String name;
-    
+
     private boolean enabled;
     private boolean nameRequired;
     private boolean emailRequired;
-    private boolean institutionRequired;   
-    private boolean positionRequired; 
+    private boolean institutionRequired;
+    private boolean positionRequired;
     @Temporal(value = TemporalType.TIMESTAMP)
-    @Column( nullable = false )
+    @Column(nullable = false)
     private Date createTime;
     
     /* WE PROBABLY NEED HELP INFO TEXT...
@@ -69,7 +67,7 @@ public class Guestbook implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public Dataverse getDataverse() {
         return dataverse;
     }
@@ -133,7 +131,7 @@ public class Guestbook implements Serializable {
     public void setPositionRequired(boolean positionRequired) {
         this.positionRequired = positionRequired;
     }
-    
+
     public Date getCreateTime() {
         return createTime;
     }
@@ -145,7 +143,7 @@ public class Guestbook implements Serializable {
     public String getCreateDate() {
         return DateUtil.formatDate(createTime);
     }
-        
+
     public Guestbook copyGuestbook(Guestbook source, Dataverse dataverse) {
         Guestbook newGuestbook = new Guestbook();
         newGuestbook.setDataverse(dataverse);
@@ -155,7 +153,7 @@ public class Guestbook implements Serializable {
         newGuestbook.setInstitutionRequired(source.isInstitutionRequired());
         newGuestbook.setCustomQuestions(new ArrayList<>());
         if (!source.getCustomQuestions().isEmpty()) {
-            for (CustomQuestion sq: source.getCustomQuestions()){
+            for (CustomQuestion sq : source.getCustomQuestions()) {
                 CustomQuestion target = new CustomQuestion();
                 target.setQuestionType(sq.getQuestionType());
                 target.setGuestbook(newGuestbook);
@@ -163,9 +161,9 @@ public class Guestbook implements Serializable {
                 target.setRequired(sq.isRequired());
                 target.setDisplayOrder(sq.getDisplayOrder());
                 target.setQuestionString(sq.getQuestionString());
-                if(!sq.getCustomQuestionValues().isEmpty()){
+                if (!sq.getCustomQuestionValues().isEmpty()) {
                     target.setCustomQuestionValues(new ArrayList<>());
-                    for (CustomQuestionValue scqv: sq.getCustomQuestionValues()){
+                    for (CustomQuestionValue scqv : sq.getCustomQuestionValues()) {
                         CustomQuestionValue newVal = new CustomQuestionValue();
                         newVal.setValueString(scqv.getValueString());
                         newVal.setCustomQuestion(target);
@@ -173,11 +171,11 @@ public class Guestbook implements Serializable {
                     }
                 }
                 newGuestbook.getCustomQuestions().add(target);
-            }          
+            }
         }
         return newGuestbook;
     }
-    
+
     @Transient
     private boolean deletable;
 
@@ -187,8 +185,8 @@ public class Guestbook implements Serializable {
 
     public void setDeletable(boolean deletable) {
         this.deletable = deletable;
-    }    
-    
+    }
+
     public List<String> getRequiredAccountInformation() {
         List<String> retList = new ArrayList<>();
         if (nameRequired) {
@@ -205,76 +203,76 @@ public class Guestbook implements Serializable {
         }
         return retList;
     }
-    
-    public List<String> getOptionalAccountInformation(){
-                List <String> retList = new ArrayList<>();
-        if(!nameRequired){
-           retList.add(BundleUtil.getStringFromBundle("name"));
+
+    public List<String> getOptionalAccountInformation() {
+        List<String> retList = new ArrayList<>();
+        if (!nameRequired) {
+            retList.add(BundleUtil.getStringFromBundle("name"));
         }
-        if(!emailRequired){
+        if (!emailRequired) {
             retList.add(BundleUtil.getStringFromBundle("email"));
         }
-        if(!institutionRequired){
+        if (!institutionRequired) {
             retList.add(BundleUtil.getStringFromBundle("institution"));
         }
-        if(!positionRequired){
+        if (!positionRequired) {
             retList.add(BundleUtil.getStringFromBundle("position"));
         }
         return retList;
-        
+
     }
-    
-    public List<String> getRequiredQuestionsList(){
-        List <String> retList = new ArrayList<>();
-                for (CustomQuestion cq : this.getCustomQuestions()){
-                    if(cq.isRequired()){
-                        retList.add(cq.getQuestionString());
-                    }
-                }
+
+    public List<String> getRequiredQuestionsList() {
+        List<String> retList = new ArrayList<>();
+        for (CustomQuestion cq : this.getCustomQuestions()) {
+            if (cq.isRequired()) {
+                retList.add(cq.getQuestionString());
+            }
+        }
         return retList;
     }
-    
-    public List<String> getOptionalQuestionsList(){
-        List <String> retList = new ArrayList<>();
-                for (CustomQuestion cq : this.getCustomQuestions()){
-                    if(!cq.isRequired()){
-                        retList.add(cq.getQuestionString());
-                    }
-                }
+
+    public List<String> getOptionalQuestionsList() {
+        List<String> retList = new ArrayList<>();
+        for (CustomQuestion cq : this.getCustomQuestions()) {
+            if (!cq.isRequired()) {
+                retList.add(cq.getQuestionString());
+            }
+        }
         return retList;
     }
-        
-    public void removeCustomQuestion(int index){
+
+    public void removeCustomQuestion(int index) {
         customQuestions.remove(index);
     }
-    
-    public void addCustomQuestion(int index, CustomQuestion cq){
+
+    public void addCustomQuestion(int index, CustomQuestion cq) {
         customQuestions.add(index, cq);
     }
-    
+
     @Transient
     private Long usageCount;
 
     public Long getUsageCount() {
         return usageCount;
     }
-    
+
     public void setUsageCount(Long usageCount) {
         this.usageCount = usageCount;
     }
-    
+
     @Transient
     private Long usageCountDataverse;
 
     public Long getUsageCountDataverse() {
         return usageCountDataverse;
     }
-    
+
     public void setUsageCountDataverse(Long usageCountDataverse) {
         this.usageCountDataverse = usageCountDataverse;
     }
-    
-    @Transient 
+
+    @Transient
     private Long responseCount;
 
     public Long getResponseCount() {
@@ -284,8 +282,8 @@ public class Guestbook implements Serializable {
     public void setResponseCount(Long responseCount) {
         this.responseCount = responseCount;
     }
-    
-    @Transient 
+
+    @Transient
     private Long responseCountDataverse;
 
     public Long getResponseCountDataverse() {
@@ -295,7 +293,7 @@ public class Guestbook implements Serializable {
     public void setResponseCountDataverse(Long responseCountDataverse) {
         this.responseCountDataverse = responseCountDataverse;
     }
-    
+
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof Guestbook)) {
@@ -304,6 +302,6 @@ public class Guestbook implements Serializable {
         Guestbook other = (Guestbook) object;
         return Objects.equals(getId(), other.getId());
     }
-    
-    
+
+
 }

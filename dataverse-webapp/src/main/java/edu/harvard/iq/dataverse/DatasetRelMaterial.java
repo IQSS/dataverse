@@ -6,43 +6,37 @@
 
 package edu.harvard.iq.dataverse;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Version;
 
 /**
- *
  * @author skraffmiller
  */
 
-public class DatasetRelMaterial  {
-
+public class DatasetRelMaterial {
 
 
     private String text;
+
     public String getText() {
         return this.text;
     }
+
     public void setText(String text) {
         this.text = text;
     }
 
     private int displayOrder;
+
     public int getDisplayOrder() {
         return this.displayOrder;
     }
+
     public void setDisplayOrder(int displayOrder) {
         this.displayOrder = displayOrder;
     }
 
 
-    
-      /**
+    /**
      * Holds value of property version.
      */
     @Version
@@ -50,6 +44,7 @@ public class DatasetRelMaterial  {
 
     /**
      * Getter for property version.
+     *
      * @return Value of property version.
      */
     public Long getVersion() {
@@ -58,19 +53,20 @@ public class DatasetRelMaterial  {
 
     /**
      * Setter for property version.
+     *
      * @param version New value of property version.
      */
     public void setVersion(Long version) {
         this.version = version;
     }
-    
-    
-   public boolean isEmpty() {
-        return ((text==null || text.trim().equals("")));
+
+
+    public boolean isEmpty() {
+        return ((text == null || text.trim().equals("")));
     }
 
     @Override
-     public int hashCode() {
+    public int hashCode() {
         int hash = 0;
         //hash += (this.id != null ? this.id.hashCode() : 0);
         return hash;
@@ -81,9 +77,9 @@ public class DatasetRelMaterial  {
         if (!(object instanceof DatasetRelMaterial)) {
             return false;
         }
-        DatasetRelMaterial other = (DatasetRelMaterial)object;
+        DatasetRelMaterial other = (DatasetRelMaterial) object;
         //if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) return false;
         return true;
     }
-    
+
 }

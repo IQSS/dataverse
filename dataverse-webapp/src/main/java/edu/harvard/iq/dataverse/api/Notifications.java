@@ -4,17 +4,18 @@ import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.workflows.WorkflowUtil;
-import java.util.List;
+
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
-import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import java.util.List;
+
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import javax.json.JsonValue;
 
 @Path("notifications")
 public class Notifications extends AbstractApiBean {

@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
@@ -54,7 +55,7 @@ public class DataReader {
     public byte[] readBytes(int n) throws IOException {
         if (n <= 0) {
             throw new IOException("DataReader.readBytes called to read zero or negative number of bytes.");
-            }
+        }
         byte[] bytes = new byte[n];
 
         if (this.buffer_size - buffer_byte_offset >= n) {
@@ -75,7 +76,7 @@ public class DataReader {
             int morebytes = bufferMoreBytes();
             logger.fine("buffered " + morebytes + " bytes");
 
-            /* 
+            /*
              * keep reading and buffering buffer-size chunks, until
              * we read the requested number of bytes.
              */
@@ -86,11 +87,11 @@ public class DataReader {
                 bytes_read += this.buffer_size;
                 buffer_byte_offset = this.buffer_size;
                 morebytes = bufferMoreBytes();
-                logger.fine("buffered "+morebytes+" bytes");
+                logger.fine("buffered " + morebytes + " bytes");
             }
 
-            /* 
-             * finally, copy the last not-a-full-buffer-worth of bytes 
+            /*
+             * finally, copy the last not-a-full-buffer-worth of bytes
              * into the return buffer:
              */
             logger.fine("copying the remaining " + (n - bytes_read) + " bytes.");
@@ -101,7 +102,7 @@ public class DataReader {
         return bytes;
     }
 
-    /* 
+    /*
      * This method tries to read and buffer the DEFAULT_BUFFER_SIZE bytes
      * and sets the current buffer size accordingly.
      */
@@ -136,7 +137,7 @@ public class DataReader {
     /*
      * Checks that LSF is not null, and sets the buffer byte order accordingly
      */
-    private void checkLSF(ByteBuffer buffer) throws IOException{
+    private void checkLSF(ByteBuffer buffer) throws IOException {
         if (LSF == null) {
             throw new IOException("Byte order not determined for reading numeric values.");
         } else if (LSF) {
@@ -144,18 +145,18 @@ public class DataReader {
         }
     }
 
-    /* 
-     * Convenience methods for reading single bytes of data. 
-     * Just like with the other types of integers, both the signed and 
-     * unsigned versions are provided. 
-     * The readByte() is used to read STATA *data* stored as 
-     * type "Byte"; the unsigned version is used to read byte values 
+    /*
+     * Convenience methods for reading single bytes of data.
+     * Just like with the other types of integers, both the signed and
+     * unsigned versions are provided.
+     * The readByte() is used to read STATA *data* stored as
+     * type "Byte"; the unsigned version is used to read byte values
      * in various sections of the file that store the lengths of byte
-     * sequences that follow. 
+     * sequences that follow.
      */
     public byte readByte() throws IOException {
         /* Why not just use readBytes(1) here, you ask?
-         * - Because readBytes() will want to allocate a 
+         * - Because readBytes() will want to allocate a
          * return byte[] buffer of size 1. */
         byte ret;
         if (buffer_byte_offset > this.buffer_size) {
@@ -183,13 +184,13 @@ public class DataReader {
         return ret;
     }
 
-    /* Various reader methods for reading primitive numeric types; 
+    /* Various reader methods for reading primitive numeric types;
      * these are used both for reading the values from the data section
-     * (signed integer and floating-point types), and to read numeric 
-     * values encoded as unsigned bytes in various sections of the file, 
-     * advertising the lengths of the data sections that follow. 
+     * (signed integer and floating-point types), and to read numeric
+     * values encoded as unsigned bytes in various sections of the file,
+     * advertising the lengths of the data sections that follow.
      * Note that the internal methods bytesToInt() and bytesToSignedInt()
-     * will throw an exception if LSF (byte order flag) has not yet been 
+     * will throw an exception if LSF (byte order flag) has not yet been
      * set.
      */
     // Unsigned integer methods readUInt() and readUShort()
@@ -243,7 +244,7 @@ public class DataReader {
 
             ret += unsigned_byte_value * (1L << (8 * i));
         }
-        if(ret < 0){
+        if (ret < 0) {
             throw new IOException("Sorry for hoping this wouldn't be used with values over 2^63-1");
         }
         return ret;
@@ -263,17 +264,17 @@ public class DataReader {
     }
 
 
-    /* 
+    /*
      * Method for reading character strings:
      *
-     * readString() reads NULL-terminated strings; i.e. it chops the 
-     * string at the first zero encountered. 
-     * we probably need an alternative, readRawString(), that reads 
-     * a String as is. 
+     * readString() reads NULL-terminated strings; i.e. it chops the
+     * string at the first zero encountered.
+     * we probably need an alternative, readRawString(), that reads
+     * a String as is.
      */
     public String readString(int n) throws IOException {
 
-        String ret = new String(readBytes(n), "US-ASCII");
+        String ret = new String(readBytes(n), StandardCharsets.US_ASCII);
 
         // Remove the terminating and/or padding zero bytes:
         if (ret != null && ret.indexOf(0) > -1) {
@@ -282,7 +283,7 @@ public class DataReader {
         return ret;
     }
 
-    /* 
+    /*
      * More complex helper methods for reading NewDTA "sections" ...
      */
     public byte[] readPrimitiveSection(String tag) throws IOException {
@@ -300,11 +301,11 @@ public class DataReader {
     }
 
     public String readPrimitiveStringSection(String tag) throws IOException {
-        return new String(readPrimitiveSection(tag), "US-ASCII");
+        return new String(readPrimitiveSection(tag), StandardCharsets.US_ASCII);
     }
 
     public String readPrimitiveStringSection(String tag, int length) throws IOException {
-        return new String(readPrimitiveSection(tag, length), "US-ASCII");
+        return new String(readPrimitiveSection(tag, length), StandardCharsets.US_ASCII);
     }
 
     public String readLabelSection(String tag, int limit) throws IOException {
@@ -318,20 +319,20 @@ public class DataReader {
         logger.fine("length of label: " + lengthOfLabel);
         String label = null;
         if (lengthOfLabel > 0) {
-            label = new String(readBytes(lengthOfLabel), "US-ASCII");
+            label = new String(readBytes(lengthOfLabel), StandardCharsets.US_ASCII);
         }
         logger.fine("ret: " + label);
         readClosingTag(tag);
         return label;
     }
 
-    /* 
+    /*
      * This method reads a string section the length of which is *defined*.
-     * the format of the section is as follows: 
+     * the format of the section is as follows:
      * <tag>Lxxxxxx...x</tag>
-     * where L is a single byte specifying the length of the enclosed 
+     * where L is a single byte specifying the length of the enclosed
      * string; followed by L bytes.
-     * L must be within 
+     * L must be within
      * 0 <= L <= limit
      * (for example, the "dataset label" is limited to 80 characters).
      */
@@ -344,7 +345,7 @@ public class DataReader {
         }
         String ret = null;
         if (number > 0) {
-            ret = new String(readBytes(number), "US-ASCII");
+            ret = new String(readBytes(number), StandardCharsets.US_ASCII);
         }
         logger.fine("ret: " + ret);
         readClosingTag(tag);
@@ -386,9 +387,8 @@ public class DataReader {
 
         int n = tag.length();
         if ((this.buffer_size - buffer_byte_offset) >= n) {
-            return (tag).equals(new String(Arrays.copyOfRange(buffer, buffer_byte_offset, buffer_byte_offset+n),"US-ASCII"));
-        }
-        else{
+            return (tag).equals(new String(Arrays.copyOfRange(buffer, buffer_byte_offset, buffer_byte_offset + n), StandardCharsets.US_ASCII));
+        } else {
             bufferMoreBytes();
             return checkTag(tag);
         }
@@ -400,9 +400,9 @@ public class DataReader {
             throw new IOException("opening tag must be a non-empty string.");
         }
 
-        String openTagString = new String(readBytes(tag.length() + 2), "US-ASCII");
-        if (openTagString == null || !openTagString.equals("<"+tag+">")) {
-            throw new IOException("Could not read opening tag <"+tag+">");
+        String openTagString = new String(readBytes(tag.length() + 2), StandardCharsets.US_ASCII);
+        if (openTagString == null || !openTagString.equals("<" + tag + ">")) {
+            throw new IOException("Could not read opening tag <" + tag + ">");
         }
     }
 
@@ -411,7 +411,7 @@ public class DataReader {
             throw new IOException("closing tag must be a non-empty string.");
         }
 
-        String closeTagString = new String(readBytes(tag.length() + 3), "US-ASCII");
+        String closeTagString = new String(readBytes(tag.length() + 3), StandardCharsets.US_ASCII);
         logger.fine("closeTagString: " + closeTagString);
 
         if (closeTagString == null || !closeTagString.equals("</" + tag + ">")) {

@@ -11,14 +11,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestbookCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import org.apache.commons.lang.StringUtils;
 
-import static javax.faces.application.FacesMessage.SEVERITY_ERROR;
-
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
@@ -27,11 +21,15 @@ import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.logging.Logger;
 
-import org.apache.commons.lang.StringUtils;
+import static javax.faces.application.FacesMessage.SEVERITY_ERROR;
 
 /**
- *
  * @author skraffmiller
  */
 @ViewScoped
@@ -39,7 +37,7 @@ import org.apache.commons.lang.StringUtils;
 public class GuestbookPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(GuestbookPage.class.getCanonicalName());
-    
+
     @EJB
     private GuestbookServiceBean guestbookService;
 
@@ -48,17 +46,17 @@ public class GuestbookPage implements java.io.Serializable {
 
     @EJB
     private EjbDataverseEngine commandEngine;
-    
+
     @Inject
     private DataverseRequestServiceBean dvRequestService;
 
     @Inject
     private PermissionsWrapper permissionsWrapper;
-        
+
     public enum EditMode {
 
         CREATE, METADATA, CLONE
-    };
+    }
 
     private Guestbook guestbook;
     private Dataverse dataverse;
@@ -66,12 +64,12 @@ public class GuestbookPage implements java.io.Serializable {
     private Long ownerId;
     private Long guestbookId;
     private Long sourceId;
-    
+
     private UIInput guestbookName;
-    
-    
+
+
     // -------------------- GETTERS --------------------
-    
+
     public Long getSourceId() {
         return sourceId;
     }
@@ -103,7 +101,7 @@ public class GuestbookPage implements java.io.Serializable {
     // -------------------- LOGIC --------------------
 
     public String init() {
-    
+
         dataverse = dataverseService.find(ownerId);
         if (dataverse == null) {
             return permissionsWrapper.notFound();
@@ -111,7 +109,7 @@ public class GuestbookPage implements java.io.Serializable {
         if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
             return permissionsWrapper.notAuthorized();
         }
-        
+
         if (guestbookId != null) { // edit or view existing for a template  
             for (Guestbook dvGb : dataverse.getGuestbooks()) {
                 if (dvGb.getId().longValue() == guestbookId) {
@@ -124,12 +122,12 @@ public class GuestbookPage implements java.io.Serializable {
             guestbook = new Guestbook();
             guestbook.setDataverse(dataverse);
             editMode = EditMode.CREATE;
-        } else if (ownerId != null && sourceId != null ) {
+        } else if (ownerId != null && sourceId != null) {
             // Clone mode for a new template from source
             editMode = EditMode.CLONE;
             Guestbook sourceGB = guestbookService.find(sourceId);
             guestbook = sourceGB.copyGuestbook(sourceGB, dataverse);
-            String name = BundleUtil.getStringFromBundle("page.copy") +" " + sourceGB.getName();
+            String name = BundleUtil.getStringFromBundle("page.copy") + " " + sourceGB.getName();
             guestbook.setName(name);
             guestbook.setUsageCount(new Long(0));
             guestbook.setCreateTime(new Timestamp(new Date().getTime()));
@@ -137,52 +135,52 @@ public class GuestbookPage implements java.io.Serializable {
         } else {
             throw new RuntimeException("On Guestook page without id or ownerid."); // improve error handling
         }
-        
+
         initCustomQuestionsForView();
-        
+
         return null;
-        
+
     }
-        
-    public void addCustomQuestion(Integer indexIn){
+
+    public void addCustomQuestion(Integer indexIn) {
         CustomQuestion toAdd = new CustomQuestion();
         toAdd.setQuestionType("text");
         toAdd.setCustomQuestionValues(new ArrayList<CustomQuestionValue>());
-        toAdd.setGuestbook(guestbook);       
-        
+        toAdd.setGuestbook(guestbook);
+
         addCustomQuestionValue(toAdd, 0);
-        
+
         guestbook.addCustomQuestion(indexIn, toAdd);
     }
 
-    public String removeCustomQuestion(Long index){
+    public String removeCustomQuestion(Long index) {
         guestbook.removeCustomQuestion(index.intValue());
         return "";
     }
-    
-    
-    public void addCustomQuestionValue(CustomQuestion cq, int index){
+
+
+    public void addCustomQuestionValue(CustomQuestion cq, int index) {
         CustomQuestionValue toAdd = new CustomQuestionValue();
         toAdd.setValueString("");
         toAdd.setCustomQuestion(cq);
         cq.addCustomQuestionValue(index, toAdd);
     }
-    
-    public void removeCustomQuestionValue(CustomQuestion cq, Long index){
+
+    public void removeCustomQuestionValue(CustomQuestion cq, Long index) {
         cq.removeCustomQuestionValue(index.intValue());
     }
-    
+
 
     public String save() {
         boolean create = false;
-        
+
         if (StringUtils.isEmpty(guestbook.getName())) {
             FacesContext.getCurrentInstance().validationFailed();
             FacesContext.getCurrentInstance().addMessage(guestbookName.getClientId(),
-                    new FacesMessage(SEVERITY_ERROR, StringUtils.EMPTY, BundleUtil.getStringFromBundle("guestbook.name.empty")));
+                                                         new FacesMessage(SEVERITY_ERROR, StringUtils.EMPTY, BundleUtil.getStringFromBundle("guestbook.name.empty")));
             return StringUtils.EMPTY;
         }
-        
+
         if (!(guestbook.getCustomQuestions() == null)) {
             for (CustomQuestion cq : guestbook.getCustomQuestions()) {
                 if (cq.getQuestionType().equals("text")) {
@@ -209,16 +207,16 @@ public class GuestbookPage implements java.io.Serializable {
                     }
                 }
             }
-            
+
             for (CustomQuestion cq : guestbook.getCustomQuestions()) {
                 if (cq != null && cq.getQuestionType().equals("options")) {
-                    if (cq.getCustomQuestionValues() == null || cq.getCustomQuestionValues().isEmpty()){
-                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("guestbook.save.fail"), BundleUtil.getStringFromBundle("guestbook.option.msg") ));
+                    if (cq.getCustomQuestionValues() == null || cq.getCustomQuestionValues().isEmpty()) {
+                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("guestbook.save.fail"), BundleUtil.getStringFromBundle("guestbook.option.msg")));
                         return null;
                     }
-                    if (cq.getCustomQuestionValues().size() == 1){
-                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("guestbook.save.fail"), BundleUtil.getStringFromBundle("guestbook.option.msg") ));
-                        return null; 
+                    if (cq.getCustomQuestionValues().size() == 1) {
+                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("guestbook.save.fail"), BundleUtil.getStringFromBundle("guestbook.option.msg")));
+                        return null;
                     }
                 }
             }
@@ -226,24 +224,24 @@ public class GuestbookPage implements java.io.Serializable {
             for (CustomQuestion cq : guestbook.getCustomQuestions()) {
                 int j = 0;
                 cq.setDisplayOrder(i);
-                if (cq.getCustomQuestionValues() != null &&  !cq.getCustomQuestionValues().isEmpty()){
-                    for (CustomQuestionValue cqv : cq.getCustomQuestionValues()){
+                if (cq.getCustomQuestionValues() != null && !cq.getCustomQuestionValues().isEmpty()) {
+                    for (CustomQuestionValue cqv : cq.getCustomQuestionValues()) {
                         cqv.setDisplayOrder(j);
                         j++;
                     }
                 }
                 i++;
-            }            
+            }
         }
-           
+
         Command<Dataverse> cmd;
         try {
-            if (editMode == EditMode.CREATE || editMode == EditMode.CLONE ) {
+            if (editMode == EditMode.CREATE || editMode == EditMode.CLONE) {
                 guestbook.setCreateTime(new Timestamp(new Date().getTime()));
                 guestbook.setUsageCount(new Long(0));
                 guestbook.setEnabled(true);
                 dataverse.getGuestbooks().add(guestbook);
-                cmd = new UpdateDataverseCommand(dataverse, null, null, dvRequestService.getDataverseRequest(), null);                
+                cmd = new UpdateDataverseCommand(dataverse, null, null, dvRequestService.getDataverseRequest(), null);
                 commandEngine.submit(cmd);
                 create = true;
             } else {
@@ -273,7 +271,7 @@ public class GuestbookPage implements java.io.Serializable {
             //logger.severe(ex.getMessage());
         }
         editMode = null;
-        String msg = (create)? BundleUtil.getStringFromBundle("guestbook.create"): BundleUtil.getStringFromBundle("guestbook.save");
+        String msg = (create) ? BundleUtil.getStringFromBundle("guestbook.create") : BundleUtil.getStringFromBundle("guestbook.save");
         JsfHelper.addFlashMessage(msg);
         return "/manage-guestbooks.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";
     }
@@ -283,8 +281,8 @@ public class GuestbookPage implements java.io.Serializable {
     }
 
     // -------------------- PRIVATE --------------------
-    
-    private void initCustomQuestionsForView(){
+
+    private void initCustomQuestionsForView() {
         if (guestbook.getCustomQuestions() == null || guestbook.getCustomQuestions().isEmpty()) {
             guestbook.setCustomQuestions(new ArrayList<CustomQuestion>());
             addCustomQuestion(0);
@@ -299,7 +297,7 @@ public class GuestbookPage implements java.io.Serializable {
             }
         }
     }
-    
+
     // -------------------- SETTERS --------------------
 
     public void setOwnerId(Long ownerId) {

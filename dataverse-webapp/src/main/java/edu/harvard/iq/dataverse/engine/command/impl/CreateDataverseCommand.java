@@ -19,7 +19,6 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -40,7 +39,7 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
     private final List<DatasetFieldType> facetList;
 
     public CreateDataverseCommand(Dataverse created, DataverseRequest aRequest, List<DatasetFieldType> facetList,
-            List<DataverseFieldTypeInputLevel> inputLevelList) {
+                                  List<DataverseFieldTypeInputLevel> inputLevelList) {
         super(aRequest, created.getOwner());
         this.created = created;
         if (facetList != null) {
@@ -118,18 +117,18 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
                     // above...
                     if ((inheritAllRoles || rolesToInherit.contains(role.getRole().getAlias()))
                             && !(role.getAssigneeIdentifier().equals(getRequest().getUser().getIdentifier())
-                                    && role.getRole().equals(adminRole))) {
+                            && role.getRole().equals(adminRole))) {
                         String identifier = role.getAssigneeIdentifier();
                         if (identifier.startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
                             identifier = identifier.substring(AuthenticatedUser.IDENTIFIER_PREFIX.length());
                             ctxt.roles().save(new RoleAssignment(role.getRole(),
-                                    ctxt.authentication().getAuthenticatedUser(identifier), managedDv, privateUrlToken));
+                                                                 ctxt.authentication().getAuthenticatedUser(identifier), managedDv, privateUrlToken));
                         } else if (identifier.startsWith(Group.IDENTIFIER_PREFIX)) {
                             identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
                             Group roleGroup = ctxt.groups().getGroup(identifier);
                             if (roleGroup != null) {
                                 ctxt.roles().save(new RoleAssignment(role.getRole(),
-                                        roleGroup, managedDv, privateUrlToken));
+                                                                     roleGroup, managedDv, privateUrlToken));
                             }
                         }
                     }

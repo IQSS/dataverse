@@ -8,62 +8,65 @@ package edu.harvard.iq.dataverse.userdata;
 import java.sql.Timestamp;
 
 /**
- *
  * @author rmp553
  */
 public class UserUtil {
-    
-    
+
+
     /**
      * Convenience method to format dbResult
+     *
      * @param dbResult
-     * @return 
+     * @return
      */
-    public static String getStringOrNull(Object dbResult){
-        
-        if (dbResult == null){
+    public static String getStringOrNull(Object dbResult) {
+
+        if (dbResult == null) {
             return null;
         }
-        return (String)dbResult;
-    }
-    
-    /**
-     * Convenience method to format dbResult
-     * @param dbResult
-     * @return 
-     */
-    public static String getStringOrBlankForNull(Object dbResult){
-        
-        if (dbResult == null){
-            return "";
-        }
-        return (String)dbResult;
-    }
-    
-    /**
-     * Convenience method to format dbResult
-     * @param dbResult
-     * @return 
-     */
-    public static String getTimestampStringOrNull(Object dbResult){
-        
-        if (dbResult == null){
-            return null;
-        }
-        return ((Timestamp)dbResult).toString();
+        return (String) dbResult;
     }
 
-        /**
+    /**
      * Convenience method to format dbResult
+     *
      * @param dbResult
-     * @return 
+     * @return
      */
-    public static Timestamp getTimestampOrNull(Object dbResult){
-        
-        if (dbResult == null){
+    public static String getStringOrBlankForNull(Object dbResult) {
+
+        if (dbResult == null) {
+            return "";
+        }
+        return (String) dbResult;
+    }
+
+    /**
+     * Convenience method to format dbResult
+     *
+     * @param dbResult
+     * @return
+     */
+    public static String getTimestampStringOrNull(Object dbResult) {
+
+        if (dbResult == null) {
             return null;
         }
-        return (Timestamp)dbResult;
+        return dbResult.toString();
+    }
+
+    /**
+     * Convenience method to format dbResult
+     *
+     * @param dbResult
+     * @return
+     */
+    public static Timestamp getTimestampOrNull(Object dbResult) {
+
+        if (dbResult == null) {
+            return null;
+        }
+        return (Timestamp) dbResult;
     }
 
 }

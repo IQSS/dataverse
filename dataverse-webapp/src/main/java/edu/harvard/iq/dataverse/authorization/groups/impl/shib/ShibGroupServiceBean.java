@@ -70,6 +70,7 @@ public class ShibGroupServiceBean {
         actionLogSvc.log(alr);
         return merged;
     }
+
     public Set<ShibGroup> findFor(AuthenticatedUser authenticatedUser) {
         Set<ShibGroup> groupsForUser = new HashSet<>();
         String shibIdp = authenticatedUser.getShibIdentityProvider();
@@ -114,7 +115,7 @@ public class ShibGroupServiceBean {
             String message = "Could not delete Shibboleth group id " + doomed.getId() + " due to existing role assignments: " + assignmentIds;
             logger.info(message);
             actionLogSvc.log(alr.setActionResult(ActionLogRecord.Result.BadRequest)
-                    .setInfo(alr.getInfo() + "// " + message));
+                                     .setInfo(alr.getInfo() + "// " + message));
 
             throw new Exception(message);
         }

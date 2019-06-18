@@ -15,13 +15,12 @@ import javax.persistence.Query;
 import java.util.List;
 
 /**
- *
  * @author skraffmiller
  */
 @Stateless
 public class DataverseFieldTypeInputLevelServiceBean {
 
-//    private static final Logger logger = Logger.getLogger(DataverseFieldTypeInputLevelServiceBean.class.getCanonicalName());
+    //    private static final Logger logger = Logger.getLogger(DataverseFieldTypeInputLevelServiceBean.class.getCanonicalName());
     public static final LruCache<Long, List<DataverseFieldTypeInputLevel>> cache = new LruCache<>();
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -32,38 +31,38 @@ public class DataverseFieldTypeInputLevelServiceBean {
 
         if (res == null) {
             res = em.createNamedQuery("DataverseFieldTypeInputLevel.findByDataverseId", DataverseFieldTypeInputLevel.class)
-                .setParameter("dataverseId", dataverseId)
-                .getResultList();
+                    .setParameter("dataverseId", dataverseId)
+                    .getResultList();
             cache.put(dataverseId, res);
         }
 
         return res;
     }
-    
-    private void msg(String s){
+
+    private void msg(String s) {
         //logger.fine(s);
     }
-    
+
     /**
      * Find a list of DataverseFieldTypeInputLevel objects
-     *  Search criteria: 
-     *      - Dataverse Id, 
-     *      - list of DatasetField Ids
-     * 
+     * Search criteria:
+     * - Dataverse Id,
+     * - list of DatasetField Ids
+     *
      * @param dataverseId
      * @param datasetFieldIdList
      * @return List of DataverseFieldTypeInputLevel
      */
-    public List<DataverseFieldTypeInputLevel> findByDataverseIdAndDatasetFieldTypeIdList( Long dataverseId, List<Long> datasetFieldIdList){
+    public List<DataverseFieldTypeInputLevel> findByDataverseIdAndDatasetFieldTypeIdList(Long dataverseId, List<Long> datasetFieldIdList) {
         msg("---- findByDataverseIdAndDatasetFieldTypeIdList ----");
-        if (datasetFieldIdList==null || datasetFieldIdList.isEmpty()){
+        if (datasetFieldIdList == null || datasetFieldIdList.isEmpty()) {
             return null;
         }
-        if (dataverseId == null){                    
+        if (dataverseId == null) {
             return null;
         }
-       
-        try{
+
+        try {
             return em.createNamedQuery("DataverseFieldTypeInputLevel.findByDataverseIdAndDatasetFieldTypeIdList", DataverseFieldTypeInputLevel.class)
                     .setParameter("datasetFieldIdList", datasetFieldIdList)
                     .setParameter("dataverseId", dataverseId)
@@ -71,24 +70,24 @@ public class DataverseFieldTypeInputLevelServiceBean {
             /*List res = query.getResultList();
             msg("Number of results: " + res.size());
             return res;*/
-        } catch ( NoResultException nre ) {  
+        } catch (NoResultException nre) {
             return null;
-        }    
+        }
     }
-            //     
-    
+    //
+
     //    Query query = em.createQuery("select object(o) from MapLayerMetadata as o where o.dataset=:dataset");// order by o.name");
     //    query.setParameter("dataset", dataset);
-    
+
     public DataverseFieldTypeInputLevel findByDataverseIdDatasetFieldTypeId(Long dataverseId, Long datasetFieldTypeId) {
         Query query = em.createNamedQuery("DataverseFieldTypeInputLevel.findByDataverseIdDatasetFieldTypeId", DataverseFieldTypeInputLevel.class);
         query.setParameter("dataverseId", dataverseId);
         query.setParameter("datasetFieldTypeId", datasetFieldTypeId);
-        try{
+        try {
             return (DataverseFieldTypeInputLevel) query.getSingleResult();
-        } catch ( NoResultException nre ) {
+        } catch (NoResultException nre) {
             return null;
-        }         
+        }
     }
 
     public void delete(DataverseFieldTypeInputLevel dataverseFieldTypeInputLevel) {

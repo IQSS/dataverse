@@ -109,26 +109,26 @@ public class SwordServiceBean {
 
     /**
      * The rules (from https://github.com/IQSS/dataverse/issues/805 ) are below.
-     *
+     * <p>
      * If you don't provide `<dcterms:license>` the license should be set to
      * "CC0" on dataset creation.
-     *
+     * <p>
      * If you don't provide `<dcterms:license>` the license on dataset
      * modification, the license should not change.
-     *
+     * <p>
      * To provide `<dcterms:rights>` you much either omit `<dcterms:license>`
      * (for backwards compatibility since `<dcterms:license>` was not a required
      * field for SWORD in DVN 3.6) or set `<dcterms:license>` to "NONE".
-     *
+     * <p>
      * It is invalid to provide "CC0" under `<dcterms:license>` in combination
      * with any value under `<dcterms:rights>`.
-     *
+     * <p>
      * It is invalid to attempt to change the license to "CC0" if Terms of Use
      * (`<dcterms:rights>`) is already on file.
-     *
+     * <p>
      * Both `<dcterms:rights>` and `<dcterms:license>` can only be specified
      * once. Multiples are not allowed.
-     *
+     * <p>
      * Blank values are not allowed for `<dcterms:license>` (since it's new) but
      * for backwards compatibility, blank values are allowed for
      * `<dcterms:rights>` per

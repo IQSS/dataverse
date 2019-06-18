@@ -1,13 +1,14 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta;
 
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
+import org.apache.commons.io.IOUtils;
+import org.junit.Test;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.io.IOUtils;
-import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class DTAFileReaderTest {

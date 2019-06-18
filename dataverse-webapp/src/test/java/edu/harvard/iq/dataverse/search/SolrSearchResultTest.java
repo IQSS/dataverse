@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse.search;
 
+import org.junit.Test;
+
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+
 import static org.junit.Assert.assertEquals;
-import org.junit.Test;
 
 public class SolrSearchResultTest {
 

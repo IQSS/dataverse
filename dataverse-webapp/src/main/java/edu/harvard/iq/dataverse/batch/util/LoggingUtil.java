@@ -25,8 +25,6 @@ import org.apache.commons.io.FileUtils;
 import javax.batch.runtime.JobExecution;
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
@@ -86,50 +84,42 @@ public class LoggingUtil {
     /**
      * check if the directory for log files exists, and create if necessary
      */
-    private static void checkCreateLogDirectory( String logDir )
-    {
-	    try
-	    {
-		    File d = new File( logDir );
-		    if ( ! d.exists() )
-		    {
-			    logger.log(Level.INFO,"log directory: " + d.getAbsolutePath() + " absent, trying to create");
-			    d.mkdirs();
-			    if ( ! d.exists() )
-			    {
-			    	logger.log(Level.SEVERE,"unable to create log directory: " + d.getAbsolutePath() );
-			    }
-			    else
-			    {
-			    	logger.log(Level.INFO,"log directory: " + d.getAbsolutePath() + " created");
-			    }
-		    }
-	    }
-	    catch( SecurityException e)
-	    {
-		    logger.log( Level.SEVERE, "security exception checking / creating log directory: " + logDir );
-	    }
+    private static void checkCreateLogDirectory(String logDir) {
+        try {
+            File d = new File(logDir);
+            if (!d.exists()) {
+                logger.log(Level.INFO, "log directory: " + d.getAbsolutePath() + " absent, trying to create");
+                d.mkdirs();
+                if (!d.exists()) {
+                    logger.log(Level.SEVERE, "unable to create log directory: " + d.getAbsolutePath());
+                } else {
+                    logger.log(Level.INFO, "log directory: " + d.getAbsolutePath() + " created");
+                }
+            }
+        } catch (SecurityException e) {
+            logger.log(Level.SEVERE, "security exception checking / creating log directory: " + logDir);
+        }
     }
-    
+
     public static Logger getJobLogger(String jobId) {
-	    try {
-		    Logger jobLogger = Logger.getLogger("job-"+jobId);
-		    FileHandler fh;
-		    String logDir = System.getProperty("com.sun.aas.instanceRoot") + System.getProperty("file.separator") 
-			    + "logs" + System.getProperty("file.separator") + "batch-jobs" + System.getProperty("file.separator");
-		    checkCreateLogDirectory( logDir );
-		    fh = new FileHandler(logDir + "job-" + jobId + ".log");
-		    logger.log(Level.INFO, "JOB LOG: " + logDir + "job-" + jobId + ".log");
-		    jobLogger.addHandler(fh);
-		    fh.setFormatter(new JobLogFormatter());
-		    return jobLogger;
-	    } catch (SecurityException e) {
-		    logger.log(Level.SEVERE, "Unable to create job logger: " + e.getMessage());
-		    return null;
-	    } catch (IOException e) {
-		    logger.log(Level.SEVERE, "Unable to create job logger: " + e.getMessage());
-		    return null;
-	    }
+        try {
+            Logger jobLogger = Logger.getLogger("job-" + jobId);
+            FileHandler fh;
+            String logDir = System.getProperty("com.sun.aas.instanceRoot") + System.getProperty("file.separator")
+                    + "logs" + System.getProperty("file.separator") + "batch-jobs" + System.getProperty("file.separator");
+            checkCreateLogDirectory(logDir);
+            fh = new FileHandler(logDir + "job-" + jobId + ".log");
+            logger.log(Level.INFO, "JOB LOG: " + logDir + "job-" + jobId + ".log");
+            jobLogger.addHandler(fh);
+            fh.setFormatter(new JobLogFormatter());
+            return jobLogger;
+        } catch (SecurityException e) {
+            logger.log(Level.SEVERE, "Unable to create job logger: " + e.getMessage());
+            return null;
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Unable to create job logger: " + e.getMessage());
+            return null;
+        }
     }
 
     public static class JobLogFormatter extends Formatter {

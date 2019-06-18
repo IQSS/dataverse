@@ -6,7 +6,6 @@
 package edu.harvard.iq.dataverse.export;
 
 /**
- *
  * @author Leonid Andreev
  */
 public class ExportException extends Exception {

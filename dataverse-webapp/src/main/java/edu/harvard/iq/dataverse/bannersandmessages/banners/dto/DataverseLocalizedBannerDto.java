@@ -87,8 +87,12 @@ public class DataverseLocalizedBannerDto {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         DataverseLocalizedBannerDto that = (DataverseLocalizedBannerDto) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(locale, that.locale) &&

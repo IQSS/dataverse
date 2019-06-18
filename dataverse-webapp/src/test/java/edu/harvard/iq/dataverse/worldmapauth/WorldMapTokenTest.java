@@ -9,34 +9,35 @@ package edu.harvard.iq.dataverse.worldmapauth;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.NonEssentialTests;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import java.sql.Timestamp;
-import java.util.Date;
-import javax.ejb.embeddable.EJBContainer;
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import javax.ejb.embeddable.EJBContainer;
+import java.sql.Timestamp;
+import java.util.Date;
+
+import static org.junit.Assert.assertEquals;
+
 /**
- *
  * @author raprasad
  */
 public class WorldMapTokenTest {
- 
+
     private static EJBContainer c;
 
-   
-    public void msg(String s){
-       System.out.println(s);
+
+    public void msg(String s) {
+        System.out.println(s);
     }
- 
-    public void msgt(String s){
+
+    public void msgt(String s) {
         msg("------------------------------------------------------------");
         msg(s);
         msg("------------------------------------------------------------");
     }
 
-     
-    private TokenApplicationType makeTokenApplicationType(int timeLimitMinutes){
+
+    private TokenApplicationType makeTokenApplicationType(int timeLimitMinutes) {
         TokenApplicationType tat = new TokenApplicationType();
         tat.setName("GeoConnect");
         tat.setContactEmail("info@iq.harvard.edu");
@@ -45,50 +46,51 @@ public class WorldMapTokenTest {
         tat.setTimeLimitMinutes(timeLimitMinutes);
         return tat;
     }
-    private WorldMapToken makeNewToken(TokenApplicationType tat){
+
+    private WorldMapToken makeNewToken(TokenApplicationType tat) {
         WorldMapToken token;
         token = new WorldMapToken();
         token.setApplication(tat);
         token.setDatafile(new DataFile());
         token.setDataverseUser(new AuthenticatedUser());
         token.refreshToken();
-        token.setToken();        
+        token.setToken();
         return token;
     }
-    
+
     @Category(NonEssentialTests.class)
     @Test
-    public void testTokenValues(){
+    public void testTokenValues() {
         msgt("WorldMapTokenTest!");
         TokenApplicationType tat = this.makeTokenApplicationType(30);
 
         WorldMapToken token = this.makeNewToken(tat);
         String token_str1 = token.getToken();
- 
+
         // Should only be able to set token value once--it doesn't "reset"
-        token.setToken();        
+        token.setToken();
         assertEquals(token.getToken().equalsIgnoreCase(token_str1), true);
-   
-        
-        WorldMapToken token2  = this.makeNewToken(tat);
-        WorldMapToken token3  = this.makeNewToken(tat);
+
+
+        WorldMapToken token2 = this.makeNewToken(tat);
+        WorldMapToken token3 = this.makeNewToken(tat);
         assertEquals(token2.getToken().equalsIgnoreCase(token.getToken()), false);
         assertEquals(token2.getToken().equalsIgnoreCase(token3.getToken()), false);
     }
-    
+
     @Category(NonEssentialTests.class)
     @Test
-    public void testTokenTimes(){
+    public void testTokenTimes() {
         msgt("testTokenTimes");
-       
+
         TokenApplicationType tat = this.makeTokenApplicationType(30);
 
-        assertEquals(30*60, tat.getTimeLimitSeconds());
+        assertEquals(30 * 60, tat.getTimeLimitSeconds());
         msg("time limit seconds: " + tat.getTimeLimitSeconds());
         tat.setTimeLimitMinutes(1);
         msg("time limit seconds (2): " + tat.getTimeLimitSeconds());
-        assertEquals(1*60, tat.getTimeLimitSeconds());
-        
+        assertEquals(1 * 60, tat.getTimeLimitSeconds());
+
         tat.setTimeLimitMinutes(30);
         WorldMapToken token = this.makeNewToken(tat);
         assertEquals(token.hasTokenExpired(), false);
@@ -125,7 +127,7 @@ public class WorldMapTokenTest {
         assertEquals(token.hasTokenExpired(getFutureTimeStamp(5)), true);
         msg("Did token expire? (auto-check current time)");
         assertEquals(token.hasTokenExpired(), true);
-        
+
         msgt("Get a new Token");
         WorldMapToken token2 = this.makeNewToken(tat);
 
@@ -137,16 +139,16 @@ public class WorldMapTokenTest {
         token2.setHasExpired(true);
         msg("Did token expire in 1 minute? (should be yes--b/c manually expired)");
         assertEquals(token2.hasTokenExpired(getFutureTimeStamp(1)), true);
-        
-        
-    }
-    
-    private Timestamp getFutureTimeStamp(int futuremMinutes){
 
-        long ONE_MINUTE_IN_MILLIS=60000;//millisecs
+
+    }
+
+    private Timestamp getFutureTimeStamp(int futuremMinutes) {
+
+        long ONE_MINUTE_IN_MILLIS = 60000;//millisecs
         long currentTimeMillisec = new Date().getTime();
         long inFutureMinutesMillisec = currentTimeMillisec + (futuremMinutes * ONE_MINUTE_IN_MILLIS);
         return new Timestamp(new Date(inFutureMinutesMillisec).getTime());
-        
+
     }
 }

@@ -2,11 +2,12 @@ package edu.harvard.iq.dataverse.api.dto;
 
 /**
  * Data transfer object for role assignments.
+ *
  * @author michael
  */
 public class RoleAssignmentDTO {
-	String assignee;
-	String role;
+    String assignee;
+    String role;
 
     public String getAssignee() {
         return assignee;

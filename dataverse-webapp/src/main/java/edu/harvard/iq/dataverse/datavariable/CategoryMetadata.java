@@ -1,32 +1,33 @@
 package edu.harvard.iq.dataverse.datavariable;
 
-import javax.persistence.Index;
 import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.GenerationType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 @Entity
-@Table(indexes = {@Index(columnList="category_id"), @Index(columnList="variablemetadata_id")})
+@Table(indexes = {@Index(columnList = "category_id"), @Index(columnList = "variablemetadata_id")})
 public class CategoryMetadata {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     VariableCategory category;
 
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private VariableMetadata variableMetadata;
 
     Double wfreq;
 
-    public CategoryMetadata() {}
+    public CategoryMetadata() {
+    }
 
     public CategoryMetadata(VariableMetadata variableMetadata, VariableCategory category) {
         this.variableMetadata = variableMetadata;
@@ -79,10 +80,8 @@ public class CategoryMetadata {
         }
 
         CategoryMetadata other = (CategoryMetadata) object;
-        if (this.id != other.id ) {
-            if (this.id == null || !this.id.equals(other.id)) {
-                return false;
-            }
+        if (this.id != other.id) {
+            return this.id != null && this.id.equals(other.id);
         }
         return true;
     }

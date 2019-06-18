@@ -7,9 +7,10 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import org.hibernate.validator.internal.util.CollectionHelper;
+
 import java.util.Collections;
 import java.util.Set;
-import org.hibernate.validator.internal.util.CollectionHelper;
 
 /**
  * Provider for the built-in, hard coded groups. This class is a singleton (no
@@ -19,11 +20,12 @@ import org.hibernate.validator.internal.util.CollectionHelper;
  * @author michael
  */
 public class BuiltInGroupsProvider implements GroupProvider<Group> {
-    
+
     private static final BuiltInGroupsProvider instance = new BuiltInGroupsProvider();
-    
-    private BuiltInGroupsProvider(){}
-    
+
+    private BuiltInGroupsProvider() {
+    }
+
     public static BuiltInGroupsProvider get() {
         return instance;
     }
@@ -39,15 +41,15 @@ public class BuiltInGroupsProvider implements GroupProvider<Group> {
     }
 
     @Override
-    public Set<Group> groupsFor(DataverseRequest req, DvObject dvo ) {
+    public Set<Group> groupsFor(DataverseRequest req, DvObject dvo) {
         return groupsFor(req.getUser());
     }
 
     @Override
-    public Set<Group> groupsFor( RoleAssignee ra, DvObject dvo ) {
+    public Set<Group> groupsFor(RoleAssignee ra, DvObject dvo) {
         return groupsFor(ra);
     }
-    
+
     @Override
     public Set<Group> groupsFor(DataverseRequest req) {
         return groupsFor(req.getUser());
@@ -55,19 +57,19 @@ public class BuiltInGroupsProvider implements GroupProvider<Group> {
 
     @Override
     public Set<Group> groupsFor(RoleAssignee ra) {
-        if (ra instanceof AuthenticatedUser){
+        if (ra instanceof AuthenticatedUser) {
             return CollectionHelper.asSet(AllUsers.get(), AuthenticatedUsers.get());
-        } else if ( ra instanceof User) {
+        } else if (ra instanceof User) {
             return Collections.singleton(AllUsers.get());
         } else {
             return Collections.emptySet();
         }
     }
-    
+
     @Override
     public Group get(String groupAlias) {
         return groupAlias.equals(AllUsers.get().getAlias()) ? AllUsers.get()
-                : ( groupAlias.equals(AuthenticatedUsers.get().getAlias()) ? AuthenticatedUsers.get() : null );
+                : (groupAlias.equals(AuthenticatedUsers.get().getAlias()) ? AuthenticatedUsers.get() : null);
     }
 
     @Override

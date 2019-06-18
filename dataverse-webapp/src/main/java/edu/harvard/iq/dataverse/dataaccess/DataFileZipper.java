@@ -19,11 +19,10 @@
 */
 package edu.harvard.iq.dataverse.dataaccess;
 
-import java.io.InputStream;
-import java.io.IOException;
-
-
 import edu.harvard.iq.dataverse.DataFile;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -35,85 +34,84 @@ import java.util.zip.ZipOutputStream;
 
 
 /**
- *
  * @author Leonid Andreev
  */
 public class DataFileZipper {
-    
+
     private static final Logger logger = Logger.getLogger(DataFileZipper.class.getCanonicalName());
     private static final String MANIFEST_FILE_NAME = "MANIFEST.TXT";
-    
-    private OutputStream outputStream = null; 
+
+    private OutputStream outputStream = null;
     private ZipOutputStream zipOutputStream = null;
-    
+
     private List<String> fileNameList = null; // the list of file names to check for duplicates
     private List<Long> zippedFilesList = null; // list of successfully zipped files, to update guestbooks and download counts (not yet implemented)
-    
+
     private String fileManifest = "";
-    
-    private Set<String> zippedFolders = null; 
+
+    private Set<String> zippedFolders = null;
 
     public DataFileZipper() {
         fileNameList = new ArrayList<>();
-        zippedFilesList = new ArrayList<>(); 
+        zippedFilesList = new ArrayList<>();
         zippedFolders = new HashSet<>();
     }
-    
+
     public DataFileZipper(OutputStream outputStream) {
         this.outputStream = outputStream;
         fileNameList = new ArrayList<>();
         zippedFilesList = new ArrayList<>();
         zippedFolders = new HashSet<>();
     }
-    
+
     public void setOutputStream(OutputStream outputStream) {
-        this.outputStream = outputStream; 
+        this.outputStream = outputStream;
     }
-    
+
     public OutputStream getOutputStream() {
         return this.outputStream;
     }
-    
+
     public void setFileManifest(String fileManifest) {
         this.fileManifest = fileManifest;
     }
-    
+
     public String getFileManifest() {
-        return this.fileManifest; 
+        return this.fileManifest;
     }
-    
+
     public void openZipStream() throws IOException {
         if (outputStream == null) {
             throw new IOException("Attempted to create a ZipOutputStream from a NULL OutputStream.");
         }
         this.zipOutputStream = new ZipOutputStream(outputStream);
     }
-    
+
     public long addFileToZipStream(DataFile dataFile) throws IOException {
         return addFileToZipStream(dataFile, false);
     }
-    
+
     public long addFileToZipStream(DataFile dataFile, boolean getOriginal) throws IOException {
         if (zipOutputStream == null) {
             openZipStream();
         }
 
         boolean createManifest = fileManifest != null;
-        
+
         DataAccessRequest daReq = new DataAccessRequest();
         StorageIO<DataFile> accessObject = DataAccess.getStorageIO(dataFile, daReq);
 
         if (accessObject != null) {
             Boolean gotOriginal = false;
-            if(getOriginal) {
+            if (getOriginal) {
                 StoredOriginalFile sof = new StoredOriginalFile();
-                StorageIO<DataFile> tempAccessObject = sof.retreive(accessObject);
-                if(null != tempAccessObject) { //If there is an original, use it
+                StorageIO<DataFile> tempAccessObject = StoredOriginalFile.retreive(accessObject);
+                if (null != tempAccessObject) { //If there is an original, use it
                     gotOriginal = true;
-                    accessObject = tempAccessObject; 
-                } 
+                    accessObject = tempAccessObject;
+                }
             }
-            if(!gotOriginal) { //if we didn't get this from sof.retreive we have to open it
+            if (!gotOriginal) { //if we didn't get this from sof.retreive we have to open it
                 accessObject.open();
             }
 
@@ -132,15 +130,15 @@ public class DataFileZipper {
             if (instream == null) {
                 if (createManifest) {
                     addToManifest(fileName
-                            + " (" + mimeType
-                            + ") COULD NOT be downloaded because an I/O error has occured. \r\n");
+                                          + " (" + mimeType
+                                          + ") COULD NOT be downloaded because an I/O error has occured. \r\n");
                 }
 
                 Success = false;
             } else {
                 // If any of the files have non-empty DirectoryLabels we'll 
                 // use them to re-create the folders in the Zipped bundle:
-                String folderName = dataFile.getFileMetadata().getDirectoryLabel(); 
+                String folderName = dataFile.getFileMetadata().getDirectoryLabel();
                 if (folderName != null) {
                     // If any of the saved folder names start with with slashes,
                     // we want to remove them: 
@@ -158,9 +156,9 @@ public class DataFileZipper {
                         fileName = folderName + "/" + fileName;
                     }
                 }
-                
+
                 String zipEntryName = checkZipEntryName(fileName);
-                
+
                 ZipEntry e = new ZipEntry(zipEntryName);
                 logger.fine("created new zip entry for " + zipEntryName);
 
@@ -204,20 +202,20 @@ public class DataFileZipper {
         }
         return 0L;
     }
-    
+
     public void finalizeZipStream() throws IOException {
         boolean createManifest = fileManifest != null;
-        
+
         if (zipOutputStream == null) {
             openZipStream();
         }
-        
+
         if (createManifest) {
-            String manifestEntry = MANIFEST_FILE_NAME; 
+            String manifestEntry = MANIFEST_FILE_NAME;
             while (fileNameList.contains(manifestEntry)) {
-                manifestEntry = "0".concat(manifestEntry); 
+                manifestEntry = "0".concat(manifestEntry);
             }
-            
+
             ZipEntry e = new ZipEntry(manifestEntry);
 
             zipOutputStream.putNextEntry(e);
@@ -228,11 +226,11 @@ public class DataFileZipper {
         zipOutputStream.flush();
         zipOutputStream.close();
     }
-    
+
     public void addToManifest(String manifestEntry) {
-        this.fileManifest = this.fileManifest + manifestEntry; 
+        this.fileManifest = this.fileManifest + manifestEntry;
     }
-    
+
     // check for and process duplicates:
     private String checkZipEntryName(String originalName) {
         String name = originalName;

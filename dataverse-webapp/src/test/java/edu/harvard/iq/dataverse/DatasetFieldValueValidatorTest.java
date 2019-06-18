@@ -20,27 +20,26 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author skraffmi
  */
 public class DatasetFieldValueValidatorTest {
-    
-    
+
+
     public DatasetFieldValueValidatorTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
     }
-    
+
     @After
     public void tearDown() {
     }
@@ -62,84 +61,84 @@ public class DatasetFieldValueValidatorTest {
         value.setDatasetField(df);
         value.setValue("asdfg");
         final ConstraintValidatorContext ctx =
-            Mockito.mock(ConstraintValidatorContext.class);
+                Mockito.mock(ConstraintValidatorContext.class);
         DatasetFieldValueValidator instance = new DatasetFieldValueValidator();
         boolean expResult = true;
         boolean result = instance.isValid(value, ctx);
         assertEquals(expResult, result);
-        
+
         //Make string too long - should fail.
         value.setValue("asdfgX");
         result = instance.isValid(value, ctx);
         assertEquals(false, result);
-        
+
         //Make string too long - should fail.
         value.setValue("asdf");
         result = instance.isValid(value, ctx);
         assertEquals(false, result);
-        
+
         //Now lets try Dates
         dft.setFieldType(FieldType.DATE);
         dft.setValidationFormat(null);
         value.setValue("1999AD");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result); 
-        
+        assertEquals(true, result);
+
         value.setValue("44BCE");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result); 
-        
+        assertEquals(true, result);
+
         value.setValue("2004-10-27");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result); 
-        
+        assertEquals(true, result);
+
         value.setValue("2002-08");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result);  
-        
+        assertEquals(true, result);
+
         value.setValue("[1999?]");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result); 
-        
+        assertEquals(true, result);
+
         value.setValue("Blergh");
         result = instance.isValid(value, ctx);
-        assertEquals(false, result);  
-        
+        assertEquals(false, result);
+
         //Float
         dft.setFieldType(FieldType.FLOAT);
         value.setValue("44");
         result = instance.isValid(value, ctx);
         assertEquals(true, result);
-        
+
         value.setValue("44 1/2");
         result = instance.isValid(value, ctx);
         assertEquals(false, result);
-        
+
         //Integer
         dft.setFieldType(FieldType.INT);
         value.setValue("44");
         result = instance.isValid(value, ctx);
         assertEquals(true, result);
-        
+
         value.setValue("-44");
         result = instance.isValid(value, ctx);
         assertEquals(true, result);
-        
+
         value.setValue("12.14");
         result = instance.isValid(value, ctx);
         assertEquals(false, result);
-        
+
         //URL
         dft.setFieldType(FieldType.URL);
         value.setValue("http://cnn.com");
         result = instance.isValid(value, ctx);
         assertEquals(true, result);
-        
-        
+
+
         value.setValue("espn.com");
         result = instance.isValid(value, ctx);
         assertEquals(false, result);
-        
+
     }
 
     @Test

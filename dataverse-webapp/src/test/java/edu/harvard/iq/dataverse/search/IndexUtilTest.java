@@ -1,13 +1,14 @@
 package edu.harvard.iq.dataverse.search;
 
-import java.util.Arrays;
-import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
 
 public class IndexUtilTest {
 

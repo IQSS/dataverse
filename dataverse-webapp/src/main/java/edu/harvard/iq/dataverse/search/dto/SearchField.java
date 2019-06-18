@@ -30,6 +30,7 @@ public abstract class SearchField {
 
     /**
      * Returns localized name that is used for displaying
+     *
      * @return display name
      */
     public String getDisplayName() {

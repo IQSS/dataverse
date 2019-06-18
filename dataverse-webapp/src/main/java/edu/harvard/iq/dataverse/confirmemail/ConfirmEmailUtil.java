@@ -1,20 +1,22 @@
 package edu.harvard.iq.dataverse.confirmemail;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.sql.Timestamp;
 
 public class ConfirmEmailUtil {
-    
-    private ConfirmEmailUtil(){
+
+    private ConfirmEmailUtil() {
         // prevent instance creation, this class has only static methods anyway.
-    } 
-    
+    }
+
     private static final Timestamp GRANDFATHERED_TIME = Timestamp.valueOf("2000-01-01 00:00:00.0");
-    
+
     /**
      * Currently set to Y2K as an easter egg to easily set apart
      * grandfathered accounts from post-launch accounts.
-     * @return 
+     *
+     * @return
      */
     public static Timestamp getGrandfatheredTime() {
         return GRANDFATHERED_TIME;

@@ -9,6 +9,11 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -20,14 +25,11 @@ import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Before;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
- *
  * @author oscardssmith
  */
 public class FileAccessIOTest {
@@ -122,6 +124,7 @@ public class FileAccessIOTest {
 
     /**
      * Test of isAuxObjectCached method, of class FileAccessIO.
+     *
      * @throws java.io.IOException if test is broken
      */
     @Test
@@ -137,7 +140,7 @@ public class FileAccessIOTest {
     @Test
     public void testGetAuxObjectSize() throws IOException {
         assertEquals(21, datasetAccess.getAuxObjectSize("Dataset"));
-        
+
     }
 
     /**
@@ -177,7 +180,7 @@ public class FileAccessIOTest {
      */
     @Test
     public void testSaveInputStreamAsAux() throws IOException {
-        InputStream inputStream = new ByteArrayInputStream("Hello".getBytes());;
+        InputStream inputStream = new ByteArrayInputStream("Hello".getBytes());
         datasetAccess.saveInputStreamAsAux(inputStream, "Dataset");
     }
 
@@ -205,7 +208,6 @@ public class FileAccessIOTest {
 
     /**
      * Test of getStorageLocation method, of class FileAccessIO.
-     *
      */
     @Test
     public void testGetStorageLocation() {

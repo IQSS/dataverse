@@ -1,8 +1,5 @@
 package edu.harvard.iq.dataverse.actionlogging;
 
-import java.util.Date;
-import java.util.Objects;
-import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -13,86 +10,97 @@ import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import java.util.Date;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Logs a single action in the action log.
+ *
  * @author michael
  */
 @Entity
-@Table(indexes = {@Index(columnList="useridentifier"), @Index(columnList="actiontype"), @Index(columnList="starttime")})
+@Table(indexes = {@Index(columnList = "useridentifier"), @Index(columnList = "actiontype"), @Index(columnList = "starttime")})
 public class ActionLogRecord implements java.io.Serializable {
-    
+
     public enum Result {
         OK, BadRequest, PermissionError, InternalError
     }
-    
+
     public enum ActionType {
-        /** login, logout */
+        /**
+         * login, logout
+         */
         SessionManagement,
-        
-        /** Command execution */
+
+        /**
+         * Command execution
+         */
         Command,
-        
-        BuiltinUser, 
-        
-        /** A setting being updated */
+
+        BuiltinUser,
+
+        /**
+         * A setting being updated
+         */
         Setting,
-        
+
         Auth,
-        
+
         Admin,
 
         ExternalTool,
-        
+
         GlobalGroups
     }
-    
+
     @Id
-    @Column( length=36 )
+    @Column(length = 36)
     private String id;
-    
+
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date startTime;
-    
+
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date endTime;
-    
+
     @Enumerated(EnumType.STRING)
     private Result actionResult;
-    
+
     private String userIdentifier;
-    
+
     @Enumerated(EnumType.STRING)
     private ActionType actionType;
-    
+
     private String actionSubType;
-    
-    @Column(columnDefinition="TEXT")
+
+    @Column(columnDefinition = "TEXT")
     private String info;
-    
-    public ActionLogRecord(){}
-    
+
+    public ActionLogRecord() {
+    }
+
     /**
      * @param anActionType
      * @param anActionSubType
      */
     // TODO: Add ability to set `info` in constructor.
-    public ActionLogRecord( ActionType anActionType, String anActionSubType ) {
+    public ActionLogRecord(ActionType anActionType, String anActionSubType) {
         actionType = anActionType;
         actionSubType = anActionSubType;
         startTime = new Date();
     }
-    
+
     @Override
     public String toString() {
-        return "[ActionLogRecord id:" + getId() + " type:" + getActionType() 
-                    + "/" + getActionSubType()
-                    + " result:" + getActionResult() + "]";
+        return "[ActionLogRecord id:" + getId() + " type:" + getActionType()
+                + "/" + getActionSubType()
+                + " result:" + getActionResult() + "]";
     }
-    
+
     @PrePersist
     void prepresist() {
-        if ( id == null ) {
+        if (id == null) {
             id = UUID.randomUUID().toString();
         }
     }
@@ -204,7 +212,6 @@ public class ActionLogRecord implements java.io.Serializable {
         }
         return Objects.equals(this.info, other.info);
     }
-    
-    
-    
+
+
 }

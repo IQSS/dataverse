@@ -59,41 +59,41 @@ import java.util.logging.Logger;
 
 /**
  * The AuthenticationManager is responsible for registering and listing
- * AuthenticationProviders. There's a single instance per application. 
- * 
+ * AuthenticationProviders. There's a single instance per application.
+ * <p>
  * Register the providers in the {@link #startup()} method.
  */
 @Singleton
 public class AuthenticationServiceBean {
     private static final Logger logger = Logger.getLogger(AuthenticationServiceBean.class.getName());
-    
+
     /**
      * Where all registered authentication providers live.
      */
     final Map<String, AuthenticationProvider> authenticationProviders = new HashMap<>();
-    
+
     /**
      * Index of all OAuth2 providers. They also live in {@link #authenticationProviders}.
      */
     final Map<String, AbstractOAuth2AuthenticationProvider> oAuth2authenticationProviders = new HashMap<>();
-    
+
     final Map<String, AuthenticationProviderFactory> providerFactories = new HashMap<>();
-    
+
     @EJB
     BuiltinUserServiceBean builtinUserServiceBean;
-    
+
     @EJB
     IndexServiceBean indexService;
-    
+
     @EJB
     protected ActionLogServiceBean actionLogSvc;
-    
+
     @EJB
     UserNotificationServiceBean userNotificationService;
 
     @EJB
     ConfirmEmailServiceBean confirmEmailService;
-    
+
     @EJB
     PasswordResetServiceBean passwordResetServiceBean;
 
@@ -102,98 +102,100 @@ public class AuthenticationServiceBean {
 
     @EJB
     PasswordValidatorServiceBean passwordValidatorService;
-        
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     @PostConstruct
     public void startup() {
-        
+
         // First, set up the factories
         try {
-            registerProviderFactory( new BuiltinAuthenticationProviderFactory(builtinUserServiceBean, passwordValidatorService, this) );
-            registerProviderFactory( new ShibAuthenticationProviderFactory() );
-            registerProviderFactory( new OAuth2AuthenticationProviderFactory() );
-        
-        } catch (AuthorizationSetupException ex) { 
+            registerProviderFactory(new BuiltinAuthenticationProviderFactory(builtinUserServiceBean, passwordValidatorService, this));
+            registerProviderFactory(new ShibAuthenticationProviderFactory());
+            registerProviderFactory(new OAuth2AuthenticationProviderFactory());
+
+        } catch (AuthorizationSetupException ex) {
             logger.log(Level.SEVERE, "Exception setting up the authentication provider factories: " + ex.getMessage(), ex);
         }
-        
+
         // Now, load the providers.
         em.createNamedQuery("AuthenticationProviderRow.findAllEnabled", AuthenticationProviderRow.class)
                 .getResultList().forEach((row) -> {
-                    try {
-                        registerProvider( loadProvider(row) );
-                        
-                    } catch ( AuthenticationProviderFactoryNotFoundException e ) {
-                        logger.log(Level.SEVERE, "Cannot find authentication provider factory with alias '" + e.getFactoryAlias() + "'",e);
-                        
-                    } catch (AuthorizationSetupException ex) {
-                        logger.log(Level.SEVERE, "Exception setting up the authentication provider '" + row.getId() + "': " + ex.getMessage(), ex);
-                    }
+            try {
+                registerProvider(loadProvider(row));
+
+            } catch (AuthenticationProviderFactoryNotFoundException e) {
+                logger.log(Level.SEVERE, "Cannot find authentication provider factory with alias '" + e.getFactoryAlias() + "'", e);
+
+            } catch (AuthorizationSetupException ex) {
+                logger.log(Level.SEVERE, "Exception setting up the authentication provider '" + row.getId() + "': " + ex.getMessage(), ex);
+            }
         });
     }
-    
-    public void registerProviderFactory(AuthenticationProviderFactory aFactory) 
-            throws AuthorizationSetupException 
-    {
-        if ( providerFactories.containsKey(aFactory.getAlias()) ) {
+
+    public void registerProviderFactory(AuthenticationProviderFactory aFactory)
+            throws AuthorizationSetupException {
+        if (providerFactories.containsKey(aFactory.getAlias())) {
             throw new AuthorizationSetupException(
                     "Duplicate alias " + aFactory.getAlias() + " for authentication provider factory.");
         }
-        providerFactories.put( aFactory.getAlias(), aFactory);
-        logger.log( Level.FINE, "Registered Authentication Provider Factory {0} as {1}", 
-                new Object[]{aFactory.getInfo(), aFactory.getAlias()});
+        providerFactories.put(aFactory.getAlias(), aFactory);
+        logger.log(Level.FINE, "Registered Authentication Provider Factory {0} as {1}",
+                   new Object[]{aFactory.getInfo(), aFactory.getAlias()});
     }
-    
+
     /**
      * Tries to load and {@link AuthenticationProvider} using the passed {@link AuthenticationProviderRow}.
+     *
      * @param aRow The row to load the provider from.
      * @return The provider, if successful
      * @throws AuthenticationProviderFactoryNotFoundException If the row specifies a non-existent factory
-     * @throws AuthorizationSetupException If the factory failed to instantiate a provider from the row.
+     * @throws AuthorizationSetupException                    If the factory failed to instantiate a provider from the row.
      */
-    public AuthenticationProvider loadProvider( AuthenticationProviderRow aRow )
-                throws AuthenticationProviderFactoryNotFoundException, AuthorizationSetupException {
+    public AuthenticationProvider loadProvider(AuthenticationProviderRow aRow)
+            throws AuthenticationProviderFactoryNotFoundException, AuthorizationSetupException {
         AuthenticationProviderFactory fact = getProviderFactory(aRow.getFactoryAlias());
-        
-        if ( fact == null ) throw new AuthenticationProviderFactoryNotFoundException(aRow.getFactoryAlias());
-        
+
+        if (fact == null) {
+            throw new AuthenticationProviderFactoryNotFoundException(aRow.getFactoryAlias());
+        }
+
         return fact.buildProvider(aRow);
     }
-    
+
     public void registerProvider(AuthenticationProvider aProvider) throws AuthorizationSetupException {
-        if ( authenticationProviders.containsKey(aProvider.getId()) ) {
+        if (authenticationProviders.containsKey(aProvider.getId())) {
             throw new AuthorizationSetupException(
                     "Duplicate id " + aProvider.getId() + " for authentication provider.");
         }
-        authenticationProviders.put( aProvider.getId(), aProvider);
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "registerProvider")
-            .setInfo(aProvider.getId() + ":" + aProvider.getInfo().getTitle()));
-        if ( aProvider instanceof AbstractOAuth2AuthenticationProvider ) {
+        authenticationProviders.put(aProvider.getId(), aProvider);
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Auth, "registerProvider")
+                                 .setInfo(aProvider.getId() + ":" + aProvider.getInfo().getTitle()));
+        if (aProvider instanceof AbstractOAuth2AuthenticationProvider) {
             oAuth2authenticationProviders.put(aProvider.getId(), (AbstractOAuth2AuthenticationProvider) aProvider);
         }
-        
+
     }
-    
-    public AbstractOAuth2AuthenticationProvider getOAuth2Provider( String id ) {
+
+    public AbstractOAuth2AuthenticationProvider getOAuth2Provider(String id) {
         return oAuth2authenticationProviders.get(id);
     }
-    
+
     public Set<AbstractOAuth2AuthenticationProvider> getOAuth2Providers() {
         return new HashSet<>(oAuth2authenticationProviders.values());
     }
-    
-    public void deregisterProvider( String id ) {
-        oAuth2authenticationProviders.remove( id );
-        if ( authenticationProviders.remove(id) != null ) {
-            actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "deregisterProvider")
-                .setInfo(id));
-            logger.log(Level.INFO,"Deregistered provider {0}", new Object[]{id});
-            logger.log(Level.INFO,"Providers left {0}", new Object[]{getAuthenticationProviderIds()});
+
+    public void deregisterProvider(String id) {
+        oAuth2authenticationProviders.remove(id);
+        if (authenticationProviders.remove(id) != null) {
+            actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Auth, "deregisterProvider")
+                                     .setInfo(id));
+            logger.log(Level.INFO, "Deregistered provider {0}", new Object[]{id});
+            logger.log(Level.INFO, "Providers left {0}", new Object[]{getAuthenticationProviderIds()});
         }
     }
-    
+
     public Set<String> getAuthenticationProviderIds() {
         return authenticationProviders.keySet();
     }
@@ -201,61 +203,61 @@ public class AuthenticationServiceBean {
     public Collection<AuthenticationProvider> getAuthenticationProviders() {
         return authenticationProviders.values();
     }
-    
-    public <T extends AuthenticationProvider> Set<String> getAuthenticationProviderIdsOfType( Class<T> aClass ) {
+
+    public <T extends AuthenticationProvider> Set<String> getAuthenticationProviderIdsOfType(Class<T> aClass) {
         Set<String> retVal = new TreeSet<>();
-        for ( Map.Entry<String, AuthenticationProvider> p : authenticationProviders.entrySet() ) {
-            if ( aClass.isAssignableFrom( p.getValue().getClass() ) ) {
-                retVal.add( p.getKey() );
+        for (Map.Entry<String, AuthenticationProvider> p : authenticationProviders.entrySet()) {
+            if (aClass.isAssignableFrom(p.getValue().getClass())) {
+                retVal.add(p.getKey());
             }
         }
         return retVal;
     }
-    
-    public AuthenticationProviderFactory getProviderFactory( String alias ) {
+
+    public AuthenticationProviderFactory getProviderFactory(String alias) {
         return providerFactories.get(alias);
     }
-    
-    public AuthenticationProvider getAuthenticationProvider( String id ) {
-        return authenticationProviders.get( id );
+
+    public AuthenticationProvider getAuthenticationProvider(String id) {
+        return authenticationProviders.get(id);
     }
-    
-    public AuthenticatedUser findByID(Object pk){
-        if (pk==null){
+
+    public AuthenticatedUser findByID(Object pk) {
+        if (pk == null) {
             return null;
         }
         return em.find(AuthenticatedUser.class, pk);
     }
 
-    public void removeApiToken(AuthenticatedUser user){
-        if (user!=null) {
+    public void removeApiToken(AuthenticatedUser user) {
+        if (user != null) {
             ApiToken apiToken = findApiTokenByUser(user);
             if (apiToken != null) {
                 em.remove(apiToken);
             }
         }
     }
-    
+
     public boolean isOrcidEnabled() {
-        return oAuth2authenticationProviders.values().stream().anyMatch( s -> s.getId().toLowerCase().contains("orcid") );
+        return oAuth2authenticationProviders.values().stream().anyMatch(s -> s.getId().toLowerCase().contains("orcid"));
     }
-    
+
     /**
      * Use with care! This method was written primarily for developers
      * interested in API testing who want to:
-     * 
+     * <p>
      * 1. Create a temporary user and get an API token.
-     * 
+     * <p>
      * 2. Do some work with that API token.
-     * 
+     * <p>
      * 3. Delete all the stuff that was created with the API token.
-     * 
+     * <p>
      * 4. Delete the temporary user.
-     * 
+     * <p>
      * Before calling this method, make sure you've deleted all the stuff tied
      * to the user, including stuff they've created, role assignments, group
      * assignments, etc.
-     * 
+     * <p>
      * Longer term, the intention is to have a "disableAuthenticatedUser"
      * method/command. See https://github.com/IQSS/dataverse/issues/2419
      */
@@ -275,30 +277,30 @@ public class AuthenticationServiceBean {
                 em.remove(confirmEmailData);
             }
             userNotificationService.findByUser(user.getId()).forEach(userNotificationService::delete);
-            
+
             AuthenticationProvider prv = lookupProvider(user);
-            if ( prv != null && prv.isUserDeletionAllowed() ) {
+            if (prv != null && prv.isUserDeletionAllowed()) {
                 prv.deleteUser(user.getAuthenticatedUserLookup().getPersistentUserId());
             }
-            
-            actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "deleteUser")
-                .setInfo(user.getUserIdentifier()));
-            em.remove(user.getAuthenticatedUserLookup());         
+
+            actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Auth, "deleteUser")
+                                     .setInfo(user.getUserIdentifier()));
+            em.remove(user.getAuthenticatedUserLookup());
             em.remove(user);
 
         }
     }
-            
-    public AuthenticatedUser getAuthenticatedUser( String identifier ) {
+
+    public AuthenticatedUser getAuthenticatedUser(String identifier) {
         try {
             return em.createNamedQuery("AuthenticatedUser.findByIdentifier", AuthenticatedUser.class)
                     .setParameter("identifier", identifier)
                     .getSingleResult();
-        } catch ( NoResultException nre ) {
+        } catch (NoResultException nre) {
             return null;
         }
     }
-    
+
     public AuthenticatedUser getAdminUser() {
         try {
             return em.createNamedQuery("AuthenticatedUser.findAdminUser", AuthenticatedUser.class)
@@ -309,15 +311,15 @@ public class AuthenticationServiceBean {
         }
     }
 
-    public AuthenticatedUser getAuthenticatedUserByEmail( String email ) {
+    public AuthenticatedUser getAuthenticatedUserByEmail(String email) {
         try {
             return em.createNamedQuery("AuthenticatedUser.findByEmail", AuthenticatedUser.class)
                     .setParameter("email", email)
                     .getSingleResult();
-        } catch ( NoResultException ex ) {
+        } catch (NoResultException ex) {
             logger.log(Level.INFO, "no user found using {0}", email);
             return null;
-        } catch ( NonUniqueResultException ex ) {
+        } catch (NonUniqueResultException ex) {
             logger.log(Level.INFO, "multiple users found using {0}: {1}", new Object[]{email, ex});
             return null;
         }
@@ -325,33 +327,35 @@ public class AuthenticationServiceBean {
 
     /**
      * Returns an {@link AuthenticatedUser} matching the passed provider id and the authentication request. If
-     *  no such user exist, it is created and then returned.
-     * 
-     * <strong>Invariant:</strong> upon successful return from this call, an {@link AuthenticatedUser} record 
+     * no such user exist, it is created and then returned.
+     *
+     * <strong>Invariant:</strong> upon successful return from this call, an {@link AuthenticatedUser} record
      * matching the request and provider exists in the database.
-     * 
+     *
      * @param authenticationProviderId
      * @param req
      * @return The authenticated user for the passed provider id and authentication request.
-     * @throws AuthenticationFailedException 
+     * @throws AuthenticationFailedException
      */
-    public AuthenticatedUser getUpdateAuthenticatedUser( String authenticationProviderId, AuthenticationRequest req ) throws AuthenticationFailedException {
+    public AuthenticatedUser getUpdateAuthenticatedUser(String authenticationProviderId, AuthenticationRequest req) throws AuthenticationFailedException {
         AuthenticationProvider prv = getAuthenticationProvider(authenticationProviderId);
-        if ( prv == null ) throw new IllegalArgumentException("No authentication provider listed under id " + authenticationProviderId );
-        if ( ! (prv instanceof CredentialsAuthenticationProvider) ) {
-            throw new IllegalArgumentException( authenticationProviderId + " does not support credentials-based authentication." );
+        if (prv == null) {
+            throw new IllegalArgumentException("No authentication provider listed under id " + authenticationProviderId);
         }
-        AuthenticationResponse resp = ((CredentialsAuthenticationProvider)prv).authenticate(req);
-        
-        if ( resp.getStatus() == AuthenticationResponse.Status.SUCCESS ) {
+        if (!(prv instanceof CredentialsAuthenticationProvider)) {
+            throw new IllegalArgumentException(authenticationProviderId + " does not support credentials-based authentication.");
+        }
+        AuthenticationResponse resp = ((CredentialsAuthenticationProvider) prv).authenticate(req);
+
+        if (resp.getStatus() == AuthenticationResponse.Status.SUCCESS) {
             // yay! see if we already have this user.
             AuthenticatedUser user = lookupUser(authenticationProviderId, resp.getUserId());
 
-            if (user != null){
+            if (user != null) {
                 user = userService.updateLastLogin(user);
             }
-            
-            if ( user == null ) {
+
+            if (user == null) {
                 throw new IllegalStateException("Authenticated user does not exist. The functionality to support creating one at this point in authentication has been removed.");
                 //return createAuthenticatedUser(
                 //        new UserRecordIdentifier(authenticationProviderId, resp.getUserId()), resp.getUserId(), resp.getUserDisplayInfo(), true );
@@ -362,25 +366,25 @@ public class AuthenticationServiceBean {
                     return updateAuthenticatedUser(user, resp.getUserDisplayInfo());
                 }
             }
-        } else { 
+        } else {
             throw new AuthenticationFailedException(resp, "Authentication Failed: " + resp.getMessage());
         }
     }
-    
+
     /**
      * @param email
      * @return {@code true} iff the none of the authenticated users has the passed email address.
      */
     public boolean isEmailAddressAvailable(String email) {
         return em.createNamedQuery("AuthenticatedUser.findByEmail", AuthenticatedUser.class)
-                 .setParameter("email", email)
-                 .getResultList().isEmpty();
+                .setParameter("email", email)
+                .getResultList().isEmpty();
     }
-    
+
     public AuthenticatedUser lookupUser(UserRecordIdentifier id) {
         return lookupUser(id.repoId, id.userIdInRepo);
     }
-    
+
     public AuthenticatedUser lookupUser(String authPrvId, String userPersistentId) {
         TypedQuery<AuthenticatedUserLookup> typedQuery = em.createNamedQuery("AuthenticatedUserLookup.findByAuthPrvID_PersUserId", AuthenticatedUserLookup.class);
         typedQuery.setParameter("authPrvId", authPrvId);
@@ -392,11 +396,11 @@ public class AuthenticationServiceBean {
             return null;
         }
     }
-    
-    public AuthenticationProvider lookupProvider( AuthenticatedUser user )  {
+
+    public AuthenticationProvider lookupProvider(AuthenticatedUser user) {
         return authenticationProviders.get(user.getAuthenticatedUserLookup().getAuthenticationProviderId());
     }
-    
+
     public ApiToken findApiToken(String token) {
         try {
             return em.createNamedQuery("ApiToken.findByTokenString", ApiToken.class)
@@ -406,7 +410,7 @@ public class AuthenticationServiceBean {
             return null;
         }
     }
-    
+
     public ApiToken findApiTokenByUser(AuthenticatedUser au) {
         if (au == null) {
             return null;
@@ -420,8 +424,8 @@ public class AuthenticationServiceBean {
             return null;
         }
     }
-    
-    
+
+
     // A method for generating a new API token;
     // TODO: this is a simple, one-size-fits-all solution; we'll need
     // to expand this system, to be able to generate tokens with different
@@ -440,66 +444,71 @@ public class AuthenticationServiceBean {
         c.roll(Calendar.YEAR, 1);
         apiToken.setExpireTime(new Timestamp(c.getTimeInMillis()));
         save(apiToken);
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "generateApiToken")
-            .setInfo("user:" + au.getIdentifier() + " token:" +  apiToken.getTokenString()));
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Auth, "generateApiToken")
+                                 .setInfo("user:" + au.getIdentifier() + " token:" + apiToken.getTokenString()));
 
         return apiToken;
     }
 
-    public AuthenticatedUser lookupUser( String apiToken ) {
+    public AuthenticatedUser lookupUser(String apiToken) {
         ApiToken tkn = findApiToken(apiToken);
-        if ( tkn == null ) return null;
-        
-        if ( tkn.isDisabled() ) return null;
-        if ( tkn.getExpireTime() != null ) {
-            if ( tkn.getExpireTime().before( new Timestamp(new Date().getTime())) ) {
+        if (tkn == null) {
+            return null;
+        }
+
+        if (tkn.isDisabled()) {
+            return null;
+        }
+        if (tkn.getExpireTime() != null) {
+            if (tkn.getExpireTime().before(new Timestamp(new Date().getTime()))) {
                 em.remove(tkn);
                 return null;
             }
         }
-        
+
         return tkn.getAuthenticatedUser();
     }
-    
-    public AuthenticatedUser save( AuthenticatedUser user ) {
+
+    public AuthenticatedUser save(AuthenticatedUser user) {
         em.persist(user);
         em.flush();
         return user;
     }
-    
-    public AuthenticatedUser update( AuthenticatedUser user ) {
+
+    public AuthenticatedUser update(AuthenticatedUser user) {
         return em.merge(user);
     }
-    
-    public ApiToken save( ApiToken aToken ) {
-        if ( aToken.getId() == null ) {
+
+    public ApiToken save(ApiToken aToken) {
+        if (aToken.getId() == null) {
             em.persist(aToken);
             return aToken;
-        } else { 
-            return em.merge( aToken );
-            
+        } else {
+            return em.merge(aToken);
+
         }
     }
-    
+
     /**
      * Associates the passed {@link AuthenticatedUser} with a new provider.
-     * @param authenticatedUser the authenticated being re-associated
+     *
+     * @param authenticatedUser        the authenticated being re-associated
      * @param authenticationProviderId Id of the new provider
-     * @param persistentIdInProvider Id of the user in the new provider
+     * @param persistentIdInProvider   Id of the user in the new provider
      * @return {@code true} iff the change was successful.
      */
-    public boolean updateProvider( AuthenticatedUser authenticatedUser, String authenticationProviderId, String persistentIdInProvider ) {
+    public boolean updateProvider(AuthenticatedUser authenticatedUser, String authenticationProviderId, String persistentIdInProvider) {
         try {
             AuthenticatedUserLookup aul = em.createNamedQuery("AuthenticatedUserLookup.findByAuthUser", AuthenticatedUserLookup.class)
                     .setParameter("authUser", authenticatedUser)
                     .getSingleResult();
             aul.setAuthenticationProviderId(authenticationProviderId);
             aul.setPersistentUserId(persistentIdInProvider);
-            actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth,
-                    authenticatedUser.getIdentifier() + " now associated with provider " + authenticationProviderId + " id: " + persistentIdInProvider) );
+            actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Auth,
+                                                 authenticatedUser.getIdentifier() + " now associated with provider " + authenticationProviderId + " id: " + persistentIdInProvider));
             return true;
-            
-        } catch ( NoResultException | NonUniqueResultException ex ) {
+
+        } catch (NoResultException | NonUniqueResultException ex) {
             logger.log(Level.WARNING, "Error converting user " + authenticatedUser.getUserIdentifier() + ": " + ex.getMessage(), ex);
             return false;
         }
@@ -515,19 +524,19 @@ public class AuthenticationServiceBean {
      * @param userRecordId
      * @param proposedAuthenticatedUserIdentifier
      * @param userDisplayInfo
-     * @param generateUniqueIdentifier if {@code true}, create a new, unique user identifier for the created user, if the suggested one exists.
+     * @param generateUniqueIdentifier            if {@code true}, create a new, unique user identifier for the created user, if the suggested one exists.
      * @return the newly created user, or {@code null} if the proposed identifier exists and {@code generateUniqueIdentifier} was {@code false}.
      * @throws EJBException which may wrap an ConstraintViolationException if the proposed user does not pass bean validation.
      */
     public AuthenticatedUser createAuthenticatedUser(UserRecordIdentifier userRecordId,
-            String proposedAuthenticatedUserIdentifier,
-            AuthenticatedUserDisplayInfo userDisplayInfo,
-            boolean generateUniqueIdentifier) {
+                                                     String proposedAuthenticatedUserIdentifier,
+                                                     AuthenticatedUserDisplayInfo userDisplayInfo,
+                                                     boolean generateUniqueIdentifier) {
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
         // set account creation time & initial login time (same timestamp)
         authenticatedUser.setCreatedTime(new Timestamp(new Date().getTime()));
         authenticatedUser.setLastLoginTime(authenticatedUser.getCreatedTime());
-        
+
         authenticatedUser.applyDisplayInfo(userDisplayInfo);
 
         // we have no desire for leading or trailing whitespace in identifiers
@@ -537,23 +546,23 @@ public class AuthenticationServiceBean {
         // we now select a username for the generated AuthenticatedUser, or give up
         String internalUserIdentifer = proposedAuthenticatedUserIdentifier;
         // TODO should lock table authenticated users for write here
-        if ( identifierExists(internalUserIdentifer) ) {
-            if ( ! generateUniqueIdentifier ) {
+        if (identifierExists(internalUserIdentifer)) {
+            if (!generateUniqueIdentifier) {
                 return null;
             }
-            int i=1;
+            int i = 1;
             String identifier = internalUserIdentifer + i;
-            while ( identifierExists(identifier) ) {
+            while (identifierExists(identifier)) {
                 i += 1;
             }
             authenticatedUser.setUserIdentifier(identifier);
         } else {
             authenticatedUser.setUserIdentifier(internalUserIdentifer);
         }
-        authenticatedUser = save( authenticatedUser );
+        authenticatedUser = save(authenticatedUser);
         // TODO should unlock table authenticated users for write here
         AuthenticatedUserLookup auusLookup = userRecordId.createAuthenticatedUserLookup(authenticatedUser);
-        em.persist( auusLookup );
+        em.persist(auusLookup);
         authenticatedUser.setAuthenticatedUserLookup(auusLookup);
 
         if (ShibAuthenticationProvider.PROVIDER_ID.equals(auusLookup.getAuthenticationProviderId())) {
@@ -566,31 +575,32 @@ public class AuthenticationServiceBean {
              * better to do something like "startConfirmEmailProcessForNewUser". */
             confirmEmailService.createToken(authenticatedUser);
         }
-        
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "createUser")
-            .setInfo(authenticatedUser.getIdentifier()));
+
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Auth, "createUser")
+                                 .setInfo(authenticatedUser.getIdentifier()));
 
         return authenticatedUser;
     }
-    
+
     /**
      * Checks whether the {@code idtf} is already taken by another {@link AuthenticatedUser}.
+     *
      * @param idtf
      * @return {@code true} iff there's already a user by that username.
      */
-    public boolean identifierExists( String idtf ) {
+    public boolean identifierExists(String idtf) {
         return em.createNamedQuery("AuthenticatedUser.countOfIdentifier", Number.class)
                 .setParameter("identifier", idtf)
                 .getSingleResult().intValue() > 0;
     }
-    
+
     public AuthenticatedUser updateAuthenticatedUser(AuthenticatedUser user, AuthenticatedUserDisplayInfo userDisplayInfo) {
         user.applyDisplayInfo(userDisplayInfo);
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "updateUser")
-            .setInfo(user.getIdentifier()));
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Auth, "updateUser")
+                                 .setInfo(user.getIdentifier()));
         return update(user);
     }
-    
+
     public List<AuthenticatedUser> findAllAuthenticatedUsers() {
         return em.createNamedQuery("AuthenticatedUser.findAll", AuthenticatedUser.class).getResultList();
     }
@@ -598,12 +608,12 @@ public class AuthenticationServiceBean {
     public List<AuthenticatedUser> findSuperUsers() {
         return em.createNamedQuery("AuthenticatedUser.findSuperUsers", AuthenticatedUser.class).getResultList();
     }
-    
-    
+
+
     public Set<AuthenticationProviderFactory> listProviderFactories() {
-        return new HashSet<>( providerFactories.values() ); 
+        return new HashSet<>(providerFactories.values());
     }
-    
+
     public Timestamp getCurrentTimestamp() {
         return new Timestamp(new Date().getTime());
     }
@@ -658,10 +668,7 @@ public class AuthenticationServiceBean {
             logger.info("Couldn't delete builtin user because could find it based on username " + builtinUsername);
         }
         AuthenticatedUser shibUser = lookupUser(shibProviderId, perUserShibIdentifier);
-        if (shibUser != null) {
-            return shibUser;
-        }
-        return null;
+        return shibUser;
     }
 
     public AuthenticatedUser convertBuiltInUserToRemoteUser(AuthenticatedUser builtInUserToConvert, String newProviderId, UserIdentifier newUserIdentifierInLookupTable) {
@@ -707,20 +714,17 @@ public class AuthenticationServiceBean {
             logger.info("Couldn't delete builtin user because could find it based on username " + builtinUsername);
         }
         AuthenticatedUser nonBuiltinUser = lookupUser(newProviderId, perUserIdentifier);
-        if (nonBuiltinUser != null) {
-            return nonBuiltinUser;
-        }
-        return null;
+        return nonBuiltinUser;
     }
 
     /**
      * @param idOfAuthUserToConvert The id of the remote AuthenticatedUser
-     * (Shibboleth user or OAuth user) to convert to a BuiltinUser.
-     * @param newEmailAddress The new email address that will be used instead of
-     * the user's old email address from the institution that they have left.
+     *                              (Shibboleth user or OAuth user) to convert to a BuiltinUser.
+     * @param newEmailAddress       The new email address that will be used instead of
+     *                              the user's old email address from the institution that they have left.
      * @return BuiltinUser
      * @throws java.lang.Exception You must catch and report back to the user (a
-     * superuser) any Exceptions.
+     *                             superuser) any Exceptions.
      */
     public BuiltinUser convertRemoteToBuiltIn(Long idOfAuthUserToConvert, String newEmailAddress) throws Exception {
         AuthenticatedUser authenticatedUser = findByID(idOfAuthUserToConvert);

@@ -1,10 +1,18 @@
 package edu.harvard.iq.dataverse.dataaccess;
+
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import org.javaswift.joss.client.factory.AccountFactory;
+import org.javaswift.joss.model.Account;
+import org.javaswift.joss.model.Container;
+import org.javaswift.joss.model.StoredObject;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -24,19 +32,13 @@ import java.util.Formatter;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import org.javaswift.joss.client.factory.AccountFactory;
+
 import static org.javaswift.joss.client.factory.AuthenticationMethod.BASIC;
 import static org.javaswift.joss.client.factory.AuthenticationMethod.KEYSTONE_V3;
-import org.javaswift.joss.model.Account;
-import org.javaswift.joss.model.Container;
-import org.javaswift.joss.model.StoredObject;
 
 /**
- *
- * @author leonid andreev
  * @param <T> what it stores
+ * @author leonid andreev
  */
 /* 
     Swift driver, implemented as part of the Dataverse - Mass Open Cloud
@@ -45,12 +47,12 @@ import org.javaswift.joss.model.StoredObject;
 public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
 
     private String swiftFolderPath;
-    private String swiftLocation; 
+    private String swiftLocation;
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO");
 
     public SwiftAccessIO() {
-        this((T)null);
+        this((T) null);
     }
 
     public SwiftAccessIO(T dvObject) {
@@ -62,9 +64,9 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
 
         this.setIsLocalFile(false);
     }
-    
+
     public SwiftAccessIO(String swiftLocation) {
-        this((T)null);
+        this((T) null);
         this.swiftLocation = swiftLocation;
     }
 
@@ -75,20 +77,20 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     //TODO: when swift containers can be private, change this -SF
     boolean publicSwiftContainer = true;
 
-        
+
     //for hash
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
-    
+
     //TODO: should this be dynamically generated based on size of file?
     //Also, this is in seconds
     private static int TEMP_URL_EXPIRES = System.getProperty("dataverse.files.temp_url_expire") != null ? Integer.parseInt(System.getProperty("dataverse.files.temp_url_expire")) : 60;
 
-    private static int LIST_PAGE_LIMIT = 100;  
+    private static int LIST_PAGE_LIMIT = 100;
 
     @Override
     public void open(DataAccessOption... options) throws IOException {
         DataAccessRequest req = this.getRequest();
-        
+
         if (isWriteAccessRequested(options)) {
             isWriteAccess = true;
             isReadAccess = false;
@@ -193,13 +195,13 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         setSize(newFileSize);
 
     }
-    
-    
+
+
     @Override
     public void saveInputStream(InputStream inputStream, Long filesize) throws IOException {
         saveInputStream(inputStream);
     }
-    
+
     @Override
     public void saveInputStream(InputStream inputStream) throws IOException {
         long newFileSize = -1;
@@ -239,17 +241,17 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             swiftFileObject.delete();
         }
     }*/
-    
+
     @Override
     public void delete() throws IOException {
         if (!isDirectAccess()) {
             throw new IOException("Direct Access IO must be used to permanently delete stored file objects");
         }
-        
+
         swiftFileObject = initializeSwiftFileDirectAccess();
         swiftFileObject.delete();
     }
-    
+
 
     @Override
     public Channel openAuxChannel(String auxItemTag, DataAccessOption... options) throws IOException {
@@ -318,13 +320,13 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException(failureMsg);
         }
     }
-    
+
     @Override
     public void revertBackupAsAux(String auxItemTag) throws IOException {
         // We are going to try and overwrite the current main file 
         // with the contents of the stored original, currently saved as an 
         // Aux file. So we need WRITE access on the main file: 
-        
+
         if (swiftFileObject == null || swiftContainer == null || !this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
@@ -332,7 +334,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             // We are writing FROM the saved AUX object, back to the main object;
             // So we need READ access on the AUX object:
-            
+
             StoredObject swiftAuxObject = openSwiftAuxFile(auxItemTag);
             swiftAuxObject.copyObject(swiftContainer, swiftFileObject);
 
@@ -370,12 +372,12 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         }
 
     }
-    
+
     @Override
     public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag, Long filesize) throws IOException {
         saveInputStreamAsAux(inputStream, auxItemTag);
     }
-    
+
     // this method copies a local InputStream into this DataAccess Auxiliary location:
     @Override
     public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
@@ -403,11 +405,11 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         if (this.swiftContainer == null || this.swiftFileObject == null) {
             throw new IOException("This SwiftAccessIO() hasn't been properly initialized yet.");
         }
-        
-        String namePrefix = this.swiftFileObject.getName()+".";
-        
-        Collection<StoredObject> items; 
-        String lastItemName = null; 
+
+        String namePrefix = this.swiftFileObject.getName() + ".";
+
+        Collection<StoredObject> items;
+        String lastItemName = null;
         List<String> ret = new ArrayList<>();
 
         while ((items = this.swiftContainer.list(namePrefix, lastItemName, LIST_PAGE_LIMIT)) != null && items.size() > 0) {
@@ -437,10 +439,10 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException("This SwiftAccessIO() hasn't been properly initialized yet. (did you execute SwiftAccessIO.open()?)");
         }
 
-        Collection<StoredObject> victims; 
-        String lastVictim = null; 
-          
-        while ((victims = this.swiftContainer.list(this.swiftFileObject.getName()+".", lastVictim, LIST_PAGE_LIMIT))!= null && victims.size() > 0) {
+        Collection<StoredObject> victims;
+        String lastVictim = null;
+
+        while ((victims = this.swiftContainer.list(this.swiftFileObject.getName() + ".", lastVictim, LIST_PAGE_LIMIT)) != null && victims.size() > 0) {
             for (StoredObject victim : victims) {
                 lastVictim = victim.getName();
                 logger.info("trying to delete " + lastVictim);
@@ -453,7 +455,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public String getStorageLocation() {
         if (isDirectAccess()) {
-            return "swift://" + swiftLocation; 
+            return "swift://" + swiftLocation;
         }
         // For Swift, the "storageLocation" and "storageIdentifier" of the DvObject are the same thing.
         return dvObject.getStorageIdentifier();
@@ -505,7 +507,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             if (storageIdentifier.startsWith("swift://")) {
                 // This is a call on an already existing swift object. 
 
-                String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);    
+                String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);
 
                 if (swiftStorageTokens.length != 3) {
                     // bad storage identifier
@@ -523,7 +525,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 }
 
                 if (auxItemTag != null) {
-                    swiftFileName = swiftFileName.concat("."+auxItemTag);
+                    swiftFileName = swiftFileName.concat("." + auxItemTag);
                 }
             } else if (this.isReadAccess) {
                 // An attempt to call Swift driver,  in a Read mode on a non-swift stored datafile
@@ -540,10 +542,10 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 String swiftFolderPathSeparator = "-";
                 String authorityNoSlashes = owner.getAuthority().replace("/", swiftFolderPathSeparator);
                 swiftFolderPath = owner.getProtocolForFileStorage() + swiftFolderPathSeparator
-                                  + authorityNoSlashes.replace(".", swiftFolderPathSeparator);
+                        + authorityNoSlashes.replace(".", swiftFolderPathSeparator);
 
                 swiftFileName = owner.getIdentifierForFileStorage() + swiftPseudoFolderPathSeparator
-                                + storageIdentifier;
+                        + storageIdentifier;
                 //setSwiftContainerName(swiftFolderPath);
                 //swiftFileName = dataFile.getDisplayName();
                 //Storage Identifier is now updated after the object is uploaded on Swift.
@@ -558,7 +560,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 // This is a call on an already existing swift object. 
 
                 //TODO: determine how storage identifer will give us info
-                String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);    
+                String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);
                 //number of tokens should be two because there is not main file
                 if (swiftStorageTokens.length != 2) {
                     // bad storage identifier
@@ -572,9 +574,9 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                     swiftFileName = auxItemTag;
                 } else {
                     throw new IOException("Dataset related auxillary files require an auxItemTag");
-                }       
+                }
 
-                if (StringUtil.isEmpty(swiftEndPoint) || StringUtil.isEmpty(swiftContainerName) || StringUtil.isEmpty(swiftFileName) ) {
+                if (StringUtil.isEmpty(swiftEndPoint) || StringUtil.isEmpty(swiftContainerName) || StringUtil.isEmpty(swiftFileName)) {
                     // all of these things need to be specified, for this to be a valid Swift location
                     // identifier.1
                     throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
@@ -594,8 +596,8 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
 
                 String authorityNoSlashes = dataset.getAuthorityForFileStorage().replace("/", swiftFolderPathSeparator);
                 swiftFolderPath = dataset.getProtocolForFileStorage() + swiftFolderPathSeparator +
-                    authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
-                    swiftPseudoFolderPathSeparator + dataset.getIdentifierForFileStorage();
+                        authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
+                        swiftPseudoFolderPathSeparator + dataset.getIdentifierForFileStorage();
 
                 swiftFileName = auxItemTag;
                 dvObject.setStorageIdentifier("swift://" + swiftEndPoint + ":" + swiftFolderPath);
@@ -604,7 +606,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             }
         } else {
             //for future scope, if dataverse is decided to be stored in swift storage containersopen    
-            throw new FileNotFoundException("Error initializing swift object");  
+            throw new FileNotFoundException("Error initializing swift object");
         }
         // Authenticate with Swift: 
 
@@ -640,10 +642,9 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                     try {
                         //creates a public data container
                         this.swiftContainer.makePublic();
-                    }
-                    catch (Exception e){
+                    } catch (Exception e) {
                         //e.printStackTrace();
-                        logger.warning("Caught exception "+e.getClass()+" while creating a swift container (it's likely not fatal!)");
+                        logger.warning("Caught exception " + e.getClass() + " while creating a swift container (it's likely not fatal!)");
                     }
                 }
             } else {
@@ -683,7 +684,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         if (!isDirectAccess()) {
             throw new IOException("Direct access attempted on a SwiftAccessIO associated with a DvObject");
         }
-        
+
         String swiftEndPoint = null;
         String swiftContainerName = null;
         String swiftFileName = null;
@@ -697,13 +698,13 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         swiftEndPoint = swiftStorageTokens[0];
         swiftContainerName = swiftStorageTokens[1];
         swiftFileName = swiftStorageTokens[2];
-        
+
         if (this.account == null) {
             account = authenticateWithSwift(swiftEndPoint);
         }
-        
+
         this.swiftContainer = account.getContainer(swiftContainerName);
-        
+
         StoredObject fileObject = this.swiftContainer.getObject(swiftFileName);
 
         if (!fileObject.exists()) {
@@ -713,7 +714,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         return fileObject;
 
     }
-    
+
     private InputStream openSwiftFileAsInputStream() throws IOException {
         swiftFileObject = initializeSwiftFileObject(false);
         this.setSize(swiftFileObject.getContentLength());
@@ -792,8 +793,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                         .setPassword(swiftEndPointSecretKey)
                         .setAuthUrl(swiftEndPointAuthUrl)
                         .createAccount();
-            }
-            else { // assume BASIC
+            } else { // assume BASIC
                 logger.fine("Authentication type: basic");
                 account = new AccountFactory()
                         .setUsername(swiftEndPointUsername)
@@ -810,7 +810,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
 
         return account;
     }
-    
+
     private String getSwiftFileURI(StoredObject fileObject) throws IOException {
         try {
             return fileObject.getPublicURL();
@@ -818,10 +818,11 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException("SwiftAccessIO: failed to get public URL of the stored object");
         }
     }
-    
+
     //these all get called a lot (20+ times) to load a page
     //lets cache them if the expiry is not expired
     private String hmac = null;
+
     public String generateTempUrlSignature(String swiftEndPoint, String containerName, String objectName, int duration) throws IOException {
         if (hmac == null || isExpiryExpired(generateTempUrlExpiry(duration, System.currentTimeMillis()), duration, System.currentTimeMillis())) {
             Properties p = getSwiftProperties();
@@ -841,8 +842,9 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         return hmac;
 
     }
-    
+
     private long expiry = -1;
+
     public long generateTempUrlExpiry(int duration, long currentTime) {
         if (expiry == -1 || isExpiryExpired(expiry, duration, System.currentTimeMillis())) {
             expiry = (currentTime / 1000) + duration;
@@ -851,11 +853,12 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     private String temporaryUrl = null;
+
     private String generateTemporarySwiftUrl(String swiftEndPoint, String containerName, String objectName, int duration) throws IOException {
         Properties p = getSwiftProperties();
         String baseUrl = p.getProperty("swift.swift_endpoint." + swiftEndPoint);
         String path = "/v1/" + containerName + "/" + objectName;
-        
+
         if (temporaryUrl == null || isExpiryExpired(generateTempUrlExpiry(duration, System.currentTimeMillis()), duration, System.currentTimeMillis())) {
             temporaryUrl = baseUrl + path + "?temp_url_sig=" + generateTempUrlSignature(swiftEndPoint, containerName, objectName, duration) + "&temp_url_expires=" + generateTempUrlExpiry(duration, System.currentTimeMillis());
         }
@@ -865,13 +868,13 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
 
         return temporaryUrl;
     }
-    
+
     public boolean isExpiryExpired(long expiry, int duration, long currentTime) {
         return ((expiry - duration) * 1000) > currentTime;
     }
 
     @Override
-    public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {        
+    public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {
         if (this.isAuxObjectCached(auxItemTag)) {
             return openSwiftAuxFileAsInputStream(auxItemTag);
         } else {
@@ -888,12 +891,12 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         if (dvObject instanceof DataFile) {
             String authorityNoSlashes = this.getDataFile().getOwner().getAuthorityForFileStorage().replace("/", swiftFolderPathSeparator);
             return this.getDataFile().getOwner().getProtocolForFileStorage() + swiftFolderPathSeparator
-                   +            authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
-                swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifierForFileStorage();
+                    + authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
+                    swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifierForFileStorage();
         }
         return null;
-     }
-     
+    }
+
     //https://gist.github.com/ishikawa/88599
     public static String toHexString(byte[] bytes) {
         Formatter formatter = new Formatter();
@@ -901,7 +904,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         for (byte b : bytes) {
             formatter.format("%02x", b);
         }
-        
+
         return formatter.toString();
     }
 
@@ -912,5 +915,5 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         mac.init(signingKey);
         return toHexString(mac.doFinal(data.getBytes()));
     }
-     
+
 }

@@ -5,6 +5,20 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.xml.XmlValidator;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -16,19 +30,6 @@ import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
 
 public class SiteMapUtil {
 
@@ -39,13 +40,13 @@ public class SiteMapUtil {
 
     /**
      * TODO: Handle more than 50,000 entries in the sitemap.
-     *
+     * <p>
      * (As of this writing Harvard Dataverse only has ~3000 dataverses and
      * ~30,000 datasets.)
-     *
+     * <p>
      * "each Sitemap file that you provide must have no more than 50,000 URLs"
      * https://www.sitemaps.org/protocol.html
-     *
+     * <p>
      * Consider using a third party library: "One sitemap can contain a maximum
      * of 50,000 URLs. (Some sitemaps, like Google News sitemaps, can contain
      * only 1,000 URLs.) If you need to put more URLs than that in a sitemap,

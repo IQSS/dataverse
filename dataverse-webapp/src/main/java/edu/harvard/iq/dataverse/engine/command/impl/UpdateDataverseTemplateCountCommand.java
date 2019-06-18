@@ -17,7 +17,6 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 /**
- *
  * @author skraffmiller
  */
 @RequiredPermissions(Permission.EditDataverse)
@@ -25,7 +24,7 @@ public class UpdateDataverseTemplateCountCommand extends AbstractVoidCommand {
 
     private final Dataset editedDs;
     private final Template template;
-    
+
     public UpdateDataverseTemplateCountCommand(DataverseRequest aRequest, Template templateIn, DvObject anAffectedDvObject) {
         super(aRequest, anAffectedDvObject);
         this.editedDs = (Dataset) anAffectedDvObject;

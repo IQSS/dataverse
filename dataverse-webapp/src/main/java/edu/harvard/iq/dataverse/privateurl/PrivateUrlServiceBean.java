@@ -17,7 +17,6 @@ import java.io.Serializable;
 import java.util.logging.Logger;
 
 /**
- *
  * PrivateUrlServiceBean depends on Glassfish and Postgres being available and
  * it is tested with API tests in DatasetIT. Code that can execute without any
  * runtime dependencies should be put in PrivateUrlUtil so it can be unit
@@ -62,7 +61,6 @@ public class PrivateUrlServiceBean implements Serializable {
 
     /**
      * @return A RoleAssignment or null.
-     *
      * @todo This might be a good place for Optional.
      */
     private RoleAssignment getRoleAssignmentFromPrivateUrlToken(String privateUrlToken) {
@@ -84,7 +82,6 @@ public class PrivateUrlServiceBean implements Serializable {
     /**
      * @param dataset A non-null dataset;
      * @return A role assignment for a Private URL, if found, or null.
-     *
      * @todo This might be a good place for Optional.
      */
     private RoleAssignment getPrivateUrlRoleAssignmentFromDataset(Dataset dataset) {

@@ -38,7 +38,7 @@ public class JsfHelper {
 
     public static void addErrorMessage(String componentId, String summary, String detail) {
         FacesContext.getCurrentInstance().addMessage(componentId,
-                new FacesMessage(FacesMessage.SEVERITY_ERROR, summary, detail));
+                                                     new FacesMessage(FacesMessage.SEVERITY_ERROR, summary, detail));
     }
 
     public void addMessage(FacesMessage.Severity s, String summary, String details) {
@@ -50,7 +50,9 @@ public class JsfHelper {
     }
 
     public <T extends Enum<T>> T enumValue(String param, Class<T> enmClass, T defaultValue) {
-        if (param == null) return defaultValue;
+        if (param == null) {
+            return defaultValue;
+        }
         param = param.trim();
         try {
             return Enum.valueOf(enmClass, param);

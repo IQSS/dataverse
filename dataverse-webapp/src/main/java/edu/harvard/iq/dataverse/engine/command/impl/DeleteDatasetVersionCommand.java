@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
-
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -14,12 +13,12 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
 /**
- *
  * @author skraffmiller
  */
 @RequiredPermissions(Permission.DeleteDatasetDraft)
@@ -57,7 +56,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                         // if file is draft (ie. new to this version, delete
                         // and remove fileMetadata from list (so that it won't try to merge)
                         ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getRequest()));
-                        fmIt.remove(); 
+                        fmIt.remove();
                     }
                 }
 

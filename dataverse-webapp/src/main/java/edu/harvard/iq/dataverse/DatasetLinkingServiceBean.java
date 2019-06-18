@@ -5,18 +5,17 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
- *
  * @author skraffmiller
  */
 @Stateless
@@ -26,10 +25,10 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     /**
      * @param linkingDataverseId
-     * @return 
+     * @return
      * @todo Should this method simply be deleted? It isn't used anywhere and is
      * throwing exceptions: Syntax error parsing [select object(o.dataverse.id)
      * from DatasetLinkingDataverse as o where o.linkingDataverse.id
@@ -65,7 +64,7 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
         }
         return retList;
     }
-    
+
     public DatasetLinkingDataverse findDatasetLinkingDataverse(Long datasetId, Long linkingDataverseId) {
         DatasetLinkingDataverse foundDatasetLinkingDataverse = null;
         try {
@@ -74,7 +73,7 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
                     .setParameter("dataverseId", linkingDataverseId)
                     .getSingleResult();
         } catch (javax.persistence.NoResultException e) {
-            logger.fine("no datasetLinkingDataverse found for datasetId " + datasetId + " and linkingDataverseId " + linkingDataverseId);        
+            logger.fine("no datasetLinkingDataverse found for datasetId " + datasetId + " and linkingDataverseId " + linkingDataverseId);
         }
         return foundDatasetLinkingDataverse;
     }
@@ -92,7 +91,7 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
             em.merge(datasetLinkingDataverse);
         }
     }
-    
+
     public boolean alreadyLinked(Dataverse dataverse, Dataset dataset) {
         TypedQuery<DatasetLinkingDataverse> typedQuery = em.createQuery("SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId AND o.dataset.id = :datasetId", DatasetLinkingDataverse.class);
         typedQuery.setParameter("dataverseId", dataverse.getId());

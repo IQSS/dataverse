@@ -6,23 +6,20 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import java.util.logging.Logger;
+import edu.harvard.iq.dataverse.harvest.server.OAISet;
+import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
+
 import javax.ejb.EJB;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-
-import javax.ws.rs.core.Response;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.PUT;
-import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
-import edu.harvard.iq.dataverse.harvest.server.OAISet;
+import java.util.logging.Logger;
 
 /**
- *
  * @author Leonid Andreev
- * 
  */
 
 @Path("admin/metadata")
@@ -50,7 +47,7 @@ public class Metadata extends AbstractApiBean {
         datasetService.exportAllAsync();
         return this.accepted();
     }
-    
+
     // reExportAll will FORCE A FULL REEXPORT on every published, local 
     // dataset, regardless of the lastexporttime value.
     @GET
@@ -59,7 +56,7 @@ public class Metadata extends AbstractApiBean {
     public Response reExportAll() {
         datasetService.reExportAllAsync();
         return this.accepted();
-    } 
+    }
 
     /**
      * initial attempt at triggering indexing/creation/population of a OAI set without going throught
@@ -67,31 +64,23 @@ public class Metadata extends AbstractApiBean {
      */
     @PUT
     @Path("/exportOAI/{specname}")
-    public Response exportOaiSet( @PathParam("specname") String spec )
-    {
-	    // assuming this belongs here (because it's a metadata export), but open to moving it elsewhere
-	    OAISet set = null;
-	    try
-	    {
-		    set = oaiSetService.findBySpec(spec);
-	    }
-	    catch(Exception ex)
-	    {
-		    return error(Response.Status.BAD_REQUEST,"bad request / invalid OAI set");
-	    }
-	    if ( null == set )
-	    {
-		    return error(Response.Status.NOT_FOUND, "unable to find specified OAI set");
-	    }
-	    try
-	    {
-		    oaiSetService.setUpdateInProgress( set.getId() );
-		    oaiSetService.exportOaiSetAsync(set);
-		    return ok("export started");
-	    }
-	    catch( Exception ex )
-	    {
-		    return error(Response.Status.BAD_REQUEST, "problem exporting OAI set");
-	    }
+    public Response exportOaiSet(@PathParam("specname") String spec) {
+        // assuming this belongs here (because it's a metadata export), but open to moving it elsewhere
+        OAISet set = null;
+        try {
+            set = oaiSetService.findBySpec(spec);
+        } catch (Exception ex) {
+            return error(Response.Status.BAD_REQUEST, "bad request / invalid OAI set");
+        }
+        if (null == set) {
+            return error(Response.Status.NOT_FOUND, "unable to find specified OAI set");
+        }
+        try {
+            oaiSetService.setUpdateInProgress(set.getId());
+            oaiSetService.exportOaiSetAsync(set);
+            return ok("export started");
+        } catch (Exception ex) {
+            return error(Response.Status.BAD_REQUEST, "problem exporting OAI set");
+        }
     }
 }

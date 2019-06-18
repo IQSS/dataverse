@@ -76,11 +76,11 @@ public class MetadataBlockService {
      */
     public MetadataBlockViewOptions prepareDatasetFieldsToBeEditable(DataverseMetaBlockOptions dataverseMetaBlockOptions, Long metadataBlockId) {
         return dataverseMetaBlockOptions.getMdbViewOptions().put(metadataBlockId,
-                MetadataBlockViewOptions.newBuilder()
-                        .showDatasetFieldTypes(true)
-                        .editableDatasetFieldTypes(true)
-                        .selected(true)
-                        .build());
+                                                                 MetadataBlockViewOptions.newBuilder()
+                                                                         .showDatasetFieldTypes(true)
+                                                                         .editableDatasetFieldTypes(true)
+                                                                         .selected(true)
+                                                                         .build());
     }
 
 
@@ -89,11 +89,11 @@ public class MetadataBlockService {
      */
     public MetadataBlockViewOptions prepareDatasetFieldsToBeUnEditable(DataverseMetaBlockOptions dataverseMetaBlockOptions, Long metadataBlockId) {
         return dataverseMetaBlockOptions.getMdbViewOptions().put(metadataBlockId,
-                MetadataBlockViewOptions.newBuilder()
-                        .showDatasetFieldTypes(true)
-                        .editableDatasetFieldTypes(false)
-                        .selected(dataverseMetaBlockOptions.isMetaBlockSelected(metadataBlockId))
-                        .build());
+                                                                 MetadataBlockViewOptions.newBuilder()
+                                                                         .showDatasetFieldTypes(true)
+                                                                         .editableDatasetFieldTypes(false)
+                                                                         .selected(dataverseMetaBlockOptions.isMetaBlockSelected(metadataBlockId))
+                                                                         .build());
     }
 
     /**
@@ -101,10 +101,10 @@ public class MetadataBlockService {
      */
     public MetadataBlockViewOptions prepareDatasetFieldsToBeHidden(DataverseMetaBlockOptions dataverseMetaBlockOptions, Long metadataBlockId) {
         return dataverseMetaBlockOptions.getMdbViewOptions().put(metadataBlockId,
-                MetadataBlockViewOptions.newBuilder()
-                        .showDatasetFieldTypes(false)
-                        .selected(dataverseMetaBlockOptions.isMetaBlockSelected(metadataBlockId))
-                        .build());
+                                                                 MetadataBlockViewOptions.newBuilder()
+                                                                         .showDatasetFieldTypes(false)
+                                                                         .selected(dataverseMetaBlockOptions.isMetaBlockSelected(metadataBlockId))
+                                                                         .build());
     }
 
     /**

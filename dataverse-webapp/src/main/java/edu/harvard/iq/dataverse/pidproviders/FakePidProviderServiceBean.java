@@ -4,11 +4,11 @@ import edu.harvard.iq.dataverse.AbstractGlobalIdServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 
+import javax.ejb.Stateless;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.ejb.Stateless;
 
 @Stateless
 public class FakePidProviderServiceBean extends AbstractGlobalIdServiceBean {
@@ -17,7 +17,7 @@ public class FakePidProviderServiceBean extends AbstractGlobalIdServiceBean {
     public boolean alreadyExists(DvObject dvo) throws Exception {
         return true;
     }
-    
+
     @Override
     public boolean alreadyExists(GlobalId globalId) throws Exception {
         return true;

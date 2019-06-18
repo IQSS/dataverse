@@ -1,27 +1,31 @@
-
-
 package edu.harvard.iq.dataverse;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import java.io.Serializable;
-import javax.persistence.*;
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
 
 /**
- *
  * @author Leonid Andreev
  */
-@Table( uniqueConstraints = @UniqueConstraint(columnNames={"foreignMetadataFormatMapping_id","foreignFieldXpath"}) 
-      , indexes = {@Index(columnList="foreignmetadataformatmapping_id")
-		, @Index(columnList="foreignfieldxpath")
-		, @Index(columnList="parentfieldmapping_id")})
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"foreignMetadataFormatMapping_id", "foreignFieldXpath"})
+        , indexes = {@Index(columnList = "foreignmetadataformatmapping_id")
+        , @Index(columnList = "foreignfieldxpath")
+        , @Index(columnList = "parentfieldmapping_id")})
 @NamedQueries({
-  @NamedQuery( name="ForeignMetadataFieldMapping.findByPath",
-               query="SELECT fmfm FROM ForeignMetadataFieldMapping fmfm WHERE fmfm.foreignMetadataFormatMapping.name=:formatName AND fmfm.foreignFieldXPath=:xPath")  
+        @NamedQuery(name = "ForeignMetadataFieldMapping.findByPath",
+                query = "SELECT fmfm FROM ForeignMetadataFieldMapping fmfm WHERE fmfm.foreignMetadataFormatMapping.name=:formatName AND fmfm.foreignFieldXPath=:xPath")
 })
 @Entity
 public class ForeignMetadataFieldMapping implements Serializable {
@@ -37,24 +41,24 @@ public class ForeignMetadataFieldMapping implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     @ManyToOne(cascade = CascadeType.MERGE)
     private ForeignMetadataFormatMapping foreignMetadataFormatMapping;
 
     @Column(name = "foreignFieldXPath", columnDefinition = "TEXT")
     private String foreignFieldXPath;
-    
+
     @Column(name = "datasetfieldName", columnDefinition = "TEXT")
-    private String datasetfieldName;    
+    private String datasetfieldName;
 
     @OneToMany(mappedBy = "parentFieldMapping", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<ForeignMetadataFieldMapping> childFieldMappings;
-        
+
     @ManyToOne(cascade = CascadeType.MERGE)
     private ForeignMetadataFieldMapping parentFieldMapping;
-    
+
     private boolean isAttribute;
-    
+
     /* getters/setters: */
 
     public ForeignMetadataFormatMapping getForeignMetadataFormatMapping() {
@@ -64,7 +68,7 @@ public class ForeignMetadataFieldMapping implements Serializable {
     public void setForeignMetadataFormatMapping(ForeignMetadataFormatMapping foreignMetadataFormatMapping) {
         this.foreignMetadataFormatMapping = foreignMetadataFormatMapping;
     }
-    
+
     public String getForeignFieldXPath() {
         return foreignFieldXPath;
     }
@@ -72,7 +76,7 @@ public class ForeignMetadataFieldMapping implements Serializable {
     public void setForeignFieldXPath(String foreignFieldXPath) {
         this.foreignFieldXPath = foreignFieldXPath;
     }
-    
+
     public String getDatasetfieldName() {
         return datasetfieldName;
     }
@@ -80,8 +84,8 @@ public class ForeignMetadataFieldMapping implements Serializable {
     public void setDatasetfieldName(String datasetfieldName) {
         this.datasetfieldName = datasetfieldName;
     }
-    
-    
+
+
     public Collection<ForeignMetadataFieldMapping> getChildFieldMappings() {
         return this.childFieldMappings;
     }
@@ -99,8 +103,8 @@ public class ForeignMetadataFieldMapping implements Serializable {
         this.attributeMappings = attributeMappings;
     }
     */
-    
-    
+
+
     public ForeignMetadataFieldMapping getParentFieldMapping() {
         return parentFieldMapping;
     }
@@ -108,7 +112,7 @@ public class ForeignMetadataFieldMapping implements Serializable {
     public void setParentFieldMapping(ForeignMetadataFieldMapping parentFieldMapping) {
         this.parentFieldMapping = parentFieldMapping;
     }
-    
+
     public boolean isAttribute() {
         return isAttribute;
     }
@@ -116,13 +120,13 @@ public class ForeignMetadataFieldMapping implements Serializable {
     public void setIsAttribute(boolean isAttribute) {
         this.isAttribute = isAttribute;
     }
-    
+
     /* logical: */
-    
+
     public boolean isChild() {
-        return this.parentFieldMapping != null;        
-    }    
-    
+        return this.parentFieldMapping != null;
+    }
+
     public boolean HasChildren() {
         return !this.childFieldMappings.isEmpty();
     }
@@ -136,7 +140,7 @@ public class ForeignMetadataFieldMapping implements Serializable {
     public boolean HasParent() {
         return this.parentFieldMapping != null;
     }
-    /* overrides: */ 
+    /* overrides: */
 
     @Override
     public int hashCode() {
@@ -158,5 +162,5 @@ public class ForeignMetadataFieldMapping implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.ForeignMetadataFieldMapping[ id=" + id + " ]";
     }
-    
+
 }

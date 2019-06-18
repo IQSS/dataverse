@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine;
 
 /**
  * A test entity manager that overrides commonly called methods with a no-op.
+ *
  * @author michael
  */
 public class NoOpTestEntityManager extends TestEntityManager {

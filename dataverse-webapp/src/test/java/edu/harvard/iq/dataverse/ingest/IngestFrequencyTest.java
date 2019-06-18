@@ -5,15 +5,14 @@ import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
-
 import org.junit.Test;
 
 import javax.ejb.EJB;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.BufferedInputStream;
 import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
@@ -29,10 +28,10 @@ public class IngestFrequencyTest {
      * Test calculation of frequencies during ingest
      */
 
-    public void testFrequency()  {
+    public void testFrequency() {
 
         String fileNameSav = "src/test/resources/sav/frequency-test.sav";
-        DataFile dataFile = readFileCalcFreq(fileNameSav , "application/x-spss-sav" );
+        DataFile dataFile = readFileCalcFreq(fileNameSav, "application/x-spss-sav");
 
         assertNotNull(dataFile);
 
@@ -40,25 +39,25 @@ public class IngestFrequencyTest {
         assertEquals(varQuant, 3);
 
         Collection<VariableCategory> cats1 = dataFile.getDataTable().getDataVariables().get(0).getCategories();
-        assertEquals(cats1.size(),2);
+        assertEquals(cats1.size(), 2);
         firstVariableTest(cats1);
 
         Collection<VariableCategory> cats2 = dataFile.getDataTable().getDataVariables().get(1).getCategories();
-        assertEquals(cats2.size(),4);
+        assertEquals(cats2.size(), 4);
         secondVariableTest(cats2);
 
         Collection<VariableCategory> cats3 = dataFile.getDataTable().getDataVariables().get(2).getCategories();
-        assertEquals(cats3.size(),2);
+        assertEquals(cats3.size(), 2);
         thirdVariableTest(cats3);
 
-        DataFile dataFileDta = readFileCalcFreq("src/test/resources/dta/test_cat_values.dta" , "application/x-stata-14" );
+        DataFile dataFileDta = readFileCalcFreq("src/test/resources/dta/test_cat_values.dta", "application/x-stata-14");
         assertNotNull(dataFileDta);
 
         long varQuantDta = dataFileDta.getDataTable().getVarQuantity();
         assertEquals(varQuantDta, 1);
 
         Collection<VariableCategory> cats = dataFileDta.getDataTable().getDataVariables().get(0).getCategories();
-        assertEquals(cats.size(),2);
+        assertEquals(cats.size(), 2);
         dtaVariableTest(cats);
 
         return;
@@ -69,19 +68,19 @@ public class IngestFrequencyTest {
             double freq = cat.getFrequency();
             switch (cat.getLabel()) {
                 case "Urban":
-                    assertEquals((int) 6, (int) freq);
+                    assertEquals(6, (int) freq);
                     break;
                 case "Rural":
-                    assertEquals((int) 4, (int)freq);
+                    assertEquals(4, (int) freq);
                     break;
                 default:
                     System.out.println("Thire is no such category label " + cat.getLabel());
-                    assertEquals(0,1);
+                    assertEquals(0, 1);
             }
         }
     }
 
-    private DataFile readFileCalcFreq(String fileName, String type ) {
+    private DataFile readFileCalcFreq(String fileName, String type) {
 
         BufferedInputStream fileInputStream = null;
 
@@ -93,7 +92,7 @@ public class IngestFrequencyTest {
             assertNotNull(fileInputStream);
         }
 
-        TabularDataFileReader ingestPlugin = ingestService.getTabDataReaderByMimeType(type);
+        TabularDataFileReader ingestPlugin = IngestServiceBean.getTabDataReaderByMimeType(type);
         assertNotNull(ingestPlugin);
 
         TabularDataIngest tabDataIngest = null;
@@ -120,7 +119,7 @@ public class IngestFrequencyTest {
         dataTable.setDataFile(dataFile);
 
         try {
-            ingestService.produceFrequencyStatistics(dataFile, tabFile);
+            IngestServiceBean.produceFrequencyStatistics(dataFile, tabFile);
             return dataFile;
         } catch (IOException ioex) {
             System.out.println("Caught exception during  produceFrequencyStatistics with " + ioex.getMessage());
@@ -130,20 +129,19 @@ public class IngestFrequencyTest {
     }
 
 
-
     private void firstVariableTest(Collection<VariableCategory> cats) {
         for (VariableCategory cat : cats) {
             double freq = cat.getFrequency();
             switch (cat.getLabel()) {
                 case "Male":
-                    assertEquals((int) 1537, (int) freq);
+                    assertEquals(1537, (int) freq);
                     break;
                 case "Female":
-                    assertEquals((int) 1508, (int)freq);
+                    assertEquals(1508, (int) freq);
                     break;
                 default:
                     System.out.println("Thire is no such category label " + cat.getLabel());
-                    assertEquals(0,1);
+                    assertEquals(0, 1);
             }
         }
     }
@@ -153,20 +151,20 @@ public class IngestFrequencyTest {
             double freq = cat.getFrequency();
             switch (cat.getValue()) {
                 case "1":
-                    assertEquals((int) 0, (int) freq);
+                    assertEquals(0, (int) freq);
                     break;
                 case "2":
-                    assertEquals((int) 691, (int)freq);
+                    assertEquals(691, (int) freq);
                     break;
                 case "3":
-                    assertEquals((int) 1262, (int)freq);
+                    assertEquals(1262, (int) freq);
                     break;
                 case "4":
-                    assertEquals((int) 1092, (int)freq);
+                    assertEquals(1092, (int) freq);
                     break;
                 default:
                     System.out.println("There is no such category value " + cat.getValue());
-                    assertEquals(0,1);
+                    assertEquals(0, 1);
 
             }
         }
@@ -179,14 +177,14 @@ public class IngestFrequencyTest {
             double freq = cat.getFrequency();
             switch (c) {
                 case "1":
-                    assertEquals((int) 2497, (int) freq);
+                    assertEquals(2497, (int) freq);
                     break;
                 case "2":
-                    assertEquals((int) 548, (int)freq);
+                    assertEquals(548, (int) freq);
                     break;
                 default:
                     System.out.println("There is no such category value " + cat.getValue());
-                    assertEquals(0,1);
+                    assertEquals(0, 1);
 
             }
         }

@@ -2,9 +2,6 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.engine.command.CommandContext;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleException;
@@ -13,14 +10,18 @@ import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.datacapturemodule.UploadRequestResponse;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
+import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import org.apache.commons.lang3.StringUtils;
 
-import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DataCaptureModuleUrl;
 import java.util.Collections;
 import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DataCaptureModuleUrl;
 
 /**
  * Always catch a RuntimeException when calling this command, which may occur on
@@ -44,11 +45,11 @@ public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResp
     }
 
     @Override
-    public ScriptRequestResponse execute(CommandContext ctxt) throws CommandException {       
+    public ScriptRequestResponse execute(CommandContext ctxt) throws CommandException {
         if (request == null) {
             throw new IllegalCommandException("DataverseRequest cannot be null.", this);
         }
-        if(!dataset.getFiles().isEmpty()){
+        if (!dataset.getFiles().isEmpty()) {
             throw new IllegalCommandException("Cannot get script for a dataset that already has a file", this);
         }
         String dcmBaseUrl = ctxt.settings().getValueForKey(DataCaptureModuleUrl);
@@ -62,7 +63,7 @@ public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResp
              * duplicating it here.
              */
             throw new PermissionException("This command can only be called by an AuthenticatedUser, not " + user,
-                    this, Collections.singleton(Permission.AddDataset), dataset);
+                                          this, Collections.singleton(Permission.AddDataset), dataset);
         }
         // We need an AuthenticatedUser so we can pass its database id to the DCM.
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
@@ -95,7 +96,7 @@ public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResp
         }
         String script = scriptRequestResponse.getScript();
         if (script == null || script.isEmpty()) {
-            logger.warning("There was a problem getting the script for " + dataset.getIdentifier() + " . DCM returned status code: "+scriptRequestResponse.getHttpStatusCode());
+            logger.warning("There was a problem getting the script for " + dataset.getIdentifier() + " . DCM returned status code: " + scriptRequestResponse.getHttpStatusCode());
         }
         logger.fine("script for dataset " + dataset.getId() + ": " + script);
         return scriptRequestResponse;

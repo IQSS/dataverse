@@ -1,8 +1,12 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileCategory;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -10,20 +14,16 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author qqmyers
- * 
- *         Adapted from UpdateDatasetVersionCommand
+ * <p>
+ * Adapted from UpdateDatasetVersionCommand
  */
 @RequiredPermissions(Permission.EditDataset)
 public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand<Dataset> {
@@ -67,16 +67,16 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         updateVersion.setTermsOfUseAndAccess(newTerms);
         //Put old terms on version that will be deleted....
         getDataset().getEditVersion().setTermsOfUseAndAccess(oldTerms);
-        
+
         List<WorkflowComment> newComments = getDataset().getEditVersion().getWorkflowComments();
-        if (newComments!=null && newComments.size() >0) {
-            for(WorkflowComment wfc: newComments) {
+        if (newComments != null && newComments.size() > 0) {
+            for (WorkflowComment wfc : newComments) {
                 wfc.setDatasetVersion(updateVersion);
             }
             updateVersion.getWorkflowComments().addAll(newComments);
         }
 
-        
+
         // we have to merge to update the database but not flush because
         // we don't want to create two draft versions!
         Dataset tempDataset = ctxt.em().merge(getDataset());
@@ -100,7 +100,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                 }
                 String draftDesc = draftFmd.getDescription();
                 String pubDesc = publishedFmd.getDescription();
-                if ((draftDesc!=null && (!draftDesc.equals(pubDesc))) || (draftDesc==null && pubDesc!=null)) {
+                if ((draftDesc != null && (!draftDesc.equals(pubDesc))) || (draftDesc == null && pubDesc != null)) {
                     publishedFmd.setDescription(draftDesc);
                     metadataUpdated = true;
                 }
@@ -116,7 +116,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                 }
                 String draftProv = draftFmd.getProvFreeForm();
                 String pubProv = publishedFmd.getProvFreeForm();
-                if ((draftProv != null && (!draftProv.equals(pubProv)))||(draftProv==null && pubProv!=null)) {
+                if ((draftProv != null && (!draftProv.equals(pubProv))) || (draftProv == null && pubProv != null)) {
                     publishedFmd.setProvFreeForm(draftProv);
                     metadataUpdated = true;
                 }
@@ -161,7 +161,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         // And update metadata at PID provider
         ctxt.engine().submit(
                 new UpdateDvObjectPIDMetadataCommand(savedDataset, getRequest()));
-        
+
         //And the exported metadata files
         try {
             ExportService instance = ExportService.getInstance(ctxt.settings());
@@ -170,14 +170,12 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             // Just like with indexing, a failure to export is not a fatal condition.
             logger.log(Level.WARNING, "Curate Published DatasetVersion: exception while exporting metadata files:{0}", ex.getMessage());
         }
-        
+
 
         // Update so that getDataset() in updateDatasetUser will get the up-to-date copy
         // (with no draft version)
         setDataset(savedDataset);
         updateDatasetUser(ctxt);
-        
-
 
 
         return savedDataset;

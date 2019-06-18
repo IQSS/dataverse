@@ -7,16 +7,15 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 
 /**
- *
  * @author madunlap
  * To sort our entity objects in the provenance bundle dropdown
  */
 @FacesConverter("provEntityFileDataConverter")
-public class ProvEntityFileDataConverter implements Converter{
+public class ProvEntityFileDataConverter implements Converter {
 
     @Inject
     ProvPopupFragmentBean provBean;
-    
+
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {
         return provBean.getEntityByEntityName(value);
@@ -29,6 +28,6 @@ public class ProvEntityFileDataConverter implements Converter{
         } else {
             return ((ProvEntityFileData) value).getEntityName();
         }
-        
+
     }
 }

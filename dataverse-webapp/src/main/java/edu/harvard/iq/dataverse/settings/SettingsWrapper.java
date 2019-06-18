@@ -17,7 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- *
  * @author gdurand
  */
 @ViewScoped
@@ -35,7 +34,7 @@ public class SettingsWrapper implements java.io.Serializable {
 
     // -------------------- GETTERS --------------------
 
-    public boolean isPublicInstall(){
+    public boolean isPublicInstall() {
         return settingService.isTrueForKey(SettingsServiceBean.Key.PublicInstall);
     }
 
@@ -63,7 +62,7 @@ public class SettingsWrapper implements java.io.Serializable {
         return systemConfig.isRsyncOnly();
     }
 
-    public boolean isHTTPUpload(){
+    public boolean isHTTPUpload() {
         return systemConfig.isHTTPUpload();
     }
 

@@ -6,8 +6,6 @@
 
 package edu.harvard.iq.dataverse;
 
-import java.io.Serializable;
-import java.util.Objects;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -18,14 +16,15 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
- *
  * @author ellenk
  */
 
 @Entity
-@Table(indexes = {@Index(columnList="dataverse_id")})
+@Table(indexes = {@Index(columnList = "dataverse_id")})
 public class DataverseTheme implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -48,6 +47,7 @@ public class DataverseTheme implements Serializable {
     public enum Alignment {
         LEFT, CENTER, RIGHT
     }
+
     @Enumerated(EnumType.STRING)
     private Alignment logoAlignment;
     private String logoBackgroundColor;
@@ -57,11 +57,13 @@ public class DataverseTheme implements Serializable {
     private String linkColor;
     private String textColor;
     private String backgroundColor;
-   public enum ImageFormat {
+
+    public enum ImageFormat {
 
         SQUARE, RECTANGLE
-    }  
-      public ImageFormat getLogoFormat() {
+    }
+
+    public ImageFormat getLogoFormat() {
         return logoFormat;
     }
 
@@ -132,8 +134,9 @@ public class DataverseTheme implements Serializable {
     public void setBackgroundColor(String backgroundColor) {
         this.backgroundColor = backgroundColor;
     }
+
     @OneToOne
-    @JoinColumn(name="dataverse_id")
+    @JoinColumn(name = "dataverse_id")
     private Dataverse dataverse;
 
     public Dataverse getDataverse() {

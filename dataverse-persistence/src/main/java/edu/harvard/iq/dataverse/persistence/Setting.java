@@ -1,26 +1,27 @@
 package edu.harvard.iq.dataverse.persistence;
 
-import java.io.Serializable;
-import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * A single value in the config of dataverse.
+ *
  * @author michael
  */
 @NamedQueries({
-    @NamedQuery( name="Setting.deleteByName",
-                query="DELETE FROM Setting s WHERE s.name=:name"),
-    @NamedQuery( name="Setting.findAll",
-                query="SELECT s FROM Setting s")
+        @NamedQuery(name = "Setting.deleteByName",
+                query = "DELETE FROM Setting s WHERE s.name=:name"),
+        @NamedQuery(name = "Setting.findAll",
+                query = "SELECT s FROM Setting s")
 })
 @Entity
 public class Setting implements Serializable {
-    
+
     @Id
     private String name;
 
@@ -28,7 +29,7 @@ public class Setting implements Serializable {
     private String content;
 
     // -------------------- CONSTRUCTORS --------------------
-    
+
     public Setting() {
     }
 
@@ -38,7 +39,7 @@ public class Setting implements Serializable {
     }
 
     // -------------------- GETTERS --------------------
-    
+
     public String getName() {
         return name;
     }
@@ -46,9 +47,9 @@ public class Setting implements Serializable {
     public String getContent() {
         return content;
     }
-    
+
     // -------------------- SETTERS --------------------
-    
+
     public void setName(String name) {
         this.name = name;
     }
@@ -58,7 +59,7 @@ public class Setting implements Serializable {
     }
 
     // -------------------- hashCode & equals --------------------
-    
+
     @Override
     public int hashCode() {
         int hash = 7;
@@ -71,7 +72,7 @@ public class Setting implements Serializable {
         if (obj == null) {
             return false;
         }
-        if ( !(obj instanceof Setting) ) {
+        if (!(obj instanceof Setting)) {
             return false;
         }
         final Setting other = (Setting) obj;
@@ -82,12 +83,11 @@ public class Setting implements Serializable {
     }
 
     // -------------------- toString --------------------
-    
+
     @Override
     public String toString() {
         return "[Setting name:" + getName() + " value:" + getContent() + "]";
     }
 
 
-     
 }

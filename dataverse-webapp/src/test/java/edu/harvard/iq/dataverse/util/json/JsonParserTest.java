@@ -40,6 +40,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -59,11 +60,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author michael
  */
 public class JsonParserTest {
-    
+
     MockDatasetFieldSvc datasetFieldTypeSvc = null;
     MockSettingsSvc settingsSvc = null;
     DatasetFieldType keywordType;
@@ -72,179 +72,180 @@ public class JsonParserTest {
     DatasetFieldType pubIdType;
     DatasetFieldType compoundSingleType;
     JsonParser sut;
-    
+
     public JsonParserTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
         datasetFieldTypeSvc = new MockDatasetFieldSvc();
 
         keywordType = datasetFieldTypeSvc.add(new DatasetFieldType("keyword", FieldType.TEXT, true));
-        descriptionType = datasetFieldTypeSvc.add( new DatasetFieldType("description", FieldType.TEXTBOX, false) );
-        
+        descriptionType = datasetFieldTypeSvc.add(new DatasetFieldType("description", FieldType.TEXTBOX, false));
+
         subjectType = datasetFieldTypeSvc.add(new DatasetFieldType("subject", FieldType.TEXT, true));
         subjectType.setAllowControlledVocabulary(true);
-        subjectType.setControlledVocabularyValues( Arrays.asList( 
+        subjectType.setControlledVocabularyValues(Arrays.asList(
                 new ControlledVocabularyValue(1l, "mgmt", subjectType),
                 new ControlledVocabularyValue(2l, "law", subjectType),
                 new ControlledVocabularyValue(3l, "cs", subjectType)
         ));
-        
+
         pubIdType = datasetFieldTypeSvc.add(new DatasetFieldType("publicationIdType", FieldType.TEXT, false));
         pubIdType.setAllowControlledVocabulary(true);
-        pubIdType.setControlledVocabularyValues( Arrays.asList( 
+        pubIdType.setControlledVocabularyValues(Arrays.asList(
                 new ControlledVocabularyValue(1l, "ark", pubIdType),
                 new ControlledVocabularyValue(2l, "doi", pubIdType),
                 new ControlledVocabularyValue(3l, "url", pubIdType)
         ));
-        
+
         compoundSingleType = datasetFieldTypeSvc.add(new DatasetFieldType("coordinate", FieldType.TEXT, true));
         Set<DatasetFieldType> childTypes = new HashSet<>();
-        childTypes.add( datasetFieldTypeSvc.add(new DatasetFieldType("lat", FieldType.TEXT, false)) );
-        childTypes.add( datasetFieldTypeSvc.add(new DatasetFieldType("lon", FieldType.TEXT, false)) );
-        
-        for ( DatasetFieldType t : childTypes ) {
+        childTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("lat", FieldType.TEXT, false)));
+        childTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("lon", FieldType.TEXT, false)));
+
+        for (DatasetFieldType t : childTypes) {
             t.setParentDatasetFieldType(compoundSingleType);
         }
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
         settingsSvc = new MockSettingsSvc();
         sut = new JsonParser(datasetFieldTypeSvc, null, settingsSvc);
     }
-    
-    @Test 
+
+    @Test
     public void testCompoundRepeatsRoundtrip() throws JsonParseException {
         DatasetField expected = new DatasetField();
-        expected.setDatasetFieldType( datasetFieldTypeSvc.findByName("coordinate") );
+        expected.setDatasetFieldType(datasetFieldTypeSvc.findByName("coordinate"));
         List<DatasetFieldCompoundValue> vals = new LinkedList<>();
-        for ( int i=0; i<5; i++ ) {
+        for (int i = 0; i < 5; i++) {
             DatasetFieldCompoundValue val = new DatasetFieldCompoundValue();
             val.setParentDatasetField(expected);
-            val.setChildDatasetFields( Arrays.asList(latLonField("lat", Integer.toString(i*10)), latLonField("lon", Integer.toString(3+i*10))));
-            vals.add( val );
+            val.setChildDatasetFields(Arrays.asList(latLonField("lat", Integer.toString(i * 10)), latLonField("lon", Integer.toString(3 + i * 10))));
+            vals.add(val);
         }
         expected.setDatasetFieldCompoundValues(vals);
-        
+
         JsonObject json = JsonPrinter.json(expected);
-        
+
         System.out.println("json = " + json);
-        
+
         DatasetField actual = sut.parseField(json);
-        
+
         assertFieldsEqual(expected, actual);
     }
-    
-    DatasetField latLonField( String latLon, String value ) {
+
+    DatasetField latLonField(String latLon, String value) {
         DatasetField retVal = new DatasetField();
-        retVal.setDatasetFieldType( datasetFieldTypeSvc.findByName(latLon));
-        retVal.setDatasetFieldValues( Collections.singletonList( new DatasetFieldValue(retVal, value)));
+        retVal.setDatasetFieldType(datasetFieldTypeSvc.findByName(latLon));
+        retVal.setDatasetFieldValues(Collections.singletonList(new DatasetFieldValue(retVal, value)));
         return retVal;
     }
-    
-    @Test 
+
+    @Test
     public void testControlledVocalNoRepeatsRoundTrip() throws JsonParseException {
         DatasetField expected = new DatasetField();
         DatasetFieldType fieldType = datasetFieldTypeSvc.findByName("publicationIdType");
-        expected.setDatasetFieldType( fieldType );
-        expected.setControlledVocabularyValues( Collections.singletonList( fieldType.getControlledVocabularyValue("ark")));
+        expected.setDatasetFieldType(fieldType);
+        expected.setControlledVocabularyValues(Collections.singletonList(fieldType.getControlledVocabularyValue("ark")));
         JsonObject json = JsonPrinter.json(expected);
-        
+
         DatasetField actual = sut.parseField(json);
         assertFieldsEqual(expected, actual);
-        
+
     }
-    
-    @Test 
+
+    @Test
     public void testControlledVocalRepeatsRoundTrip() throws JsonParseException {
         DatasetField expected = new DatasetField();
         DatasetFieldType fieldType = datasetFieldTypeSvc.findByName("subject");
-        expected.setDatasetFieldType( fieldType );
-        expected.setControlledVocabularyValues( Arrays.asList( fieldType.getControlledVocabularyValue("mgmt"),
-                 fieldType.getControlledVocabularyValue("law"),
-                 fieldType.getControlledVocabularyValue("cs")));
-        
-        JsonObject json = JsonPrinter.json(expected);      
+        expected.setDatasetFieldType(fieldType);
+        expected.setControlledVocabularyValues(Arrays.asList(fieldType.getControlledVocabularyValue("mgmt"),
+                                                             fieldType.getControlledVocabularyValue("law"),
+                                                             fieldType.getControlledVocabularyValue("cs")));
+
+        JsonObject json = JsonPrinter.json(expected);
         DatasetField actual = sut.parseField(json);
         assertFieldsEqual(expected, actual);
-        
+
     }
-    
-    
-    @Test(expected=JsonParseException.class)
-     public void testChildValidation() throws JsonParseException {
+
+
+    @Test(expected = JsonParseException.class)
+    public void testChildValidation() throws JsonParseException {
         // This Json String is a compound field that contains the wrong
         // fieldType as a child ("description" is not a child of "coordinate").
         // It should throw a JsonParseException when it encounters the invalid child.
         String compoundString = "{ " +
-"            \"typeClass\": \"compound\"," +
-"            \"multiple\": true," +
-"            \"typeName\": \"coordinate\"," +
-"            \"value\": [" +
-"              {" +
-"                \"description\": {" +
-"                  \"value\": \"0\"," +
-"                  \"typeClass\": \"primitive\"," +
-"                  \"multiple\": false," +
-"                  \"typeName\": \"description\"" +
-"                }" +
-"              }" +
-"            ]" +
-"            " +
-"          }"; 
-   
+                "            \"typeClass\": \"compound\"," +
+                "            \"multiple\": true," +
+                "            \"typeName\": \"coordinate\"," +
+                "            \"value\": [" +
+                "              {" +
+                "                \"description\": {" +
+                "                  \"value\": \"0\"," +
+                "                  \"typeClass\": \"primitive\"," +
+                "                  \"multiple\": false," +
+                "                  \"typeName\": \"description\"" +
+                "                }" +
+                "              }" +
+                "            ]" +
+                "            " +
+                "          }";
+
         String text = compoundString;
         JsonReader jsonReader = Json.createReader(new StringReader(text));
         JsonObject obj = jsonReader.readObject();
 
         sut.parseField(obj);
-       }
-    
-    
+    }
+
+
     @Test
     public void testPrimitiveNoRepeatesFieldRoundTrip() throws JsonParseException {
         DatasetField expected = new DatasetField();
-        expected.setDatasetFieldType( datasetFieldTypeSvc.findByName("description") );
-        expected.setDatasetFieldValues( Collections.singletonList(new DatasetFieldValue(expected, "This is a description value")) );
+        expected.setDatasetFieldType(datasetFieldTypeSvc.findByName("description"));
+        expected.setDatasetFieldValues(Collections.singletonList(new DatasetFieldValue(expected, "This is a description value")));
         JsonObject json = JsonPrinter.json(expected);
-        
+
         DatasetField actual = sut.parseField(json);
-        
+
         assertFieldsEqual(actual, expected);
     }
-    
+
     @Test
     public void testPrimitiveRepeatesFieldRoundTrip() throws JsonParseException {
         DatasetField expected = new DatasetField();
-        expected.setDatasetFieldType( datasetFieldTypeSvc.findByName("keyword") );
-        expected.setDatasetFieldValues( Arrays.asList(new DatasetFieldValue(expected, "kw1"),
-                new DatasetFieldValue(expected, "kw2"),
-                new DatasetFieldValue(expected, "kw3")) );
+        expected.setDatasetFieldType(datasetFieldTypeSvc.findByName("keyword"));
+        expected.setDatasetFieldValues(Arrays.asList(new DatasetFieldValue(expected, "kw1"),
+                                                     new DatasetFieldValue(expected, "kw2"),
+                                                     new DatasetFieldValue(expected, "kw3")));
         JsonObject json = JsonPrinter.json(expected);
-        
+
         DatasetField actual = sut.parseField(json);
-        
+
         assertFieldsEqual(actual, expected);
     }
-    
+
     /**
      * Test that a complete dataverse JSON object is correctly parsed. This
      * checks that required and optional properties are parsed into the correct
      * dataverse properties.
+     *
      * @throws JsonParseException when this test is broken.
      */
     @Test
     public void testParseCompleteDataverse() throws JsonParseException {
-        
+
         JsonObject dvJson;
-        try (InputStreamReader reader = new InputStreamReader(getClass().getClassLoader().getResourceAsStream("json/dataverse-complete.json"), "UTF-8")) {
+        try (InputStreamReader reader = new InputStreamReader(getClass().getClassLoader().getResourceAsStream("json/dataverse-complete.json"), StandardCharsets.UTF_8)) {
             dvJson = Json.createReader(reader).readObject();
             Dataverse actual = sut.parseDataverse(dvJson);
             assertEquals("Scientific Research", actual.getName());
@@ -267,13 +268,13 @@ public class JsonParserTest {
             throw new JsonParseException("Couldn't read test file", ioe);
         }
     }
-    
+
     @Test
     public void testParseThemeDataverse() throws JsonParseException {
-        
+
         JsonObject dvJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/dataverse-theme.json")) {
-            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
+            InputStreamReader reader = new InputStreamReader(jsonFile, StandardCharsets.UTF_8);
             dvJson = Json.createReader(reader).readObject();
             Dataverse actual = sut.parseDataverse(dvJson);
             assertEquals("testDv", actual.getName());
@@ -295,19 +296,20 @@ public class JsonParserTest {
             throw new JsonParseException("Couldn't read test file", ioe);
         }
     }
-    
+
     /**
      * Test that a minimally complete dataverse JSON object is correctly parsed.
      * This checks for required properties and default values for optional
      * values.
+     *
      * @throws JsonParseException when this test is broken.
      */
     @Test
     public void testParseMinimalDataverse() throws JsonParseException {
-        
+
         JsonObject dvJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/minimal-dataverse.json")) {
-            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
+            InputStreamReader reader = new InputStreamReader(jsonFile, StandardCharsets.UTF_8);
             dvJson = Json.createReader(reader).readObject();
             Dataverse actual = sut.parseDataverse(dvJson);
             assertEquals("testDv", actual.getName());
@@ -321,11 +323,12 @@ public class JsonParserTest {
             throw new JsonParseException("Couldn't read test file", ioe);
         }
     }
-    
+
     /**
      * Test that a dataverse JSON object without alias fails to parse.
+     *
      * @throws JsonParseException if all goes well - this is expected.
-     * @throws IOException when test file IO goes wrong - this is bad.
+     * @throws IOException        when test file IO goes wrong - this is bad.
      */
     @Test(expected = JsonParseException.class)
     public void testParseNoAliasDataverse() throws JsonParseException, IOException {
@@ -335,11 +338,12 @@ public class JsonParserTest {
             Dataverse actual = sut.parseDataverse(dvJson);
         }
     }
-    
+
     /**
      * Test that a dataverse JSON object without name fails to parse.
+     *
      * @throws JsonParseException if all goes well - this is expected.
-     * @throws IOException when test file IO goes wrong - this is bad.
+     * @throws IOException        when test file IO goes wrong - this is bad.
      */
     @Test(expected = JsonParseException.class)
     public void testParseNoNameDataverse() throws JsonParseException, IOException {
@@ -349,12 +353,13 @@ public class JsonParserTest {
             Dataverse actual = sut.parseDataverse(dvJson);
         }
     }
-    
+
     /**
      * Test that a dataverse JSON object with contacts, but without contact
      * email fails to parse.
+     *
      * @throws JsonParseException if all goes well - this is expected.
-     * @throws IOException when test file IO goes wrong - this is bad.
+     * @throws IOException        when test file IO goes wrong - this is bad.
      */
     @Test(expected = JsonParseException.class)
     public void testParseNoContactEmailsDataverse() throws JsonParseException, IOException {
@@ -371,8 +376,9 @@ public class JsonParserTest {
      * the date string, which means time zone indicators are ignored. Only when
      * UTC dates and cleared calendars are used, it is "safe" to perform this
      * round-trip.
+     *
      * @throws ParseException if Dataverse outputs date strings that it cannot
-     * parse.
+     *                        parse.
      */
     @Test
     public void testDateRoundtrip() throws ParseException {
@@ -395,8 +401,9 @@ public class JsonParserTest {
      * Test that a date-time string that the {@link JsonPrinter} outputs a string
      * that JsonParser can read correctly. This defines a non-UTC date-time that
      * when output as a string and parsed must give the same date-time.
+     *
      * @throws ParseException when JsonPrinter outputs a string that JsonParse
-     * cannot read.
+     *                        cannot read.
      */
     @Test
     public void testDateTimeRoundtrip() throws ParseException {
@@ -412,13 +419,14 @@ public class JsonParserTest {
 
     /**
      * Expect an exception when the dataset JSON is empty.
+     *
      * @throws JsonParseException when the test is broken
      */
     @Test(expected = NullPointerException.class)
     public void testParseEmptyDataset() throws JsonParseException {
         JsonObject dsJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/empty-dataset.json")) {
-            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
+            InputStreamReader reader = new InputStreamReader(jsonFile, StandardCharsets.UTF_8);
             dsJson = Json.createReader(reader).readObject();
             System.out.println(dsJson != null);
             Dataset actual = sut.parseDataset(dsJson);
@@ -430,106 +438,106 @@ public class JsonParserTest {
     }
 
     /**
-     * 
      * Expect an exception when the dataset version JSON contains fields
      * that the {@link DatasetFieldService} doesn't know about.
+     *
      * @throws JsonParseException as expected
-     * @throws IOException when test file IO goes wrong - this is bad.
+     * @throws IOException        when test file IO goes wrong - this is bad.
      */
     @Test(expected = JsonParseException.class)
     public void testParseOvercompleteDatasetVersion() throws JsonParseException, IOException {
         JsonObject dsJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/complete-dataset-version.json")) {
-            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
+            InputStreamReader reader = new InputStreamReader(jsonFile, StandardCharsets.UTF_8);
             dsJson = Json.createReader(reader).readObject();
             System.out.println(dsJson != null);
             DatasetVersion actual = sut.parseDatasetVersion(dsJson);
         }
     }
-    
+
     @Test
     public void testIpGroupRoundTrip() {
-        
+
         IpGroup original = new IpGroup();
         original.setDescription("Ip group description");
         original.setDisplayName("Test-ip-group");
         original.setId(42l);
         original.setPersistedGroupAlias("test-ip-group");
-        original.setGroupProvider( new IpGroupProvider(null) );
-        
-        original.add( IpAddressRange.make(IpAddress.valueOf("1.2.1.1"), IpAddress.valueOf("1.2.1.10")) );
-        original.add( IpAddressRange.make(IpAddress.valueOf("1.1.1.1"), IpAddress.valueOf("1.1.1.1")) );
-        original.add( IpAddressRange.make(IpAddress.valueOf("1:2:3::4:5"), IpAddress.valueOf("1:2:3::4:5")) );
-        original.add( IpAddressRange.make(IpAddress.valueOf("1:2:3::3:ff"), IpAddress.valueOf("1:2:3::3:5")) );
-        
+        original.setGroupProvider(new IpGroupProvider(null));
+
+        original.add(IpAddressRange.make(IpAddress.valueOf("1.2.1.1"), IpAddress.valueOf("1.2.1.10")));
+        original.add(IpAddressRange.make(IpAddress.valueOf("1.1.1.1"), IpAddress.valueOf("1.1.1.1")));
+        original.add(IpAddressRange.make(IpAddress.valueOf("1:2:3::4:5"), IpAddress.valueOf("1:2:3::4:5")));
+        original.add(IpAddressRange.make(IpAddress.valueOf("1:2:3::3:ff"), IpAddress.valueOf("1:2:3::3:5")));
+
         JsonObject serialized = JsonPrinter.json(original).build();
-        
-        System.out.println( serialized.toString() );
-        
+
+        System.out.println(serialized.toString());
+
         IpGroup parsed = new JsonParser().parseIpGroup(serialized);
-        
-        assertEquals( original, parsed );
-        
+
+        assertEquals(original, parsed);
+
     }
-    
+
     @Test
     public void testIpGroupRoundTrip_singleIpv4Address() {
-        
+
         IpGroup original = new IpGroup();
         original.setDescription("Ip group description");
         original.setDisplayName("Test-ip-group");
         original.setId(42l);
         original.setPersistedGroupAlias("test-ip-group");
-        original.setGroupProvider( new IpGroupProvider(null) );
-        
-        original.add( IpAddressRange.make(IpAddress.valueOf("1.1.1.1"), IpAddress.valueOf("1.1.1.1")) );
-        
+        original.setGroupProvider(new IpGroupProvider(null));
+
+        original.add(IpAddressRange.make(IpAddress.valueOf("1.1.1.1"), IpAddress.valueOf("1.1.1.1")));
+
         JsonObject serialized = JsonPrinter.json(original).build();
-        
-        System.out.println( serialized.toString() );
-        
+
+        System.out.println(serialized.toString());
+
         IpGroup parsed = new JsonParser().parseIpGroup(serialized);
-        
-        assertEquals( original, parsed );
-        assertTrue( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.1")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.2")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.2.1")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.0")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.250")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.2.1.1")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("2.1.1.1")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61")) ));
-        
+
+        assertEquals(original, parsed);
+        assertTrue(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.1"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.2"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.2.1"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.0"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.250"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.2.1.1"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("2.1.1.1"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61"))));
+
     }
-    
+
     @Test
     public void testIpGroupRoundTrip_singleIpv6Address() {
-        
+
         IpGroup original = new IpGroup();
         original.setDescription("Ip group description");
         original.setDisplayName("Test-ip-group");
         original.setId(42l);
         original.setPersistedGroupAlias("test-ip-group");
-        original.setGroupProvider( new IpGroupProvider(null) );
-        
-        original.add( IpAddressRange.make(IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61"),
-                                          IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61")) );
-        
+        original.setGroupProvider(new IpGroupProvider(null));
+
+        original.add(IpAddressRange.make(IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61"),
+                                         IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61")));
+
         JsonObject serialized = JsonPrinter.json(original).build();
-        
-        System.out.println( serialized.toString() );
-        
+
+        System.out.println(serialized.toString());
+
         IpGroup parsed = new JsonParser().parseIpGroup(serialized);
-        
-        assertEquals( original, parsed );
-        assertTrue( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce60")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce62")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe47:ce61")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0af:fe48:ce61")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe79::22c9:d0ff:fe48:ce61")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("2.1.1.1")) ));
-        
+
+        assertEquals(original, parsed);
+        assertTrue(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce60"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce62"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe47:ce61"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0af:fe48:ce61"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe79::22c9:d0ff:fe48:ce61"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("2.1.1.1"))));
+
     }
 
     @Test
@@ -576,66 +584,78 @@ public class JsonParserTest {
         verifyDisplayOrderAtIndex(datasetVersion, 1, 1);
     }
 
-    JsonObject json( String s ) {
-        return Json.createReader( new StringReader(s) ).readObject();
+    JsonObject json(String s) {
+        return Json.createReader(new StringReader(s)).readObject();
     }
-    
-    public boolean assertFieldsEqual( DatasetField ex, DatasetField act ) {
-        if ( ex == act ) return true;
-        if ( (ex == null) ^ (act==null) ) return false;
-        
+
+    public boolean assertFieldsEqual(DatasetField ex, DatasetField act) {
+        if (ex == act) {
+            return true;
+        }
+        if ((ex == null) ^ (act == null)) {
+            return false;
+        }
+
         // type
-        if ( ! ex.getDatasetFieldType().equals(act.getDatasetFieldType()) ) return false;
-        
-        if ( ex.getDatasetFieldType().isPrimitive() ) {
+        if (!ex.getDatasetFieldType().equals(act.getDatasetFieldType())) {
+            return false;
+        }
+
+        if (ex.getDatasetFieldType().isPrimitive()) {
             List<DatasetFieldValue> exVals = ex.getDatasetFieldValues();
             List<DatasetFieldValue> actVals = act.getDatasetFieldValues();
-            if ( exVals.size() != actVals.size() ) return false;
+            if (exVals.size() != actVals.size()) {
+                return false;
+            }
             Iterator<DatasetFieldValue> exItr = exVals.iterator();
-            for ( DatasetFieldValue actVal : actVals ) {
+            for (DatasetFieldValue actVal : actVals) {
                 DatasetFieldValue exVal = exItr.next();
-                if ( ! exVal.getValue().equals(actVal.getValue()) ) {
+                if (!exVal.getValue().equals(actVal.getValue())) {
                     return false;
                 }
             }
             return true;
-            
-        } else if ( ex.getDatasetFieldType().isControlledVocabulary() ) {
+
+        } else if (ex.getDatasetFieldType().isControlledVocabulary()) {
             List<ControlledVocabularyValue> exVals = ex.getControlledVocabularyValues();
             List<ControlledVocabularyValue> actVals = act.getControlledVocabularyValues();
-            if ( exVals.size() != actVals.size() ) return false;
+            if (exVals.size() != actVals.size()) {
+                return false;
+            }
             Iterator<ControlledVocabularyValue> exItr = exVals.iterator();
-            for ( ControlledVocabularyValue actVal : actVals ) {
+            for (ControlledVocabularyValue actVal : actVals) {
                 ControlledVocabularyValue exVal = exItr.next();
-                if ( ! exVal.getId().equals(actVal.getId()) ) {
+                if (!exVal.getId().equals(actVal.getId())) {
                     return false;
                 }
             }
             return true;
-            
-        } else if ( ex.getDatasetFieldType().isCompound() ) {
+
+        } else if (ex.getDatasetFieldType().isCompound()) {
             List<DatasetFieldCompoundValue> exVals = ex.getDatasetFieldCompoundValues();
             List<DatasetFieldCompoundValue> actVals = act.getDatasetFieldCompoundValues();
-            if ( exVals.size() != actVals.size() ) return false;
+            if (exVals.size() != actVals.size()) {
+                return false;
+            }
             Iterator<DatasetFieldCompoundValue> exItr = exVals.iterator();
-            for ( DatasetFieldCompoundValue actVal : actVals ) {
+            for (DatasetFieldCompoundValue actVal : actVals) {
                 DatasetFieldCompoundValue exVal = exItr.next();
                 Iterator<DatasetField> exChildItr = exVal.getChildDatasetFields().iterator();
                 Iterator<DatasetField> actChildItr = actVal.getChildDatasetFields().iterator();
-                while( exChildItr.hasNext() ) {
+                while (exChildItr.hasNext()) {
                     assertFieldsEqual(exChildItr.next(), actChildItr.next());
                 }
             }
             return true;
-            
+
         }
-        
+
         throw new IllegalArgumentException("Unknown dataset field type '" + ex.getDatasetFieldType() + "'");
     }
-    
+
     private static class MockSettingsSvc extends SettingsServiceBean {
         @Override
-        public String getValueForKey( Key key /*, String defaultValue */) {
+        public String getValueForKey(Key key /*, String defaultValue */) {
             switch (key) {
                 case Authority:
                     return "10.5072";
@@ -644,32 +664,33 @@ public class JsonParserTest {
                 default:
                     break;
             }
-             return null;
+            return null;
         }
     }
-    
+
     static class MockDatasetFieldSvc extends DatasetFieldServiceBean {
-        
+
         Map<String, DatasetFieldType> fieldTypes = new HashMap<>();
         long nextId = 1;
-        public DatasetFieldType add( DatasetFieldType t ) {
-            if ( t.getId()==null ) {
-                t.setId( nextId++ );
+
+        public DatasetFieldType add(DatasetFieldType t) {
+            if (t.getId() == null) {
+                t.setId(nextId++);
             }
-            fieldTypes.put( t.getName(), t);
+            fieldTypes.put(t.getName(), t);
             return t;
         }
-        
+
         @Override
-        public DatasetFieldType findByName( String name ) {
+        public DatasetFieldType findByName(String name) {
             return fieldTypes.get(name);
         }
-        
+
         @Override
         public DatasetFieldType findByNameOpt(String name) {
-           return findByName(name);
+            return findByName(name);
         }
-        
+
         @Override
         public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndStrValue(DatasetFieldType dsft, String strValue, boolean lenient) {
             ControlledVocabularyValue cvv = new ControlledVocabularyValue();
@@ -677,7 +698,7 @@ public class JsonParserTest {
             cvv.setStrValue(strValue);
             return cvv;
         }
- 
+
     }
 
     private DatasetVersion createEmptyDatasetVersion() {

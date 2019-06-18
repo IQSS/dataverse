@@ -2,11 +2,12 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssignment;
-import java.util.Collection;
-import java.util.logging.Logger;
+
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import java.util.Collection;
+import java.util.logging.Logger;
 
 @Stateless
 public class IndexAsync {
@@ -21,8 +22,8 @@ public class IndexAsync {
         IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(roleAssignment.getDefinitionPoint());
         logger.fine("output from indexing operations: " + indexResponse);
     }
-    
-    @Asynchronous 
+
+    @Asynchronous
     public void indexRoles(Collection<DvObject> dvObjects) {
         for (DvObject dvObject : dvObjects) {
             IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(dvObject);

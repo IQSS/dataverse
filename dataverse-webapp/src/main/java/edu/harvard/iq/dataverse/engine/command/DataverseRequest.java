@@ -3,20 +3,20 @@ package edu.harvard.iq.dataverse.engine.command;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * 
- * A request in the dataverse context. Similar to an HTTP request (and indeed 
+ * A request in the dataverse context. Similar to an HTTP request (and indeed
  * wraps one) but has more data that's specific to the Dataverse application.
- * 
+ *
  * @author michael
  */
 public class DataverseRequest {
-    
+
     private final User user;
     private final IpAddress sourceAddress;
-    
+
     public DataverseRequest(User aUser, HttpServletRequest aHttpServletRequest) {
         this.user = aUser;
 
@@ -30,14 +30,14 @@ public class DataverseRequest {
                 remoteAddressStr = remoteAddressFromRequest;
             }
         }
-        sourceAddress = IpAddress.valueOf( remoteAddressStr );
+        sourceAddress = IpAddress.valueOf(remoteAddressStr);
     }
 
-    public DataverseRequest( User aUser, IpAddress aSourceAddress ) {
+    public DataverseRequest(User aUser, IpAddress aSourceAddress) {
         user = aUser;
         sourceAddress = aSourceAddress;
     }
-    
+
     public User getUser() {
         return user;
     }
@@ -51,21 +51,22 @@ public class DataverseRequest {
 
     @Override
     public String toString() {
-        return "[DataverseRequest user:" + getUser() + "@" + getSourceAddress() + "]";                
+        return "[DataverseRequest user:" + getUser() + "@" + getSourceAddress() + "]";
     }
-    
+
     /**
      * Get an AuthenticatedUser or return null
-     * @return 
+     *
+     * @return
      */
-    public AuthenticatedUser getAuthenticatedUser(){
-        
+    public AuthenticatedUser getAuthenticatedUser() {
+
         User authUser = this.getUser();
-        
-        if (authUser instanceof AuthenticatedUser){
-            return (AuthenticatedUser)authUser;
+
+        if (authUser instanceof AuthenticatedUser) {
+            return (AuthenticatedUser) authUser;
         }
         return null;
     }
-    
+
 }

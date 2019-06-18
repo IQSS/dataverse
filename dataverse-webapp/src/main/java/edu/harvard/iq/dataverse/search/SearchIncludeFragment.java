@@ -91,10 +91,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private String selectedTypesHumanReadable;
     private String searchFieldType = SearchFields.TYPE;
     private String searchFieldSubtree = SearchFields.SUBTREE;
-//    private String searchFieldHostDataverse = SearchFields.HOST_DATAVERSE;
+    //    private String searchFieldHostDataverse = SearchFields.HOST_DATAVERSE;
     private String searchFieldNameSort = SearchFields.NAME_SORT;
     private String searchFieldRelevance = SearchFields.RELEVANCE;
-//    private String searchFieldReleaseDate = SearchFields.RELEASE_DATE_YYYY;
+    //    private String searchFieldReleaseDate = SearchFields.RELEASE_DATE_YYYY;
     private String searchFieldReleaseOrCreateDate = SearchFields.RELEASE_OR_CREATE_DATE;
     final private String ASCENDING = SortOrder.asc.toString();
     final private String DESCENDING = SortOrder.desc.toString();
@@ -112,38 +112,36 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private boolean solrIsDown = false;
     private Map<String, Integer> numberOfFacets = new HashMap<>();
     private boolean debug = false;
-//    private boolean showUnpublished;
+    //    private boolean showUnpublished;
     List<String> filterQueriesDebug = new ArrayList<>();
-//    private Map<String, String> friendlyName = new HashMap<>();
+    //    private Map<String, String> friendlyName = new HashMap<>();
     private String errorFromSolr;
     private SearchException searchException;
     private boolean rootDv = false;
     private boolean solrErrorEncountered = false;
-    
+
     /**
-     * @todo:
-     *
-     * better style and icons for facets
-     *
+     * @todo: better style and icons for facets
+     * <p>
      * replace * with watermark saying "Search this Dataverse"
-     *
+     * <p>
      * get rid of "_s" et al. (human eyeball friendly)
-     *
+     * <p>
      * pagination (previous/next links)
-     *
+     * <p>
      * test dataset cards
-     *
+     * <p>
      * test files cards
-     *
+     * <p>
      * test dataset cards when Solr is down
-     *
+     * <p>
      * make results sortable: https://redmine.hmdc.harvard.edu/issues/3482
-     *
+     * <p>
      * always show all types, even if zero count:
      * https://redmine.hmdc.harvard.edu/issues/3488
-     *
+     * <p>
      * make subtree facet look like amazon widget (i.e. a tree)
-     *
+     * <p>
      * see also https://trello.com/c/jmry3BJR/28-browse-dataverses
      */
     public String searchRedirect(String dataverseRedirectPage) {
@@ -295,7 +293,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
         // reset the solr error flag
         setSolrErrorEncountered(false);
-        
+
         try {
             logger.fine("query from user:   " + query);
             logger.fine("queryToPassToSolr: " + queryToPassToSolr);
@@ -311,18 +309,18 @@ public class SearchIncludeFragment implements java.io.Serializable {
             List<Dataverse> dataverses = new ArrayList<>();
             dataverses.add(dataverse);
             solrQueryResponse = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
-            if (solrQueryResponse.hasError()){
+            if (solrQueryResponse.hasError()) {
                 logger.info(solrQueryResponse.getError());
                 setSolrErrorEncountered(true);
             }
             // This 2nd search() is for populating the facets: -- L.A. 
             // TODO: ...
             solrQueryResponseAllTypes = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
-            if (solrQueryResponse.hasError()){
+            if (solrQueryResponse.hasError()) {
                 logger.info(solrQueryResponse.getError());
                 setSolrErrorEncountered(true);
             }
-            
+
         } catch (SearchException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -367,11 +365,11 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     logger.warning(SearchFields.ENTITY_ID + " was null for Solr document id:" + solrSearchResult.getId() + ", skipping. Bad Solr data?");
                     break;
                 }
-                
+
                 // going to assume that this is NOT a linked object, for now:
                 solrSearchResult.setIsInTree(true);
                 // (we'll review this later!)
-                
+
                 if (solrSearchResult.getType().equals("dataverses")) {
                     //logger.info("XXRESULT: dataverse: "+solrSearchResult.getEntityId());
                     dataverseService.populateDvSearchCard(solrSearchResult);
@@ -392,7 +390,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     if (deaccesssionReason != null) {
                         solrSearchResult.setDescriptionNoSnippet(deaccesssionReason);
                     }
-                    
+
                 } else if (solrSearchResult.getType().equals("files")) {
                     //logger.info("XXRESULT: datafile: "+solrSearchResult.getEntityId());
                     dataFileService.populateFileSearchCard(solrSearchResult);
@@ -437,34 +435,35 @@ public class SearchIncludeFragment implements java.io.Serializable {
 //        friendlyName.put(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, "Distribution Date");
     }
 
-  
+
     /**
      * Used for capturing errors that happen during solr query
      * Added to catch exceptions when parsing the solr query string
-     * 
-     * @return 
+     *
+     * @return
      */
-    public boolean wasSolrErrorEncountered(){
-  
-        if (this.solrErrorEncountered){
+    public boolean wasSolrErrorEncountered() {
+
+        if (this.solrErrorEncountered) {
             return true;
         }
-        if (!this.hasValidFilterQueries()){
+        if (!this.hasValidFilterQueries()) {
             setSolrErrorEncountered(true);
             return true;
         }
         return solrErrorEncountered;
     }
-    
+
     /**
      * Set the solrErrorEncountered flag
-     * @param val 
+     *
+     * @param val
      */
-    public void setSolrErrorEncountered(boolean val){
+    public void setSolrErrorEncountered(boolean val) {
         this.solrErrorEncountered = val;
     }
-    
-//    public boolean isShowUnpublished() {
+
+    //    public boolean isShowUnpublished() {
 //        return showUnpublished;
 //    }
 //
@@ -678,7 +677,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         this.dataverse = dataverse;
     }
 
-//    public String getDataverseSubtreeContext() {
+    //    public String getDataverseSubtreeContext() {
 //        return dataverseSubtreeContext;
 //    }
 //
@@ -725,7 +724,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         this.searchFieldSubtree = searchFieldSubtree;
     }
 
-//    public String getSearchFieldHostDataverse() {
+    //    public String getSearchFieldHostDataverse() {
 //        return searchFieldHostDataverse;
 //    }
 //
@@ -798,7 +797,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     /**
      * Allow only valid values to be set.
-     *
+     * <p>
      * Rather than passing in a String and converting it to an enum in this
      * method we could write a converter:
      * http://stackoverflow.com/questions/8609378/jsf-2-0-view-parameters-to-pass-objects
@@ -961,45 +960,45 @@ public class SearchIncludeFragment implements java.io.Serializable {
         return IndexServiceBean.getDEACCESSIONED_STRING();
     }
 
-    
-   /**
-    * A bit of redundant effort for error checking in the .xhtml
-    * 
-    * Specifically for searches with bad facets in query string--
-    * incorrect quoting.  These searches don't always throw an explicit
-    * solr error.
-    * 
-    * Note: An empty or null filterQuery array is OK
-    * Values within the array that can't be split are NOT ok
-    * (This is quick "downstream" fix--not necessarily efficient)
-    * 
-    * @return 
-    */
-    public boolean hasValidFilterQueries(){
-             
-        if (this.filterQueries.isEmpty()){   
+
+    /**
+     * A bit of redundant effort for error checking in the .xhtml
+     * <p>
+     * Specifically for searches with bad facets in query string--
+     * incorrect quoting.  These searches don't always throw an explicit
+     * solr error.
+     * <p>
+     * Note: An empty or null filterQuery array is OK
+     * Values within the array that can't be split are NOT ok
+     * (This is quick "downstream" fix--not necessarily efficient)
+     *
+     * @return
+     */
+    public boolean hasValidFilterQueries() {
+
+        if (this.filterQueries.isEmpty()) {
             return true;        // empty is valid!
         }
 
-        for (String fq : this.filterQueries){
-            if (this.getFriendlyNamesFromFilterQuery(fq) == null){
+        for (String fq : this.filterQueries) {
+            if (this.getFriendlyNamesFromFilterQuery(fq) == null) {
                 return false;   // not parseable is bad!
             }
         }
         return true;
     }
-    
+
     public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {
-        
-        
-        if ((filterQuery == null)||
-            (datasetfieldFriendlyNamesBySolrField == null)||
-            (staticSolrFieldFriendlyNamesBySolrField==null)){
+
+
+        if ((filterQuery == null) ||
+                (datasetfieldFriendlyNamesBySolrField == null) ||
+                (staticSolrFieldFriendlyNamesBySolrField == null)) {
             return null;
         }
-        
+
         String[] parts = filterQuery.split(":");
-        if (parts.length != 2){
+        if (parts.length != 2) {
             //logger.log(Level.INFO, "String array has {0} part(s).  Should have 2: {1}", new Object[]{parts.length, filterQuery});
             return null;
         }
@@ -1156,7 +1155,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 if (result.getEntity() != null) {
                     result.setImageUrl(thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(result));
                 }
-                
+
                 if (result.isHarvested()) {
                     if (harvestedDatasetIds == null) {
                         harvestedDatasetIds = new HashSet<>();
@@ -1173,19 +1172,19 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 }
             }
         }
-        
+
         thumbnailServiceWrapper.resetObjectMaps();
-        
+
         // Now, make another pass, and add the remote archive descriptions to the 
         // harvested dataset and datafile cards (at the expense of one extra 
         // SQL query:
-        
+
         if (harvestedDatasetIds != null) {
             Map<Long, String> descriptionsForHarvestedDatasets = datasetService.getArchiveDescriptionsForHarvestedDatasets(harvestedDatasetIds);
             if (descriptionsForHarvestedDatasets != null && descriptionsForHarvestedDatasets.size() > 0) {
                 for (SolrSearchResult result : searchResultsList) {
                     if (result.isHarvested()) {
-                        if (result.getType().equals("files")) { 
+                        if (result.getType().equals("files")) {
                             if (descriptionsForHarvestedDatasets.containsKey(result.getParentIdAsLong())) {
                                 result.setHarvestingDescription(descriptionsForHarvestedDatasets.get(result.getParentIdAsLong()));
                             }
@@ -1200,9 +1199,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
             descriptionsForHarvestedDatasets = null;
             harvestedDatasetIds = null;
         }
-        
+
         // determine which of the objects are linked:
-        
+
         if (!this.isRootDv()) {
             // (nothing is "linked" if it's the root DV!)
             Set<Long> dvObjectParentIds = new HashSet<>();
@@ -1218,7 +1217,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     dvObjectParentIds.add(result.getParentIdAsLong());
                 }
             }
-            
+
             if (dvObjectParentIds.size() > 0) {
                 Map<Long, String> treePathMap = dvObjectService.getObjectPathsByIds(dvObjectParentIds);
                 if (treePathMap != null) {
@@ -1227,22 +1226,22 @@ public class SearchIncludeFragment implements java.io.Serializable {
                         if (treePathMap.containsKey(objectId)) {
                             String objectPath = treePathMap.get(objectId);
                             if (!objectPath.startsWith(dataversePath)) {
-                                result.setIsInTree(false);                                
+                                result.setIsInTree(false);
                             }
                         }
                     }
                 }
                 treePathMap = null;
             }
-            
+
             dvObjectParentIds = null;
         }
-        
+
     }
-    
+
     public enum SortOrder {
 
         asc, desc
-    };
+    }
 
 }

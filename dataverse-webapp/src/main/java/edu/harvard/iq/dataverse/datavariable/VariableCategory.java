@@ -6,87 +6,85 @@
 
 package edu.harvard.iq.dataverse.datavariable;
 
-import java.io.Serializable;
-import java.util.List;
+import edu.harvard.iq.dataverse.util.AlphaNumericComparator;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-
-import edu.harvard.iq.dataverse.util.AlphaNumericComparator;
-import javax.persistence.Index;
 import javax.persistence.Table;
+import java.io.Serializable;
+import java.util.List;
 
 /**
- *
  * @author Ellen Kraffmiller
  * @author Leonid Andreev
- *    
+ * <p>
  * Largely based on the VariableCategory entity from the DVN v2-3;
  * original author: Ellen Kraffmiller (2006).
- * 
  */
 @Entity
-@Table(indexes = {@Index(columnList="datavariable_id")})
-public class VariableCategory  implements Comparable, Serializable {
+@Table(indexes = {@Index(columnList = "datavariable_id")})
+public class VariableCategory implements Comparable, Serializable {
     /*
-     * Simple constructor: 
+     * Simple constructor:
      */
     public VariableCategory() {
     }
-    
+
     private static AlphaNumericComparator alphaNumericComparator = new AlphaNumericComparator();
-    
+
     /*
-     * Definitions of class properties: 
+     * Definitions of class properties:
      */
-   
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     /*
      * DataVariable for which this range is defined.
      */
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DataVariable dataVariable;
-    
+
     /*
-     * Category Value: 
+     * Category Value:
      */
     private String value;
 
     /*
-     * Category Label:  
+     * Category Label:
      */
     private String label;
-    
+
     /*
      * Is this a missing category?
      */
     private boolean missing;
-    
+
     /*
-     * If this is an "Ordered Categorical Variable", aka an "Ordinal", it 
+     * If this is an "Ordered Categorical Variable", aka an "Ordinal", it
      * has an explicitly assigned order value:
      */
     private int catOrder;
-    
+
     /*
      * Frequency of this category:
      */
     private Double frequency;
-    
-    
+
+
     /*
      * Getter and Setter methods:
      */
-    
-    
+
+
     public Long getId() {
         return id;
     }
@@ -94,23 +92,23 @@ public class VariableCategory  implements Comparable, Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public String getLabel() {
         return this.label;
     }
-    
+
     public void setLabel(String label) {
         this.label = label;
     }
-    
+
     public String getValue() {
         return this.value;
     }
-    
+
     public void setValue(String value) {
         this.value = value;
     }
-    
+
     public DataVariable getDataVariable() {
         return this.dataVariable;
     }
@@ -118,7 +116,7 @@ public class VariableCategory  implements Comparable, Serializable {
     public void setDataVariable(DataVariable dataVariable) {
         this.dataVariable = dataVariable;
     }
-    
+
     public boolean isMissing() {
         return this.missing;
     }
@@ -126,38 +124,38 @@ public class VariableCategory  implements Comparable, Serializable {
     public void setMissing(boolean missing) {
         this.missing = missing;
     }
-    
+
     public int getOrder() {
-        return catOrder; 
+        return catOrder;
     }
-    
+
     public void setOrder(int order) {
-        this.catOrder = order; 
+        this.catOrder = order;
     }
-    
+
     public Double getFrequency() {
         return this.frequency;
     }
-    
+
     public void setFrequency(Double frequency) {
         this.frequency = frequency;
     }
 
-    
-    /* 
-     * Helper methods: 
+
+    /*
+     * Helper methods:
      */
-    
-    
+
+
     // helper for html display  
     // [TODO: double-check if we still need this method in 4.0; -- L.A., jan. 2014] 
     private transient List charList;
 
-    /* 
+    /*
      * Custom overrides for hashCode(), equals() and toString() methods:
      */
-    
-    
+
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -170,29 +168,27 @@ public class VariableCategory  implements Comparable, Serializable {
         if (!(object instanceof VariableCategory)) {
             return false;
         }
-        
+
         // TODO: 
         // We should probably compare the values instead, similarly 
         // to comareTo() below. -- L.A., Jan. 2014
-        VariableCategory other = (VariableCategory)object;
+        VariableCategory other = (VariableCategory) object;
         if (this.id != other.id) {
-            if (this.id == null || !this.id.equals(other.id)) {
-                return false;
-            }                    
+            return this.id != null && this.id.equals(other.id);
         }
         return true;
     }
-    
+
     @Override
     public String toString() {
         return "edu.harvard.iq.dataverse.VariableCategory[ value=" + value + " ]";
     }
-    
+
     @Override
     public int compareTo(Object obj) {
-        VariableCategory ss = (VariableCategory)obj;     
-        return alphaNumericComparator.compare(this.getValue(),ss.getValue());
-        
+        VariableCategory ss = (VariableCategory) obj;
+        return alphaNumericComparator.compare(this.getValue(), ss.getValue());
+
     }
-    
+
 }

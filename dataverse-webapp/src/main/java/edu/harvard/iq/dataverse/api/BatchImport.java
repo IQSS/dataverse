@@ -51,9 +51,9 @@ public class BatchImport extends AbstractApiBean {
     /**
      * Import a new Dataset with DDI xml data posted in the request
      *
-     * @param body the xml
+     * @param body       the xml
      * @param parentIdtf the dataverse to import into (id or alias)
-     * @param apiKey user's api key
+     * @param apiKey     user's api key
      * @return import status (including id of the dataset created)
      */
     @POST
@@ -80,17 +80,17 @@ public class BatchImport extends AbstractApiBean {
             JsonObjectBuilder status = importService.doImport(dataverseRequest, owner, body, filename, ImportType.NEW, cleanupLog);
             return this.ok(status);
         } catch (ImportException | IOException e) {
-            return this.error(Response.Status.BAD_REQUEST, e.getMessage());
+            return error(Response.Status.BAD_REQUEST, e.getMessage());
         }
     }
 
     /**
      * Import single or multiple datasets that are in the local filesystem
      *
-     * @param fileDir the absolute path of the file or directory (all files
-     * within the directory will be imported
+     * @param fileDir    the absolute path of the file or directory (all files
+     *                   within the directory will be imported
      * @param parentIdtf the dataverse to import into (id or alias)
-     * @param apiKey user's api key
+     * @param apiKey     user's api key
      * @return import status (including id's of the datasets created)
      */
     @GET
@@ -126,7 +126,7 @@ public class BatchImport extends AbstractApiBean {
             batchService.processFilePath(fileDir, parentIdtf, dataverseRequest, owner, importType, createDV);
 
         } catch (ImportException e) {
-            return this.error(Response.Status.BAD_REQUEST, "Import Exception, " + e.getMessage());
+            return error(Response.Status.BAD_REQUEST, "Import Exception, " + e.getMessage());
         }
         return this.accepted();
     }

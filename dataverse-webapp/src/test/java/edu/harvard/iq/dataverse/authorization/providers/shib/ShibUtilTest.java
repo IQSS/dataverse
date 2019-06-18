@@ -1,5 +1,12 @@
 package edu.harvard.iq.dataverse.authorization.providers.shib;
 
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -7,13 +14,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
 public class ShibUtilTest {
@@ -54,19 +56,19 @@ public class ShibUtilTest {
         }
         ShibUtil shibUtil = new ShibUtil();
 
-        String testShib = shibUtil.getDisplayNameFromDiscoFeed("https://idp.testshib.org/idp/shibboleth", discoFeedExample);
+        String testShib = ShibUtil.getDisplayNameFromDiscoFeed("https://idp.testshib.org/idp/shibboleth", discoFeedExample);
         assertEquals("TestShib Test IdP", testShib);
 
-        String harvardStage = shibUtil.getDisplayNameFromDiscoFeed("https://stage.fed.huit.harvard.edu/idp/shibboleth", discoFeedExample);
+        String harvardStage = ShibUtil.getDisplayNameFromDiscoFeed("https://stage.fed.huit.harvard.edu/idp/shibboleth", discoFeedExample);
         assertEquals("Harvard Test IdP", harvardStage);
 
-        String minimal = shibUtil.getDisplayNameFromDiscoFeed("https://minimal.com/shibboleth", discoFeedExample);
+        String minimal = ShibUtil.getDisplayNameFromDiscoFeed("https://minimal.com/shibboleth", discoFeedExample);
         assertEquals(null, minimal);
 
-        String unknown = shibUtil.getDisplayNameFromDiscoFeed("https://nosuchdomain.com/idp/shibboleth", discoFeedExample);
+        String unknown = ShibUtil.getDisplayNameFromDiscoFeed("https://nosuchdomain.com/idp/shibboleth", discoFeedExample);
         assertEquals(null, unknown);
 
-        String searchForNull = shibUtil.getDisplayNameFromDiscoFeed(null, discoFeedExample);
+        String searchForNull = ShibUtil.getDisplayNameFromDiscoFeed(null, discoFeedExample);
         assertEquals(null, searchForNull);
 
         /**

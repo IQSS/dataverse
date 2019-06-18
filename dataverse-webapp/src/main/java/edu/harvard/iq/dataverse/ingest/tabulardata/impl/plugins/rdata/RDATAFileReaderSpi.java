@@ -19,63 +19,66 @@
 */
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata;
 
-import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
+import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 
-import java.io.*;
-import java.util.logging.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.Locale;
+import java.util.logging.Logger;
 
 /*
- * original 
+ * original
  * @author Matt Owen
  * @author Leonid Andreev
  */
-public class RDATAFileReaderSpi extends TabularDataFileReaderSpi{
+public class RDATAFileReaderSpi extends TabularDataFileReaderSpi {
 
-  private static Logger LOG = Logger.getLogger(RDATAFileReaderSpi.class.getPackage().getName());
+    private static Logger LOG = Logger.getLogger(RDATAFileReaderSpi.class.getPackage().getName());
 
-  private static String[] formatNames = {"Rdata", "rdata", "RDATA"};
-  private static String[] extensions = {"Rdata", "rdata"};
-  private static String[] mimeType = {"application/x-rlang-transport"};
+    private static String[] formatNames = {"Rdata", "rdata", "RDATA"};
+    private static String[] extensions = {"Rdata", "rdata"};
+    private static String[] mimeType = {"application/x-rlang-transport"};
 
-  /*
-   * Construct RDATAFileReaderSpi Object
-   */
-  public RDATAFileReaderSpi() {
-    super("HU-IQSS-DVN-project", "0.1", formatNames, extensions, mimeType, RDATAFileReaderSpi.class.getName());
-    LOG.fine(RDATAFileReaderSpi.class.getName()+" is called");
-  }
-  
-  public String getDescription(Locale locale) {
-    return "HU-IQSS-DVN-project RDATA";
-  }
-  
-  @Override
-  public boolean canDecodeInput(Object source) throws IOException {
-    
-    if (!(source instanceof BufferedInputStream))
-      return false;
+    /*
+     * Construct RDATAFileReaderSpi Object
+     */
+    public RDATAFileReaderSpi() {
+        super("HU-IQSS-DVN-project", "0.1", formatNames, extensions, mimeType, RDATAFileReaderSpi.class.getName());
+        LOG.fine(RDATAFileReaderSpi.class.getName() + " is called");
+    }
 
-    return canDecodeInput((BufferedInputStream)source);
-  }
-  
-  @Override
-  public boolean canDecodeInput(BufferedInputStream stream) throws IOException {
-    return false;
-  }
-  
-  @Override
-  public boolean canDecodeInput(File file) throws IOException {
-    return true;
-  }
-  
-  public boolean fileIsValid() throws IOException {
-    return false; 
-  }
-  
-  @Override
-  public TabularDataFileReader createReaderInstance(Object ext) throws IOException {
-    return new RDATAFileReader(this);
-  }
+    public String getDescription(Locale locale) {
+        return "HU-IQSS-DVN-project RDATA";
+    }
+
+    @Override
+    public boolean canDecodeInput(Object source) throws IOException {
+
+        if (!(source instanceof BufferedInputStream)) {
+            return false;
+        }
+
+        return canDecodeInput((BufferedInputStream) source);
+    }
+
+    @Override
+    public boolean canDecodeInput(BufferedInputStream stream) throws IOException {
+        return false;
+    }
+
+    @Override
+    public boolean canDecodeInput(File file) throws IOException {
+        return true;
+    }
+
+    public boolean fileIsValid() throws IOException {
+        return false;
+    }
+
+    @Override
+    public TabularDataFileReader createReaderInstance(Object ext) throws IOException {
+        return new RDATAFileReader(this);
+    }
 }

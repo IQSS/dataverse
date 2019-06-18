@@ -1,8 +1,9 @@
 package edu.harvard.iq.dataverse.branding;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.util.Arrays;
+
 import javax.mail.internet.InternetAddress;
+import java.util.Arrays;
 
 public class BrandingUtil {
 

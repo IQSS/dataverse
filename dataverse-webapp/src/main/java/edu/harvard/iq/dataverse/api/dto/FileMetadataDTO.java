@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.api.dto;
 
 /**
- *
  * @author ellenk
  */
 public class FileMetadataDTO {
@@ -41,5 +40,5 @@ public class FileMetadataDTO {
     public void setCategory(String category) {
         this.category = category;
     }
-   
+
 }

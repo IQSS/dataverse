@@ -5,13 +5,12 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- *
  * @author sarahferry
  * Modeled after PasswordValidator and EMailValidator
  */
@@ -21,7 +20,7 @@ public class UserNameValidator implements ConstraintValidator<ValidateUserName, 
     public void initialize(ValidateUserName constraintAnnotation) {
 
     }
-    
+
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         return isUserNameValid(value, context);
@@ -31,7 +30,7 @@ public class UserNameValidator implements ConstraintValidator<ValidateUserName, 
      * Here we will validate the username
      *
      * @param username
-     * @return boolean 
+     * @return boolean
      */
     public static boolean isUserNameValid(final String username, ConstraintValidatorContext context) {
         if (username == null) {

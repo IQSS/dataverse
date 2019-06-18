@@ -1,12 +1,5 @@
 package edu.harvard.iq.dataverse.util;
 
-import java.lang.annotation.Annotation;
-import java.net.URI;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import static java.util.stream.Collectors.toList;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Link;
@@ -15,28 +8,36 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import java.lang.annotation.Annotation;
+import java.net.URI;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Simple mock class for HTTP response. This is needed as the normal response builders
  * require JAX-RS system initializations.
- * 
+ *
  * @author michael
  */
 public class MockResponse extends Response {
-    
+
     private final int status;
     private final Object entity;
-    private final MultivaluedMap<String,Object> headers = new MultivaluedHashMap<>();
-    
-    public MockResponse( int aStatus, Object anEntity ) {
+    private final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+
+    public MockResponse(int aStatus, Object anEntity) {
         status = aStatus;
         entity = anEntity;
     }
-    
-    public MockResponse( int aStatus ){
-        this( aStatus, null );
+
+    public MockResponse(int aStatus) {
+        this(aStatus, null);
     }
-    
+
     @Override
     public int getStatus() {
         return status;
@@ -54,27 +55,27 @@ public class MockResponse extends Response {
 
     @Override
     public <T> T readEntity(Class<T> entityType) {
-        return (T)entity;
+        return (T) entity;
     }
 
     @Override
     public <T> T readEntity(GenericType<T> entityType) {
-        return (T)entity;
+        return (T) entity;
     }
 
     @Override
     public <T> T readEntity(Class<T> entityType, Annotation[] annotations) {
-        return (T)entity;
+        return (T) entity;
     }
 
     @Override
     public <T> T readEntity(GenericType<T> entityType, Annotation[] annotations) {
-        return (T)entity;
+        return (T) entity;
     }
 
     @Override
     public boolean hasEntity() {
-        return (entity!=null);
+        return (entity != null);
     }
 
     @Override
@@ -158,7 +159,7 @@ public class MockResponse extends Response {
 
     @Override
     public MultivaluedMap<String, String> getStringHeaders() {
-        MultivaluedMap<String,String> retVal = new MultivaluedHashMap<>();
+        MultivaluedMap<String, String> retVal = new MultivaluedHashMap<>();
         headers.entrySet().forEach(e -> {
             retVal.put(e.getKey(), e.getValue().stream().map(Object::toString).collect(toList()));
         });
@@ -169,5 +170,5 @@ public class MockResponse extends Response {
     public String getHeaderString(String name) {
         return headers.getFirst(name).toString();
     }
-    
+
 }

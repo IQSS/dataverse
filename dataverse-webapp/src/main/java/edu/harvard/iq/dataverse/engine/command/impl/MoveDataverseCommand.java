@@ -36,9 +36,9 @@ import java.util.logging.Logger;
 // since the current implementation is superuser only, we can ignore these permission
 // checks that would need to be revisited if regular users were able to use this
 @RequiredPermissionsMap({
-    @RequiredPermissions(dataverseName = "moved", value = {Permission.ManageDataversePermissions, Permission.EditDataverse}),
-	@RequiredPermissions(dataverseName = "source", value = Permission.DeleteDataverse),
-	@RequiredPermissions(dataverseName = "destination", value = Permission.AddDataverse)
+        @RequiredPermissions(dataverseName = "moved", value = {Permission.ManageDataversePermissions, Permission.EditDataverse}),
+        @RequiredPermissions(dataverseName = "source", value = Permission.DeleteDataverse),
+        @RequiredPermissions(dataverseName = "destination", value = Permission.AddDataverse)
 })
 public class MoveDataverseCommand extends AbstractVoidCommand {
     private static final Logger logger = Logger.getLogger(MoveDataverseCommand.class.getName());
@@ -48,8 +48,8 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
 
     public MoveDataverseCommand(DataverseRequest aRequest, Dataverse moved, Dataverse destination, Boolean force) {
         super(aRequest, dv("moved", moved),
-                dv("source", moved.getOwner()),
-                dv("destination", destination));
+              dv("source", moved.getOwner()),
+              dv("destination", destination));
         this.moved = moved;
         this.destination = destination;
         this.force = force;
@@ -60,11 +60,11 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         long moveDvStart = System.currentTimeMillis();
         logger.info("Starting dataverse move...");
         boolean removeGuestbook = false, removeTemplate = false, removeFeatDv = false, removeMetadataBlock = false, removeLinkDv = false, removeLinkDs = false;
-        
+
         // first check if user is a superuser
         if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
             throw new PermissionException("Move Dataset can only be called by superusers.",
-                    this, Collections.singleton(Permission.DeleteDataverse), moved);
+                                          this, Collections.singleton(Permission.DeleteDataverse), moved);
         }
 
         // validate the move makes sense
@@ -81,20 +81,20 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         if (moved.isReleased() && !destination.isReleased()) {
             throw new IllegalCommandException("Published dataverse may not be moved to unpublished dataverse. You may publish " + destination.getDisplayName() + " and re-try the move.", this);
         }
-        
+
         logger.info("Getting dataset children of dataverse...");
         List<Dataset> datasetChildren = new ArrayList<>();
         List<Long> datasetChildrenIds = ctxt.dataverses().findAllDataverseDatasetChildren(moved.getId());
-        datasetChildrenIds.forEach( (dsId) -> datasetChildren.add(ctxt.datasets().find(dsId)) );
+        datasetChildrenIds.forEach((dsId) -> datasetChildren.add(ctxt.datasets().find(dsId)));
 
         logger.info("Getting dataverse children of dataverse...");
         List<Dataverse> dataverseChildren = new ArrayList<>();
         List<Long> dataverseChildrenIds = ctxt.dataverses().findAllDataverseDataverseChildren(moved.getId());
-        dataverseChildrenIds.forEach( (dvId) -> dataverseChildren.add(ctxt.dataverses().find(dvId)) );
+        dataverseChildrenIds.forEach((dvId) -> dataverseChildren.add(ctxt.dataverses().find(dvId)));
 
         dataverseChildren.add(moved); // include the root of the children
 
-        
+
         // generate list of all possible parent dataverses to check against
         List<Dataverse> ownersToCheck = new ArrayList<>();
         ownersToCheck.add(destination);
@@ -102,7 +102,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         if (destination.getOwners() != null) {
             ownersToCheck.addAll(destination.getOwners());
         }
-        
+
         // generate list of destination guestbooks to check against
         List<Guestbook> destinationGbs = null;
         if (moved.getGuestbooks() != null) {
@@ -131,7 +131,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                 }
             }
         }
-        
+
         // generate a list of templates in destination to check against
         List<Template> destinationTemplates = null;
         if (moved.getTemplates() != null) {
@@ -154,9 +154,9 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         if (moved.getRootMetadataBlocks() != null) {
             inheritMbValue = !destination.isMetadataBlockRoot();
         }
-                
+
         List<DataverseLinkingDataverse> linkingDataverses = new ArrayList();
-    
+
         logger.info("Checking templates and metadata blocks");
         for (Dataverse dv : dataverseChildren) {
             // if the dataverses default TEMPLATE is not contained in the 
@@ -200,13 +200,13 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                     dv.setMetadataBlocks(metadataBlocksToKeep);
                 }
             }
-            
+
             // get list of dataverses each child links to
             if (dv.getDataverseLinkingDataverses() != null) {
                 linkingDataverses.addAll(dv.getDataverseLinkingDataverses());
             }
         }
-        
+
         List<DatasetLinkingDataverse> linkingDatasets = new ArrayList();
         logger.info("Checking guestbooks...");
         for (Dataset ds : datasetChildren) {
@@ -220,19 +220,19 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                 }
                 ds.setGuestbook(null);
             }
-            
+
             // get list of dataverses each child dataset links to
             if (ds.getDatasetLinkingDataverses() != null) {
                 linkingDatasets.addAll(ds.getDatasetLinkingDataverses());
             }
         }
-        
+
         // if a dataverse links to its destination dataverse or any of 
         // its destinations owners, remove the link
         logger.info("Checking linked dataverses....");
         for (DataverseLinkingDataverse dvld : linkingDataverses) {
-            for (Dataverse owner : ownersToCheck){
-                if ((dvld.getLinkingDataverse()).equals(owner)){
+            for (Dataverse owner : ownersToCheck) {
+                if ((dvld.getLinkingDataverse()).equals(owner)) {
                     if (force == null || !force) {
                         removeLinkDv = true;
                         break;
@@ -243,7 +243,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                 }
             }
         }
-        
+
         // if a dataset links to its destination dataverse or any of 
         // its destinations owners, remove the link
         logger.info("Checking linked datasets...");
@@ -268,12 +268,12 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
             }
             if (removeTemplate) {
                 errorString.append("Dataverse template is not in target dataverse. ");
-            } 
+            }
             if (removeFeatDv) {
                 errorString.append("Dataverse is featured in current dataverse. ");
             }
             if (removeMetadataBlock) {
-               errorString.append("Dataverse metadata block is not in target dataverse. ");
+                errorString.append("Dataverse metadata block is not in target dataverse. ");
             }
             if (removeLinkDv) {
                 errorString.append("Dataverse is linked to target dataverse or one of its parents. ");
@@ -287,14 +287,14 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         // OK, move
         moved.setOwner(destination);
         ctxt.dataverses().save(moved);
-        
+
         long moveDvEnd = System.currentTimeMillis();
         logger.info("Dataverse move took " + (moveDvEnd - moveDvStart) + " milliseconds");
-        
+
         ctxt.indexBatch().indexDataverseRecursively(moved);
-        
+
         //REindex datasets linked to moved dv
-        if (moved.getDatasetLinkingDataverses() != null &&  !moved.getDatasetLinkingDataverses().isEmpty()) {
+        if (moved.getDatasetLinkingDataverses() != null && !moved.getDatasetLinkingDataverses().isEmpty()) {
             for (DatasetLinkingDataverse dld : moved.getDatasetLinkingDataverses()) {
                 Dataset linkedDS = ctxt.datasets().find(dld.getDataset().getId());
                 ctxt.index().indexDataset(linkedDS, true);

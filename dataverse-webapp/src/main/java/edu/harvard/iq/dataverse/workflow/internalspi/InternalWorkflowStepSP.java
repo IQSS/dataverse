@@ -2,10 +2,12 @@ package edu.harvard.iq.dataverse.workflow.internalspi;
 
 import edu.harvard.iq.dataverse.workflow.WorkflowStepSPI;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
+
 import java.util.Map;
 
 /**
  * Provider for steps that are available internally.
+ *
  * @author michael
  */
 public class InternalWorkflowStepSP implements WorkflowStepSPI {
@@ -25,5 +27,5 @@ public class InternalWorkflowStepSP implements WorkflowStepSPI {
                 throw new IllegalArgumentException("Unsupported step type: '" + stepType + "'.");
         }
     }
-    
+
 }

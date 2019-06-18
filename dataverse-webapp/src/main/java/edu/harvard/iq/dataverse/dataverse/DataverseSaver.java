@@ -61,9 +61,9 @@ public class DataverseSaver {
 
         if (session.getUser().isAuthenticated()) {
             Command<Dataverse> cmd = new CreateDataverseCommand(dataverse,
-                    dvRequestService.getDataverseRequest(),
-                    facets.getTarget(),
-                    Lists.newArrayList(dftilToBeSaved));
+                                                                dvRequestService.getDataverseRequest(),
+                                                                facets.getTarget(),
+                                                                Lists.newArrayList(dftilToBeSaved));
 
             try {
                 dataverse = commandEngine.submit(cmd);
@@ -89,7 +89,7 @@ public class DataverseSaver {
         }
 
         UpdateDataverseCommand cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), null,
-                dvRequestService.getDataverseRequest(), Lists.newArrayList(dftilToBeSaved));
+                                                                dvRequestService.getDataverseRequest(), Lists.newArrayList(dftilToBeSaved));
 
         try {
             dataverse = commandEngine.submit(cmd);
@@ -107,8 +107,8 @@ public class DataverseSaver {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 
         executorService.execute(() ->
-                userNotificationService.sendNotification((AuthenticatedUser) user, dataverse.getCreateDate(),
-                        UserNotification.Type.CREATEDV, dataverse.getId()));
+                                        userNotificationService.sendNotification((AuthenticatedUser) user, dataverse.getCreateDate(),
+                                                                                 UserNotification.Type.CREATEDV, dataverse.getId()));
 
         executorService.shutdown();
     }

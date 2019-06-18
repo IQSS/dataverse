@@ -1,13 +1,14 @@
 package edu.harvard.iq.dataverse.authorization.groups;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+
 import java.util.Set;
 
 public class GroupUtil {
 
     /**
      * @param authenticatedUser An non-null AuthenticatedUser.
-     * @param groups The groups associated with an AuthenticatedUser.
+     * @param groups            The groups associated with an AuthenticatedUser.
      * @return A list of identifiers for the user including groups, single
      * quoted, and separated by commas. Null if a null AuthenticatedUser is
      * passed.

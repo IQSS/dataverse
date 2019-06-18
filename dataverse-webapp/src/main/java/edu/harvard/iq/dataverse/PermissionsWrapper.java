@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * @author gdurand
  */
 @ViewScoped
@@ -51,15 +50,15 @@ public class PermissionsWrapper implements java.io.Serializable {
     /**
      * Check if the current Dataset can Issue Commands
      *
-     * @param dvo Target dataverse object.
+     * @param dvo     Target dataverse object.
      * @param command The command to execute
      * @return {@code true} if the user can issue the command on the object.
      */
     public boolean canIssueCommand(DvObject dvo, Class<? extends Command<?>> command) {
-        if ((dvo==null) || (dvo.getId()==null)){
+        if ((dvo == null) || (dvo.getId() == null)) {
             return false;
         }
-        if (command==null){
+        if (command == null) {
             return false;
         }
 
@@ -79,10 +78,10 @@ public class PermissionsWrapper implements java.io.Serializable {
     }
 
     private boolean addCommandtoDvoCommandMap(DvObject dvo, Class<? extends Command<?>> command, Map<Class<? extends Command<?>>, Boolean> dvoCommandMap) {
-        if ( dvo==null || (dvo.getId()==null) ){
+        if (dvo == null || (dvo.getId() == null)) {
             return false;
         }
-        if (command==null){
+        if (command == null) {
             return false;
         }
 
@@ -115,7 +114,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     }
 
     public boolean canManagePermissions(DvObject dvo) {
-        if (dvo==null || (dvo.getId()==null) ){
+        if (dvo == null || (dvo.getId() == null)) {
             return false;
         }
 
@@ -126,7 +125,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     }
 
     public boolean canManageDataversePermissions(User u, Dataverse dv) {
-        if ( dv==null || (dv.getId()==null)){
+        if (dv == null || (dv.getId() == null)) {
             return false;
         }
         if (u == null) {
@@ -136,7 +135,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     }
 
     public boolean canManageDatasetOrMinorDatasetPermissions(User u, Dataset ds) {
-        if ( ds==null || (ds.getId()==null)){
+        if (ds == null || (ds.getId() == null)) {
             return false;
         }
         if (u == null) {
@@ -158,7 +157,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     /**
      * (Using Raman's implementation in DatasetPage - moving it here, so that
      * other components could use this optimization -- L.A. 4.2.1)
-     *
+     * <p>
      * Check Dataset related permissions
      *
      * @param req
@@ -166,8 +165,8 @@ public class PermissionsWrapper implements java.io.Serializable {
      * @param permissionToCheck
      * @return
      */
-    public boolean doesSessionUserHaveDataSetPermission(DataverseRequest req, Dataset dataset, Permission permissionToCheck){
-        if (permissionToCheck == null){
+    public boolean doesSessionUserHaveDataSetPermission(DataverseRequest req, Dataset dataset, Permission permissionToCheck) {
+        if (permissionToCheck == null) {
             return false;
         }
 
@@ -175,7 +174,7 @@ public class PermissionsWrapper implements java.io.Serializable {
 
         // Has this check already been done? 
         // 
-        if (this.datasetPermissionMap.containsKey(permName)){
+        if (this.datasetPermissionMap.containsKey(permName)) {
             // Yes, return previous answer
             return this.datasetPermissionMap.get(permName);
         }
@@ -189,27 +188,29 @@ public class PermissionsWrapper implements java.io.Serializable {
         // return true/false
         return hasPermission;
     }
+
     /**
-     *  Does this dvoObject have "Permission.DownloadFile"?
+     * Does this dvoObject have "Permission.DownloadFile"?
+     *
      * @param dvo
      * @return
      */
-    public boolean hasDownloadFilePermission(DvObject dvo){
+    public boolean hasDownloadFilePermission(DvObject dvo) {
 
-        if ((dvo==null)||(dvo.getId() == null)){
+        if ((dvo == null) || (dvo.getId() == null)) {
             return false;
         }
 
         // Has this check already been done? Check the hash
         //
-        if (this.fileDownloadPermissionMap.containsKey(dvo.getId())){
+        if (this.fileDownloadPermissionMap.containsKey(dvo.getId())) {
             // Yes, return previous answer
             return this.fileDownloadPermissionMap.get(dvo.getId());
         }
 
         // Check permissions
         //
-        if ( permissionService.on(dvo).has(Permission.DownloadFile) ){
+        if (permissionService.on(dvo).has(Permission.DownloadFile)) {
 
             // Yes, has permission, store result
             fileDownloadPermissionMap.put(dvo.getId(), true);
@@ -230,30 +231,31 @@ public class PermissionsWrapper implements java.io.Serializable {
      ----------------------------------- */
 
     // CREATE DATASET
-    public boolean canIssueCreateDatasetCommand(DvObject dvo){
+    public boolean canIssueCreateDatasetCommand(DvObject dvo) {
         return canIssueCommand(dvo, AbstractCreateDatasetCommand.class);
     }
 
     // UPDATE DATASET
-    public boolean canIssueUpdateDatasetCommand(DvObject dvo){
+    public boolean canIssueUpdateDatasetCommand(DvObject dvo) {
         return canIssueCommand(dvo, UpdateDatasetVersionCommand.class);
     }
 
     // DELETE DATASET
-    public boolean canIssueDeleteDatasetCommand(DvObject dvo){
+    public boolean canIssueDeleteDatasetCommand(DvObject dvo) {
         return canIssueCommand(dvo, DeleteDatasetCommand.class);
     }
 
     // PLUBLISH DATASET
-    public boolean canIssuePublishDatasetCommand(DvObject dvo){
+    public boolean canIssuePublishDatasetCommand(DvObject dvo) {
         return canIssueCommand(dvo, PublishDatasetCommand.class);
     }
 
 
     // todo: move any calls to this to call NavigationWrapper
-    @Inject NavigationWrapper navigationWrapper;
+    @Inject
+    NavigationWrapper navigationWrapper;
 
-    public String notAuthorized(){
+    public String notAuthorized() {
         return navigationWrapper.notAuthorized();
     }
 

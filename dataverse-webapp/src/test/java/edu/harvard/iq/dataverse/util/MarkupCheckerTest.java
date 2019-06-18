@@ -5,10 +5,12 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author rmp553
  */
 public class MarkupCheckerTest {
@@ -93,13 +95,13 @@ public class MarkupCheckerTest {
         sanitized = MarkupChecker.sanitizeBasicHTML(unsafeStr);
         this.msgu("safeStr: " + safeStr + "\nsanitized: " + sanitized);
         assertTrue(safeStr.equals(sanitized));
-        
+
         unsafeStr = "the <a href=\"http://dataverse.org\">Dataverse project</a> in a new window";
         safeStr = "the \n<a href=\"http://dataverse.org\" rel=\"nofollow\" target=\"_blank\">Dataverse project</a> in a new window";
         sanitized = MarkupChecker.sanitizeBasicHTML(unsafeStr);
         this.msgu("safeStr: " + safeStr + "\nsanitized: " + sanitized);
-        assertTrue(safeStr.equals(sanitized));      
-        
+        assertTrue(safeStr.equals(sanitized));
+
         //test null
         unsafeStr = null;
         sanitized = MarkupChecker.sanitizeBasicHTML(unsafeStr);
@@ -124,7 +126,7 @@ public class MarkupCheckerTest {
         unsafe = null;
         result = MarkupChecker.stripAllTags(unsafe);
         assertNull(result);
-        
+
     }
 
     @Test

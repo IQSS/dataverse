@@ -5,16 +5,16 @@
  */
 package edu.harvard.iq.dataverse.authorization.users;
 
-import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.List;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Before;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tested class: AuthenticatedUser.java
@@ -60,7 +60,7 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, result);
 
     }
-    
+
     @Test
     public void testIsAuthenticated() {
         System.out.println("isAuthenticated");
@@ -199,7 +199,7 @@ public class AuthenticatedUserTest {
     @Test
     public void testGetShibIdentityProvider() {
         System.out.println("getShibIdentityProvider");
-        String expResult = testUser.getShibIdentityProvider();;
+        String expResult = testUser.getShibIdentityProvider();
         assertEquals(expResult, testUser.getShibIdentityProvider());
     }
 

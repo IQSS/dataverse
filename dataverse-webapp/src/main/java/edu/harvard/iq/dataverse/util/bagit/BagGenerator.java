@@ -1,41 +1,14 @@
 package edu.harvard.iq.dataverse.util.bagit;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSyntaxException;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFile.ChecksumType;
+import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.archivers.zip.ParallelScatterZipCreator;
 import org.apache.commons.compress.archivers.zip.ScatterZipOutputStream;
@@ -58,22 +31,47 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.ssl.SSLContextBuilder;
-
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.json.JSONArray;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSyntaxException;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFile.ChecksumType;
-import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
+import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
 
 public class BagGenerator {
 
@@ -134,14 +132,15 @@ public class BagGenerator {
      * and zipping are done in parallel, using a connection pool. The required space
      * on disk is ~ n+1/n of the final bag size, e.g. 125% of the bag size for a
      * 4-way parallel zip operation.
-     * @throws Exception 
-     * @throws JsonSyntaxException 
+     *
+     * @throws Exception
+     * @throws JsonSyntaxException
      */
 
     public BagGenerator(OREMap oreMap, String dataciteXml) throws JsonSyntaxException, Exception {
         this.oremap = oreMap;
         this.oremapObject = oreMap.getOREMap();
-                //(JsonObject) new JsonParser().parse(oreMap.getOREMap().toString());
+        //(JsonObject) new JsonParser().parse(oreMap.getOREMap().toString());
         this.dataciteXml = dataciteXml;
 
         try {
@@ -189,7 +188,7 @@ public class BagGenerator {
     /*
      * Full workflow to generate new BagIt bag from ORE Map Url and to write the bag
      * to the provided output stream (Ex: File OS, FTP OS etc.).
-     * 
+     *
      * @return success true/false
      */
     public boolean generateBag(OutputStream outputStream) throws Exception {
@@ -324,8 +323,9 @@ public class BagGenerator {
                 if (i > 0) { // Not root container
                     if (!checksumMap.containsKey(pidMap.get(resourceIndex.get(i)))) {
 
-                        if (!childIsContainer(aggregates.get(i - 1).getAsJsonObject()))
+                        if (!childIsContainer(aggregates.get(i - 1).getAsJsonObject())) {
                             logger.warning("Missing checksum hash for: " + resourceIndex.get(i));
+                        }
                         // FixMe - actually generate it before adding the
                         // oremap
                         // to the zip
@@ -365,7 +365,7 @@ public class BagGenerator {
                 return false;
             }
         } catch (Exception e) {
-            logger.log(Level.SEVERE,"Bag Exception: ", e);
+            logger.log(Level.SEVERE, "Bag Exception: ", e);
             e.printStackTrace();
             logger.warning("Failure: Processing failure during Bagit file creation");
             return false;
@@ -403,8 +403,9 @@ public class BagGenerator {
                     }
                 }
             }
-            if (entry == null)
+            if (entry == null) {
                 throw new IOException("No manifest file found");
+            }
             is = zf.getInputStream(entry);
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             String line = br.readLine();
@@ -421,9 +422,9 @@ public class BagGenerator {
             logger.info("HashMap Map contains: " + checksumMap.size() + " entries");
             checkFiles(checksumMap, zf);
         } catch (IOException io) {
-            logger.log(Level.SEVERE,"Could not validate Hashes", io);
+            logger.log(Level.SEVERE, "Could not validate Hashes", io);
         } catch (Exception e) {
-            logger.log(Level.SEVERE,"Could not validate Hashes", e);
+            logger.log(Level.SEVERE, "Could not validate Hashes", e);
         } finally {
             IOUtils.closeQuietly(zf);
         }
@@ -532,13 +533,14 @@ public class BagGenerator {
                     if (hashtype != null && !hashtype.equals(childHashType)) {
                         logger.warning("Multiple hash values in use - not supported");
                     }
-                    if (hashtype == null)
+                    if (hashtype == null) {
                         hashtype = childHashType;
+                    }
                     childHash = child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@value").getAsString();
                     if (checksumMap.containsValue(childHash)) {
                         // Something else has this hash
                         logger.warning("Duplicate/Collision: " + child.get("@id").getAsString() + " has SHA1 Hash: "
-                                + childHash);
+                                               + childHash);
                     }
                     checksumMap.put(childPath, childHash);
                 }
@@ -575,7 +577,7 @@ public class BagGenerator {
                             JsonObject childHashObject = new JsonObject();
                             childHashObject.addProperty("@type", hashtype.toString());
                             childHashObject.addProperty("@value", childHash);
-                            child.add(JsonLDTerm.checksum.getLabel(), (JsonElement) childHashObject);
+                            child.add(JsonLDTerm.checksum.getLabel(), childHashObject);
 
                             checksumMap.put(childPath, childHash);
                         } else {
@@ -661,12 +663,7 @@ public class BagGenerator {
         archiveEntry.setMethod(ZipEntry.DEFLATED);
         InputStreamSupplier supp = new InputStreamSupplier() {
             public InputStream get() {
-                try {
-                    return new ByteArrayInputStream(content.getBytes("UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-                return null;
+                return new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
             }
         };
 
@@ -704,17 +701,18 @@ public class BagGenerator {
                 logger.fine("Awaiting completion of hash calculations.");
             }
         } catch (InterruptedException e) {
-            logger.log(Level.SEVERE,"Hash Calculations interrupted", e);
+            logger.log(Level.SEVERE, "Hash Calculations interrupted", e);
         }
         logger.fine("Hash Validations Completed");
 
     }
 
     public void addEntry(ZipArchiveEntry zipArchiveEntry, InputStreamSupplier streamSupplier) throws IOException {
-        if (zipArchiveEntry.isDirectory() && !zipArchiveEntry.isUnixSymlink())
+        if (zipArchiveEntry.isDirectory() && !zipArchiveEntry.isUnixSymlink()) {
             dirs.addArchiveEntry(ZipArchiveEntryRequest.createZipArchiveEntryRequest(zipArchiveEntry, streamSupplier));
-        else
+        } else {
             scatterZipCreator.addArchiveEntry(zipArchiveEntry, streamSupplier);
+        }
     }
 
     public void writeTo(ZipArchiveOutputStream zipArchiveOutputStream)
@@ -736,14 +734,14 @@ public class BagGenerator {
         JsonArray contactsArray = new JsonArray();
         /* Contact, and it's subfields, are terms from citation.tsv whose mapping to a formal vocabulary and label in the oremap may change
          * so we need to find the labels used.
-         */ 
+         */
         JsonLDTerm contactTerm = oremap.getContactTerm();
         if ((contactTerm != null) && aggregation.has(contactTerm.getLabel())) {
 
             JsonElement contacts = aggregation.get(contactTerm.getLabel());
             JsonLDTerm contactNameTerm = oremap.getContactNameTerm();
             JsonLDTerm contactEmailTerm = oremap.getContactEmailTerm();
-            
+
             if (contacts.isJsonArray()) {
                 for (int i = 0; i < contactsArray.size(); i++) {
                     info.append("Contact-Name: ");
@@ -755,7 +753,7 @@ public class BagGenerator {
                     } else {
                         info.append(((JsonObject) person).get(contactNameTerm.getLabel()).getAsString());
                         info.append(CRLF);
-                        if ((contactEmailTerm!=null) &&((JsonObject) person).has(contactEmailTerm.getLabel())) {
+                        if ((contactEmailTerm != null) && ((JsonObject) person).has(contactEmailTerm.getLabel())) {
                             info.append("Contact-Email: ");
                             info.append(((JsonObject) person).get(contactEmailTerm.getLabel()).getAsString());
                             info.append(CRLF);
@@ -766,7 +764,7 @@ public class BagGenerator {
                 info.append("Contact-Name: ");
 
                 if (contacts.isJsonPrimitive()) {
-                    info.append((String) contacts.getAsString());
+                    info.append(contacts.getAsString());
                     info.append(CRLF);
 
                 } else {
@@ -774,7 +772,7 @@ public class BagGenerator {
 
                     info.append(person.get(contactNameTerm.getLabel()).getAsString());
                     info.append(CRLF);
-                    if ((contactEmailTerm!=null) && (person.has(contactEmailTerm.getLabel()))) {
+                    if ((contactEmailTerm != null) && (person.has(contactEmailTerm.getLabel()))) {
                         info.append("Contact-Email: ");
                         info.append(person.get(contactEmailTerm.getLabel()).getAsString());
                         info.append(CRLF);
@@ -800,7 +798,7 @@ public class BagGenerator {
         info.append(CRLF);
 
         info.append("External-Description: ");
-        
+
         /* Description, and it's subfields, are terms from citation.tsv whose mapping to a formal vocabulary and label in the oremap may change
          * so we need to find the labels used.
          */
@@ -812,7 +810,7 @@ public class BagGenerator {
             info.append(
                     // FixMe - handle description having subfields better
                     WordUtils.wrap(getSingleValue(aggregation.getAsJsonObject(descriptionTerm.getLabel()),
-                            descriptionTextTerm.getLabel()), 78, CRLF + " ", true));
+                                                  descriptionTextTerm.getLabel()), 78, CRLF + " ", true));
 
             info.append(CRLF);
         }
@@ -829,9 +827,9 @@ public class BagGenerator {
         info.append(CRLF);
 
         info.append("Payload-Oxum: ");
-        info.append(Long.toString(totalDataSize));
+        info.append(totalDataSize);
         info.append(".");
-        info.append(Long.toString(dataCount));
+        info.append(dataCount);
         info.append(CRLF);
 
         info.append("Internal-Sender-Identifier: ");
@@ -850,11 +848,9 @@ public class BagGenerator {
      * Kludge - handle when a single string is sent as an array of 1 string and, for
      * cases where multiple values are sent when only one is expected, create a
      * concatenated string so that information is not lost.
-     * 
-     * @param jsonObject
-     *            - the root json object
-     * @param key
-     *            - the key to find a value(s) for
+     *
+     * @param jsonObject - the root json object
+     * @param key        - the key to find a value(s) for
      * @return - a single string
      */
     String getSingleValue(JsonObject jsonObject, String key) {
@@ -868,7 +864,7 @@ public class BagGenerator {
                 stringArray.add(iter.next().getAsString());
             }
             if (stringArray.size() > 1) {
-                val = StringUtils.join((String[]) stringArray.toArray(), ",");
+                val = StringUtils.join(stringArray.toArray(), ",");
             } else {
                 val = stringArray.get(0);
             }
@@ -927,9 +923,7 @@ public class BagGenerator {
             } else if (o instanceof String) {
                 // Or as the only type
                 String type = ((String) o).trim();
-                if ("http://cet.ncsa.uiuc.edu/2016/Folder".equals(type)) {
-                    return true;
-                }
+                return "http://cet.ncsa.uiuc.edu/2016/Folder".equals(type);
             }
         }
         return false;
@@ -996,7 +990,7 @@ public class BagGenerator {
                         // Retry if this is a potentially temporary error such
                         // as a timeout
                         tries++;
-                        logger.log(Level.WARNING,"Attempt# " + tries + " : Unable to retrieve file: " + uri, e);
+                        logger.log(Level.WARNING, "Attempt# " + tries + " : Unable to retrieve file: " + uri, e);
                         if (tries == 5) {
                             logger.severe("Final attempt failed for " + uri);
                         }
@@ -1036,21 +1030,20 @@ public class BagGenerator {
      * Returns a human-readable version of the file size, where the input represents
      * a specific number of bytes.
      *
-     * @param size
-     *            the number of bytes
+     * @param size the number of bytes
      * @return a human-readable display value (includes units)
      */
     public static String byteCountToDisplaySize(long size) {
         String displaySize;
 
         if (size / ONE_GB > 0) {
-            displaySize = String.valueOf(Math.round(size / (ONE_GB / 100.0d)) / 100.0) + " GB";
+            displaySize = Math.round(size / (ONE_GB / 100.0d)) / 100.0 + " GB";
         } else if (size / ONE_MB > 0) {
-            displaySize = String.valueOf(Math.round(size / (ONE_MB / 100.0d)) / 100.0) + " MB";
+            displaySize = Math.round(size / (ONE_MB / 100.0d)) / 100.0 + " MB";
         } else if (size / ONE_KB > 0) {
-            displaySize = String.valueOf(Math.round(size / (ONE_KB / 100.0d)) / 100.0) + " KB";
+            displaySize = Math.round(size / (ONE_KB / 100.0d)) / 100.0 + " KB";
         } else {
-            displaySize = String.valueOf(size) + " bytes";
+            displaySize = size + " bytes";
         }
         return displaySize;
     }

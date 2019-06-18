@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.api.dto;
 
 /**
- *
  * @author ellenk
  */
 public class VariableCategoryDTO {
@@ -50,5 +49,5 @@ public class VariableCategoryDTO {
     public void setFrequency(Double frequency) {
         this.frequency = frequency;
     }
-    
+
 }

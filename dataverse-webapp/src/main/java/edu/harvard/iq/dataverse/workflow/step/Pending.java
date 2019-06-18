@@ -4,19 +4,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Result returned when a {@link WorkflowStep} is waiting on 
- * 
+ * Result returned when a {@link WorkflowStep} is waiting on
+ *
  * @author michael
  */
 public class Pending implements WorkflowStepResult {
-    
-    private final Map<String,String> data = new HashMap<>();
 
-    public Pending(Map<String,String> someData) {
+    private final Map<String, String> data = new HashMap<>();
+
+    public Pending(Map<String, String> someData) {
         data.putAll(someData);
     }
-    public Pending() {}
-    
+
+    public Pending() {
+    }
+
     public Map<String, String> getData() {
         return data;
     }
@@ -25,6 +27,6 @@ public class Pending implements WorkflowStepResult {
     public String toString() {
         return "WorkflowStepResult.Pending{" + "data=" + data + '}';
     }
-    
-    
+
+
 }

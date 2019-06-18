@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import java.io.Serializable;
-import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,32 +11,33 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
- *
  * @author skraffmiller
  */
 @Entity
 @Table(indexes = {
         @Index(columnList = "dataset_id"),
-    @Index(columnList = "linkingDataverse_id")
+        @Index(columnList = "linkingDataverse_id")
 })
 public class DatasetLinkingDataverse implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @OneToOne
     @JoinColumn(nullable = false)
     private Dataset dataset;
-    
+
     @OneToOne
     @JoinColumn(nullable = false)
     private Dataverse linkingDataverse;
-    
+
     @Temporal(value = TemporalType.TIMESTAMP)
-    @Column( nullable=false )
+    @Column(nullable = false)
     private Date linkCreateTime;
 
     public Long getId() {
@@ -87,15 +86,12 @@ public class DatasetLinkingDataverse implements Serializable {
             return false;
         }
         DatasetLinkingDataverse other = (DatasetLinkingDataverse) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
 
     @Override
     public String toString() {
         return "edu.harvard.iq.dataverse.DatasetLinkingDataverse[ id=" + id + " ]";
     }
-    
+
 }

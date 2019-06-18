@@ -6,10 +6,10 @@ package edu.harvard.iq.dataverse.authorization;
  * assigning roles, etc.
  *
  * <br>
- *
+ * <p>
  * The lookup string for a {@link BuiltinUser} may be "pete". The lookup string
  * for a Shibboleth user may be "https://idp.crash.com/idp/shibboleth|70236e89"
- * 
+ * <p>
  * TODO consider removing this class - not sure we need this level of indirection. Causes data duplication in current code.
  */
 public class UserIdentifier {

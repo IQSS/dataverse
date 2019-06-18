@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -12,25 +13,25 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+
+import javax.validation.ConstraintViolation;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import static java.util.stream.Collectors.joining;
-import javax.validation.ConstraintViolation;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 
 /**
- *
  * Base class for commands that deal with {@code Dataset}s.Mainly here as a code
  * re-use mechanism.
  *
- * @author michael
  * @param <T> The type of the command's result. Normally {@link Dataset}.
+ * @author michael
  */
 public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
 
@@ -76,7 +77,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
             createDatasetUser(ctxt);
         }
     }
-    
+
     protected void createDatasetUser(CommandContext ctxt) {
         DatasetVersionUser datasetDataverseUser = new DatasetVersionUser();
         datasetDataverseUser.setDatasetVersion(getDataset().getLatestVersion());
@@ -84,16 +85,16 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
         datasetDataverseUser.setAuthenticatedUser((AuthenticatedUser) getUser());
         ctxt.em().persist(datasetDataverseUser);
     }
-    
+
     /**
      * Validates the fields of the {@link DatasetVersion} passed. Throws an
      * informational error if validation fails.
      *
-     * @param dsv The dataset version whose fields we validate
+     * @param dsv     The dataset version whose fields we validate
      * @param lenient when {@code true}, invalid fields are populated with N/A
-     * value.
+     *                value.
      * @throws CommandException if and only if {@code lenient=false}, and field
-     * validation failed.
+     *                          validation failed.
      */
     protected void validateOrDie(DatasetVersion dsv, Boolean lenient) throws CommandException {
         Set<ConstraintViolation> constraintViolations = dsv.validate();
@@ -101,14 +102,14 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
             if (lenient) {
                 // populate invalid fields with N/A
                 constraintViolations.stream()
-                    .map(cv -> ((DatasetField) cv.getRootBean()))
-                    .forEach(f -> f.setSingleValue(DatasetField.NA_VALUE));
+                        .map(cv -> ((DatasetField) cv.getRootBean()))
+                        .forEach(f -> f.setSingleValue(DatasetField.NA_VALUE));
 
             } else {
                 // explode with a helpful message
                 String validationMessage = constraintViolations.stream()
-                    .map(cv -> cv.getMessage() + " (Invalid value:" + cv.getInvalidValue() + ")")
-                    .collect(joining(", ", "Validation Failed: ", "."));
+                        .map(cv -> cv.getMessage() + " (Invalid value:" + cv.getInvalidValue() + ")")
+                        .collect(joining(", ", "Validation Failed: ", "."));
 
                 throw new IllegalCommandException(validationMessage, this);
             }
@@ -143,7 +144,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      * again... but only up to some reasonably high number of times - so that we
      * don't go into an infinite loop here, if EZID is giving us these duplicate
      * messages in error.
-     *
+     * <p>
      * (and we do want the limit to be a "reasonably high" number! true, if our
      * identifiers are randomly generated strings, then it is highly unlikely
      * that we'll ever run into a duplicate race condition repeatedly; but if
@@ -158,7 +159,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
     protected void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt) throws CommandException {
         if (!theDataset.isIdentifierRegistered()) {
             GlobalIdServiceBean globalIdServiceBean = GlobalIdServiceBean.getBean(theDataset.getProtocol(), ctxt);
-            if ( globalIdServiceBean != null ) {
+            if (globalIdServiceBean != null) {
                 if (globalIdServiceBean instanceof FakePidProviderServiceBean) {
                     try {
                         globalIdServiceBean.createIdentifier(theDataset);
@@ -176,13 +177,13 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                         while (globalIdServiceBean.alreadyExists(theDataset) && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
                             theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, globalIdServiceBean));
                             logger.log(Level.INFO, "Attempting to register external identifier for dataset {0} (trying: {1}).",
-                                new Object[]{theDataset.getId(), theDataset.getIdentifier()});
+                                       new Object[]{theDataset.getId(), theDataset.getIdentifier()});
                             attempts++;
                         }
 
                         if (globalIdServiceBean.alreadyExists(theDataset)) {
                             throw new CommandExecutionException("This dataset may not be published because its identifier is already in use by another dataset; "
-                                + "gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
+                                                                        + "gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
                         }
                     }
                     // Invariant: Dataset identifier does not exist in the remote registry

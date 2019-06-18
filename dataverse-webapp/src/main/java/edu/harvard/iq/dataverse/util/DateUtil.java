@@ -12,7 +12,6 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- *
  * @author jchengan
  */
 public class DateUtil {
@@ -25,7 +24,7 @@ public class DateUtil {
             dateFormatter = DateFormat.getDateInstance(DateFormat.DEFAULT, currentLocale);
             formattedDate = dateFormatter.format(dateToformat);
             return formattedDate;
-        } catch(Exception e) {
+        } catch (Exception e) {
             return null;
         }
     }
@@ -48,18 +47,18 @@ public class DateUtil {
         String formattedDate;
         DateFormat dateFormatter;
         try {
-             Locale currentLocale = BundleUtil.getCurrentLocale();
-             dateFormatter = DateFormat.getDateTimeInstance(
-                                                     DateFormat.DEFAULT,
-                                                     DateFormat.LONG,
-                                                     currentLocale);
-             formattedDate = dateFormatter.format(datetimeToformat);
+            Locale currentLocale = BundleUtil.getCurrentLocale();
+            dateFormatter = DateFormat.getDateTimeInstance(
+                    DateFormat.DEFAULT,
+                    DateFormat.LONG,
+                    currentLocale);
+            formattedDate = dateFormatter.format(datetimeToformat);
 
-             return formattedDate;
-         } catch (Exception e) {
-             e.printStackTrace();
-             return null;
-         }
+            return formattedDate;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static LocalDateTime convertToLocalDateTime(Date date) {

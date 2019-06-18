@@ -14,7 +14,6 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 /**
- *
  * @author skraffmi
  */
 @RequiredPermissions(Permission.EditDataverse)

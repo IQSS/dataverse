@@ -2,14 +2,17 @@ package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import static edu.harvard.iq.dataverse.GlobalIdServiceBean.logger;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import org.apache.commons.io.IOUtils;
+
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.ws.rs.core.MediaType;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -20,6 +23,7 @@ import java.io.OutputStream;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
@@ -31,14 +35,11 @@ import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.core.MediaType;
 
-import org.apache.commons.io.IOUtils;
+import static edu.harvard.iq.dataverse.GlobalIdServiceBean.logger;
+import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 
 /**
- *
  * @author skraffmi
  */
 public class ExportService {
@@ -73,7 +74,7 @@ public class ExportService {
         return service;
     }
 
-    public List< String[]> getExportersLabels() {
+    public List<String[]> getExportersLabels() {
         List<String[]> retList = new ArrayList<>();
         Iterator<Exporter> exporters = ExportService.getInstance(null).loader.iterator();
         while (exporters.hasNext()) {
@@ -117,7 +118,7 @@ public class ExportService {
         try {
             inputStream = getExport(dataset, formatName);
             if (inputStream != null) {
-                inp = new InputStreamReader(inputStream, "UTF8");
+                inp = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
                 BufferedReader br = new BufferedReader(inp);
                 StringBuilder sb = new StringBuilder();
                 String line;
@@ -218,7 +219,7 @@ public class ExportService {
             throw new ExportException("No published version found during export. " + dataset.getGlobalId().toString());
         }
     }
-    
+
 
     public Exporter getExporter(String formatName) throws ExportException {
         try {
@@ -276,7 +277,7 @@ public class ExportService {
                     exporter.exportDataset(version, datasetAsJson, outputStream);
                     outputStream.flush();
                     outputStream.close();
-                    
+
                     logger.fine("Saving path as aux for temp file in: " + Paths.get(tempFile.getAbsolutePath()));
                     storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), "export_" + format + ".cached");
                     boolean tempFileDeleted = tempFile.delete();
@@ -364,19 +365,19 @@ public class ExportService {
         return null;
     }
 
-	public String getMediaType(String provider) {
-		 try {
-	            Iterator<Exporter> exporters = loader.iterator();
-	            while (exporters.hasNext()) {
-	                Exporter e = exporters.next();
-	                if (e.getProviderName().equals(provider)) {
-	                    return e.getMediaType();
-	                }
-	            }
-	        } catch (ServiceConfigurationError serviceError) {
-	            serviceError.printStackTrace();
-	        }
-	        return MediaType.TEXT_PLAIN;
-	}
+    public String getMediaType(String provider) {
+        try {
+            Iterator<Exporter> exporters = loader.iterator();
+            while (exporters.hasNext()) {
+                Exporter e = exporters.next();
+                if (e.getProviderName().equals(provider)) {
+                    return e.getMediaType();
+                }
+            }
+        } catch (ServiceConfigurationError serviceError) {
+            serviceError.printStackTrace();
+        }
+        return MediaType.TEXT_PLAIN;
+    }
 
 }

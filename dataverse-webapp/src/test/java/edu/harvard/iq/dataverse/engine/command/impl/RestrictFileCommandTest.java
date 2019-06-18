@@ -30,40 +30,39 @@ import static org.junit.Assert.assertTrue;
 
 
 /**
- *
  * @author sarahferry
  */
 public class RestrictFileCommandTest {
-    
+
     TestDataverseEngine engine;
     private DataFile file;
     private Dataset dataset;
     boolean restrict = true;
     boolean unrestrict = false;
     static boolean publicInstall = false;
-    
-    
+
+
     public RestrictFileCommandTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
         dataset = makeDataset();
         file = makeDataFile();
 
-        engine = new TestDataverseEngine(new TestCommandContext(){
+        engine = new TestDataverseEngine(new TestCommandContext() {
 
             @Override
-            public SettingsServiceBean settings(){
-                return new SettingsServiceBean(){
+            public SettingsServiceBean settings() {
+                return new SettingsServiceBean() {
                     //override for a public install, 
                     //assume false
                     @Override
@@ -73,26 +72,26 @@ public class RestrictFileCommandTest {
                 };
             }
         });
-            
+
     }
-    
+
     @After
     public void tearDown() {
     }
-        
+
     @Test
-    public void testRestrictUnpublishedFile() throws CommandException{
+    public void testRestrictUnpublishedFile() throws CommandException {
         file.setOwner(dataset);
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
         engine.submit(cmd);
-        
+
         assertTrue(file.isRestricted());
         assertTrue(file.getFileMetadata().isRestricted());
-        
+
     }
-    
+
     @Test
-    public void testRestrictPublishedFile() throws Exception{
+    public void testRestrictPublishedFile() throws Exception {
         dataset.setPublicationDate(new Timestamp(new Date().getTime()));
         // Restrict on a published file will cause the creation of a new draft dataset version
         // and should update only the FileMetadata in the draft version for the test file.
@@ -112,7 +111,7 @@ public class RestrictFileCommandTest {
         boolean fileFound = false;
         for (FileMetadata fmw : dataset.getEditVersion().getFileMetadatas()) {
             if (file.equals(fmw.getDataFile())) {
-                fileFound=true;
+                fileFound = true;
                 //If it worked fmw is for the draft version and file.getFileMetadata() is for the published version
                 assertTrue(fmw.isRestricted());
                 assertTrue(!file.getFileMetadata().isRestricted());
@@ -121,8 +120,8 @@ public class RestrictFileCommandTest {
         }
         assertTrue(fileFound);
     }
-    
-    
+
+
     @Test
     public void testRestrictNewFile() throws Exception {
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
@@ -130,7 +129,7 @@ public class RestrictFileCommandTest {
         assertTrue(file.isRestricted());
         assertTrue(file.getFileMetadata().isRestricted());
     }
-    
+
     @Test
     public void testRestrictRestrictedFile() throws Exception {
         file.setOwner(dataset);
@@ -144,11 +143,11 @@ public class RestrictFileCommandTest {
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
-        
+
         assertEquals(expected, actual);
-        
+
     }
-    
+
     @Test
     public void testRestrictRestrictedNewFile() throws Exception {
         String expected = "File " + file.getDisplayName() + " is already restricted";
@@ -161,27 +160,27 @@ public class RestrictFileCommandTest {
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
-        
+
         assertEquals(expected, actual);
-        
+
     }
 
-    
+
     @Test
-    public void testUnrestrictUnpublishedFile() throws CommandException{
+    public void testUnrestrictUnpublishedFile() throws CommandException {
         file.setOwner(dataset);
         file.setRestricted(true);
         file.getFileMetadata().setRestricted(true);
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), unrestrict);
         engine.submit(cmd);
-        
+
         assertTrue(!file.isRestricted());
         assertTrue(!file.getFileMetadata().isRestricted());
-        
+
     }
-    
+
     @Test
-    public void testUnrestrictPublishedFile() throws Exception{
+    public void testUnrestrictPublishedFile() throws Exception {
         //see comments in testRestrictPublishedFile()
         dataset.setPublicationDate(new Timestamp(new Date().getTime()));
         DataFile file = dataset.getFiles().get(0);
@@ -205,8 +204,8 @@ public class RestrictFileCommandTest {
         }
         assertTrue(fileFound);
     }
-    
-    
+
+
     @Test
     public void testUnrestrictNewFile() throws Exception {
         file.setRestricted(true);
@@ -216,7 +215,7 @@ public class RestrictFileCommandTest {
         assertTrue(!file.isRestricted());
         assertTrue(!file.getFileMetadata().isRestricted());
     }
-    
+
     @Test
     public void testUnrestrictUnrestrictedFile() throws Exception {
         file.setOwner(dataset);
@@ -228,14 +227,14 @@ public class RestrictFileCommandTest {
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
-        
+
         assertEquals(expected, actual);
-        
+
     }
-    
+
     @Test
     public void testUnrestrictUnrestrictedNewFile() throws Exception {
-        
+
         String expected = "File " + file.getDisplayName() + " is already unrestricted";
         String actual = null;
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), unrestrict);
@@ -244,12 +243,12 @@ public class RestrictFileCommandTest {
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
-        
+
         assertEquals(expected, actual);
-        
+
     }
 
-    @Test 
+    @Test
     public void testPublicInstall() throws CommandException {
         file.setOwner(dataset);
         String expected = "Restricting files is not permitted on a public installation.";
@@ -265,5 +264,5 @@ public class RestrictFileCommandTest {
         assertEquals(expected, actual);
         publicInstall = false;
     }
-    
+
 }

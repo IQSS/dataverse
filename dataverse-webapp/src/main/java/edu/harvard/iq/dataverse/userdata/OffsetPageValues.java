@@ -6,16 +6,15 @@
 package edu.harvard.iq.dataverse.userdata;
 
 /**
- *
  * @author rmp553
  */
 public class OffsetPageValues {
- 
+
     private int offset;
     private int pageNumber;
 
 
-     /*
+    /*
      * Constructor
      */
     public OffsetPageValues(int offset, int pageNumber) {
@@ -23,39 +22,42 @@ public class OffsetPageValues {
         this.offset = offset;
     }
 
-    
- 
+
     /**
-     *  Set offset
-     *  @param offset
+     * Set offset
+     *
+     * @param offset
      */
-    public void setOffset(int offset){
+    public void setOffset(int offset) {
         this.offset = offset;
     }
 
     /**
-     *  Get for offset
-     *  @return int
+     * Get for offset
+     *
+     * @return int
      */
-    public int getOffset(){
+    public int getOffset() {
         return this.offset;
     }
-    
+
 
     /**
-     *  Set pageNumber
-     *  @param pageNumber
+     * Set pageNumber
+     *
+     * @param pageNumber
      */
-    public void setPageNumber(int pageNumber){
+    public void setPageNumber(int pageNumber) {
         this.pageNumber = pageNumber;
     }
 
     /**
-     *  Get for pageNumber
-     *  @return int
+     * Get for pageNumber
+     *
+     * @return int
      */
-    public int getPageNumber(){
+    public int getPageNumber() {
         return this.pageNumber;
     }
-      
+
 }

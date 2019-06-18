@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.BannerLimits;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.DataverseBanner;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.DataverseLocalizedBanner;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,9 +39,9 @@ public class BannerErrorHandlerTest {
     private ArgumentCaptor<FacesMessage> facesMesssage;
 
     private static final Path BANNER_PATH = Paths.get(BannerErrorHandlerTest.class.getClassLoader()
-            .getResource("images/banner.png").getPath());
+                                                              .getResource("images/banner.png").getPath());
     private static final Path TXT_PATH = Paths.get(BannerErrorHandlerTest.class.getClassLoader()
-            .getResource("images/sample.txt").getPath());
+                                                           .getResource("images/sample.txt").getPath());
     private static final java.util.Date FROM_TIME = convertToDate(
             LocalDateTime.of(2018, 12, 1, 9, 15, 45));
     private static final java.util.Date TO_TIME = convertToDate(
@@ -62,7 +61,7 @@ public class BannerErrorHandlerTest {
         bannerErrorHandler.handleBannerAddingErrors(banner, dataverseLocalizedBanner, facesContextMock);
         //then
         Mockito.verify(facesContextMock).addMessage(Mockito.eq("edit-text-messages-form:repeater:" + 0 + ":upload"),
-                facesMesssage.capture());
+                                                    facesMesssage.capture());
         FacesMessage message = facesMesssage.getValue();
 
         Assert.assertEquals("The image is missing", message.getDetail());
@@ -83,7 +82,7 @@ public class BannerErrorHandlerTest {
 
         //then
         Mockito.verify(facesContextMock).addMessage(Mockito.eq("edit-text-messages-form:repeater:" + 0 + ":first-file-warning"),
-                facesMesssage.capture());
+                                                    facesMesssage.capture());
         FacesMessage message = facesMesssage.getValue();
 
         Assert.assertEquals("Extension must be .jpg or .png", message.getDetail());
@@ -104,7 +103,7 @@ public class BannerErrorHandlerTest {
 
         //then
         Mockito.verify(facesContextMock).addMessage(Mockito.eq("edit-text-messages-form:repeater:" + 0 + ":message-locale"),
-                facesMesssage.capture());
+                                                    facesMesssage.capture());
         FacesMessage message = facesMesssage.getValue();
 
         Assert.assertEquals("The link is missing", message.getDetail());
@@ -125,7 +124,7 @@ public class BannerErrorHandlerTest {
 
         //then
         Mockito.verify(facesContextMock).addMessage(Mockito.eq("edit-text-messages-form:repeater:" + 0 + ":second-file-warning"),
-                facesMesssage.capture());
+                                                    facesMesssage.capture());
         FacesMessage message = facesMesssage.getValue();
 
         Assert.assertEquals("The image size was too big", message.getDetail());
@@ -146,7 +145,7 @@ public class BannerErrorHandlerTest {
 
         //then
         Mockito.verify(facesContextMock).addMessage(Mockito.eq("edit-text-messages-form:repeater:" + 0 + ":upload"),
-                facesMesssage.capture());
+                                                    facesMesssage.capture());
         FacesMessage message = facesMesssage.getValue();
 
         Assert.assertEquals("The resolution was too big", message.getDetail());
@@ -169,10 +168,10 @@ public class BannerErrorHandlerTest {
 
         //then
         Mockito.verify(facesContextMock).addMessage(Mockito.eq("edit-text-messages-form:message-fromtime"),
-                facesMesssage.capture());
+                                                    facesMesssage.capture());
 
         Mockito.verify(facesContextMock).addMessage(Mockito.eq("edit-text-messages-form:message-totime"),
-                facesMesssage.capture());
+                                                    facesMesssage.capture());
         List<FacesMessage> allMessages = facesMesssage.getAllValues();
 
         Assert.assertEquals("End date must not be earlier than starting date.", allMessages.get(0).getDetail());

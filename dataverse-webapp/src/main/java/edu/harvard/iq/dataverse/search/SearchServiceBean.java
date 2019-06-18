@@ -80,13 +80,13 @@ public class SearchServiceBean {
     SystemConfig systemConfig;
 
     private SolrClient solrServer;
-    
+
     @PostConstruct
     public void init() {
         String urlString = "http://" + settingsService.getValueForKey(Key.SolrHostColonPort) + "/solr/collection1";
         solrServer = new HttpSolrClient.Builder(urlString).build();
     }
-    
+
     @PreDestroy
     public void close() {
         if (solrServer != null) {
@@ -98,14 +98,13 @@ public class SearchServiceBean {
             solrServer = null;
         }
     }
-    
+
     /**
      * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
      * access to Private Data for the correct user
-     *
+     * <p>
      * In other words "onlyDatatRelatedToMe", negates other filter Queries
      * related to permissions
-     *
      *
      * @param dataverseRequest
      * @param dataverses
@@ -122,14 +121,13 @@ public class SearchServiceBean {
     public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
         return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true);
     }
-    
+
     /**
      * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
      * access to Private Data for the correct user
-     *
+     * <p>
      * In other words "onlyDatatRelatedToMe", negates other filter Queries
      * related to permissions
-     *
      *
      * @param dataverseRequest
      * @param dataverses
@@ -140,7 +138,7 @@ public class SearchServiceBean {
      * @param paginationStart
      * @param onlyDatatRelatedToMe
      * @param numResultsPerPage
-     * @param retrieveEntities - look up dvobject entities with .find() (potentially expensive!) 
+     * @param retrieveEntities     - look up dvobject entities with .find() (potentially expensive!)
      * @return
      * @throws SearchException
      */
@@ -194,7 +192,7 @@ public class SearchServiceBean {
         /**
          * @todo: show highlight on file card?
          * https://redmine.hmdc.harvard.edu/issues/3848
-         */      
+         */
         solrFieldsToHightlightOnMap.put(SearchFields.FILENAME_WITHOUT_EXTENSION, "Filename Without Extension");
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TAG_SEARCHABLE, "File Tag");
         List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
@@ -218,7 +216,6 @@ public class SearchServiceBean {
         for (String filterQuery : filterQueries) {
             solrQuery.addFilterQuery(filterQuery);
         }
-
 
 
         // -----------------------------------
@@ -245,10 +242,10 @@ public class SearchServiceBean {
          * if advancedSearchField is true or false
          *
          */
-        
+
         //I'm not sure if just adding null here is good for hte permissions system... i think it needs something
-        if(dataverses != null) {
-            for(Dataverse dataverse : dataverses) {
+        if (dataverses != null) {
+            for (Dataverse dataverse : dataverses) {
                 // -----------------------------------
                 // PERMISSION FILTER QUERY
                 // -----------------------------------
@@ -269,7 +266,7 @@ public class SearchServiceBean {
                 solrQuery.addFilterQuery(permissionFilterQuery);
             }
         }
-        
+
         solrQuery.addFacetField(SearchFields.FILE_TYPE);
         /**
          * @todo: hide the extra line this shows in the GUI... at least it's
@@ -464,12 +461,12 @@ public class SearchServiceBean {
             solrSearchResult.setDescriptionNoSnippet(description);
             solrSearchResult.setDeaccessionReason(deaccessionReason);
             solrSearchResult.setDvTree(dvTree);
-            
+
             String originSource = (String) solrDocument.getFieldValue(SearchFields.METADATA_SOURCE);
             if (IndexServiceBean.HARVESTED.equals(originSource)) {
                 solrSearchResult.setHarvested(true);
             }
-            
+
             /**
              * @todo start using SearchConstants class here
              */
@@ -512,10 +509,10 @@ public class SearchServiceBean {
 
                 solrSearchResult.setCitation(citation);
                 solrSearchResult.setCitationHtml(citationPlainHtml);
-                
+
                 solrSearchResult.setIdentifierOfDataverse(identifierOfDataverse);
                 solrSearchResult.setNameOfDataverse(nameOfDataverse);
-                
+
                 if (titles != null) {
                     solrSearchResult.setTitle((String) titles.get(0));
                 } else {
@@ -575,7 +572,7 @@ public class SearchServiceBean {
                     solrSearchResult.setTabularDataTags(tabularDataTags);
                 }
                 String filePID = (String) solrDocument.getFieldValue(SearchFields.FILE_PERSISTENT_ID);
-                if(null != filePID && !"".equals(filePID) && !"".equals("null")) {
+                if (null != filePID && !"".equals(filePID) && !"".equals("null")) {
                     solrSearchResult.setFilePersistentId(filePID);
                 }
             }
@@ -719,7 +716,7 @@ public class SearchServiceBean {
                 RangeFacet.Count rangeFacetCount = (RangeFacet.Count) rfObj;
                 String valueString = rangeFacetCount.getValue();
                 Integer start = Integer.parseInt(valueString);
-                Integer end = start + Integer.parseInt(rangeFacet.getGap().toString());
+                Integer end = start + Integer.parseInt(rangeFacet.getGap());
                 // to avoid overlapping dates
                 end = end - 1;
                 if (rangeFacetCount.getCount() > 0) {

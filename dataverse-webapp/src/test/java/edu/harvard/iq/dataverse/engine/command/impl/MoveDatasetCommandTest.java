@@ -24,14 +24,11 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Future;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -48,29 +45,33 @@ import javax.persistence.criteria.CriteriaUpdate;
 import javax.persistence.metamodel.Metamodel;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
+
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
 
 /**
- *
  * @author skraffmi
  */
 public class MoveDatasetCommandTest {
-        Dataset moved, movedResponses;
-    	Dataverse root, childA, childB, grandchildAA, childDraft, grandchildBB;
-	DataverseEngine testEngine;
-        MetadataBlock blockA, blockB, blockC, blockD;
-        AuthenticatedUser auth, nobody;
-        Guestbook gbA, gbB, gbC;
-        GuestbookResponse gbResp;
-        @Context
-        protected HttpServletRequest httpRequest;
-	
+    Dataset moved, movedResponses;
+    Dataverse root, childA, childB, grandchildAA, childDraft, grandchildBB;
+    DataverseEngine testEngine;
+    MetadataBlock blockA, blockB, blockC, blockD;
+    AuthenticatedUser auth, nobody;
+    Guestbook gbA, gbB, gbC;
+    GuestbookResponse gbResp;
+    @Context
+    protected HttpServletRequest httpRequest;
+
     @Before
     public void setUp() {
 
@@ -79,43 +80,42 @@ public class MoveDatasetCommandTest {
         nobody = makeAuthenticatedUser("Nick", "Nobody");
         nobody.setSuperuser(false);
 
-        
-        
+
         root = new Dataverse();
         root.setName("root");
         root.setId(1l);
         root.setPublicationDate(new Timestamp(new Date().getTime()));
-        
+
         childA = new Dataverse();
         childA.setName("childA");
         childA.setId(2l);
         childA.setPublicationDate(new Timestamp(new Date().getTime()));
-        
+
         childB = new Dataverse();
         childB.setName("childB");
         childB.setId(3l);
-        childB.setPublicationDate(new Timestamp(new Date().getTime())); 
-        
+        childB.setPublicationDate(new Timestamp(new Date().getTime()));
+
         grandchildAA = new Dataverse();
         grandchildAA.setName("grandchildAA");
         grandchildAA.setId(4l);
         grandchildAA.setPublicationDate(new Timestamp(new Date().getTime()));
-        
+
         childDraft = new Dataverse();
         childDraft.setName("childDraft");
         childDraft.setId(5l);
-        
+
         grandchildBB = new Dataverse();
         grandchildBB.setName("grandchildBB");
         grandchildBB.setId(6l);
         grandchildBB.setPublicationDate(new Timestamp(new Date().getTime()));
 
-        
+
         moved = new Dataset();
         moved.setOwner(root);
         moved.setPublicationDate(new Timestamp(new Date().getTime()));
         moved.setId(1l);
-        
+
         movedResponses = new Dataset();
         movedResponses.setOwner(root);
         movedResponses.setPublicationDate(new Timestamp(new Date().getTime()));
@@ -126,39 +126,39 @@ public class MoveDatasetCommandTest {
         grandchildAA.setOwner(childA);
         grandchildBB.setOwner(childA);
         childDraft.setOwner(childA);
-        
-        gbA= new Guestbook();
+
+        gbA = new Guestbook();
         gbA.setId(1l);
-        gbB= new Guestbook();
+        gbB = new Guestbook();
         gbB.setId(2l);
-        gbC= new Guestbook();
+        gbC = new Guestbook();
         gbC.setId(3l);
-        
+
         moved.setGuestbook(gbA);
         movedResponses.setGuestbook(gbA);
-        
-        GuestbookResponse gbResp = new GuestbookResponse(); 
+
+        GuestbookResponse gbResp = new GuestbookResponse();
         gbResp.setGuestbook(gbA);
         gbResp.setDataset(movedResponses);
-        
+
         List<Guestbook> includeA = new ArrayList();
         includeA.add(gbA);
         includeA.add(gbB);
-        
+
         grandchildAA.setGuestbooks(includeA);
-        
+
         List<Guestbook> notIncludeA = new ArrayList();
         notIncludeA.add(gbC);
         notIncludeA.add(gbB);
-        
+
         childB.setGuestbooks(notIncludeA);
-        
-        List<Guestbook> none = new ArrayList();       
+
+        List<Guestbook> none = new ArrayList();
         root.setGuestbooks(none);
         grandchildBB.setGuestbooks(none);
         grandchildBB.setGuestbookRoot(false);
         childA.setGuestbooks(includeA);
-        
+
         testEngine = new TestDataverseEngine(new TestCommandContext() {
             @Override
             public DataverseServiceBean dataverses() {
@@ -170,32 +170,32 @@ public class MoveDatasetCommandTest {
                     }
                 };
             }
-            
+
             @Override
             public GuestbookServiceBean guestbooks() {
                 return new GuestbookServiceBean() {
                     @Override
                     public Long findCountResponsesForGivenDataset(Long guestbookId, Long datasetId) {
                         //We're going to fake a response for a dataset with responses
-                        if(datasetId == 1){
+                        if (datasetId == 1) {
                             return new Long(0);
-                        } else{
+                        } else {
                             return new Long(1);
                         }
                     }
                 };
             }
-            
+
             @Override
-            public IndexServiceBean index(){
-                return new IndexServiceBean(){
+            public IndexServiceBean index() {
+                return new IndexServiceBean() {
                     @Override
-                    public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp){
+                    public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
                         return null;
                     }
                 };
             }
-            
+
             @Override
             public EntityManager em() {
                 return new MockEntityManager() {
@@ -210,22 +210,19 @@ public class MoveDatasetCommandTest {
                     @Override
                     public boolean isUserAllowedOn(RoleAssignee roleAssignee, Command<?> command, DvObject dvObject) {
                         AuthenticatedUser authenticatedUser = (AuthenticatedUser) roleAssignee;
-                        if (authenticatedUser.getFirstName().equals("Super")) {
-                            return true;
-                        } else {
-                            return false;
-                        }
+                        return authenticatedUser.getFirstName().equals("Super");
                     }
                 };
             }
-            
+
         });
     }
-	
-	/**
-	 * Moving ChildB to ChildA
-	 * @throws Exception - should not throw an exception
-	 */
+
+    /**
+     * Moving ChildB to ChildA
+     *
+     * @throws Exception - should not throw an exception
+     */
     @Test
     public void testValidMove() throws Exception {
 
@@ -235,11 +232,11 @@ public class MoveDatasetCommandTest {
         assertEquals(childA, moved.getOwner());
 
     }
-    
+
     /**
-	 * Moving  grandchildAA
-	 * Guestbook is not null because target includes it.
-	 */
+     * Moving  grandchildAA
+     * Guestbook is not null because target includes it.
+     */
     @Test
     public void testKeepGuestbook() throws Exception {
 
@@ -249,12 +246,12 @@ public class MoveDatasetCommandTest {
         assertNotNull(moved.getGuestbook());
 
     }
-    
-        /**
-	 * Moving to grandchildBB
-	 * Guestbook is not null because target inherits it.
-	 */
-    
+
+    /**
+     * Moving to grandchildBB
+     * Guestbook is not null because target inherits it.
+     */
+
     @Test
     public void testKeepGuestbookInherit() throws Exception {
 
@@ -264,26 +261,27 @@ public class MoveDatasetCommandTest {
         assertNotNull(moved.getGuestbook());
 
     }
-    
-    
+
+
     /**
-	 * Moving to ChildB
-	 * Guestbook is null because target does not include it
-	 */
+     * Moving to ChildB
+     * Guestbook is null because target does not include it
+     */
     @Test
     public void testRemoveGuestbook() throws Exception {
 
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(new MoveDatasetCommand(aRequest, moved, childB, true));
-        assertNull( moved.getGuestbook());
+        assertNull(moved.getGuestbook());
 
     }
-    	
-	
-	/**
-	 * Moving DS to its owning DV 
-        * @throws IllegalCommandException
-	 */
+
+
+    /**
+     * Moving DS to its owning DV
+     *
+     * @throws IllegalCommandException
+     */
     @Test(expected = IllegalCommandException.class)
     public void testInvalidMove() throws Exception {
 
@@ -292,15 +290,13 @@ public class MoveDatasetCommandTest {
                 new MoveDatasetCommand(aRequest, moved, root, false));
         fail();
     }
-        
+
     /**
      * Moving a dataset without having enough permission fails with
      * PermissionException.
      *
-     * @throws java.lang.Exception
-     * 
-     * Ignoring after permissions change in 47fb045. Did that change make this
-     * case untestable? Unclear.
+     * @throws java.lang.Exception Ignoring after permissions change in 47fb045. Did that change make this
+     *                             case untestable? Unclear.
      */
     @Ignore
     @Test(expected = PermissionException.class)
@@ -326,11 +322,12 @@ public class MoveDatasetCommandTest {
                 new MoveDatasetCommand(aRequest, moved, root, null));
         fail();
     }
-    
-    	/**
-	 * Moving published  DS to unpublished DV
-        * @throws IllegalCommandException
-	 */
+
+    /**
+     * Moving published  DS to unpublished DV
+     *
+     * @throws IllegalCommandException
+     */
     @Test(expected = IllegalCommandException.class)
     public void testInvalidMovePublishedToUnpublished() throws Exception {
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
@@ -338,9 +335,9 @@ public class MoveDatasetCommandTest {
                 new MoveDatasetCommand(aRequest, moved, childDraft, null));
         fail();
     }
-         
-        
-        private static class EntityManagerImpl implements EntityManager {
+
+
+    private static class EntityManagerImpl implements EntityManager {
 
         @Override
         public void persist(Object entity) {
@@ -597,8 +594,8 @@ public class MoveDatasetCommandTest {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 
-    }    
-        
+    }
+
     private static class MockEntityManager extends EntityManagerImpl {
 
         @Override

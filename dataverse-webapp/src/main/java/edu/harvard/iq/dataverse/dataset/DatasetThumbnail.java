@@ -21,11 +21,7 @@ public class DatasetThumbnail {
     }
 
     public boolean isFromDataFile() {
-        if (dataFile != null) {
-            return true;
-        } else {
-            return false;
-        }
+        return dataFile != null;
     }
 
     public String getFilename() {

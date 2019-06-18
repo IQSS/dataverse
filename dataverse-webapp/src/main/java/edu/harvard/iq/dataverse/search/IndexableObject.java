@@ -21,7 +21,7 @@ public abstract class IndexableObject {
 
         private String name;
 
-        private IndexableTypes(String string) {
+        IndexableTypes(String string) {
             name = string;
         }
 

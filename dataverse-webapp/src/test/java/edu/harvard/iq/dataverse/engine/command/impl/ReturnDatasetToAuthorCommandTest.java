@@ -22,16 +22,17 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
+import org.junit.Before;
+import org.junit.Test;
+
+import javax.persistence.EntityManager;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
-import javax.persistence.EntityManager;
-import javax.servlet.http.HttpServletRequest;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import org.junit.Before;
-import org.junit.Test;
 
 public class ReturnDatasetToAuthorCommandTest {
 
@@ -78,19 +79,20 @@ public class ReturnDatasetToAuthorCommandTest {
                     {
                         em = new NoOpTestEntityManager();
                     }
-                        
+
                     @Override
                     public DatasetVersionUser getDatasetVersionUser(DatasetVersion version, User user) {
                         return null;
                     }
-                    @Override 
-                    public WorkflowComment addWorkflowComment(WorkflowComment comment){
+
+                    @Override
+                    public WorkflowComment addWorkflowComment(WorkflowComment comment) {
                         return comment;
                     }
-                    
+
                     @Override
                     public void removeDatasetLocks(Dataset dataset, DatasetLock.Reason aReason) {
-                        
+
                     }
                 };
             }
@@ -142,7 +144,7 @@ public class ReturnDatasetToAuthorCommandTest {
             throw new IllegalCommandException("You must enter a reason for returning a dataset to its author.", this);
         }
      */
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testDatasetNull() throws CommandException {
         new ReturnDatasetToAuthorCommand(dataverseRequest, null, "");
     }
@@ -201,18 +203,18 @@ public class ReturnDatasetToAuthorCommandTest {
         
     }
      */
-    
-   @Test
+
+    @Test
     public void testAllGood() {
-       dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
-       Dataset updatedDataset = null;
-       try {
-           testEngine.submit( new AddLockCommand(dataverseRequest, dataset, 
-                              new DatasetLock(DatasetLock.Reason.InReview, dataverseRequest.getAuthenticatedUser())));
-           updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, "Update Your Files, Dummy"));
-       } catch (CommandException ex) {
-            System.out.println("Error updating dataset: " + ex.getMessage() );
-       }
+        dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
+        Dataset updatedDataset = null;
+        try {
+            testEngine.submit(new AddLockCommand(dataverseRequest, dataset,
+                                                 new DatasetLock(DatasetLock.Reason.InReview, dataverseRequest.getAuthenticatedUser())));
+            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, "Update Your Files, Dummy"));
+        } catch (CommandException ex) {
+            System.out.println("Error updating dataset: " + ex.getMessage());
+        }
         assertNotNull(updatedDataset);
     }
 

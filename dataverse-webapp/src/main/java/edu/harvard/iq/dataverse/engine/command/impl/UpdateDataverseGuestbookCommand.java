@@ -15,7 +15,6 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 /**
- *
  * @author skraffmiller
  */
 @RequiredPermissions(Permission.EditDataverse)
@@ -36,7 +35,7 @@ public class UpdateDataverseGuestbookCommand extends AbstractCommand<Dataverse> 
         if (!this.guestbook.isEnabled()) {
             ctxt.em().createNativeQuery(
                     "Update Dataset set guestbook_id = null "
-                    + "WHERE guestbook_id =" + this.guestbook.getId()
+                            + "WHERE guestbook_id =" + this.guestbook.getId()
             ).executeUpdate();
         }
 
@@ -44,5 +43,5 @@ public class UpdateDataverseGuestbookCommand extends AbstractCommand<Dataverse> 
         Dataverse result = ctxt.dataverses().save(editedDv);
         return result;
     }
-    
+
 }

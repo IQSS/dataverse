@@ -6,9 +6,8 @@
 package edu.harvard.iq.dataverse.datasetutility;
 
 /**
- *
  * @author rmp553
- */    
+ */
 public class DataFileTagException extends Exception {
 
     public DataFileTagException(String message) {

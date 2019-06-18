@@ -35,8 +35,8 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
     private final String privateUrlToken;
 
     /**
-     * @param anAssignee The user being granted the role
-     * @param aRole the role being granted to the user
+     * @param anAssignee      The user being granted the role
+     * @param aRole           the role being granted to the user
      * @param assignmentPoint the dataverse on which the role is granted.
      * @param aRequest
      * @param privateUrlToken An optional token used by the Private Url feature.
@@ -68,7 +68,7 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
 
         if (DataverseRolePermissionHelper.getRolesAllowedToBeAssignedByManageMinorDatasetPermissions().contains(role.getAlias())) {
             return Collections.singletonMap("",
-                    ImmutableSet.of(Permission.ManageDatasetPermissions, Permission.ManageMinorDatasetPermissions));
+                                            ImmutableSet.of(Permission.ManageDatasetPermissions, Permission.ManageMinorDatasetPermissions));
         }
 
         return Collections.singletonMap("", Collections.singleton(Permission.ManageDatasetPermissions));

@@ -7,12 +7,14 @@ import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import edu.harvard.iq.dataverse.util.xml.XmlValidator;
+import org.junit.Test;
+import org.xml.sax.SAXException;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -20,11 +22,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import org.junit.Test;
-import org.xml.sax.SAXException;
 
 public class SiteMapUtilTest {
 

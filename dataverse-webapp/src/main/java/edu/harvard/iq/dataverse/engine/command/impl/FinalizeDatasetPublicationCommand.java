@@ -33,7 +33,6 @@ import java.util.logging.Logger;
 import static edu.harvard.iq.dataverse.DatasetVersion.VersionState.RELEASED;
 
 /**
- *
  * Takes the last internal steps in publishing a dataset.
  *
  * @author michael
@@ -42,44 +41,45 @@ import static edu.harvard.iq.dataverse.DatasetVersion.VersionState.RELEASED;
 public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCommand<Dataset> {
 
     private static final Logger logger = Logger.getLogger(FinalizeDatasetPublicationCommand.class.getName());
-    
+
     /**
      * mirror field from {@link PublishDatasetCommand} of same name
      */
     final boolean datasetExternallyReleased;
-    
+
     public FinalizeDatasetPublicationCommand(Dataset aDataset, DataverseRequest aRequest) {
-        this( aDataset, aRequest, false );
+        this(aDataset, aRequest, false);
     }
+
     public FinalizeDatasetPublicationCommand(Dataset aDataset, DataverseRequest aRequest, boolean isPidPrePublished) {
         super(aDataset, aRequest);
-	datasetExternallyReleased = isPidPrePublished;
+        datasetExternallyReleased = isPidPrePublished;
     }
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         Dataset theDataset = getDataset();
-        
-        if ( theDataset.getGlobalIdCreateTime() == null ) {
+
+        if (theDataset.getGlobalIdCreateTime() == null) {
             registerExternalIdentifier(theDataset, ctxt);
         }
-                
+
         // is this the first publication of the dataset?
         if (theDataset.getPublicationDate() == null) {
             theDataset.setReleaseUser((AuthenticatedUser) getUser());
         }
-        if ( theDataset.getPublicationDate() == null ) {
+        if (theDataset.getPublicationDate() == null) {
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
-        } 
+        }
 
         // update metadata
         theDataset.getLatestVersion().setReleaseTime(getTimestamp());
         theDataset.getLatestVersion().setLastUpdateTime(getTimestamp());
         theDataset.setModificationTime(getTimestamp());
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
-        
+
         updateFiles(getTimestamp(), ctxt);
-        
+
         // 
         // TODO: Not sure if this .merge() is necessary here - ? 
         // I'm moving a bunch of code from PublishDatasetCommand here; and this .merge()
@@ -88,10 +88,10 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         theDataset = ctxt.em().merge(theDataset);
         setDataset(theDataset);
         updateDatasetUser(ctxt);
-        
+
         //if the publisher hasn't contributed to this version
         DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(theDataset.getLatestVersion(), getUser());
-        
+
         if (ddu == null) {
             ddu = new DatasetVersionUser();
             ddu.setDatasetVersion(theDataset.getLatestVersion());
@@ -102,22 +102,22 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
         ddu.setLastUpdateDate(getTimestamp());
         ctxt.em().merge(ddu);
-        
+
         updateParentDataversesSubjectsField(theDataset, ctxt);
 
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
         if (privateUrl != null) {
             ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
         }
-        
-	if ( theDataset.getLatestVersion().getVersionState() != RELEASED ) {
-		// some imported datasets may already be released.
-		if (!datasetExternallyReleased){
-			publicizeExternalIdentifier(theDataset, ctxt);
-		}
-		theDataset.getLatestVersion().setVersionState(RELEASED);
-	}
-        
+
+        if (theDataset.getLatestVersion().getVersionState() != RELEASED) {
+            // some imported datasets may already be released.
+            if (!datasetExternallyReleased) {
+                publicizeExternalIdentifier(theDataset, ctxt);
+            }
+            theDataset.getLatestVersion().setVersionState(RELEASED);
+        }
+
         exportMetadata(ctxt.settings());
         boolean doNormalSolrDocCleanUp = true;
         ctxt.index().indexDataset(theDataset, doNormalSolrDocCleanUp);
@@ -126,13 +126,13 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         // Remove locks
         ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.Workflow));
         ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.pidRegister));
-        if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
-            ctxt.engine().submit( 
-                    new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
+        if (theDataset.isLockedFor(DatasetLock.Reason.InReview)) {
+            ctxt.engine().submit(
+                    new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview));
         }
-        
+
         final Dataset ds = ctxt.em().merge(theDataset);
-        
+
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
                 ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased));
@@ -140,13 +140,13 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 logger.log(Level.SEVERE, "Error invoking post-publish workflow: " + ex.getMessage(), ex);
             }
         });
-        
+
         Dataset readyDataset = ctxt.em().merge(theDataset);
-        
-        if ( readyDataset != null ) {
+
+        if (readyDataset != null) {
             notifyUsersDatasetPublish(ctxt, theDataset);
         }
-        
+
         return readyDataset;
     }
 
@@ -231,23 +231,23 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             }
         }
     }
-    
+
     private void updateFiles(Timestamp updateTime, CommandContext ctxt) throws CommandException {
         for (DataFile dataFile : getDataset().getFiles()) {
             if (dataFile.getPublicationDate() == null) {
                 // this is a new, previously unpublished file, so publish by setting date
                 dataFile.setPublicationDate(updateTime);
-                
+
                 // check if any prexisting roleassignments have file download and send notifications
                 notifyUsersFileDownload(ctxt, dataFile);
             }
-            
+
             // set the files restriction flag to the same as the latest version's
             if (dataFile.getFileMetadata() != null && dataFile.getFileMetadata().getDatasetVersion().equals(getDataset().getLatestVersion())) {
                 dataFile.setRestricted(dataFile.getFileMetadata().isRestricted());
             }
-            
-            
+
+
             if (dataFile.isRestricted()) {
                 // A couple things need to happen if the file has been restricted: 
                 // 1. If there's a map layer associated with this shape file, or 
@@ -260,7 +260,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 //    now that the file is restricted. 
 
                 // Map layer: 
-                
+
                 if (ctxt.mapLayerMetadata().findMetadataByDatafile(dataFile) != null) {
                     // (We need an AuthenticatedUser in order to produce a WorldMap token!)
                     String id = getUser().getIdentifier();
@@ -287,34 +287,34 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                     }
 
                 }
-                
+
                 // Dataset thumbnail assignment: 
-                
+
                 if (dataFile.equals(getDataset().getThumbnailFile())) {
                     getDataset().setThumbnailFile(null);
                 }
             }
         }
     }
-    
-   
+
+
     //These notification methods are fairly similar, but it was cleaner to create a few copies.
     //If more notifications are needed in this command, they should probably be collapsed.
     private void notifyUsersFileDownload(CommandContext ctxt, DvObject subject) {
         ctxt.roles().directRoleAssignments(subject).stream()
-            .filter(  ra -> ra.getRole().permissions().contains(Permission.DownloadFile) )
-            .flatMap( ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream() )
-            .distinct() // prevent double-send
-            .forEach( au -> ctxt.notifications().sendNotification(au, getTimestamp(), UserNotification.Type.GRANTFILEACCESS, getDataset().getId()) );
+                .filter(ra -> ra.getRole().permissions().contains(Permission.DownloadFile))
+                .flatMap(ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream())
+                .distinct() // prevent double-send
+                .forEach(au -> ctxt.notifications().sendNotification(au, getTimestamp(), UserNotification.Type.GRANTFILEACCESS, getDataset().getId()));
     }
-    
+
     private void notifyUsersDatasetPublish(CommandContext ctxt, DvObject subject) {
         ctxt.roles().rolesAssignments(subject).stream()
-            .filter(  ra -> ra.getRole().permissions().contains(Permission.ViewUnpublishedDataset) || ra.getRole().permissions().contains(Permission.DownloadFile))
-            .flatMap( ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream() )
-            .distinct() // prevent double-send
-            //.forEach( au -> ctxt.notifications().sendNotification(au, timestamp, messageType, theDataset.getId()) ); //not sure why this line doesn't work instead
-            .forEach( au -> ctxt.notifications().sendNotification(au, getTimestamp(), UserNotification.Type.PUBLISHEDDS, getDataset().getLatestVersion().getId()) ); 
+                .filter(ra -> ra.getRole().permissions().contains(Permission.ViewUnpublishedDataset) || ra.getRole().permissions().contains(Permission.DownloadFile))
+                .flatMap(ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream())
+                .distinct() // prevent double-send
+                //.forEach( au -> ctxt.notifications().sendNotification(au, timestamp, messageType, theDataset.getId()) ); //not sure why this line doesn't work instead
+                .forEach(au -> ctxt.notifications().sendNotification(au, getTimestamp(), UserNotification.Type.PUBLISHEDDS, getDataset().getLatestVersion().getId()));
     }
 
 }

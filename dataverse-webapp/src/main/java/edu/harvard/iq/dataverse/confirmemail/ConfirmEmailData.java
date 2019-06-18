@@ -1,10 +1,7 @@
 package edu.harvard.iq.dataverse.confirmemail;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import java.io.Serializable;
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -16,21 +13,24 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import java.io.Serializable;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.UUID;
 
 /**
- *
  * @author bsilverstein
  */
 @Table(indexes = {
-    @Index(columnList = "token"),
-    @Index(columnList = "authenticateduser_id")})
+        @Index(columnList = "token"),
+        @Index(columnList = "authenticateduser_id")})
 @NamedQueries({
-    @NamedQuery(name = "ConfirmEmailData.findAll",
-            query = "SELECT prd FROM ConfirmEmailData prd"),
-    @NamedQuery(name = "ConfirmEmailData.findByUser",
-            query = "SELECT prd FROM ConfirmEmailData prd WHERE prd.authenticatedUser = :user"),
-    @NamedQuery(name = "ConfirmEmailData.findByToken",
-            query = "SELECT prd FROM ConfirmEmailData prd WHERE prd.token = :token")
+        @NamedQuery(name = "ConfirmEmailData.findAll",
+                query = "SELECT prd FROM ConfirmEmailData prd"),
+        @NamedQuery(name = "ConfirmEmailData.findByUser",
+                query = "SELECT prd FROM ConfirmEmailData prd WHERE prd.authenticatedUser = :user"),
+        @NamedQuery(name = "ConfirmEmailData.findByToken",
+                query = "SELECT prd FROM ConfirmEmailData prd WHERE prd.token = :token")
 })
 @Entity
 public class ConfirmEmailData implements Serializable {

@@ -5,8 +5,6 @@
  */
 package edu.harvard.iq.dataverse.harvest.client;
 
-import java.io.Serializable;
-import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -15,11 +13,12 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
- *
  * @author Leonid Andreev
- *
+ * <p>
  * This is a record of an attempted harvesting client run. (Should it be named
  * HarvestingClientRunResult instead?)
  */
@@ -40,13 +39,13 @@ public class ClientHarvestRun implements Serializable {
         this.id = id;
     }
 
-    public enum RunResultType { SUCCESS, FAILURE, INPROGRESS };
-    
+    public enum RunResultType {SUCCESS, FAILURE, INPROGRESS}
+
     private static String RESULT_LABEL_SUCCESS = "SUCCESS";
     private static String RESULT_LABEL_FAILURE = "FAILED";
     private static String RESULT_LABEL_INPROGRESS = "INPROGRESS";
     private static String RESULT_DELETE_IN_PROGRESS = "DELETE IN PROGRESS";
-    
+
     @ManyToOne
     @JoinColumn(nullable = false)
     private HarvestingClient harvestingClient;
@@ -59,17 +58,17 @@ public class ClientHarvestRun implements Serializable {
         this.harvestingClient = harvestingClient;
     }
 
-    private RunResultType harvestResult; 
+    private RunResultType harvestResult;
 
     public RunResultType getResult() {
         return harvestResult;
     }
-    
+
     public String getResultLabel() {
         if (harvestingClient != null && harvestingClient.isDeleteInProgress()) {
             return RESULT_DELETE_IN_PROGRESS;
         }
-        
+
         if (isSuccess()) {
             return RESULT_LABEL_SUCCESS;
         } else if (isFailed()) {
@@ -79,17 +78,17 @@ public class ClientHarvestRun implements Serializable {
         }
         return null;
     }
-    
+
     public String getDetailedResultLabel() {
         if (harvestingClient != null && harvestingClient.isDeleteInProgress()) {
             return RESULT_DELETE_IN_PROGRESS;
         }
         if (isSuccess()) {
             String resultLabel = RESULT_LABEL_SUCCESS;
-            
-            resultLabel = resultLabel.concat("; "+harvestedDatasetCount+" harvested, ");
-            resultLabel = resultLabel.concat(deletedDatasetCount+" deleted, ");
-            resultLabel = resultLabel.concat(failedDatasetCount+" failed.");
+
+            resultLabel = resultLabel.concat("; " + harvestedDatasetCount + " harvested, ");
+            resultLabel = resultLabel.concat(deletedDatasetCount + " deleted, ");
+            resultLabel = resultLabel.concat(failedDatasetCount + " failed.");
             return resultLabel;
         } else if (isFailed()) {
             return RESULT_LABEL_FAILURE;
@@ -118,12 +117,12 @@ public class ClientHarvestRun implements Serializable {
     public void setFailed() {
         harvestResult = RunResultType.FAILURE;
     }
-    
+
     public boolean isInProgress() {
         return RunResultType.INPROGRESS == harvestResult ||
                 (harvestResult == null && startTime != null && finishTime == null);
     }
-    
+
     public void setInProgress() {
         harvestResult = RunResultType.INPROGRESS;
     }
@@ -196,10 +195,7 @@ public class ClientHarvestRun implements Serializable {
             return false;
         }
         ClientHarvestRun other = (ClientHarvestRun) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
 
     @Override

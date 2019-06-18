@@ -1,16 +1,14 @@
-
 package edu.harvard.iq.dataverse.api.dto;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
  * @author ellenk
  */
 public class DataFileDTO {
     private String id;
-    private String storageIdentifier; 
+    private String storageIdentifier;
     private String contentType;
     private String filename;
     private String originalFileFormat;
@@ -27,7 +25,7 @@ public class DataFileDTO {
     public void setPidURL(String pidURL) {
         this.pidURL = pidURL;
     }
-    
+
     private List<DataTableDTO> dataTables = new ArrayList<>();
 
     public List<DataTableDTO> getDataTables() {
@@ -45,7 +43,7 @@ public class DataFileDTO {
     public void setStorageIdentifier(String storageIdentifier) {
         this.storageIdentifier = storageIdentifier;
     }
-    
+
     public String getId() {
         return id;
     }
@@ -109,6 +107,6 @@ public class DataFileDTO {
     public void setDescription(String description) {
         this.description = description;
     }
-    
-    
+
+
 }

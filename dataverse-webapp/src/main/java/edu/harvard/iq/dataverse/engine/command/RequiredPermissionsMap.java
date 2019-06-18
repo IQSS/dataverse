@@ -11,12 +11,12 @@ import java.lang.annotation.Target;
  * using this annotation. The named sets of permissions are tested against
  * the {@link Dataverse}s returned by the {@link Command#getAffectedDataverses()}
  * method.
- * 
+ *
  * @author michael
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface RequiredPermissionsMap {
-	RequiredPermissions[] value();
+    RequiredPermissions[] value();
 }

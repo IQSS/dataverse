@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
@@ -11,8 +11,10 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
+
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -23,7 +25,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 /**
  * Deletes a data file, both DB entity and filesystem object.
@@ -40,12 +41,12 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
     public DeleteDataFileCommand(DataFile doomed, DataverseRequest aRequest) {
         this(doomed, aRequest, false);
     }
-    
+
     public DeleteDataFileCommand(DataFile doomed, DataverseRequest aRequest, boolean destroy) {
         super(aRequest, doomed.getOwner());
         this.doomed = doomed;
         this.destroy = destroy;
-    }    
+    }
 
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
@@ -54,16 +55,16 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
             //for now, if called as destroy, will check for superuser acess
             if (doomed.getOwner().isReleased() && (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
                 throw new PermissionException("Destroy can only be called by superusers.",
-                        this, Collections.singleton(Permission.DeleteDatasetDraft), doomed);
+                                              this, Collections.singleton(Permission.DeleteDatasetDraft), doomed);
             }
         } else // since this is not a destroy, we want to make sure the file is a draft
-        // we'll do three sanity checks
-        // 1. confirm the file is not released
-        // 2. confirm the file is only attached to one version (i.e. only has one fileMetadata)
-        // 3. confirm that version is not released
-        if (doomed.isReleased() || doomed.getFileMetadatas().size() > 1 || doomed.getFileMetadata().getDatasetVersion().isReleased()) {
-            throw new CommandException("Cannot delete file: the DataFile is published, is attached to more than one Dataset Version, or is attached to a released Dataset Version.", this);
-        }
+            // we'll do three sanity checks
+            // 1. confirm the file is not released
+            // 2. confirm the file is only attached to one version (i.e. only has one fileMetadata)
+            // 3. confirm that version is not released
+            if (doomed.isReleased() || doomed.getFileMetadatas().size() > 1 || doomed.getFileMetadata().getDatasetVersion().isReleased()) {
+                throw new CommandException("Cannot delete file: the DataFile is published, is attached to more than one Dataset Version, or is attached to a released Dataset Version.", this);
+            }
 
         // We need to delete a bunch of physical files, either from the file system,
         // or from some other storage medium where the datafile is stored, 
@@ -77,61 +78,63 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         logger.log(Level.FINE, "Delete command called on an unpublished DataFile {0}", doomed.getId());
 
         if (!doomed.isHarvested() && !StringUtil.isEmpty(doomed.getStorageIdentifier())) {
-            
+
             // "Package" files need to be treated as a special case, because, 
             // as of now, they are not supported by StorageIO (they only work 
             // with local filesystem as the storage mechanism). 
-            
+
             if (FileUtil.isPackageFile(doomed)) {
-                try { 
+                try {
                     String datasetDirectory = doomed.getOwner().getFileSystemDirectory().toString();
                     Path datasetDirectoryPath = Paths.get(datasetDirectory, doomed.getStorageIdentifier());
-                            
-                        Files.walkFileTree(datasetDirectoryPath, new SimpleFileVisitor<Path>(){
-                        @Override 
-                        public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs)
-                          throws IOException {
-                          Files.delete(file);
-                          return FileVisitResult.CONTINUE;
-                        }
 
-                        @Override 
-                        public FileVisitResult visitFileFailed(final Path file, final IOException e) {
-                          return handleException(e);
-                        }
+                    Files.walkFileTree(datasetDirectoryPath, new SimpleFileVisitor<Path>() {
+                                           @Override
+                                           public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs)
+                                                   throws IOException {
+                                               Files.delete(file);
+                                               return FileVisitResult.CONTINUE;
+                                           }
 
-                        private FileVisitResult handleException(final IOException e) {
-                          logger.warning("Failed to delete file due to"+e.getMessage());
-                          return FileVisitResult.TERMINATE;
-                        }
+                                           @Override
+                                           public FileVisitResult visitFileFailed(final Path file, final IOException e) {
+                                               return handleException(e);
+                                           }
 
-                        @Override 
-                        public FileVisitResult postVisitDirectory(final Path dir, final IOException e)
-                          throws IOException {
-                          if(e!=null)return handleException(e);
-                          Files.delete(dir);
-                          return FileVisitResult.CONTINUE;
-                        }
-                        }
-                );
-                    
+                                           private FileVisitResult handleException(final IOException e) {
+                                               logger.warning("Failed to delete file due to" + e.getMessage());
+                                               return FileVisitResult.TERMINATE;
+                                           }
+
+                                           @Override
+                                           public FileVisitResult postVisitDirectory(final Path dir, final IOException e)
+                                                   throws IOException {
+                                               if (e != null) {
+                                                   return handleException(e);
+                                               }
+                                               Files.delete(dir);
+                                               return FileVisitResult.CONTINUE;
+                                           }
+                                       }
+                    );
+
                 } catch (IOException ioex) {
-                    throw new CommandExecutionException("Failed to delete package file "+doomed.getStorageIdentifier(), ioex, this);
+                    throw new CommandExecutionException("Failed to delete package file " + doomed.getStorageIdentifier(), ioex, this);
                 }
-                
-                logger.info("Successfully deleted the package file "+doomed.getStorageIdentifier());
-                
+
+                logger.info("Successfully deleted the package file " + doomed.getStorageIdentifier());
+
             } else {
                 logger.info("Skipping deleting the physical file on the storage volume (will be done outside the command)");
-                /* We no longer attempt to delete the physical file from inside the command, 
-                 * since commands are executed as (potentially nested) transactions, 
-                 * and it is prudent to assume that this database transaction may 
-                 * be reversed in the end. Meaning if we delete the file here, 
-                 * we are at risk of the database entry not getting deleted, 
+                /* We no longer attempt to delete the physical file from inside the command,
+                 * since commands are executed as (potentially nested) transactions,
+                 * and it is prudent to assume that this database transaction may
+                 * be reversed in the end. Meaning if we delete the file here,
+                 * we are at risk of the database entry not getting deleted,
                  * leaving a "ghost" DataFile with no associated physical file
-                 * on the storage medium. 
-                 * The physical file delete must happen outside the transaction, 
-                 * once the database delete has been confirmed. 
+                 * on the storage medium.
+                 * The physical file delete must happen outside the transaction,
+                 * once the database delete has been confirmed.
                  */
                 /*
                 logger.log(Level.FINE, "Storage identifier for the file: {0}", doomed.getStorageIdentifier());
@@ -234,8 +237,8 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
          */
 
     }
-    
-    @Override 
+
+    @Override
     public String describe() {
         StringBuilder sb = new StringBuilder();
         sb.append(super.describe());

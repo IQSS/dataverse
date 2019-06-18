@@ -15,22 +15,19 @@ package edu.harvard.iq.dataverse.util.bagit;
  * @author qqmyers@hotmail.com
  */
 
+import edu.harvard.iq.dataverse.DataFile;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.compress.utils.IOUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Logger;
 import java.util.zip.ZipException;
 
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
-
-import edu.harvard.iq.dataverse.DataFile;
-
-import org.apache.commons.compress.utils.IOUtils;
-
 /**
  * @author Jim
- *
  */
 public class BagValidationJob implements Runnable {
 
@@ -55,7 +52,7 @@ public class BagValidationJob implements Runnable {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Runnable#run()
      */
     public void run() {

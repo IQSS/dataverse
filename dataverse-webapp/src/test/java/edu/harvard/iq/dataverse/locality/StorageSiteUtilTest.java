@@ -1,11 +1,12 @@
 package edu.harvard.iq.dataverse.locality;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import java.util.ArrayList;
-import java.util.List;
+import org.junit.Test;
+
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import org.junit.Test;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StorageSiteUtilTest {
 

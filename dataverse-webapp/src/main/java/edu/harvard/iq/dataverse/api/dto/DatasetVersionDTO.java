@@ -1,12 +1,12 @@
 package edu.harvard.iq.dataverse.api.dto;
 
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
- *
  * @author ellenk
  */
 public class DatasetVersionDTO {
@@ -36,12 +36,12 @@ public class DatasetVersionDTO {
     String availabilityStatus;
     String contactForAccess;
     String sizeOfCollection;
-    String studyCompletion; 
+    String studyCompletion;
     String citation;
     String license;
     boolean inReview;
-    
-    Map<String,MetadataBlockDTO> metadataBlocks;
+
+    Map<String, MetadataBlockDTO> metadataBlocks;
     List<FileMetadataDTO> fileMetadatas;
     List<FileDTO> files;
 
@@ -245,7 +245,6 @@ public class DatasetVersionDTO {
         this.id = id;
     }
 
-    
 
     public VersionState getVersionState() {
         return versionState;
@@ -262,8 +261,8 @@ public class DatasetVersionDTO {
     public void setReleaseDate(String releaseDate) {
         this.releaseDate = releaseDate;
     }
-    
-    
+
+
     public String getReleaseTime() {
         return releaseTime;
     }
@@ -295,7 +294,7 @@ public class DatasetVersionDTO {
     public void setArchiveTime(String archiveTime) {
         this.archiveTime = archiveTime;
     }
-    
+
     public String getLicense() {
         return license;
     }
@@ -311,7 +310,7 @@ public class DatasetVersionDTO {
     public void setMetadataBlocks(Map<String, MetadataBlockDTO> metadataBlocks) {
         this.metadataBlocks = metadataBlocks;
     }
-    
+
     public List<FieldDTO> getDatasetFields() {
         List<FieldDTO> fields = new ArrayList<>();
         //TODO: finish this
@@ -322,13 +321,6 @@ public class DatasetVersionDTO {
     public String toString() {
         return "DatasetVersionDTO{" + "archiveNote=" + archiveNote + ", deacessionLink=" + deacessionLink + ", versionNumber=" + versionNumber + ", minorVersionNumber=" + minorVersionNumber + ", id=" + id + ", versionState=" + versionState + ", releaseDate=" + releaseDate + ", lastUpdateTime=" + lastUpdateTime + ", createTime=" + createTime + ", archiveTime=" + archiveTime + ", UNF=" + UNF + ", metadataBlocks=" + metadataBlocks + ", fileMetadatas=" + fileMetadatas + '}';
     }
-    
-    
-    
-     
-     
-    
-     
-    
- 
+
+
 }

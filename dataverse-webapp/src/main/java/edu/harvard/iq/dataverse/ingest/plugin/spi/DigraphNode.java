@@ -64,11 +64,12 @@ import java.util.Set;
  * to by the current node (available from <code>getOutNodes</code>).
  * The in-degree of the node (that is, number of nodes that point to
  * the current node) may be queried.
- *
  */
 class DigraphNode implements Cloneable, Serializable {
 
-    /** The data associated with this node. */
+    /**
+     * The data associated with this node.
+     */
     protected Object data;
 
     /**
@@ -77,7 +78,9 @@ class DigraphNode implements Cloneable, Serializable {
      */
     protected Set outNodes = new HashSet();
 
-    /** The in-degree of the node. */
+    /**
+     * The in-degree of the node.
+     */
     protected int inDegree = 0;
 
     /**
@@ -90,7 +93,9 @@ class DigraphNode implements Cloneable, Serializable {
         this.data = data;
     }
 
-    /** Returns the <code>Object</code> referenced by this node. */
+    /**
+     * Returns the <code>Object</code> referenced by this node.
+     */
     public Object getData() {
         return data;
     }
@@ -108,7 +113,6 @@ class DigraphNode implements Cloneable, Serializable {
      * node is updated and the in-degree of the other node is incremented.
      *
      * @param node a <code>DigraphNode</code>.
-     *
      * @return <code>true</code> if the node was not previously the
      * target of an edge.
      */
@@ -128,7 +132,6 @@ class DigraphNode implements Cloneable, Serializable {
      * and the given node.
      *
      * @param node a <code>DigraphNode</code>.
-     *
      * @return <code>true</code> if the node is the target of an edge.
      */
     public boolean hasEdge(DigraphNode node) {
@@ -159,29 +162,35 @@ class DigraphNode implements Cloneable, Serializable {
      */
     public void dispose() {
         Object[] inNodesArray = inNodes.toArray();
-        for(int i=0; i<inNodesArray.length; i++) {
+        for (int i = 0; i < inNodesArray.length; i++) {
             DigraphNode node = (DigraphNode) inNodesArray[i];
             node.removeEdge(this);
         }
 
         Object[] outNodesArray = outNodes.toArray();
-        for(int i=0; i<outNodesArray.length; i++) {
+        for (int i = 0; i < outNodesArray.length; i++) {
             DigraphNode node = (DigraphNode) outNodesArray[i];
             removeEdge(node);
         }
     }
 
-    /** Returns the in-degree of this node. */
+    /**
+     * Returns the in-degree of this node.
+     */
     public int getInDegree() {
         return inDegree;
     }
 
-    /** Increments the in-degree of this node. */
+    /**
+     * Increments the in-degree of this node.
+     */
     private void incrementInDegree() {
         ++inDegree;
     }
 
-    /** Decrements the in-degree of this node. */
+    /**
+     * Decrements the in-degree of this node.
+     */
     private void decrementInDegree() {
         --inDegree;
     }

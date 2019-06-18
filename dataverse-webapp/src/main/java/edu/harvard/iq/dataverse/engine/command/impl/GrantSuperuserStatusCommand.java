@@ -6,7 +6,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -14,21 +13,19 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 /**
- *
  * @author Leonid Andreev
  */
 // the permission annotation is open, since this is a superuser-only command - 
 // and that's enforced in the command body:
 @RequiredPermissions({})
-public class GrantSuperuserStatusCommand extends AbstractVoidCommand  {
+public class GrantSuperuserStatusCommand extends AbstractVoidCommand {
 
     private final AuthenticatedUser targetUser;
-    
-    public GrantSuperuserStatusCommand (AuthenticatedUser targetUser, DataverseRequest aRequest) {
-        super(aRequest, (Dataset)null);
+
+    public GrantSuperuserStatusCommand(AuthenticatedUser targetUser, DataverseRequest aRequest) {
+        super(aRequest, (Dataset) null);
         this.targetUser = targetUser;
     }
 
@@ -37,7 +34,7 @@ public class GrantSuperuserStatusCommand extends AbstractVoidCommand  {
 
         if (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser()) {
             throw new PermissionException("Revoke Superuser status command can only be called by superusers.",
-                    this, null, null);
+                                          this, null, null);
         }
 
         try {
@@ -45,7 +42,7 @@ public class GrantSuperuserStatusCommand extends AbstractVoidCommand  {
             ctxt.em().merge(targetUser);
             ctxt.em().flush();
         } catch (Exception e) {
-            throw new CommandException("Failed to grant the superuser status to user "+targetUser.getIdentifier(), this);
+            throw new CommandException("Failed to grant the superuser status to user " + targetUser.getIdentifier(), this);
         }
     }
 }

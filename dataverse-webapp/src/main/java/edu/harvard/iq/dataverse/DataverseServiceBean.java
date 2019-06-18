@@ -40,7 +40,6 @@ import java.util.concurrent.Future;
 import java.util.logging.Logger;
 
 /**
- *
  * @author gdurand
  */
 @Stateless
@@ -53,25 +52,25 @@ public class DataverseServiceBean implements java.io.Serializable {
 
     @EJB
     AuthenticationServiceBean authService;
-    
+
     @EJB
     DatasetServiceBean datasetService;
-    
+
     @EJB
     DataverseLinkingServiceBean dataverseLinkingService;
 
     @EJB
     DatasetLinkingServiceBean datasetLinkingService;
-    
+
     @EJB
     GroupServiceBean groupService;
-    
+
     @EJB
     DataverseRoleServiceBean rolesService;
-    
+
     @EJB
     PermissionServiceBean permissionService;
-    
+
     @EJB
     SystemConfig systemConfig;
 
@@ -82,7 +81,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     private EntityManager em;
 
     public Dataverse save(Dataverse dataverse) {
-       
+
         dataverse.setModificationTime(new Timestamp(new Date().getTime()));
         Dataverse savedDataverse = em.merge(dataverse);
         /**
@@ -103,16 +102,13 @@ public class DataverseServiceBean implements java.io.Serializable {
 
     /**
      * @param numPartitions The number of partitions you intend to split the
-     * indexing job into. Perhaps you have three Glassfish servers and you'd
-     * like each one to operate on a subset of dataverses.
-     *
-     * @param partitionId Maybe "partitionId" is the wrong term but it's what we
-     * call in the (text) UI. If you've specified three partitions the three
-     * partitionIds are 0, 1, and 2. We do `dataverseId % numPartitions =
-     * partitionId` to figure out which partition the dataverseId falls into.
-     * 
-     * @param skipIndexed If true, will skip any dvObjects that have a indexTime set 
-     *
+     *                      indexing job into. Perhaps you have three Glassfish servers and you'd
+     *                      like each one to operate on a subset of dataverses.
+     * @param partitionId   Maybe "partitionId" is the wrong term but it's what we
+     *                      call in the (text) UI. If you've specified three partitions the three
+     *                      partitionIds are 0, 1, and 2. We do `dataverseId % numPartitions =
+     *                      partitionId` to figure out which partition the dataverseId falls into.
+     * @param skipIndexed   If true, will skip any dvObjects that have a indexTime set
      * @return All dataverses if you say numPartitions=1 and partitionId=0.
      * Otherwise, a subset of dataverses.
      */
@@ -123,32 +119,32 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
         String skipClause = skipIndexed ? "AND o.indexTime is null " : "";
         TypedQuery<Dataverse> typedQuery = em.createQuery("SELECT OBJECT(o) FROM Dataverse AS o WHERE MOD( o.id, :numPartitions) = :partitionId " +
-                skipClause +
-                "ORDER BY o.id", Dataverse.class);
+                                                                  skipClause +
+                                                                  "ORDER BY o.id", Dataverse.class);
         typedQuery.setParameter("numPartitions", numPartitions);
         typedQuery.setParameter("partitionId", partitionId);
         return typedQuery.getResultList();
     }
-    
+
     public List<Long> findDataverseIdsForIndexing(boolean skipIndexed) {
         if (skipIndexed) {
             return em.createQuery("SELECT o.id FROM Dataverse o WHERE o.indexTime IS null ORDER BY o.id", Long.class).getResultList();
         }
         return em.createQuery("SELECT o.id FROM Dataverse o ORDER BY o.id", Long.class).getResultList();
-        
+
     }
 
     public List<Dataverse> findByOwnerId(Long ownerId) {
         return em.createNamedQuery("Dataverse.findByOwnerId").setParameter("ownerId", ownerId).getResultList();
     }
-    
+
     public List<Long> findIdsByOwnerId(Long ownerId) {
         String qr = "select o.id from Dataverse as o where o.owner.id =:ownerId order by o.id";
         return em.createQuery(qr, Long.class).setParameter("ownerId", ownerId).getResultList();
     }
-    
+
     public List<Dataverse> findPublishedByOwnerId(Long ownerId) {
-        String qr ="select object(o) from Dataverse as o where o.owner.id =:ownerId and o.publicationDate is not null order by o.name";
+        String qr = "select object(o) from Dataverse as o where o.owner.id =:ownerId and o.publicationDate is not null order by o.name";
         return em.createQuery(qr, Dataverse.class).setParameter("ownerId", ownerId).getResultList();
     }
 
@@ -160,11 +156,11 @@ public class DataverseServiceBean implements java.io.Serializable {
     public Dataverse findRootDataverse() {
         return em.createNamedQuery("Dataverse.findRoot", Dataverse.class).getSingleResult();
     }
-    
+
     public List<Dataverse> findAllPublishedByOwnerId(Long ownerId) {
-        List<Dataverse> retVal = new ArrayList<>();       
+        List<Dataverse> retVal = new ArrayList<>();
         List<Dataverse> previousLevel = findPublishedByOwnerId(ownerId);
-        
+
         retVal.addAll(previousLevel);
         /*
         if (!previousLevel.isEmpty()) {
@@ -179,29 +175,30 @@ public class DataverseServiceBean implements java.io.Serializable {
      * A lookup of a dataverse alias should be case insensitive. If "cfa"
      * belongs to the Center for Astrophysics, we don't want to allow Code for
      * America to start using "CFA". Force all queries to be lower case.
+     *
      * @param anAlias
-     * @return 
+     * @return
      */
     public Dataverse findByAlias(String anAlias) {
         try {
             return (anAlias.toLowerCase().equals(":root"))
-				? findRootDataverse()
-				: em.createNamedQuery("Dataverse.findByAlias", Dataverse.class)
-					.setParameter("alias", anAlias.toLowerCase())
-					.getSingleResult();
-        } catch ( NoResultException|NonUniqueResultException ex ) {
+                    ? findRootDataverse()
+                    : em.createNamedQuery("Dataverse.findByAlias", Dataverse.class)
+                    .setParameter("alias", anAlias.toLowerCase())
+                    .getSingleResult();
+        } catch (NoResultException | NonUniqueResultException ex) {
             logger.fine("Unable to find a single dataverse using alias \"" + anAlias + "\": " + ex);
             return null;
         }
     }
-    
-	public boolean hasData( Dataverse dv ) {
-		TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
-								.setParameter("id", dv.getId());
-		
-		return (amountQry.getSingleResult()>0);
-	}
-	
+
+    public boolean hasData(Dataverse dv) {
+        TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
+                .setParameter("id", dv.getId());
+
+        return (amountQry.getSingleResult() > 0);
+    }
+
     public boolean isRootDataverseExists() {
         long count = em.createQuery("SELECT count(dv) FROM Dataverse dv WHERE dv.owner.id=null", Long.class).getSingleResult();
         return (count == 1);
@@ -230,12 +227,12 @@ public class DataverseServiceBean implements java.io.Serializable {
     public List<MetadataBlock> findAllMetadataBlocks() {
         return em.createQuery("select object(o) from MetadataBlock as o order by o.id", MetadataBlock.class).getResultList();
     }
-    
-    public List<MetadataBlock> findSystemMetadataBlocks(){
+
+    public List<MetadataBlock> findSystemMetadataBlocks() {
         String qr = "select object(o) from MetadataBlock as o where o.owner.id=null  order by o.id";
         return em.createQuery(qr, MetadataBlock.class).getResultList();
     }
-    
+
     public List<MetadataBlock> findMetadataBlocksByDataverseId(Long dataverse_id) {
         String qr = "select object(o) from MetadataBlock as o where o.owner.id=:dataverse_id order by o.id";
         return em.createQuery(qr, MetadataBlock.class)
@@ -243,9 +240,9 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
     public String getDataverseLogoThumbnailAsBase64ById(Long dvId) {
-     
+
         File dataverseLogoFile = getLogoById(dvId);
-        
+
         if (dataverseLogoFile != null) {
             String logoThumbNailPath;
 
@@ -256,7 +253,7 @@ public class DataverseServiceBean implements java.io.Serializable {
 
                 }
             }
-        } 
+        }
         return null;
     }
     
@@ -282,13 +279,13 @@ public class DataverseServiceBean implements java.io.Serializable {
             }
         //}
         */
-        // If there's no uploaded logo for this dataverse, go through its 
-        // [released] datasets and see if any of them have card images:
-        // 
-        // TODO:
-        // Discuss/Decide if we really want to do this - i.e., go through every
-        // file in every dataset below... 
-        // -- L.A. 4.0 beta14
+    // If there's no uploaded logo for this dataverse, go through its
+    // [released] datasets and see if any of them have card images:
+    //
+    // TODO:
+    // Discuss/Decide if we really want to do this - i.e., go through every
+    // file in every dataset below...
+    // -- L.A. 4.0 beta14
         /*
         for (Dataset dataset : datasetService.findPublishedByOwnerId(dataverse.getId())) {
             if (dataset != null) {
@@ -304,79 +301,79 @@ public class DataverseServiceBean implements java.io.Serializable {
         /*
         return false; 
     } */
-        
+
     private File getLogo(Dataverse dataverse) {
         if (dataverse.getId() == null) {
-            return null; 
+            return null;
         }
-        
-        DataverseTheme theme = dataverse.getDataverseTheme(); 
+
+        DataverseTheme theme = dataverse.getDataverseTheme();
         if (theme != null && theme.getLogo() != null && !theme.getLogo().isEmpty()) {
             Properties p = System.getProperties();
             String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
-  
+
             if (domainRoot != null && !"".equals(domainRoot)) {
-                return new File (domainRoot + File.separator + 
-                    "docroot" + File.separator + 
-                    "logos" + File.separator + 
-                    dataverse.getLogoOwnerId() + File.separator + 
-                    theme.getLogo());
+                return new File(domainRoot + File.separator +
+                                        "docroot" + File.separator +
+                                        "logos" + File.separator +
+                                        dataverse.getLogoOwnerId() + File.separator +
+                                        theme.getLogo());
             }
         }
-            
-        return null;         
+
+        return null;
     }
-    
+
     private File getLogoById(Long id) {
         if (id == null) {
-            return null; 
+            return null;
         }
-        
+
         String logoFileName;
-        
+
         try {
-                logoFileName = (String) em.createNativeQuery("SELECT logo FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
-            
+            logoFileName = (String) em.createNativeQuery("SELECT logo FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
+
         } catch (Exception ex) {
             return null;
         }
-        
+
         if (logoFileName != null && !logoFileName.isEmpty()) {
             Properties p = System.getProperties();
             String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
-  
+
             if (domainRoot != null && !"".equals(domainRoot)) {
-                return new File (domainRoot + File.separator + 
-                    "docroot" + File.separator + 
-                    "logos" + File.separator + 
-                    id + File.separator + 
-                    logoFileName);
+                return new File(domainRoot + File.separator +
+                                        "docroot" + File.separator +
+                                        "logos" + File.separator +
+                                        id + File.separator +
+                                        logoFileName);
             }
         }
-            
-        return null;         
+
+        return null;
     }
-    
+
     public DataverseTheme findDataverseThemeByIdQuick(Long id) {
         if (id == null) {
-            return null; 
+            return null;
         }
-        
+
         Object[] result;
-        
+
         try {
-                result = (Object[]) em.createNativeQuery("SELECT logo, logoFormat FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
-            
+            result = (Object[]) em.createNativeQuery("SELECT logo, logoFormat FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
+
         } catch (Exception ex) {
             return null;
         }
-        
+
         if (result == null) {
             return null;
         }
-        
+
         DataverseTheme theme = new DataverseTheme();
-        
+
         if (result[0] != null) {
             theme.setLogo((String) result[0]);
         }
@@ -385,14 +382,14 @@ public class DataverseServiceBean implements java.io.Serializable {
             String format = (String) result[1];
             switch (format) {
                 case "RECTANGLE":
-                theme.setLogoFormat(DataverseTheme.ImageFormat.RECTANGLE);
+                    theme.setLogoFormat(DataverseTheme.ImageFormat.RECTANGLE);
                     break;
                 case "SQUARE":
-                theme.setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
+                    theme.setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
                     break;
             }
         }
-        
+
         return theme;
     }
 
@@ -411,7 +408,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     public List<Dataverse> findDataversesThatLinkToThisDatasetId(long datasetId) {
         return datasetLinkingService.findLinkingDataverses(datasetId);
     }
-    
+
     public List<Dataverse> filterByAliasQuery(String filterQuery) {
         //Query query = em.createNativeQuery("select o from Dataverse o where o.alias LIKE '" + filterQuery + "%' order by o.alias");
         //Query query = em.createNamedQuery("Dataverse.filterByAlias", Dataverse.class).setParameter("alias", filterQuery.toLowerCase() + "%");
@@ -422,11 +419,11 @@ public class DataverseServiceBean implements java.io.Serializable {
         //logger.info("created native query: select o from Dataverse o where o.alias LIKE '" + filterQuery + "%' order by o.alias");
         logger.info("created named query");
         if (ret != null) {
-            logger.info("results list: "+ret.size()+" results.");
+            logger.info("results list: " + ret.size() + " results.");
         }
         return ret;
     }
-    
+
     public List<Dataverse> filterDataversesForLinking(String query, DataverseRequest req, Dataset dataset) {
 
         List<Dataverse> dataverseList = new ArrayList<>();
@@ -443,7 +440,7 @@ public class DataverseServiceBean implements java.io.Serializable {
                 remove.add(removeIt);
             });
         }
-        
+
         for (Dataverse res : results) {
             if (!remove.contains(res)) {
                 if (this.permissionService.requestOn(req, res).has(Permission.PublishDataset)) {
@@ -454,10 +451,9 @@ public class DataverseServiceBean implements java.io.Serializable {
 
         return dataverseList;
     }
-    
+
     /**
      * Used to identify and properly display Harvested objects on the dataverse page.
-     * 
      *//*
     @Deprecated
     public Map<Long, String> getAllHarvestedDataverseDescriptions(){
@@ -495,15 +491,14 @@ public class DataverseServiceBean implements java.io.Serializable {
         
         return ret;        
     }*/
-    
-    public String getParentAliasString(SolrSearchResult solrSearchResult){
+    public String getParentAliasString(SolrSearchResult solrSearchResult) {
         Long dvId = solrSearchResult.getEntityId();
         String retVal = "";
-        
+
         if (dvId == null) {
             return retVal;
         }
-        
+
         String searchResult;
         try {
             searchResult = (String) em.createNativeQuery("select  t0.ALIAS FROM DATAVERSE t0, DVOBJECT t1,  DVOBJECT t2 WHERE (t0.ID = t1.ID) AND (t2.OWNER_ID = t1.ID)  AND (t2.ID =" + dvId + ")").getSingleResult();
@@ -519,19 +514,19 @@ public class DataverseServiceBean implements java.io.Serializable {
         if (searchResult != null) {
             return searchResult;
         }
-        
+
         return retVal;
     }
-    
-    
+
+
     public void populateDvSearchCard(SolrSearchResult solrSearchResult) {
-  
+
         Long dvId = solrSearchResult.getEntityId();
-        
+
         if (dvId == null) {
             return;
         }
-        
+
         Long parentDvId = null;
         String parentId = solrSearchResult.getParent().get("id");
         if (parentId != null) {
@@ -541,9 +536,9 @@ public class DataverseServiceBean implements java.io.Serializable {
                 parentDvId = null;
             }
         }
-        
+
         Object[] searchResult;
-        
+
         try {
             if (parentDvId == null) {
                 searchResult = (Object[]) em.createNativeQuery("SELECT t0.AFFILIATION, t0.ALIAS FROM DATAVERSE t0 WHERE t0.ID = " + dvId).getSingleResult();
@@ -557,7 +552,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         if (searchResult == null) {
             return;
         }
-        
+
         if (searchResult[0] != null) {
             solrSearchResult.setDataverseAffiliation((String) searchResult[0]);
         }
@@ -565,20 +560,20 @@ public class DataverseServiceBean implements java.io.Serializable {
         if (searchResult[1] != null) {
             solrSearchResult.setDataverseAlias((String) searchResult[1]);
         }
-        
+
         if (parentDvId != null) {
             if (searchResult[2] != null) {
                 solrSearchResult.setDataverseParentAlias((String) searchResult[2]);
             }
         }
     }
-    
+
     // function to recursively find ids of all children of a dataverse that 
     // are also of type dataverse
     public List<Long> findAllDataverseDataverseChildren(Long dvId) {
         // get list of Dataverse children
         List<Long> dataverseChildren = findIdsByOwnerId(dvId);
-        
+
         if (dataverseChildren == null) {
             return dataverseChildren;
         } else {
@@ -590,7 +585,7 @@ public class DataverseServiceBean implements java.io.Serializable {
             return dataverseChildren;
         }
     }
-    
+
     // function to recursively find ids of all children of a dataverse that are 
     // of type dataset
     public List<Long> findAllDataverseDatasetChildren(Long dvId) {
@@ -598,7 +593,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         List<Long> dataverseChildren = findIdsByOwnerId(dvId);
         // get list of Dataset children
         List<Long> datasetChildren = datasetService.findIdsByOwnerId(dvId);
-        
+
         if (dataverseChildren == null) {
             return datasetChildren;
         } else {
@@ -608,9 +603,9 @@ public class DataverseServiceBean implements java.io.Serializable {
             return datasetChildren;
         }
     }
-    
+
     public String addRoleAssignmentsToChildren(Dataverse owner, List<String> rolesToInherit,
-            boolean inheritAllRoles) {
+                                               boolean inheritAllRoles) {
         /*
          * This query recursively finds all Dataverses that are inside/children of the
          * specified one. It recursively finds dvobjects of dtype 'Dataverse' whose
@@ -660,7 +655,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         for (RoleAssignment role : allRAsOnOwner) {
             if (inheritAllRoles || rolesToInherit.contains(role.getRole().getAlias())) {
                 //Only supporting built-in/non-dataverse-specific custom roles. Custom roles all have an owner.
-                if(role.getRole().getOwner()==null) {
+                if (role.getRole().getOwner() == null) {
                     inheritableRAsOnOwner.add(role);
                 }
             }
@@ -700,7 +695,7 @@ public class DataverseServiceBean implements java.io.Serializable {
                         }
                     } catch (Exception e) {
                         logger.warning("Unable to assign " + roleAssignment.getAssigneeIdentifier()
-                                + "as an admin for new Dataverse: " + childDv.getName());
+                                               + "as an admin for new Dataverse: " + childDv.getName());
                         logger.warning(e.getMessage());
                         throw (e);
                     }
@@ -714,13 +709,13 @@ public class DataverseServiceBean implements java.io.Serializable {
                     for (Dataverse childDv : children) {
                         try {
                             RoleAssignment ra = new RoleAssignment(inheritableRole, roleGroup, childDv,
-                                    privateUrlToken);
+                                                                   privateUrlToken);
                             if (!existingRAs.get(childDv.getId()).contains(ra)) {
                                 rolesService.save(ra);
                             }
                         } catch (Exception e) {
                             logger.warning("Unable to assign " + roleAssignment.getAssigneeIdentifier()
-                                    + "as an admin for new Dataverse: " + childDv.getName());
+                                                   + "as an admin for new Dataverse: " + childDv.getName());
                             logger.warning(e.getMessage());
                             throw (e);
                         }

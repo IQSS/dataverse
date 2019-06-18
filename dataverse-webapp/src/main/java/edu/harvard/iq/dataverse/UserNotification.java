@@ -3,9 +3,6 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.DateUtil;
 
-import java.io.Serializable;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
@@ -17,43 +14,45 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import java.io.Serializable;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 
 /**
- *
  * @author xyang
  */
 @Entity
-@Table(indexes = {@Index(columnList="user_id")})
+@Table(indexes = {@Index(columnList = "user_id")})
 
 public class UserNotification implements Serializable {
     public enum Type {
         ASSIGNROLE, REVOKEROLE, CREATEDV, CREATEDS, CREATEACC, MAPLAYERUPDATED, MAPLAYERDELETEFAILED, SUBMITTEDDS, RETURNEDDS, PUBLISHEDDS, REQUESTFILEACCESS, GRANTFILEACCESS, REJECTFILEACCESS, FILESYSTEMIMPORT, CHECKSUMIMPORT, CHECKSUMFAIL, CONFIRMEMAIL
-    };
-    
+    }
+
     private static final long serialVersionUID = 1L;
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn( nullable = false )
+    @JoinColumn(nullable = false)
     private AuthenticatedUser user;
     @ManyToOne
-    @JoinColumn( nullable = true )
+    @JoinColumn(nullable = true)
     private AuthenticatedUser requestor;
     private Timestamp sendDate;
     private boolean readNotification;
-    
+
     @Enumerated
-    @Column( nullable = false )
+    @Column(nullable = false)
     private Type type;
     private Long objectId;
 
     @Transient
     private boolean displayAsRead;
-    
-    @Transient 
+
+    @Transient
     String roleString;
 
     private boolean emailed;
@@ -73,7 +72,7 @@ public class UserNotification implements Serializable {
     public void setUser(AuthenticatedUser user) {
         this.user = user;
     }
-        
+
     public AuthenticatedUser getRequestor() {
         return requestor;
     }
@@ -105,7 +104,7 @@ public class UserNotification implements Serializable {
     public void setType(Type type) {
         this.type = type;
     }
-    
+
     public Long getObjectId() {
         return objectId;
     }
@@ -113,8 +112,8 @@ public class UserNotification implements Serializable {
     public void setObjectId(Long objectId) {
         this.objectId = objectId;
     }
-    
-    @Transient 
+
+    @Transient
     private Object theObject;
 
     public Object getTheObject() {
@@ -124,8 +123,8 @@ public class UserNotification implements Serializable {
     public void setTheObject(Object theObject) {
         this.theObject = theObject;
     }
-    
-        
+
+
     public boolean isDisplayAsRead() {
         return displayAsRead;
     }
@@ -140,8 +139,8 @@ public class UserNotification implements Serializable {
 
     public void setEmailed(boolean emailed) {
         this.emailed = emailed;
-    }    
-    
+    }
+
     public String getRoleString() {
         return roleString;
     }

@@ -13,18 +13,15 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- *
- * 
- * Compares String objects alphabetically, except if both Strings begin with a number, 
- * then compares numerically.  If one String begins with a number and the other doesn't, then 
+ * Compares String objects alphabetically, except if both Strings begin with a number,
+ * then compares numerically.  If one String begins with a number and the other doesn't, then
  * the number precedes the non-number.
- * 
+ *
  * @author Ellen Kraffmiller
  * @author Leonid Andreev
- *    
+ * <p>
  * This comparator was originally created by Ellen Kraffmiller for the DVN v2.
  * Incorporated into DVN 4.0 by Leonid Andreev in Dec. 2013.
- * 
  */
 public class AlphaNumericComparator implements Comparator<String>, Serializable {
     public AlphaNumericComparator() {
@@ -80,7 +77,7 @@ public class AlphaNumericComparator implements Comparator<String>, Serializable 
         List<Object> tokenizedList = new ArrayList<>();
         char[] charArray = value.trim().toCharArray();
 
-        StringBuffer currentToken = new StringBuffer("");
+        StringBuffer currentToken = new StringBuffer();
         boolean isCurrentTokenNumeric = false;
 
         for (int i = 0; i < charArray.length; i++) {
@@ -95,7 +92,7 @@ public class AlphaNumericComparator implements Comparator<String>, Serializable 
 
                 if (!isCurrentTokenNumeric) { // reset
                     tokenizedList.add(currentToken.toString());
-                    currentToken = new StringBuffer("");
+                    currentToken = new StringBuffer();
                 }
 
                 if (c != ',') { // if comma, don't append as it's just a visual separator
@@ -111,7 +108,7 @@ public class AlphaNumericComparator implements Comparator<String>, Serializable 
                     } catch (NumberFormatException nfe) {
                         tokenizedList.add(currentToken.toString()); // something went wrong, but go ahead and add a a String
                     }
-                    currentToken = new StringBuffer("");
+                    currentToken = new StringBuffer();
                 }
 
                 currentToken.append(c);
@@ -144,5 +141,5 @@ public class AlphaNumericComparator implements Comparator<String>, Serializable 
         int hash = 3;
         return hash;
     }
-   
+
 }

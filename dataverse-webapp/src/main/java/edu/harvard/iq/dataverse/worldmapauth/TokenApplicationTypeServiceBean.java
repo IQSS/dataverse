@@ -17,21 +17,20 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- *
  * @author raprasad
  */
 @Stateless
 public class TokenApplicationTypeServiceBean {
-    
+
     private static final Logger logger = Logger.getLogger(TokenApplicationTypeServiceBean.class.getCanonicalName());
-    
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
-    public TokenApplicationType getGeoConnectApplication(){
+
+    public TokenApplicationType getGeoConnectApplication() {
         logger.info("--getGeoConnectApplication--");
         TokenApplicationType tat = this.findByName(TokenApplicationType.DEFAULT_GEOCONNECT_APPLICATION_NAME);
-        if (tat != null){
+        if (tat != null) {
             logger.info("-- Got it!!");
             return tat;
         }
@@ -44,34 +43,35 @@ public class TokenApplicationTypeServiceBean {
         tat.setTimeLimitMinutes(TokenApplicationType.DEFAULT_TOKEN_TIME_LIMIT_MINUTES);
         //tat.setMapitLink(TokenApplicationType.LOCAL_DEV_MAPIT_LINK);
         tat.setMapitLink(TokenApplicationType.DEV_MAPIT_LINK);
-        
+
         return this.save(tat);
-        
+
         //return null;
     }
+
     public TokenApplicationType find(Object pk) {
-        if (pk==null){
+        if (pk == null) {
             return null;
         }
         return em.find(TokenApplicationType.class, pk);
     }
-    
+
     /**
-     * 
      * Convert string to md5 hash
-     * 
-        import hashlib
-        m = hashlib.md5()
-        m.update("Give me python or give me...more time, more time -- c.mena")
-        m.hexdigest()     #'266cf94160a22fe1ef118c907379cd60'
-     * @param stringToHash        
-     * @return         
-    */
-    public String getMD5Hash(String stringToHash){
-        if (stringToHash==null){
+     * <p>
+     * import hashlib
+     * m = hashlib.md5()
+     * m.update("Give me python or give me...more time, more time -- c.mena")
+     * m.hexdigest()     #'266cf94160a22fe1ef118c907379cd60'
+     *
+     * @param stringToHash
+     * @return
+     */
+    public String getMD5Hash(String stringToHash) {
+        if (stringToHash == null) {
             return null;
         }
-        MessageDigest md;   
+        MessageDigest md;
         try {
             md = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException ex) {
@@ -79,73 +79,73 @@ public class TokenApplicationTypeServiceBean {
             return null;
         }
         md.update(stringToHash.getBytes());
-          
+
         byte[] mdbytes = md.digest();
-        StringBuilder sb = new StringBuilder("");
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < mdbytes.length; i++) {
             sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
         }
         return sb.toString();
-                
-       
+
+
     }
-            
-    public TokenApplicationType save( TokenApplicationType tokenApp ) {
-        
-        if (tokenApp==null){
+
+    public TokenApplicationType save(TokenApplicationType tokenApp) {
+
+        if (tokenApp == null) {
             return null;
         }
-        
-        if (tokenApp.getName()==null){
+
+        if (tokenApp.getName() == null) {
             tokenApp.setName(TokenApplicationType.DEFAULT_GEOCONNECT_APPLICATION_NAME);
         }
-        
-        if (tokenApp.getMapitLink()==null){
+
+        if (tokenApp.getMapitLink() == null) {
             logger.warning("mapitLink is missing for tokenApp");
             return null;
         }
-        
+
         // Set time limit minutes
         Integer time_limit_minutes = tokenApp.getTimeLimitMinutes();
-        if (time_limit_minutes == null){
+        if (time_limit_minutes == null) {
             tokenApp.setTimeLimitMinutes(TokenApplicationType.DEFAULT_TOKEN_TIME_LIMIT_MINUTES);
             // (also sets the time limit seconds)
         }
-        
+
         // set md5
         tokenApp.setMd5(this.getMD5Hash(tokenApp.getName()));
-        
-        if ( tokenApp.getId() == null ) {
+
+        if (tokenApp.getId() == null) {
             tokenApp.setCreated();
             em.persist(tokenApp);
             logger.fine("New tokenApp saved");
             return tokenApp;
-	} else {
+        } else {
             tokenApp.setModified();
             logger.fine("Existing tokenApp saved");
-            return em.merge( tokenApp );
-	}
+            return em.merge(tokenApp);
+        }
     }
-	        
-   
-    public TokenApplicationType findByName(String name){
-        if (name == null){
+
+
+    public TokenApplicationType findByName(String name) {
+        if (name == null) {
             return null;
         }
-        try{
+        try {
             return em.createQuery("select m from TokenApplicationType m WHERE m.name=:name", TokenApplicationType.class)
-					.setParameter("name", name)
-					.getSingleResult();
-        } catch ( NoResultException nre ) {
+                    .setParameter("name", name)
+                    .getSingleResult();
+        } catch (NoResultException nre) {
             return null;
-        }    
+        }
     }
-    
-    
-    public List<TokenApplicationType> getAllTokenApplicationTypes(){
+
+
+    public List<TokenApplicationType> getAllTokenApplicationTypes() {
         String qr = "select object(o) from TokenApplicationType order by o.modified desc";
         TypedQuery<TokenApplicationType> query = em.createQuery(qr, TokenApplicationType.class);
         return query.getResultList();
-    }    
-    
+    }
+
 }

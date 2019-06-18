@@ -64,8 +64,12 @@ public class DataverseLocalizedMessage implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         DataverseLocalizedMessage that = (DataverseLocalizedMessage) o;
         return Objects.equals(uuid, that.uuid);
     }

@@ -7,22 +7,19 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.ejb.EJB;
 
+import javax.ejb.EJB;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 
 /**
- *
  * @author gdurand
  */
 @FacesConverter("roleAssigneeConverter")
 public class RoleAssigneeConverter implements Converter {
-    
+
     @EJB
     RoleAssigneeServiceBean roleAssigneeService;
 

@@ -94,10 +94,10 @@ public class MetricsUtilTest {
         assertEquals("Physics", jsonObject.getString("subject"));
         assertEquals(98, jsonObject.getInt("count"));
     }
-    
+
     @Test
     public void testDataversesBySubjectToJson() {
-         List<Object[]> list = new ArrayList<>();
+        List<Object[]> list = new ArrayList<>();
         Object[] obj00 = {"Social Sciences", 24955l};
         Object[] obj01 = {"Medicine, Health and Life Sciences", 2262l};
         Object[] obj02 = {"Earth and Environmental Sciences", 1631l};
@@ -207,7 +207,7 @@ public class MetricsUtilTest {
         List<DatasetsMetrics> metrics = allMetrics();
 
         // when
-        List<DatasetsMetrics> result = MetricsUtil.fillMissingDatasetMonths(metrics,2018);
+        List<DatasetsMetrics> result = MetricsUtil.fillMissingDatasetMonths(metrics, 2018);
 
         // then
         verifyMetricsSize(result, 12);
@@ -268,12 +268,12 @@ public class MetricsUtilTest {
 
     private List<DatasetsMetrics> allMetrics() {
         return Lists.newArrayList(
-                new DatasetsMetrics(2018.0, (double)4, 7L),
-                new DatasetsMetrics(2018.0, (double)5, 1L),
-                new DatasetsMetrics(2018.0, (double)6, 0L),
-                new DatasetsMetrics(2019.0, (double)1, 78L),
-                new DatasetsMetrics(2020.0, (double)11, 9L),
-                new DatasetsMetrics(2020.0, (double)12, 8L)
+                new DatasetsMetrics(2018.0, (double) 4, 7L),
+                new DatasetsMetrics(2018.0, (double) 5, 1L),
+                new DatasetsMetrics(2018.0, (double) 6, 0L),
+                new DatasetsMetrics(2019.0, (double) 1, 78L),
+                new DatasetsMetrics(2020.0, (double) 11, 9L),
+                new DatasetsMetrics(2020.0, (double) 12, 8L)
         );
     }
 }

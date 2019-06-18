@@ -37,7 +37,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 /**
- *
  * @author michael
  */
 public class MoveDataverseCommandTest {
@@ -64,57 +63,57 @@ public class MoveDataverseCommandTest {
         root.setName("root");
         root.setId(1l);
         root.setPublicationDate(new Timestamp(new Date().getTime()));
-        
+
         childA = new Dataverse();
-        childA.setOwner( root );
+        childA.setOwner(root);
         childA.setId(2l);
-        
+
         childB = new Dataverse();
-        childB.setOwner( root );
+        childB.setOwner(root);
         childB.setId(3l);
-        
+
         grandchildAA = new Dataverse();
-        grandchildAA.setOwner( childA );
+        grandchildAA.setOwner(childA);
         grandchildAA.setId(4l);
 
         childC = new Dataverse();
         childC.setOwner(root);
         childC.setId(5l);
-        
+
         grandchildCC = new Dataverse();
         grandchildCC.setOwner(childC);
         grandchildCC.setId(6l);
-        
+
         childD = new Dataverse();
         childD.setOwner(root);
         childD.setId(7l);
-        
+
         grandchildDD = new Dataverse();
         grandchildDD.setOwner(childD);
         grandchildDD.setId(8l);
-        
+
         childE = new Dataverse();
         childE.setOwner(root);
         childE.setId(9l);
-        
+
         grandchildEE = new Dataverse();
         grandchildEE.setOwner(childE);
         grandchildEE.setId(10l);
-                
+
         // Datasets
         datasetC = new Dataset();
         datasetC.setOwner(childC);
         datasetC.setId(1l);
-        
+
         datasetCC = new Dataset();
         datasetCC.setOwner(grandchildCC);
         datasetCC.setId(2l);
-        
+
         // Guestbooks
-        gbA= new Guestbook();
+        gbA = new Guestbook();
         gbA.setId(1l);
         gbA.setDataverse(childC);
-        
+
         List<Guestbook> gbs = new ArrayList<>();
         gbs.add(gbA);
         childC.setGuestbooks(gbs);
@@ -122,7 +121,7 @@ public class MoveDataverseCommandTest {
         grandchildCC.setGuestbookRoot(false);
         datasetC.setGuestbook(gbA);
         datasetCC.setGuestbook(gbA);
-        
+
         List<Guestbook> noneGb = new ArrayList();
         root.setGuestbooks(noneGb);
         childA.setGuestbooks(noneGb);
@@ -131,7 +130,7 @@ public class MoveDataverseCommandTest {
         grandchildCC.setGuestbooks(noneGb);
         childD.setGuestbooks(noneGb);
         grandchildDD.setGuestbooks(noneGb);
-        
+
         // Templates
         List<Template> ts = new ArrayList<>();
         templateA = new Template();
@@ -142,7 +141,7 @@ public class MoveDataverseCommandTest {
         childD.setTemplateRoot(true);
         grandchildDD.setTemplateRoot(false);
         grandchildDD.setDefaultTemplate(templateA);
-        
+
         List<Template> noneT = new ArrayList<>();
         root.setTemplates(noneT);
         childA.setTemplates(noneT);
@@ -151,7 +150,7 @@ public class MoveDataverseCommandTest {
         childC.setTemplates(noneT);
         grandchildCC.setTemplates(noneT);
         grandchildDD.setTemplates(noneT);
-        
+
         // Metadata blocks
         List<MetadataBlock> mbsE = new ArrayList<>();
         List<MetadataBlock> mbsEE = new ArrayList<>();
@@ -168,39 +167,43 @@ public class MoveDataverseCommandTest {
         childE.setMetadataBlockRoot(true);
         grandchildEE.setMetadataBlockRoot(false);
         grandchildEE.setMetadataBlocks(mbsEE);
-            
-        testEngine = new TestDataverseEngine( new TestCommandContext(){
+
+        testEngine = new TestDataverseEngine(new TestCommandContext() {
             @Override
             public DataverseServiceBean dataverses() {
-                return new DataverseServiceBean(){
+                return new DataverseServiceBean() {
                     @Override
                     public Dataverse save(Dataverse dataverse) {
-                            // no-op. The superclass accesses databases which we don't have.
-                            return dataverse;
+                        // no-op. The superclass accesses databases which we don't have.
+                        return dataverse;
                     }
-                    @Override 
+
+                    @Override
                     public Dataverse find(Object pk) {
-                    // fake this for what we need
+                        // fake this for what we need
                         if (pk instanceof Long) {
-                            if ((Long)pk == 10) {
+                            if ((Long) pk == 10) {
                                 return grandchildEE;
                             }
                         }
                         return new Dataverse();
                     }
+
                     @Override
                     public List<Dataverse> findByOwnerId(Long ownerId) {
                         return new ArrayList<>();
                     }
+
                     @Override
                     public List<Long> findAllDataverseDataverseChildren(Long dvId) {
                         // fake this for what we need 
                         List<Long> fakeChildren = new ArrayList<>();
-                        if (dvId == 9){ 
+                        if (dvId == 9) {
                             fakeChildren.add(grandchildEE.getId());
                         }
                         return fakeChildren;
                     }
+
                     @Override
                     public List<Long> findAllDataverseDatasetChildren(Long dvId) {
                         // fake this for what we need
@@ -212,33 +215,36 @@ public class MoveDataverseCommandTest {
                     }
                 };
             }
+
             @Override
-            public IndexServiceBean index(){
-                return new IndexServiceBean(){
+            public IndexServiceBean index() {
+                return new IndexServiceBean() {
                     @Override
-                    public Future<String> indexDataverse(Dataverse dataverse){
+                    public Future<String> indexDataverse(Dataverse dataverse) {
                         return null;
                     }
 
                     @Override
-                    public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp){
-                        return null;
-                    }
-                    @Override
-                    public Future<String> indexDataverseInNewTransaction(Dataverse dataverse){
+                    public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
                         return null;
                     }
 
                     @Override
-                    public Future<String> indexDatasetInNewTransaction(Long id){
+                    public Future<String> indexDataverseInNewTransaction(Dataverse dataverse) {
                         return null;
-                    }                    
+                    }
+
+                    @Override
+                    public Future<String> indexDatasetInNewTransaction(Long id) {
+                        return null;
+                    }
                 };
 
             }
+
             @Override
-            public IndexBatchServiceBean indexBatch(){
-                return new IndexBatchServiceBean(){
+            public IndexBatchServiceBean indexBatch() {
+                return new IndexBatchServiceBean() {
                     @Override
                     public void indexDataverseRecursively(Dataverse dataverse) {
 
@@ -246,6 +252,7 @@ public class MoveDataverseCommandTest {
                 };
 
             }
+
             @Override
             public DatasetServiceBean datasets() {
                 return new DatasetServiceBean() {
@@ -253,11 +260,12 @@ public class MoveDataverseCommandTest {
                     public List<Dataset> findByOwnerId(Long ownerId) {
                         return new ArrayList<>();
                     }
+
                     @Override
                     public Dataset find(Object pk) {
                         // fake this for what we need
                         if (pk instanceof Long) {
-                            if ((Long)pk == 2) {
+                            if ((Long) pk == 2) {
                                 return datasetCC;
                             }
                         }
@@ -265,14 +273,16 @@ public class MoveDataverseCommandTest {
                     }
                 };
             }
+
             @Override
             public EntityManager em() {
                 return new NoOpTestEntityManager();
             }
+
             @Override
             public DataverseLinkingServiceBean dvLinking() {
                 return new DataverseLinkingServiceBean() {
-                    
+
                 };
             }
         });
@@ -280,6 +290,7 @@ public class MoveDataverseCommandTest {
 
     /**
      * Moving ChildB to ChildA
+     *
      * @throws Exception - should not throw an exception
      */
     @Test
@@ -288,31 +299,31 @@ public class MoveDataverseCommandTest {
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
 
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, childB, childA, null));
+                new MoveDataverseCommand(aRequest, childB, childA, null));
 
-        assertEquals( childA, childB.getOwner() );
-        assertEquals( Arrays.asList(root, childA), childB.getOwners() );
-        
+        assertEquals(childA, childB.getOwner());
+        assertEquals(Arrays.asList(root, childA), childB.getOwners());
+
         // move back
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, childB, root, null));
-        
-        assertEquals( root, childB.getOwner() );
-        assertEquals( Arrays.asList(root), childB.getOwners() );
+                new MoveDataverseCommand(aRequest, childB, root, null));
+
+        assertEquals(root, childB.getOwner());
+        assertEquals(Arrays.asList(root), childB.getOwners());
     }
 
     /**
      * Moving ChildA to its child (illegal).
      */
-    @Test( expected=IllegalCommandException.class )
+    @Test(expected = IllegalCommandException.class)
     public void testInvalidMove() throws Exception {
         System.out.println("testInvalidMove");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, childA, grandchildAA, null));
+                new MoveDataverseCommand(aRequest, childA, grandchildAA, null));
         fail();
     }
-    
+
     /**
      * Calling API as a non super user (illegal).
      */
@@ -321,136 +332,136 @@ public class MoveDataverseCommandTest {
         System.out.println("testNotSuperUser");
         DataverseRequest aRequest = new DataverseRequest(nobody, httpRequest);
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, childB, childA, null));
+                new MoveDataverseCommand(aRequest, childB, childA, null));
         fail();
     }
-    
-    @Test( expected=IllegalCommandException.class )
+
+    @Test(expected = IllegalCommandException.class)
     public void testMoveIntoSelf() throws Exception {
         System.out.println("testMoveIntoSelf");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, childB, childB, null));
+                new MoveDataverseCommand(aRequest, childB, childB, null));
         fail();
     }
-    
-    @Test( expected=IllegalCommandException.class )
+
+    @Test(expected = IllegalCommandException.class)
     public void testMoveIntoParent() throws Exception {
         System.out.println("testMoveIntoParent");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, grandchildAA, childA, null));
+                new MoveDataverseCommand(aRequest, grandchildAA, childA, null));
         fail();
     }
-    
+
     @Test
     public void testKeepGuestbook() throws Exception {
         System.out.println("testKeepGuestbook");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, childC, childB, null));
+                new MoveDataverseCommand(aRequest, childC, childB, null));
         assertNotNull(datasetC.getGuestbook());
-        
+
         // move back
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, childC, root, null));
-        assertEquals( root, childC.getOwner() );
+                new MoveDataverseCommand(aRequest, childC, root, null));
+        assertEquals(root, childC.getOwner());
     }
-    
+
     @Test(expected = IllegalCommandException.class)
     public void testRemoveGuestbookWithoutForce() throws Exception {
         System.out.println("testRemoveGuestbookWithoutForce");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, grandchildCC, root, null));
+                new MoveDataverseCommand(aRequest, grandchildCC, root, null));
         fail();
     }
-    
+
     @Test
     public void testRemoveGuestbook() throws Exception {
         System.out.println("testRemoveGuestbook");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, grandchildCC, root, true));
-        assertNull( datasetCC.getGuestbook());
-        
+                new MoveDataverseCommand(aRequest, grandchildCC, root, true));
+        assertNull(datasetCC.getGuestbook());
+
         // move back
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, grandchildCC, childC, true));
-        assertEquals( childC, grandchildCC.getOwner() );
+                new MoveDataverseCommand(aRequest, grandchildCC, childC, true));
+        assertEquals(childC, grandchildCC.getOwner());
     }
-    
+
     @Test
     public void testKeepTemplate() throws Exception {
         System.out.println("testKeepTemplate");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, childD, childB, null));
+                new MoveDataverseCommand(aRequest, childD, childB, null));
         assertNotNull(grandchildDD.getDefaultTemplate());
-        
+
         // move back
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, childD, root, null));
-        assertEquals( root, childD.getOwner() );
-        
+                new MoveDataverseCommand(aRequest, childD, root, null));
+        assertEquals(root, childD.getOwner());
+
     }
-    
+
     @Test(expected = IllegalCommandException.class)
     public void testRemoveTemplateWithoutForce() throws Exception {
         System.out.println("testRemoveTemplateWithoutForce");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, grandchildDD, root, null));
+                new MoveDataverseCommand(aRequest, grandchildDD, root, null));
         fail();
     }
-    
+
     @Test
     public void testRemoveTemplate() throws Exception {
         System.out.println("testRemoveTemplate");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, grandchildDD, root, true));
-        assertNull( grandchildDD.getDefaultTemplate());
-        
+                new MoveDataverseCommand(aRequest, grandchildDD, root, true));
+        assertNull(grandchildDD.getDefaultTemplate());
+
         // move back
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, grandchildDD, childD, true));
-        assertEquals( childD, grandchildDD.getOwner() );
+                new MoveDataverseCommand(aRequest, grandchildDD, childD, true));
+        assertEquals(childD, grandchildDD.getOwner());
     }
-    
+
     @Test
     public void testKeepMetadataBlock() throws Exception {
         System.out.println("testKeepMetadataBlock");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, childE, childB, null));
+                new MoveDataverseCommand(aRequest, childE, childB, null));
         assertEquals(Arrays.asList(mbB), childE.getRootMetadataBlocks());
-        
+
         // move back
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, childE, root, null));
-        assertEquals( root, childE.getOwner() );
+                new MoveDataverseCommand(aRequest, childE, root, null));
+        assertEquals(root, childE.getOwner());
     }
-    
+
     @Test(expected = IllegalCommandException.class)
     public void testRemoveMetadataBlockWithoutForce() throws Exception {
         System.out.println("testRemoveMetadataBlockWithoutForce");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, grandchildEE, root, null));
+                new MoveDataverseCommand(aRequest, grandchildEE, root, null));
         fail();
     }
-    
+
     @Test
     public void testRemoveMetadataBlock() throws Exception {
         System.out.println("testRemoveMetadataBlock");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, grandchildEE, root, true));
+                new MoveDataverseCommand(aRequest, grandchildEE, root, true));
         assertEquals(Arrays.asList(mbA), grandchildEE.getMetadataBlocks());
         // move back
         testEngine.submit(
-                        new MoveDataverseCommand(aRequest, grandchildEE, childE, true));
-        assertEquals( childE, grandchildEE.getOwner() );
+                new MoveDataverseCommand(aRequest, grandchildEE, childE, true));
+        assertEquals(childE, grandchildEE.getOwner());
     }
 }

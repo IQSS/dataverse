@@ -3,16 +3,18 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.logging.Logger;
+
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
 
 public class TabularIT {
 
@@ -200,7 +202,7 @@ public class TabularIT {
             System.out.println(i + "\t" + filename + "\t" + Arrays.toString(justErrors) + "\t" + firstLine);
         }
     }
-    
+
     @Ignore
     @Test
     public void testStata14Multiple() {

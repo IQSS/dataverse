@@ -37,20 +37,20 @@ public class PasswordResetPage implements java.io.Serializable {
     @EJB
     PasswordResetServiceBean passwordResetService;
     @EJB
-    DataverseServiceBean dataverseService;    
+    DataverseServiceBean dataverseService;
     @EJB
     AuthenticationServiceBean authSvc;
     @Inject
     DataverseSession session;
     @EJB
     SettingsServiceBean settingsService;
-    
+
     @EJB
     ActionLogServiceBean actionLogSvc;
 
     @EJB
     PasswordValidatorServiceBean passwordValidatorService;
-    
+
     /**
      * The unique string used to look up a user and continue the password reset
      * process.
@@ -80,9 +80,9 @@ public class PasswordResetPage implements java.io.Serializable {
      * The new password the user enters.
      */
     String newPassword;
-    
+
     PasswordResetData passwordResetData;
-    
+
     private List<String> passwordErrors;
 
     public void init() {
@@ -92,25 +92,25 @@ public class PasswordResetPage implements java.io.Serializable {
             if (passwordResetData != null) {
                 user = passwordResetData.getBuiltinUser();
             } else {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, 
-                        BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetLinkTitle"),
-                        BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetLinkDesc")));
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                                                                    BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetLinkTitle"),
+                                                                                    BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetLinkDesc")));
             }
         }
     }
 
     public String sendPasswordResetLink() {
-            
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "passwordResetRequest")
-                            .setInfo("Email Address: " + emailAddress) );
+
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "passwordResetRequest")
+                                 .setInfo("Email Address: " + emailAddress));
         try {
             PasswordResetInitResponse passwordResetInitResponse = passwordResetService.requestReset(emailAddress);
             PasswordResetData passwordResetData = passwordResetInitResponse.getPasswordResetData();
             if (passwordResetData != null) {
                 BuiltinUser foundUser = passwordResetData.getBuiltinUser();
                 passwordResetUrl = passwordResetInitResponse.getResetUrl();
-                actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "passwordResetSent")
-                            .setInfo("Email Address: " + emailAddress) );
+                actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "passwordResetSent")
+                                         .setInfo("Email Address: " + emailAddress));
             } else {
                 /**
                  * @todo remove "single" when it's no longer necessary. See
@@ -146,18 +146,18 @@ public class PasswordResetPage implements java.io.Serializable {
     //Note: Ported from DataverseUserPage
     public void validateNewPassword(FacesContext context, UIComponent toValidate, Object value) {
         String password = (String) value;
-        if (StringUtils.isBlank(password)){
+        if (StringUtils.isBlank(password)) {
             logger.log(Level.WARNING, BundleUtil.getStringFromBundle("passwdVal.passwdReset.valBlankLog"));
 
             ((UIInput) toValidate).setValid(false);
 
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    BundleUtil.getStringFromBundle("passwdVal.passwdReset.valFacesError"),
-                    BundleUtil.getStringFromBundle("passwdVal.passwdReset.valFacesErrorDesc"));
+                                                    BundleUtil.getStringFromBundle("passwdVal.passwdReset.valFacesError"),
+                                                    BundleUtil.getStringFromBundle("passwdVal.passwdReset.valFacesErrorDesc"));
             context.addMessage(toValidate.getClientId(context), message);
             return;
 
-        } 
+        }
 
         final List<String> errors = passwordValidatorService.validate(password, new Date(), false);
         this.passwordErrors = errors;
@@ -165,19 +165,19 @@ public class PasswordResetPage implements java.io.Serializable {
             ((UIInput) toValidate).setValid(false);
         }
     }
-    
+
     public String getPasswordRequirements() {
         return passwordValidatorService.getGoodPasswordDescription(passwordErrors);
     }
-    
+
     public boolean isAccountUpgrade() {
         return passwordResetData.getReason() == PasswordResetData.Reason.UPGRADE_REQUIRED;
     }
-    
+
     public boolean isPasswordCompliant() {
         return passwordResetData.getReason() == PasswordResetData.Reason.NON_COMPLIANT_PASSWORD;
     }
-    
+
     public String getToken() {
         return token;
     }
@@ -209,10 +209,10 @@ public class PasswordResetPage implements java.io.Serializable {
     public String getNewPassword() {
         return newPassword;
     }
-    
+
     public String getCustomPasswordResetAlertMessage() {
         String customPasswordResetAlertMessage = settingsService.getValueForKey(SettingsServiceBean.Key.PVCustomPasswordResetAlertMessage);
-        if(customPasswordResetAlertMessage != null && !customPasswordResetAlertMessage.isEmpty()){
+        if (customPasswordResetAlertMessage != null && !customPasswordResetAlertMessage.isEmpty()) {
             return customPasswordResetAlertMessage;
         } else {
             String defaultPasswordResetAlertMessage = BundleUtil.getStringFromBundle("passwdReset.newPasswd.details");

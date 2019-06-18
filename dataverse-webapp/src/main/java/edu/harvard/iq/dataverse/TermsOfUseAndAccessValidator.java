@@ -9,24 +9,23 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 /**
- *
  * @author skraffmi
  */
-public class TermsOfUseAndAccessValidator implements ConstraintValidator<ValidateTermsOfUseAndAccess, TermsOfUseAndAccess>  {
+public class TermsOfUseAndAccessValidator implements ConstraintValidator<ValidateTermsOfUseAndAccess, TermsOfUseAndAccess> {
 
     @Override
     public void initialize(ValidateTermsOfUseAndAccess constraintAnnotation) {
-        
+
     }
 
     @Override
     public boolean isValid(TermsOfUseAndAccess value, ConstraintValidatorContext context) {
         //if both null invalid
         //if(value.getTemplate() == null && value.getDatasetVersion() == null) return false;
-        
+
         //if both not null invalid
         //return !(value.getTemplate() != null && value.getDatasetVersion() != null);
         return true;
     }
-  
+
 }

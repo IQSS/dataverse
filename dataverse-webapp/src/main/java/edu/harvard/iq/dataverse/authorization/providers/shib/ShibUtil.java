@@ -5,6 +5,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import edu.harvard.iq.dataverse.EMailValidator;
+
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
 
 public class ShibUtil {
 
@@ -26,7 +27,7 @@ public class ShibUtil {
     /**
      * @todo Make attribute used (i.e. "eppn") configurable:
      * https://github.com/IQSS/dataverse/issues/1422
-     *
+     * <p>
      * OR *maybe* we can rely on people installing Dataverse to configure shibd
      * to always send "eppn" as an attribute, via attribute mappings or what
      * have you.
@@ -74,19 +75,18 @@ public class ShibUtil {
     }
 
     /**
-     * @param firstName First or "given" name.
-     * @param lastName Last or "family" name.
+     * @param firstName   First or "given" name.
+     * @param lastName    Last or "family" name.
      * @param displayName Only used if first and last are not provided.
      * @return ShibUserNameFields contains separate first and last name fields.
-     *
      * @todo Do something more intelligent with displayName. By comparing
      * displayName to the firstName and lastName strings, we should be able to
      * figure out where the proper split is, like this:
-     *
+     * <p>
      * - "Guido|van Rossum"
-     *
+     * <p>
      * - "Philip Seymour|Hoffman"
-     *
+     * <p>
      * Also, we currently compel all Shibboleth IdPs to send us firstName and
      * lastName so the logic to handle null/empty values for firstName and
      * lastName is only currently exercised by the GitHub Identity Provider. As
@@ -297,49 +297,48 @@ public class ShibUtil {
     /**
      * These are the attributes we are getting from the IdP at testshib.org, a
      * dump from https://pdurbin.pagekite.me/Shibboleth.sso/Session
-     *
+     * <p>
      * Miscellaneous
-     *
+     * <p>
      * Session Expiration (barring inactivity): 479 minute(s)
-     *
+     * <p>
      * Client Address: 10.0.2.2
-     *
+     * <p>
      * SSO Protocol: urn:oasis:names:tc:SAML:2.0:protocol
-     *
+     * <p>
      * Identity Provider: https://idp.testshib.org/idp/shibboleth
-     *
+     * <p>
      * Authentication Time: 2014-09-12T17:07:36.137Z
-     *
+     * <p>
      * Authentication Context Class:
      * urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport
-     *
+     * <p>
      * Authentication Context Decl: (none)
-     *
-     *
-     *
+     * <p>
+     * <p>
+     * <p>
      * Attributes
-     *
+     * <p>
      * affiliation: Member@testshib.org;Staff@testshib.org
-     *
+     * <p>
      * cn: Me Myself And I
-     *
+     * <p>
      * entitlement: urn:mace:dir:entitlement:common-lib-terms
-     *
+     * <p>
      * eppn: myself@testshib.org
-     *
+     * <p>
      * givenName: Me Myself
-     *
+     * <p>
      * persistent-id:
      * https://idp.testshib.org/idp/shibboleth!https://pdurbin.pagekite.me/shibboleth!zylzL+NruovU5OOGXDOL576jxfo=
-     *
+     * <p>
      * sn: And I
-     *
+     * <p>
      * telephoneNumber: 555-5555
-     *
+     * <p>
      * uid: myself
-     *
+     * <p>
      * unscoped-affiliation: Member;Staff
-     *
      */
     public static void printAttributes(HttpServletRequest request) {
         List<String> shibValues = new ArrayList<>();

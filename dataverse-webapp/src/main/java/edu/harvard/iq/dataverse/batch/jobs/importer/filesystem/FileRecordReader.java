@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 
 @Dependent
 public class FileRecordReader extends AbstractItemReader {
-    
+
     public static final String SEP = System.getProperty("file.separator");
 
     @Inject
@@ -63,7 +63,7 @@ public class FileRecordReader extends AbstractItemReader {
     @Inject
     @BatchProperty
     String excludes;
-    
+
     @EJB
     DatasetServiceBean datasetServiceBean;
 
@@ -94,10 +94,10 @@ public class FileRecordReader extends AbstractItemReader {
 
     @Override
     public void open(Serializable checkpoint) throws Exception {
- 
+
         directory = new File(System.getProperty("dataverse.files.directory")
-                + SEP + dataset.getAuthority() + SEP + dataset.getIdentifier() + SEP + uploadFolder);
-        getJobLogger().log(Level.INFO, "Reading dataset directory: " + directory.getAbsolutePath() 
+                                     + SEP + dataset.getAuthority() + SEP + dataset.getIdentifier() + SEP + uploadFolder);
+        getJobLogger().log(Level.INFO, "Reading dataset directory: " + directory.getAbsolutePath()
                 + " (excluding: " + excludes + ")");
         if (isValidDirectory(directory)) {
             files = getFiles(directory);
@@ -133,6 +133,7 @@ public class FileRecordReader extends AbstractItemReader {
 
     /**
      * Get the list of files in the directory, minus any in the skip list.
+     *
      * @param directory directory where dataset files can be found
      * @return list of files
      */
@@ -155,6 +156,7 @@ public class FileRecordReader extends AbstractItemReader {
 
     /**
      * Make sure the directory path is truly a directory, exists and we can read it.
+     *
      * @return isValid
      */
     private boolean isValidDirectory(File directory) {
@@ -173,9 +175,9 @@ public class FileRecordReader extends AbstractItemReader {
         }
         return true;
     }
-    
+
     private Logger getJobLogger() {
-        return Logger.getLogger("job-"+jobContext.getInstanceId());
+        return Logger.getLogger("job-" + jobContext.getInstanceId());
     }
-    
+
 }

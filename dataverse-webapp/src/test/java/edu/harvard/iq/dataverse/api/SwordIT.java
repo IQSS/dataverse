@@ -5,28 +5,30 @@ import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import java.util.List;
 import java.util.logging.Logger;
+
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.startsWith;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  * In all these tests you should never see something like "[long string exposing
@@ -109,15 +111,15 @@ public class SwordIT {
         UtilIT.deleteUser(username);
 
     }
-    
+
     @Test
-    public void testSwordAuthUserLastApiUse(){
+    public void testSwordAuthUserLastApiUse() {
         Response createUser = UtilIT.createRandomUser();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apitoken = UtilIT.getApiTokenFromResponse(createUser);
-        
+
         Response serviceDocumentResponse = UtilIT.getServiceDocument(apitoken);
-        
+
         Response getUserAsJsonAgain = UtilIT.getAuthenticatedUser(username, apitoken);
         getUserAsJsonAgain.prettyPrint();
         getUserAsJsonAgain.then().assertThat()
@@ -462,7 +464,6 @@ public class SwordIT {
         assertTrue(listDatasetsAtRootAsSuperuser.body().asString().contains(identifier));
 
 
-
         Response publishShouldFailForContributorViaSword = UtilIT.publishDatasetViaSword(persistentId, apiTokenContributor);
         publishShouldFailForContributorViaSword.prettyPrint();
         publishShouldFailForContributorViaSword.then().assertThat()
@@ -543,15 +544,15 @@ public class SwordIT {
                  */
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("error.summary", equalTo("User " + usernameNoPrivs + " " + usernameNoPrivs + " is not authorized to modify dataverse " + dataverseAlias));
-        
+
         Response thisDataverseContents = UtilIT.showDataverseContents(dataverseAlias, apiTokenNoPrivs);
         thisDataverseContents.prettyPrint();
         thisDataverseContents.then().assertThat()
                 .statusCode(OK.getStatusCode());
         logger.info("Without priviledges we do not expect to find \"" + persistentId + "\" from the persistent ID to be present for random user");
-        assertFalse(thisDataverseContents.body().asString().contains(persistentId.toString()));
+        assertFalse(thisDataverseContents.body().asString().contains(persistentId));
 
-        
+
         Response publishDataset = UtilIT.publishDatasetViaSword(persistentId, apiToken);
         publishDataset.prettyPrint();
         publishDataset.then().assertThat()
@@ -592,8 +593,8 @@ public class SwordIT {
                 .statusCode(OK.getStatusCode());
         logger.info("We expect to find the numeric id of the dataset (\"" + datasetId + "\") in the response.");
         assertTrue(thisDataverseContents.body().asString().contains(datasetId.toString()));
-        
-        
+
+
         /**
          * @todo The "destroy" endpoint should accept a persistentId:
          * https://github.com/IQSS/dataverse/issues/1837
@@ -622,13 +623,13 @@ public class SwordIT {
 
     /**
      * This test requires the root dataverse to have been published already.
-     *
+     * <p>
      * Test the following issues:
-     *
+     * <p>
      * - https://github.com/IQSS/dataverse/issues/1784
-     *
+     * <p>
      * - https://github.com/IQSS/dataverse/issues/2222
-     *
+     * <p>
      * - https://github.com/IQSS/dataverse/issues/2464
      */
     @Test

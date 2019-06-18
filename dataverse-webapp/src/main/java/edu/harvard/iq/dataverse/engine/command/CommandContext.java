@@ -46,7 +46,7 @@ import javax.persistence.EntityManager;
 /**
  * An interface for accessing Dataverse's resources, user info etc. Used by the
  * {@link Command} implementations to perform their intended actions.
- * 
+ *
  * @author michael
  */
 public interface CommandContext {
@@ -58,85 +58,85 @@ public interface CommandContext {
      *
      * @return the entity manager
      */
-    public EntityManager em();
+    EntityManager em();
 
-    public DataverseEngine engine();
+    DataverseEngine engine();
 
-    public DvObjectServiceBean dvObjects();
+    DvObjectServiceBean dvObjects();
 
-    public DatasetServiceBean datasets();
+    DatasetServiceBean datasets();
 
-    public DataverseServiceBean dataverses();
+    DataverseServiceBean dataverses();
 
-    public DataverseRoleServiceBean roles();
+    DataverseRoleServiceBean roles();
 
-    public BuiltinUserServiceBean builtinUsers();
+    BuiltinUserServiceBean builtinUsers();
 
-    public IndexServiceBean index();
-    
-    public IndexBatchServiceBean indexBatch();
+    IndexServiceBean index();
 
-    public SolrIndexServiceBean solrIndex();
+    IndexBatchServiceBean indexBatch();
 
-    public SearchServiceBean search();
-    
-    public IngestServiceBean ingest();
+    SolrIndexServiceBean solrIndex();
 
-    public PermissionServiceBean permissions();
+    SearchServiceBean search();
 
-    public RoleAssigneeServiceBean roleAssignees();
+    IngestServiceBean ingest();
 
-    public DataverseFacetServiceBean facets();
+    PermissionServiceBean permissions();
 
-    public FeaturedDataverseServiceBean featuredDataverses();
+    RoleAssigneeServiceBean roleAssignees();
 
-    public DataFileServiceBean files();
+    DataverseFacetServiceBean facets();
 
-    public TemplateServiceBean templates();
+    FeaturedDataverseServiceBean featuredDataverses();
 
-    public SavedSearchServiceBean savedSearches();
+    DataFileServiceBean files();
 
-    public DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels();
+    TemplateServiceBean templates();
 
-    public DOIEZIdServiceBean doiEZId();
+    SavedSearchServiceBean savedSearches();
 
-    public DOIDataCiteServiceBean doiDataCite();
+    DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels();
 
-    public FakePidProviderServiceBean fakePidProvider();
+    DOIEZIdServiceBean doiEZId();
 
-    public HandlenetServiceBean handleNet();
+    DOIDataCiteServiceBean doiDataCite();
 
-    public GuestbookServiceBean guestbooks();
+    FakePidProviderServiceBean fakePidProvider();
 
-    public GuestbookResponseServiceBean responses();
+    HandlenetServiceBean handleNet();
 
-    public DataverseLinkingServiceBean dvLinking();
+    GuestbookServiceBean guestbooks();
 
-    public DatasetLinkingServiceBean dsLinking();
+    GuestbookResponseServiceBean responses();
 
-    public SettingsServiceBean settings();
+    DataverseLinkingServiceBean dvLinking();
 
-    public ExplicitGroupServiceBean explicitGroups();
+    DatasetLinkingServiceBean dsLinking();
 
-    public GroupServiceBean groups();
+    SettingsServiceBean settings();
 
-    public UserNotificationServiceBean notifications();
+    ExplicitGroupServiceBean explicitGroups();
 
-    public AuthenticationServiceBean authentication();
+    GroupServiceBean groups();
 
-    public SystemConfig systemConfig();
+    UserNotificationServiceBean notifications();
 
-    public PrivateUrlServiceBean privateUrl();
+    AuthenticationServiceBean authentication();
 
-    public DatasetVersionServiceBean datasetVersion();
-    
-    public WorkflowServiceBean workflows();
+    SystemConfig systemConfig();
 
-    public MapLayerMetadataServiceBean mapLayerMetadata();
+    PrivateUrlServiceBean privateUrl();
 
-    public DataCaptureModuleServiceBean dataCaptureModule();
-    
-    public FileDownloadServiceBean fileDownload();
+    DatasetVersionServiceBean datasetVersion();
+
+    WorkflowServiceBean workflows();
+
+    MapLayerMetadataServiceBean mapLayerMetadata();
+
+    DataCaptureModuleServiceBean dataCaptureModule();
+
+    FileDownloadServiceBean fileDownload();
 
     DataverseTextMessageServiceBean dataverseTextMessages();
 }

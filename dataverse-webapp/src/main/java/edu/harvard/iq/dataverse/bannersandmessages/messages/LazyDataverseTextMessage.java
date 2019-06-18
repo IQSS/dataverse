@@ -67,8 +67,8 @@ public class LazyDataverseTextMessage extends LazyDataModel<DataverseTextMessage
 
     private List<DataverseTextMessageDto> sortMessageLanguages(List<DataverseTextMessageDto> dataList) {
         dataList.forEach(dataverseTextMessageDto ->
-                dataverseTextMessageDto.getDataverseLocalizedMessage()
-                        .sort(Comparator.comparing(DataverseLocalizedMessageDto::getLocale)));
+                                 dataverseTextMessageDto.getDataverseLocalizedMessage()
+                                         .sort(Comparator.comparing(DataverseLocalizedMessageDto::getLocale)));
         return dataList;
     }
 

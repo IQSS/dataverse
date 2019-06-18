@@ -7,19 +7,21 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import java.util.ArrayList;
-import java.util.List;
+import org.junit.Test;
+
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.junit.Test;
 
 public class ExternalToolServiceBeanTest {
 
     public ExternalToolServiceBeanTest() {
     }
-    
+
     @Test
     public void testfindAll() {
         DataFile dataFile = new DataFile();
@@ -56,11 +58,11 @@ public class ExternalToolServiceBeanTest {
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()
-                                .add("fileid", "{fileId}")
-                                .build())
+                                     .add("fileid", "{fileId}")
+                                     .build())
                         .add(Json.createObjectBuilder()
-                                .add("key", "{apiToken}")
-                                .build())
+                                     .add("key", "{apiToken}")
+                                     .build())
                         .build())
                 .build());
         job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
@@ -96,8 +98,8 @@ public class ExternalToolServiceBeanTest {
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()
-                                .add("key", "{apiToken}")
-                                .build())
+                                     .add("key", "{apiToken}")
+                                     .build())
                         .build())
                 .build());
         job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
@@ -147,14 +149,14 @@ public class ExternalToolServiceBeanTest {
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()
-                                .add("fileid", "{fileId}")
-                                .build())
+                                     .add("fileid", "{fileId}")
+                                     .build())
                         .add(Json.createObjectBuilder()
-                                .add("key", "{apiToken}")
-                                .build())
+                                     .add("key", "{apiToken}")
+                                     .build())
                         .add(Json.createObjectBuilder()
-                                .add("mode", "mode1")
-                                .build())
+                                     .add("mode", "mode1")
+                                     .build())
                         .build())
                 .build());
         job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
@@ -257,16 +259,16 @@ public class ExternalToolServiceBeanTest {
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
         job.add("toolUrl", "http://awesometool.com");
-        
+
         job.add("toolParameters", Json.createObjectBuilder().add("queryParameters", Json.createArrayBuilder()
                 .add(Json.createObjectBuilder()
-                        .add("fileid", "{fileId}")
-                        .build())
+                             .add("fileid", "{fileId}")
+                             .build())
                 .add(Json.createObjectBuilder()
-                        .add("key", "{apiToken}")
-                        .build())
+                             .add("key", "{apiToken}")
+                             .build())
                 .build())
-            .build());
+                .build());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
         ExternalTool externalTool = null;

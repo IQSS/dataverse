@@ -6,24 +6,22 @@
 
 package edu.harvard.iq.dataverse.ingest.metadataextraction.impl.plugins.fits;
 
-import edu.harvard.iq.dataverse.ingest.metadataextraction.*;
-import edu.harvard.iq.dataverse.ingest.metadataextraction.spi.*;
-
-import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
-import java.util.logging.Logger;
-import java.util.Locale;
-
-import static java.lang.System.*;
-
+import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
+import edu.harvard.iq.dataverse.ingest.metadataextraction.spi.FileMetadataExtractorSpi;
 import org.apache.commons.codec.binary.Hex;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.Locale;
+import java.util.logging.Logger;
+
+import static java.lang.System.out;
+
 /**
- *
  * @author Leonid Andreev
  */
-public class FITSFileMetadataExtractorSpi extends FileMetadataExtractorSpi{
+public class FITSFileMetadataExtractorSpi extends FileMetadataExtractorSpi {
     private static Logger dbgLog = Logger.getLogger(FITSFileMetadataExtractorSpi.class.getPackage().getName());
     private static int FITS_HEADER_SIZE = 10;
     private static String FITS_FILE_SIGNATURE = "SIMPLE  = ";
@@ -32,71 +30,70 @@ public class FITSFileMetadataExtractorSpi extends FileMetadataExtractorSpi{
     private static String[] extensions = {"fits"};
     private static String[] mimeType = {"application/fits", "image/fits"};
 
-    
-    
+
     /**
      *
      */
     public FITSFileMetadataExtractorSpi() {
         super(
-            "HU-IQSS-DVN-project",
-            "0.1",
-            formatNames, extensions, mimeType, FITSFileMetadataExtractorSpi.class.getName());
-        dbgLog.fine(FITSFileMetadataExtractorSpi.class.getName()+" is called");
+                "HU-IQSS-DVN-project",
+                "0.1",
+                formatNames, extensions, mimeType, FITSFileMetadataExtractorSpi.class.getName());
+        dbgLog.fine(FITSFileMetadataExtractorSpi.class.getName() + " is called");
     }
 
-    
+
     public String getDescription(Locale locale) {
         return "HU-IQSS-DVN-project FITS File Ingester";
     }
 
     // (of the canDecodeInput methods below, the BufferedInputStream-based
     // one should be used);
-    
+
     @Override
     public boolean canDecodeInput(Object source) throws IOException {
         out.println("this method is actually called: object");
         if (!(source instanceof BufferedInputStream)) {
             return false;
-        } else if (source instanceof File){
+        } else if (source instanceof File) {
             out.println("source is a File object");
         } else {
             out.println("not File object");
         }
-        if (source  == null){
+        if (source == null) {
             throw new IllegalArgumentException("source == null!");
         }
-        
-        BufferedInputStream stream = (BufferedInputStream)source;
+
+        BufferedInputStream stream = (BufferedInputStream) source;
 
         //
-        
-        return true; 
+
+        return true;
     }
 
 
     @Override
     public boolean canDecodeInput(BufferedInputStream stream) throws IOException {
-        if (stream ==null){
+        if (stream == null) {
             throw new IllegalArgumentException("stream == null!");
         }
 
         byte[] b = new byte[FITS_HEADER_SIZE];
-        
-        if (stream.markSupported()){
+
+        if (stream.markSupported()) {
             stream.mark(0);
         }
         int nbytes = stream.read(b, 0, FITS_HEADER_SIZE);
 
-        if (nbytes == 0){
+        if (nbytes == 0) {
             throw new IOException();
         }
         //printHexDump(b, "hex dump of the byte-array");
-        dbgLog.info("hex dump of the 1st "+FITS_HEADER_SIZE+" bytes:"+
-                (new String (Hex.encodeHex(b))).toUpperCase());
+        dbgLog.info("hex dump of the 1st " + FITS_HEADER_SIZE + " bytes:" +
+                            (new String(Hex.encodeHex(b))).toUpperCase());
 
 
-        if (stream.markSupported()){
+        if (stream.markSupported()) {
             stream.reset();
         }
 
@@ -116,10 +113,10 @@ public class FITSFileMetadataExtractorSpi extends FileMetadataExtractorSpi{
 
     @Override
     public boolean canDecodeInput(File file) throws IOException {
-        if (file ==null){
+        if (file == null) {
             throw new IllegalArgumentException("file == null!");
         }
-        if (!file.canRead()){
+        if (!file.canRead()) {
             throw new IOException("cannot read the input file");
         }
 
@@ -129,7 +126,7 @@ public class FITSFileMetadataExtractorSpi extends FileMetadataExtractorSpi{
 
     @Override
     public FileMetadataExtractor createIngesterInstance(Object ext) throws
-        IOException {
+            IOException {
         return new FITSFileMetadataExtractor(this);
-    }   
+    }
 }

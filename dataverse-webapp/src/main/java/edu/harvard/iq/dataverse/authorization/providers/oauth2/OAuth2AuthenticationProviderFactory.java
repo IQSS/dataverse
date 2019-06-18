@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRo
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GoogleOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
  */
 public class OAuth2AuthenticationProviderFactory implements AuthenticationProviderFactory {
 
-    private static interface ProviderBuilder {
+    private interface ProviderBuilder {
 
         AbstractOAuth2AuthenticationProvider build(AuthenticationProviderRow aRow, Map<String, String> factoryData);
 
@@ -30,7 +31,7 @@ public class OAuth2AuthenticationProviderFactory implements AuthenticationProvid
     public OAuth2AuthenticationProviderFactory() {
         builders.put("github", (row, data) -> readRow(row, new GitHubOAuth2AP(data.get("clientId"), data.get("clientSecret"))));
         builders.put("google", (row, data) -> readRow(row, new GoogleOAuth2AP(data.get("clientId"), data.get("clientSecret"))));
-        builders.put("orcid", (row, data)  -> readRow(row, new OrcidOAuth2AP(data.get("clientId"), data.get("clientSecret"), data.get("userEndpoint"))));
+        builders.put("orcid", (row, data) -> readRow(row, new OrcidOAuth2AP(data.get("clientId"), data.get("clientSecret"), data.get("userEndpoint"))));
     }
 
     @Override
@@ -40,17 +41,17 @@ public class OAuth2AuthenticationProviderFactory implements AuthenticationProvid
 
     @Override
     public AuthenticationProvider buildProvider(AuthenticationProviderRow aRow) throws AuthorizationSetupException {
-        Map<String,String> factoryData = parseFactoryData(aRow.getFactoryData());
+        Map<String, String> factoryData = parseFactoryData(aRow.getFactoryData());
         final String type = factoryData.get("type");
-        if ( type == null ) {
-            throw new AuthorizationSetupException("Authentication provider row with id " + aRow.getId() 
-                    + " describes an OAuth2 provider but does not provide a type. Available types are " + builders.keySet() );
+        if (type == null) {
+            throw new AuthorizationSetupException("Authentication provider row with id " + aRow.getId()
+                                                          + " describes an OAuth2 provider but does not provide a type. Available types are " + builders.keySet());
         }
         ProviderBuilder pb = builders.get(type);
-        if ( pb == null ) {
-            throw new AuthorizationSetupException("Authentication provider row with id " + aRow.getId() 
-                    + " describes an OAuth2 provider of type " + type +". This type is not supported."
-                    + " Available types are " + builders.keySet() );
+        if (pb == null) {
+            throw new AuthorizationSetupException("Authentication provider row with id " + aRow.getId()
+                                                          + " describes an OAuth2 provider of type " + type + ". This type is not supported."
+                                                          + " Available types are " + builders.keySet());
         }
         return pb.build(aRow, factoryData);
     }

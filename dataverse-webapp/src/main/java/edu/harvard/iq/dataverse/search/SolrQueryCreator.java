@@ -67,11 +67,11 @@ public class SolrQueryCreator {
         List<String> fieldValues = Arrays.asList(textSearchField.getFieldValue().split(" "));
 
         fieldValues.forEach(fieldValue ->
-                textQueryBuilder
-                        .append(textQueryBuilder.length() == 0 ? StringUtils.EMPTY : " ")
-                        .append(textSearchField.getName())
-                        .append(":")
-                        .append(fieldValue));
+                                    textQueryBuilder
+                                            .append(textQueryBuilder.length() == 0 ? StringUtils.EMPTY : " ")
+                                            .append(textSearchField.getName())
+                                            .append(":")
+                                            .append(fieldValue));
 
         return textQueryBuilder.toString();
     }

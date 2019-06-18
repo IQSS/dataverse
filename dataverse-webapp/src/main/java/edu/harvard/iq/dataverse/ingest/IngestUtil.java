@@ -20,26 +20,20 @@
 package edu.harvard.iq.dataverse.ingest;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import org.dataverse.unf.UNFUtil;
+import org.dataverse.unf.UnfException;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import org.dataverse.unf.UNFUtil;
-import org.dataverse.unf.UnfException;
 
 /**
  * Various helper methods used by IngestServiceBean.
@@ -54,7 +48,7 @@ public class IngestUtil {
      * Checks a list of new data files for duplicate names, renaming any
      * duplicates to ensure that they are unique.
      *
-     * @param version the dataset version
+     * @param version  the dataset version
      * @param newFiles the list of new data files to add to it
      */
     public static void checkForDuplicateFileNamesFinal(DatasetVersion version, List<DataFile> newFiles) {
@@ -64,7 +58,7 @@ public class IngestUtil {
         Set<String> pathNamesExisting = existingPathNamesAsSet(version);
 
         // Step 2: check each new DataFile against the list of path names, if a duplicate create a new unique file name
-        for (Iterator<DataFile> dfIt = newFiles.iterator(); dfIt.hasNext();) {
+        for (Iterator<DataFile> dfIt = newFiles.iterator(); dfIt.hasNext(); ) {
 
             FileMetadata fm = dfIt.next().getFileMetadata();
 
@@ -78,7 +72,7 @@ public class IngestUtil {
      * until it is unique. Returns the final file name. (i.e., it only modifies
      * the filename, and not the folder name, in order to achieve uniqueness)
      *
-     * @param fileMetadata supplied FileMetadata
+     * @param fileMetadata      supplied FileMetadata
      * @param existingFileNames a set of the already existing pathnames
      * @return a [possibly] new unique filename
      */
@@ -172,7 +166,7 @@ public class IngestUtil {
         // create list of existing path names from all FileMetadata in the DatasetVersion
         // (skipping the one specified fileMetadata, if supplied. That's in order to 
         // be able to call this method 
-        for (Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator(); fmIt.hasNext();) {
+        for (Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator(); fmIt.hasNext(); ) {
             FileMetadata fm = fmIt.next();
             if (fm.getId() != null && (fileMetadata == null || !fm.getId().equals(fileMetadata.getId()))) {
                 String existingName = fm.getLabel();
@@ -206,7 +200,7 @@ public class IngestUtil {
 
     /**
      * @param version The DatasetVersion to mutate, setting or unsetting the
-     * UNF.
+     *                UNF.
      */
     public static void recalculateDatasetVersionUNF(DatasetVersion version) {
         logger.fine("recalculating UNF for dataset version.");
@@ -268,11 +262,7 @@ public class IngestUtil {
         }
         List<String> values = getUnfValuesOfFiles(version);
         logger.fine("UNF values for files from Dataset version " + version.getSemanticVersion() + " from " + version.getDataset().getGlobalIdString() + ": " + values);
-        if (values.size() > 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return values.size() > 0;
 
     }
 }

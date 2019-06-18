@@ -10,6 +10,7 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,7 +22,7 @@ import java.util.logging.Logger;
 
 /**
  * Base class for OAuth2 identity providers, such as GitHub and ORCiD.
- * 
+ *
  * @author michael
  */
 public abstract class AbstractOAuth2AuthenticationProvider implements AuthenticationProvider {
@@ -40,6 +41,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
             username = aUsername;
             emails.addAll(emails);
         }
+
         public ParsedUserResponse(AuthenticatedUserDisplayInfo displayInfo, String userIdInProvider, String username) {
             this(displayInfo, userIdInProvider, username, Collections.emptyList());
         }
@@ -81,7 +83,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
             return "ParsedUserResponse{" + "displayInfo=" + displayInfo + ", userIdInProvider=" + userIdInProvider + ", username=" + username + ", emails=" + emails + '}';
         }
     }
-    
+
     protected String id;
     protected String title;
     protected String subTitle;
@@ -90,42 +92,42 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     protected String baseUserEndpoint;
     protected String redirectUrl;
     protected String scope;
-    
+
     public abstract BaseApi<OAuth20Service> getApiInstance();
-    
-    protected abstract ParsedUserResponse parseUserResponse( String responseBody );
-    
+
+    protected abstract ParsedUserResponse parseUserResponse(String responseBody);
+
     public OAuth20Service getService(String state, String redirectUrl) {
         ServiceBuilder svcBuilder = new ServiceBuilder()
                 .apiKey(getClientId())
                 .apiSecret(getClientSecret())
                 .state(state)
                 .callback(redirectUrl);
-        if ( scope != null ) {        
+        if (scope != null) {
             svcBuilder.scope(scope);
         }
-        return svcBuilder.build( getApiInstance() );
+        return svcBuilder.build(getApiInstance());
     }
-    
+
     public OAuth2UserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception {
         OAuth20Service service = getService(state, redirectUrl);
         OAuth2AccessToken accessToken = service.getAccessToken(code);
 
         final String userEndpoint = getUserEndpoint(accessToken);
-        
+
         final OAuthRequest request = new OAuthRequest(Verb.GET, userEndpoint, service);
         request.addHeader("Authorization", "Bearer " + accessToken.getAccessToken());
         request.setCharset("UTF-8");
-        
+
         final Response response = request.send();
         int responseCode = response.getCode();
-        final String body = response.getBody();        
+        final String body = response.getBody();
         logger.log(Level.FINE, "In getUserRecord. Body: {0}", body);
 
-        if ( responseCode == 200 ) {
+        if (responseCode == 200) {
             final ParsedUserResponse parsed = parseUserResponse(body);
             return new OAuth2UserRecord(getId(), parsed.userIdInProvider,
-                                        parsed.username, 
+                                        parsed.username,
                                         OAuth2TokenData.from(accessToken),
                                         parsed.displayInfo,
                                         parsed.emails);
@@ -150,7 +152,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     public AuthenticationProviderDisplayInfo getInfo() {
         return new AuthenticationProviderDisplayInfo(getId(), getTitle(), getSubTitle());
     }
-    
+
     @Override
     public String getId() {
         return id;
@@ -159,7 +161,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     public String getTitle() {
         return title;
     }
-    
+
     public String getClientId() {
         return clientId;
     }
@@ -168,10 +170,10 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         return clientSecret;
     }
 
-    public String getUserEndpoint( OAuth2AccessToken token ) {
+    public String getUserEndpoint(OAuth2AccessToken token) {
         return baseUserEndpoint;
     }
-    
+
     public String getRedirectUrl() {
         return redirectUrl;
     }
@@ -212,7 +214,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         if (obj == null) {
             return false;
         }
-        if ( ! (obj instanceof AbstractOAuth2AuthenticationProvider)) {
+        if (!(obj instanceof AbstractOAuth2AuthenticationProvider)) {
             return false;
         }
         final AbstractOAuth2AuthenticationProvider other = (AbstractOAuth2AuthenticationProvider) obj;
@@ -236,5 +238,6 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         RANDOM_EMAIL1,
         RANDOM_EMAIL2,
         RANDOM_EMAIL3,
-    };
+    }
+
 }

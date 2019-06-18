@@ -20,7 +20,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
- *
  * @author gdurand
  */
 public class DatasetFieldValueValidator implements ConstraintValidator<ValidateDatasetFieldType, DatasetFieldValue> {
@@ -180,10 +179,10 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         }
 
         if (fieldType.equals(FieldType.EMAIL) && !lengthOnly) {
-            if(value.getDatasetField().isRequired() && value.getValue()==null){
+            if (value.getDatasetField().isRequired() && value.getValue() == null) {
                 return false;
             }
-            
+
             return EMailValidator.isEmailValid(value.getValue(), context);
 
         }

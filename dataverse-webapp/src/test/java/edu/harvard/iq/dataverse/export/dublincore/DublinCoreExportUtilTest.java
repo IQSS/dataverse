@@ -5,51 +5,48 @@
  */
 package edu.harvard.iq.dataverse.export.dublincore;
 
-import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileReader;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import org.primefaces.json.JSONObject;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.OutputStream;
+import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.logging.Logger;
+
+import static org.junit.Assert.assertEquals;
 
 /**
- *
  * @author skraffmi
  */
 public class DublinCoreExportUtilTest {
 
     private static final Logger logger = Logger.getLogger(DublinCoreExportUtilTest.class.getCanonicalName());
-    
+
     public DublinCoreExportUtilTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
     }
-    
+
     @After
     public void tearDown() {
     }
@@ -62,18 +59,18 @@ public class DublinCoreExportUtilTest {
 
         File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.json");
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
-       
+
         JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
         JsonObject obj = jsonReader.readObject();
-        
+
         File dubCoreFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finchDC.xml");
         String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(dubCoreFile.getAbsolutePath()))));
         logger.info(datasetAsDdi);
-        
+
         OutputStream output = new ByteArrayOutputStream();
         DublinCoreExportUtil.datasetJson2dublincore(obj, output, DublinCoreExportUtil.DC_FLAVOR_DCTERMS);
         String result = XmlPrinter.prettyPrintXml(output.toString());
-        
+
         logger.info(result);
         assertEquals(datasetAsDdi, result);
         
@@ -87,5 +84,5 @@ public class DublinCoreExportUtilTest {
         fail("The test case is a prototype.");
 */
     }
-    
+
 }

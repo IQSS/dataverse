@@ -19,34 +19,34 @@
 */
 package edu.harvard.iq.dataverse.ingest;
 
-import edu.harvard.iq.dataverse.DataFile;
 import java.io.Serializable;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
- *
- * This is an experimental, JMS-based implementation of asynchronous 
+ * This is an experimental, JMS-based implementation of asynchronous
  * ingest. (experimental is the key! it may go away!)
- * 
+ *
  * @author Leonid Andreev
  */
 public class IngestMessage implements Serializable {
-    public static final int INGEST_MESAGE_LEVEL_ERROR = 1; 
+    public static final int INGEST_MESAGE_LEVEL_ERROR = 1;
     public static final int INGEST_MESAGE_LEVEL_INFO = 2;
 
-    /** Creates a new instance of IngestMessage */
-    public IngestMessage()  {
+    /**
+     * Creates a new instance of IngestMessage
+     */
+    public IngestMessage() {
         this(INGEST_MESAGE_LEVEL_INFO);
     }
 
-    public IngestMessage(int messageLevel)  {
+    public IngestMessage(int messageLevel) {
         this.messageLevel = messageLevel;
         datafile_ids = new ArrayList<Long>();
     }
-   
+
     private int messageLevel = INGEST_MESAGE_LEVEL_INFO;
-    
+
     private Long datasetId;
     private Long datasetVersionId;
     private String versionNote;
@@ -100,15 +100,15 @@ public class IngestMessage implements Serializable {
     public void setDatasetVersionNumber(String datasetVersionNumber) {
         this.datasetVersionNumber = datasetVersionNumber;
     }
-    
+
     public List<Long> getFileIds() {
-        return datafile_ids; 
+        return datafile_ids;
     }
-    
+
     public void setFileIds(List<Long> file_ids) {
         datafile_ids = file_ids;
     }
-    
+
     public void addFileId(Long file_id) {
         datafile_ids.add(file_id);
     }

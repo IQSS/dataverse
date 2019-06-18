@@ -2,9 +2,10 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
-import static javax.ws.rs.core.Response.Status.OK;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static javax.ws.rs.core.Response.Status.OK;
 
 public class GeoconnectIT {
 
@@ -13,7 +14,7 @@ public class GeoconnectIT {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
 
-//    @Ignore
+    //    @Ignore
     @Test
     public void checkMapLayerMetadatas() {
         Response createUser = UtilIT.createRandomUser();
@@ -26,7 +27,7 @@ public class GeoconnectIT {
                 .statusCode(OK.getStatusCode());
     }
 
-//    @Ignore
+    //    @Ignore
     @Test
     public void checkSingleMapLayerMetadata() {
         Response createUser = UtilIT.createRandomUser();
@@ -39,7 +40,7 @@ public class GeoconnectIT {
                 .statusCode(OK.getStatusCode());
     }
 
-//    @Ignore
+    //    @Ignore
     @Test
     public void deleteMapFromFile() {
         String apiToken = "b5a144d8-b3a3-452b-9543-131360884281";

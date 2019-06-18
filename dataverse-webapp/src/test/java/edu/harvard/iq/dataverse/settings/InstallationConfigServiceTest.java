@@ -11,7 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 /**
  * @author madryk
@@ -24,22 +24,22 @@ public class InstallationConfigServiceTest {
 
     @Mock
     private SettingsServiceBean settingService;
-    
+
     @Mock
     private DataverseServiceBean dataverseService;
-    
-    
+
+
     @Before
     public void setup() {
         Dataverse dataverse = new Dataverse();
         dataverse.setName("rootName");
         when(dataverseService.findRootDataverse()).thenReturn(dataverse);
-        
+
         when(settingService.getValueForKey(Key.SystemEmail)).thenReturn("fake@domain.com");
     }
-    
+
     // -------------------- TESTS --------------------
-    
+
     @Test
     public void getNameOfInstallation() {
         // when
@@ -47,7 +47,7 @@ public class InstallationConfigServiceTest {
         // then
         assertEquals("rootName", installationName);
     }
-    
+
     @Test
     public void getSupportTeamName() {
         // when
@@ -55,7 +55,7 @@ public class InstallationConfigServiceTest {
         // then
         assertEquals("rootName Support", supportTeamName);
     }
-    
+
     @Test
     public void getSupportTeamName_FROM_SYSTEM_EMAIL() {
         // given

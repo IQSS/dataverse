@@ -36,7 +36,6 @@ import java.util.logging.Logger;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
- *
  * @author xyang
  * @author Michael Bar-Sinai
  */
@@ -44,6 +43,7 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 @Named("LoginPage")
 public class LoginPage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(LoginPage.class.getName());
+
     public static class FilledCredential {
         CredentialsAuthenticationProvider.Credential credential;
         String value;
@@ -55,7 +55,7 @@ public class LoginPage implements java.io.Serializable {
             this.credential = credential;
             this.value = value;
         }
-        
+
         public CredentialsAuthenticationProvider.Credential getCredential() {
             return credential;
         }
@@ -71,35 +71,36 @@ public class LoginPage implements java.io.Serializable {
         public void setValue(String value) {
             this.value = value;
         }
-        
+
     }
-    
-    public enum EditMode {LOGIN, SUCCESS, FAILED};
-    
-    @Inject DataverseSession session;    
-    
+
+    public enum EditMode {LOGIN, SUCCESS, FAILED}
+
+    @Inject
+    DataverseSession session;
+
     @EJB
     DataverseServiceBean dataverseService;
-    
+
     @EJB
     BuiltinUserServiceBean dataverseUserService;
-    
+
     @EJB
     UserServiceBean userService;
-    
+
     @EJB
     AuthenticationServiceBean authSvc;
 
     @EJB
     SettingsServiceBean settingsService;
-    
+
     @Inject
     DataverseRequestServiceBean dvRequestService;
-    
+
     private String credentialsAuthProviderId;
-    
+
     private List<FilledCredential> filledCredentials;
-    
+
     private String redirectPage = "dataverse.xhtml";
     private AuthenticationProvider authProvider;
     private int numFailedLoginAttempts;
@@ -109,8 +110,8 @@ public class LoginPage implements java.io.Serializable {
     Long userSum;
 
     public void init() {
-        Iterator<String> credentialsIterator = authSvc.getAuthenticationProviderIdsOfType( CredentialsAuthenticationProvider.class ).iterator();
-        if ( credentialsIterator.hasNext() ) {
+        Iterator<String> credentialsIterator = authSvc.getAuthenticationProviderIdsOfType(CredentialsAuthenticationProvider.class).iterator();
+        if (credentialsIterator.hasNext()) {
             setCredentialsAuthProviderId(credentialsIterator.next());
         }
         resetFilledCredentials(null);
@@ -120,13 +121,13 @@ public class LoginPage implements java.io.Serializable {
 
     public List<AuthenticationProviderDisplayInfo> listCredentialsAuthenticationProviders() {
         List<AuthenticationProviderDisplayInfo> infos = new LinkedList<>();
-        for ( String id : authSvc.getAuthenticationProviderIdsOfType( CredentialsAuthenticationProvider.class ) ) {
+        for (String id : authSvc.getAuthenticationProviderIdsOfType(CredentialsAuthenticationProvider.class)) {
             AuthenticationProvider authenticationProvider = authSvc.getAuthenticationProvider(id);
-            infos.add( authenticationProvider.getInfo());
+            infos.add(authenticationProvider.getInfo());
         }
         return infos;
     }
-    
+
     public List<AuthenticationProviderDisplayInfo> listAuthenticationProviders() {
         List<AuthenticationProviderDisplayInfo> infos = new LinkedList<>();
         for (String id : authSvc.getAuthenticationProviderIdsSorted()) {
@@ -141,40 +142,40 @@ public class LoginPage implements java.io.Serializable {
         }
         return infos;
     }
-   
+
     public CredentialsAuthenticationProvider selectedCredentialsProvider() {
         return (CredentialsAuthenticationProvider) authSvc.getAuthenticationProvider(getCredentialsAuthProviderId());
     }
-    
+
     public boolean validatePassword(String username, String password) {
         return false;
     }
 
     public String login() {
-        
+
         AuthenticationRequest authReq = new AuthenticationRequest();
         List<FilledCredential> filledCredentialsList = getFilledCredentials();
-        if ( filledCredentialsList == null ) {
+        if (filledCredentialsList == null) {
             logger.info("Credential list is null!");
             return null;
         }
-        for ( FilledCredential fc : filledCredentialsList ) {
-            if(fc.getValue()==null || fc.getValue().isEmpty()){
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("login."+fc.getCredential().getKey()));
+        for (FilledCredential fc : filledCredentialsList) {
+            if (fc.getValue() == null || fc.getValue().isEmpty()) {
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("login." + fc.getCredential().getKey()));
             }
             authReq.putCredential(fc.getCredential().getKey(), fc.getValue());
         }
-        authReq.setIpAddress( dvRequestService.getDataverseRequest().getSourceAddress() );
+        authReq.setIpAddress(dvRequestService.getDataverseRequest().getSourceAddress());
         try {
             AuthenticatedUser r = authSvc.getUpdateAuthenticatedUser(credentialsAuthProviderId, authReq);
             logger.log(Level.FINE, "User authenticated: {0}", r.getEmail());
             session.setUser(r);
-            
+
             if ("dataverse.xhtml".equals(redirectPage)) {
                 redirectPage = redirectToRoot();
             }
-            
-            try {            
+
+            try {
                 redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
             } catch (UnsupportedEncodingException ex) {
                 logger.log(Level.SEVERE, null, ex);
@@ -184,13 +185,13 @@ public class LoginPage implements java.io.Serializable {
             logger.log(Level.FINE, "Sending user to = {0}", redirectPage);
             return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";
 
-            
+
         } catch (AuthenticationFailedException ex) {
             numFailedLoginAttempts++;
             op1 = new Long(random.nextInt(10));
             op2 = new Long(random.nextInt(10));
             AuthenticationResponse response = ex.getResponse();
-            switch ( response.getStatus() ) {
+            switch (response.getStatus()) {
                 case FAIL:
                     JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("login.builtin.invalidUsernameEmailOrPassword"));
                     return null;
@@ -201,7 +202,7 @@ public class LoginPage implements java.io.Serializable {
                      * https://github.com/IQSS/dataverse/pull/2922
                      */
                     JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("login.error"));
-                    logger.log( Level.WARNING, "Error logging in: " + response.getMessage(), response.getError() );
+                    logger.log(Level.WARNING, "Error logging in: " + response.getMessage(), response.getError());
                     return null;
                 case BREAKOUT:
                     return response.getMessage();
@@ -210,26 +211,28 @@ public class LoginPage implements java.io.Serializable {
                     return null;
             }
         }
-        
+
     }
-    
-    private String redirectToRoot(){
+
+    private String redirectToRoot() {
         return "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias();
     }
 
     public String getCredentialsAuthProviderId() {
         return credentialsAuthProviderId;
     }
-    
-    public void resetFilledCredentials( AjaxBehaviorEvent event) {
-        if ( selectedCredentialsProvider()==null ) return;
-        
+
+    public void resetFilledCredentials(AjaxBehaviorEvent event) {
+        if (selectedCredentialsProvider() == null) {
+            return;
+        }
+
         filledCredentials = new LinkedList<>();
-        for ( CredentialsAuthenticationProvider.Credential c : selectedCredentialsProvider().getRequiredCredentials() ) {
-            filledCredentials.add( new FilledCredential(c, ""));
+        for (CredentialsAuthenticationProvider.Credential c : selectedCredentialsProvider().getRequiredCredentials()) {
+            filledCredentials.add(new FilledCredential(c, ""));
         }
     }
-    
+
     public void setCredentialsAuthProviderId(String authProviderId) {
         this.credentialsAuthProviderId = authProviderId;
     }
@@ -243,7 +246,7 @@ public class LoginPage implements java.io.Serializable {
     }
 
     public boolean isMultipleProvidersAvailable() {
-        return authSvc.getAuthenticationProviderIds().size()>1;
+        return authSvc.getAuthenticationProviderIds().size() > 1;
     }
 
     public String getRedirectPage() {
@@ -277,11 +280,7 @@ public class LoginPage implements java.io.Serializable {
     }
 
     public boolean isRequireExtraValidation() {
-        if (numFailedLoginAttempts > 2) {
-            return true;
-        } else {
-            return false;
-        }
+        return numFailedLoginAttempts > 2;
     }
 
     public long getOp1() {

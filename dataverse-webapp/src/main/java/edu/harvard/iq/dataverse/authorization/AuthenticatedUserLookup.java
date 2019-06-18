@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.authorization;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import java.io.Serializable;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,6 +13,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import java.io.Serializable;
 
 /**
  * A somewhat glorified key-value pair, persisted in the database.
@@ -25,16 +26,16 @@ import javax.persistence.UniqueConstraint;
  * @author michael
  */
 @Table(
-    uniqueConstraints=
-        @UniqueConstraint(columnNames={"persistentuserid", "authenticationproviderid"})
+        uniqueConstraints =
+        @UniqueConstraint(columnNames = {"persistentuserid", "authenticationproviderid"})
 )
-@NamedQueries( {
-    @NamedQuery( name="AuthenticatedUserLookup.findByAuthPrvID_PersUserId",
-                 query="SELECT au FROM AuthenticatedUserLookup au "
-                         + "WHERE au.authenticationProviderId=:authPrvId "
-                         + "  AND au.persistentUserId=:persUserId "),
-    @NamedQuery( name="AuthenticatedUserLookup.findByAuthUser",
-                 query="SELECT au FROM AuthenticatedUserLookup au WHERE au.authenticatedUser=:authUser")
+@NamedQueries({
+        @NamedQuery(name = "AuthenticatedUserLookup.findByAuthPrvID_PersUserId",
+                query = "SELECT au FROM AuthenticatedUserLookup au "
+                        + "WHERE au.authenticationProviderId=:authPrvId "
+                        + "  AND au.persistentUserId=:persUserId "),
+        @NamedQuery(name = "AuthenticatedUserLookup.findByAuthUser",
+                query = "SELECT au FROM AuthenticatedUserLookup au WHERE au.authenticatedUser=:authUser")
 })
 @Entity
 public class AuthenticatedUserLookup implements Serializable {
@@ -46,12 +47,12 @@ public class AuthenticatedUserLookup implements Serializable {
     private String authenticationProviderId;
     private String persistentUserId;
 
-    @OneToOne( cascade = {CascadeType.PERSIST, CascadeType.MERGE} )
-    @JoinColumn(unique=true, nullable=false)
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(unique = true, nullable = false)
     private AuthenticatedUser authenticatedUser;
 
     public AuthenticatedUserLookup(String persistentUserIdFromIdp, String idp) {
-        this( persistentUserIdFromIdp, idp, null );
+        this(persistentUserIdFromIdp, idp, null);
     }
 
     public AuthenticatedUserLookup(String persistentUserIdFromIdp, String authPrvId, AuthenticatedUser authenticatedUser) {
@@ -63,8 +64,9 @@ public class AuthenticatedUserLookup implements Serializable {
     /**
      * Constructor for JPA
      */
-    public AuthenticatedUserLookup(){}
-    
+    public AuthenticatedUserLookup() {
+    }
+
     public AuthenticatedUser getAuthenticatedUser() {
         return authenticatedUser;
     }
@@ -88,7 +90,6 @@ public class AuthenticatedUserLookup implements Serializable {
     public void setPersistentUserId(String persistentUserId) {
         this.persistentUserId = persistentUserId;
     }
-    
-    
+
 
 }

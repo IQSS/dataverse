@@ -1,13 +1,14 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
-import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
-import java.util.logging.Logger;
-import static junit.framework.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.util.logging.Logger;
+
+import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 

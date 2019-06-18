@@ -17,10 +17,6 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
-import edu.harvard.iq.dataverse.search.SolrField;
-import edu.harvard.iq.dataverse.search.SolrQueryResponse;
-import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.DvObjectSolrDoc;
 import edu.harvard.iq.dataverse.search.FacetCategory;
@@ -32,18 +28,16 @@ import edu.harvard.iq.dataverse.search.IndexUtil;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
+import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
+import edu.harvard.iq.dataverse.search.SolrField;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
+import edu.harvard.iq.dataverse.search.SolrQueryResponse;
+import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Future;
-import java.util.logging.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
+
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.json.Json;
@@ -59,7 +53,15 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import org.apache.solr.client.solrj.SolrServerException;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 @Path("admin/index")
 public class Index extends AbstractApiBean {
@@ -534,7 +536,7 @@ public class Index extends AbstractApiBean {
             }
 
             // <copyField source="*_i" dest="_text_" maxChars="3000"/>
-            sb.append("    <copyField source=\"").append(nameSearchable).append("\" dest=\""+ SearchFields.FULL_TEXT + "\" maxChars=\"3000\"/>\n");
+            sb.append("    <copyField source=\"").append(nameSearchable).append("\" dest=\"" + SearchFields.FULL_TEXT + "\" maxChars=\"3000\"/>\n");
         }
 
         return sb.toString();

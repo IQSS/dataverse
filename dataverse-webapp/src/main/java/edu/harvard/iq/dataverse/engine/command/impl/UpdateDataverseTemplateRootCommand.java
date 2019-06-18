@@ -1,5 +1,3 @@
-
-
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
@@ -11,15 +9,14 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 /**
- *
  * @author skraffmiller
  */
-@RequiredPermissions( Permission.EditDataverse )
+@RequiredPermissions(Permission.EditDataverse)
 public class UpdateDataverseTemplateRootCommand extends AbstractCommand<Dataverse> {
 
-    	private final boolean newValue;
-        private  Dataverse dv;
-        
+    private final boolean newValue;
+    private Dataverse dv;
+
     public UpdateDataverseTemplateRootCommand(boolean newValue, DataverseRequest aRequest, Dataverse anAffectedDataverse) {
         super(aRequest, anAffectedDataverse);
         this.newValue = newValue;
@@ -28,11 +25,11 @@ public class UpdateDataverseTemplateRootCommand extends AbstractCommand<Datavers
 
     @Override
     public Dataverse execute(CommandContext ctxt) throws CommandException {
-        	if ( dv.isTemplateRoot() != newValue ) {
-			dv.setTemplateRoot(newValue);
-			dv = ctxt.dataverses().save(dv);
-		}
-		return dv;
+        if (dv.isTemplateRoot() != newValue) {
+            dv.setTemplateRoot(newValue);
+            dv = ctxt.dataverses().save(dv);
+        }
+        return dv;
     }
-    
+
 }

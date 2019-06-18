@@ -13,8 +13,8 @@ import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 /**
  * Convenience class for implementing the {@link Command} interface.
  *
- * @author michael
  * @param <R> The result type of the command.
+ * @author michael
  */
 public abstract class AbstractCommand<R> implements Command<R> {
 
@@ -60,7 +60,7 @@ public abstract class AbstractCommand<R> implements Command<R> {
         request = aRequest;
         affectedDvObjects = someAffectedDvObjects;
     }
-    
+
     @Override
     public Map<String, DvObject> getAffectedDvObjects() {
         return affectedDvObjects;
@@ -83,10 +83,11 @@ public abstract class AbstractCommand<R> implements Command<R> {
 
     /**
      * Convenience method for getting the user requesting this command.
+     *
      * @return the user issuing the command (via the {@link DataverseRequest}).
      */
     protected User getUser() {
-       return getRequest().getUser();
+        return getRequest().getUser();
     }
 
     @Override

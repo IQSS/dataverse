@@ -1,46 +1,45 @@
 package edu.harvard.iq.dataverse.datavariable;
 
+import edu.harvard.iq.dataverse.FileMetadata;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Index;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.JoinColumn;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
-import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import java.util.HashSet;
 import java.util.Set;
 
-
-import edu.harvard.iq.dataverse.FileMetadata;
-
 @Entity
-@Table(indexes = {@Index(columnList="filemetadata_id")})
+@Table(indexes = {@Index(columnList = "filemetadata_id")})
 public class VarGroup {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String label;
 
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private FileMetadata fileMetadata;
 
     private Set<DataVariable> varsInGroup;
 
 
-    public VarGroup () {
+    public VarGroup() {
         varsInGroup = new HashSet<DataVariable>();
     }
 
-    public VarGroup (FileMetadata fileMetadata) {
+    public VarGroup(FileMetadata fileMetadata) {
         this.fileMetadata = fileMetadata;
     }
 
-    public VarGroup (FileMetadata fileMetadata, Set<DataVariable> varsInGroup ) {
+    public VarGroup(FileMetadata fileMetadata, Set<DataVariable> varsInGroup) {
         this.fileMetadata = fileMetadata;
         this.varsInGroup = varsInGroup;
     }

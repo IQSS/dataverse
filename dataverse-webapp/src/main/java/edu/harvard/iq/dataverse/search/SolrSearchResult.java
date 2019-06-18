@@ -111,20 +111,20 @@ public class SolrSearchResult {
     private String harvestingDescription = null;
     private List<String> fileCategories = null;
     private List<String> tabularDataTags = null;
-    
+
     private String identifierOfDataverse = null;
     private String nameOfDataverse = null;
-    
+
     private String filePersistentId = null;
-    
+
     public String getDvTree() {
         return dvTree;
     }
-    
+
     public void setDvTree(String dvTree) {
         this.dvTree = dvTree;
-    } 
-    
+    }
+
     public boolean isIsInTree() {
         return isInTree;
     }
@@ -132,7 +132,7 @@ public class SolrSearchResult {
     public void setIsInTree(boolean isInTree) {
         this.isInTree = isInTree;
     }
-    
+
     public boolean isHarvested() {
         return harvested;
     }
@@ -140,14 +140,14 @@ public class SolrSearchResult {
     public void setHarvested(boolean harvested) {
         this.harvested = harvested;
     }
-    
+
     public String getHarvestingDescription() {
         //if (this.isHarvested()) {
-            return harvestingDescription;
+        return harvestingDescription;
         //}
         //return null;
     }
-    
+
     public void setHarvestingDescription(String harvestingDescription) {
         this.harvestingDescription = harvestingDescription;
     }
@@ -249,6 +249,7 @@ public class SolrSearchResult {
     public void setDeaccessionedState(boolean deaccessionedState) {
         this.deaccessionedState = deaccessionedState;
     }
+
     /**
      * @todo: used? remove
      */
@@ -274,9 +275,7 @@ public class SolrSearchResult {
         Highlight highlight = highlightsAsMap.get(SearchFields.NAME);
         if (highlight != null) {
             String firstSnippet = highlight.getSnippets().get(0);
-            if (firstSnippet != null) {
-                return firstSnippet;
-            }
+            return firstSnippet;
         }
         return null;
     }
@@ -285,9 +284,7 @@ public class SolrSearchResult {
         Highlight highlight = highlightsAsMap.get(SearchFields.AFFILIATION);
         if (highlight != null) {
             String firstSnippet = highlight.getSnippets().get(0);
-            if (firstSnippet != null) {
-                return firstSnippet;
-            }
+            return firstSnippet;
         }
         return null;
     }
@@ -296,9 +293,7 @@ public class SolrSearchResult {
         Highlight highlight = highlightsAsMap.get(SearchFields.FILE_TYPE_FRIENDLY);
         if (highlight != null) {
             String firstSnippet = highlight.getSnippets().get(0);
-            if (firstSnippet != null) {
-                return firstSnippet;
-            }
+            return firstSnippet;
         }
         return null;
     }
@@ -312,9 +307,7 @@ public class SolrSearchResult {
         Highlight highlight = highlightsAsMap.get("title");
         if (highlight != null) {
             String firstSnippet = highlight.getSnippets().get(0);
-            if (firstSnippet != null) {
-                return firstSnippet;
-            }
+            return firstSnippet;
         }
         return null;
     }
@@ -456,7 +449,7 @@ public class SolrSearchResult {
         String datasetCitation = null;
         String datasetName = null;
         String datasetId = null;
-        String datasetPersistentId = null;  
+        String datasetPersistentId = null;
         String filePersistentId = null;
         String preferredUrl = null;
         String apiUrl = null;
@@ -554,7 +547,7 @@ public class SolrSearchResult {
                 nullSafeJsonBuilder.add("entity_id", this.entityId);
             }
         }
-        
+
         if (showApiUrls) {
             /**
              * @todo We should probably have a metadata_url or api_url concept
@@ -753,19 +746,19 @@ public class SolrSearchResult {
     public List<String> getFileCategories() {
         return fileCategories;
     }
-    
+
     public void setFileCategories(List<String> fileCategories) {
         this.fileCategories = fileCategories;
     }
-    
+
     public List<String> getTabularDataTags() {
         return tabularDataTags;
     }
-    
+
     public void setTabularDataTags(List<String> tabularDataTags) {
         this.tabularDataTags = tabularDataTags;
     }
-    
+
     public Map<String, String> getParent() {
         return parent;
     }
@@ -939,12 +932,9 @@ public class SolrSearchResult {
             String badString = "null";
             if (!identifier.contains(badString)) {
                 if (entity != null && entity instanceof Dataset) {
-                    if (this.isHarvested() && ((Dataset)entity).getHarvestedFrom() != null) {
+                    if (this.isHarvested() && ((Dataset) entity).getHarvestedFrom() != null) {
                         String remoteArchiveUrl = ((Dataset) entity).getRemoteArchiveURL();
-                        if (remoteArchiveUrl != null) {
-                            return remoteArchiveUrl;
-                        }
-                        return null;
+                        return remoteArchiveUrl;
                     }
                 }
                 if (isDraftState()) {
@@ -972,7 +962,7 @@ public class SolrSearchResult {
         return null;
         //if (entity)
     }
-    
+
     public String getFilePersistentId() {
         return filePersistentId;
     }
@@ -980,6 +970,7 @@ public class SolrSearchResult {
     public void setFilePersistentId(String pid) {
         filePersistentId = pid;
     }
+
     public String getFileUrl() {
         // Nothing special needs to be done for harvested file URLs: 
         // simply directing these to the local dataset.xhtml for this dataset
@@ -996,10 +987,10 @@ public class SolrSearchResult {
             }
             return null;
         }*/
-        if (entity.getIdentifier() != null){
+        if (entity.getIdentifier() != null) {
             return "/file.xhtml?persistentId=" + entity.getGlobalIdString();
         }
-        
+
         return "/file.xhtml?fileId=" + entity.getId() + "&datasetVersionId=" + datasetVersionId;
         
         /*
@@ -1009,7 +1000,7 @@ public class SolrSearchResult {
             return "/dataset.xhtml?id=" + parent.get(SearchFields.ID) + "&versionId=" + datasetVersionId;
         }*/
     }
-    
+
     public String getFileDatasetUrl() {
         // See the comment in the getFileUrl() method above. -- L.A. 4.2.4
         /*
@@ -1020,8 +1011,8 @@ public class SolrSearchResult {
             }
             return null;
         }*/
-               
-        String parentDatasetGlobalId = parent.get(PARENT_IDENTIFIER);        
+
+        String parentDatasetGlobalId = parent.get(PARENT_IDENTIFIER);
 
         if (parentDatasetGlobalId != null) {
             return "/dataset.xhtml?persistentId=" + parentDatasetGlobalId;
@@ -1098,15 +1089,15 @@ public class SolrSearchResult {
     public String getIdentifierOfDataverse() {
         return identifierOfDataverse;
     }
-    
+
     public void setIdentifierOfDataverse(String id) {
         this.identifierOfDataverse = id;
     }
-    
+
     public String getNameOfDataverse() {
         return nameOfDataverse;
     }
-    
+
     public void setNameOfDataverse(String id) {
         this.nameOfDataverse = id;
     }

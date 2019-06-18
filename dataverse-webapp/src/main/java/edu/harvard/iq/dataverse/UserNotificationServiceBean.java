@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- *
  * @author xyang
  */
 @Stateless
@@ -32,38 +31,38 @@ public class UserNotificationServiceBean {
     MailServiceBean mailService;
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     public List<UserNotification> findByUser(Long userId) {
         TypedQuery<UserNotification> query = em.createQuery("select un from UserNotification un where un.user.id =:userId order by un.sendDate desc", UserNotification.class);
         query.setParameter("userId", userId);
         return query.getResultList();
     }
-    
+
     public List<UserNotification> findByDvObject(Long dvObjId) {
         TypedQuery<UserNotification> query = em.createQuery("select object(o) from UserNotification as o where o.objectId =:dvObjId order by o.sendDate desc", UserNotification.class);
         query.setParameter("dvObjId", dvObjId);
         return query.getResultList();
     }
-    
+
     public List<UserNotification> findUnreadByUser(Long userId) {
         TypedQuery<UserNotification> query = em.createQuery("select object(o) from UserNotification as o where o.user.id =:userId and o.readNotification = 'false' order by o.sendDate desc", UserNotification.class);
         query.setParameter("userId", userId);
         return query.getResultList();
     }
-    
-    public Long getUnreadNotificationCountByUser(Long userId){
-        if (userId == null){
+
+    public Long getUnreadNotificationCountByUser(Long userId) {
+        if (userId == null) {
             return new Long("0");
         }
         Query query = em.createNativeQuery("select count(id) from usernotification as o where o.user_id = " + userId + " and o.readnotification = 'false';");
-        return (Long) query.getSingleResult();    
+        return (Long) query.getSingleResult();
     }
-    
+
     public List<UserNotification> findUnemailed() {
         TypedQuery<UserNotification> query = em.createQuery("select object(o) from UserNotification as o where o.readNotification = 'false' and o.emailed = 'false'", UserNotification.class);
         return query.getResultList();
     }
-    
+
     public UserNotification find(Object pk) {
         return em.find(UserNotification.class, pk);
     }
@@ -71,19 +70,19 @@ public class UserNotificationServiceBean {
     public UserNotification save(UserNotification userNotification) {
         return em.merge(userNotification);
     }
-    
+
     public void delete(UserNotification userNotification) {
         em.remove(em.merge(userNotification));
-    }    
+    }
 
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId) {
         sendNotification(dataverseUser, sendDate, type, objectId, "");
     }
-    
+
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment) {
         sendNotification(dataverseUser, sendDate, type, objectId, comment, null);
     }
-    
+
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment, AuthenticatedUser requestor) {
         UserNotification userNotification = new UserNotification();
         userNotification.setUser(dataverseUser);
@@ -91,7 +90,7 @@ public class UserNotificationServiceBean {
         userNotification.setType(type);
         userNotification.setObjectId(objectId);
         userNotification.setRequestor(requestor);
-        
+
         if (mailService.sendNotificationEmail(userNotification, comment, requestor)) {
             logger.fine("email was sent");
             userNotification.setEmailed(true);

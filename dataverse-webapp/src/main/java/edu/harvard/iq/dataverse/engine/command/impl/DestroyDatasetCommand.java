@@ -3,12 +3,11 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import static edu.harvard.iq.dataverse.dataset.DatasetUtil.deleteDatasetLogo;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -16,13 +15,16 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.search.IndexResponse;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+
+import static edu.harvard.iq.dataverse.dataset.DatasetUtil.deleteDatasetLogo;
 
 /**
  * Same as {@link DeleteDatasetCommand}, but does not stop if the dataset is
@@ -32,7 +34,7 @@ import edu.harvard.iq.dataverse.GlobalIdServiceBean;
  */
 // Since this is used by DeleteDatasetCommand, must have at least that permission
 // (for released, user is checked for superuser)
-@RequiredPermissions( Permission.DeleteDatasetDraft )
+@RequiredPermissions(Permission.DeleteDatasetDraft)
 public class DestroyDatasetCommand extends AbstractVoidCommand {
 
     private static final Logger logger = Logger.getLogger(DestroyDatasetCommand.class.getCanonicalName());
@@ -48,23 +50,23 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
     protected void executeImpl(CommandContext ctxt) throws CommandException {
 
         // first check if dataset is released, and if so, if user is a superuser
-        if ( doomed.isReleased() && (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser() ) ) {      
+        if (doomed.isReleased() && (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
             throw new PermissionException("Destroy can only be called by superusers.",
-                this,  Collections.singleton(Permission.DeleteDatasetDraft), doomed);                
+                                          this, Collections.singleton(Permission.DeleteDatasetDraft), doomed);
         }
-        
+
         // If there is a dedicated thumbnail DataFile, it needs to be reset
         // explicitly, or we'll get a constraint violation when deleting:
         doomed.setThumbnailFile(null);
         final Dataset managedDoomed = ctxt.em().merge(doomed);
-        
+
         List<String> datasetAndFileSolrIdsToDelete = new ArrayList<>();
         // files need to iterate through and remove 'by hand' to avoid
         // optimistic lock issues... (plus the physical files need to be 
         // deleted too!)
-        
-        Iterator <DataFile> dfIt = doomed.getFiles().iterator();
-        while (dfIt.hasNext()){
+
+        Iterator<DataFile> dfIt = doomed.getFiles().iterator();
+        while (dfIt.hasNext()) {
             DataFile df = dfIt.next();
             // Gather potential Solr IDs of files. As of this writing deaccessioned files are never indexed.
             String solrIdOfPublishedFile = IndexServiceBean.solrDocIdentifierFile + df.getId();
@@ -74,11 +76,11 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             ctxt.engine().submit(new DeleteDataFileCommand(df, getRequest(), true));
             dfIt.remove();
         }
-        
+
         //also, lets delete the uploaded thumbnails!
         deleteDatasetLogo(doomed);
-        
-        
+
+
         // ASSIGNMENTS
         for (RoleAssignment ra : ctxt.roles().directRoleAssignments(doomed)) {
             ctxt.em().remove(ra);
@@ -86,11 +88,11 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         // ROLES
         for (DataverseRole ra : ctxt.roles().findByOwnerId(doomed.getId())) {
             ctxt.em().remove(ra);
-        }   
-        
+        }
+
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
-        try{
-            if(idServiceBean.alreadyExists(doomed)){
+        try {
+            if (idServiceBean.alreadyExists(doomed)) {
                 idServiceBean.deleteIdentifier(doomed);
                 for (DataFile df : doomed.getFiles()) {
                     idServiceBean.deleteIdentifier(df);

@@ -45,7 +45,7 @@ public class BannerErrorHandler {
             addErrorMessageImageWasMissing(faceContext, localizedBannerIndex);
 
         } else if (ImageValidator.isImageResolutionTooBig(dlb.getImage(),
-                bannerLimits.getMaxWidth(), bannerLimits.getMaxHeight())) {
+                                                          bannerLimits.getMaxWidth(), bannerLimits.getMaxHeight())) {
             addErrorMessageResolutionTooBigError(faceContext, localizedBannerIndex);
         }
 
@@ -71,40 +71,40 @@ public class BannerErrorHandler {
     private void addErrorMessageResolutionTooBigError(FacesContext faceContext, int index) {
 
         faceContext.addMessage("edit-text-messages-form:repeater:" + index + ":upload",
-                new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("messages.error"),
-                        BundleUtil.getStringFromBundle("dataversemessages.banners.resolutionError")));
+                               new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("messages.error"),
+                                                BundleUtil.getStringFromBundle("dataversemessages.banners.resolutionError")));
 
     }
 
     private void addErrorMessageLinkWasMissing(FacesContext faceContext, int index) {
 
         faceContext.addMessage("edit-text-messages-form:repeater:" + index + ":message-locale",
-                new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("messages.error"),
-                        BundleUtil.getStringFromBundle("dataversemessages.banners.linkError")));
+                               new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("messages.error"),
+                                                BundleUtil.getStringFromBundle("dataversemessages.banners.linkError")));
 
     }
 
     private void addErrorMessageWrongExtension(FacesContext faceContext, int index) {
 
         faceContext.addMessage("edit-text-messages-form:repeater:" + index + ":first-file-warning",
-                new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("messages.error"),
-                        BundleUtil.getStringFromBundle("dataversemessages.banners.extensionError")));
+                               new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("messages.error"),
+                                                BundleUtil.getStringFromBundle("dataversemessages.banners.extensionError")));
 
     }
 
     private void addErrorMessageSizeTooBigError(FacesContext faceContext, int index) {
 
         faceContext.addMessage("edit-text-messages-form:repeater:" + index + ":second-file-warning",
-                new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("messages.error"),
-                        BundleUtil.getStringFromBundle("dataversemessages.banners.sizeError")));
+                               new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("messages.error"),
+                                                BundleUtil.getStringFromBundle("dataversemessages.banners.sizeError")));
 
     }
 
     private void addErrorMessageImageWasMissing(FacesContext faceContext, int index) {
 
         faceContext.addMessage("edit-text-messages-form:repeater:" + index + ":upload",
-                new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("messages.error"),
-                        BundleUtil.getStringFromBundle("dataversemessages.banners.missingError")));
+                               new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("messages.error"),
+                                                BundleUtil.getStringFromBundle("dataversemessages.banners.missingError")));
 
     }
 
@@ -114,15 +114,15 @@ public class BannerErrorHandler {
         }
         if (toTime.before(fromTime)) {
             faceContext.addMessage("edit-text-messages-form:message-fromtime",
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("messages.error"),
-                            BundleUtil.getStringFromBundle("textmessages.enddate.valid")));
+                                   new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("messages.error"),
+                                                    BundleUtil.getStringFromBundle("textmessages.enddate.valid")));
         }
         LocalDateTime now = DataverseClock.now();
 
         if (!toTime.after(DateUtil.convertToDate(now))) {
             faceContext.addMessage("edit-text-messages-form:message-totime",
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("messages.error"),
-                            BundleUtil.getStringFromBundle("textmessages.enddate.future")));
+                                   new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("messages.error"),
+                                                    BundleUtil.getStringFromBundle("textmessages.enddate.future")));
         }
     }
 }

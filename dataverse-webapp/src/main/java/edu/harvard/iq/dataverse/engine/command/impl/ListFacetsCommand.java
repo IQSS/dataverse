@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import java.util.Set;
 
 /**
  * List the search facets {@link DataverseFacet} of a {@link Dataverse}.
+ *
  * @author michaelsuo
  */
 // no annotations here, since permissions are dynamically decided
@@ -34,7 +36,7 @@ public class ListFacetsCommand extends AbstractCommand<List<DataverseFacet>> {
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         return Collections.singletonMap("",
-                dv.isReleased() ? Collections.<Permission>emptySet()
-                : Collections.singleton(Permission.ViewUnpublishedDataverse));
+                                        dv.isReleased() ? Collections.emptySet()
+                                                : Collections.singleton(Permission.ViewUnpublishedDataverse));
     }
 }

@@ -2,17 +2,20 @@ package edu.harvard.iq.dataverse;
 
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Test that the DataFileServiceBean classifies DataFiles correctly.
+ *
  * @author bencomp
  */
 public class DataFileServiceBeanTest {
-    
+
     public DataFileServiceBeanTest() {
     }
-    
+
     /**
      * A DataFile without content type.
      */
@@ -25,8 +28,8 @@ public class DataFileServiceBeanTest {
      * The Bean Under Test.
      */
     private DataFileServiceBean dataFileServiceBean;
-            
-    
+
+
     @Before
     public void setUp() {
         fileWoContentType = createDataFile(null);
@@ -37,6 +40,7 @@ public class DataFileServiceBeanTest {
     /**
      * Expect that {@code null}, a DataFile without content type and a DataFile
      * with bogus content type are not astro files.
+     *
      * @throws Exception when the test is in error.
      */
     @Test
@@ -49,6 +53,7 @@ public class DataFileServiceBeanTest {
     /**
      * Expect that {@code null}, a DataFile without content type and a DataFile
      * with bogus content type are not audio files.
+     *
      * @throws Exception when the test is in error.
      */
     @Test
@@ -61,6 +66,7 @@ public class DataFileServiceBeanTest {
     /**
      * Expect that {@code null}, a DataFile without content type and a DataFile
      * with bogus content type are not code files.
+     *
      * @throws Exception when the test is in error.
      */
     @Test
@@ -73,6 +79,7 @@ public class DataFileServiceBeanTest {
     /**
      * Expect that {@code null}, a DataFile without content type and a DataFile
      * with bogus content type are not document files.
+     *
      * @throws Exception when the test is in error.
      */
     @Test
@@ -85,6 +92,7 @@ public class DataFileServiceBeanTest {
     /**
      * Expect that {@code null}, a DataFile without content type and a DataFile
      * with bogus content type are not geo files.
+     *
      * @throws Exception when the test is in error.
      */
     @Test
@@ -97,6 +105,7 @@ public class DataFileServiceBeanTest {
     /**
      * Expect that {@code null}, a DataFile without content type and a DataFile
      * with bogus content type are not image files.
+     *
      * @throws Exception when the test is in error.
      */
     @Test
@@ -109,6 +118,7 @@ public class DataFileServiceBeanTest {
     /**
      * Expect that {@code null}, a DataFile without content type and a DataFile
      * with bogus content type are not network files.
+     *
      * @throws Exception when the test is in error.
      */
     @Test
@@ -121,6 +131,7 @@ public class DataFileServiceBeanTest {
     /**
      * Expect that {@code null}, a DataFile without content type and a DataFile
      * with bogus content type are not tabular files.
+     *
      * @throws Exception when the test is in error.
      */
     @Test
@@ -133,6 +144,7 @@ public class DataFileServiceBeanTest {
     /**
      * Expect that {@code null}, a DataFile without content type and a DataFile
      * with bogus content type are not video files.
+     *
      * @throws Exception when the test is in error.
      */
     @Test
@@ -145,6 +157,7 @@ public class DataFileServiceBeanTest {
     /**
      * Expect that {@code null}, a DataFile without content type and a DataFile
      * with bogus content type are not SPSS portable files.
+     *
      * @throws Exception when the test is in error.
      */
     @Test
@@ -157,6 +170,7 @@ public class DataFileServiceBeanTest {
     /**
      * Expect that {@code null}, a DataFile without content type and a DataFile
      * with bogus content type are not SPSS .sav files.
+     *
      * @throws Exception when the test is in error.
      */
     @Test
@@ -170,18 +184,18 @@ public class DataFileServiceBeanTest {
      * Expect that {@code null}, a DataFile without content type and a DataFile
      * with bogus content type are not files that thumbnails can be created for.
      * @throws Exception when the test is in error.
-     (this method has been removed from datafileservicebean)
-    @Test
-    public void testIsThumbnailSupportedForSize() throws Exception {
-        assertFalse(dataFileServiceBean.isThumbnailAvailableForSize(null));
-        assertFalse(dataFileServiceBean.isThumbnailAvailableForSize(fileWoContentType));
-        assertFalse(dataFileServiceBean.isThumbnailAvailableForSize(fileWithBogusContentType));
-    }
-    */
-    
+    (this method has been removed from datafileservicebean)
+     @Test public void testIsThumbnailSupportedForSize() throws Exception {
+     assertFalse(dataFileServiceBean.isThumbnailAvailableForSize(null));
+     assertFalse(dataFileServiceBean.isThumbnailAvailableForSize(fileWoContentType));
+     assertFalse(dataFileServiceBean.isThumbnailAvailableForSize(fileWithBogusContentType));
+     }
+     */
+
     /**
      * Expect that files without content type or with a bogus content type are
      * classed as "other". Note that the file classes are not coded as constants!
+     *
      * @throws Exception when the test is in error.
      */
     @Test
@@ -189,14 +203,14 @@ public class DataFileServiceBeanTest {
         assertEquals("other", dataFileServiceBean.getFileClass(fileWoContentType));
         assertEquals("other", dataFileServiceBean.getFileClass(fileWithBogusContentType));
     }
-    
+
     /**
      * Create a DataFile with properties.
-     * @param contentType the content media type as a string
-     * @param storageIdentifier an identifier that signifies the location of the
-     * file in storage. Must not be null, but may be empty.
-     * @return a DataFile with the given content type and storage identifier
      *
+     * @param contentType       the content media type as a string
+     * @param storageIdentifier an identifier that signifies the location of the
+     *                          file in storage. Must not be null, but may be empty.
+     * @return a DataFile with the given content type and storage identifier
      * @see #createDataFile(java.lang.String)
      */
     private DataFile createDataFile(String contentType, String storageIdentifier) {
@@ -207,9 +221,9 @@ public class DataFileServiceBeanTest {
 
     /**
      * Create a DataFile with the given content type and empty storage identifier.
+     *
      * @param contentType the content type of the DataFile (may be {@code null})
      * @return a DataFile with content type and empty storage identifier
-     *
      * @see #createDataFile(java.lang.String, java.lang.String)
      */
     private DataFile createDataFile(String contentType) {

@@ -1,11 +1,7 @@
 package edu.harvard.iq.dataverse.workflow;
 
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -16,24 +12,30 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
- * A list of steps that can be executed with a given context. 
+ * A list of steps that can be executed with a given context.
+ *
  * @author michael
  */
 @NamedQueries({
-    @NamedQuery(name="Workflow.listAll", query="Select w from Workflow w"),
-    @NamedQuery(name="Workflow.deleteById", query="Delete from Workflow w WHERE w.id=:id")
+        @NamedQuery(name = "Workflow.listAll", query = "Select w from Workflow w"),
+        @NamedQuery(name = "Workflow.deleteById", query = "Delete from Workflow w WHERE w.id=:id")
 })
 @Entity
 public class Workflow implements Serializable {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     private String name;
-    
+
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @OrderColumn(name = "index")
     List<WorkflowStepData> steps;
@@ -60,14 +62,14 @@ public class Workflow implements Serializable {
 
     public void setSteps(List<WorkflowStepData> steps) {
         this.steps = steps;
-        for ( WorkflowStepData s : steps ) {
+        for (WorkflowStepData s : steps) {
             s.setParent(this);
         }
     }
 
     Map<String, String> getRequiredSettings() {
         Map<String, String> settings = new HashMap<String, String>();
-        for(WorkflowStepData step: steps) {
+        for (WorkflowStepData step : steps) {
             settings.putAll(step.getStepSettings());
         }
         return settings;
@@ -88,7 +90,7 @@ public class Workflow implements Serializable {
         if (obj == null) {
             return false;
         }
-        if ( !(obj instanceof Workflow) ) {
+        if (!(obj instanceof Workflow)) {
             return false;
         }
         final Workflow other = (Workflow) obj;
@@ -100,6 +102,6 @@ public class Workflow implements Serializable {
         }
         return Objects.deepEquals(this.steps, other.steps);
     }
-    
-    
+
+
 }

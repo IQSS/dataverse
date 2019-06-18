@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl;
 
-import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
-import java.io.Serializable;
+import edu.harvard.iq.dataverse.authorization.groups.Group;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -11,25 +11,26 @@ import javax.persistence.Index;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 /**
  * Convenience base class for implementing groups that apply to the entire Dataverse
  * installation, and are persisted to the DB.
- * 
+ *
  * @author michael
  */
 @NamedQueries({
-    @NamedQuery( name="PersistedGlobalGroup.persistedGroupAlias",
-                query="SELECT g FROM PersistedGlobalGroup g WHERE g.persistedGroupAlias=:persistedGroupAlias" )
+        @NamedQuery(name = "PersistedGlobalGroup.persistedGroupAlias",
+                query = "SELECT g FROM PersistedGlobalGroup g WHERE g.persistedGroupAlias=:persistedGroupAlias")
 })
 @Entity
-@Table(indexes = {@Index(columnList="dtype")})
+@Table(indexes = {@Index(columnList = "dtype")})
 public abstract class PersistedGlobalGroup implements Group, Serializable {
-    
+
     @Id
     @GeneratedValue
     private Long id;
-    
+
     /**
      * A unique alias within the Dataverse system installation.
      */
@@ -45,7 +46,7 @@ public abstract class PersistedGlobalGroup implements Group, Serializable {
     public String getPersistedGroupAlias() {
         return persistedGroupAlias;
     }
-    
+
     public Long getId() {
         return id;
     }
@@ -53,7 +54,7 @@ public abstract class PersistedGlobalGroup implements Group, Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     @Override
     public String getAlias() {
         return getGroupProvider().getGroupProviderAlias() + Group.PATH_SEPARATOR + persistedGroupAlias;
@@ -62,7 +63,7 @@ public abstract class PersistedGlobalGroup implements Group, Serializable {
     public void setDisplayName(String name) {
         this.displayName = name;
     }
-    
+
     @Override
     public String getDisplayName() {
         return displayName;
@@ -86,12 +87,12 @@ public abstract class PersistedGlobalGroup implements Group, Serializable {
     public String getIdentifier() {
         return Group.IDENTIFIER_PREFIX + getAlias();
     }
-    
-    
+
+
     @Override
     public String toString() {
         return "[PersistedGlobalGroup " + getIdentifier() + "]";
     }
-    
+
 
 }

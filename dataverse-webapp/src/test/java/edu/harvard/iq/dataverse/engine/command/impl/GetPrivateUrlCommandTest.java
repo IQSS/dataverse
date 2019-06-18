@@ -7,11 +7,11 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
-import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertNull;
 
 public class GetPrivateUrlCommandTest {
 

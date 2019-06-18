@@ -6,10 +6,6 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.util.List;
-import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.inject.Inject;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.ServiceDocument;
 import org.swordapp.server.ServiceDocumentManager;
@@ -20,6 +16,11 @@ import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 import org.swordapp.server.SwordWorkspace;
 import org.swordapp.server.UriRegistry;
+
+import javax.ejb.EJB;
+import javax.inject.Inject;
+import java.util.List;
+import java.util.logging.Logger;
 
 public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
 

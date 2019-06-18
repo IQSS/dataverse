@@ -70,10 +70,10 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     @EJB
     OAuth2TokenDataServiceBean oauth2Tokens;
-    
+
     @EJB
     InstallationConfigService installationConfigService;
-    
+
     @Inject
     DataverseSession session;
 
@@ -87,7 +87,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     String selectedEmail;
 
     String password;
-    
+
     String installationName;
 
     boolean authenticationFailed = false;
@@ -99,11 +99,11 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
      * initialization fails.
      *
      * @throws IOException If the redirection fails to be sent. Should not
-     * happen*
-     *
-     *
-     *
-     * * Famous last sentences etc.
+     *                     happen*
+     *                     <p>
+     *                     <p>
+     *                     <p>
+     *                     * Famous last sentences etc.
      */
     public void init() throws IOException {
         logger.fine("init called");
@@ -149,8 +149,8 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
                 OAuth2TokenData accessToken = new OAuth2TokenData();
                 accessToken.setAccessToken("qwe-addssd-iiiiie");
                 setNewUser(new OAuth2UserRecord(authProviderId, eppn, randomUsername, accessToken,
-                        new AuthenticatedUserDisplayInfo(firstName, lastName, email, "myAffiliation", "myPosition"),
-                        extraEmails));
+                                                new AuthenticatedUserDisplayInfo(firstName, lastName, email, "myAffiliation", "myPosition"),
+                                                extraEmails));
             }
         }
 
@@ -179,31 +179,31 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         setSelectedEmail(emailToSuggest);
 
         authProvider = authenticationSvc.getAuthenticationProvider(newUser.getServiceId());
-        
+
         installationName = installationConfigService.getNameOfInstallation();
     }
 
     public String createNewAccount() {
 
         AuthenticatedUserDisplayInfo newAud = new AuthenticatedUserDisplayInfo(newUser.getDisplayInfo().getFirstName(),
-                newUser.getDisplayInfo().getLastName(),
-                getSelectedEmail(),
-                newUser.getDisplayInfo().getAffiliation(),
-                newUser.getDisplayInfo().getPosition());
+                                                                               newUser.getDisplayInfo().getLastName(),
+                                                                               getSelectedEmail(),
+                                                                               newUser.getDisplayInfo().getAffiliation(),
+                                                                               newUser.getDisplayInfo().getPosition());
         final AuthenticatedUser user = authenticationSvc.createAuthenticatedUser(newUser.getUserRecordIdentifier(), getUsername(), newAud, true);
         session.setUser(user);
         /**
          * @todo Move this to AuthenticationServiceBean.createAuthenticatedUser
          */
         userNotificationService.sendNotification(user,
-                new Timestamp(new Date().getTime()),
-                UserNotification.Type.CREATEACC, null);
-        
+                                                 new Timestamp(new Date().getTime()),
+                                                 UserNotification.Type.CREATEACC, null);
+
         final OAuth2TokenData tokenData = newUser.getTokenData();
-                tokenData.setUser(user);
-                tokenData.setOauthProviderId(newUser.getServiceId());
-                oauth2Tokens.store(tokenData);
-        
+        tokenData.setUser(user);
+        tokenData.setOauthProviderId(newUser.getServiceId());
+        oauth2Tokens.store(tokenData);
+
         return "/dataverse.xhtml?faces-redirect=true";
     }
 

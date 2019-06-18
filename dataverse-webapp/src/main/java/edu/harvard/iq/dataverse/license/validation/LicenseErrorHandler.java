@@ -30,7 +30,7 @@ public class LicenseErrorHandler implements Validator {
         if (!urlValidator.isValid(value.toString())) {
 
             FacesMessage errorMessage = new FacesMessage(StringUtils.EMPTY,
-                    BundleUtil.getStringFromBundle("dashboard.license.invalidURL"));
+                                                         BundleUtil.getStringFromBundle("dashboard.license.invalidURL"));
             errorMessage.setSeverity(FacesMessage.SEVERITY_ERROR);
 
             throw new ValidatorException(errorMessage);

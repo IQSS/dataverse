@@ -41,11 +41,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author Leonid Andreev
- *
+ * <p>
  * Draft/prototype DDI export service for DVN 4.0
- *
+ * <p>
  * Note that this is definitely a "prototype". One of the stated dev. goals of
  * 4.0 is to have export/import services that utilize application-defined
  * metadata schemas and cross-schema mappings. But since this new architecture
@@ -125,7 +124,7 @@ public class DDIExportServiceBean {
     }
 
     /*
-     * Workhorse methods, that do all the work: 
+     * Workhorse methods, that do all the work:
      */
     private void export(String objectTag, Long objectId, OutputStream os, String partialExclude, String partialInclude) {
 
@@ -141,13 +140,13 @@ public class DDIExportServiceBean {
          */
         Set<String> includedFieldSet = null;
         Set<String> excludedFieldSet = null;
-        
+
         DatasetVersion releasedVersion = null;
 
         if (partialExclude != null && !"".equals(partialExclude)) {
             excludedFieldSet = new HashSet<String>();
 
-            String splitTokens[] = partialExclude.split(",");
+            String[] splitTokens = partialExclude.split(",");
 
             for (int i = 0; i < splitTokens.length; i++) {
                 if (splitTokens[i] != null && !splitTokens[i].equals("")) {
@@ -159,7 +158,7 @@ public class DDIExportServiceBean {
         if (partialInclude != null && !"".equals(partialInclude)) {
             includedFieldSet = new HashSet<String>();
 
-            String splitTokens[] = partialInclude.split(",");
+            String[] splitTokens = partialInclude.split(",");
 
             for (int i = 0; i < splitTokens.length; i++) {
                 if (splitTokens[i] != null && !splitTokens[i].equals("")) {
@@ -189,7 +188,7 @@ public class DDIExportServiceBean {
             if (dataObject == null) {
                 throw new IllegalArgumentException("Metadata Export: Invalid dataset id supplied.");
             }
-            releasedVersion = ((Dataset)dataObject).getReleasedVersion();
+            releasedVersion = ((Dataset) dataObject).getReleasedVersion();
             if (releasedVersion == null) {
                 throw new IllegalArgumentException("Metadata Export: Dataset not released.");
             }
@@ -235,7 +234,7 @@ public class DDIExportServiceBean {
         if (dv.isOrderedCategorical()) {
             writeAttribute(xmlw, "nature", "ordinal");
         }
-        
+
         if (dv.getInterval() != null) {
             String interval = dv.getIntervalLabel();
             if (interval != null) {
@@ -308,9 +307,9 @@ public class DDIExportServiceBean {
         if (checkField("universe", excludedFieldSet, includedFieldSet)) {
             FileMetadata latestFm = dv.getDataTable().getDataFile().getFileMetadata();
 
-            List<VariableMetadata> vmList = variableService.findByDataVarIdAndFileMetaId(dv.getId(),latestFm.getId());
+            List<VariableMetadata> vmList = variableService.findByDataVarIdAndFileMetaId(dv.getId(), latestFm.getId());
 
-            if (vmList != null && vmList.size() >0) {
+            if (vmList != null && vmList.size() > 0) {
                 VariableMetadata vm = vmList.get(0);
                 if (!StringUtilisEmpty(vm.getUniverse())) {
                     xmlw.writeStartElement("universe");
@@ -402,17 +401,17 @@ public class DDIExportServiceBean {
     }
 
     private void createDataFileDDI(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, DataFile df) throws XMLStreamException {
-        /* This method will create both the <fileDscr> and <dataDscr><var> 
-         * portions of the DDI that describe the tabular data contained in 
-         * the file, the file-, datatable- and variable-level metadata; or 
-         * a subset of the above, as defined by the "include" and "exclude" 
-         * parameters. 
+        /* This method will create both the <fileDscr> and <dataDscr><var>
+         * portions of the DDI that describe the tabular data contained in
+         * the file, the file-, datatable- and variable-level metadata; or
+         * a subset of the above, as defined by the "include" and "exclude"
+         * parameters.
          */
 
-        /* 
-         * This method is only called when an /api/meta/file request comes 
-         * in; i.e., for a study export, createFileDscr and createData/createVar 
-         * methods will be called separately. So we need to create the top-level 
+        /*
+         * This method is only called when an /api/meta/file request comes
+         * in; i.e., for a study export, createFileDscr and createData/createVar
+         * methods will be called separately. So we need to create the top-level
          * ddi (<codeBook>) tag header:
          */
         xmlw.writeStartElement("codeBook");
@@ -420,7 +419,7 @@ public class DDIExportServiceBean {
         writeAttribute(xmlw, "version", "2.0");
 
         createStdyDscr(xmlw, excludedFieldSet, includedFieldSet, df.getOwner().getLatestVersion());
-        
+
         DataTable dt = fileService.findDataTableByFileId(df.getId());
 
         if (checkField("fileDscr", excludedFieldSet, includedFieldSet)) {
@@ -454,49 +453,44 @@ public class DDIExportServiceBean {
         for (DataVariable dv : vars) {
             for (VariableCategory cat : dv.getCategories()) {
                 found = true;
-                if (cat.getFrequency() == null) {
-                    IsWithoutFrequencies = true;
-                } else {
-                    IsWithoutFrequencies = false;
-                }
+                IsWithoutFrequencies = cat.getFrequency() == null;
                 break;
             }
-            if (found)
+            if (found) {
                 break;
+            }
         }
         return IsWithoutFrequencies;
     }
 
-    private void calculateFrequencies(DataFile df, List<DataVariable> vars)
-    {
+    private void calculateFrequencies(DataFile df, List<DataVariable> vars) {
         try {
             DataConverter dc = new DataConverter();
-            File tabFile = dc.downloadFromStorageIO(df.getStorageIO());
+            File tabFile = DataConverter.downloadFromStorageIO(df.getStorageIO());
 
-            ingestService.produceFrequencies(tabFile, vars );
+            IngestServiceBean.produceFrequencies(tabFile, vars);
 
-        } catch (Exception ex)
-        {
+        } catch (Exception ex) {
             logger.warning(ex.getMessage());
             return;
         }
     }
-    
+
     private void createDatasetDDI(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, DatasetVersion version) throws XMLStreamException {
-        
+
         xmlw.writeStartElement("codeBook");
         xmlw.writeDefaultNamespace("http://www.icpsr.umich.edu/DDI");
         writeAttribute(xmlw, "version", "2.0");
-        
+
         createStdyDscr(xmlw, excludedFieldSet, includedFieldSet, version);
-        
+
         // Files: 
-        
-        List<FileMetadata> tabularDataFiles = new ArrayList<>();  
+
+        List<FileMetadata> tabularDataFiles = new ArrayList<>();
         List<FileMetadata> otherDataFiles = new ArrayList<>();
-        
+
         List<FileMetadata> fileMetadatas = version.getFileMetadatas();
-        
+
         if (fileMetadatas == null || fileMetadatas.isEmpty()) {
             xmlw.writeEndElement(); // codeBook
             return;
@@ -509,13 +503,13 @@ public class DDIExportServiceBean {
                 otherDataFiles.add(fileMetadata);
             }
         }
-        
+
         if (checkField("fileDscr", excludedFieldSet, includedFieldSet)) {
             for (FileMetadata fileMetadata : tabularDataFiles) {
                 DataTable dt = fileService.findDataTableByFileId(fileMetadata.getDataFile().getId());
-                createFileDscr(xmlw, excludedFieldSet, includedFieldSet, fileMetadata.getDataFile(),dt);
+                createFileDscr(xmlw, excludedFieldSet, includedFieldSet, fileMetadata.getDataFile(), dt);
             }
-            
+
             // 2nd pass, to create data (variable) description sections: 
             xmlw.writeStartElement("dataDscr");
 
@@ -523,78 +517,78 @@ public class DDIExportServiceBean {
                 DataTable dt = fileService.findDataTableByFileId(fileMetadata.getDataFile().getId());
                 List<DataVariable> vars = variableService.findByDataTableId(dt.getId());
 
-                for (DataVariable var : vars) { 
+                for (DataVariable var : vars) {
                     createVarDDI(xmlw, excludedFieldSet, null, var);
                 }
             }
-            
+
             xmlw.writeEndElement(); // dataDscr
         }
-        
+
         if (checkField("othrMat", excludedFieldSet, includedFieldSet)) {
             for (FileMetadata fileMetadata : otherDataFiles) {
                 createOtherMat(xmlw, excludedFieldSet, includedFieldSet, fileMetadata);
             }
         }
-        
+
         xmlw.writeEndElement(); // codeBook
     }
-    
+
     private void createStdyDscr(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, DatasetVersion version) throws XMLStreamException {
-        
+
         String title = version.getTitle();
-        String authors = version.getAuthorsStr(false); 
+        String authors = version.getAuthorsStr(false);
         String persistentAgency = version.getDataset().getProtocol();
         String persistentAuthority = version.getDataset().getAuthority();
-        String persistentId = version.getDataset().getIdentifier(); 
-        
-        
+        String persistentId = version.getDataset().getIdentifier();
+
+
         xmlw.writeStartElement("stdyDscr");
-            xmlw.writeStartElement("citation");
-        
-                xmlw.writeStartElement("titlStmt");
+        xmlw.writeStartElement("citation");
 
-                    xmlw.writeStartElement("titl");
-                    xmlw.writeCharacters(title);
-                    xmlw.writeEndElement(); // titl
+        xmlw.writeStartElement("titlStmt");
 
-                    xmlw.writeStartElement("IDNo");
-                    writeAttribute(xmlw, "agency", persistentAgency);
-                    xmlw.writeCharacters( persistentAuthority + "/" + persistentId );
-                    xmlw.writeEndElement(); // IDNo
-        
-                xmlw.writeEndElement(); // titlStmt
-        
-                xmlw.writeStartElement("rspStmt");
-        
-                    xmlw.writeStartElement("AuthEnty");
-                    xmlw.writeCharacters( authors );
-                    xmlw.writeEndElement(); // AuthEnty
-        
-                xmlw.writeEndElement(); // rspStmt
-                xmlw.writeStartElement("biblCit");
-                
-                xmlw.writeCharacters(version.getCitation());
-                
-                xmlw.writeEndElement(); // biblCit
-        
-            xmlw.writeEndElement(); // citation
+        xmlw.writeStartElement("titl");
+        xmlw.writeCharacters(title);
+        xmlw.writeEndElement(); // titl
+
+        xmlw.writeStartElement("IDNo");
+        writeAttribute(xmlw, "agency", persistentAgency);
+        xmlw.writeCharacters(persistentAuthority + "/" + persistentId);
+        xmlw.writeEndElement(); // IDNo
+
+        xmlw.writeEndElement(); // titlStmt
+
+        xmlw.writeStartElement("rspStmt");
+
+        xmlw.writeStartElement("AuthEnty");
+        xmlw.writeCharacters(authors);
+        xmlw.writeEndElement(); // AuthEnty
+
+        xmlw.writeEndElement(); // rspStmt
+        xmlw.writeStartElement("biblCit");
+
+        xmlw.writeCharacters(version.getCitation());
+
+        xmlw.writeEndElement(); // biblCit
+
+        xmlw.writeEndElement(); // citation
         xmlw.writeEndElement(); // stdyDscr
-        
+
     }
-    
+
     private void createOtherMat(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, FileMetadata fm) throws XMLStreamException {
         xmlw.writeStartElement("otherMat");
         writeAttribute(xmlw, "ID", "f" + fm.getDataFile().getId().toString());
-        
+
         xmlw.writeStartElement("labl");
-        xmlw.writeCharacters( fm.getLabel() );
+        xmlw.writeCharacters(fm.getLabel());
         xmlw.writeEndElement(); // labl
 
         xmlw.writeStartElement("txt");
-        xmlw.writeCharacters( fm.getDescription() );
+        xmlw.writeCharacters(fm.getDescription());
         xmlw.writeEndElement(); // txt
-        
+
         xmlw.writeEndElement(); // otherMat
     }
 
@@ -740,9 +734,7 @@ public class DDIExportServiceBean {
         if (includedFieldSet == null || includedFieldSet.size() == 0) {
 
             // AND the field is not specifically included on the list of unwanted fields:
-            if (excludedFieldSet == null || !excludedFieldSet.contains(fieldName)) {
-                return true;
-            }
+            return excludedFieldSet == null || !excludedFieldSet.contains(fieldName);
         }
 
         return false;
@@ -753,10 +745,7 @@ public class DDIExportServiceBean {
      * back in DVN v2-3).
      */
     private boolean StringUtilisEmpty(String str) {
-        if (str == null || str.trim().equals("")) {
-            return true;
-        }
-        return false;
+        return str == null || str.trim().equals("");
     }
 
 }

@@ -71,8 +71,8 @@ class SolrQueryCreatorTest {
         String result = solrQueryCreator.constructQuery(Lists.newArrayList((searchBlock)));
         //then
         Assert.assertEquals("number1:[1 TO 2] AND number2:[3.1 TO 4.1] AND number1:[1 TO *] AND" +
-                " number2:[* TO 4.1] AND checkboxValues:\"checkboxValue1\" AND checkboxValues:\"checkboxValue2\" AND" +
-                " text1:testValue1 AND text2:testValue2", result);
+                                    " number2:[* TO 4.1] AND checkboxValues:\"checkboxValue1\" AND checkboxValues:\"checkboxValue2\" AND" +
+                                    " text1:testValue1 AND text2:testValue2", result);
     }
 
     private List<SearchField> createBothNumbersSearchFields() {

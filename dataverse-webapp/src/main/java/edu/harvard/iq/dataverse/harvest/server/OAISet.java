@@ -19,33 +19,29 @@
  */
 package edu.harvard.iq.dataverse.harvest.server;
 
-import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import javax.persistence.Version;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 
 /**
- *
  * @author Leonid Andreev
- * based on the DVN 3 implementation, 
- * @author Ellen Kraffmiller 
- * 
+ * based on the DVN 3 implementation,
+ * @author Ellen Kraffmiller
  */
 @Entity
 public class OAISet implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
     public OAISet() {
-    } 
-    
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -57,26 +53,26 @@ public class OAISet implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
-    @Column(columnDefinition="TEXT")
+
+    @Column(columnDefinition = "TEXT")
     private String name;
-    @Column(columnDefinition="TEXT", nullable = false, unique=true)
+    @Column(columnDefinition = "TEXT", nullable = false, unique = true)
     @Size(max = 30, message = "{setspec.maxLength}")
     @Pattern.List({@Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "{dataverse.nameIllegalCharacters}")})
     //    @Pattern(regexp=".*\\D.*", message="{setspec.notNumber}")})
     private String spec;
-    
-    @Column(columnDefinition="TEXT", nullable = false)
+
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String definition;
-   
-    @Column(columnDefinition="TEXT", nullable = false)
+
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 
     @Version
     private Long version;
-    
+
     private boolean updateInProgress;
-    
+
     private boolean deleted;
 
     public boolean isUpdateInProgress() {
@@ -84,17 +80,17 @@ public class OAISet implements Serializable {
     }
 
     public void setUpdateInProgress(boolean updateInProgress) {
-        this.updateInProgress = updateInProgress; 
+        this.updateInProgress = updateInProgress;
     }
-    
+
     public boolean isDeleteInProgress() {
         return this.deleted;
     }
 
     public void setDeleteInProgress(boolean deleteInProgress) {
-        this.deleted = deleteInProgress; 
+        this.deleted = deleteInProgress;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -126,15 +122,15 @@ public class OAISet implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
-    
+
     public Long getVersion() {
         return version;
     }
-    
+
     public void setVersion(Long version) {
         this.version = version;
     }
-    
+
     public boolean isDefaultSet() {
         return "".equals(this.spec);
     }
@@ -153,15 +149,12 @@ public class OAISet implements Serializable {
             return false;
         }
         OAISet other = (OAISet) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
 
     @Override
     public String toString() {
         return "edu.harvard.iq.dataverse.harvest.server.OaiSet[ id=" + id + " ]";
     }
-    
+
 }

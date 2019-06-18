@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,8 +32,8 @@ import java.util.logging.Logger;
  * @author skraffmi
  */
 @RequiredPermissionsMap({
-    @RequiredPermissions(dataverseName = "moved", value = {Permission.PublishDataset})
-    ,	@RequiredPermissions(dataverseName = "destination", value = {Permission.AddDataset, Permission.PublishDataset})
+        @RequiredPermissions(dataverseName = "moved", value = {Permission.PublishDataset})
+        , @RequiredPermissions(dataverseName = "destination", value = {Permission.AddDataset, Permission.PublishDataset})
 })
 public class MoveDatasetCommand extends AbstractVoidCommand {
 
@@ -49,7 +50,7 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         );
         this.moved = moved;
         this.destination = destination;
-        this.force= force;
+        this.force = force;
     }
 
     @Override
@@ -63,13 +64,13 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         if (moved.getOwner().equals(destination)) {
             throw new IllegalCommandException("Dataset already in this Dataverse ", this);
         }
-        
+
         // if dataset is published make sure that its target is published
-        
-        if (moved.isReleased() && !destination.isReleased()){
+
+        if (moved.isReleased() && !destination.isReleased()) {
             throw new IllegalCommandException("Published Dataset may not be moved to unpublished Dataverse. You may publish " + destination.getDisplayName() + " and re-try the move.", this);
         }
-                
+
         //if the datasets guestbook is not contained in the new dataverse then remove it
         if (moved.getGuestbook() != null) {
             Guestbook gb = moved.getGuestbook();
@@ -81,21 +82,21 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
                 }
             }
             if (gbs == null || !gbs.contains(gb)) {
-                if (force == null  || !force){
+                if (force == null || !force) {
                     removeGuestbook = true;
                 } else {
                     moved.setGuestbook(null);
                 }
             }
         }
-        
+
         // generate list of all possible parent dataverses to check against
         List<Dataverse> ownersToCheck = new ArrayList<>();
         ownersToCheck.add(destination);
         if (destination.getOwners() != null) {
             ownersToCheck.addAll(destination.getOwners());
         }
-        
+
         // if the dataset is linked to the new dataverse or any of 
         // its parent dataverses then remove the link
         List<DatasetLinkingDataverse> linkingDatasets = new ArrayList<>();
@@ -103,8 +104,8 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
             linkingDatasets.addAll(moved.getDatasetLinkingDataverses());
         }
         for (DatasetLinkingDataverse dsld : linkingDatasets) {
-            for (Dataverse owner : ownersToCheck){
-                if ((dsld.getLinkingDataverse()).equals(owner)){
+            for (Dataverse owner : ownersToCheck) {
+                if ((dsld.getLinkingDataverse()).equals(owner)) {
                     if (force == null || !force) {
                         removeLinkDs = true;
                         break;
@@ -115,7 +116,7 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
                 }
             }
         }
-        
+
         if (removeGuestbook || removeLinkDs) {
             StringBuilder errorString = new StringBuilder();
             if (removeGuestbook) {

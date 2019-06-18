@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.response.Response;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import com.jayway.restassured.response.Response;
 
 public class SiteMapIT {
 

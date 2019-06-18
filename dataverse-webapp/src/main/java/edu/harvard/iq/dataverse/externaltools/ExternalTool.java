@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.externaltools;
 
-import java.io.Serializable;
-import java.util.Arrays;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.Column;
@@ -11,6 +9,8 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * A specification or definition for how an external tool is intended to
@@ -63,20 +63,20 @@ public class ExternalTool implements Serializable {
     private String toolParameters;
 
     /**
-     * The file content type the tool works on. For tabular files, the type text/tab-separated-values should be sent 
+     * The file content type the tool works on. For tabular files, the type text/tab-separated-values should be sent
      */
     @Column(nullable = false, columnDefinition = "TEXT")
     private String contentType;
 
-    
+
     /**
      * This default constructor is only here to prevent this error at
      * deployment:
-     *
+     * <p>
      * Exception Description: The instance creation method
      * [...ExternalTool.<Default Constructor>], with no parameters, does not
      * exist, or is not accessible
-     *
+     * <p>
      * Don't use it.
      */
     @Deprecated
@@ -99,7 +99,7 @@ public class ExternalTool implements Serializable {
 
         private final String text;
 
-        private Type(final String text) {
+        Type(final String text) {
             this.text = text;
         }
 
@@ -167,7 +167,7 @@ public class ExternalTool implements Serializable {
     public String getContentType() {
         return this.contentType;
     }
-    
+
     public void setContentType(String contentType) {
         this.contentType = contentType;
     }
@@ -200,7 +200,7 @@ public class ExternalTool implements Serializable {
         private final String START = "{";
         private final String END = "}";
 
-        private ReservedWord(final String text) {
+        ReservedWord(final String text) {
             this.text = START + text + END;
         }
 

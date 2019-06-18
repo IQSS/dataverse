@@ -5,15 +5,14 @@
  */
 package edu.harvard.iq.dataverse;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang.StringUtils;
 
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+
 
 /**
- *
  * @author gdurand
  */
 public class DatasetFieldValidator implements ConstraintValidator<ValidateDatasetFieldType, DatasetField> {
@@ -28,14 +27,14 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
 
         DatasetFieldType dsfType = value.getDatasetFieldType();
         //SEK Additional logic turns off validation for templates
-        if (isTemplateDatasetField(value)){
+        if (isTemplateDatasetField(value)) {
             return true;
         }
-        if (((dsfType.isPrimitive() && dsfType.isRequired())  || (dsfType.isPrimitive() && value.isRequired())) 
+        if (((dsfType.isPrimitive() && dsfType.isRequired()) || (dsfType.isPrimitive() && value.isRequired()))
                 && StringUtils.isBlank(value.getValue())) {
-            try{
+            try {
                 context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + BundleUtil.getStringFromBundle("isrequired")).addConstraintViolation();
-            } catch (NullPointerException npe){
+            } catch (NullPointerException npe) {
                 //if there's no context for the error we can't put it anywhere....
             }
 
@@ -43,7 +42,7 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
         }
         return true;
     }
-    
+
     private boolean isTemplateDatasetField(DatasetField dsf) {
         if (dsf.getParentDatasetFieldCompoundValue() != null) {
             return isTemplateDatasetField(dsf.getParentDatasetFieldCompoundValue().getParentDatasetField());

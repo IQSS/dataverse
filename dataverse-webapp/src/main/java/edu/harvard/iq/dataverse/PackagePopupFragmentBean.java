@@ -10,23 +10,22 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 
 /**
- *
  * @author matthew
  */
 
 @ViewScoped
 @Named
 public class PackagePopupFragmentBean implements java.io.Serializable {
-    
+
     FileMetadata fm;
-    
+
     public void setFileMetadata(FileMetadata fileMetadata) {
         fm = fileMetadata;
     }
-    
+
     public FileMetadata getFileMetadata() {
         return fm;
     }
-    
+
 }
  

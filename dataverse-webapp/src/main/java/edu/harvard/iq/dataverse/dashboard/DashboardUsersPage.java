@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 @ViewScoped
 @Named("DashboardUsersPage")
 public class DashboardUsersPage implements java.io.Serializable {
-  
+
     @EJB
     AuthenticationServiceBean authenticationService;
     @EJB
@@ -53,13 +53,13 @@ public class DashboardUsersPage implements java.io.Serializable {
 
     private Pager pager;
     private List<AuthenticatedUser> userList;
-    
+
     private String searchTerm;
 
     public String init() {
 
         if ((session.getUser() != null) && (session.getUser().isAuthenticated()) && (session.getUser().isSuperuser())) {
-           authUser = (AuthenticatedUser) session.getUser();
+            authUser = (AuthenticatedUser) session.getUser();
             userListMaker = new UserListMaker(userService);
             runUserSearch();
         } else {
@@ -69,15 +69,15 @@ public class DashboardUsersPage implements java.io.Serializable {
 
         return null;
     }
-    
-    public boolean runUserSearchWithPage(Integer pageNumber){
+
+    public boolean runUserSearchWithPage(Integer pageNumber) {
         System.err.println("runUserSearchWithPage");
         setSelectedPage(pageNumber);
         runUserSearch();
         return true;
     }
-    
-    public boolean runUserSearch(){
+
+    public boolean runUserSearch() {
 
         logger.fine("Run the search!");
 
@@ -86,44 +86,45 @@ public class DashboardUsersPage implements java.io.Serializable {
          * (1) Determine the number of users returned by the count        
          */
         UserListResult userListResult = userListMaker.runUserSearch(searchTerm, UserListMaker.ITEMS_PER_PAGE, getSelectedPage(), null);
-        if (userListResult==null){
+        if (userListResult == null) {
             try {
                 throw new Exception("userListResult should not be null!");
             } catch (Exception ex) {
                 Logger.getLogger(DashboardUsersPage.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        setSelectedPage(userListResult.getSelectedPageNumber());        
+        setSelectedPage(userListResult.getSelectedPageNumber());
 
         this.userList = userListResult.getUserList();
         this.pager = userListResult.getPager();
-        
+
         return true;
-        
+
     }
 
 
-    
     public String getListUsersAPIPath() {
         //return "ok";
         return Admin.listUsersFullAPIPath;
     }
 
-    /** 
+    /**
      * Number of total users
-     * @return 
+     *
+     * @return
      */
     public String getUserCount() {
 
         return NumberFormat.getInstance().format(userService.getTotalUserCount());
     }
 
-    /** 
+    /**
      * Number of total Superusers
-     * @return 
+     *
+     * @return
      */
     public Long getSuperUserCount() {
-        
+
         return userService.getSuperUserCount();
     }
 
@@ -134,27 +135,27 @@ public class DashboardUsersPage implements java.io.Serializable {
     /**
      * Pager for when user list exceeds the number of display rows
      * (default: UserListMaker.ITEMS_PER_PAGE)
-     * 
-     * @return 
+     *
+     * @return
      */
     public Pager getPager() {
         return this.pager;
     }
 
-    public void setSelectedPage(Integer pgNum){
-        if ((pgNum == null)||(pgNum < 1)){
+    public void setSelectedPage(Integer pgNum) {
+        if ((pgNum == null) || (pgNum < 1)) {
             this.selectedPage = 1;
         }
         selectedPage = pgNum;
     }
 
-    public Integer getSelectedPage(){
-        if ((selectedPage == null)||(selectedPage < 1)){
-            setSelectedPage(null);            
+    public Integer getSelectedPage() {
+        if ((selectedPage == null) || (selectedPage < 1)) {
+            setSelectedPage(null);
         }
         return selectedPage;
     }
-    
+
     public String getSearchTerm() {
         return searchTerm;
     }
@@ -168,23 +169,23 @@ public class DashboardUsersPage implements java.io.Serializable {
        Our normal two step approach is used: first showing the "are you sure?" 
        popup, then finalizing the toggled value. 
     */
-       
+
     AuthenticatedUser selectedUserDetached = null; // Note: This is NOT the persisted object!!!!  Don't try to save it, etc.
     AuthenticatedUser selectedUserPersistent = null;  // This is called on the fly and updated
-    
+
     public void setSelectedUserDetached(AuthenticatedUser user) {
         this.selectedUserDetached = user;
     }
-    
+
     public AuthenticatedUser getSelectedUserDetached() {
         return this.selectedUserDetached;
     }
-    
-    
+
+
     public void setUserToToggleSuperuserStatus(AuthenticatedUser user) {
-        selectedUserDetached = user; 
+        selectedUserDetached = user;
     }
-    
+
     public void saveSuperuserStatus() {
 
         // Retrieve the persistent version for saving to db
@@ -215,18 +216,18 @@ public class DashboardUsersPage implements java.io.Serializable {
         }
 
     }
-    
-    public void cancelSuperuserStatusChange(){
-        selectedUserDetached.setSuperuser(!selectedUserDetached.isSuperuser());        
+
+    public void cancelSuperuserStatusChange() {
+        selectedUserDetached.setSuperuser(!selectedUserDetached.isSuperuser());
         selectedUserPersistent = null;
     }
-    
+
     // Methods for the removeAllRoles for a user : 
-    
+
     public void removeUserRoles() {
         logger.fine("Get persisent AuthenticatedUser for id: " + selectedUserDetached.getId());
         selectedUserPersistent = userService.find(selectedUserDetached.getId());
-        
+
         selectedUserDetached.setRoles(null); // for display
         try {
             commandEngine.submit(new RevokeAllRolesCommand(selectedUserPersistent, dvRequestService.getDataverseRequest()));
@@ -238,16 +239,16 @@ public class DashboardUsersPage implements java.io.Serializable {
         // success message: 
         JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dashboard.list_users.removeAll.message.success", Arrays.asList(selectedUserPersistent.getUserIdentifier())));
     }
-    
+
     public String getConfirmRemoveRolesMessage() {
         if (selectedUserDetached != null) {
             return BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.roles.removeAll.confirmationText", Arrays.asList(selectedUserDetached.getUserIdentifier()));
-        } 
+        }
         return BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.roles.removeAll.confirmationText");
     }
-    
-    public String getAuthProviderFriendlyName(String authProviderId){
-        
+
+    public String getAuthProviderFriendlyName(String authProviderId) {
+
         return AuthenticationProvider.getFriendlyName(authProviderId);
     }
 }

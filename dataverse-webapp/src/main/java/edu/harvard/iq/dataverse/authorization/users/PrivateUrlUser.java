@@ -34,7 +34,7 @@ public class PrivateUrlUser implements User {
      * name from appearing in the corner as well as preventing an account page
      * and MyData from being accessible. The user can still navigate to the home
      * page but can only see published datasets.
-     * 
+     *
      * @return {@code false}.
      */
     @Override
@@ -57,7 +57,6 @@ public class PrivateUrlUser implements User {
         String title = BundleUtil.getStringFromBundle("dataset.privateurl.roleassigeeTitle");
         return new RoleAssigneeDisplayInfo(title, null);
     }
-
 
 
 }

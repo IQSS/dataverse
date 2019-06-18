@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.api.dto;
 import java.util.List;
 
 /**
- *
  * @author ellenk
  */
 public class DataTableDTO {
@@ -52,6 +51,6 @@ public class DataTableDTO {
     public void setDataVariables(List<DataVariableDTO> dataVariables) {
         this.dataVariables = dataVariables;
     }
-    
-    
+
+
 }

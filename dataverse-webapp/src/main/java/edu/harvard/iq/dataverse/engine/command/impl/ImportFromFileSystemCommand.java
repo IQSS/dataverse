@@ -12,17 +12,19 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import java.io.File;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import javax.batch.operations.JobOperator;
 import javax.batch.operations.JobSecurityException;
 import javax.batch.operations.JobStartException;
 import javax.batch.runtime.BatchRuntime;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import java.io.File;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 @RequiredPermissions(Permission.EditDataset)
 public class ImportFromFileSystemCommand extends AbstractCommand<JsonObject> {
@@ -70,7 +72,7 @@ public class ImportFromFileSystemCommand extends AbstractCommand<JsonObject> {
                 throw new IllegalCommandException(error, this);
             }
             File directory = new File(System.getProperty("dataverse.files.directory")
-                    + File.separator + dataset.getAuthority() + File.separator + dataset.getIdentifier());
+                                              + File.separator + dataset.getAuthority() + File.separator + dataset.getIdentifier());
             if (!isValidDirectory(directory)) {
                 String error = "Dataset directory is invalid. " + directory;
                 logger.info(error);
@@ -84,8 +86,8 @@ public class ImportFromFileSystemCommand extends AbstractCommand<JsonObject> {
             }
 
             File uploadDirectory = new File(System.getProperty("dataverse.files.directory")
-                    + File.separator + dataset.getAuthority() + File.separator + dataset.getIdentifier()
-                    + File.separator + uploadFolder);
+                                                    + File.separator + dataset.getAuthority() + File.separator + dataset.getIdentifier()
+                                                    + File.separator + uploadFolder);
             if (!isValidDirectory(uploadDirectory)) {
                 String error = "Upload folder is not a valid directory.";
                 logger.info(error);

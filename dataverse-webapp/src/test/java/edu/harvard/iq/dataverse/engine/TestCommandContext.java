@@ -77,11 +77,11 @@ public class TestCommandContext implements CommandContext {
     public IndexServiceBean index() {
         return null;
     }
-        
+
     @Override
-	public IndexBatchServiceBean indexBatch() {
-		return null;
-	}
+    public IndexBatchServiceBean indexBatch() {
+        return null;
+    }
 
     @Override
     public SolrIndexServiceBean solrIndex() {
@@ -202,7 +202,7 @@ public class TestCommandContext implements CommandContext {
     public ExplicitGroupServiceBean explicitGroups() {
         return null;
     }
-    
+
     @Override
     public GroupServiceBean groups() {
         return null;
@@ -247,7 +247,7 @@ public class TestCommandContext implements CommandContext {
     public DataCaptureModuleServiceBean dataCaptureModule() {
         return null;
     }
-    
+
     @Override
     public FileDownloadServiceBean fileDownload() {
         return null;

@@ -22,44 +22,46 @@ package edu.harvard.iq.dataverse.harvest.client;
 import java.io.Serializable;
 
 /**
- *  This class is used when creating an EJB Timer for scheduling Harvesting.
- *  We use this class rather than the HarvestingClient entity because
- *  the class must be Serializable, and there is too much info associated with the HarvestingClient
- *  in order to realistically serialize it.  (We can't make related mapped entities transient.)
+ * This class is used when creating an EJB Timer for scheduling Harvesting.
+ * We use this class rather than the HarvestingClient entity because
+ * the class must be Serializable, and there is too much info associated with the HarvestingClient
+ * in order to realistically serialize it.  (We can't make related mapped entities transient.)
+ * <p>
+ * Based on the DVN 3 implementation,
+ * original
  *
- *  Based on the DVN 3 implementation, 
- *  original
- *  @author Ellen Kraffmiller
- *  incorporated into Dataverse 4 by
- *  @author Leonid Andreev
+ * @author Ellen Kraffmiller
+ * incorporated into Dataverse 4 by
+ * @author Leonid Andreev
  */
 public class HarvestTimerInfo implements Serializable {
     private Long harvestingClientId;
     private String name;
     private String schedulePeriod;
     private Integer scheduleHourOfDay;
-    
+
     public HarvestTimerInfo() {
-        
+
     }
-    
-   
+
+
     public HarvestTimerInfo(Long harvestingClientId, String name, String schedulePeriod, Integer scheduleHourOfDay, Integer scheduleDayOfWeek) {
-        this.harvestingClientId=harvestingClientId;
-        this.name=name;
-        this.schedulePeriod=schedulePeriod;
-        this.scheduleDayOfWeek=scheduleDayOfWeek;
-        this.scheduleHourOfDay=scheduleHourOfDay;
+        this.harvestingClientId = harvestingClientId;
+        this.name = name;
+        this.schedulePeriod = schedulePeriod;
+        this.scheduleDayOfWeek = scheduleDayOfWeek;
+        this.scheduleHourOfDay = scheduleHourOfDay;
     }
-    
-    
+
+
     public Long getHarvestingClientId() {
         return harvestingClientId;
     }
 
     public void setHarvestingClientId(Long harvestingClientId) {
         this.harvestingClientId = harvestingClientId;
-    }    
+    }
+
     public String getName() {
         return name;
     }
@@ -91,7 +93,8 @@ public class HarvestTimerInfo implements Serializable {
     public void setScheduleDayOfWeek(Integer scheduleDayOfWeek) {
         this.scheduleDayOfWeek = scheduleDayOfWeek;
     }
+
     private Integer scheduleDayOfWeek;
-  
-    
+
+
 }

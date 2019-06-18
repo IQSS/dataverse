@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse.arquillian.arquillianglassfishconfig;
 
 import edu.harvard.iq.dataverse.arquillian.ParametrizedGlassfishConfCreator;

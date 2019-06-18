@@ -1,12 +1,14 @@
 package edu.harvard.iq.dataverse;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
- *
  * @author rmp553
  */
 public class GlobalIdTest {

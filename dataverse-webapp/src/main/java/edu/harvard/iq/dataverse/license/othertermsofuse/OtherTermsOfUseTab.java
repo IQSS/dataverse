@@ -46,20 +46,20 @@ public class OtherTermsOfUseTab implements Serializable {
         }
 
         otherTermsOfUseDto.add(new OtherTermsOfUseDto(Key.AllRightsReservedTermsOfUseActive,
-                "All rights reserved",
-                Boolean.valueOf(settingsServiceBean.getValueForKey(Key.AllRightsReservedTermsOfUseActive)),
-                new ByteArrayContent(FileUtil.getFileFromResources("/images/allrightsreserved.png"))));
+                                                      "All rights reserved",
+                                                      Boolean.valueOf(settingsServiceBean.getValueForKey(Key.AllRightsReservedTermsOfUseActive)),
+                                                      new ByteArrayContent(FileUtil.getFileFromResources("/images/allrightsreserved.png"))));
 
         otherTermsOfUseDto.add(new OtherTermsOfUseDto(Key.RestrictedAccessTermsOfUseActive,
-                "Restricted access",
-                Boolean.valueOf(settingsServiceBean.getValueForKey(Key.RestrictedAccessTermsOfUseActive)),
-                new ByteArrayContent(FileUtil.getFileFromResources("/images/restrictedaccess.png"))));
+                                                      "Restricted access",
+                                                      Boolean.valueOf(settingsServiceBean.getValueForKey(Key.RestrictedAccessTermsOfUseActive)),
+                                                      new ByteArrayContent(FileUtil.getFileFromResources("/images/restrictedaccess.png"))));
 
         return StringUtils.EMPTY;
     }
 
     public void saveLicenseActiveStatus(OtherTermsOfUseDto otherTermsOfUseDto) {
         settingsServiceBean.setValueForKey(otherTermsOfUseDto.getIsActiveSettingKey(),
-                String.valueOf(otherTermsOfUseDto.isActive()));
+                                           String.valueOf(otherTermsOfUseDto.isActive()));
     }
 }

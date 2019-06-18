@@ -22,7 +22,7 @@ import java.util.ArrayList;
  * @author michael
  */
 @RequiredPermissionsMap({
-    @RequiredPermissions(dataverseName = "doomed", value = Permission.DeleteDataverse)
+        @RequiredPermissions(dataverseName = "doomed", value = Permission.DeleteDataverse)
 })
 public class DeleteDataverseCommand extends AbstractVoidCommand {
 
@@ -45,27 +45,27 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
             throw new IllegalCommandException("Cannot delete non-empty dataverses", this);
         }
 
-	// if we got here, we can delete
-	// Metadata blocks - cant delete metadatablocks
+        // if we got here, we can delete
+        // Metadata blocks - cant delete metadatablocks
          /* Don't seem to need to do this SEK 10/23/14
          for (MetadataBlock block : doomed.getMetadataBlocks(true) ) {
          MetadataBlock merged =  ctxt.em().merge(block);
          ctxt.em().remove(merged);
          } */
-        
+
         // ASSIGNMENTS
-        for ( RoleAssignment ra : ctxt.roles().directRoleAssignments(doomed) ) {
+        for (RoleAssignment ra : ctxt.roles().directRoleAssignments(doomed)) {
             ctxt.em().remove(ra);
         }
         // ROLES
-        for ( DataverseRole ra : ctxt.roles().findByOwnerId(doomed.getId()) ) {
+        for (DataverseRole ra : ctxt.roles().findByOwnerId(doomed.getId())) {
             ctxt.em().remove(ra);
         }
-        
+
         // EXPLICIT GROUPS
-        for ( ExplicitGroup eg : ctxt.em().createNamedQuery("ExplicitGroup.findByOwnerId", ExplicitGroup.class)
-                                          .setParameter("ownerId", doomed.getId())
-                                          .getResultList() ) {
+        for (ExplicitGroup eg : ctxt.em().createNamedQuery("ExplicitGroup.findByOwnerId", ExplicitGroup.class)
+                .setParameter("ownerId", doomed.getId())
+                .getResultList()) {
             ctxt.explicitGroups().removeGroup(eg);
         }
         // FACETS handled with cascade on dataverse

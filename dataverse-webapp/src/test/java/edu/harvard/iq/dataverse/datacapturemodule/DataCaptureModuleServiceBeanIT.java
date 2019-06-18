@@ -6,20 +6,22 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
+import org.junit.Test;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
 import java.io.StringReader;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.logging.Logger;
-import org.junit.Test;
+
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
+import static java.lang.Thread.sleep;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import javax.json.JsonObject;
-import static java.lang.Thread.sleep;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
 
 /**
  * These tests are not expected to pass unless you have a Data Capture Module
@@ -52,7 +54,7 @@ public class DataCaptureModuleServiceBeanIT {
         System.out.println("out: " + uploadRequestResponse.getResponse());
         assertEquals(200, uploadRequestResponse.getHttpStatusCode());
         String uploadRequestResponseString = uploadRequestResponse.getResponse();
-        JsonReader jsonReader = Json.createReader(new StringReader((String) uploadRequestResponseString));
+        JsonReader jsonReader = Json.createReader(new StringReader(uploadRequestResponseString));
         JsonObject jsonObject = jsonReader.readObject();
         assertEquals("OK", jsonObject.getString("status"));
 

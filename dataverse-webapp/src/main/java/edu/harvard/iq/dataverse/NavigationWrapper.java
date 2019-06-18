@@ -5,6 +5,14 @@
  */
 package edu.harvard.iq.dataverse;
 
+import org.apache.commons.lang.StringUtils;
+
+import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -14,25 +22,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.faces.context.FacesContext;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.lang.StringUtils;
 
 /**
- *
  * @author gdurand
  */
 @ViewScoped
 @Named
 public class NavigationWrapper implements java.io.Serializable {
-    
+
     @Inject
     DataverseSession session;
-    
+
     String redirectPage;
 
 
@@ -42,7 +42,7 @@ public class NavigationWrapper implements java.io.Serializable {
 
     public String getPageFromContext() {
         if (redirectPage == null) {
-            StringBuilder redirectBuilder = new StringBuilder();        
+            StringBuilder redirectBuilder = new StringBuilder();
 
             HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
             redirectBuilder.append(req.getServletPath());
@@ -55,7 +55,7 @@ public class NavigationWrapper implements java.io.Serializable {
 
             if (req.getParameterMap() != null) {
                 StringBuilder queryString = new StringBuilder();
-                for (Map.Entry<String, String[]> entry : ((Map<String, String[]>) req.getParameterMap()).entrySet()) {
+                for (Map.Entry<String, String[]> entry : req.getParameterMap().entrySet()) {
                     String name = entry.getKey();
                     if (acceptableParameters.contains(name)) {
                         String value = entry.getValue()[0];
@@ -73,35 +73,33 @@ public class NavigationWrapper implements java.io.Serializable {
                 redirectPage = "";
             }
         }
-        
+
         return redirectPage;
-    }  
-    
-    
-    
-     public String notAuthorized(){
-        if (!session.getUser().isAuthenticated()){
+    }
+
+
+    public String notAuthorized() {
+        if (!session.getUser().isAuthenticated()) {
             return "/loginpage.xhtml" + getRedirectPage();
         } else {
             return sendError(HttpServletResponse.SC_FORBIDDEN);
-        }        
+        }
     }
-    
+
     public String notFound() {
         return sendError(HttpServletResponse.SC_NOT_FOUND);
     }
-    
+
     private String sendError(int errorCode) {
         FacesContext context = FacesContext.getCurrentInstance();
         try {
-            context.getExternalContext().responseSendError(errorCode,null);
+            context.getExternalContext().responseSendError(errorCode, null);
         } catch (IOException ex) {
             Logger.getLogger(PermissionsWrapper.class.getName()).log(Level.SEVERE, null, ex);
         }
         context.responseComplete();
         return "";
-    }    
-       
-    
+    }
+
 
 }

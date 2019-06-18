@@ -27,12 +27,12 @@ public class LicenseMapper {
         }
 
         return new LicenseDto(license.getId(),
-                license.getName(),
-                license.getUrl(),
-                mapToDto(license.getIcon()),
-                license.isActive(),
-                license.getPosition(),
-                localeTextDtos);
+                              license.getName(),
+                              license.getUrl(),
+                              mapToDto(license.getIcon()),
+                              license.isActive(),
+                              license.getPosition(),
+                              localeTextDtos);
     }
 
     public List<LicenseDto> mapToDtos(List<License> licenses) {
@@ -91,10 +91,10 @@ public class LicenseMapper {
         }
 
         return new LicenseIconDto(licenseIcon.getId(),
-                new ByteArrayContent(licenseIcon.getContent(),
-                        licenseIcon.getContentType(),
-                        licenseIcon.getLicense().getName(),
-                        licenseIcon.getContent().length));
+                                  new ByteArrayContent(licenseIcon.getContent(),
+                                                       licenseIcon.getContentType(),
+                                                       licenseIcon.getLicense().getName(),
+                                                       licenseIcon.getContent().length));
     }
 
     private LocaleTextDto mapToDto(LocaleText localeText) {

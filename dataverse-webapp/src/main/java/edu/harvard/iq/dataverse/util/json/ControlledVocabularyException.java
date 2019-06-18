@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 
 /**
  * Thrown when value is not a valid controlled vocabulary for datasetFeidType
+ *
  * @author ellenk
  */
 public class ControlledVocabularyException extends JsonParseException {
@@ -30,11 +31,11 @@ public class ControlledVocabularyException extends JsonParseException {
     public void setStrValue(String strValue) {
         this.strValue = strValue;
     }
-    
-     public ControlledVocabularyException(String message, DatasetFieldType dsfType, String strValue) {         
+
+    public ControlledVocabularyException(String message, DatasetFieldType dsfType, String strValue) {
         super(message);
-        this.dsfType=dsfType;
-        this.strValue=strValue;
+        this.dsfType = dsfType;
+        this.strValue = strValue;
     }
 
     public ControlledVocabularyException(String message, Throwable cause) {

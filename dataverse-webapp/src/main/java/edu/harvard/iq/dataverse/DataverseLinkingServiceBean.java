@@ -5,9 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -15,9 +12,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
- *
  * @author skraffmiller
  */
 @Stateless
@@ -27,11 +26,11 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     @EJB
     DataverseServiceBean dataverseService;
-    
-    
+
+
     public List<Dataverse> findLinkedDataverses(Long linkingDataverseId) {
         List<Dataverse> retList = new ArrayList<>();
         Query query = em.createQuery("select object(o) from DataverseLinkingDataverse as o where o.linkingDataverse.id =:linkingDataverseId order by o.id");
@@ -53,7 +52,7 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
         }
         return retList;
     }
-    
+
     public void save(DataverseLinkingDataverse dataverseLinkingDataverse) {
         if (dataverseLinkingDataverse.getId() == null) {
             em.persist(dataverseLinkingDataverse);
@@ -61,7 +60,7 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
             em.merge(dataverseLinkingDataverse);
         }
     }
-    
+
     public DataverseLinkingDataverse findDataverseLinkingDataverse(Long dataverseId, Long linkingDataverseId) {
         DataverseLinkingDataverse foundDataverseLinkingDataverse = null;
         try {
@@ -70,7 +69,7 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
                     .setParameter("linkingDataverseId", linkingDataverseId)
                     .getSingleResult();
         } catch (javax.persistence.NoResultException e) {
-            logger.fine("No DataverseLinkingDataverse found for dataverseId " + dataverseId + " and linkedDataverseId " + linkingDataverseId);        
+            logger.fine("No DataverseLinkingDataverse found for dataverseId " + dataverseId + " and linkedDataverseId " + linkingDataverseId);
         }
         return foundDataverseLinkingDataverse;
     }

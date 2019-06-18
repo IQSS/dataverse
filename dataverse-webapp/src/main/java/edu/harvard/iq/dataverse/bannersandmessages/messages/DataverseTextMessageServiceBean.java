@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- *
  * @author tjanek
  */
 @Stateless
@@ -29,7 +28,7 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
-    
+
     public DataverseTextMessageServiceBean() {
     }
 
@@ -87,31 +86,31 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
         }
         logger.info("Getting text messages for dataverse: " + dataverseId);
         List<String> messages = em.createNativeQuery("select r.message from (select distinct dvtml.message, dvtm.totime  from\n" +
-                "  dataversetextmessage dvtm\n" +
-                "  join dataverselocalizedmessage dvtml on dvtml.dataversetextmessage_id = dvtm.id\n" +
-                "  where\n" +
-                "    dvtm.active = true and\n" +
-                "    dvtml.locale = ? and\n" +
-                "    ? between dvtm.fromtime and dvtm.totime and\n" +
-                "    dvtm.dataverse_id in (with recursive dv_roots as (\n" +
-                "    select\n" +
-                "        dv.id,\n" +
-                "        dv.owner_id,\n" +
-                "        d2.allowmessagesbanners\n" +
-                "    from dvobject dv\n" +
-                "      join dataverse d2 on dv.id = d2.id\n" +
-                "    where\n" +
-                "        dv.id = ?\n" +
-                "        union all\n" +
-                "        select\n" +
-                "               dv2.id,\n" +
-                "               dv2.owner_id,\n" +
-                "               d2.allowmessagesbanners\n" +
-                "        from dvobject dv2\n" +
-                "               join dataverse d2 on dv2.id = d2.id\n" +
-                "               join dv_roots on dv_roots.owner_id = dv2.id\n" +
-                "    )\n" +
-                "    select id from dv_roots dr where dr.allowmessagesbanners = true) order by dvtm.totime asc) r")
+                                                             "  dataversetextmessage dvtm\n" +
+                                                             "  join dataverselocalizedmessage dvtml on dvtml.dataversetextmessage_id = dvtm.id\n" +
+                                                             "  where\n" +
+                                                             "    dvtm.active = true and\n" +
+                                                             "    dvtml.locale = ? and\n" +
+                                                             "    ? between dvtm.fromtime and dvtm.totime and\n" +
+                                                             "    dvtm.dataverse_id in (with recursive dv_roots as (\n" +
+                                                             "    select\n" +
+                                                             "        dv.id,\n" +
+                                                             "        dv.owner_id,\n" +
+                                                             "        d2.allowmessagesbanners\n" +
+                                                             "    from dvobject dv\n" +
+                                                             "      join dataverse d2 on dv.id = d2.id\n" +
+                                                             "    where\n" +
+                                                             "        dv.id = ?\n" +
+                                                             "        union all\n" +
+                                                             "        select\n" +
+                                                             "               dv2.id,\n" +
+                                                             "               dv2.owner_id,\n" +
+                                                             "               d2.allowmessagesbanners\n" +
+                                                             "        from dvobject dv2\n" +
+                                                             "               join dataverse d2 on dv2.id = d2.id\n" +
+                                                             "               join dv_roots on dv_roots.owner_id = dv2.id\n" +
+                                                             "    )\n" +
+                                                             "    select id from dv_roots dr where dr.allowmessagesbanners = true) order by dvtm.totime asc) r")
                 .setParameter(1, localeCode)
                 .setParameter(2, LocalDateTime.now())
                 .setParameter(3, dataverseId)
@@ -121,8 +120,8 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
 
     public List<DataverseTextMessage> fetchAllTextMessagesForDataverse(long dataverseId) {
         return em.createQuery("select dtm FROM DataverseTextMessage as dtm " +
-                "join fetch DataverseLocalizedMessage " +
-                "where dtm.dataverse.id = :dataverseid")
+                                      "join fetch DataverseLocalizedMessage " +
+                                      "where dtm.dataverse.id = :dataverseid")
                 .setParameter("dataverseid", dataverseId)
                 .getResultList();
     }
@@ -138,8 +137,8 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
      */
     public List<DataverseTextMessage> fetchTextMessagesForDataverseWithPaging(long dataverseId, int firstResult, int maxResult) {
         return em.createQuery("select dtm FROM DataverseTextMessage as dtm " +
-                "join fetch DataverseLocalizedMessage  " +
-                "where dtm.dataverse.id = :dataverseid order by dtm.id DESC ")
+                                      "join fetch DataverseLocalizedMessage  " +
+                                      "where dtm.dataverse.id = :dataverseid order by dtm.id DESC ")
                 .setParameter("dataverseid", dataverseId)
                 .setFirstResult(firstResult)
                 .setMaxResults(maxResult)
@@ -148,7 +147,7 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
 
     public Long countMessagesForDataverse(long dataverseId) {
         return em.createQuery("select count(dtm.id) FROM DataverseTextMessage as dtm " +
-                "where dtm.dataverse.id = :dataverseid", Long.class)
+                                      "where dtm.dataverse.id = :dataverseid", Long.class)
                 .setParameter("dataverseid", dataverseId)
                 .getSingleResult();
     }

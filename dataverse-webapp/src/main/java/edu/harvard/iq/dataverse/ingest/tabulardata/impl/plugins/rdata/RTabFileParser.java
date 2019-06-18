@@ -19,37 +19,36 @@
 */
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata;
 
-import java.io.*;
-import java.util.Arrays;
-import java.util.logging.*;
-
+import edu.harvard.iq.dataverse.DataTable;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang.StringUtils;
 
-import edu.harvard.iq.dataverse.DataTable;
-import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.logging.Logger;
 
 /**
  * This is a customized version of CSVFileReader;
- 
+ * <p>
  * Tab files saved by R need some special post-processing, unique to the
- * R Ingest, so a specialized version of the file parser was needed. 
- * 
+ * R Ingest, so a specialized version of the file parser was needed.
  *
  * @author Leonid Andreev
- *
  */
 public class RTabFileParser implements java.io.Serializable {
-    private char delimiterChar='\t';
+    private char delimiterChar = '\t';
 
     private static Logger dbgLog =
-       Logger.getLogger(RTabFileParser.class.getPackage().getName());
+            Logger.getLogger(RTabFileParser.class.getPackage().getName());
 
 
-    public RTabFileParser () {
+    public RTabFileParser() {
     }
 
-    public RTabFileParser (char delimiterChar) {
+    public RTabFileParser(char delimiterChar) {
         this.delimiterChar = delimiterChar;
     }
 
@@ -61,25 +60,25 @@ public class RTabFileParser implements java.io.Serializable {
     // should be used.
 
 
-  public int read(BufferedReader csvReader, DataTable dataTable, PrintWriter pwout) throws IOException {
-    dbgLog.warning("RTabFileParser: Inside R Tab file parser");
-      
+    public int read(BufferedReader csvReader, DataTable dataTable, PrintWriter pwout) throws IOException {
+        dbgLog.warning("RTabFileParser: Inside R Tab file parser");
+
         int varQnty = 0;
 
         try {
             varQnty = dataTable.getVarQuantity().intValue();
         } catch (Exception ex) {
             //return -1;
-            throw new IOException (BundleUtil.getStringFromBundle("rtabfileparser.ioexception.parser1"));
+            throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.parser1"));
         }
 
         if (varQnty == 0) {
             //return -1;
-            throw new IOException (BundleUtil.getStringFromBundle("rtabfileparser.ioexception.parser2"));
+            throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.parser2"));
         }
 
-        dbgLog.fine("CSV reader; varQnty: "+varQnty);
-        dbgLog.fine("CSV reader; delimiter: "+delimiterChar);
+        dbgLog.fine("CSV reader; varQnty: " + varQnty);
+        dbgLog.fine("CSV reader; delimiter: " + delimiterChar);
 
 
         String[] caseRow = new String[varQnty];
@@ -93,7 +92,7 @@ public class RTabFileParser implements java.io.Serializable {
         boolean[] isContinuousVariable = new boolean[varQnty];
         boolean[] isTimeVariable = new boolean[varQnty];
         boolean[] isBooleanVariable = new boolean[varQnty];
-        
+
         if (dataTable.getDataVariables() != null) {
             for (int i = 0; i < varQnty; i++) {
                 DataVariable var = dataTable.getDataVariables().get(i);
@@ -104,17 +103,17 @@ public class RTabFileParser implements java.io.Serializable {
                     // throw exception!
                 }
                 if (var.isTypeCharacter()) {
-                    isCharacterVariable[i] = true; 
-                    isContinuousVariable[i] = false; 
-                    
-                    if (var.getFormatCategory() != null && 
+                    isCharacterVariable[i] = true;
+                    isContinuousVariable[i] = false;
+
+                    if (var.getFormatCategory() != null &&
                             (var.getFormatCategory().startsWith("date") || var.getFormatCategory().startsWith("time"))) {
-                            isTimeVariable[i] = true; 
-                        }
-                    
+                        isTimeVariable[i] = true;
+                    }
+
                 } else if (var.isTypeNumeric()) {
-                    isCharacterVariable[i] = false; 
-                    
+                    isCharacterVariable[i] = false;
+
                     if (var.getInterval() == null) {
                         // throw exception!
                     }
@@ -122,38 +121,38 @@ public class RTabFileParser implements java.io.Serializable {
                         isContinuousVariable[i] = true;
                     } else {
                         // discrete by default:
-                        isContinuousVariable[i] = false; 
+                        isContinuousVariable[i] = false;
                         if (var.getFormatCategory() != null && var.getFormatCategory().equals("Boolean")) {
-                            isBooleanVariable[i] = true; 
+                            isBooleanVariable[i] = true;
                         }
                     }
                 } else {
                     // throw excepion "unknown variable format type" - ?
                 }
-                
-                
+
+
             }
         } else {
             // throw exception!
         }
-        
+
         while ((line = csvReader.readLine()) != null) {
             // chop the line:
             line = line.replaceFirst("[\r\n]*$", "");
-            valueTokens = line.split(""+delimiterChar, -2);
+            valueTokens = line.split("" + delimiterChar, -2);
 
             if (valueTokens == null) {
-                throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.failed" , Arrays.asList(Integer.toString(lineCounter + 1))));
+                throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.failed", Arrays.asList(Integer.toString(lineCounter + 1))));
 
             }
 
             if (valueTokens.length != varQnty) {
-                throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.mismatch" , Arrays.asList(Integer.toString(lineCounter + 1),Integer.toString(varQnty),Integer.toString(valueTokens.length))));
+                throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.mismatch", Arrays.asList(Integer.toString(lineCounter + 1), Integer.toString(varQnty), Integer.toString(valueTokens.length))));
             }
 
             //dbgLog.fine("case: "+lineCounter);
 
-            for ( int i = 0; i < varQnty; i++ ) {
+            for (int i = 0; i < varQnty; i++) {
                 //dbgLog.fine("value: "+valueTokens[i]);
 
                 if (isCharacterVariable[i]) {
@@ -168,13 +167,13 @@ public class RTabFileParser implements java.io.Serializable {
                         // escape the remaining ones:
                         charToken = charToken.replace("\"", "\\\"");
                         // final pair of quotes:
-                        if (isTimeVariable==null || (!isTimeVariable[i])) {
+                        if (isTimeVariable == null || (!isTimeVariable[i])) {
                             charToken = "\"" + charToken + "\"";
                         }
                         caseRow[i] = charToken;
                     } else {
                         // missing value:
-                           caseRow[i] = ""; 
+                        caseRow[i] = "";
                     }
 
                 } else if (isContinuousVariable[i]) {
@@ -193,8 +192,8 @@ public class RTabFileParser implements java.io.Serializable {
                     // respectively. Of course R will add double quotes around 
                     // the tokens, hence the post-processing - we'll just need 
                     // to remove all these quotes, and then we'll be fine. 
-                    
-                    dbgLog.fine("R Tab File Parser; double value: "+valueTokens[i]); 
+
+                    dbgLog.fine("R Tab File Parser; double value: " + valueTokens[i]);
                     // Dealing with quotes: 
                     // remove the leading and trailing quotes, if present:
                     valueTokens[i] = valueTokens[i].replaceFirst("^\"", "");
@@ -203,9 +202,9 @@ public class RTabFileParser implements java.io.Serializable {
                         caseRow[i] = "";
                     } else if (valueTokens[i] != null && valueTokens[i].equalsIgnoreCase("NaN")) {
                         caseRow[i] = "NaN";
-                    } else if (valueTokens[i] != null && 
-                            ( valueTokens[i].equalsIgnoreCase("Inf")
-                            || valueTokens[i].equalsIgnoreCase("+Inf"))) {
+                    } else if (valueTokens[i] != null &&
+                            (valueTokens[i].equalsIgnoreCase("Inf")
+                                    || valueTokens[i].equalsIgnoreCase("+Inf"))) {
                         caseRow[i] = "Inf";
                     } else if (valueTokens[i] != null && valueTokens[i].equalsIgnoreCase("-Inf")) {
                         caseRow[i] = "-Inf";
@@ -218,7 +217,7 @@ public class RTabFileParser implements java.io.Serializable {
 
                             //dataTable[i][lineCounter] = (new Double(0)).toString();
                             caseRow[i] = "";
-                            
+
                             // TODO:
                             // decide if we should rather throw an exception and exit here; 
                             // all the values in this file at this point must be 
@@ -231,7 +230,7 @@ public class RTabFileParser implements java.io.Serializable {
                         // remove the leading and trailing quotes, if present:
                         charToken = charToken.replaceFirst("^\"", "");
                         charToken = charToken.replaceFirst("\"$", "");
-                        
+
                         if (charToken.equals("FALSE")) {
                             caseRow[i] = "0";
                         } else if (charToken.equals("TRUE")) {
@@ -240,13 +239,13 @@ public class RTabFileParser implements java.io.Serializable {
                             // Legit case - Missing Value!
                             caseRow[i] = charToken;
                         } else {
-                            throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.boolean" , Arrays.asList(Integer.toString( +i)))+charToken);
+                            throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.boolean", Arrays.asList(Integer.toString(+i))) + charToken);
                         }
                     } else {
-                        throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.read" , Arrays.asList(Integer.toString(i))));
+                        throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.read", Arrays.asList(Integer.toString(i))));
                     }
 
-                    
+
                 } else {
                     // Numeric, Integer:
                     // One special case first: R NA (missing value) needs to be 
@@ -255,7 +254,7 @@ public class RTabFileParser implements java.io.Serializable {
                     // create an Integer object from the String "NA" would
                     // result in an exception, that would be intercepted below,
                     // with the same end result)
-                    dbgLog.fine("R Tab File Parser; integer value: "+valueTokens[i]);
+                    dbgLog.fine("R Tab File Parser; integer value: " + valueTokens[i]);
                     if (valueTokens[i] != null && valueTokens[i].equalsIgnoreCase("NA")) {
                         caseRow[i] = "";
                     } else {

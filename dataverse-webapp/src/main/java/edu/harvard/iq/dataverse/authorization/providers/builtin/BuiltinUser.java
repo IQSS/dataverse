@@ -1,10 +1,9 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
-import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.ValidateUserName;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
-import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
-import java.io.Serializable;
+import org.hibernate.validator.constraints.NotBlank;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -16,23 +15,22 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.Size;
-import org.hibernate.validator.constraints.NotBlank;
+import java.io.Serializable;
 
 /**
- *
  * @author xyang
  * @author mbarsinai
  */
 @NamedQueries({
-		@NamedQuery( name="BuiltinUser.findAll",
-				query = "SELECT u FROM BuiltinUser u ORDER BY u.userName"),
-		@NamedQuery( name="BuiltinUser.findByUserName",
-				query = "SELECT u FROM BuiltinUser u WHERE u.userName=:userName"),
-		@NamedQuery( name="BuiltinUser.listByUserNameLike",
-				query = "SELECT u FROM BuiltinUser u WHERE u.userName LIKE :userNameLike")
+        @NamedQuery(name = "BuiltinUser.findAll",
+                query = "SELECT u FROM BuiltinUser u ORDER BY u.userName"),
+        @NamedQuery(name = "BuiltinUser.findByUserName",
+                query = "SELECT u FROM BuiltinUser u WHERE u.userName=:userName"),
+        @NamedQuery(name = "BuiltinUser.listByUserNameLike",
+                query = "SELECT u FROM BuiltinUser u WHERE u.userName LIKE :userNameLike")
 })
 @Entity
-@Table(indexes = {@Index(columnList="userName")})  // for sorting the NamedQuery BuiltinUser.findAll
+@Table(indexes = {@Index(columnList = "userName")})  // for sorting the NamedQuery BuiltinUser.findAll
 public class BuiltinUser implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -41,18 +39,18 @@ public class BuiltinUser implements Serializable {
     private Long id;
 
     @NotBlank(message = "{user.enterUsername}")
-    @Size(min=2, max=60, message = "{user.usernameLength}")
+    @Size(min = 2, max = 60, message = "{user.usernameLength}")
     @ValidateUserName(message = "{user.illegalCharacters}")
-    @Column(nullable = false, unique=true)  
+    @Column(nullable = false, unique = true)
     private String userName;
-    
-    private int passwordEncryptionVersion; 
+
+    private int passwordEncryptionVersion;
     private String encryptedPassword;
 
     /**
      * These attributes are kept as transients for legacy purposes, namely to ease
      * the creation of users via API with serialization
-     * 
+     * <p>
      * We do not provide getters because the only time these need to be gotten
      * is not individually
      */
@@ -66,53 +64,62 @@ public class BuiltinUser implements Serializable {
     private String affiliation;
     @Transient
     private String position;
-    
+
     @Deprecated()
     public String getEmail() {
         return email;
     }
+
     @Deprecated()
     public void setEmail(String email) {
-       this.email = email;
+        this.email = email;
     }
+
     @Deprecated()
     public String getFirstName() {
-       return firstName;
+        return firstName;
     }
+
     @Deprecated()
     public void setFirstName(String firstName) {
-       this.firstName = firstName;
+        this.firstName = firstName;
     }
+
     @Deprecated()
     public String getLastName() {
-       return lastName;
+        return lastName;
     }
+
     @Deprecated()
     public void setLastName(String lastName) {
-       this.lastName = lastName;
+        this.lastName = lastName;
     }
+
     @Deprecated()
     public String getAffiliation() {
-       return affiliation;
+        return affiliation;
     }
+
     @Deprecated()
     public void setAffiliation(String affiliation) {
-       this.affiliation = affiliation;
+        this.affiliation = affiliation;
     }
+
     @Deprecated()
     public String getPosition() {
-       return position;
+        return position;
     }
+
     @Deprecated()
     public void setPosition(String position) {
-       this.position = position;
+        this.position = position;
     }
-    
-    public void updateEncryptedPassword( String encryptedPassword, int algorithmVersion ) {
+
+    public void updateEncryptedPassword(String encryptedPassword, int algorithmVersion) {
         setEncryptedPassword(encryptedPassword);
         setPasswordEncryptionVersion(algorithmVersion);
     }
-    
+
     public Long getId() {
         return id;
     }
@@ -128,15 +135,15 @@ public class BuiltinUser implements Serializable {
     public void setUserName(String userName) {
         this.userName = userName;
     }
-    
+
     public String getEncryptedPassword() {
         return encryptedPassword;
     }
-    
+
     /**
      * JPA-use only. Humans should call {@link #updateEncryptedPassword(java.lang.String, int)}
      * and update the password and the algorithm at the same time.
-     * 
+     *
      * @param encryptedPassword
      * @deprecated
      */
@@ -163,7 +170,7 @@ public class BuiltinUser implements Serializable {
 
     @Override
     public String toString() {
-            return "BuiltinUser{" + "id=" + id + ", userName=" + userName + '}';
+        return "BuiltinUser{" + "id=" + id + ", userName=" + userName + '}';
     }
 
     public int getPasswordEncryptionVersion() {
@@ -173,18 +180,18 @@ public class BuiltinUser implements Serializable {
     public void setPasswordEncryptionVersion(int passwordEncryptionVersion) {
         this.passwordEncryptionVersion = passwordEncryptionVersion;
     }
-    
+
     /**
      * This only exists at this point to ease creation of users via API.
      * Previously we stored more information in the BuiltInUser, but this was
      * removed and only stored with AuthenticatedUser.
      * We use this along with the transient BuiltinUser attributes to gather
      * needed data for user creation.
-     * 
+     *
      * @deprecated
      */
     @Deprecated()
     public AuthenticatedUserDisplayInfo getDisplayInfoForApiCreation() {
-        return new AuthenticatedUserDisplayInfo(firstName, lastName, email, affiliation, position );
+        return new AuthenticatedUserDisplayInfo(firstName, lastName, email, affiliation, position);
     }
 }

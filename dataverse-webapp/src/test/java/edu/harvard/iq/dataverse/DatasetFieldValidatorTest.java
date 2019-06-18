@@ -17,26 +17,25 @@ import javax.validation.ConstraintValidatorContext;
 import static org.junit.Assert.assertEquals;
 
 /**
- *
  * @author skraffmi
  */
 public class DatasetFieldValidatorTest {
-    
+
     public DatasetFieldValidatorTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
     }
-    
+
     @After
     public void tearDown() {
     }
@@ -51,15 +50,15 @@ public class DatasetFieldValidatorTest {
         DatasetField value = new DatasetField();
 
         final ConstraintValidatorContext ctx =
-            Mockito.mock(ConstraintValidatorContext.class);
+                Mockito.mock(ConstraintValidatorContext.class);
         DatasetFieldValidator instance = new DatasetFieldValidator();
         //If its a template field it is always valid
         value.setTemplate(new Template());
         boolean expResult = true;
         boolean result = instance.isValid(value, ctx);
         assertEquals(expResult, result);
-        
-        
+
+
         //if not template and required
         value.setTemplate(null);
         DatasetVersion datasetVersion = new DatasetVersion();
@@ -68,7 +67,7 @@ public class DatasetFieldValidatorTest {
         dataset.setOwner(dataverse);
         datasetVersion.setDataset(dataset);
         value.setDatasetVersion(datasetVersion);
-        
+
         DatasetFieldValue dfv = new DatasetFieldValue();
         DatasetFieldType dft = new DatasetFieldType("test", FieldType.TEXT, false);
         dft.setRequired(true);
@@ -77,17 +76,17 @@ public class DatasetFieldValidatorTest {
         dfv.setValue("");
         result = instance.isValid(value, ctx);
         assertEquals(false, result);
-        
+
         //Fill in a value - should be valid now....
         value.setSingleValue("value");
         result = instance.isValid(value, ctx);
         assertEquals(true, result);
-        
+
         //if not required - can be blank
         dft.setRequired(false);
         value.setSingleValue("");
         result = instance.isValid(value, ctx);
         assertEquals(true, result);
     }
-    
+
 }

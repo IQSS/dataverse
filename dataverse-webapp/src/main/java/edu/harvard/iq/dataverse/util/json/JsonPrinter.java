@@ -5,9 +5,9 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetDistributor;
-import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
+import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -15,14 +15,13 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseTheme;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
@@ -31,20 +30,33 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.StringUtil;
-import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 
-import java.util.*;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Deque;
+import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -52,9 +64,9 @@ import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static java.util.stream.Collectors.toList;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
 
 /**
  * Convert objects to Json.
@@ -69,11 +81,11 @@ public class JsonPrinter {
 
     // Passed to DatasetFieldWalker so it can check the :ExcludeEmailFromExport setting
     public static void setSettingsService(SettingsServiceBean ssb) {
-            settingsService = ssb;
+        settingsService = ssb;
     }
 
     public JsonPrinter() {
-   
+
     }
 
     public static final BriefJsonPrinter brief = new BriefJsonPrinter();
@@ -113,7 +125,7 @@ public class JsonPrinter {
                 .add("lastApiUseTime", authenticatedUser.getLastApiUseTime())
                 .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
     }
-    
+
     public static JsonObjectBuilder json(RoleAssignment ra) {
         return jsonObjectBuilder()
                 .add("id", ra.getId())
@@ -138,8 +150,8 @@ public class JsonPrinter {
                 .add("message", lock.getInfo());
 
     }
-    
-    public static JsonObjectBuilder json( RoleAssigneeDisplayInfo d ) {
+
+    public static JsonObjectBuilder json(RoleAssigneeDisplayInfo d) {
         return jsonObjectBuilder()
                 .add("title", d.getTitle())
                 .add("email", d.getEmailAddress())
@@ -147,32 +159,32 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(IpGroup grp) {
-         // collect single addresses
-        List<String> singles = grp.getRanges().stream().filter( IpAddressRange::isSingleAddress )
-                                .map( IpAddressRange::getBottom )
-                                .map( IpAddress::toString ).collect(toList());
+        // collect single addresses
+        List<String> singles = grp.getRanges().stream().filter(IpAddressRange::isSingleAddress)
+                .map(IpAddressRange::getBottom)
+                .map(IpAddress::toString).collect(toList());
         // collect "real" ranges
-        List<List<String>> ranges = grp.getRanges().stream().filter( rng -> !rng.isSingleAddress() )
-                                .map( rng -> Arrays.asList(rng.getBottom().toString(), rng.getTop().toString()) )
-                                .collect(toList());
+        List<List<String>> ranges = grp.getRanges().stream().filter(rng -> !rng.isSingleAddress())
+                .map(rng -> Arrays.asList(rng.getBottom().toString(), rng.getTop().toString()))
+                .collect(toList());
 
         JsonObjectBuilder bld = jsonObjectBuilder()
-                .add("alias", grp.getPersistedGroupAlias() )
+                .add("alias", grp.getPersistedGroupAlias())
                 .add("identifier", grp.getIdentifier())
-                .add("id", grp.getId() )
-                .add("name", grp.getDisplayName() )
-                .add("description", grp.getDescription() );
-       
-        if ( ! singles.isEmpty() ) {
-            bld.add("addresses", asJsonArray(singles) );
+                .add("id", grp.getId())
+                .add("name", grp.getDisplayName())
+                .add("description", grp.getDescription());
+
+        if (!singles.isEmpty()) {
+            bld.add("addresses", asJsonArray(singles));
         }
-        
-        if ( ! ranges.isEmpty() ) {
+
+        if (!ranges.isEmpty()) {
             JsonArrayBuilder rangesBld = Json.createArrayBuilder();
-            ranges.forEach( r -> rangesBld.add( Json.createArrayBuilder().add(r.get(0)).add(r.get(1))) );
-            bld.add("ranges", rangesBld );
+            ranges.forEach(r -> rangesBld.add(Json.createArrayBuilder().add(r.get(0)).add(r.get(1))));
+            bld.add("ranges", rangesBld);
         }
-        
+
         return bld;
     }
 
@@ -207,25 +219,25 @@ public class JsonPrinter {
 
         return bld;
     }
-    
-    public static JsonObjectBuilder json(Workflow wf){
+
+    public static JsonObjectBuilder json(Workflow wf) {
         JsonObjectBuilder bld = jsonObjectBuilder();
         bld.add("name", wf.getName());
-        if ( wf.getId() != null ) {
+        if (wf.getId() != null) {
             bld.add("id", wf.getId());
         }
-        
-        if ( wf.getSteps()!=null && !wf.getSteps().isEmpty()) {
+
+        if (wf.getSteps() != null && !wf.getSteps().isEmpty()) {
             JsonArrayBuilder arr = Json.createArrayBuilder();
-            for ( WorkflowStepData stp : wf.getSteps() ) {
-                arr.add( jsonObjectBuilder().add("stepType", stp.getStepType())
-                                   .add("provider", stp.getProviderId())
-                                   .add("parameters", mapToObject(stp.getStepParameters()))
-                                   .add("requiredSettings", mapToObject(stp.getStepSettings())) );
+            for (WorkflowStepData stp : wf.getSteps()) {
+                arr.add(jsonObjectBuilder().add("stepType", stp.getStepType())
+                                .add("provider", stp.getProviderId())
+                                .add("parameters", mapToObject(stp.getStepParameters()))
+                                .add("requiredSettings", mapToObject(stp.getStepSettings())));
             }
-            bld.add("steps", arr );
+            bld.add("steps", arr);
         }
-        
+
         return bld;
     }
 
@@ -257,22 +269,22 @@ public class JsonPrinter {
 
     public static JsonArrayBuilder json(List<DataverseContact> dataverseContacts) {
         return dataverseContacts.stream()
-                .map( dc -> jsonObjectBuilder()
+                .map(dc -> jsonObjectBuilder()
                         .add("displayOrder", dc.getDisplayOrder())
                         .add("contactEmail", dc.getContactEmail())
-                ).collect( toJsonArray() );
+                ).collect(toJsonArray());
     }
-    
-    public static JsonObjectBuilder json( DataverseTheme theme ) {
+
+    public static JsonObjectBuilder json(DataverseTheme theme) {
         final NullSafeJsonBuilder baseObject = jsonObjectBuilder()
-                .add("id", theme.getId() )
+                .add("id", theme.getId())
                 .add("logo", theme.getLogo())
                 .add("tagline", theme.getTagline())
                 .add("linkUrl", theme.getLinkUrl())
                 .add("linkColor", theme.getLinkColor())
                 .add("textColor", theme.getTextColor())
                 .add("backgroundColor", theme.getBackgroundColor());
-        if ( theme.getLogoAlignment() != null ) {
+        if (theme.getLogoAlignment() != null) {
             baseObject.add("logoBackgroundColor", theme.getLogoBackgroundColor());
         }
         return baseObject;
@@ -317,21 +329,21 @@ public class JsonPrinter {
                 .add("createTime", format(dsv.getCreateTime()))
                 .add("license", dsv.getTermsOfUseAndAccess().getLicense() != null ? dsv.getTermsOfUseAndAccess().getLicense().toString() : null)
                 .add("termsOfUse", getLicenseInfo(dsv))
-                .add("confidentialityDeclaration", dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration() != null ? dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration() : null)
-                .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus() != null ? dsv.getTermsOfUseAndAccess().getAvailabilityStatus() : null)
-                .add("specialPermissions", dsv.getTermsOfUseAndAccess().getSpecialPermissions() != null ? dsv.getTermsOfUseAndAccess().getSpecialPermissions() : null)
-                .add("restrictions", dsv.getTermsOfUseAndAccess().getRestrictions() != null ? dsv.getTermsOfUseAndAccess().getRestrictions() : null)
-                .add("citationRequirements", dsv.getTermsOfUseAndAccess().getCitationRequirements() != null ? dsv.getTermsOfUseAndAccess().getCitationRequirements() : null)
-                .add("depositorRequirements", dsv.getTermsOfUseAndAccess().getDepositorRequirements() != null ? dsv.getTermsOfUseAndAccess().getDepositorRequirements() : null)
-                .add("conditions", dsv.getTermsOfUseAndAccess().getConditions() != null ? dsv.getTermsOfUseAndAccess().getConditions() : null)
-                .add("disclaimer", dsv.getTermsOfUseAndAccess().getDisclaimer() != null ? dsv.getTermsOfUseAndAccess().getDisclaimer() : null)
-                .add("termsOfAccess", dsv.getTermsOfUseAndAccess().getTermsOfAccess() != null ? dsv.getTermsOfUseAndAccess().getTermsOfAccess() : null)
-                .add("dataAccessPlace", dsv.getTermsOfUseAndAccess().getDataAccessPlace() != null ? dsv.getTermsOfUseAndAccess().getDataAccessPlace() : null)
-                .add("originalArchive", dsv.getTermsOfUseAndAccess().getOriginalArchive() != null ? dsv.getTermsOfUseAndAccess().getOriginalArchive() : null)
-                .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus() != null ? dsv.getTermsOfUseAndAccess().getAvailabilityStatus() : null)
-                .add("contactForAccess", dsv.getTermsOfUseAndAccess().getContactForAccess() != null ? dsv.getTermsOfUseAndAccess().getContactForAccess() : null)
-                .add("sizeOfCollection", dsv.getTermsOfUseAndAccess().getSizeOfCollection() != null ? dsv.getTermsOfUseAndAccess().getSizeOfCollection() : null)
-                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion() != null ? dsv.getTermsOfUseAndAccess().getStudyCompletion() : null);
+                .add("confidentialityDeclaration", dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration())
+                .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus())
+                .add("specialPermissions", dsv.getTermsOfUseAndAccess().getSpecialPermissions())
+                .add("restrictions", dsv.getTermsOfUseAndAccess().getRestrictions())
+                .add("citationRequirements", dsv.getTermsOfUseAndAccess().getCitationRequirements())
+                .add("depositorRequirements", dsv.getTermsOfUseAndAccess().getDepositorRequirements())
+                .add("conditions", dsv.getTermsOfUseAndAccess().getConditions())
+                .add("disclaimer", dsv.getTermsOfUseAndAccess().getDisclaimer())
+                .add("termsOfAccess", dsv.getTermsOfUseAndAccess().getTermsOfAccess())
+                .add("dataAccessPlace", dsv.getTermsOfUseAndAccess().getDataAccessPlace())
+                .add("originalArchive", dsv.getTermsOfUseAndAccess().getOriginalArchive())
+                .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus())
+                .add("contactForAccess", dsv.getTermsOfUseAndAccess().getContactForAccess())
+                .add("sizeOfCollection", dsv.getTermsOfUseAndAccess().getSizeOfCollection())
+                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion());
 
         bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields()));
 
@@ -339,27 +351,27 @@ public class JsonPrinter {
 
         return bld;
     }
-    
-    
-    public static JsonObjectBuilder jsonDataFileList(List<DataFile> dataFiles){
-    
-        if (dataFiles==null){
+
+
+    public static JsonObjectBuilder jsonDataFileList(List<DataFile> dataFiles) {
+
+        if (dataFiles == null) {
             throw new NullPointerException("dataFiles cannot be null");
         }
-        
-        JsonObjectBuilder bld = jsonObjectBuilder();
-        
-        
-        List<FileMetadata> dataFileList = dataFiles.stream()
-                                    .map(x -> x.getFileMetadata())
-                                    .collect(Collectors.toList());
 
-        
+        JsonObjectBuilder bld = jsonObjectBuilder();
+
+
+        List<FileMetadata> dataFileList = dataFiles.stream()
+                .map(x -> x.getFileMetadata())
+                .collect(Collectors.toList());
+
+
         bld.add("files", jsonFileMetadatas(dataFileList));
 
         return bld;
     }
-    
+
     private static String getRootDataverseNameforCitation(Dataset dataset) {
         Dataverse root = dataset.getOwner();
         while (root.getOwner() != null) {
@@ -372,7 +384,7 @@ public class JsonPrinter {
             return "";
         }
     }
-    
+
     private static String getLicenseInfo(DatasetVersion dsv) {
         if (dsv.getTermsOfUseAndAccess().getLicense() != null && dsv.getTermsOfUseAndAccess().getLicense().equals(TermsOfUseAndAccess.License.CC0)) {
             return "CC0 Waiver";
@@ -527,7 +539,7 @@ public class JsonPrinter {
                 // categories - and we probably need to export them too!) -- L.A. 4.5
                 .add("description", fmd.getDescription())
                 .add("label", fmd.getLabel()) // "label" is the filename
-                .add("restricted", fmd.isRestricted()) 
+                .add("restricted", fmd.isRestricted())
                 .add("directoryLabel", fmd.getDirectoryLabel())
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())
@@ -538,7 +550,7 @@ public class JsonPrinter {
     public static JsonObjectBuilder json(DataFile df) {
         return JsonPrinter.json(df, null);
     }
-    
+
     public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata) {
         // File names are no longer stored in the DataFile entity; 
         // (they are instead in the FileMetadata (as "labels") - this way 
@@ -549,7 +561,7 @@ public class JsonPrinter {
         // *correct* file name - i.e., that it comes from the right version. 
         // (TODO...? L.A. 4.5, Aug 7 2016)
         String fileName = null;
-        
+
         if (fileMetadata != null) {
             fileName = fileMetadata.getLabel();
         } else if (df.getFileMetadata() != null) {
@@ -557,27 +569,27 @@ public class JsonPrinter {
             // version *you want*! (L.A.)
             fileName = df.getFileMetadata().getLabel();
         }
-        
+
         String pidURL = "";
-        
-        if (new GlobalId(df).toURL() != null){
+
+        if (new GlobalId(df).toURL() != null) {
             pidURL = new GlobalId(df).toURL().toString();
         }
-        
+
         return jsonObjectBuilder()
                 .add("id", df.getId())
                 .add("persistentId", df.getGlobalIdString())
                 .add("pidURL", pidURL)
                 .add("filename", fileName)
-                .add("contentType", df.getContentType())            
-                .add("filesize", df.getFilesize())            
-                .add("description", df.getDescription())    
+                .add("contentType", df.getContentType())
+                .add("filesize", df.getFilesize())
+                .add("description", df.getDescription())
                 //.add("released", df.isReleased())
                 //.add("restricted", df.isRestricted())
                 .add("storageIdentifier", df.getStorageIdentifier())
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())
-                .add ("originalFileSize", df.getOriginalFileSize())
+                .add("originalFileSize", df.getOriginalFileSize())
                 .add("UNF", df.getUnf())
                 //---------------------------------------------
                 // For file replace: rootDataFileId, previousDataFileId
@@ -594,7 +606,7 @@ public class JsonPrinter {
                 .add("tabularTags", getTabularFileTags(df))
                 ;
     }
-    
+
     public static String format(Date d) {
         return (d == null) ? null : Util.getDateTimeFormat().format(d);
     }
@@ -660,8 +672,8 @@ public class JsonPrinter {
             JsonArray jsonValues = valueArrStack.pop().build();
             if (!jsonValues.isEmpty()) {
                 jsonField.add("value",
-                        f.getDatasetFieldType().isAllowMultiples() ? jsonValues
-                                : jsonValues.get(0));
+                              f.getDatasetFieldType().isAllowMultiples() ? jsonValues
+                                      : jsonValues.get(0));
                 valueArrStack.peek().add(jsonField);
             }
         }
@@ -698,12 +710,12 @@ public class JsonPrinter {
 
     public static JsonObjectBuilder json(AuthenticationProviderRow aRow) {
         return jsonObjectBuilder()
-                        .add("id", aRow.getId())
-                        .add("factoryAlias", aRow.getFactoryAlias() )
-                        .add("title", aRow.getTitle())
-                        .add("subtitle",aRow.getSubtitle())
-                        .add("factoryData", aRow.getFactoryData())
-                        .add("enabled", aRow.isEnabled())
+                .add("id", aRow.getId())
+                .add("factoryAlias", aRow.getFactoryAlias())
+                .add("title", aRow.getTitle())
+                .add("subtitle", aRow.getSubtitle())
+                .add("factoryData", aRow.getFactoryData())
+                .add("enabled", aRow.isEnabled())
                 ;
     }
 
@@ -715,26 +727,26 @@ public class JsonPrinter {
                 .add("roleAssignment", json(privateUrl.getRoleAssignment()));
     }
 
-    public static JsonObjectBuilder json( ExplicitGroup eg ) {
+    public static JsonObjectBuilder json(ExplicitGroup eg) {
         JsonArrayBuilder ras = Json.createArrayBuilder();
-            for (String u : eg.getContainedRoleAssgineeIdentifiers()) {
-                ras.add(u);
-            }
-            return jsonObjectBuilder()
-                    .add("identifier", eg.getIdentifier())
-                    .add("groupAliasInOwner", eg.getGroupAliasInOwner())
-                    .add("owner", eg.getOwner().getId())
-                    .add("description", eg.getDescription())
-                    .add("displayName", eg.getDisplayName())
-                    .add("containedRoleAssignees", ras);
-    }
-    
-    public static JsonObjectBuilder json( DataverseFacet aFacet ) {
+        for (String u : eg.getContainedRoleAssgineeIdentifiers()) {
+            ras.add(u);
+        }
         return jsonObjectBuilder()
-                    .add("id", String.valueOf(aFacet.getId())) // TODO should just be id I think
-                    .add("name", aFacet.getDatasetFieldType().getDisplayName());
+                .add("identifier", eg.getIdentifier())
+                .add("groupAliasInOwner", eg.getGroupAliasInOwner())
+                .add("owner", eg.getOwner().getId())
+                .add("description", eg.getDescription())
+                .add("displayName", eg.getDisplayName())
+                .add("containedRoleAssignees", ras);
     }
-        
+
+    public static JsonObjectBuilder json(DataverseFacet aFacet) {
+        return jsonObjectBuilder()
+                .add("id", String.valueOf(aFacet.getId())) // TODO should just be id I think
+                .add("name", aFacet.getDatasetFieldType().getDisplayName());
+    }
+
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {
         return new Collector<String, JsonArrayBuilder, JsonArrayBuilder>() {
 
@@ -780,7 +792,7 @@ public class JsonPrinter {
 
             @Override
             public BiConsumer<ArrayList<JsonObjectBuilder>, JsonObjectBuilder> accumulator() {
-                return (t, u) ->t.add(u);
+                return (t, u) -> t.add(u);
             }
 
             @Override
@@ -794,9 +806,9 @@ public class JsonPrinter {
             @Override
             public Function<ArrayList<JsonObjectBuilder>, JsonArrayBuilder> finisher() {
                 return (l) -> {
-                  JsonArrayBuilder bld = Json.createArrayBuilder();
-                  l.forEach( bld::add );
-                  return bld;
+                    JsonArrayBuilder bld = Json.createArrayBuilder();
+                    l.forEach(bld::add);
+                    return bld;
                 };
             }
 
@@ -824,17 +836,20 @@ public class JsonPrinter {
             return null;
         }
     }
-    
+
     /**
      * Takes a map, returns a Json object for this map.
      * If map is {@code null}, returns {@code null}.
+     *
      * @param in the map to be translated
      * @return a Json Builder of the map, or {@code null}.
      */
-    public static JsonObjectBuilder mapToObject(Map<String,String> in) {
-        if ( in == null ) return null;
+    public static JsonObjectBuilder mapToObject(Map<String, String> in) {
+        if (in == null) {
+            return null;
+        }
         JsonObjectBuilder b = jsonObjectBuilder();
-        in.keySet().forEach( k->b.add(k, in.get(k)) );
+        in.keySet().forEach(k -> b.add(k, in.get(k)));
         return b;
     }
 }

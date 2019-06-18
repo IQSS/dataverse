@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +26,7 @@ public class PersistProvJsonCommand extends AbstractCommand<DataFile> {
     private final String jsonInput;
     private final String entityName;
     private final boolean saveContext;
-    
+
     public PersistProvJsonCommand(DataverseRequest aRequest, DataFile dataFile, String jsonInput, String entityName, boolean saveContext) {
         super(aRequest, dataFile);
         this.dataFile = dataFile;
@@ -37,7 +38,7 @@ public class PersistProvJsonCommand extends AbstractCommand<DataFile> {
     @Override
     public DataFile execute(CommandContext ctxt) throws CommandException {
         //First, save the name of the entity in the json so CPL can later connect the uploaded json
-        if(null == entityName || "".equals(entityName)) {
+        if (null == entityName || "".equals(entityName)) {
             String error = "A valid entityName must be provided to connect the DataFile to the provenance data.";
             throw new IllegalCommandException(error, this);
         }
@@ -53,12 +54,12 @@ public class PersistProvJsonCommand extends AbstractCommand<DataFile> {
             String error = "Exception caught persisting PROV-JSON: " + ex;
             throw new IllegalCommandException(error, this);
         }
-        
+
         dataFile.setProvEntityName(entityName);
-        if(saveContext) {
+        if (saveContext) {
             dataFile = ctxt.files().save(dataFile);
         }
-        
+
         return dataFile;
     }
 

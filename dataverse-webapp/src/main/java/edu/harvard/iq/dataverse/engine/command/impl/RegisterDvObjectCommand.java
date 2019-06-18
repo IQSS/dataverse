@@ -17,21 +17,20 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 /**
- *
  * @author skraffmi
  */
 @RequiredPermissions({})
 public class RegisterDvObjectCommand extends AbstractVoidCommand {
 
     private final DvObject target;
-    private final  Boolean migrateHandle;
+    private final Boolean migrateHandle;
 
     public RegisterDvObjectCommand(DataverseRequest aRequest, DvObject target) {
         super(aRequest, target);
         this.target = target;
         this.migrateHandle = false;
     }
-    
+
     public RegisterDvObjectCommand(DataverseRequest aRequest, DvObject target, Boolean migrateHandle) {
         super(aRequest, target);
         this.target = target;
@@ -40,10 +39,12 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
 
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
-        
-        if(this.migrateHandle){
+
+        if (this.migrateHandle) {
             //Only continue if you can successfully migrate the handle
-            if (!processMigrateHandle(ctxt)) return;
+            if (!processMigrateHandle(ctxt)) {
+                return;
+            }
         }
         String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol);
         String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority);
@@ -133,15 +134,19 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             //Only continue if you can successfully migrate the handle
             boolean doNormalSolrDocCleanUp = true;
             ctxt.index().indexDataset((Dataset) target, doNormalSolrDocCleanUp);
-            ctxt.solrIndex().indexPermissionsForOneDvObject((Dataset) target);
+            ctxt.solrIndex().indexPermissionsForOneDvObject(target);
         }
     }
-    
-    private Boolean processMigrateHandle (CommandContext ctxt){
+
+    private Boolean processMigrateHandle(CommandContext ctxt) {
         boolean retval = true;
-        if(!target.isInstanceofDataset()) return false;
-        if(!target.getProtocol().equals(GlobalId.HDL_PROTOCOL)) return false;
-        
+        if (!target.isInstanceofDataset()) {
+            return false;
+        }
+        if (!target.getProtocol().equals(GlobalId.HDL_PROTOCOL)) {
+            return false;
+        }
+
         AlternativePersistentIdentifier api = new AlternativePersistentIdentifier();
         api.setProtocol(target.getProtocol());
         api.setAuthority(target.getAuthority());
@@ -158,5 +163,5 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
         target.setGlobalIdCreateTime(null);
         return retval;
     }
-        
+
 }

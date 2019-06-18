@@ -28,7 +28,7 @@ public class MessagesAndBannersFragment implements java.io.Serializable {
 
     @Inject
     private BannerDAO bannerDAO;
-    
+
     @Inject
     private DataverseSession dataverseSession;
 

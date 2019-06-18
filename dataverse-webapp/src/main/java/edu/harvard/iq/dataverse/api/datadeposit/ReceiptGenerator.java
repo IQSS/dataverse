@@ -2,9 +2,10 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
-import java.util.logging.Logger;
 import org.apache.abdera.i18n.iri.IRI;
 import org.swordapp.server.DepositReceipt;
+
+import java.util.logging.Logger;
 
 public class ReceiptGenerator {
 

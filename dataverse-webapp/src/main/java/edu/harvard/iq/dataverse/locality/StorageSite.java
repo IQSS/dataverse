@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.locality;
 
-import java.io.Serializable;
-import java.util.Objects;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.Column;
@@ -9,6 +7,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import java.io.Serializable;
+import java.util.Objects;
 
 @Entity
 public class StorageSite implements Serializable {
@@ -31,11 +31,11 @@ public class StorageSite implements Serializable {
      * Sites around the world to which data has been replicated using RSAL
      * (Repository Storage Abstraction Layer). Formerly, the :ReplicationSites
      * database setting.
-     *
+     * <p>
      * TODO: Think about how this is a duplication of the following JVM options:
-     *
+     * <p>
      * - dataverse.fqdn
-     *
+     * <p>
      * - dataverse.siteUrl
      */
     // FIXME: Why is nullable=false having no effect?
@@ -45,11 +45,11 @@ public class StorageSite implements Serializable {
     /**
      * TODO: Consider adding a constraint to only allow one row to be true. The
      * following was suggested...
-     *
+     * <p>
      * create unique index on my_table (actual)
-     *
+     * <p>
      * where actual = true;
-     *
+     * <p>
      * ... at
      * https://stackoverflow.com/questions/28166915/postgresql-constraint-only-one-row-can-have-flag-set/28167225#28167225
      */
@@ -65,7 +65,7 @@ public class StorageSite implements Serializable {
     @Column(name = "transferProtocols", columnDefinition = "TEXT", nullable = false)
     private String transferProtocols;
 
-//    @OneToMany(mappedBy = "storageSite", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    //    @OneToMany(mappedBy = "storageSite", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
 //    private List<DvObjectStorageLocation> dvObjectStorageLocations;
 //    public List<DvObjectStorageLocation> getDvObjectStorageLocations() {
 //        return dvObjectStorageLocations;

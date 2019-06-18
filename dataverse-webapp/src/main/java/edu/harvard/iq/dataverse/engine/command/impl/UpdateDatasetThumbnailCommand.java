@@ -11,6 +11,8 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import org.apache.commons.io.IOUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -18,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.io.IOUtils;
 
 @RequiredPermissions(Permission.EditDataset)
 public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbnail> {
@@ -37,7 +38,7 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
         setDatasetFileAsThumbnail,
         setNonDatasetFileAsThumbnail,
         removeThumbnail
-    };
+    }
 
     public UpdateDatasetThumbnailCommand(DataverseRequest aRequest, Dataset theDataset, UserIntent theUserIntent, Long theDataFileIdSupplied, InputStream theInputStream) {
         super(aRequest, theDataset);
@@ -106,7 +107,7 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                     Logger.getLogger(UpdateDatasetThumbnailCommand.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 Dataset datasetWithNewThumbnail = ctxt.datasets().setNonDatasetFileAsThumbnail(dataset, fileAsStream);
-		IOUtils.closeQuietly(fileAsStream);
+                IOUtils.closeQuietly(fileAsStream);
                 if (datasetWithNewThumbnail != null) {
                     return datasetWithNewThumbnail.getDatasetThumbnail();
                 } else {

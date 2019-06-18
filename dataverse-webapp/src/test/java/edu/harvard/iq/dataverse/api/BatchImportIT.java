@@ -2,15 +2,17 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
-import java.io.File;
 import com.jayway.restassured.response.Response;
-import java.util.logging.Logger;
+import org.hamcrest.CoreMatchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.File;
+import java.util.logging.Logger;
+
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
-import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import org.hamcrest.CoreMatchers;
+import static javax.ws.rs.core.Response.Status.OK;
 
 public class BatchImportIT {
 
@@ -30,17 +32,16 @@ public class BatchImportIT {
      * This test is called "roundTripDdi" because the original idea was to start
      * with DDI (XML) as input to create a dataset (via the DVN 3 migration
      * method) and then export the dataset as DDI to see if the DDI matches.
-     *
+     * <p>
      * In practice, the DDI is slightly different but at least DDI comes out.
      * TODO: Make the DDI going in and coming out the same?
-     *
+     * <p>
      * Note that to run this test more than once the "destroy" of the dataset
      * must succeed. If you need to destroy the dataset manually, run something
      * like this:
-     *
+     * <p>
      * curl -H 'X-Dataverse-key: cd883738-34fa-4101-a3ae-47ffbb30d041' -X DELETE
      * http://localhost:8080/api/datasets/:persistentId/destroy?persistentId=hdl:1902.1/00012
-     *
      */
     @Test
     public void roundTripDdi() throws Exception {

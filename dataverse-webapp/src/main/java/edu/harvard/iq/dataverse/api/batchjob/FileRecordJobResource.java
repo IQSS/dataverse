@@ -5,8 +5,11 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.engine.command.impl.ImportFromFileSystemCommand;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.json.Json;
+import javax.json.JsonObject;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -16,8 +19,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObject;
 
 @Stateless
 @Path("batch/jobs")
@@ -36,10 +37,10 @@ public class FileRecordJobResource extends AbstractApiBean {
     @Path("import/datasets/files/{identifier}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFilesystemImport(@PathParam("identifier") String identifier,
-            @QueryParam("mode") @DefaultValue("MERGE") String mode,
+                                        @QueryParam("mode") @DefaultValue("MERGE") String mode,
             /*@QueryParam("fileMode") @DefaultValue("package_file") String fileMode*/
-            @QueryParam("uploadFolder") String uploadFolder,
-            @QueryParam("totalSize") Long totalSize) {
+                                        @QueryParam("uploadFolder") String uploadFolder,
+                                        @QueryParam("totalSize") Long totalSize) {
         return response(req -> {
             ImportMode importMode = ImportMode.MERGE;
             // Switch to this if you ever need to use something other than MERGE.
@@ -50,8 +51,8 @@ public class FileRecordJobResource extends AbstractApiBean {
                 return error(Response.Status.INTERNAL_SERVER_ERROR, returnString);
             }
             return ok(Json.createObjectBuilder()
-                    .add("message", returnString)
-                    .add("executionId", jsonObject.getInt("executionId"))
+                              .add("message", returnString)
+                              .add("executionId", jsonObject.getInt("executionId"))
             );
         });
     }

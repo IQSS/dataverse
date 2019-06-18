@@ -1,10 +1,11 @@
 package edu.harvard.iq.dataverse.externaltools;
 
-import javax.json.JsonObject;
-import static org.junit.Assert.assertEquals;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import org.junit.Test;
 
-import edu.harvard.iq.dataverse.DataFileServiceBean;
+import javax.json.JsonObject;
+
+import static org.junit.Assert.assertEquals;
 
 public class ExternalToolTest {
 

@@ -43,7 +43,7 @@ public class DataverseTextMessageServiceBeanTest {
         // given
         DataverseTextMessageDto textMessageDto = mock(DataverseTextMessageDto.class);
         when(mapper.mapToNewTextMessage(1L)).thenReturn(textMessageDto);
-        
+
         // when
         DataverseTextMessageDto retTextMessageDto = service.newTextMessage(1L);
 
@@ -56,7 +56,7 @@ public class DataverseTextMessageServiceBeanTest {
         // given
         DataverseTextMessage message = new DataverseTextMessage();
         message.setId(1L);
-        
+
         DataverseTextMessageDto textMessageDto = mock(DataverseTextMessageDto.class);
 
         when(em.find(DataverseTextMessage.class, 1L)).thenReturn(message);
@@ -141,10 +141,10 @@ public class DataverseTextMessageServiceBeanTest {
 
     private void verifyLocaleMessage(DataverseTextMessage textMessage, Set<DataverseLocalizedMessage> messages, DataverseLocalizedMessageDto localeDto) {
         messages.stream().filter(lm ->
-                lm.getMessage().equals(localeDto.getMessage()) &&
-                lm.getLocale().equals(localeDto.getLocale()) &&
-                lm.getDataverseTextMessage().equals(textMessage) &&
-                lm.getId() == null)
+                                         lm.getMessage().equals(localeDto.getMessage()) &&
+                                                 lm.getLocale().equals(localeDto.getLocale()) &&
+                                                 lm.getDataverseTextMessage().equals(textMessage) &&
+                                                 lm.getId() == null)
                 .findAny()
                 .orElseThrow(IllegalStateException::new);
     }
@@ -172,9 +172,9 @@ public class DataverseTextMessageServiceBeanTest {
 
     private void verifyDefaultLocale(List<DataverseLocalizedMessageDto> locales, String locale, String language) {
         assertTrue(locales.stream().anyMatch(lm ->
-                    lm.getLocale().equals(locale) &&
-                    lm.getLanguage().equals(language) &&
-                    lm.getMessage().equals("")
-                ));
+                                                     lm.getLocale().equals(locale) &&
+                                                             lm.getLanguage().equals(language) &&
+                                                             lm.getMessage().equals("")
+        ));
     }
 }

@@ -1,10 +1,15 @@
 package edu.harvard.iq.dataverse;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import java.io.Serializable;
-import javax.persistence.*;
 
 /**
- *
  * @author skraffmiller
  */
 @Entity
@@ -13,10 +18,10 @@ public class CustomQuestionValue implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    @Column( nullable = false )
+
+    @Column(nullable = false)
     private String valueString;
-    
+
     private int displayOrder;
 
     public int getDisplayOrder() {
@@ -42,9 +47,9 @@ public class CustomQuestionValue implements Serializable {
     public void setValueString(String valueString) {
         this.valueString = valueString;
     }
-    
+
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private CustomQuestion customQuestion;
 
     public Long getId() {
@@ -69,16 +74,13 @@ public class CustomQuestionValue implements Serializable {
             return false;
         }
         CustomQuestionValue other = (CustomQuestionValue) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
 
     @Override
     public String toString() {
         return "edu.harvard.iq.dvn.core.vdc.CustomQuestionValue[ id=" + id + " ]";
     }
-    
+
 }
 

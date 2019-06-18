@@ -1,11 +1,15 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
-import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,17 +18,14 @@ import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import static javax.ws.rs.core.Response.Status.OK;
+
+import static com.jayway.restassured.RestAssured.given;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
 
 public class BuiltinUsersIT {
 
@@ -196,7 +197,7 @@ public class BuiltinUsersIT {
         // but is disabled as it could not be used without a code change and
         // then the code to use it was removed in https://github.com/IQSS/dataverse/pull/4993 .
         // We should consider a better way to test email login --MAD 4.9.3
-        
+
         //if (BuiltinUsers.retrievingApiTokenViaEmailEnabled) {
         //    Response getApiTokenUsingEmail = getApiTokenUsingEmail(usernameToCreate + "@mailinator.com", usernameToCreate);
         //    getApiTokenUsingEmail.prettyPrint();
@@ -204,7 +205,7 @@ public class BuiltinUsersIT {
         //    String retrievedTokenUsingEmail = JsonPath.from(getApiTokenUsingEmail.asString()).getString("data.message");
         //    assertEquals(createdToken, retrievedTokenUsingEmail);
         //}
-        
+
         Response failExpected = UtilIT.getApiTokenUsingUsername("junk", "junk");
         failExpected.prettyPrint();
         assertEquals(400, failExpected.getStatusCode());
@@ -237,65 +238,65 @@ public class BuiltinUsersIT {
 
         Collections.unmodifiableMap(Stream.of(
                 new AbstractMap.SimpleEntry<>(" ", Arrays.asList( // All is wrong here:
-                        "INSUFFICIENT_CHARACTERISTICS",
-                        "INSUFFICIENT_DIGIT",
-                        "INSUFFICIENT_LOWERCASE",
-                        "INSUFFICIENT_SPECIAL",
-                        "INSUFFICIENT_UPPERCASE",
-                        "NO_GOODSTRENGTH",
-                        "TOO_SHORT"
+                                                                  "INSUFFICIENT_CHARACTERISTICS",
+                                                                  "INSUFFICIENT_DIGIT",
+                                                                  "INSUFFICIENT_LOWERCASE",
+                                                                  "INSUFFICIENT_SPECIAL",
+                                                                  "INSUFFICIENT_UPPERCASE",
+                                                                  "NO_GOODSTRENGTH",
+                                                                  "TOO_SHORT"
                 )),
                 new AbstractMap.SimpleEntry<>("potato", Arrays.asList( // Lowercase ok, but:
-                        "INSUFFICIENT_CHARACTERISTICS",
-                        "INSUFFICIENT_DIGIT",
-                        "INSUFFICIENT_SPECIAL",
-                        "INSUFFICIENT_UPPERCASE",
-                        "NO_GOODSTRENGTH",
-                        "TOO_SHORT"
+                                                                       "INSUFFICIENT_CHARACTERISTICS",
+                                                                       "INSUFFICIENT_DIGIT",
+                                                                       "INSUFFICIENT_SPECIAL",
+                                                                       "INSUFFICIENT_UPPERCASE",
+                                                                       "NO_GOODSTRENGTH",
+                                                                       "TOO_SHORT"
                 )),
                 new AbstractMap.SimpleEntry<>("POTATO", Arrays.asList( // Uppercase ok, but:
-                        "INSUFFICIENT_CHARACTERISTICS",
-                        "INSUFFICIENT_DIGIT",
-                        "INSUFFICIENT_SPECIAL",
-                        "INSUFFICIENT_LOWERCASE",
-                        "NO_GOODSTRENGTH",
-                        "TOO_SHORT"
+                                                                       "INSUFFICIENT_CHARACTERISTICS",
+                                                                       "INSUFFICIENT_DIGIT",
+                                                                       "INSUFFICIENT_SPECIAL",
+                                                                       "INSUFFICIENT_LOWERCASE",
+                                                                       "NO_GOODSTRENGTH",
+                                                                       "TOO_SHORT"
                 )),
                 new AbstractMap.SimpleEntry<>("potat  o", Arrays.asList( // Length and lowercase ok, but:
-                        "INSUFFICIENT_CHARACTERISTICS",
-                        "INSUFFICIENT_DIGIT",
-                        "INSUFFICIENT_SPECIAL",
-                        "INSUFFICIENT_UPPERCASE",
-                        "NO_GOODSTRENGTH"
+                                                                         "INSUFFICIENT_CHARACTERISTICS",
+                                                                         "INSUFFICIENT_DIGIT",
+                                                                         "INSUFFICIENT_SPECIAL",
+                                                                         "INSUFFICIENT_UPPERCASE",
+                                                                         "NO_GOODSTRENGTH"
                 )),
                 new AbstractMap.SimpleEntry<>("POTAT  O", Arrays.asList( // Length and uppercase ok, but:
-                        "INSUFFICIENT_CHARACTERISTICS",
-                        "INSUFFICIENT_DIGIT",
-                        "INSUFFICIENT_SPECIAL",
-                        "INSUFFICIENT_LOWERCASE",
-                        "NO_GOODSTRENGTH"
+                                                                         "INSUFFICIENT_CHARACTERISTICS",
+                                                                         "INSUFFICIENT_DIGIT",
+                                                                         "INSUFFICIENT_SPECIAL",
+                                                                         "INSUFFICIENT_LOWERCASE",
+                                                                         "NO_GOODSTRENGTH"
                 )),
                 new AbstractMap.SimpleEntry<>("PoTaT  O", Arrays.asList( // correct length ,lower and upper case, but:
-                        "INSUFFICIENT_CHARACTERISTICS",
-                        "INSUFFICIENT_DIGIT",
-                        "INSUFFICIENT_SPECIAL",
-                        "NO_GOODSTRENGTH"
+                                                                         "INSUFFICIENT_CHARACTERISTICS",
+                                                                         "INSUFFICIENT_DIGIT",
+                                                                         "INSUFFICIENT_SPECIAL",
+                                                                         "NO_GOODSTRENGTH"
                 )),
                 new AbstractMap.SimpleEntry<>("potat1 o", Arrays.asList( // correct length and digit, but:
-                        "INSUFFICIENT_CHARACTERISTICS",
-                        "INSUFFICIENT_SPECIAL",
-                        "INSUFFICIENT_UPPERCASE",
-                        "NO_GOODSTRENGTH"
+                                                                         "INSUFFICIENT_CHARACTERISTICS",
+                                                                         "INSUFFICIENT_SPECIAL",
+                                                                         "INSUFFICIENT_UPPERCASE",
+                                                                         "NO_GOODSTRENGTH"
                 )),
                 new AbstractMap.SimpleEntry<>("potat$ o", Arrays.asList( // correct length and special character, but:
-                        "INSUFFICIENT_CHARACTERISTICS",
-                        "INSUFFICIENT_DIGIT",
-                        "INSUFFICIENT_UPPERCASE",
-                        "NO_GOODSTRENGTH"
+                                                                         "INSUFFICIENT_CHARACTERISTICS",
+                                                                         "INSUFFICIENT_DIGIT",
+                                                                         "INSUFFICIENT_UPPERCASE",
+                                                                         "NO_GOODSTRENGTH"
                 )),
                 new AbstractMap.SimpleEntry<>("Pot@t00000", Arrays.asList( // correct length, case, special char, but exceeds repeated character limit (illegal match error)
-                        "ILLEGAL_MATCH",
-                        "NO_GOODSTRENGTH"
+                                                                           "ILLEGAL_MATCH",
+                                                                           "NO_GOODSTRENGTH"
                 )),
                 new AbstractMap.SimpleEntry<>("Potat$ 1234!", Collections.<String>emptyList()), // 4 digits in a row is ok
                 new AbstractMap.SimpleEntry<>("Potat$ 01!", Collections.<String>emptyList()), // correct length, lowercase, special character and digit. All ok...
@@ -303,13 +304,13 @@ public class BuiltinUsersIT {
                 new AbstractMap.SimpleEntry<>("Potat$ o1!", Collections.<String>emptyList()), // correct length, uppercase, lowercase and and special character. All ok...
                 new AbstractMap.SimpleEntry<>("Potat  0!", Collections.<String>emptyList()), // correct length, uppercase, lowercase and digit. All ok...
                 new AbstractMap.SimpleEntry<>("twentycharactershere", Collections.<String>emptyList())) // 20 character password length. All ok...
-                .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue))).forEach(
+                                            .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue))).forEach(
                 (password, expectedErrors) -> {
                     final Response response = given().body(password).when().post("/api/admin/validatePassword");
                     response.prettyPrint();
                     final List<String> actualErrors = JsonPath.from(response.body().asString()).get("data.errors");
                     assertTrue(actualErrors.containsAll(expectedErrors));
-                    assertTrue(expectedErrors.containsAll(actualErrors)); 
+                    assertTrue(expectedErrors.containsAll(actualErrors));
                 }
         );
     }
@@ -322,33 +323,33 @@ public class BuiltinUsersIT {
                 .forEach(key -> given().delete("/api/admin/settings/" + key));
 
         Collections.unmodifiableMap(Stream.of(
-                new AbstractMap.SimpleEntry<>(" ", Arrays.<String>asList( // All is wrong here:
-                        "INSUFFICIENT_CHARACTERISTICS",
-                        "INSUFFICIENT_DIGIT",
-                        "INSUFFICIENT_ALPHABETICAL",
-                        "NO_GOODSTRENGTH",
-                        "TOO_SHORT"
+                new AbstractMap.SimpleEntry<>(" ", Arrays.asList( // All is wrong here:
+                                                                  "INSUFFICIENT_CHARACTERISTICS",
+                                                                  "INSUFFICIENT_DIGIT",
+                                                                  "INSUFFICIENT_ALPHABETICAL",
+                                                                  "NO_GOODSTRENGTH",
+                                                                  "TOO_SHORT"
                 )),
-                new AbstractMap.SimpleEntry<>("potato", Arrays.<String>asList( // Alpha ok, but:
-                        "INSUFFICIENT_CHARACTERISTICS",
-                        "INSUFFICIENT_DIGIT",
-                        "NO_GOODSTRENGTH"
+                new AbstractMap.SimpleEntry<>("potato", Arrays.asList( // Alpha ok, but:
+                                                                       "INSUFFICIENT_CHARACTERISTICS",
+                                                                       "INSUFFICIENT_DIGIT",
+                                                                       "NO_GOODSTRENGTH"
                 )),
-                new AbstractMap.SimpleEntry<>("123456", Arrays.<String>asList( // correct length and special character, but:
-                        "INSUFFICIENT_ALPHABETICAL",
-                        "INSUFFICIENT_CHARACTERISTICS",
-                        "NO_GOODSTRENGTH"
+                new AbstractMap.SimpleEntry<>("123456", Arrays.asList( // correct length and special character, but:
+                                                                       "INSUFFICIENT_ALPHABETICAL",
+                                                                       "INSUFFICIENT_CHARACTERISTICS",
+                                                                       "NO_GOODSTRENGTH"
                 )),
                 new AbstractMap.SimpleEntry<>("potat1", Collections.<String>emptyList()), // Strong enough for Dataverse 4.0.
                 new AbstractMap.SimpleEntry<>("Potat  0", Collections.<String>emptyList()), // All ok...
                 new AbstractMap.SimpleEntry<>("                    ", Collections.<String>emptyList())) // 20 character password length. All ok...
-                .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue))).forEach(
+                                            .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue))).forEach(
                 (password, expectedErrors) -> {
                     final Response response = given().body(password).when().post("/api/admin/validatePassword");
                     response.prettyPrint();
                     final List<String> actualErrors = JsonPath.from(response.body().asString()).get("data.errors");
                     assertTrue(actualErrors.containsAll(expectedErrors));
-                    assertTrue(expectedErrors.containsAll(actualErrors)); 
+                    assertTrue(expectedErrors.containsAll(actualErrors));
                 }
         );
     }

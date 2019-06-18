@@ -1,24 +1,25 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.util.MockResponse;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
+import org.junit.Before;
+import org.junit.Test;
+
 import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonWriter;
 import javax.json.JsonWriterFactory;
 import javax.json.stream.JsonGenerator;
 import javax.ws.rs.core.Response;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import org.junit.Before;
-import org.junit.Test;
 
 public class AbstractApiBeanTest {
 
@@ -61,7 +62,7 @@ public class AbstractApiBeanTest {
     public void testMessagesNoJsonObject() {
         String message = "myMessage";
         Response response = sut.ok(message);
-        JsonReader jsonReader = Json.createReader(new StringReader((String) response.getEntity().toString()));
+        JsonReader jsonReader = Json.createReader(new StringReader(response.getEntity().toString()));
         JsonObject jsonObject = jsonReader.readObject();
         Map<String, Boolean> config = new HashMap<>();
         config.put(JsonGenerator.PRETTY_PRINTING, true);

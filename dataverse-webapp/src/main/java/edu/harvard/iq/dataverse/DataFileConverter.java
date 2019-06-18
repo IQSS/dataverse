@@ -1,12 +1,11 @@
 package edu.harvard.iq.dataverse;
 
-import java.util.logging.Logger;
 import javax.ejb.EJB;
-
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import java.util.logging.Logger;
 
 @FacesConverter("dataFileConverter")
 public class DataFileConverter implements Converter {

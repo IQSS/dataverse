@@ -5,20 +5,22 @@ import com.mashape.unirest.http.JsonNode;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
-import java.io.UnsupportedEncodingException;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import org.apache.http.HttpResponseFactory;
 import org.apache.http.HttpStatus;
 import org.apache.http.HttpVersion;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.DefaultHttpResponseFactory;
 import org.apache.http.message.BasicStatusLine;
+import org.junit.Test;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import java.io.UnsupportedEncodingException;
+
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import org.junit.Test;
 
 public class DataCaptureModuleUtilTest {
 
@@ -41,7 +43,7 @@ public class DataCaptureModuleUtilTest {
         Dataset dataset = new Dataset();
         dataset.setIdentifier("42");
         JsonObject result = DataCaptureModuleUtil.generateJsonForUploadRequest(user, dataset);
-        assertEquals("42", result.getString("datasetIdentifier") );
+        assertEquals("42", result.getString("datasetIdentifier"));
         int userId = result.getInt("userId");
         assertTrue(Integer.MIN_VALUE <= userId && userId <= Integer.MAX_VALUE);
     }
@@ -59,7 +61,7 @@ public class DataCaptureModuleUtilTest {
         HttpResponse<JsonNode> httpResponse = new HttpResponse<>(response, JsonNode.class);
         ScriptRequestResponse result = DataCaptureModuleUtil.getScriptFromRequest(httpResponse);
         assertEquals(200, result.getHttpStatusCode());
-        assertEquals("123", result.getDatasetIdentifier() );
+        assertEquals("123", result.getDatasetIdentifier());
         assertEquals(42, result.getUserId());
         assertEquals("#!/bin/sh", result.getScript());
     }

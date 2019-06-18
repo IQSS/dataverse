@@ -1,15 +1,16 @@
 package edu.harvard.iq.dataverse.confirmemail;
 
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.Arrays;
-
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
+import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.Collection;
+
+import static org.junit.Assert.assertEquals;
 
 @RunWith(Enclosed.class)
 public class ConfirmEmailUtilTest {
@@ -28,15 +29,15 @@ public class ConfirmEmailUtilTest {
         @Parameters
         public static Collection<Object[]> parameters() {
             return Arrays.asList(
-                    new Object[][] { 
-                        { "48 hours", 2880 }, 
-                        { "24 hours", 1440 },
-                        { "2.75 hours", 165 },
-                        { "2.5 hours", 150 },
-                        { "1.5 hours", 90 }, 
-                        { "1 hour", 60 }, 
-                        { "30 minutes", 30 }, 
-                        { "1 minute", 1 } 
+                    new Object[][]{
+                            {"48 hours", 2880},
+                            {"24 hours", 1440},
+                            {"2.75 hours", 165},
+                            {"2.5 hours", 150},
+                            {"1.5 hours", 90},
+                            {"1 hour", 60},
+                            {"30 minutes", 30},
+                            {"1 minute", 1}
                     }
             );
         }

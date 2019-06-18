@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.feedback.Feedback;
 import edu.harvard.iq.dataverse.feedback.FeedbackUtil;
-import java.util.List;
+
 import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -17,6 +17,7 @@ import javax.mail.internet.InternetAddress;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 @Path("admin/feedback")
 public class FeedbackApi extends AbstractApiBean {

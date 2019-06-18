@@ -55,9 +55,8 @@ public class SearchPermissionsServiceBean {
     private static final int MAX_CACHE_SIZE = 2000;
 
     /**
-     * @todo Should we make a PermStrings object? Probably.
-     *
      * @return A list of strings on which Solr will JOIN to enforce permissions
+     * @todo Should we make a PermStrings object? Probably.
      */
     public List<String> findDataversePerms(Dataverse dataverse) {
         List<String> permStrings = new ArrayList<>();
@@ -155,11 +154,7 @@ public class SearchPermissionsServiceBean {
         DatasetVersion.VersionState latestVersionState = latestVersion.getVersionState();
         DatasetVersion releasedVersion = dataset.getReleasedVersion();
         boolean atLeastOnePublishedVersion = false;
-        if (releasedVersion != null) {
-            atLeastOnePublishedVersion = true;
-        } else {
-            atLeastOnePublishedVersion = false;
-        }
+        atLeastOnePublishedVersion = releasedVersion != null;
 
         if (atLeastOnePublishedVersion == false) {
             if (latestVersionState.equals(DatasetVersion.VersionState.DRAFT)) {

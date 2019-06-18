@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.license;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -12,14 +10,15 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import java.io.Serializable;
 
 /**
  * Entity class representing icon (image) of the license.
- * 
+ *
  * @author madryk
  */
 @Entity
-@Table(uniqueConstraints= { @UniqueConstraint(columnNames = {"license_id"}) })
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"license_id"})})
 public class LicenseIcon implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -28,19 +27,19 @@ public class LicenseIcon implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable=false)
+    @Column(nullable = false)
     private byte[] content;
-    
-    @Column(nullable=false)
+
+    @Column(nullable = false)
     private String contentType;
-    
-    @OneToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="license_id", nullable=false)
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "license_id", nullable = false)
     private License license;
 
-    
+
     //-------------------- GETTERS --------------------
-    
+
     /**
      * Returns database id of license icon
      */
@@ -70,9 +69,9 @@ public class LicenseIcon implements Serializable {
         return license;
     }
 
-    
+
     //-------------------- SETTERS --------------------
-    
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -88,6 +87,6 @@ public class LicenseIcon implements Serializable {
     public void setLicense(License license) {
         this.license = license;
     }
-    
-    
+
+
 }

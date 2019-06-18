@@ -7,11 +7,10 @@
 package edu.harvard.iq.dataverse.api;
 
 /**
- *
  * @author Leonid Andreev
  */
 public class BundleDownloadInstance {
-   
+
 
     private DownloadInfo downloadInfo = null;
     private String fileCitationEndNote = "";
@@ -20,9 +19,9 @@ public class BundleDownloadInstance {
     private String fileCitationBibtex = "";
 
     public BundleDownloadInstance() {
-        
+
     }
-    
+
     public BundleDownloadInstance(DownloadInfo info) {
         this.downloadInfo = info;
     }
@@ -38,23 +37,23 @@ public class BundleDownloadInstance {
     public String getFileCitationEndNote() {
         return fileCitationEndNote;
     }
-    
+
     public void setFileCitationEndNote(String fileCitationEndNote) {
         this.fileCitationEndNote = fileCitationEndNote;
     }
-    
+
     public String getFileCitationRIS() {
         return fileCitationRIS;
     }
-    
+
     public void setFileCitationRIS(String fileCitationRIS) {
         this.fileCitationRIS = fileCitationRIS;
     }
-    
+
     public String getFileDDIXML() {
         return fileDDIXML;
     }
-    
+
     public void setFileDDIXML(String fileDDIXML) {
         this.fileDDIXML = fileDDIXML;
     }

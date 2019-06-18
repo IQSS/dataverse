@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.search.savedsearch;
 
-import java.io.Serializable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,9 +10,10 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 @Entity
-@Table(indexes = {@Index(columnList="savedsearch_id")})
+@Table(indexes = {@Index(columnList = "savedsearch_id")})
 public class SavedSearchFilterQuery implements Serializable {
 
     @Id
@@ -30,11 +30,11 @@ public class SavedSearchFilterQuery implements Serializable {
     /**
      * This default constructor is only here to prevent this error at
      * deployment:
-     *
+     * <p>
      * The instance creation method
      * [edu.harvard.iq.dataverse.search.savedsearch.SavedSearchFilterQuery.<Default Constructor>],
      * with no parameters, does not exist, or is not accessible.
-     *
+     * <p>
      * Don't use it.
      */
     @Deprecated

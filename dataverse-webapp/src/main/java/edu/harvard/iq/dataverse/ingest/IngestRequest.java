@@ -6,7 +6,7 @@
 package edu.harvard.iq.dataverse.ingest;
 
 import edu.harvard.iq.dataverse.DataFile;
-import java.io.Serializable;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,16 +14,15 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 /**
- *
  * @author Leonid Andreev
  */
 @Entity
-@Table(indexes = {@Index(columnList="datafile_id")})
+@Table(indexes = {@Index(columnList = "datafile_id")})
 public class IngestRequest implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -38,68 +37,68 @@ public class IngestRequest implements Serializable {
         this.id = id;
     }
 
-    @OneToOne(cascade={CascadeType.MERGE,CascadeType.PERSIST})
-    @JoinColumn(name="datafile_id")
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinColumn(name = "datafile_id")
     private DataFile dataFile;
-    
-    private String textEncoding; 
-    
+
+    private String textEncoding;
+
     private String controlCard;
-    
-    private String labelsFile; 
-    
+
+    private String labelsFile;
+
     private Boolean forceTypeCheck;
-    
+
     public IngestRequest() {
     }
-    
+
     public IngestRequest(DataFile dataFile) {
         this.dataFile = dataFile;
     }
-    
+
     public DataFile getDataFile() {
         return dataFile;
     }
-    
+
     public void setDataFile(DataFile dataFile) {
-        this.dataFile = dataFile; 
+        this.dataFile = dataFile;
     }
-    
+
     public String getTextEncoding() {
         return textEncoding;
     }
-    
+
     public void setTextEncoding(String textEncoding) {
-        this.textEncoding = textEncoding; 
+        this.textEncoding = textEncoding;
     }
 
     public String getControlCard() {
         return controlCard;
     }
-    
+
     public void setControlCard(String controlCard) {
-        this.controlCard = controlCard; 
+        this.controlCard = controlCard;
     }
-    
+
     public String getLabelsFile() {
         return labelsFile;
     }
-    
+
     public void setLabelsFile(String labelsFile) {
-        this.labelsFile = labelsFile; 
+        this.labelsFile = labelsFile;
     }
-    
+
     public void setForceTypeCheck(boolean forceTypeCheck) {
         this.forceTypeCheck = forceTypeCheck;
     }
-    
+
     public boolean isForceTypeCheck() {
         if (forceTypeCheck != null) {
             return forceTypeCheck;
         }
         return false;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -114,15 +113,12 @@ public class IngestRequest implements Serializable {
             return false;
         }
         IngestRequest other = (IngestRequest) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
 
     @Override
     public String toString() {
         return "edu.harvard.iq.dataverse.ingest.IngestRequest[ id=" + id + " ]";
     }
-    
+
 }

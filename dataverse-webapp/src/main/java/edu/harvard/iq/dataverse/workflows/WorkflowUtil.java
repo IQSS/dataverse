@@ -2,10 +2,12 @@ package edu.harvard.iq.dataverse.workflows;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.api.Util;
-import java.util.List;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
-import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import java.util.List;
+
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 public class WorkflowUtil {

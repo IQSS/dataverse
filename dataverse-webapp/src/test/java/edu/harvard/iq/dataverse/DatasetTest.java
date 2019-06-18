@@ -2,10 +2,13 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author michael
  */
 public class DatasetTest {
@@ -16,38 +19,38 @@ public class DatasetTest {
     @Test
     public void testIsLockedFor() {
         Dataset sut = new Dataset();
-        assertFalse( sut.isLockedFor(DatasetLock.Reason.Ingest) );
+        assertFalse(sut.isLockedFor(DatasetLock.Reason.Ingest));
         DatasetLock dl = new DatasetLock(DatasetLock.Reason.Ingest, MocksFactory.makeAuthenticatedUser("jane", "doe"));
         sut.addLock(dl);
-        assertTrue( sut.isLockedFor(DatasetLock.Reason.Ingest) );
-        assertFalse( sut.isLockedFor(DatasetLock.Reason.Workflow) );
+        assertTrue(sut.isLockedFor(DatasetLock.Reason.Ingest));
+        assertFalse(sut.isLockedFor(DatasetLock.Reason.Workflow));
     }
-    
+
     @Test
     public void testLocksManagement() {
         Dataset sut = new Dataset();
-        assertFalse( sut.isLocked() );
-        
+        assertFalse(sut.isLocked());
+
         DatasetLock dlIngest = new DatasetLock(DatasetLock.Reason.Ingest, MocksFactory.makeAuthenticatedUser("jane", "doe"));
         dlIngest.setId(MocksFactory.nextId());
         sut.addLock(dlIngest);
-        assertTrue( sut.isLocked() );
+        assertTrue(sut.isLocked());
 
         final DatasetLock dlInReview = new DatasetLock(DatasetLock.Reason.InReview, MocksFactory.makeAuthenticatedUser("jane", "doe"));
         dlInReview.setId(MocksFactory.nextId());
         sut.addLock(dlInReview);
-        assertEquals( 2, sut.getLocks().size() );
-        
+        assertEquals(2, sut.getLocks().size());
+
         DatasetLock retrievedDl = sut.getLockFor(DatasetLock.Reason.Ingest);
-        assertEquals( dlIngest, retrievedDl );
+        assertEquals(dlIngest, retrievedDl);
         sut.removeLock(dlIngest);
-        assertNull( sut.getLockFor(DatasetLock.Reason.Ingest) );
-        
-        assertTrue( sut.isLocked() );
-        
+        assertNull(sut.getLockFor(DatasetLock.Reason.Ingest));
+
+        assertTrue(sut.isLocked());
+
         sut.removeLock(dlInReview);
-        assertFalse( sut.isLocked() );
-        
+        assertFalse(sut.isLocked());
+
     }
- 
+
 }

@@ -1,21 +1,19 @@
-
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
-
 import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
 import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+
+import javax.json.JsonObject;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Map;
-import javax.json.JsonObject;
 
 /**
- *
  * @author qqmyers
  */
 @AutoService(Exporter.class)
@@ -26,6 +24,7 @@ public class DataCiteExporter implements Exporter {
     private static String DEFAULT_XML_VERSION = "3.0";
 
     public static final String NAME = "Datacite";
+
     @Override
     public String getProviderName() {
         return NAME;
@@ -43,7 +42,7 @@ public class DataCiteExporter implements Exporter {
             throws ExportException {
         try {
             DataCitation dc = new DataCitation(version);
-            
+
             Map<String, String> metadata = dc.getDataCiteMetadata();
             String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(
                     version.getDataset().getGlobalId().asString(), metadata, version.getDataset());

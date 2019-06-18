@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.search.IndexResponse;
+
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -31,7 +32,7 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
         if (dataverse.isReleased()) {
             throw new IllegalCommandException("Dataverse " + dataverse.getAlias() + " has already been published.", this);
         }
-        
+
         Dataverse parent = dataverse.getOwner();
         // root dataverse doesn't have a parent
         if (parent != null) {

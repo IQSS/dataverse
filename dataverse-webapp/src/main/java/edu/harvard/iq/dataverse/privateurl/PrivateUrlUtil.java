@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +30,8 @@ public class PrivateUrlUtil {
      * {@link PrivateUrlUser} using the definitionPoint.
      *
      * @param identifier For example, "#42". The identifier is expected to start
-     * with "#" (the namespace for a PrivateUrlUser and its corresponding
-     * RoleAssignment) and end with the dataset id.
-     *
+     *                   with "#" (the namespace for a PrivateUrlUser and its corresponding
+     *                   RoleAssignment) and end with the dataset id.
      * @return A valid PrivateUrlUser (which like any User or Group is a
      * RoleAssignee) if a valid identifier is provided or null.
      */
@@ -68,7 +68,6 @@ public class PrivateUrlUtil {
 
     /**
      * @return DatasetVersion if a draft or null.
-     *
      * @todo If there is a use case for this outside the context of Private URL,
      * move this method to somewhere more centralized.
      */
@@ -102,7 +101,6 @@ public class PrivateUrlUtil {
     /**
      * @param roleAssignment
      * @return PrivateUrlRedirectData or null.
-     *
      * @todo Show the Exception to the user?
      */
     public static PrivateUrlRedirectData getPrivateUrlRedirectData(RoleAssignment roleAssignment) {
@@ -131,7 +129,7 @@ public class PrivateUrlUtil {
         if (draft != null) {
             Dataset dataset = draft.getDataset();
             if (dataset != null) {
-                if ( dataset.getGlobalId().isComplete() ) {
+                if (dataset.getGlobalId().isComplete()) {
                     String relativeUrl = "/dataset.xhtml?persistentId=" + dataset.getGlobalId().toString() + "&version=DRAFT";
                     return relativeUrl;
                 }
@@ -166,7 +164,6 @@ public class PrivateUrlUtil {
     /**
      * @return A list of the CamelCase "names" of required permissions, not the
      * human-readable equivalents.
-     *
      * @todo Move this to somewhere more central.
      */
     public static List<String> getRequiredPermissions(CommandException ex) {

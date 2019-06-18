@@ -1,9 +1,10 @@
 package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.UserNotification;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
 import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class MailUtilTest {
 
@@ -47,80 +48,80 @@ public class MailUtilTest {
         userNotification.setType(UserNotification.Type.CREATEDV);
         assertEquals("LibraScholar: Your dataverse has been created", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
     }
-    
+
     @Test
     public void testSubjectRevokeRole() {
         userNotification.setType(UserNotification.Type.REVOKEROLE);
         assertEquals("LibraScholar: Your role has been revoked", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
     }
-    
+
     @Test
     public void testSubjectRequestFileAccess() {
         userNotification.setType(UserNotification.Type.REQUESTFILEACCESS);
         assertEquals("LibraScholar: Access has been requested for a restricted file", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
     }
-    
+
     @Test
     public void testSubjectGrantFileAccess() {
         userNotification.setType(UserNotification.Type.GRANTFILEACCESS);
         assertEquals("LibraScholar: You have been granted access to a restricted file", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
     }
-    
+
     @Test
     public void testSubjectRejectFileAccess() {
         userNotification.setType(UserNotification.Type.REJECTFILEACCESS);
         assertEquals("LibraScholar: Your request for access to a restricted file has been rejected", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
     }
-    
+
     @Test
     public void testSubjectMapLayerUpdated() {
         userNotification.setType(UserNotification.Type.MAPLAYERUPDATED);
         assertEquals("LibraScholar: WorldMap layer added to dataset", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
     }
-    
+
     @Test
     public void testSubjectMapLayerDeleteFailed() {
         userNotification.setType(UserNotification.Type.MAPLAYERDELETEFAILED);
         assertEquals("LibraScholar: Failed to delete WorldMap layer", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
     }
-    
+
     @Test
     public void testSubjectCreateDataset() {
         userNotification.setType(UserNotification.Type.CREATEDS);
         assertEquals("LibraScholar: Your dataset has been created", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
     }
-    
+
     @Test
     public void testSubjectSubmittedDS() {
         userNotification.setType(UserNotification.Type.SUBMITTEDDS);
         assertEquals("LibraScholar: Your dataset has been submitted for review", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
     }
-    
+
     @Test
     public void testSubjectPublishedDS() {
         userNotification.setType(UserNotification.Type.PUBLISHEDDS);
         assertEquals("LibraScholar: Your dataset has been published", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
     }
-    
+
     @Test
     public void testSubjectReturnedDS() {
         userNotification.setType(UserNotification.Type.RETURNEDDS);
         assertEquals("LibraScholar: Your dataset has been returned", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
     }
-    
+
     @Test
     public void testSubjectChecksumFail() {
         userNotification.setType(UserNotification.Type.CHECKSUMFAIL);
         assertEquals("LibraScholar: Your upload failed checksum validation", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
     }
-    
+
     @Test
     public void testSubjectFileSystemImport() {
         userNotification.setType(UserNotification.Type.FILESYSTEMIMPORT);
         //TODO SEK add a dataset version to get the Dataset Title which is actually used in the subject now
-        assertEquals("Dataset LibraScholar has been successfully uploaded and verified", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName , null));
+        assertEquals("Dataset LibraScholar has been successfully uploaded and verified", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
     }
-    
+
     @Test
     public void testSubjectChecksumImport() {
         userNotification.setType(UserNotification.Type.CHECKSUMIMPORT);

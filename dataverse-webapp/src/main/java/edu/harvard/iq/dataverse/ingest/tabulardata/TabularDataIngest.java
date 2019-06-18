@@ -19,20 +19,20 @@
  */
 package edu.harvard.iq.dataverse.ingest.tabulardata;
 
-import java.io.File;
 import edu.harvard.iq.dataverse.DataTable;
+
+import java.io.File;
 
 /**
  * A new Ingest object class that represents ingested tabular data object, both
  * the data and the metadata describing it.
- *
+ * <p>
  * The metadata will be stored in the native DVN DataTable object.
- *
+ * <p>
  * The tab-delimited data will be in a regular Java (not DVN!) File object. It
  * will be the job of the DVN application to take this File and attach it to the
  * new DataFile object, together with the DataTable this ingest object provides.
  * TODO: finalize this! -- L.A. 4.0
- *
  */
 public class TabularDataIngest {
 

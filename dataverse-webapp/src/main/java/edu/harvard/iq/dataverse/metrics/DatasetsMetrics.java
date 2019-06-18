@@ -37,8 +37,12 @@ public class DatasetsMetrics {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         DatasetsMetrics that = (DatasetsMetrics) o;
         return year == that.year &&
                 month == that.month &&
@@ -52,6 +56,6 @@ public class DatasetsMetrics {
 
     @Override
     public String toString() {
-        return ""+year;
+        return "" + year;
     }
 }

@@ -33,7 +33,7 @@ public class MetricsUtil {
     private final static String CATEGORY = "category";
     private final static String SUBJECT = "subject";
     public static String YEAR_AND_MONTH_PATTERN = "yyyy-MM";
-    
+
     public static final String DATA_LOCATION_LOCAL = "local";
     public static final String DATA_LOCATION_REMOTE = "remote";
     public static final String DATA_LOCATION_ALL = "all";
@@ -119,16 +119,16 @@ public class MetricsUtil {
     }
 
     public static String validateDataLocationStringType(String dataLocation) throws Exception {
-        if( null == dataLocation || "".equals(dataLocation)) {
+        if (null == dataLocation || "".equals(dataLocation)) {
             dataLocation = DATA_LOCATION_LOCAL;
-        } 
-        if(!(DATA_LOCATION_LOCAL.equals(dataLocation) || DATA_LOCATION_REMOTE.equals(dataLocation) || DATA_LOCATION_ALL.equals(dataLocation))) {
+        }
+        if (!(DATA_LOCATION_LOCAL.equals(dataLocation) || DATA_LOCATION_REMOTE.equals(dataLocation) || DATA_LOCATION_ALL.equals(dataLocation))) {
             throw new Exception("The inputted data location is not valid");
         }
-        
+
         return dataLocation;
     }
-    
+
     public static String getCurrentMonth() {
         return LocalDate.now().format(DateTimeFormatter.ofPattern(MetricsUtil.YEAR_AND_MONTH_PATTERN));
     }
@@ -191,10 +191,10 @@ public class MetricsUtil {
 
         List<DatasetsMetrics> filteredMetrics = datasetsMetrics.stream()
                 .filter(metrics -> metrics.getYear() == year)
-                .peek(metrics -> months.removeIf(month -> month==metrics.getMonth()))
+                .peek(metrics -> months.removeIf(month -> month == metrics.getMonth()))
                 .collect(Collectors.toList());
 
-        months.forEach(month -> filteredMetrics.add(new DatasetsMetrics((double)year,(double)month,0L)));
+        months.forEach(month -> filteredMetrics.add(new DatasetsMetrics((double) year, (double) month, 0L)));
         filteredMetrics.sort(Comparator.comparing(DatasetsMetrics::getMonth));
         return filteredMetrics;
     }

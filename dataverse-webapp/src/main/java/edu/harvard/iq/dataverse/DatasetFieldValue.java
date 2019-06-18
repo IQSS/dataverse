@@ -8,9 +8,8 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
-import java.io.Serializable;
-import java.util.Comparator;
-import java.util.ResourceBundle;
+import org.apache.commons.lang.StringUtils;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -21,48 +20,49 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import org.apache.commons.lang.StringUtils;
+import java.io.Serializable;
+import java.util.Comparator;
 
 /**
- *
  * @author gdurand
  */
 @Entity
 @ValidateDatasetFieldType
-@Table(indexes = {@Index(columnList="datasetfield_id")})
+@Table(indexes = {@Index(columnList = "datasetfield_id")})
 public class DatasetFieldValue implements Serializable {
     private static final long serialVersionUID = 1L;
-    
+
     public static final Comparator<DatasetFieldValue> DisplayOrder = new Comparator<DatasetFieldValue>() {
         @Override
         public int compare(DatasetFieldValue o1, DatasetFieldValue o2) {
-            return Integer.compare( o1.getDisplayOrder(),
-                                    o2.getDisplayOrder() );
-    }};
-    
+            return Integer.compare(o1.getDisplayOrder(),
+                                   o2.getDisplayOrder());
+        }
+    };
+
     public DatasetFieldValue() {
     }
-    
+
     public DatasetFieldValue(DatasetField aField) {
-        setDatasetField(aField); 
-    }    
-        
+        setDatasetField(aField);
+    }
+
     public DatasetFieldValue(DatasetField aField, String aValue) {
-        setDatasetField(aField); 
+        setDatasetField(aField);
         value = aValue;
-    }    
-          
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Column(name = "value", columnDefinition = "TEXT", nullable = false)
     private String value;
     private int displayOrder;
-    
+
     @ManyToOne
-    @JoinColumn(nullable=false)
-    private DatasetField datasetField;    
+    @JoinColumn(nullable = false)
+    private DatasetField datasetField;
 
     public Long getId() {
         return id;
@@ -89,24 +89,24 @@ public class DatasetFieldValue implements Serializable {
     public void setValueForEdit(String value) {
         this.value = value;
     }
-    
+
     public String getDisplayValue() {
         String retVal = "";
         if (!StringUtils.isBlank(this.getValue()) && !DatasetField.NA_VALUE.equals(this.getValue())) {
             String format = this.datasetField.getDatasetFieldType().getDisplayFormat();
             if (StringUtils.isBlank(format)) {
                 format = "#VALUE";
-            }           
-            String sanitizedValue = !this.datasetField.getDatasetFieldType().isSanitizeHtml() ? this.getValue() :  MarkupChecker.sanitizeBasicHTML(this.getValue());    
-            
-                if (!this.datasetField.getDatasetFieldType().isSanitizeHtml() && this.datasetField.getDatasetFieldType().isEscapeOutputText()){
-                    sanitizedValue = MarkupChecker.stripAllTags(sanitizedValue);
-                }
-            
+            }
+            String sanitizedValue = !this.datasetField.getDatasetFieldType().isSanitizeHtml() ? this.getValue() : MarkupChecker.sanitizeBasicHTML(this.getValue());
+
+            if (!this.datasetField.getDatasetFieldType().isSanitizeHtml() && this.datasetField.getDatasetFieldType().isEscapeOutputText()) {
+                sanitizedValue = MarkupChecker.stripAllTags(sanitizedValue);
+            }
+
             // replace the special values in the format (note: we replace #VALUE last since we don't
             // want any issues if the value itself has #NAME in it)
             String displayValue = format
-                    .replace("#NAME",  this.datasetField.getDatasetFieldType().getTitle() == null ? "" : this.datasetField.getDatasetFieldType().getTitle())
+                    .replace("#NAME", this.datasetField.getDatasetFieldType().getTitle() == null ? "" : this.datasetField.getDatasetFieldType().getTitle())
                     .replace("#EMAIL", BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
                     .replace("#VALUE", sanitizedValue);
             retVal = displayValue;
@@ -121,17 +121,17 @@ public class DatasetFieldValue implements Serializable {
             String format = this.datasetField.getDatasetFieldType().getDisplayFormat();
             if (StringUtils.isBlank(format)) {
                 format = "#VALUE";
-            }           
-            String value = this.getValue();    
+            }
+            String value = this.getValue();
             String displayValue = format
-                    .replace("#NAME",  this.datasetField.getDatasetFieldType().getTitle() == null ? "" : this.datasetField.getDatasetFieldType().getTitle())
+                    .replace("#NAME", this.datasetField.getDatasetFieldType().getTitle() == null ? "" : this.datasetField.getDatasetFieldType().getTitle())
                     .replace("#EMAIL", BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
                     .replace("#VALUE", value);
             retVal = displayValue;
         }
         return retVal;
     }
-    
+
     public int getDisplayOrder() {
         return displayOrder;
     }
@@ -147,8 +147,9 @@ public class DatasetFieldValue implements Serializable {
     public void setDatasetField(DatasetField datasetField) {
         this.datasetField = datasetField;
     }
-    
-    @Transient private String validationMessage;
+
+    @Transient
+    private String validationMessage;
 
     public String getValidationMessage() {
         return validationMessage;
@@ -157,9 +158,7 @@ public class DatasetFieldValue implements Serializable {
     public void setValidationMessage(String validationMessage) {
         this.validationMessage = validationMessage;
     }
-    
-    
-    
+
 
     @Override
     public int hashCode() {
@@ -175,10 +174,7 @@ public class DatasetFieldValue implements Serializable {
             return false;
         }
         DatasetFieldValue other = (DatasetFieldValue) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
 
     @Override
@@ -191,8 +187,8 @@ public class DatasetFieldValue implements Serializable {
         dsfv.setDatasetField(dsf);
         dsfv.setDisplayOrder(displayOrder);
         dsfv.setValue(value);
-                     
+
         return dsfv;
-    }    
-    
+    }
+
 }

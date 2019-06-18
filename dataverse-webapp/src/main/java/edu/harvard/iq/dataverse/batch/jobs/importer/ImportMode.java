@@ -33,10 +33,10 @@ public enum ImportMode {
      * Existing data files are updated. New data files are added. Nothing is deleted.
      */
     UPDATE,
-    
+
     /**
      * Existing data files are replaced completely.
      */
     REPLACE
-    
+
 }

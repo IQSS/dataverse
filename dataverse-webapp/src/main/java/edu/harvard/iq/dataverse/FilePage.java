@@ -54,19 +54,17 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 
 /**
- *
  * @author skraffmi
- * 
  */
 
 @ViewScoped
 @Named("FilePage")
 public class FilePage implements java.io.Serializable {
-    
+
     private FileMetadata fileMetadata;
-    private Long fileId;  
+    private Long fileId;
     private String version;
-    private DataFile file;   
+    private DataFile file;
     private GuestbookResponse guestbookResponse;
     private int selectedTabIndex;
     private Dataset editDataset;
@@ -79,7 +77,7 @@ public class FilePage implements java.io.Serializable {
 
     @EJB
     DataFileServiceBean datafileService;
-    
+
     @EJB
     DatasetVersionServiceBean datasetVersionService;
 
@@ -93,7 +91,7 @@ public class FilePage implements java.io.Serializable {
     GuestbookResponseServiceBean guestbookResponseService;
     @EJB
     AuthenticationServiceBean authService;
-    
+
     @EJB
     SystemConfig systemConfig;
 
@@ -111,7 +109,8 @@ public class FilePage implements java.io.Serializable {
     PermissionsWrapper permissionsWrapper;
     @Inject
     FileDownloadHelper fileDownloadHelper;
-    @Inject WorldMapPermissionHelper worldMapPermissionHelper;
+    @Inject
+    WorldMapPermissionHelper worldMapPermissionHelper;
 
     public WorldMapPermissionHelper getWorldMapPermissionHelper() {
         return worldMapPermissionHelper;
@@ -124,56 +123,57 @@ public class FilePage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(FilePage.class.getCanonicalName());
 
     private boolean fileDeleteInProgress = false;
+
     public String init() {
-     
-        
-         if ( fileId != null || persistentId != null ) { 
-           
+
+
+        if (fileId != null || persistentId != null) {
+
             // ---------------------------------------
             // Set the file and datasetVersion 
             // ---------------------------------------           
             if (fileId != null) {
-               file = datafileService.find(fileId);   
+                file = datafileService.find(fileId);
 
-            }  else if (persistentId != null){
-               file = datafileService.findByGlobalId(persistentId);
-               if (file != null){
-                                  fileId = file.getId();
-               }
+            } else if (persistentId != null) {
+                file = datafileService.findByGlobalId(persistentId);
+                if (file != null) {
+                    fileId = file.getId();
+                }
 
             }
-            
-            if (file == null || fileId == null){
-               return permissionsWrapper.notFound();
+
+            if (file == null || fileId == null) {
+                return permissionsWrapper.notFound();
             }
-            
+
             // Is the Dataset harvested?
             if (file.getOwner().isHarvested()) {
                 // if so, we'll simply forward to the remote URL for the original
                 // source of this harvested dataset:
                 String originalSourceURL = file.getOwner().getRemoteArchiveURL();
                 if (originalSourceURL != null && !originalSourceURL.equals("")) {
-                    logger.fine("redirecting to "+originalSourceURL);
+                    logger.fine("redirecting to " + originalSourceURL);
                     try {
                         FacesContext.getCurrentInstance().getExternalContext().redirect(originalSourceURL);
                     } catch (IOException ioex) {
                         // must be a bad URL...
                         // we don't need to do anything special here - we'll redirect
                         // to the local 404 page, below.
-                        logger.warning("failed to issue a redirect to "+originalSourceURL);
+                        logger.warning("failed to issue a redirect to " + originalSourceURL);
                     }
                 }
 
                 return permissionsWrapper.notFound();
             }
 
-                RetrieveDatasetVersionResponse retrieveDatasetVersionResponse;
-                retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(file.getOwner().getVersions(), version);
-                Long getDatasetVersionID = retrieveDatasetVersionResponse.getDatasetVersion().getId();
-                fileMetadata = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, fileId);
+            RetrieveDatasetVersionResponse retrieveDatasetVersionResponse;
+            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(file.getOwner().getVersions(), version);
+            Long getDatasetVersionID = retrieveDatasetVersionResponse.getDatasetVersion().getId();
+            fileMetadata = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, fileId);
 
-          
-            if (fileMetadata == null){
+
+            if (fileMetadata == null) {
                 logger.fine("fileMetadata is null! Checking finding most recent version file was in.");
                 fileMetadata = datafileService.findMostRecentVersionFileIsIn(file);
                 if (fileMetadata == null) {
@@ -181,21 +181,21 @@ public class FilePage implements java.io.Serializable {
                 }
             }
 
-           // If this DatasetVersion is unpublished and permission is doesn't have permissions:
-           //  > Go to the Login page
-           //
+            // If this DatasetVersion is unpublished and permission is doesn't have permissions:
+            //  > Go to the Login page
+            //
             // Check permisisons       
 
-            
+
             Boolean authorized = (fileMetadata.getDatasetVersion().isReleased()) ||
                     (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset());
-            
-            if (!authorized ) {
+
+            if (!authorized) {
                 return permissionsWrapper.notAuthorized();
-            }         
-           
-           this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
-           
+            }
+
+            this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
+
             // Find external tools based on their type, the file content type, and whether
             // ingest has created a derived file for that type
             // Currently, tabular data files are the only type of derived file created, so
@@ -204,7 +204,7 @@ public class FilePage implements java.io.Serializable {
             String contentType = file.getContentType();
             //For tabular data, indicate successful ingest by returning a contentType for the derived .tab file
             if (file.isTabularData()) {
-                contentType=DataFileServiceBean.MIME_TYPE_TSV_ALT;
+                contentType = DataFileServiceBean.MIME_TYPE_TSV_ALT;
             }
             configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE, contentType);
             exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE, contentType);
@@ -216,26 +216,26 @@ public class FilePage implements java.io.Serializable {
 
         return null;
     }
-    
+
     private boolean canViewUnpublishedDataset() {
-        return permissionsWrapper.canViewUnpublishedDataset( dvRequestService.getDataverseRequest(), fileMetadata.getDatasetVersion().getDataset());
+        return permissionsWrapper.canViewUnpublishedDataset(dvRequestService.getDataverseRequest(), fileMetadata.getDatasetVersion().getDataset());
     }
-   
+
 
     public FileMetadata getFileMetadata() {
         return fileMetadata;
     }
-    
 
-    public boolean isDownloadPopupRequired() {  
-        if(fileMetadata.getId() == null || fileMetadata.getDatasetVersion().getId() == null ){
+
+    public boolean isDownloadPopupRequired() {
+        if (fileMetadata.getId() == null || fileMetadata.getDatasetVersion().getId() == null) {
             return false;
         }
         return FileUtil.isDownloadPopupRequired(fileMetadata.getDatasetVersion());
     }
-    
-    public boolean isRequestAccessPopupRequired() {  
-        if(fileMetadata.getId() == null || fileMetadata.getDatasetVersion().getId() == null ){
+
+    public boolean isRequestAccessPopupRequired() {
+        if (fileMetadata.getId() == null || fileMetadata.getDatasetVersion().getId() == null) {
             return false;
         }
         return FileUtil.isRequestAccessPopupRequired(fileMetadata.getDatasetVersion());
@@ -253,7 +253,7 @@ public class FilePage implements java.io.Serializable {
     public void setFile(DataFile file) {
         this.file = file;
     }
-    
+
     public Long getFileId() {
         return fileId;
     }
@@ -261,7 +261,7 @@ public class FilePage implements java.io.Serializable {
     public void setFileId(Long fileId) {
         this.fileId = fileId;
     }
-     
+
     public String getVersion() {
         return version;
     }
@@ -269,15 +269,15 @@ public class FilePage implements java.io.Serializable {
     public void setVersion(String version) {
         this.version = version;
     }
-    
-    public List< String[]> getExporters(){
+
+    public List<String[]> getExporters() {
         List<String[]> retList = new ArrayList<>();
         String myHostURL = systemConfig.getDataverseSiteUrl();
-        for (String [] provider : ExportService.getInstance(settingsService).getExportersLabels() ){
+        for (String[] provider : ExportService.getInstance(settingsService).getExportersLabels()) {
             String formatName = provider[1];
             String formatDisplayName = provider[0];
-            
-            Exporter exporter = null; 
+
+            Exporter exporter = null;
             try {
                 exporter = ExportService.getInstance(settingsService).getExporter(formatName);
             } catch (ExportException ex) {
@@ -286,39 +286,39 @@ public class FilePage implements java.io.Serializable {
             if (exporter != null && exporter.isAvailableToUsers()) {
                 // Not all metadata exports should be presented to the web users!
                 // Some are only for harvesting clients.
-                
-                String[] temp = new String[2];            
+
+                String[] temp = new String[2];
                 temp[0] = formatDisplayName;
                 temp[1] = myHostURL + "/api/datasets/export?exporter=" + formatName + "&persistentId=" + fileMetadata.getDatasetVersion().getDataset().getGlobalIdString();
                 retList.add(temp);
             }
         }
-        return retList;  
+        return retList;
     }
-    
+
     public String saveProvFreeform(String freeformTextInput, DataFile dataFileFromPopup) throws CommandException {
         editDataset = this.file.getOwner();
         file.setProvEntityName(dataFileFromPopup.getProvEntityName()); //passing this value into the file being saved here is pretty hacky.
         Command cmd;
-        
+
         for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
             if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())) {
                 cmd = new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), file, freeformTextInput);
                 commandEngine.submit(cmd);
             }
         }
-        
+
         save();
         init();
         return returnToDraftVersion();
     }
-    
-    public String restrictFile(boolean restricted) throws CommandException{
+
+    public String restrictFile(boolean restricted) throws CommandException {
         String fileNames = null;
-        String termsOfAccess = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();        
+        String termsOfAccess = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();
         Boolean allowRequest = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().isFileAccessRequest();
         editDataset = this.file.getOwner();
-        
+
         Command cmd;
         for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
             if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())) {
@@ -328,10 +328,10 @@ public class FilePage implements java.io.Serializable {
                 commandEngine.submit(cmd);
             }
         }
-        
+
         editDataset.getEditVersion().getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
         editDataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(allowRequest);
-        
+
         if (fileNames != null) {
             String successMessage = BundleUtil.getStringFromBundle("file.restricted.success");
             successMessage = successMessage.replace("{0}", fileNames);
@@ -341,7 +341,7 @@ public class FilePage implements java.io.Serializable {
         init();
         return returnToDraftVersion();
     }
-    
+
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
 
     public String deleteFile() {
@@ -381,7 +381,7 @@ public class FilePage implements java.io.Serializable {
         return returnToDatasetOnly();
 
     }
-    
+
     private int activeTabIndex;
 
     public int getActiveTabIndex() {
@@ -391,24 +391,24 @@ public class FilePage implements java.io.Serializable {
     public void setActiveTabIndex(int activeTabIndex) {
         this.activeTabIndex = activeTabIndex;
     }
-    
+
     public void tabChanged(TabChangeEvent event) {
         TabView tv = (TabView) event.getComponent();
         this.activeTabIndex = tv.getActiveIndex();
-        if (this.activeTabIndex == 1 || this.activeTabIndex == 2 ) {
+        if (this.activeTabIndex == 1 || this.activeTabIndex == 2) {
             setFileMetadatasForTab(loadFileMetadataTabList());
         } else {
-            setFileMetadatasForTab( new ArrayList<>());         
+            setFileMetadatasForTab(new ArrayList<>());
         }
     }
-    
-    
+
+
     private List<FileMetadata> loadFileMetadataTabList() {
         List<DataFile> allfiles = allRelatedFiles();
         List<FileMetadata> retList = new ArrayList<>();
         for (DatasetVersion versionLoop : fileMetadata.getDatasetVersion().getDataset().getVersions()) {
             boolean foundFmd = false;
-            
+
             if (versionLoop.isReleased() || versionLoop.isDeaccessioned() || permissionService.on(fileMetadata.getDatasetVersion().getDataset()).has(Permission.ViewUnpublishedDataset)) {
                 foundFmd = false;
                 for (DataFile df : allfiles) {
@@ -435,7 +435,7 @@ public class FilePage implements java.io.Serializable {
         }
         return retList;
     }
-    
+
     private FileMetadata getPreviousFileMetadata(DatasetVersion currentversion) {
         List<DataFile> allfiles = allRelatedFiles();
         boolean foundCurrent = false;
@@ -463,24 +463,24 @@ public class FilePage implements java.io.Serializable {
         return null;
 
     }
-    
-    private FileMetadata getPreviousFileMetadata(FileMetadata fmdIn){
-        
+
+    private FileMetadata getPreviousFileMetadata(FileMetadata fmdIn) {
+
         DataFile dfPrevious = datafileService.findPreviousFile(fmdIn.getDataFile());
         DatasetVersion dvPrevious = null;
         boolean gotCurrent = false;
-        for (DatasetVersion dvloop: fileMetadata.getDatasetVersion().getDataset().getVersions()){
-            if(gotCurrent){
-                dvPrevious  = dvloop;
+        for (DatasetVersion dvloop : fileMetadata.getDatasetVersion().getDataset().getVersions()) {
+            if (gotCurrent) {
+                dvPrevious = dvloop;
                 break;
             }
-             if(dvloop.equals(fmdIn.getDatasetVersion())){
-                 gotCurrent = true;
-             }
-        } 
-        
+            if (dvloop.equals(fmdIn.getDatasetVersion())) {
+                gotCurrent = true;
+            }
+        }
+
         List<DataFile> allfiles = allRelatedFiles();
-        
+
         if (dvPrevious != null && dvPrevious.getFileMetadatasSorted() != null) {
             for (FileMetadata fmdTest : dvPrevious.getFileMetadatasSorted()) {
                 for (DataFile fileTest : allfiles) {
@@ -490,21 +490,21 @@ public class FilePage implements java.io.Serializable {
                 }
             }
         }
-        
+
         Long dfId = fmdIn.getDataFile().getId();
-        if (dfPrevious != null){
+        if (dfPrevious != null) {
             dfId = dfPrevious.getId();
         }
-        Long versionId = null;       
-        if (dvPrevious !=null){
+        Long versionId = null;
+        if (dvPrevious != null) {
             versionId = dvPrevious.getId();
         }
-        
+
         FileMetadata fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(versionId, dfId);
-        
+
         return fmd;
     }
-    
+
     public List<FileMetadata> getFileMetadatasForTab() {
         return fileMetadatasForTab;
     }
@@ -512,7 +512,7 @@ public class FilePage implements java.io.Serializable {
     public void setFileMetadatasForTab(List<FileMetadata> fileMetadatasForTab) {
         this.fileMetadatasForTab = fileMetadatasForTab;
     }
-    
+
     public String getPersistentId() {
         return persistentId;
     }
@@ -520,8 +520,8 @@ public class FilePage implements java.io.Serializable {
     public void setPersistentId(String persistentId) {
         this.persistentId = persistentId;
     }
-    
-    
+
+
     public List<DatasetVersion> getDatasetVersionsForTab() {
         return datasetVersionsForTab;
     }
@@ -529,44 +529,44 @@ public class FilePage implements java.io.Serializable {
     public void setDatasetVersionsForTab(List<DatasetVersion> datasetVersionsForTab) {
         this.datasetVersionsForTab = datasetVersionsForTab;
     }
-    
+
     public String save() {
         // Validate
         Set<ConstraintViolation> constraintViolations = this.fileMetadata.getDatasetVersion().validate();
         if (!constraintViolations.isEmpty()) {
-             //JsfHelper.addFlashMessage(JH.localize("dataset.message.validationError"));
-             fileDeleteInProgress = false;
-             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
+            //JsfHelper.addFlashMessage(JH.localize("dataset.message.validationError"));
+            fileDeleteInProgress = false;
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
             return "";
         }
-               
+
 
         Command<Dataset> cmd;
         boolean updateCommandSuccess = false;
         Long deleteFileId = null;
         String deleteStorageLocation = null;
 
-        if (!filesToBeDeleted.isEmpty()) { 
+        if (!filesToBeDeleted.isEmpty()) {
             // We want to delete the file (there's always only one file with this page)
-            
+
             deleteStorageLocation = datafileService.getPhysicalFileToDelete(filesToBeDeleted.get(0).getDataFile());
         }
-        
+
         try {
             cmd = new UpdateDatasetVersionCommand(editDataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
             commandEngine.submit(cmd);
             updateCommandSuccess = true;
 
         } catch (EJBException ex) {
-            
+
             StringBuilder error = new StringBuilder();
             error.append(ex).append(" ");
             error.append(ex.getMessage()).append(" ");
-            
-            
+
+
             Throwable cause = ex;
-            while (cause.getCause()!= null) {
+            while (cause.getCause() != null) {
                 cause = cause.getCause();
                 error.append(cause).append(" ");
                 error.append(cause.getMessage()).append(" ");
@@ -580,7 +580,7 @@ public class FilePage implements java.io.Serializable {
 
 
         if (fileDeleteInProgress) {
-            
+
             if (updateCommandSuccess) {
                 if (deleteStorageLocation != null) {
                     // Finalize the delete of the physical file 
@@ -591,7 +591,7 @@ public class FilePage implements java.io.Serializable {
                         datafileService.finalizeFileDelete(deleteFileId, deleteStorageLocation);
                     } catch (IOException ioex) {
                         logger.warning("Failed to delete the physical file associated with the deleted datafile id="
-                                + deleteFileId + ", storage location: " + deleteStorageLocation);
+                                               + deleteFileId + ", storage location: " + deleteStorageLocation);
                     }
                 }
             }
@@ -601,13 +601,13 @@ public class FilePage implements java.io.Serializable {
         } else {
             JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("file.message.editSuccess"));
         }
-        
+
         setVersion("DRAFT");
         return "";
     }
-    
-    private Boolean thumbnailAvailable = null; 
-    
+
+    private Boolean thumbnailAvailable = null;
+
     public boolean isThumbnailAvailable(FileMetadata fileMetadata) {
         // new and optimized logic: 
         // - check download permission here (should be cached - so it's free!)
@@ -616,27 +616,27 @@ public class FilePage implements java.io.Serializable {
         // (Also, cache the result the first time the check is performed... 
         // remember - methods referenced in "rendered=..." attributes are 
         // called *multiple* times as the page is loading!)
-        
+
         if (thumbnailAvailable != null) {
             return thumbnailAvailable;
         }
-                
+
         if (!fileDownloadHelper.canDownloadFile(fileMetadata)) {
             thumbnailAvailable = false;
         } else {
             thumbnailAvailable = datafileService.isThumbnailAvailable(fileMetadata.getDataFile());
         }
-        
+
         return thumbnailAvailable;
     }
-    
+
     public boolean isLicenseIconAvailable(FileMetadata fileMetadata) {
         if (fileMetadata.getTermsOfUse().getTermsOfUseType() != TermsOfUseType.LICENSE_BASED) {
             return false;
         }
         return fileMetadata.getTermsOfUse().getLicense().getIcon() != null;
     }
-    
+
     public Optional<StreamedContent> getLicenseIconContent(FileMetadata fileMetadata) {
         if (!isLicenseIconAvailable(fileMetadata)) {
             Optional.empty();
@@ -644,17 +644,17 @@ public class FilePage implements java.io.Serializable {
         LicenseIcon licenseIcon = fileMetadata.getTermsOfUse().getLicense().getIcon();
         return Optional.of(new ByteArrayContent(licenseIcon.getContent(), licenseIcon.getContentType()));
     }
-    
-    private String returnToDatasetOnly(){
-        
-         return "/dataset.xhtml?persistentId=" + editDataset.getGlobalIdString()  + "&version=DRAFT" + "&faces-redirect=true";   
+
+    private String returnToDatasetOnly() {
+
+        return "/dataset.xhtml?persistentId=" + editDataset.getGlobalIdString() + "&version=DRAFT" + "&faces-redirect=true";
     }
-    
-    private String returnToDraftVersion(){ 
-        
-         return "/file.xhtml?fileId=" + fileId + "&version=DRAFT&faces-redirect=true";    
+
+    private String returnToDraftVersion() {
+
+        return "/file.xhtml?fileId=" + fileId + "&version=DRAFT&faces-redirect=true";
     }
-    
+
     public FileDownloadServiceBean getFileDownloadService() {
         return fileDownloadService;
     }
@@ -662,8 +662,8 @@ public class FilePage implements java.io.Serializable {
     public void setFileDownloadService(FileDownloadServiceBean fileDownloadService) {
         this.fileDownloadService = fileDownloadService;
     }
-    
-    
+
+
     public GuestbookResponseServiceBean getGuestbookResponseService() {
         return guestbookResponseService;
     }
@@ -671,8 +671,8 @@ public class FilePage implements java.io.Serializable {
     public void setGuestbookResponseService(GuestbookResponseServiceBean guestbookResponseService) {
         this.guestbookResponseService = guestbookResponseService;
     }
-    
-    
+
+
     public GuestbookResponse getGuestbookResponse() {
         return guestbookResponse;
     }
@@ -680,12 +680,12 @@ public class FilePage implements java.io.Serializable {
     public void setGuestbookResponse(GuestbookResponse guestbookResponse) {
         this.guestbookResponse = guestbookResponse;
     }
-    
-    
+
+
     public boolean canUpdateDataset() {
         return permissionsWrapper.canUpdateDataset(dvRequestService.getDataverseRequest(), this.file.getOwner());
     }
-    
+
     public int getSelectedTabIndex() {
         return selectedTabIndex;
     }
@@ -693,31 +693,28 @@ public class FilePage implements java.io.Serializable {
     public void setSelectedTabIndex(int selectedTabIndex) {
         this.selectedTabIndex = selectedTabIndex;
     }
-    
-    public boolean isSwiftStorage () {
+
+    public boolean isSwiftStorage() {
         Boolean swiftBool = false;
-        if (file.getStorageIdentifier().startsWith("swift://")){
+        if (file.getStorageIdentifier().startsWith("swift://")) {
             swiftBool = true;
         }
         return swiftBool;
     }
-    
-    public boolean showComputeButton () {
-        if (isSwiftStorage() && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null)) {
-            return true;
-        }
-        
-        return false;
+
+    public boolean showComputeButton() {
+        return isSwiftStorage() && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null);
+
     }
-    
+
     public SwiftAccessIO getSwiftObject() {
         try {
             StorageIO<DataFile> storageIO = getFile().getStorageIO();
             if (storageIO != null && storageIO instanceof SwiftAccessIO) {
-                return (SwiftAccessIO)storageIO;
+                return (SwiftAccessIO) storageIO;
             } else {
                 logger.fine("FilePage: Failed to cast storageIO as SwiftAccessIO");
-            } 
+            }
         } catch (IOException e) {
             logger.fine("FilePage: Failed to get storageIO");
         }
@@ -725,12 +722,12 @@ public class FilePage implements java.io.Serializable {
     }
 
 
-    public String getSwiftContainerName(){
+    public String getSwiftContainerName() {
         SwiftAccessIO swiftObject = getSwiftObject();
         try {
             swiftObject.open();
             return swiftObject.getSwiftContainerName();
-        } catch (IOException e){
+        } catch (IOException e) {
             logger.info("FilePage: Failed to open swift object");
         }
         return "";
@@ -761,84 +758,80 @@ public class FilePage implements java.io.Serializable {
 
         return dataFiles;
     }
-    
-    public boolean isDraftReplacementFile(){
+
+    public boolean isDraftReplacementFile() {
         /*
         This method tests to see if the file has been replaced in a draft version of the dataset
         Since it must must work when you are on prior versions of the dataset 
         it must accrue all replacement files that may have been created
         */
-        if(null == dataset) {
+        if (null == dataset) {
             dataset = fileMetadata.getDataFile().getOwner();
         }
-        
-        DataFile dataFileToTest = fileMetadata.getDataFile(); 
-        
+
+        DataFile dataFileToTest = fileMetadata.getDataFile();
+
         DatasetVersion currentVersion = dataset.getLatestVersion();
-        
-        if (!currentVersion.isDraft()){
+
+        if (!currentVersion.isDraft()) {
             return false;
         }
-        
-        if (dataset.getReleasedVersion() == null){
+
+        if (dataset.getReleasedVersion() == null) {
             return false;
         }
-        
+
         List<DataFile> dataFiles = new ArrayList<>();
-        
+
         dataFiles.add(dataFileToTest);
-        
-        while (datafileService.findReplacementFile(dataFileToTest.getId()) != null ){
+
+        while (datafileService.findReplacementFile(dataFileToTest.getId()) != null) {
             dataFiles.add(datafileService.findReplacementFile(dataFileToTest.getId()));
             dataFileToTest = datafileService.findReplacementFile(dataFileToTest.getId());
         }
-        
-        if(dataFiles.size() <2){
+
+        if (dataFiles.size() < 2) {
             return false;
         }
-        
+
         int numFiles = dataFiles.size();
-        
-        DataFile current = dataFiles.get(numFiles - 1 );       
-        
+
+        DataFile current = dataFiles.get(numFiles - 1);
+
         DatasetVersion publishedVersion = dataset.getReleasedVersion();
-        
-        if( datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(publishedVersion.getId(), current.getId()) == null){
-            return true;
-        }
-        
-        return false;
+
+        return datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(publishedVersion.getId(), current.getId()) == null;
+
     }
-    
 
 
-    
     /**
-     * To help with replace development 
-     * @return 
+     * To help with replace development
+     *
+     * @return
      */
-    public boolean isReplacementFile(){
-   
+    public boolean isReplacementFile() {
+
         return this.datafileService.isReplacementFile(this.getFile());
     }
 
     public boolean isPubliclyDownloadable() {
         return FileUtil.isPubliclyDownloadable(fileMetadata);
     }
-    
+
     private Boolean lockedFromEditsVar;
-    private Boolean lockedFromDownloadVar; 
-    
+    private Boolean lockedFromDownloadVar;
+
     /**
      * Authors are not allowed to edit but curators are allowed - when Dataset is inReview
      * For all other locks edit should be locked for all editors.
      */
     public boolean isLockedFromEdits() {
-        if(null == dataset) {
+        if (null == dataset) {
             dataset = fileMetadata.getDataFile().getOwner();
         }
-        
-        if(null == lockedFromEditsVar) {
+
+        if (null == lockedFromEditsVar) {
             try {
                 permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest()));
                 lockedFromEditsVar = false;
@@ -848,9 +841,9 @@ public class FilePage implements java.io.Serializable {
         }
         return lockedFromEditsVar;
     }
-    
-    public boolean isLockedFromDownload(){
-        if(null == dataset) {
+
+    public boolean isLockedFromDownload() {
+        if (null == dataset) {
             dataset = fileMetadata.getDataFile().getOwner();
         }
         if (null == lockedFromDownloadVar) {
@@ -861,7 +854,7 @@ public class FilePage implements java.io.Serializable {
                 lockedFromDownloadVar = true;
             }
         }
-        return lockedFromDownloadVar;       
+        return lockedFromDownloadVar;
     }
 
     public String getPublicDownloadUrl() {
@@ -873,7 +866,7 @@ public class FilePage implements java.io.Serializable {
                     SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) storageIO;
                     swiftIO.open();
                     //if its a public install, lets just give users the permanent URL!
-                    if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall)){
+                    if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall)) {
                         fileDownloadUrl = swiftIO.getRemoteUrl();
                     } else {
                         //TODO: if a user has access to this file, they should be given the swift url
@@ -887,10 +880,10 @@ public class FilePage implements java.io.Serializable {
                     e.printStackTrace();
                 }
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), persistentId, fileId);
     }
 
@@ -901,7 +894,7 @@ public class FilePage implements java.io.Serializable {
     public List<ExternalTool> getExploreTools() {
         return exploreTools;
     }
-    
+
     //Provenance fragment bean calls this to show error dialogs after popup failure
     //This can probably be replaced by calling JsfHelper from the provpopup bean
     public void showProvError() {

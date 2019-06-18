@@ -13,18 +13,17 @@ import javax.persistence.TypedQuery;
 import java.util.List;
 
 /**
- *
  * @author Leonid Andreev
- * 
+ * <p>
  * Basic skeleton of the new DataVariable service for DVN 4.0
  */
 
 @Stateless
 public class VariableServiceBean {
     public static final String[] summaryStatisticTypes = {"mean", "medn", "mode", "vald", "invd", "min", "max", "stdev"};
-    
+
     //private static final Logger logger = Logger.getLogger(VariableServiceBean.class.getCanonicalName());
-    
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -35,18 +34,18 @@ public class VariableServiceBean {
 
     public DataVariable find(Object pk) {
         return em.find(DataVariable.class, pk);
-    }    
-    
-    public List<DataVariable> findByDataFileId(Long fileId) {
-         TypedQuery<DataVariable> query = em.createQuery("select object(o) from DataVariable as o where o.dataTable.dataFile.id =:fileId order by o.fileOrder", DataVariable.class);
-         query.setParameter("fileId", fileId);
-         return query.getResultList();
     }
-    
+
+    public List<DataVariable> findByDataFileId(Long fileId) {
+        TypedQuery<DataVariable> query = em.createQuery("select object(o) from DataVariable as o where o.dataTable.dataFile.id =:fileId order by o.fileOrder", DataVariable.class);
+        query.setParameter("fileId", fileId);
+        return query.getResultList();
+    }
+
     public List<DataVariable> findByDataTableId(Long dtId) {
-         TypedQuery<DataVariable> query = em.createQuery("select object(o) from DataVariable as o where o.dataTable.id =:dtId order by o.fileOrder", DataVariable.class);
-         query.setParameter("dtId", dtId);
-         return query.getResultList();
+        TypedQuery<DataVariable> query = em.createQuery("select object(o) from DataVariable as o where o.dataTable.id =:dtId order by o.fileOrder", DataVariable.class);
+        query.setParameter("dtId", dtId);
+        return query.getResultList();
     }
 
     public List<VariableMetadata> findByDataVarIdAndFileMetaId(Long datVarId, Long metaId) {
@@ -119,5 +118,5 @@ public class VariableServiceBean {
         return type;
     }
     */
-    
+
 }

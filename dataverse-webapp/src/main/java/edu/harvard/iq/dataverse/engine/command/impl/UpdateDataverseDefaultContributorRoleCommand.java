@@ -1,5 +1,3 @@
-
-
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
@@ -12,15 +10,14 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 /**
- *
  * @author skraffmiller
  */
-@RequiredPermissions( Permission.ManageDataversePermissions )
+@RequiredPermissions(Permission.ManageDataversePermissions)
 public class UpdateDataverseDefaultContributorRoleCommand extends AbstractCommand<Dataverse> {
 
-    	private final DataverseRole role;
-        private  Dataverse dv;
-        
+    private final DataverseRole role;
+    private Dataverse dv;
+
     public UpdateDataverseDefaultContributorRoleCommand(DataverseRole role, DataverseRequest aRequest, Dataverse anAffectedDataverse) {
         super(aRequest, anAffectedDataverse);
         this.role = role;
@@ -33,5 +30,5 @@ public class UpdateDataverseDefaultContributorRoleCommand extends AbstractComman
         dv = ctxt.dataverses().save(dv);
         return dv;
     }
-    
+
 }

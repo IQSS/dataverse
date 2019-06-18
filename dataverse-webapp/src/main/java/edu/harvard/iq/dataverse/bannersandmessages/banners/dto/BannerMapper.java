@@ -29,7 +29,7 @@ public class BannerMapper {
     private static final Logger logger = Logger.getLogger(BannerMapper.class.getCanonicalName());
 
     private BannerLimits bannerLimits;
-    
+
     private SettingsWrapper settingsWrapper;
 
     public BannerMapper() {
@@ -56,15 +56,15 @@ public class BannerMapper {
 
             DataverseLocalizedBannerDto localBannerDto =
                     new DataverseLocalizedBannerDto(dlb.getId(), dlb.getLocale(),
-                            dlb.getImageLink().isPresent() ?
-                                    dlb.getImageLink().get() : StringUtils.EMPTY);
+                                                    dlb.getImageLink().isPresent() ?
+                                                            dlb.getImageLink().get() : StringUtils.EMPTY);
 
             ByteArrayOutputStream resizedImage = convertImageToMiniSize(dlb.getImage());
 
             localBannerDto.setDisplayedImage(new ByteArrayContent(dlb.getImage(), dlb.getContentType(), dlb.getImageName()));
             localBannerDto.setMiniDisplayImage(
                     new ByteArrayContent(resizedImage.toByteArray(),
-                            "image/jpeg"));
+                                         "image/jpeg"));
 
             dlbDto.add(localBannerDto);
         }
@@ -146,8 +146,8 @@ public class BannerMapper {
             BufferedImage loadedImage = ImageIO.read(new ByteArrayInputStream(image));
 
             BufferedImage resizedImage = Scalr.resize(loadedImage,
-                    bannerLimits.getMaxWidth() / 3,
-                    bannerLimits.getMaxHeight() / 3);
+                                                      bannerLimits.getMaxWidth() / 3,
+                                                      bannerLimits.getMaxHeight() / 3);
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             ImageIO.write(resizedImage, "jpeg", os);

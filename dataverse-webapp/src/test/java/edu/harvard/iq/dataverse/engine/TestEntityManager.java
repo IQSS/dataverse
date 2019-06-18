@@ -5,15 +5,6 @@
  */
 package edu.harvard.iq.dataverse.engine;
 
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -29,20 +20,28 @@ import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.CriteriaUpdate;
 import javax.persistence.metamodel.Metamodel;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- *
  * @author skraffmi
  */
 public class TestEntityManager implements EntityManager {
-    
+
     Set<Object> newlyPersistedObjects = new HashSet<>();
-    Map<Class,Map<Object,Object>> tables = new HashMap<>();
+    Map<Class, Map<Object, Object>> tables = new HashMap<>();
     final AtomicLong nextId = new AtomicLong(0);
-    
+
     @Override
     public void persist(Object entity) {
-        newlyPersistedObjects.add( entity );
+        newlyPersistedObjects.add(entity);
     }
 
     @Override
@@ -82,13 +81,13 @@ public class TestEntityManager implements EntityManager {
 
     @Override
     public void flush() {
-        newlyPersistedObjects.stream().forEach( o -> {
+        newlyPersistedObjects.stream().forEach(o -> {
             Class<?> clz = o.getClass();
-            if ( ! tables.containsKey(clz) ) {
-                tables.put( clz, new HashMap<>());
+            if (!tables.containsKey(clz)) {
+                tables.put(clz, new HashMap<>());
             }
-            for ( Field f : clz.getFields() ) {
-                if ( f.getAnnotation(Id.class) != null ) {
+            for (Field f : clz.getFields()) {
+                if (f.getAnnotation(Id.class) != null) {
                     long id = nextId.incrementAndGet();
                     try {
                         f.setAccessible(true);
@@ -311,5 +310,5 @@ public class TestEntityManager implements EntityManager {
     public <T> List<EntityGraph<? super T>> getEntityGraphs(Class<T> entityClass) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
 }

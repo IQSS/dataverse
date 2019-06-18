@@ -30,11 +30,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
  * @author skraffmiller
  */
 @Entity
-@Table(indexes = {@Index(columnList="dataverse_id")})
+@Table(indexes = {@Index(columnList = "dataverse_id")})
 public class Template implements Serializable {
 
     @Id
@@ -58,7 +57,7 @@ public class Template implements Serializable {
 
     @NotBlank(message = "{dataset.templatename}")
     @Size(max = 255, message = "{dataset.nameLength}")
-    @Column( nullable = false )
+    @Column(nullable = false)
     private String name;
 
     public String getName() {
@@ -80,7 +79,7 @@ public class Template implements Serializable {
     }
 
     @Temporal(value = TemporalType.TIMESTAMP)
-    @Column( nullable = false )
+    @Column(nullable = false)
     private Date createTime;
 
     public Date getCreateTime() {
@@ -94,8 +93,8 @@ public class Template implements Serializable {
     public String getCreateDate() {
         return new SimpleDateFormat("MMMM d, yyyy").format(createTime);
     }
-    
-    @OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval=true)
+
+    @OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
     @JoinColumn(name = "termsOfUseAndAccess_id")
     private TermsOfUseAndAccess termsOfUseAndAccess;
 
@@ -119,7 +118,7 @@ public class Template implements Serializable {
     private Map<MetadataBlock, List<DatasetField>> metadataBlocksForView = new HashMap<>();
     @Transient
     private Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new HashMap<>();
-    
+
     @Transient
     private boolean isDefaultForDataverse;
 
@@ -130,7 +129,7 @@ public class Template implements Serializable {
     public void setIsDefaultForDataverse(boolean isDefaultForDataverse) {
         this.isDefaultForDataverse = isDefaultForDataverse;
     }
-    
+
     @Transient
     private List<Dataverse> dataversesHasAsDefault;
 
@@ -141,7 +140,7 @@ public class Template implements Serializable {
     public void setDataversesHasAsDefault(List<Dataverse> dataversesHasAsDefault) {
         this.dataversesHasAsDefault = dataversesHasAsDefault;
     }
-    
+
 
     public Map<MetadataBlock, List<DatasetField>> getMetadataBlocksForView() {
         return metadataBlocksForView;
@@ -160,7 +159,7 @@ public class Template implements Serializable {
     }
 
     @ManyToOne
-    @JoinColumn(nullable=true)
+    @JoinColumn(nullable = true)
     private Dataverse dataverse;
 
     public Dataverse getDataverse() {
@@ -249,10 +248,10 @@ public class Template implements Serializable {
         //TODO: A lot of clean up on the logic of this method
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
-        List<DatasetField> filledInFields = this.getDatasetFields(); 
-        
-        
-        List <MetadataBlock> actualMDB = new ArrayList<>();
+        List<DatasetField> filledInFields = this.getDatasetFields();
+
+
+        List<MetadataBlock> actualMDB = new ArrayList<>();
 
         actualMDB.addAll(this.getDataverse().getRootMetadataBlocks());
         for (DatasetField dsfv : filledInFields) {
@@ -262,8 +261,8 @@ public class Template implements Serializable {
                     actualMDB.add(mdbTest);
                 }
             }
-        }       
-        
+        }
+
         for (MetadataBlock mdb : actualMDB) {
             List<DatasetField> datasetFieldsForView = new ArrayList<>();
             List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
@@ -320,7 +319,7 @@ public class Template implements Serializable {
             newTemplate.setDatasetFields(newTemplate.copyDatasetFields(source.getDatasetFields()));
         }
         TermsOfUseAndAccess terms;
-        if(source.getTermsOfUseAndAccess() != null){
+        if (source.getTermsOfUseAndAccess() != null) {
             terms = source.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
         } else {
             terms = new TermsOfUseAndAccess();
@@ -347,7 +346,7 @@ public class Template implements Serializable {
         }
         this.datasetFields = datasetFields;
     }
-    
+
     public List<DatasetField> getFlatDatasetFields() {
         return getFlatDatasetFields(getDatasetFields());
     }
@@ -365,25 +364,22 @@ public class Template implements Serializable {
         }
         return retList;
     }
-    
+
     @Override
-     public int hashCode() {
+    public int hashCode() {
         int hash = 0;
         hash += (this.id != null ? this.id.hashCode() : 0);
         return hash;
     }
 
     @Override
-     public boolean equals(Object object) {
+    public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
         if (!(object instanceof Template)) {
             return false;
         }
         Template other = (Template) object;
-        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
-    } 
+        return this.id == other.id || (this.id != null && this.id.equals(other.id));
+    }
 
 }

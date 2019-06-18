@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
@@ -6,19 +5,18 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.dublincore.DublinCoreExportUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.io.OutputStream;
+
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
+import java.io.OutputStream;
 
 /**
- *
  * @author skraffmi
  */
 @AutoService(Exporter.class)
 public class DublinCoreExporter implements Exporter {
-    
-    
-    
+
+
     @Override
     public String getProviderName() {
         return "oai_dc";
@@ -26,7 +24,7 @@ public class DublinCoreExporter implements Exporter {
 
     @Override
     public String getDisplayName() {
-        return  BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dublinCore") != null ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dublinCore") : "Dublin Core";
+        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dublinCore") != null ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dublinCore") : "Dublin Core";
     }
 
     @Override
@@ -42,32 +40,32 @@ public class DublinCoreExporter implements Exporter {
     public Boolean isXMLFormat() {
         return true;
     }
-    
+
     @Override
     public Boolean isHarvestable() {
         return true;
     }
-    
+
     @Override
     public Boolean isAvailableToUsers() {
         return false;
     }
-    
+
     @Override
     public String getXMLNameSpace() throws ExportException {
-        return DublinCoreExportUtil.OAI_DC_XML_NAMESPACE;   
+        return DublinCoreExportUtil.OAI_DC_XML_NAMESPACE;
     }
-    
+
     @Override
     public String getXMLSchemaLocation() throws ExportException {
         return DublinCoreExportUtil.OAI_DC_XML_SCHEMALOCATION;
     }
-    
+
     @Override
     public String getXMLSchemaVersion() throws ExportException {
         return DublinCoreExportUtil.DEFAULT_XML_VERSION;
     }
-    
+
     @Override
     public void setParam(String name, Object value) {
         // this exporter doesn't need/doesn't currently take any parameters

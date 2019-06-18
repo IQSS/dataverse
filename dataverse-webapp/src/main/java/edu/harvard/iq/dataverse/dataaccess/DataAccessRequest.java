@@ -21,25 +21,25 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 // java core imports:
-import java.util.Map;
-import java.util.HashMap;
 
-
-// DVN App imports:
 import edu.harvard.iq.dataverse.DataFile;
 
+import java.util.HashMap;
+import java.util.Map;
+
+// DVN App imports:
+
 /**
- *
  * @author Leonid Aandreev
  */
 
 public class DataAccessRequest {
-    
-    public DataAccessRequest () {
+
+    public DataAccessRequest() {
         this(null);
     }
 
-    public DataAccessRequest (DataFile file) {
+    public DataAccessRequest(DataFile file) {
         this.file = file;
         this.requestParameters = new HashMap<String, String>();
     }
@@ -47,25 +47,25 @@ public class DataAccessRequest {
     private DataFile file;
     private Map<String, String> requestParameters;
 
-    public void setFile (DataFile file) {
+    public void setFile(DataFile file) {
         this.file = file;
     }
 
-    public DataFile getFile () {
-        return this.file; 
+    public DataFile getFile() {
+        return this.file;
     }
 
-    public void setParameter (String name, String value) {
+    public void setParameter(String name, String value) {
         if (requestParameters != null) {
             requestParameters.put(name, value);
         }
     }
 
-    public String getParameter (String name) {
+    public String getParameter(String name) {
         if (requestParameters != null) {
             return requestParameters.get(name);
         }
-        return null; 
+        return null;
     }
 
     private DataAccessRequest(Object object) {

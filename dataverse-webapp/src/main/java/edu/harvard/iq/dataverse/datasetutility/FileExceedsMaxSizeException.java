@@ -6,7 +6,6 @@
 package edu.harvard.iq.dataverse.datasetutility;
 
 /**
- *
  * @author rmp553
  */
 public class FileExceedsMaxSizeException extends Exception {

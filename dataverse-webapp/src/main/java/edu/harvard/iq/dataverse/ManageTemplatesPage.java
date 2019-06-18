@@ -25,8 +25,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+
 /**
- *
  * @author skraffmiller
  */
 @ViewScoped
@@ -38,7 +38,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
 
     @EJB
     TemplateServiceBean templateService;
-    
+
     @EJB
     EjbDataverseEngine engineService;
 
@@ -53,10 +53,10 @@ public class ManageTemplatesPage implements java.io.Serializable {
 
     @Inject
     DataverseSession session;
-    
+
     @Inject
     DataverseRequestServiceBean dvRequestService;
-    
+
     @Inject
     PermissionsWrapper permissionsWrapper;
 
@@ -75,12 +75,12 @@ public class ManageTemplatesPage implements java.io.Serializable {
         }
         if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
             return permissionsWrapper.notAuthorized();
-        }  
+        }
         dvpage.setDataverse(dataverse);
         if (dataverse.getOwner() != null && dataverse.getRootMetadataBlocks().equals(dataverse.getOwner().getRootMetadataBlocks())) {
-           setInheritTemplatesAllowed(true); 
+            setInheritTemplatesAllowed(true);
         }
- 
+
         templates = new LinkedList<>();
         setInheritTemplatesValue(!dataverse.isTemplateRoot());
         if (inheritTemplatesValue && dataverse.getOwner() != null) {
@@ -95,8 +95,8 @@ public class ManageTemplatesPage implements java.io.Serializable {
             ct.setIsDefaultForDataverse(!ct.getDataversesHasAsDefault().isEmpty());
             templates.add(ct);
         }
-        if (!templates.isEmpty()){
-             JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.manageTemplates.label"), BundleUtil.getStringFromBundle("dataset.message.manageTemplates.message"));
+        if (!templates.isEmpty()) {
+            JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.manageTemplates.label"), BundleUtil.getStringFromBundle("dataset.message.manageTemplates.message"));
         }
         return null;
     }
@@ -113,7 +113,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
 
     public String cloneTemplate(Template templateIn) {
         Template newOne = templateIn.cloneNewTemplate(templateIn);
-        String name = BundleUtil.getStringFromBundle("page.copy") +" " + templateIn.getName();
+        String name = BundleUtil.getStringFromBundle("page.copy") + " " + templateIn.getName();
         newOne.setName(name);
         newOne.setUsageCount(new Long(0));
         newOne.setCreateTime(new Timestamp(new Date().getTime()));
@@ -123,7 +123,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
         try {
             created = engineService.submit(new CreateTemplateCommand(newOne, dvRequestService.getDataverseRequest(), dataverse));
             saveDataverse("");
-            String msg =  BundleUtil.getStringFromBundle("template.clone");//"The template has been copied";
+            String msg = BundleUtil.getStringFromBundle("template.clone");//"The template has been copied";
             JsfHelper.addFlashMessage(msg);
             return "/template.xhtml?id=" + created.getId() + "&ownerId=" + dataverse.getId() + "&editMode=METADATA&faces-redirect=true";
         } catch (CommandException ex) {
@@ -133,19 +133,19 @@ public class ManageTemplatesPage implements java.io.Serializable {
     }
 
     public void deleteTemplate() {
-        List <Dataverse> dataverseWDefaultTemplate = null;
+        List<Dataverse> dataverseWDefaultTemplate = null;
         if (selectedTemplate != null) {
             templates.remove(selectedTemplate);
-            if(dataverse.getDefaultTemplate() != null && dataverse.getDefaultTemplate().equals(selectedTemplate)){
+            if (dataverse.getDefaultTemplate() != null && dataverse.getDefaultTemplate().equals(selectedTemplate)) {
                 dataverse.setDefaultTemplate(null);
             }
-            dataverse.getTemplates().remove(selectedTemplate);  
+            dataverse.getTemplates().remove(selectedTemplate);
             dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(selectedTemplate.getId());
         } else {
             System.out.print("selected template is null");
         }
         try {
-            engineService.submit(new DeleteTemplateCommand(dvRequestService.getDataverseRequest(), getDataverse(), selectedTemplate, dataverseWDefaultTemplate  ));
+            engineService.submit(new DeleteTemplateCommand(dvRequestService.getDataverseRequest(), getDataverse(), selectedTemplate, dataverseWDefaultTemplate));
             JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("template.delete"));//("The template has been deleted");
         } catch (CommandException ex) {
             String failMessage = BundleUtil.getStringFromBundle("template.delete.error");//"The dataset template cannot be deleted.";
@@ -167,10 +167,10 @@ public class ManageTemplatesPage implements java.io.Serializable {
             JsfHelper.addFlashMessage(successMessage);
         } catch (CommandException ex) {
             String failMessage = BundleUtil.getStringFromBundle("template.update.error");//"Template update failed";
-            if(successMessage.equals(BundleUtil.getStringFromBundle("template.delete"))){
+            if (successMessage.equals(BundleUtil.getStringFromBundle("template.delete"))) {
                 failMessage = BundleUtil.getStringFromBundle("template.delete.error");//"The dataset template cannot be deleted.";
             }
-            if(successMessage.equals(BundleUtil.getStringFromBundle("template.makeDefault"))){
+            if (successMessage.equals(BundleUtil.getStringFromBundle("template.makeDefault"))) {
                 failMessage = BundleUtil.getStringFromBundle("template.makeDefault.error");//"The dataset template cannot be made default.";
             }
             JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
@@ -217,6 +217,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
     public void setInheritTemplatesAllowed(boolean inheritTemplatesAllowed) {
         this.inheritTemplatesAllowed = inheritTemplatesAllowed;
     }
+
     public Template getSelectedTemplate() {
         return selectedTemplate;
     }

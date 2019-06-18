@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.search.SortBy;
 import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 
 public class FileSortFieldAndOrderTest {

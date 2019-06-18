@@ -296,14 +296,14 @@ public class IndexServiceBean {
     public Future<String> asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         return indexDataset(dataset, doNormalSolrDocCleanUp);
     }
-    
+
     @Asynchronous
     public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) {
-        for(Dataset dataset : datasets) {
+        for (Dataset dataset : datasets) {
             indexDataset(dataset, true);
         }
     }
-    
+
     public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         logger.fine("indexing dataset " + dataset.getId());
         /**
@@ -393,11 +393,7 @@ public class IndexServiceBean {
         DatasetVersion.VersionState latestVersionState = latestVersion.getVersionState();
         DatasetVersion releasedVersion = dataset.getReleasedVersion();
         boolean atLeastOnePublishedVersion = false;
-        if (releasedVersion != null) {
-            atLeastOnePublishedVersion = true;
-        } else {
-            atLeastOnePublishedVersion = false;
-        }
+        atLeastOnePublishedVersion = releasedVersion != null;
         Map<DatasetVersion.VersionState, Boolean> desiredCards = new LinkedHashMap<>();
         /**
          * @todo refactor all of this below and have a single method that takes
@@ -686,7 +682,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dataset.getDataverseContext().getIndexableCategoryName());
         solrInputDocument.addField(SearchFields.IDENTIFIER_OF_DATAVERSE, dataset.getDataverseContext().getAlias());
         solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dataset.getDataverseContext().getDisplayName());
-        
+
         Date datasetSortByDate = new Date();
         Date majorVersionReleaseDate = dataset.getMostRecentMajorVersionReleaseDate();
         if (majorVersionReleaseDate != null) {
@@ -717,11 +713,11 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, datasetSortByDate);
         solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(datasetSortByDate));
 
-        if (state.equals(indexableDataset.getDatasetState().PUBLISHED)) {
+        if (state.equals(IndexableDataset.DatasetState.PUBLISHED)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
             // solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE,
             // dataset.getPublicationDate());
-        } else if (state.equals(indexableDataset.getDatasetState().WORKING_COPY)) {
+        } else if (state.equals(IndexableDataset.DatasetState.WORKING_COPY)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
         }
 
@@ -856,7 +852,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.PARENT_ID, dataset.getOwner().getId());
         solrInputDocument.addField(SearchFields.PARENT_NAME, dataset.getOwner().getName());
 
-        if (state.equals(indexableDataset.getDatasetState().DEACCESSIONED)) {
+        if (state.equals(IndexableDataset.DatasetState.DEACCESSIONED)) {
             String deaccessionNote = datasetVersion.getVersionNote();
             if (deaccessionNote != null) {
                 solrInputDocument.addField(SearchFields.DATASET_DEACCESSION_REASON, deaccessionNote);
@@ -928,7 +924,7 @@ public class IndexServiceBean {
                             ContentHandler textHandler = null;
                             try {
                                 accessObject = DataAccess.getStorageIO(fileMetadata.getDataFile(),
-                                        new DataAccessRequest());
+                                                                       new DataAccessRequest());
                                 if (accessObject != null) {
                                     accessObject.open();
                                     // If the size is >max, we don't use the stream. However, for S3, the stream is
@@ -948,20 +944,20 @@ public class IndexServiceBean {
                                          */
                                         autoParser.parse(instream, textHandler, metadata, context);
                                         datafileSolrInputDocument.addField(SearchFields.FULL_TEXT,
-                                                textHandler.toString());
+                                                                           textHandler.toString());
                                     }
                                 }
                             } catch (Exception e) {
                                 // Needs better logging of what went wrong in order to
                                 // track down "bad" documents.
                                 logger.warning(String.format("Full-text indexing for %s failed",
-                                        fileMetadata.getDataFile().getDisplayName()));
+                                                             fileMetadata.getDataFile().getDisplayName()));
                                 e.printStackTrace();
                                 continue;
                             } catch (OutOfMemoryError e) {
                                 textHandler = null;
                                 logger.warning(String.format("Full-text indexing for %s failed due to OutOfMemoryError",
-                                        fileMetadata.getDataFile().getDisplayName()));
+                                                             fileMetadata.getDataFile().getDisplayName()));
                                 continue;
                             } finally {
                                 IOUtils.closeQuietly(instream);
@@ -1031,7 +1027,7 @@ public class IndexServiceBean {
                                 logger.info(msg);
                             }
                             datafileSolrInputDocument.addField(SearchFields.ACCESS,
-                                    fileMetadata.isRestricted() ? SearchConstants.RESTRICTED : SearchConstants.PUBLIC);
+                                                               fileMetadata.isRestricted() ? SearchConstants.RESTRICTED : SearchConstants.PUBLIC);
                         }
                         if (datafile.isHarvested()) {
                             datafileSolrInputDocument.addField(SearchFields.IS_HARVESTED, true);
@@ -1062,12 +1058,12 @@ public class IndexServiceBean {
                     }
 
                     String fileSolrDocId = solrDocIdentifierFile + fileEntityId;
-                    if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().PUBLISHED)) {
+                    if (indexableDataset.getDatasetState().equals(IndexableDataset.DatasetState.PUBLISHED)) {
                         fileSolrDocId = solrDocIdentifierFile + fileEntityId;
                         datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
                         // datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
                         addDatasetReleaseDateToSolrDoc(datafileSolrInputDocument, dataset);
-                    } else if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().WORKING_COPY)) {
+                    } else if (indexableDataset.getDatasetState().equals(IndexableDataset.DatasetState.WORKING_COPY)) {
                         fileSolrDocId = solrDocIdentifierFile + fileEntityId + indexableDataset.getDatasetState().getSuffix();
                         datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
                     }
@@ -1302,7 +1298,7 @@ public class IndexServiceBean {
     /**
      * @todo call this in fewer places, favoring
      * SolrIndexServiceBeans.deleteMultipleSolrIds instead to operate in batches
-     *
+     * <p>
      * https://github.com/IQSS/dataverse/issues/142
      */
     public String removeSolrDocFromIndex(String doomed) {
@@ -1480,10 +1476,7 @@ public class IndexServiceBean {
         Timestamp modificationTime = dvObject.getModificationTime();
         if (indexTime == null) {
             return true;
-        } else if (indexTime.before(modificationTime)) {
-            return true;
-        }
-        return false;
+        } else return indexTime.before(modificationTime);
     }
 
     public List<Long> findDataversesInSolrOnly() throws SearchException {

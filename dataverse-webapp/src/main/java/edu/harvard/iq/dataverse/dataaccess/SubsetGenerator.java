@@ -25,23 +25,24 @@ package edu.harvard.iq.dataverse.dataaccess;
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
+
 import java.io.InputStream;
-import java.util.*;
-    
+import java.util.List;
+
 /**
  * original author:
+ *
  * @author Akio Sone
  * (for DVN v.2-3)
- *
  * @author Leonid Andreev
  */
 public interface SubsetGenerator {
-        
-    public  void subsetFile(String infile, String outfile, List<Integer> columns, Long numCases);
 
-    public void subsetFile(String infile, String outfile, List<Integer> columns, Long numCases,
-        String delimiter);
+    void subsetFile(String infile, String outfile, List<Integer> columns, Long numCases);
 
-    public void subsetFile(InputStream in, String outfile, List<Integer> columns, Long numCases,
-        String delimiter);
+    void subsetFile(String infile, String outfile, List<Integer> columns, Long numCases,
+                    String delimiter);
+
+    void subsetFile(InputStream in, String outfile, List<Integer> columns, Long numCases,
+                    String delimiter);
 }

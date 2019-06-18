@@ -11,12 +11,12 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
 /**
- *
  * @author Naomi
  */
 // no annotations here, since permissions are dynamically decided
@@ -37,8 +37,8 @@ public class GetDatasetCommand extends AbstractCommand<Dataset> {
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         return Collections.singletonMap("",
-                ds.isReleased() ? Collections.<Permission>emptySet()
-                : Collections.singleton(Permission.ViewUnpublishedDataset));
+                                        ds.isReleased() ? Collections.emptySet()
+                                                : Collections.singleton(Permission.ViewUnpublishedDataset));
     }
 
 }

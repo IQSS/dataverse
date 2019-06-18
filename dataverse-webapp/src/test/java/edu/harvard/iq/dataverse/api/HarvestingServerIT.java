@@ -1,22 +1,17 @@
 package edu.harvard.iq.dataverse.api;
 
-import java.util.logging.Logger;
 import com.jayway.restassured.RestAssured;
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import com.jayway.restassured.response.Response;
-import static com.jayway.restassured.RestAssured.given;
-import com.jayway.restassured.path.json.JsonPath;
-import javax.json.Json;
-import javax.json.JsonArray;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.Ignore;
-import static com.jayway.restassured.RestAssured.given;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import java.util.List;
+import java.util.logging.Logger;
+
+import static com.jayway.restassured.RestAssured.given;
+import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -30,15 +25,15 @@ public class HarvestingServerIT {
     @BeforeClass
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
-	// enable harvesting server
-	//  Gave some thought to storing the original response, and resetting afterwards - but that appears to be more complexity than it's worth
-	Response enableHarvestingServerResponse = UtilIT.setSetting(SettingsServiceBean.Key.OAIServerEnabled,"true");
+        // enable harvesting server
+        //  Gave some thought to storing the original response, and resetting afterwards - but that appears to be more complexity than it's worth
+        Response enableHarvestingServerResponse = UtilIT.setSetting(SettingsServiceBean.Key.OAIServerEnabled, "true");
     }
 
     @AfterClass
     public static void afterClass() {
-	// disable harvesting server (default value)
-	Response enableHarvestingServerResponse = UtilIT.setSetting(SettingsServiceBean.Key.OAIServerEnabled,"false");
+        // disable harvesting server (default value)
+        Response enableHarvestingServerResponse = UtilIT.setSetting(SettingsServiceBean.Key.OAIServerEnabled, "false");
     }
 
     private void setupUsers() {

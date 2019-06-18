@@ -80,13 +80,14 @@ import static org.apache.commons.lang.StringUtils.isNumeric;
 
 /**
  * Base class for API beans
+ *
  * @author michael
  */
 public abstract class AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(AbstractApiBean.class.getName());
     private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
-    private static final String PERSISTENT_ID_KEY=":persistentId";
+    private static final String PERSISTENT_ID_KEY = ":persistentId";
     public static final String STATUS_ERROR = "ERROR";
     public static final String STATUS_OK = "OK";
     public static final String STATUS_WF_IN_PROGRESS = "WORKFLOW_IN_PROGRESS";
@@ -101,8 +102,8 @@ public abstract class AbstractApiBean {
             this.response = response;
         }
 
-        public WrappedResponse( Throwable cause, Response response ) {
-            super( cause );
+        public WrappedResponse(Throwable cause, Response response) {
+            super(cause);
             this.response = response;
         }
 
@@ -113,35 +114,39 @@ public abstract class AbstractApiBean {
         /**
          * Creates a new response, based on the original response and the passed message.
          * Typical use would be to add a better error message to the HTTP response.
+         *
          * @param message additional message to be added to the response.
          * @return A Response with updated message field.
          */
-        public Response refineResponse( String message ) {
+        public Response refineResponse(String message) {
             final Status statusCode = Response.Status.fromStatusCode(response.getStatus());
             String baseMessage = getWrappedMessageWhenJson();
 
-            if ( baseMessage == null ) {
+            if (baseMessage == null) {
                 final Throwable cause = getCause();
-                baseMessage = (cause!=null ? cause.getMessage() : "");
+                baseMessage = (cause != null ? cause.getMessage() : "");
             }
-            return error(statusCode, message+" "+baseMessage);
+            return error(statusCode, message + " " + baseMessage);
         }
 
         /**
          * In the common case of the wrapped response being of type JSON,
          * return the message field it has (if any).
+         *
          * @return the content of a message field, or {@code null}.
          */
         String getWrappedMessageWhenJson() {
-            if ( response.getMediaType().equals(MediaType.APPLICATION_JSON_TYPE) ) {
+            if (response.getMediaType().equals(MediaType.APPLICATION_JSON_TYPE)) {
                 Object entity = response.getEntity();
-                if ( entity == null ) return null;
+                if (entity == null) {
+                    return null;
+                }
 
                 String json = entity.toString();
-                try ( StringReader rdr = new StringReader(json) ){
+                try (StringReader rdr = new StringReader(json)) {
                     JsonReader jrdr = Json.createReader(rdr);
                     JsonObject obj = jrdr.readObject();
-                    if ( obj.containsKey("message") ) {
+                    if (obj.containsKey("message")) {
                         JsonValue message = obj.get("message");
                         return message.getValueType() == ValueType.STRING ? obj.getString("message") : message.toString();
                     } else {
@@ -159,7 +164,7 @@ public abstract class AbstractApiBean {
 
     @EJB
     protected DatasetServiceBean datasetSvc;
-    
+
     @EJB
     protected DataFileServiceBean fileService;
 
@@ -178,8 +183,8 @@ public abstract class AbstractApiBean {
     @EJB
     protected UserServiceBean userSvc;
 
-	@EJB
-	protected DataverseRoleServiceBean rolesSvc;
+    @EJB
+    protected DataverseRoleServiceBean rolesSvc;
 
     @EJB
     protected SettingsServiceBean settingsSvc;
@@ -222,10 +227,10 @@ public abstract class AbstractApiBean {
 
     @EJB
     protected DataCaptureModuleServiceBean dataCaptureModuleSvc;
-    
+
     @EJB
     protected DatasetLinkingServiceBean dsLinkingService;
-    
+
     @EJB
     protected DataverseLinkingServiceBean dvLinkingService;
 
@@ -261,7 +266,7 @@ public abstract class AbstractApiBean {
     private final LazyRef<JsonParser> jsonParserRef = new LazyRef<>(new Callable<JsonParser>() {
         @Override
         public JsonParser call() throws Exception {
-            return new JsonParser(datasetFieldSvc, metadataBlockSvc,settingsSvc);
+            return new JsonParser(datasetFieldSvc, metadataBlockSvc, settingsSvc);
         }
     });
 
@@ -270,8 +275,8 @@ public abstract class AbstractApiBean {
      *
      * @see #response(edu.harvard.iq.dataverse.api.AbstractApiBean.DataverseRequestHandler)
      */
-    protected static interface DataverseRequestHandler {
-        Response handle( DataverseRequest u ) throws WrappedResponse;
+    protected interface DataverseRequestHandler {
+        Response handle(DataverseRequest u) throws WrappedResponse;
     }
 
 
@@ -284,31 +289,34 @@ public abstract class AbstractApiBean {
         return jsonParserRef.get();
     }
 
-    protected boolean parseBooleanOrDie( String input ) throws WrappedResponse {
-        if (input == null ) throw new WrappedResponse( badRequest("Boolean value missing"));
+    protected boolean parseBooleanOrDie(String input) throws WrappedResponse {
+        if (input == null) {
+            throw new WrappedResponse(badRequest("Boolean value missing"));
+        }
         input = input.trim();
-        if ( Util.isBoolean(input) ) {
+        if (Util.isBoolean(input)) {
             return Util.isTrue(input);
         } else {
-            throw new WrappedResponse( badRequest("Illegal boolean value '" + input + "'"));
+            throw new WrappedResponse(badRequest("Illegal boolean value '" + input + "'"));
         }
     }
 
-     /**
+    /**
      * Returns the {@code key} query parameter from the current request, or {@code null} if
      * the request has no such parameter.
+     *
      * @param key Name of the requested parameter.
      * @return Value of the requested parameter in the current request.
      */
-    protected String getRequestParameter( String key ) {
+    protected String getRequestParameter(String key) {
         return httpRequest.getParameter(key);
     }
 
     protected String getRequestApiKey() {
         String headerParamApiKey = httpRequest.getHeader(DATAVERSE_KEY_HEADER_NAME);
         String queryParamApiKey = httpRequest.getParameter("key");
-                
-        return headerParamApiKey!=null ? headerParamApiKey : queryParamApiKey;
+
+        return headerParamApiKey != null ? headerParamApiKey : queryParamApiKey;
     }
 
     /* ========= *\
@@ -329,17 +337,17 @@ public abstract class AbstractApiBean {
     }
 
     /**
-     *
      * @param apiKey the key to find the user with
      * @return the user, or null
      * @see #findUserOrDie(java.lang.String)
      */
-    protected AuthenticatedUser findUserByApiToken( String apiKey ) {
+    protected AuthenticatedUser findUserByApiToken(String apiKey) {
         return authSvc.lookupUser(apiKey);
     }
 
     /**
      * Returns the user of pointed by the API key, or the guest user
+     *
      * @return a user, may be a guest user.
      * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse iff there is an api key present, but it is invalid.
      */
@@ -358,10 +366,10 @@ public abstract class AbstractApiBean {
     /**
      * Finds the authenticated user, based on (in order):
      * <ol>
-     *  <li>The key in the HTTP header {@link #DATAVERSE_KEY_HEADER_NAME}</li>
-     *  <li>The key in the query parameter {@code key}
+     * <li>The key in the HTTP header {@link #DATAVERSE_KEY_HEADER_NAME}</li>
+     * <li>The key in the query parameter {@code key}
      * </ol>
-     *
+     * <p>
      * If no user is found, throws a wrapped bad api key (HTTP UNAUTHORIZED) response.
      *
      * @return The authenticated user which owns the passed api key
@@ -372,24 +380,24 @@ public abstract class AbstractApiBean {
     }
 
 
-    private AuthenticatedUser findAuthenticatedUserOrDie( String key ) throws WrappedResponse {
+    private AuthenticatedUser findAuthenticatedUserOrDie(String key) throws WrappedResponse {
         AuthenticatedUser authUser = authSvc.lookupUser(key);
-        if ( authUser != null ) {
+        if (authUser != null) {
             authUser = userSvc.updateLastApiUseTime(authUser);
 
             return authUser;
         }
-        throw new WrappedResponse( badApiKey(key) );
+        throw new WrappedResponse(badApiKey(key));
     }
 
-    protected Dataverse findDataverseOrDie( String dvIdtf ) throws WrappedResponse {
+    protected Dataverse findDataverseOrDie(String dvIdtf) throws WrappedResponse {
         Dataverse dv = findDataverse(dvIdtf);
-        if ( dv == null ) {
-            throw new WrappedResponse(error( Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + dvIdtf + "'"));
+        if (dv == null) {
+            throw new WrappedResponse(error(Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + dvIdtf + "'"));
         }
         return dv;
     }
-    
+
     protected DataverseLinkingDataverse findDataverseLinkingDataverseOrDie(String dataverseId, String linkedDataverseId) throws WrappedResponse {
         DataverseLinkingDataverse dvld;
         Dataverse dataverse = findDataverseOrDie(dataverseId);
@@ -433,7 +441,7 @@ public abstract class AbstractApiBean {
             }
         }
     }
-    
+
     protected DataFile findDataFileOrDie(String id) throws WrappedResponse {
         DataFile datafile;
         if (id.equals(PERSISTENT_ID_KEY)) {
@@ -460,7 +468,7 @@ public abstract class AbstractApiBean {
             }
         }
     }
-    
+
     protected DatasetLinkingDataverse findDatasetLinkingDataverseOrDie(String datasetId, String linkingDataverseId) throws WrappedResponse {
         DatasetLinkingDataverse dsld;
         Dataverse linkingDataverse = findDataverseOrDie(linkingDataverseId);
@@ -471,13 +479,13 @@ public abstract class AbstractApiBean {
                 throw new WrappedResponse(
                         badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
             }
-            
+
             Dataset dataset = datasetSvc.findByGlobalId(persistentId);
             if (dataset == null) {
                 throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
             }
             datasetId = dataset.getId().toString();
-        } 
+        }
         try {
             dsld = dsLinkingService.findDatasetLinkingDataverse(Long.parseLong(datasetId), linkingDataverse.getId());
             if (dsld == null) {
@@ -490,47 +498,51 @@ public abstract class AbstractApiBean {
         }
     }
 
-    protected DataverseRequest createDataverseRequest( User u )  {
+    protected DataverseRequest createDataverseRequest(User u) {
         return new DataverseRequest(u, httpRequest);
     }
 
-	protected Dataverse findDataverse( String idtf ) {
-		return isNumeric(idtf) ? dataverseSvc.find(Long.parseLong(idtf))
-	 							  : dataverseSvc.findByAlias(idtf);
-	}
+    protected Dataverse findDataverse(String idtf) {
+        return isNumeric(idtf) ? dataverseSvc.find(Long.parseLong(idtf))
+                : dataverseSvc.findByAlias(idtf);
+    }
 
-	protected DvObject findDvo( Long id ) {
-		return em.createNamedQuery("DvObject.findById", DvObject.class)
-				.setParameter("id", id)
-				.getSingleResult();
-	}
+    protected DvObject findDvo(Long id) {
+        return em.createNamedQuery("DvObject.findById", DvObject.class)
+                .setParameter("id", id)
+                .getSingleResult();
+    }
 
     /**
      * Tries to find a DvObject. If the passed id can be interpreted as a number,
      * it tries to get the DvObject by its id. Else, it tries to get a {@link Dataverse}
      * with that alias. If that fails, tries to get a {@link Dataset} with that global id.
+     *
      * @param id a value identifying the DvObject, either numeric of textual.
      * @return A DvObject, or {@code null}
      */
-	protected DvObject findDvo( String id ) {
-        if ( isNumeric(id) ) {
-            return findDvo( Long.valueOf(id)) ;
+    protected DvObject findDvo(String id) {
+        if (isNumeric(id)) {
+            return findDvo(Long.valueOf(id));
         } else {
             Dataverse d = dataverseSvc.findByAlias(id);
-            return ( d != null ) ?
+            return (d != null) ?
                     d : datasetSvc.findByGlobalId(id);
 
         }
-	}
-
-    protected <T> T failIfNull( T t, String errorMessage ) throws WrappedResponse {
-        if ( t != null ) return t;
-        throw new WrappedResponse( error( Response.Status.BAD_REQUEST,errorMessage) );
     }
 
-    protected MetadataBlock findMetadataBlock(Long id)  {
+    protected <T> T failIfNull(T t, String errorMessage) throws WrappedResponse {
+        if (t != null) {
+            return t;
+        }
+        throw new WrappedResponse(error(Response.Status.BAD_REQUEST, errorMessage));
+    }
+
+    protected MetadataBlock findMetadataBlock(Long id) {
         return metadataBlockSvc.findById(id);
     }
+
     protected MetadataBlock findMetadataBlock(String idtf) throws NumberFormatException {
         return metadataBlockSvc.findByName(idtf);
     }
@@ -546,18 +558,19 @@ public abstract class AbstractApiBean {
 
     /**
      * Executes a command, and returns the appropriate result/HTTP response.
+     *
      * @param <T> Return type for the command
      * @param cmd The command to execute.
      * @return Value from the command
      * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse Unwrap and return.
      * @see #response(java.util.concurrent.Callable)
      */
-    protected <T> T execCommand( Command<T> cmd ) throws WrappedResponse {
+    protected <T> T execCommand(Command<T> cmd) throws WrappedResponse {
         try {
             return engineSvc.submit(cmd);
 
         } catch (IllegalCommandException ex) {
-            throw new WrappedResponse( ex, forbidden(ex.getMessage() ) );
+            throw new WrappedResponse(ex, forbidden(ex.getMessage()));
         } catch (PermissionException ex) {
             /**
              * @todo Is there any harm in exposing ex.getLocalizedMessage()?
@@ -565,7 +578,7 @@ public abstract class AbstractApiBean {
              * about permissions!
              */
             throw new WrappedResponse(error(Response.Status.UNAUTHORIZED,
-                                                    "User " + cmd.getRequest().getUser().getIdentifier() + " is not permitted to perform requested action.") );
+                                            "User " + cmd.getRequest().getUser().getIdentifier() + " is not permitted to perform requested action."));
 
         } catch (CommandException ex) {
             Logger.getLogger(AbstractApiBean.class.getName()).log(Level.SEVERE, "Error while executing command " + cmd, ex);
@@ -575,25 +588,26 @@ public abstract class AbstractApiBean {
 
     /**
      * A syntactically nicer way of using {@link #execCommand(edu.harvard.iq.dataverse.engine.command.Command)}.
+     *
      * @param hdl The block to run.
      * @return HTTP Response appropriate for the way {@code hdl} executed.
      */
-    protected Response response( Callable<Response> hdl ) {
+    protected Response response(Callable<Response> hdl) {
         try {
             return hdl.call();
-        } catch ( WrappedResponse rr ) {
+        } catch (WrappedResponse rr) {
             return rr.getResponse();
-        } catch ( Exception ex ) {
+        } catch (Exception ex) {
             String incidentId = UUID.randomUUID().toString();
-            logger.log(Level.SEVERE, "API internal error " + incidentId +": " + ex.getMessage(), ex);
+            logger.log(Level.SEVERE, "API internal error " + incidentId + ": " + ex.getMessage(), ex);
             return Response.status(500)
-                .entity( Json.createObjectBuilder()
-                             .add("status", "ERROR")
-                             .add("code", 500)
-                             .add("message", "Internal server error. More details available at the server logs.")
-                             .add("incidentId", incidentId)
-                        .build())
-                .type("application/json").build();
+                    .entity(Json.createObjectBuilder()
+                                    .add("status", "ERROR")
+                                    .add("code", 500)
+                                    .add("message", "Internal server error. More details available at the server logs.")
+                                    .add("incidentId", incidentId)
+                                    .build())
+                    .type("application/json").build();
         }
     }
 
@@ -601,7 +615,7 @@ public abstract class AbstractApiBean {
      * The preferred way of handling a request that requires a user. The system
      * looks for the user and, if found, handles it to the handler for doing the
      * actual work.
-     *
+     * <p>
      * This is a relatively secure way to handle things, since if the user is not
      * found, the response is about the bad API key, rather than something else
      * (say, 404 NOT FOUND which leaks information about the existence of the
@@ -610,22 +624,22 @@ public abstract class AbstractApiBean {
      * @param hdl handling code block.
      * @return HTTP Response appropriate for the way {@code hdl} executed.
      */
-    protected Response response( DataverseRequestHandler hdl ) {
+    protected Response response(DataverseRequestHandler hdl) {
         try {
             return hdl.handle(createDataverseRequest(findUserOrDie()));
-        } catch ( WrappedResponse rr ) {
+        } catch (WrappedResponse rr) {
             return rr.getResponse();
-        } catch ( Exception ex ) {
+        } catch (Exception ex) {
             String incidentId = UUID.randomUUID().toString();
-            logger.log(Level.SEVERE, "API internal error " + incidentId +": " + ex.getMessage(), ex);
+            logger.log(Level.SEVERE, "API internal error " + incidentId + ": " + ex.getMessage(), ex);
             return Response.status(500)
-                .entity( Json.createObjectBuilder()
-                             .add("status", "ERROR")
-                             .add("code", 500)
-                             .add("message", "Internal server error. More details available at the server logs.")
-                             .add("incidentId", incidentId)
-                        .build())
-                .type("application/json").build();
+                    .entity(Json.createObjectBuilder()
+                                    .add("status", "ERROR")
+                                    .add("code", 500)
+                                    .add("message", "Internal server error. More details available at the server logs.")
+                                    .add("incidentId", incidentId)
+                                    .build())
+                    .type("application/json").build();
         }
     }
 
@@ -633,36 +647,36 @@ public abstract class AbstractApiBean {
      *  HTTP Response methods *
     \* ====================== */
 
-    protected Response ok( JsonArrayBuilder bld ) {
+    protected Response ok(JsonArrayBuilder bld) {
         return Response.ok(Json.createObjectBuilder()
-            .add("status", STATUS_OK)
-            .add("data", bld).build()).build();
+                                   .add("status", STATUS_OK)
+                                   .add("data", bld).build()).build();
     }
 
-    protected Response ok( JsonObjectBuilder bld ) {
-        return Response.ok( Json.createObjectBuilder()
-            .add("status", STATUS_OK)
-            .add("data", bld).build() )
-            .type(MediaType.APPLICATION_JSON)
-            .build();
+    protected Response ok(JsonObjectBuilder bld) {
+        return Response.ok(Json.createObjectBuilder()
+                                   .add("status", STATUS_OK)
+                                   .add("data", bld).build())
+                .type(MediaType.APPLICATION_JSON)
+                .build();
     }
 
-    protected Response ok( String msg ) {
+    protected Response ok(String msg) {
         return Response.ok().entity(Json.createObjectBuilder()
-            .add("status", STATUS_OK)
-            .add("data", Json.createObjectBuilder().add("message",msg)).build() )
-            .type(MediaType.APPLICATION_JSON)
-            .build();
+                                            .add("status", STATUS_OK)
+                                            .add("data", Json.createObjectBuilder().add("message", msg)).build())
+                .type(MediaType.APPLICATION_JSON)
+                .build();
     }
 
-    protected Response ok( boolean value ) {
+    protected Response ok(boolean value) {
         return Response.ok().entity(Json.createObjectBuilder()
-            .add("status", STATUS_OK)
-            .add("data", value).build() ).build();
+                                            .add("status", STATUS_OK)
+                                            .add("data", value).build()).build();
     }
 
     /**
-     * @param data Payload to return.
+     * @param data      Payload to return.
      * @param mediaType Non-JSON media type.
      * @return Non-JSON response, such as a shell script.
      */
@@ -670,70 +684,70 @@ public abstract class AbstractApiBean {
         return Response.ok().entity(data).type(mediaType).build();
     }
 
-    protected Response created( String uri, JsonObjectBuilder bld ) {
-        return Response.created( URI.create(uri) )
-                .entity( Json.createObjectBuilder()
-                .add("status", "OK")
-                .add("data", bld).build())
+    protected Response created(String uri, JsonObjectBuilder bld) {
+        return Response.created(URI.create(uri))
+                .entity(Json.createObjectBuilder()
+                                .add("status", "OK")
+                                .add("data", bld).build())
                 .type(MediaType.APPLICATION_JSON)
                 .build();
     }
-    
+
     protected Response accepted(JsonObjectBuilder bld) {
         return Response.accepted()
                 .entity(Json.createObjectBuilder()
-                        .add("status", STATUS_WF_IN_PROGRESS)
-                        .add("data",bld).build()
+                                .add("status", STATUS_WF_IN_PROGRESS)
+                                .add("data", bld).build()
                 ).build();
     }
-    
+
     protected Response accepted() {
         return Response.accepted()
                 .entity(Json.createObjectBuilder()
-                        .add("status", STATUS_WF_IN_PROGRESS).build()
+                                .add("status", STATUS_WF_IN_PROGRESS).build()
                 ).build();
     }
 
-    protected Response notFound( String msg ) {
+    protected Response notFound(String msg) {
         return error(Status.NOT_FOUND, msg);
     }
 
-    protected Response badRequest( String msg ) {
-        return error( Status.BAD_REQUEST, msg );
-    }
-    
-    protected Response forbidden( String msg ) {
-        return error( Status.FORBIDDEN, msg );
-    }
-    
-    protected Response badApiKey( String apiKey ) {
-        return error(Status.UNAUTHORIZED, (apiKey != null ) ? "Bad api key " : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + DATAVERSE_KEY_HEADER_NAME );
+    protected Response badRequest(String msg) {
+        return error(Status.BAD_REQUEST, msg);
     }
 
-    protected Response permissionError( PermissionException pe ) {
-        return permissionError( pe.getMessage() );
+    protected Response forbidden(String msg) {
+        return error(Status.FORBIDDEN, msg);
     }
 
-    protected Response permissionError( String message ) {
-        return unauthorized( message );
-    }
-    
-    protected Response unauthorized( String message ) {
-        return error( Status.UNAUTHORIZED, message );
+    protected Response badApiKey(String apiKey) {
+        return error(Status.UNAUTHORIZED, (apiKey != null) ? "Bad api key " : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + DATAVERSE_KEY_HEADER_NAME);
     }
 
-    protected static Response error( Status sts, String msg ) {
+    protected Response permissionError(PermissionException pe) {
+        return permissionError(pe.getMessage());
+    }
+
+    protected Response permissionError(String message) {
+        return unauthorized(message);
+    }
+
+    protected Response unauthorized(String message) {
+        return error(Status.UNAUTHORIZED, message);
+    }
+
+    protected static Response error(Status sts, String msg) {
         return Response.status(sts)
-                .entity( NullSafeJsonBuilder.jsonObjectBuilder()
-                        .add("status", STATUS_ERROR)
-                        .add( "message", msg ).build()
+                .entity(NullSafeJsonBuilder.jsonObjectBuilder()
+                                .add("status", STATUS_ERROR)
+                                .add("message", msg).build()
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
 
-   protected Response allowCors( Response r ) {
-       r.getHeaders().add("Access-Control-Allow-Origin", "*");
-       return r;
-   }
+    protected Response allowCors(Response r) {
+        r.getHeaders().add("Access-Control-Allow-Origin", "*");
+        return r;
+    }
 }
 
 class LazyRef<T> {
@@ -743,7 +757,7 @@ class LazyRef<T> {
 
     private Ref<T> ref;
 
-    public LazyRef( final Callable<T> initer ) {
+    public LazyRef(final Callable<T> initer) {
         ref = () -> {
             try {
                 final T t = initer.call();
@@ -756,7 +770,7 @@ class LazyRef<T> {
         };
     }
 
-    public T get()  {
+    public T get() {
         return ref.get();
     }
 }

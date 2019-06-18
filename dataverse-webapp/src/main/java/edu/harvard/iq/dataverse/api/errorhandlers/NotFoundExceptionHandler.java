@@ -10,18 +10,19 @@ import javax.ws.rs.ext.Provider;
 
 /**
  * Produces custom 404 messages for the API.
+ *
  * @author michael
  */
 @Provider
-public class NotFoundExceptionHandler implements ExceptionMapper<NotFoundException>{
+public class NotFoundExceptionHandler implements ExceptionMapper<NotFoundException> {
 
     @Context
     HttpServletRequest request;
-    
+
     @Override
-    public Response toResponse(NotFoundException ex){
+    public Response toResponse(NotFoundException ex) {
         String uri = request.getRequestURI();
-        String exMessage = ex.getMessage(); 
+        String exMessage = ex.getMessage();
         String outputMessage;
         if (exMessage != null && exMessage.toLowerCase().startsWith("datafile")) {
             outputMessage = exMessage;
@@ -29,15 +30,15 @@ public class NotFoundExceptionHandler implements ExceptionMapper<NotFoundExcepti
             outputMessage = "endpoint does not exist on this server. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.";
         }
         return Response.status(404)
-                .entity( Json.createObjectBuilder()
-                             .add("status", "ERROR")
-                             .add("code", 404)
-                             .add("message", "'" + uri + "' " + outputMessage)
-                        .build())
+                .entity(Json.createObjectBuilder()
+                                .add("status", "ERROR")
+                                .add("code", 404)
+                                .add("message", "'" + uri + "' " + outputMessage)
+                                .build())
                 .type("application/json").build();
-        
-       
+
+
     }
-    
+
 }
 

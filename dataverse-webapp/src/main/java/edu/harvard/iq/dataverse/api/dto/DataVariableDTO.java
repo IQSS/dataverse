@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
  * @author ellenk
  */
 public class DataVariableDTO {
@@ -180,6 +179,6 @@ public class DataVariableDTO {
     public void setNumberOfDecimalPoints(Long numberOfDecimalPoints) {
         this.numberOfDecimalPoints = numberOfDecimalPoints;
     }
-    
-    
+
+
 }

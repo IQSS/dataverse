@@ -35,35 +35,33 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author Leonid Andreev
- * 
+ * <p>
  * Basic skeleton of the new DataFile service for DVN 4.0
- * 
  */
 
 @Stateless
 @Named
 public class DataFileServiceBean implements java.io.Serializable {
-    
+
     private static final Logger logger = Logger.getLogger(DataFileServiceBean.class.getCanonicalName());
     @EJB
     DvObjectServiceBean dvObjectService;
     @EJB
     PermissionServiceBean permissionService;
     @EJB
-    UserServiceBean userService; 
+    UserServiceBean userService;
     @EJB
     SettingsServiceBean settingsService;
-    
-    @EJB 
+
+    @EJB
     IngestServiceBean ingestService;
-    
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     // File type "classes" tags:
-    
+
     private static final String FILE_CLASS_AUDIO = "audio";
     private static final String FILE_CLASS_CODE = "code";
     private static final String FILE_CLASS_DOCUMENT = "document";
@@ -77,32 +75,32 @@ public class DataFileServiceBean implements java.io.Serializable {
     private static final String FILE_CLASS_OTHER = "other";
 
     // Assorted useful mime types:
-    
+
     // 3rd-party and/or proprietary tabular data formasts that we know
     // how to ingest: 
-    
+
     private static final String MIME_TYPE_STATA = "application/x-stata";
     private static final String MIME_TYPE_STATA13 = "application/x-stata-13";
     private static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
-    private static final String MIME_TYPE_CSV   = "text/csv";
+    private static final String MIME_TYPE_CSV = "text/csv";
     private static final String MIME_TYPE_CSV_ALT = "text/comma-separated-values";
-    private static final String MIME_TYPE_TSV   = "text/tsv";
-    public static final String MIME_TYPE_TSV_ALT   = "text/tab-separated-values";
-    private static final String MIME_TYPE_XLSX  = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    private static final String MIME_TYPE_TSV = "text/tsv";
+    public static final String MIME_TYPE_TSV_ALT = "text/tab-separated-values";
+    private static final String MIME_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private static final String MIME_TYPE_SPSS_SAV = "application/x-spss-sav";
     private static final String MIME_TYPE_SPSS_POR = "application/x-spss-por";
-    
+
     // Tabular data formats we don't know how to ingets, but still recognize
     // as "tabular data":
     // TODO: - add more to this list? -- L.A. 4.0 beta13
-    
+
     private static final String MIME_TYPE_FIXED_FIELD = "text/x-fixed-field";
     private static final String MIME_TYPE_SAS_TRANSPORT = "application/x-sas-transport";
     private static final String MIME_TYPE_SAS_SYSTEM = "application/x-sas-system";
-    
+
     // The following are the "control card/syntax" formats that we recognize 
     // as "code":
-    
+
     private static final String MIME_TYPE_R_SYNTAX = "application/x-r-syntax";
     private static final String MIME_TYPE_STATA_SYNTAX = "text/x-stata-syntax";
     private static final String MIME_TYPE_SPSS_CCARD = "text/x-spss-syntax";
@@ -110,28 +108,28 @@ public class DataFileServiceBean implements java.io.Serializable {
 
     // The types recognized as "documents":
     // TODO: there has to be more! -- L.A. 4.0 beta13
-    
+
     private static final String MIME_TYPE_PLAIN_TEXT = "text/plain";
     private static final String MIME_TYPE_DOCUMENT_PDF = "application/pdf";
     private static final String MIME_TYPE_DOCUMENT_MSWORD = "application/msword";
     private static final String MIME_TYPE_DOCUMENT_MSEXCEL = "application/vnd.ms-excel";
     private static final String MIME_TYPE_DOCUMENT_MSWORD_OPENXML = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    
+
     // Supported Astrophysics formats: 
     // (only FITS at this point)
-    
-    private static final String MIME_TYPE_FITS  = "application/fits";
+
+    private static final String MIME_TYPE_FITS = "application/fits";
 
     // Network Data files: 
     // (only GRAPHML at this point): 
-    
+
     private static final String MIME_TYPE_NETWORK_GRAPHML = "text/xml-graphml";
-   
+
     // SHAPE file type: 
     // this is the only supported file type in the GEO DATA class:
-        
-    private static final String MIME_TYPE_ZIP   = "application/zip";
-    
+
+    private static final String MIME_TYPE_ZIP = "application/zip";
+
     private static final String MIME_TYPE_UNDETERMINED_DEFAULT = "application/octet-stream";
     private static final String MIME_TYPE_UNDETERMINED_BINARY = "application/binary";
 
@@ -145,7 +143,7 @@ public class DataFileServiceBean implements java.io.Serializable {
      * the page URL above.
      */
     public static final String MIME_TYPE_PACKAGE_FILE = "application/vnd.dataverse.file-package";
-    
+
     public DataFile find(Object pk) {
         return em.find(DataFile.class, pk);
     }   
@@ -159,34 +157,34 @@ public class DataFileServiceBean implements java.io.Serializable {
         return (DataFile)query.getSingleResult();
         
     }*/
-    
+
     public DataFile findByGlobalId(String globalId) {
-            return (DataFile) dvObjectService.findByGlobalId(globalId, DataFile.DATAFILE_DTYPE_STRING);
+        return (DataFile) dvObjectService.findByGlobalId(globalId, DataFile.DATAFILE_DTYPE_STRING);
     }
-    
-    public DataFile findReplacementFile(Long previousFileId){
+
+    public DataFile findReplacementFile(Long previousFileId) {
         Query query = em.createQuery("select object(o) from DataFile as o where o.previousDataFileId = :previousFileId");
         query.setParameter("previousFileId", previousFileId);
         try {
-            DataFile retVal = (DataFile)query.getSingleResult();
+            DataFile retVal = (DataFile) query.getSingleResult();
             return retVal;
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             return null;
         }
     }
 
-    
-    public DataFile findPreviousFile(DataFile df){
+
+    public DataFile findPreviousFile(DataFile df) {
         TypedQuery<DataFile> query = em.createQuery("select o from DataFile o" + " WHERE o.id = :dataFileId", DataFile.class);
         query.setParameter("dataFileId", df.getPreviousDataFileId());
         try {
             DataFile retVal = query.getSingleResult();
             return retVal;
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             return null;
         }
     }
-    
+
     public List<DataFile> findByDatasetId(Long studyId) {
         /* 
            Sure, we don't have *studies* any more, in 4.0; it's a tribute 
@@ -196,7 +194,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         return em.createQuery(qr, DataFile.class)
                 .setParameter("studyId", studyId).getResultList();
     }
-    
+
     public List<DataFile> findAllRelatedByRootDatafileId(Long datafileId) {
         /* 
          Get all files with the same root datafile id
@@ -210,8 +208,8 @@ public class DataFileServiceBean implements java.io.Serializable {
     public DataFile findByStorageIdandDatasetVersion(String storageId, DatasetVersion dv) {
         try {
             Query query = em.createNativeQuery("select o.id from dvobject o, filemetadata m " +
-                    "where o.storageidentifier = '" + storageId + "' and o.id = m.datafile_id and m.datasetversion_id = " +
-                    dv.getId() + "");
+                                                       "where o.storageidentifier = '" + storageId + "' and o.id = m.datafile_id and m.datasetversion_id = " +
+                                                       dv.getId() + "");
             query.setMaxResults(1);
             if (query.getResultList().size() < 1) {
                 return null;
@@ -227,7 +225,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             return null;
         }
     }
-    
+
     public List<FileMetadata> findFileMetadataByDatasetVersionId(Long datasetVersionId, int maxResults, String userSuppliedSortField, String userSuppliedSortOrder) {
         FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
         String sortField = sortFieldAndOrder.getSortField();
@@ -238,50 +236,50 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         String qr = "select o from FileMetadata o where o.datasetVersion.id = :datasetVersionId order by o." + sortField + " " + sortOrder;
         return em.createQuery(qr, FileMetadata.class)
-                    .setParameter("datasetVersionId", datasetVersionId)
-                    .setMaxResults(maxResults)
-                    .getResultList();
+                .setParameter("datasetVersionId", datasetVersionId)
+                .setMaxResults(maxResults)
+                .getResultList();
     }
-    
-    public List<FileMetadata> findFileMetadataByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
+
+    public List<FileMetadata> findFileMetadataByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder) {
         FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
 
         String sortField = sortFieldAndOrder.getSortField();
         String sortOrder = sortFieldAndOrder.getSortOrder();
         String searchClause = "";
-        if(searchTerm != null && !searchTerm.isEmpty()){
+        if (searchTerm != null && !searchTerm.isEmpty()) {
             searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
         }
-        
+
         String queryString = "select o from FileMetadata o where o.datasetVersion.id = :datasetVersionId"
                 + searchClause
                 + " order by o." + sortField + " " + sortOrder;
-        return em.createQuery(queryString, FileMetadata.class) 
-            .setParameter("datasetVersionId", datasetVersionId)
-            .getResultList();
+        return em.createQuery(queryString, FileMetadata.class)
+                .setParameter("datasetVersionId", datasetVersionId)
+                .getResultList();
     }
-    
-    public List<Integer> findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
+
+    public List<Integer> findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder) {
         FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
-        
-        searchTerm=searchTerm.trim();
+
+        searchTerm = searchTerm.trim();
         String sortField = sortFieldAndOrder.getSortField();
         String sortOrder = sortFieldAndOrder.getSortOrder();
         String searchClause = "";
-        if(searchTerm != null && !searchTerm.isEmpty()){
+        if (searchTerm != null && !searchTerm.isEmpty()) {
             searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
         }
-        
+
         //the createNativeQuary takes persistant entities, which Integer.class is not,
         //which is causing the exception. Hence, this query does not need an Integer.class
         //as the second parameter. 
-        return em.createNativeQuery("select o.id from FileMetadata o where o.datasetVersion_id = "  + datasetVersionId
-                + searchClause
-                + " order by o." + sortField + " " + sortOrder)
+        return em.createNativeQuery("select o.id from FileMetadata o where o.datasetVersion_id = " + datasetVersionId
+                                            + searchClause
+                                            + " order by o." + sortField + " " + sortOrder)
                 .getResultList();
     }
-        
-    
+
+
     public List<FileMetadata> findFileMetadataByDatasetVersionIdLazy(Long datasetVersionId, int maxResults, String userSuppliedSortField, String userSuppliedSortOrder, int firstResult) {
         FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
         String sortField = sortFieldAndOrder.getSortField();
@@ -297,17 +295,17 @@ public class DataFileServiceBean implements java.io.Serializable {
                 .setFirstResult(firstResult)
                 .getResultList();
     }
-    
-    public Long findCountByDatasetVersionId(Long datasetVersionId){
+
+    public Long findCountByDatasetVersionId(Long datasetVersionId) {
         return (Long) em.createNativeQuery("select count(*)  from FileMetadata fmd "
-                + " where fmd.datasetVersion_id = " + datasetVersionId
-                + ";").getSingleResult();
+                                                   + " where fmd.datasetVersion_id = " + datasetVersionId
+                                                   + ";").getSingleResult();
     }
 
     public FileMetadata findFileMetadata(Long fileMetadataId) {
         return em.find(FileMetadata.class, fileMetadataId);
     }
-    
+
     public FileMetadata findFileMetadataByDatasetVersionIdAndDataFileId(Long datasetVersionId, Long dataFileId) {
 
         Query query = em.createQuery("select o from FileMetadata o where o.datasetVersion.id = :datasetVersionId  and o.dataFile.id = :dataFileId");
@@ -316,7 +314,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         try {
             FileMetadata retVal = (FileMetadata) query.getSingleResult();
             return retVal;
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             return null;
         }
     }
@@ -404,9 +402,9 @@ public class DataFileServiceBean implements java.io.Serializable {
         if (previewAvailable != null) {
             dataFile.setPreviewImageAvailable(previewAvailable);
         }
-        
+
         String contentType = (String) result[10];
-        
+
         if (contentType != null) {
             dataFile.setContentType(contentType);
         }
@@ -442,11 +440,11 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         Dataset owner = new Dataset();
 
-        
+
         // TODO: check for nulls
-        owner.setId((Long)result[16]);
-        owner.setAuthority((String)result[17]);
-        owner.setIdentifier((String)result[18]);
+        owner.setId((Long) result[16]);
+        owner.setAuthority((String) result[17]);
+        owner.setIdentifier((String) result[18]);
 
         String checksumType = (String) result[19];
         if (checksumType != null) {
@@ -458,17 +456,17 @@ public class DataFileServiceBean implements java.io.Serializable {
                 logger.info("Exception trying to convert " + checksumType + " to enum: " + ex);
             }
         }
-        
+
         Long previousDataFileId = (Long) result[20];
-        if (previousDataFileId != null){
+        if (previousDataFileId != null) {
             dataFile.setPreviousDataFileId(previousDataFileId);
         }
-        
+
         Long rootDataFileId = (Long) result[21];
-        if (rootDataFileId != null){
+        if (rootDataFileId != null) {
             dataFile.setRootDataFileId(rootDataFileId);
-        } 
-        
+        }
+
         String authority = (String) result[22];
         if (authority != null) {
             dataFile.setAuthority(authority);
@@ -483,12 +481,12 @@ public class DataFileServiceBean implements java.io.Serializable {
         if (identifier != null) {
             dataFile.setIdentifier(identifier);
         }
-                
+
         dataFile.setOwner(owner);
 
         // If content type indicates it's tabular data, spend 2 extra queries 
         // looking up the data table and tabular tags objects:
-        
+
         if (MIME_TYPE_TSV.equalsIgnoreCase(contentType)) {
             Object[] dtResult;
             try {
@@ -496,27 +494,27 @@ public class DataFileServiceBean implements java.io.Serializable {
             } catch (Exception ex) {
                 dtResult = null;
             }
-        
+
             if (dtResult != null) {
-                DataTable dataTable = new DataTable(); 
+                DataTable dataTable = new DataTable();
 
                 dataTable.setId(((Integer) dtResult[0]).longValue());
-            
-                dataTable.setUnf((String)dtResult[1]);
-            
-                dataTable.setCaseQuantity((Long)dtResult[2]);
-            
-                dataTable.setVarQuantity((Long)dtResult[3]);
-            
-                dataTable.setOriginalFileFormat((String)dtResult[4]);
-                
-                dataTable.setOriginalFileSize((Long)dtResult[5]);
-                
+
+                dataTable.setUnf((String) dtResult[1]);
+
+                dataTable.setCaseQuantity((Long) dtResult[2]);
+
+                dataTable.setVarQuantity((Long) dtResult[3]);
+
+                dataTable.setOriginalFileFormat((String) dtResult[4]);
+
+                dataTable.setOriginalFileSize((Long) dtResult[5]);
+
                 dataTable.setDataFile(dataFile);
                 dataFile.setDataTable(dataTable);
-                
+
                 // tabular tags: 
-                
+
                 List<Object[]> tagResults;
                 try {
                     tagResults = em.createNativeQuery("SELECT t.TYPE, t.DATAFILE_ID FROM DATAFILETAG t WHERE t.DATAFILE_ID = " + id).getResultList();
@@ -524,12 +522,12 @@ public class DataFileServiceBean implements java.io.Serializable {
                     logger.info("EXCEPTION looking up tags.");
                     tagResults = null;
                 }
-                
+
                 if (tagResults != null) {
                     List<String> fileTagLabels = DataFileTag.listTags();
-                    
+
                     for (Object[] tagResult : tagResults) {
-                        Integer tagId = (Integer)tagResult[0];
+                        Integer tagId = (Integer) tagResult[0];
                         DataFileTag tag = new DataFileTag();
                         tag.setTypeByLabel(fileTagLabels.get(tagId));
                         tag.setDataFile(dataFile);
@@ -538,177 +536,181 @@ public class DataFileServiceBean implements java.io.Serializable {
                 }
             }
         }
-        
+
         return dataFile;
     }
-    
+
     public List<DataFile> findIngestsInProgress() {
-        if ( em.isOpen() ) {
+        if (em.isOpen()) {
             String qr = "select object(o) from DataFile as o where o.ingestStatus =:scheduledStatusCode or o.ingestStatus =:progressStatusCode order by o.id";
             return em.createQuery(qr, DataFile.class)
-                .setParameter("scheduledStatusCode", DataFile.INGEST_STATUS_SCHEDULED)
-                .setParameter("progressStatusCode", DataFile.INGEST_STATUS_INPROGRESS)
-                .getResultList();
+                    .setParameter("scheduledStatusCode", DataFile.INGEST_STATUS_SCHEDULED)
+                    .setParameter("progressStatusCode", DataFile.INGEST_STATUS_INPROGRESS)
+                    .getResultList();
         } else {
             return Collections.emptyList();
         }
     }
-    
-    
+
+
     public DataTable findDataTableByFileId(Long fileId) {
         Query query = em.createQuery("select object(o) from DataTable as o where o.dataFile.id =:fileId order by o.id");
         query.setParameter("fileId", fileId);
-        
+
         Object singleResult;
-        
-        try{
-            return (DataTable)query.getSingleResult();
-        }catch(NoResultException ex){
+
+        try {
+            return (DataTable) query.getSingleResult();
+        } catch (NoResultException ex) {
             return null;
         }
     }
-    
+
     public List<DataFile> findAll() {
         return em.createQuery("select object(o) from DataFile as o order by o.id", DataFile.class).getResultList();
     }
-    
+
     public DataFile save(DataFile dataFile) {
 
-        if (dataFile.isMergeable()) {   
+        if (dataFile.isMergeable()) {
             DataFile savedDataFile = em.merge(dataFile);
             return savedDataFile;
         } else {
             throw new IllegalArgumentException("This DataFile object has been set to NOT MERGEABLE; please ensure a MERGEABLE object is passed to the save method.");
-        } 
+        }
     }
-    
-    private void msg(String m){
+
+    private void msg(String m) {
         System.out.println(m);
     }
-    private void dashes(){
+
+    private void dashes() {
         msg("----------------");
     }
-    private void msgt(String m){
-        dashes(); msg(m); dashes();
+
+    private void msgt(String m) {
+        dashes();
+        msg(m);
+        dashes();
     }
-    
+
     /*
         Make sure the file replace ids are set for a initial version 
         of a file
     
     */
-    public DataFile setAndCheckFileReplaceAttributes(DataFile savedDataFile){
-               
+    public DataFile setAndCheckFileReplaceAttributes(DataFile savedDataFile) {
+
         // Is this the initial version of a file?
-        
-        if ((savedDataFile.getRootDataFileId() == null)||
-                (savedDataFile.getRootDataFileId().equals(DataFile.ROOT_DATAFILE_ID_DEFAULT))){
+
+        if ((savedDataFile.getRootDataFileId() == null) ||
+                (savedDataFile.getRootDataFileId().equals(DataFile.ROOT_DATAFILE_ID_DEFAULT))) {
             msg("yes, initial version");
- 
-           // YES!  Set the RootDataFileId to the Id
-           savedDataFile.setRootDataFileId(savedDataFile.getId());
-           
-           // SAVE IT AGAIN!!!
-           msg("yes, save again");
-        
-            return em.merge(savedDataFile);   
-           
-        }else{       
+
+            // YES!  Set the RootDataFileId to the Id
+            savedDataFile.setRootDataFileId(savedDataFile.getId());
+
+            // SAVE IT AGAIN!!!
+            msg("yes, save again");
+
+            return em.merge(savedDataFile);
+
+        } else {
             // Looking Good Billy Ray! Feeling Good Louis!    
             msg("nope, looks ok");
 
             return savedDataFile;
         }
     }
-    
-    
-    public Boolean isPreviouslyPublished(Long fileId){
+
+
+    public Boolean isPreviouslyPublished(Long fileId) {
         Query query = em.createQuery("select object(o) from FileMetadata as o where o.dataFile.id =:fileId");
         query.setParameter("fileId", fileId);
         List<?> retList = query.getResultList();
         return (retList.size() > 1);
     }
-    
-    public void deleteFromVersion( DatasetVersion d, DataFile f ) {
-		em.createNamedQuery("DataFile.removeFromDatasetVersion")
-			.setParameter("versionId", d.getId()).setParameter("fileId", f.getId())
-				.executeUpdate();
+
+    public void deleteFromVersion(DatasetVersion d, DataFile f) {
+        em.createNamedQuery("DataFile.removeFromDatasetVersion")
+                .setParameter("versionId", d.getId()).setParameter("fileId", f.getId())
+                .executeUpdate();
     }
 
     /* 
      Convenience methods for merging and removingindividual file metadatas, 
      without touching the rest of the DataFile object:
     */
-    
+
     public FileMetadata mergeFileMetadata(FileMetadata fileMetadata) {
-        
+
         FileMetadata newFileMetadata = em.merge(fileMetadata);
         em.flush();
-        
+
         // Set the initial value of the rootDataFileId
         //    (does nothing if it's already set)
         //DataFile updatedDataFile = setAndCheckFileReplaceAttributes(newFileMetadata.getDataFile());
-               
+
         return newFileMetadata;
     }
-    
+
     public void removeFileMetadata(FileMetadata fileMetadata) {
         msgt("removeFileMetadata: fileMetadata");
         FileMetadata mergedFM = em.merge(fileMetadata);
         em.remove(mergedFM);
     }
-    
-    /* 
+
+    /*
      * Same, for DataTables:
-    */
-    
+     */
+
     public DataTable saveDataTable(DataTable dataTable) {
         DataTable merged = em.merge(dataTable);
         em.flush();
         return merged;
     }
-    
+
     public List<DataFile> findHarvestedFilesByClient(HarvestingClient harvestingClient) {
         String qr = "SELECT d FROM DataFile d, DvObject o, Dataset s WHERE o.id = d.id AND o.owner.id = s.id AND s.harvestedFrom.id = :harvestingClientId";
         return em.createQuery(qr, DataFile.class)
-            .setParameter("harvestingClientId", harvestingClient.getId())
-            .getResultList();
+                .setParameter("harvestingClientId", harvestingClient.getId())
+                .getResultList();
     }
-    
+
     /*moving to the fileutil*/
-    
+
     public void generateStorageIdentifier(DataFile dataFile) {
         dataFile.setStorageIdentifier(generateStorageIdentifier());
     }
-    
+
     public String generateStorageIdentifier() {
-        
+
         UUID uid = UUID.randomUUID();
-                
+
         logger.log(Level.FINE, "UUID value: {0}", uid.toString());
-        
+
         // last 6 bytes, of the random UUID, in hex: 
-        
+
         String hexRandom = uid.toString().substring(24);
-        
+
         logger.log(Level.FINE, "UUID (last 6 bytes, 12 hex digits): {0}", hexRandom);
-        
+
         String hexTimestamp = Long.toHexString(new Date().getTime());
-        
+
         logger.log(Level.FINE, "(not UUID) timestamp in hex: {0}", hexTimestamp);
-            
+
         String storageIdentifier = hexTimestamp + "-" + hexRandom;
-        
+
         logger.log(Level.FINE, "timestamp/UUID hybrid: {0}", storageIdentifier);
-        return storageIdentifier; 
+        return storageIdentifier;
     }
-    
-    public boolean isSpssPorFile (DataFile file) {
-        return (file != null) ? MIME_TYPE_SPSS_POR.equalsIgnoreCase(file.getContentType()) : false;
+
+    public boolean isSpssPorFile(DataFile file) {
+        return (file != null) && MIME_TYPE_SPSS_POR.equalsIgnoreCase(file.getContentType());
     }
-    
-    public boolean isSpssSavFile (DataFile file) {
-        return (file != null) ? MIME_TYPE_SPSS_SAV.equalsIgnoreCase(file.getContentType()) : false;
+
+    public boolean isSpssSavFile(DataFile file) {
+        return (file != null) && MIME_TYPE_SPSS_SAV.equalsIgnoreCase(file.getContentType());
     }
     
     /*
@@ -719,16 +721,16 @@ public class DataFileServiceBean implements java.io.Serializable {
         return false; 
     }
     */
-    
+
     /*
      * This method will return true if the thumbnail is *actually available* and
      * ready to be downloaded. (it will try to generate a thumbnail for supported
      * file types, if not yet available)
      */
-    public boolean isThumbnailAvailable (DataFile file) {
+    public boolean isThumbnailAvailable(DataFile file) {
         if (file == null) {
-            return false; 
-        } 
+            return false;
+        }
 
         // If this file already has the "thumbnail generated" flag set,
         // we'll just trust that:
@@ -736,7 +738,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             logger.fine("returning true");
             return true;
         }
-        
+
         // If thumbnails are not even supported for this class of files, 
         // there's notthing to talk about:      
         if (!FileUtil.isThumbnailSupported(file)) {
@@ -753,84 +755,83 @@ public class DataFileServiceBean implements java.io.Serializable {
          is more important... 
         
         */
-                
-        
-       if (ImageThumbConverter.isThumbnailAvailable(file)) {
-           file = this.find(file.getId());
-           file.setPreviewImageAvailable(true);
-           this.save(file); 
-           return true;
-       }
 
-       return false;
+
+        if (ImageThumbConverter.isThumbnailAvailable(file)) {
+            file = this.find(file.getId());
+            file.setPreviewImageAvailable(true);
+            this.save(file);
+            return true;
+        }
+
+        return false;
     }
 
-    
-    /* 
+
+    /*
      * Methods for identifying "classes" (groupings) of files by type:
-    */
-    
-    public String getFileClassById (Long fileId) {
+     */
+
+    public String getFileClassById(Long fileId) {
         DataFile file = find(fileId);
-        
+
         if (file == null) {
-            return null; 
+            return null;
         }
-        
+
         return getFileClass(file);
     }
-    
-    public String getFileClass (DataFile file) {
+
+    public String getFileClass(DataFile file) {
         if (isFileClassImage(file)) {
             return FILE_CLASS_IMAGE;
         }
-        
+
         if (isFileClassVideo(file)) {
             return FILE_CLASS_VIDEO;
         }
-        
+
         if (isFileClassAudio(file)) {
             return FILE_CLASS_AUDIO;
         }
-        
+
         if (isFileClassCode(file)) {
             return FILE_CLASS_CODE;
         }
-        
+
         if (isFileClassDocument(file)) {
             return FILE_CLASS_DOCUMENT;
         }
-        
+
         if (isFileClassAstro(file)) {
             return FILE_CLASS_ASTRO;
         }
-        
+
         if (isFileClassNetwork(file)) {
             return FILE_CLASS_NETWORK;
         }
-        
+
         if (isFileClassGeo(file)) {
             return FILE_CLASS_GEO;
         }
-        
+
         if (isFileClassTabularData(file)) {
             return FILE_CLASS_TABULAR;
         }
-        
+
         if (isFileClassPackage(file)) {
             return FILE_CLASS_PACKAGE;
         }
-        
+
         return FILE_CLASS_OTHER;
     }
-    
-    
-    
-    public boolean isFileClassImage (DataFile file) {
+
+
+    public boolean isFileClassImage(DataFile file) {
         if (file == null) {
             return false;
         }
-        
+
         String contentType = file.getContentType();
 
         // Some browsers (Chrome?) seem to identify FITS files as mime
@@ -838,94 +839,94 @@ public class DataFileServiceBean implements java.io.Serializable {
         // mime type for FITS is "application/fits", and problematic: then
         // the file is identified as an image, and the page will attempt to 
         // generate a preview - which of course is going to fail...
-        
+
         if (FileUtil.MIME_TYPE_FITSIMAGE.equalsIgnoreCase(contentType)) {
             return false;
         }
         // besides most image/* types, we can generate thumbnails for 
         // pdf and "world map" files:
-        
+
         return (contentType != null && (contentType.toLowerCase().startsWith("image/")));
     }
-    
-    public boolean isFileClassAudio (DataFile file) {
+
+    public boolean isFileClassAudio(DataFile file) {
         if (file == null) {
             return false;
         }
-        
+
         String contentType = file.getContentType();
-        
+
         // TODO: 
         // verify that there are no audio types that don't start with "audio/" - 
         //  some exotic mp[34]... ?
-        
-        return (contentType != null && (contentType.toLowerCase().startsWith("audio/")));    
+
+        return (contentType != null && (contentType.toLowerCase().startsWith("audio/")));
     }
-    
-    public boolean isFileClassCode (DataFile file) {
+
+    public boolean isFileClassCode(DataFile file) {
         if (file == null) {
             return false;
         }
-     
+
         String contentType = file.getContentType();
-        
+
         // The following are the "control card/syntax" formats that we recognize 
         // as "code":
-    
+
         return (MIME_TYPE_R_SYNTAX.equalsIgnoreCase(contentType)
-            || MIME_TYPE_STATA_SYNTAX.equalsIgnoreCase(contentType) 
-            || MIME_TYPE_SAS_SYNTAX.equalsIgnoreCase(contentType)
-            || MIME_TYPE_SPSS_CCARD.equalsIgnoreCase(contentType));
-        
+                || MIME_TYPE_STATA_SYNTAX.equalsIgnoreCase(contentType)
+                || MIME_TYPE_SAS_SYNTAX.equalsIgnoreCase(contentType)
+                || MIME_TYPE_SPSS_CCARD.equalsIgnoreCase(contentType));
+
     }
-    
-    public boolean isFileClassDocument (DataFile file) {
+
+    public boolean isFileClassDocument(DataFile file) {
         if (file == null) {
             return false;
         }
-        
+
         // "Documents": PDF, assorted MS docs, etc. 
-        
+
         String contentType = file.getContentType();
         int scIndex = 0;
         if (contentType != null && (scIndex = contentType.indexOf(';')) > 0) {
             contentType = contentType.substring(0, scIndex);
         }
-        
+
         return (MIME_TYPE_PLAIN_TEXT.equalsIgnoreCase(contentType)
-            || MIME_TYPE_DOCUMENT_PDF.equalsIgnoreCase(contentType)
-            || MIME_TYPE_DOCUMENT_MSWORD.equalsIgnoreCase(contentType)
-            || MIME_TYPE_DOCUMENT_MSEXCEL.equalsIgnoreCase(contentType)
-            || MIME_TYPE_DOCUMENT_MSWORD_OPENXML.equalsIgnoreCase(contentType));
-        
+                || MIME_TYPE_DOCUMENT_PDF.equalsIgnoreCase(contentType)
+                || MIME_TYPE_DOCUMENT_MSWORD.equalsIgnoreCase(contentType)
+                || MIME_TYPE_DOCUMENT_MSEXCEL.equalsIgnoreCase(contentType)
+                || MIME_TYPE_DOCUMENT_MSWORD_OPENXML.equalsIgnoreCase(contentType));
+
     }
-    
-    public boolean isFileClassAstro (DataFile file) {
+
+    public boolean isFileClassAstro(DataFile file) {
         if (file == null) {
             return false;
         }
-        
+
         String contentType = file.getContentType();
-       
+
         // The only known/supported "Astro" file type is FITS,
         // so far:
-        
+
         return (MIME_TYPE_FITS.equalsIgnoreCase(contentType) || FileUtil.MIME_TYPE_FITSIMAGE.equalsIgnoreCase(contentType));
-        
+
     }
-    
-    public boolean isFileClassNetwork (DataFile file) {
+
+    public boolean isFileClassNetwork(DataFile file) {
         if (file == null) {
             return false;
         }
-        
+
         String contentType = file.getContentType();
-       
+
         // The only known/supported Network Data type is GRAPHML,
         // so far:
-        
+
         return MIME_TYPE_NETWORK_GRAPHML.equalsIgnoreCase(contentType);
-        
+
     }
     
     /* 
@@ -939,199 +940,192 @@ public class DataFileServiceBean implements java.io.Serializable {
         
     }
     */
-    
-    public boolean isFileClassGeo (DataFile file) {
+
+    public boolean isFileClassGeo(DataFile file) {
         if (file == null) {
             return false;
         }
-        
+
         String contentType = file.getContentType();
-       
+
         // The only known/supported Geo Data type is SHAPE,
         // so far:
-        
+
         return FileUtil.MIME_TYPE_GEO_SHAPE.equalsIgnoreCase(contentType);
     }
-    
-    public boolean isFileClassTabularData (DataFile file) {
+
+    public boolean isFileClassTabularData(DataFile file) {
         if (file == null) {
             return false;
         }
-        
+
         // "Tabular data" is EITHER an INGESTED tabular data file, i.e.
         // a file with a DataTable and DataVariables; or a DataFile 
         // of one of the many known tabular data formats - SPSS, Stata, etc.
         // that for one reason or another didn't get ingested: 
-        
+
         if (file.isTabularData()) {
-            return true; 
+            return true;
         }
-        
+
         // The formats we know how to ingest: 
         if (FileUtil.canIngestAsTabular(file)) {
             return true;
         }
-        
+
         String contentType = file.getContentType();
-        
+
         // And these are the formats we DON'T know how to ingest, 
         // but nevertheless recognize as "tabular data":
-        
+
         return (MIME_TYPE_TSV.equalsIgnoreCase(contentType)
-            || MIME_TYPE_FIXED_FIELD.equalsIgnoreCase(contentType) 
-            || MIME_TYPE_SAS_TRANSPORT.equalsIgnoreCase(contentType)
-            || MIME_TYPE_SAS_SYSTEM.equalsIgnoreCase(contentType));
-        
+                || MIME_TYPE_FIXED_FIELD.equalsIgnoreCase(contentType)
+                || MIME_TYPE_SAS_TRANSPORT.equalsIgnoreCase(contentType)
+                || MIME_TYPE_SAS_SYSTEM.equalsIgnoreCase(contentType));
+
     }
-    
-    public boolean isFileClassVideo (DataFile file) {
+
+    public boolean isFileClassVideo(DataFile file) {
         if (file == null) {
             return false;
         }
-        
+
         String contentType = file.getContentType();
-        
+
         // TODO: 
         // check if there are video types that don't start with "audio/" - 
         // some exotic application/... formats ?
-        
-        return (contentType != null && (contentType.toLowerCase().startsWith("video/")));    
-        
+
+        return (contentType != null && (contentType.toLowerCase().startsWith("video/")));
+
     }
-    
-    public boolean isFileClassPackage (DataFile file) {
+
+    public boolean isFileClassPackage(DataFile file) {
         if (file == null) {
             return false;
         }
-        
+
         String contentType = file.getContentType();
-       
+
         return MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(contentType);
     }
-    
+
     public void populateFileSearchCard(SolrSearchResult solrSearchResult) {
         solrSearchResult.setEntity(this.findCheapAndEasy(solrSearchResult.getEntityId()));
     }
-        
-    
+
+
     /**
-     * Does this file have a replacement.  
+     * Does this file have a replacement.
      * Any file should have AT MOST 1 replacement
-     * 
+     *
      * @param df
-     * @return 
+     * @return
      * @throws java.lang.Exception if a DataFile has more than 1 replacement
-     *         or is unpublished and has a replacement.
+     *                             or is unpublished and has a replacement.
      */
-    public boolean hasReplacement(DataFile df) throws Exception{
-        
-        if (df.getId() == null){
+    public boolean hasReplacement(DataFile df) throws Exception {
+
+        if (df.getId() == null) {
             // An unsaved file cannot have a replacment
             return false;
         }
-       
-        
+
+
         List<DataFile> dataFiles = em.createQuery("select o from DataFile o" +
-                    " WHERE o.previousDataFileId = :dataFileId", DataFile.class)
-                    .setParameter("dataFileId", df.getId())
-                    .getResultList();
-        
-        if (dataFiles.isEmpty()){
+                                                          " WHERE o.previousDataFileId = :dataFileId", DataFile.class)
+                .setParameter("dataFileId", df.getId())
+                .getResultList();
+
+        if (dataFiles.isEmpty()) {
             return false;
         }
-        
-         if (!df.isReleased()){
+
+        if (!df.isReleased()) {
             // An unpublished SHOULD NOT have a replacment
             String errMsg = "DataFile with id: [" + df.getId() + "] is UNPUBLISHED with a REPLACEMENT.  This should NOT happen.";
             logger.severe(errMsg);
-            
-            throw new Exception(errMsg);
-        }
 
-        
-        
-        else if (dataFiles.size() == 1){
+            throw new Exception(errMsg);
+        } else if (dataFiles.size() == 1) {
             return true;
-        }else{
-        
+        } else {
+
             String errMsg = "DataFile with id: [" + df.getId() + "] has more than one replacment!";
             logger.severe(errMsg);
 
             throw new Exception(errMsg);
         }
-        
+
     }
-    
-    public boolean hasBeenDeleted(DataFile df){
+
+    public boolean hasBeenDeleted(DataFile df) {
         Dataset dataset = df.getOwner();
         DatasetVersion dsv = dataset.getLatestVersion();
-        
+
         return findFileMetadataByDatasetVersionIdAndDataFileId(dsv.getId(), df.getId()) == null;
-        
+
     }
-    
+
     /**
      * Is this a replacement file??
-     * 
+     * <p>
      * The indication of a previousDataFileId says that it is
-     * 
+     *
      * @param df
      * @return
      */
     public boolean isReplacementFile(DataFile df) {
 
-        if (df.getPreviousDataFileId() == null){
+        if (df.getPreviousDataFileId() == null) {
             return false;
-        }else if (df.getPreviousDataFileId() < 1){
+        } else if (df.getPreviousDataFileId() < 1) {
             String errMSg = "Stop! previousDataFileId should either be null or a number greater than 0";
             logger.severe(errMSg);
             return false;
             // blow up -- this shouldn't happen!
             //throw new FileReplaceException(errMSg);
-        }else if (df.getPreviousDataFileId() > 0){
-            return true;
-        }
-        return false;
+        } else return df.getPreviousDataFileId() > 0;
     }  // end: isReplacementFile
-    
+
     public List<Long> selectFilesWithMissingOriginalTypes() {
         Query query = em.createNativeQuery("SELECT f.id FROM datafile f, datatable t where t.datafile_id = f.id AND (t.originalfileformat='" + MIME_TYPE_TSV + "' OR t.originalfileformat IS NULL) ORDER BY f.id");
-        
+
         try {
             return query.getResultList();
         } catch (Exception ex) {
             return new ArrayList<>();
         }
     }
-    
+
     public List<Long> selectFilesWithMissingOriginalSizes() {
         Query query = em.createNativeQuery("SELECT f.id FROM datafile f, datatable t where t.datafile_id = f.id AND (t.originalfilesize IS NULL ) AND (t.originalfileformat IS NOT NULL) ORDER BY f.id");
-        
+
         try {
             return query.getResultList();
         } catch (Exception ex) {
             return new ArrayList<>();
         }
     }
-    
+
     public String generateDataFileIdentifier(DataFile datafile, GlobalIdServiceBean idServiceBean) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle);
         String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat);
 
         String prepend = "";
-        if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())){
+        if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())) {
             //If format is dependent then pre-pend the dataset identifier 
             prepend = datafile.getOwner().getIdentifier() + "/";
         } else {
             //If there's a shoulder prepend independent identifiers with it
             prepend = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder);
         }
- 
+
         switch (doiIdentifierType) {
-            case "randomString":               
+            case "randomString":
                 return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
             case "sequentialNumber":
-                if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString())){ 
+                if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString())) {
                     return generateIdentifierAsIndependentSequentialNumber(datafile, idServiceBean, prepend);
                 } else {
                     return generateIdentifierAsDependentSequentialNumber(datafile, idServiceBean, prepend);
@@ -1141,11 +1135,11 @@ public class DataFileServiceBean implements java.io.Serializable {
                 return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
         }
     }
-    
+
     private String generateIdentifierAsRandomString(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
         String identifier = null;
         do {
-            identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
+            identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();
         } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
 
         return identifier;
@@ -1153,22 +1147,22 @@ public class DataFileServiceBean implements java.io.Serializable {
 
 
     private String generateIdentifierAsIndependentSequentialNumber(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
-        String identifier; 
+        String identifier;
         do {
             StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierAsSequentialNumber");
             query.execute();
-            Integer identifierNumeric = (Integer) query.getOutputParameterValue(1); 
+            Integer identifierNumeric = (Integer) query.getOutputParameterValue(1);
             // some diagnostics here maybe - is it possible to determine that it's failing 
             // because the stored procedure hasn't been created in the database?
             if (identifierNumeric == null) {
-                return null; 
+                return null;
             }
             identifier = prepend + identifierNumeric.toString();
         } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
-        
+
         return identifier;
     }
-    
+
     private String generateIdentifierAsDependentSequentialNumber(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
         String identifier;
         Long retVal;
@@ -1188,53 +1182,54 @@ public class DataFileServiceBean implements java.io.Serializable {
      * Check that a identifier entered by the user is unique (not currently used
      * for any other study in this Dataverse Network). Also check for duplicate
      * in the remote PID service if needed
+     *
      * @param userIdentifier
      * @param datafile
      * @param idServiceBean
-     * @return  {@code true} iff the global identifier is unique.
+     * @return {@code true} iff the global identifier is unique.
      */
     public boolean isGlobalIdUnique(String userIdentifier, DataFile datafile, GlobalIdServiceBean idServiceBean) {
         String testProtocol = "";
         String testAuthority = "";
-        if (datafile.getAuthority() != null){
+        if (datafile.getAuthority() != null) {
             testAuthority = datafile.getAuthority();
         } else {
             testAuthority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority);
         }
-        if (datafile.getProtocol() != null){
+        if (datafile.getProtocol() != null) {
             testProtocol = datafile.getProtocol();
         } else {
             testProtocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol);
         }
-        
+
         boolean u = em.createNamedQuery("DvObject.findByProtocolIdentifierAuthority")
-            .setParameter("protocol", testProtocol)
-            .setParameter("authority", testAuthority)
-            .setParameter("identifier",userIdentifier)
-            .getResultList().isEmpty();
-            
-        try{
+                .setParameter("protocol", testProtocol)
+                .setParameter("authority", testAuthority)
+                .setParameter("identifier", userIdentifier)
+                .getResultList().isEmpty();
+
+        try {
             if (idServiceBean.alreadyExists(new GlobalId(testProtocol, testAuthority, userIdentifier))) {
                 u = false;
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             //we can live with failure - means identifier not found remotely
         }
 
-       
+
         return u;
     }
-    
+
     public void finalizeFileDelete(Long dataFileId, String storageLocation) throws IOException {
         // Verify that the DataFile no longer exists: 
         if (find(dataFileId) != null) {
             throw new IOException("Attempted to permanently delete a physical file still associated with an existing DvObject "
-                    + "(id: " + dataFileId + ", location: " + storageLocation);
+                                          + "(id: " + dataFileId + ", location: " + storageLocation);
         }
         StorageIO directStorageAccess = DataAccess.getDirectStorageIO(storageLocation);
         directStorageAccess.delete();
     }
-    
+
     public void finalizeFileDeletes(Map<Long, String> storageLocations) {
         storageLocations.keySet().stream().forEach((dataFileId) -> {
             String storageLocation = storageLocations.get(dataFileId);
@@ -1243,15 +1238,15 @@ public class DataFileServiceBean implements java.io.Serializable {
                 finalizeFileDelete(dataFileId, storageLocation);
             } catch (IOException ioex) {
                 logger.warning("Failed to delete the physical file associated with the deleted datafile id="
-                        + dataFileId + ", storage location: " + storageLocation);
+                                       + dataFileId + ", storage location: " + storageLocation);
             }
         });
     }
-    
+
     public Map<Long, String> getPhysicalFilesToDelete(DatasetVersion datasetVersion) {
         return getPhysicalFilesToDelete(datasetVersion, false);
     }
-    
+
     public Map<Long, String> getPhysicalFilesToDelete(DatasetVersion datasetVersion, boolean destroy) {
         // Gather the locations of the physical files associated with DRAFT
         // (unpublished) DataFiles (or ALL the DataFiles, if "destroy") in the 
@@ -1260,11 +1255,11 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         return getPhysicalFilesToDelete(datasetVersion.getFileMetadatas(), destroy);
     }
-    
+
     public Map<Long, String> getPhysicalFilesToDelete(List<FileMetadata> fileMetadatasToDelete) {
         return getPhysicalFilesToDelete(fileMetadatasToDelete, false);
     }
-    
+
     public Map<Long, String> getPhysicalFilesToDelete(List<FileMetadata> fileMetadatasToDelete, boolean destroy) {
         Map<Long, String> deleteStorageLocations = new HashMap<>();
 
@@ -1284,7 +1279,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         return deleteStorageLocations;
     }
-  
+
     public Map<Long, String> getPhysicalFilesToDelete(Dataset dataset) {
         // Gather the locations of ALL the physical files associated with 
         // a DATASET that is being DESTROYED, that will need to be deleted
@@ -1307,7 +1302,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         return deleteStorageLocations;
     }
-    
+
     public String getPhysicalFileToDelete(DataFile dataFile) {
         try {
             StorageIO<DataFile> storageIO = dataFile.getStorageIO();

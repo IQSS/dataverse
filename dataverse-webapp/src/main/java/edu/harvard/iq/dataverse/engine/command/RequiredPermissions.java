@@ -9,15 +9,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- *
  * @author michael
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface RequiredPermissions {
-	Permission[] value();
+    Permission[] value();
 
-	boolean isAllPermissionsRequired() default true;
-	String dataverseName() default ""; // TODO change to "dvObjectName"
+    boolean isAllPermissionsRequired() default true;
+
+    String dataverseName() default ""; // TODO change to "dvObjectName"
 }

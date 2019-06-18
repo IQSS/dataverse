@@ -28,7 +28,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author michael
  * @author tjanek
  */
@@ -36,19 +35,19 @@ public class DatasetVersionTest {
 
     public DatasetVersionTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
     }
-    
+
     @After
     public void tearDown() {
     }
@@ -57,36 +56,36 @@ public class DatasetVersionTest {
     public void testComparator() {
         DatasetVersion ds1_0 = new DatasetVersion();
         ds1_0.setId(0l);
-        ds1_0.setVersionNumber( 1l );
-        ds1_0.setMinorVersionNumber( 0l );
+        ds1_0.setVersionNumber(1l);
+        ds1_0.setMinorVersionNumber(0l);
         ds1_0.setVersionState(DatasetVersion.VersionState.RELEASED);
-        
+
         DatasetVersion ds1_1 = new DatasetVersion();
         ds1_1.setId(1l);
-        ds1_1.setVersionNumber( 1l );
-        ds1_1.setMinorVersionNumber( 1l );
+        ds1_1.setVersionNumber(1l);
+        ds1_1.setMinorVersionNumber(1l);
         ds1_1.setVersionState(DatasetVersion.VersionState.RELEASED);
-        
+
         DatasetVersion ds2_0 = new DatasetVersion();
         ds2_0.setId(2l);
-        ds2_0.setVersionNumber( 2l );
-        ds2_0.setMinorVersionNumber( 0l );
+        ds2_0.setVersionNumber(2l);
+        ds2_0.setMinorVersionNumber(0l);
         ds2_0.setVersionState(DatasetVersion.VersionState.RELEASED);
-        
+
         DatasetVersion ds_draft = new DatasetVersion();
         ds_draft.setId(3l);
         ds_draft.setVersionState(DatasetVersion.VersionState.DRAFT);
-        
-        List<DatasetVersion> expected = Arrays.asList( ds1_0, ds1_1, ds2_0, ds_draft );
-        List<DatasetVersion> actual = Arrays.asList( ds2_0, ds1_0, ds_draft, ds1_1 );
+
+        List<DatasetVersion> expected = Arrays.asList(ds1_0, ds1_1, ds2_0, ds_draft);
+        List<DatasetVersion> actual = Arrays.asList(ds2_0, ds1_0, ds_draft, ds1_1);
         Collections.sort(actual, DatasetVersion.compareByVersion);
-        assertEquals( expected, actual );
+        assertEquals(expected, actual);
     }
 
     @Test
     public void testIsInReview() {
         Dataset ds = MocksFactory.makeDataset();
-        
+
         DatasetVersion draft = ds.getCreateVersion();
         draft.setVersionState(DatasetVersion.VersionState.DRAFT);
         ds.addLock(new DatasetLock(DatasetLock.Reason.InReview, MocksFactory.makeAuthenticatedUser("Lauren", "Ipsumowitch")));
@@ -95,7 +94,7 @@ public class DatasetVersionTest {
         DatasetVersion nonDraft = new DatasetVersion();
         nonDraft.setVersionState(DatasetVersion.VersionState.RELEASED);
         assertEquals(false, nonDraft.isInReview());
-        
+
         ds.addLock(null);
         assertFalse(nonDraft.isInReview());
     }
@@ -274,10 +273,10 @@ public class DatasetVersionTest {
         datasetVersion.setFileMetadatas(newArrayList(
                 makeFileMetadata(10L, "file2.png", 3),
                 makeFileMetadata(20L, "file1.png", 5),
-                makeFileMetadata(30L,"file3.png", 1),
-                makeFileMetadata(40L,"file4.png", 0),
-                makeFileMetadata(50L,"file5.png", 2),
-                makeFileMetadata(60L,"file6.png", 4)
+                makeFileMetadata(30L, "file3.png", 1),
+                makeFileMetadata(40L, "file4.png", 0),
+                makeFileMetadata(50L, "file5.png", 2),
+                makeFileMetadata(60L, "file6.png", 4)
         ));
 
         return datasetVersion;
@@ -287,9 +286,9 @@ public class DatasetVersionTest {
         DatasetVersion datasetVersion = new DatasetVersion();
 
         datasetVersion.setFileMetadatas(newArrayList(
-                makeFileMetadata(10L,"file1.png", 1),
-                makeFileMetadata(20L,"file2.png", 6),
-                makeFileMetadata(30L,"file3.png", 8)
+                makeFileMetadata(10L, "file1.png", 1),
+                makeFileMetadata(20L, "file2.png", 6),
+                makeFileMetadata(30L, "file3.png", 8)
         ));
 
         return datasetVersion;

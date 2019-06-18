@@ -5,12 +5,13 @@ import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import org.apache.commons.lang3.StringUtils;
 
-import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.SystemEmail;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
+
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.SystemEmail;
 
 public class MailUtil {
 
@@ -64,7 +65,7 @@ public class MailUtil {
                 return BundleUtil.getStringFromBundle("notification.email.checksumfail.subject", rootDvNameAsList);
             case FILESYSTEMIMPORT:
                 try {
-                    DatasetVersion version =  (DatasetVersion)objectOfNotification;
+                    DatasetVersion version = (DatasetVersion) objectOfNotification;
                     List<String> dsNameAsList = Arrays.asList(version.getDataset().getDisplayName());
                     return BundleUtil.getStringFromBundle("notification.email.import.filesystem.subject", dsNameAsList);
                 } catch (Exception e) {

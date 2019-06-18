@@ -10,13 +10,13 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 /**
- *
  * @author michael
  */
-@RequiredPermissions( Permission.ManageDataversePermissions )
+@RequiredPermissions(Permission.ManageDataversePermissions)
 public class GetExplicitGroupCommand extends AbstractCommand<ExplicitGroup> {
 
     private final String groupAliasInOwner;
+
     public GetExplicitGroupCommand(DataverseRequest aRequest, DvObject anAffectedDvObject, String aGroupAliasInOwner) {
         super(aRequest, anAffectedDvObject);
         groupAliasInOwner = aGroupAliasInOwner;
@@ -26,5 +26,5 @@ public class GetExplicitGroupCommand extends AbstractCommand<ExplicitGroup> {
     public ExplicitGroup execute(CommandContext ctxt) throws CommandException {
         return ctxt.explicitGroups().findInOwner(getAffectedDvObjects().get("").getId(), groupAliasInOwner);
     }
-    
+
 }

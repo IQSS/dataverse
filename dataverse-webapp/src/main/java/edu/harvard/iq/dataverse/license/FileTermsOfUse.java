@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.license;
 
-import java.io.Serializable;
+import edu.harvard.iq.dataverse.FileMetadata;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,26 +11,25 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
-
-import edu.harvard.iq.dataverse.FileMetadata;
+import java.io.Serializable;
 
 /**
  * Entity describing on what terms
  * file can be used by app users.
- * 
+ *
  * @author madryk
  */
 @Entity
 public class FileTermsOfUse implements Serializable {
-    
+
     private static final long serialVersionUID = 1L;
-    
+
     public enum TermsOfUseType {
         LICENSE_BASED,
         ALL_RIGHTS_RESERVED,
         RESTRICTED
     }
-    
+
     public enum RestrictType {
         ACADEMIC_PURPOSE,
         NOT_FOR_REDISTRIBUTION,
@@ -41,24 +40,24 @@ public class FileTermsOfUse implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @OneToOne(mappedBy = "termsOfUse")
     private FileMetadata fileMetadata;
-    
+
     @ManyToOne
     private License license;
-    
+
     private boolean allRightsReserved;
-    
+
     @Enumerated(EnumType.STRING)
     private RestrictType restrictType;
-    
-    @Column(columnDefinition="TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String restrictCustomText;
-    
-    
+
+
     // -------------------- GETTERS --------------------
-    
+
     public Long getId() {
         return id;
     }
@@ -105,7 +104,7 @@ public class FileTermsOfUse implements Serializable {
     }
 
     // -------------------- LOGIC --------------------
-    
+
     public TermsOfUseType getTermsOfUseType() {
         if (license != null) {
             return TermsOfUseType.LICENSE_BASED;
@@ -118,7 +117,7 @@ public class FileTermsOfUse implements Serializable {
         }
         throw new RuntimeException("Unknown terms of use type");
     }
-    
+
     public FileTermsOfUse createCopy() {
         FileTermsOfUse copy = new FileTermsOfUse();
         copy.setFileMetadata(getFileMetadata());
@@ -130,7 +129,7 @@ public class FileTermsOfUse implements Serializable {
     }
 
     // -------------------- SETTERS --------------------
-    
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -154,6 +153,6 @@ public class FileTermsOfUse implements Serializable {
     public void setRestrictCustomText(String restrictCustomText) {
         this.restrictCustomText = restrictCustomText;
     }
-    
-    
+
+
 }

@@ -22,39 +22,39 @@ import java.util.Locale;
  * Licenses can be attached to data files.
  * Licenses determine on what terms files can
  * be used by users of the application.
- * 
+ *
  * @author madryk
  */
 @Entity
 public class License implements Serializable {
-    
+
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable=false, unique=true)
+    @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(nullable=false)
+    @Column(nullable = false)
     private String url;
 
-    @OneToOne(mappedBy="license", cascade=CascadeType.ALL, optional=true)
+    @OneToOne(mappedBy = "license", cascade = CascadeType.ALL, optional = true)
     private LicenseIcon icon;
 
     private boolean active;
 
-    @Column(nullable=false)
+    @Column(nullable = false)
     private Long position;
 
     @ElementCollection
-    @CollectionTable(name="license_localizedname")
+    @CollectionTable(name = "license_localizedname")
     private List<LocaleText> localizedNames = new ArrayList<>();
 
-    
+
     //-------------------- GETTERS --------------------
-    
+
     /**
      * Returns database id of license
      */
@@ -107,20 +107,20 @@ public class License implements Serializable {
     public List<LocaleText> getLocalizedNames() {
         return Collections.unmodifiableList(localizedNames);
     }
-    
-    
+
+
     //-------------------- LOGIC --------------------
-    
+
     /**
      * Adds locale specific name of the license.
      */
     public void addLocalizedName(LocaleText localizedName) {
         Preconditions.checkNotNull(localizedName);
         Preconditions.checkArgument(!containsNameWithLocale(localizedName.getLocale()));
-        
+
         localizedNames.add(localizedName);
     }
-    
+
     /**
      * Returns true if license already have localized name
      * with the given locale.
@@ -133,7 +133,7 @@ public class License implements Serializable {
         }
         return false;
     }
-    
+
     /**
      * Returns localized version of license name
      * if it exists or {@link #getName()} otherwise.
@@ -148,7 +148,7 @@ public class License implements Serializable {
     }
 
     //-------------------- SETTERS --------------------
-    
+
     public void setId(Long id) {
         this.id = id;
     }

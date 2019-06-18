@@ -5,103 +5,110 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.mocks.MocksFactory;
-import static edu.harvard.iq.dataverse.mocks.MocksFactory.*;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import org.junit.Test;
+
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import org.junit.Test;
+
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataset;
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.nextId;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author michael
  */
 public class CreateDatasetVersionCommandTest {
-    
+
     @Test
     public void testSimpleVersionAddition() throws Exception {
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
         // Create Dataset
         Dataset ds = makeDataset();
-        
+
         // Populate the Initial version
         DatasetVersion dsvInitial = ds.getEditVersion();
-        dsvInitial.setCreateTime( dateFmt.parse("20001012") );
-        dsvInitial.setLastUpdateTime( dsvInitial.getLastUpdateTime() );
-        dsvInitial.setId( MocksFactory.nextId() );
-        dsvInitial.setReleaseTime( dateFmt.parse("20010101") );
+        dsvInitial.setCreateTime(dateFmt.parse("20001012"));
+        dsvInitial.setLastUpdateTime(dsvInitial.getLastUpdateTime());
+        dsvInitial.setId(MocksFactory.nextId());
+        dsvInitial.setReleaseTime(dateFmt.parse("20010101"));
         dsvInitial.setVersionState(DatasetVersion.VersionState.RELEASED);
         dsvInitial.setMinorVersionNumber(0l);
         dsvInitial.setVersionNumber(1l);
-        
+
         // Create version to be added
         DatasetVersion dsvNew = new DatasetVersion();
         dsvNew.setVersionState(DatasetVersion.VersionState.DRAFT);
-        
+
         // Execute
-        CreateDatasetVersionCommand sut = new CreateDatasetVersionCommand( makeRequest(), ds, dsvNew );
-        
+        CreateDatasetVersionCommand sut = new CreateDatasetVersionCommand(makeRequest(), ds, dsvNew);
+
         final MockDatasetServiceBean serviceBean = new MockDatasetServiceBean();
-        TestDataverseEngine testEngine = new TestDataverseEngine( new TestCommandContext(){
-            @Override public DatasetServiceBean datasets() { return serviceBean; }
-        } );
-        
+        TestDataverseEngine testEngine = new TestDataverseEngine(new TestCommandContext() {
+            @Override
+            public DatasetServiceBean datasets() {
+                return serviceBean;
+            }
+        });
+
         testEngine.submit(sut);
-        
+
         // asserts
-        assertTrue( serviceBean.storeVersionCalled );
+        assertTrue(serviceBean.storeVersionCalled);
         Date dsvCreationDate = dsvNew.getCreateTime();
-        assertEquals( dsvCreationDate, dsvNew.getLastUpdateTime() );
-        assertEquals( dsvCreationDate.getTime(), ds.getModificationTime().getTime() );
-        assertEquals( ds, dsvNew.getDataset() );
-        assertEquals( dsvNew, ds.getEditVersion() );
+        assertEquals(dsvCreationDate, dsvNew.getLastUpdateTime());
+        assertEquals(dsvCreationDate.getTime(), ds.getModificationTime().getTime());
+        assertEquals(ds, dsvNew.getDataset());
+        assertEquals(dsvNew, ds.getEditVersion());
         Map<DvObject, Set<Permission>> expected = new HashMap<>();
         expected.put(ds, Collections.singleton(Permission.AddDataset));
-        assertEquals(expected, testEngine.getReqiredPermissionsForObjects() );
+        assertEquals(expected, testEngine.getReqiredPermissionsForObjects());
     }
-    
-    @Test(expected=IllegalCommandException.class)
+
+    @Test(expected = IllegalCommandException.class)
     public void testCantCreateTwoDraftVersions() throws Exception {
         DatasetVersion dsvNew = new DatasetVersion();
         dsvNew.setVersionState(DatasetVersion.VersionState.DRAFT);
         Dataset sampleDataset = makeDataset();
         sampleDataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
-        
+
         // Execute
-        CreateDatasetVersionCommand sut = new CreateDatasetVersionCommand( makeRequest(), sampleDataset, dsvNew );
-        
-        TestDataverseEngine testEngine = new TestDataverseEngine( new TestCommandContext() {
+        CreateDatasetVersionCommand sut = new CreateDatasetVersionCommand(makeRequest(), sampleDataset, dsvNew);
+
+        TestDataverseEngine testEngine = new TestDataverseEngine(new TestCommandContext() {
             DatasetServiceBean dsb = new MockDatasetServiceBean();
+
             @Override
             public DatasetServiceBean datasets() {
                 return dsb;
             }
-            
+
         });
-        
+
         testEngine.submit(sut);
     }
-    
-    
+
+
     static class MockDatasetServiceBean extends DatasetServiceBean {
-         
+
         boolean storeVersionCalled = false;
-        
+
         @Override
         public DatasetVersion storeVersion(DatasetVersion dsv) {
             storeVersionCalled = true;
-            dsv.setId( nextId() );
+            dsv.setId(nextId());
             return dsv;
         }
-        
+
     }
-    
+
 }

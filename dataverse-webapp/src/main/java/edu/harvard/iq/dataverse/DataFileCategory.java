@@ -6,9 +6,6 @@
 
 package edu.harvard.iq.dataverse;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -19,14 +16,16 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
- *
  * @author Leonid Andreev
  */
 
 @Entity
-@Table(indexes = {@Index(columnList="dataset_id")})
+@Table(indexes = {@Index(columnList = "dataset_id")})
 public class DataFileCategory implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -56,10 +55,10 @@ public class DataFileCategory implements Serializable {
     public void setDataset(Dataset dataset) {
         this.dataset = dataset;
     }
-    
-    @Column( nullable = false )
+
+    @Column(nullable = false)
     private String name;
-    
+
     public String getName() {
         return this.name;
     }
@@ -67,28 +66,28 @@ public class DataFileCategory implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
-    
-    /* 
-     * DataFiles which belong to this category: 
+
+    /*
+     * DataFiles which belong to this category:
      */
-    @ManyToMany (mappedBy="fileCategories")
-    private Collection<FileMetadata> fileMetadatas = null; 
-    
+    @ManyToMany(mappedBy = "fileCategories")
+    private Collection<FileMetadata> fileMetadatas = null;
+
     public Collection<FileMetadata> getFileMetadatas() {
-        return fileMetadatas; 
+        return fileMetadatas;
     }
-    
+
     public void setFileMetadatas(Collection<FileMetadata> fileMetadatas) {
-        this.fileMetadatas = fileMetadatas; 
+        this.fileMetadatas = fileMetadatas;
     }
-    
-    public void addFileMetadata (FileMetadata fileMetadata) {
+
+    public void addFileMetadata(FileMetadata fileMetadata) {
         if (fileMetadatas == null) {
             fileMetadatas = new ArrayList<>();
         }
         fileMetadatas.add(fileMetadata);
     }
-    
+
 
     @Override
     public int hashCode() {
@@ -103,7 +102,7 @@ public class DataFileCategory implements Serializable {
             return false;
         }
         DataFileCategory other = (DataFileCategory) object;
-        
+
         // Custom code for comparing 2 categories before the 
         // objects have been persisted with the entity manager
         // and assigned database ids: 
@@ -115,11 +114,8 @@ public class DataFileCategory implements Serializable {
              }
             return false; 
         }*/
-        
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+
+        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
 
     @Override

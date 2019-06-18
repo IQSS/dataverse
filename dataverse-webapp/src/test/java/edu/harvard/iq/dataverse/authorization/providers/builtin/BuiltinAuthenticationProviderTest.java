@@ -7,21 +7,23 @@ import edu.harvard.iq.dataverse.mocks.MockAuthenticationServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockBuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockPasswordValidatorServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
-import org.junit.Test;
-import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author michael
  */
 public class BuiltinAuthenticationProviderTest {
-    
+
     BuiltinAuthenticationProvider sut = null;
     PasswordValidatorServiceBean passwordValidatorService;
     MockBuiltinUserServiceBean bean = null;
     AuthenticationServiceBean authBean = null;
-    
+
     @Before
     public void setup() {
         bean = new MockBuiltinUserServiceBean();
@@ -53,7 +55,7 @@ public class BuiltinAuthenticationProviderTest {
      */
     @Test
     public void testIsPasswordUpdateAllowed() {
-        assertTrue( sut.isPasswordUpdateAllowed() );
+        assertTrue(sut.isPasswordUpdateAllowed());
     }
 
     /**
@@ -61,7 +63,7 @@ public class BuiltinAuthenticationProviderTest {
      */
     @Test
     public void testIsUserInfoUpdateAllowed() {
-        assertTrue( sut.isUserInfoUpdateAllowed() );
+        assertTrue(sut.isUserInfoUpdateAllowed());
     }
 
     /**
@@ -69,7 +71,7 @@ public class BuiltinAuthenticationProviderTest {
      */
     @Test
     public void testIsUserDeletionAllowed() {
-        assertTrue( sut.isUserDeletionAllowed() );
+        assertTrue(sut.isUserDeletionAllowed());
     }
 
     /**
@@ -78,13 +80,13 @@ public class BuiltinAuthenticationProviderTest {
     @Test
     public void testDeleteUser() {
         BuiltinUser u = makeBuiltInUser();
-        assertTrue( bean.users.isEmpty() );
+        assertTrue(bean.users.isEmpty());
         bean.save(u);
-        assertFalse( bean.users.isEmpty() );
-        
-        sut.deleteUser( u.getUserName() );
-        
-        assertTrue( bean.users.isEmpty() );
+        assertFalse(bean.users.isEmpty());
+
+        sut.deleteUser(u.getUserName());
+
+        assertTrue(bean.users.isEmpty());
     }
 
     /**
@@ -94,12 +96,12 @@ public class BuiltinAuthenticationProviderTest {
     public void testUpdatePassword() {
         BuiltinUser user = bean.save(makeBuiltInUser());
         final String newPassword = "newPassword";
-        assertFalse( sut.verifyPassword(user.getUserName(), newPassword) );
+        assertFalse(sut.verifyPassword(user.getUserName(), newPassword));
         sut.updatePassword(user.getUserName(), newPassword);
-        assertTrue( sut.verifyPassword(user.getUserName(), newPassword));
+        assertTrue(sut.verifyPassword(user.getUserName(), newPassword));
     }
 
-    
+
     private BuiltinUser makeBuiltInUser() {
         BuiltinUser user = new BuiltinUser();
         user.setUserName("username");
@@ -113,9 +115,9 @@ public class BuiltinAuthenticationProviderTest {
     @Test
     public void testVerifyPassword() {
         bean.save(makeBuiltInUser());
-        assertEquals( Boolean.TRUE,  sut.verifyPassword("username", "password"));
-        assertEquals( Boolean.FALSE, sut.verifyPassword("username", "xxxxxxxx"));
-        assertEquals( null,          sut.verifyPassword("xxxxxxxx", "xxxxxxxx"));
+        assertEquals(Boolean.TRUE, sut.verifyPassword("username", "password"));
+        assertEquals(Boolean.FALSE, sut.verifyPassword("username", "xxxxxxxx"));
+        assertEquals(null, sut.verifyPassword("xxxxxxxx", "xxxxxxxx"));
     }
 
     /**
@@ -131,35 +133,35 @@ public class BuiltinAuthenticationProviderTest {
         req.putCredential(crdPassword, "password");
         AuthenticationResponse result = sut.authenticate(req);
         assertEquals(AuthenticationResponse.Status.SUCCESS, result.getStatus());
-        
+
         req = new AuthenticationRequest();
         req.putCredential(crdUsername, "xxxxxxxx");
         req.putCredential(crdPassword, "password");
         result = sut.authenticate(req);
         assertEquals(AuthenticationResponse.Status.FAIL, result.getStatus());
-        
+
         req = new AuthenticationRequest();
         req.putCredential(crdUsername, "username");
         req.putCredential(crdPassword, "xxxxxxxx");
         result = sut.authenticate(req);
         assertEquals(AuthenticationResponse.Status.FAIL, result.getStatus());
-        
+
         BuiltinUser u2 = makeBuiltInUser();
         u2.setUserName("u2");
         u2.updateEncryptedPassword(PasswordEncryption.getVersion(0).encrypt("password"), 0);
         bean.save(u2);
-        
+
         req = new AuthenticationRequest();
         req.putCredential(crdUsername, "u2");
         req.putCredential(crdPassword, "xxxxxxxx");
         result = sut.authenticate(req);
         assertEquals(AuthenticationResponse.Status.FAIL, result.getStatus());
-        
+
         req = new AuthenticationRequest();
         req.putCredential(crdUsername, "u2");
         req.putCredential(crdPassword, "password");
         result = sut.authenticate(req);
         assertEquals(AuthenticationResponse.Status.BREAKOUT, result.getStatus());
     }
-    
+
 }

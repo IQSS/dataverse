@@ -6,11 +6,13 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
-import java.io.InputStream;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class DatasetUtilTest {
 
@@ -59,6 +61,7 @@ public class DatasetUtilTest {
         DatasetThumbnail result = DatasetUtil.getThumbnail(dataset);
         assertNull(result);
     }
+
     /**
      * Test of deleteDatasetLogo method, of class DatasetUtil.
      */

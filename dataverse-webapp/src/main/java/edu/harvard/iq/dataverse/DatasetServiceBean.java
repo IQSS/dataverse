@@ -44,7 +44,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author skraffmiller
  */
 
@@ -62,30 +61,30 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     @EJB
     SettingsServiceBean settingsService;
-    
+
     @EJB
     DatasetVersionServiceBean versionService;
-    
+
     @EJB
     DvObjectServiceBean dvObjectService;
-    
+
     @EJB
     AuthenticationServiceBean authentication;
-    
+
     @EJB
-    DataFileServiceBean fileService; 
-    
+    DataFileServiceBean fileService;
+
     @EJB
     PermissionServiceBean permissionService;
-    
+
     @EJB
     OAIRecordServiceBean recordService;
-    
+
     @EJB
     EjbDataverseEngine commandEngine;
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
-    
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
 
@@ -96,14 +95,14 @@ public class DatasetServiceBean implements java.io.Serializable {
     public List<Dataset> findByOwnerId(Long ownerId) {
         return findByOwnerId(ownerId, false);
     }
-    
+
     public List<Dataset> findPublishedByOwnerId(Long ownerId) {
         return findByOwnerId(ownerId, true);
-    }    
+    }
 
     private List<Dataset> findByOwnerId(Long ownerId, boolean onlyPublished) {
         List<Dataset> retList = new ArrayList<>();
-        TypedQuery<Dataset>  query = em.createNamedQuery("Dataset.findByOwnerId", Dataset.class);
+        TypedQuery<Dataset> query = em.createNamedQuery("Dataset.findByOwnerId", Dataset.class);
         query.setParameter("ownerId", ownerId);
         if (!onlyPublished) {
             return query.getResultList();
@@ -116,11 +115,11 @@ public class DatasetServiceBean implements java.io.Serializable {
             return retList;
         }
     }
-    
+
     public List<Long> findIdsByOwnerId(Long ownerId) {
         return findIdsByOwnerId(ownerId, false);
     }
-    
+
     private List<Long> findIdsByOwnerId(Long ownerId, boolean onlyPublished) {
         List<Long> retList = new ArrayList<>();
         if (!onlyPublished) {
@@ -142,24 +141,25 @@ public class DatasetServiceBean implements java.io.Serializable {
     public List<Dataset> findAll() {
         return em.createQuery("select object(o) from Dataset as o order by o.id", Dataset.class).getResultList();
     }
-    
-    
+
+
     public List<Long> findAllLocalDatasetIds() {
         return em.createQuery("SELECT o.id FROM Dataset o WHERE o.harvestedFrom IS null ORDER BY o.id", Long.class).getResultList();
     }
-    
+
     public List<Long> findAllUnindexed() {
         return em.createQuery("SELECT o.id FROM Dataset o WHERE o.indexTime IS null ORDER BY o.id DESC", Long.class).getResultList();
     }
 
     /**
      * For docs, see the equivalent method on the DataverseServiceBean.
+     *
      * @param numPartitions
      * @param partitionId
      * @param skipIndexed
      * @return a list of datasets
      * @see DataverseServiceBean#findAllOrSubset(long, long, boolean)
-     */     
+     */
     public List<Long> findAllOrSubset(long numPartitions, long partitionId, boolean skipIndexed) {
         if (numPartitions < 1) {
             long saneNumPartitions = 1;
@@ -167,36 +167,37 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         String skipClause = skipIndexed ? "AND o.indexTime is null " : "";
         TypedQuery<Long> typedQuery = em.createQuery("SELECT o.id FROM Dataset o WHERE MOD( o.id, :numPartitions) = :partitionId " +
-                skipClause +
-                "ORDER BY o.id", Long.class);
+                                                             skipClause +
+                                                             "ORDER BY o.id", Long.class);
         typedQuery.setParameter("numPartitions", numPartitions);
         typedQuery.setParameter("partitionId", partitionId);
         return typedQuery.getResultList();
     }
-    
+
     /**
      * Merges the passed dataset to the persistence context.
+     *
      * @param ds the dataset whose new state we want to persist.
      * @return The managed entity representing {@code ds}.
      */
-    public Dataset merge( Dataset ds ) {
+    public Dataset merge(Dataset ds) {
         return em.merge(ds);
     }
-    
+
     public Dataset findByGlobalId(String globalId) {
         Dataset retVal = (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset");
-        if (retVal != null){
+        if (retVal != null) {
             return retVal;
         } else {
             //try to find with alternative PID
             return (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset", true);
-        }        
+        }
     }
 
     public String generateDatasetIdentifier(Dataset dataset, GlobalIdServiceBean idServiceBean) {
         String identifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle);
         String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder);
-       
+
         switch (identifierType) {
             case "randomString":
                 return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
@@ -207,31 +208,31 @@ public class DatasetServiceBean implements java.io.Serializable {
                 return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
         }
     }
-    
+
     private String generateIdentifierAsRandomString(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
         String identifier = null;
         do {
-            identifier = shoulder + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
+            identifier = shoulder + RandomStringUtils.randomAlphanumeric(6).toUpperCase();
         } while (!isIdentifierLocallyUnique(identifier, dataset));
-        
+
         return identifier;
     }
 
     private String generateIdentifierAsSequentialNumber(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
-        
-        String identifier; 
+
+        String identifier;
         do {
             StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierAsSequentialNumber");
             query.execute();
-            Integer identifierNumeric = (Integer) query.getOutputParameterValue(1); 
+            Integer identifierNumeric = (Integer) query.getOutputParameterValue(1);
             // some diagnostics here maybe - is it possible to determine that it's failing 
             // because the stored procedure hasn't been created in the database?
             if (identifierNumeric == null) {
-                return null; 
+                return null;
             }
             identifier = shoulder + identifierNumeric.toString();
         } while (!isIdentifierLocallyUnique(identifier, dataset));
-        
+
         return identifier;
     }
 
@@ -239,36 +240,39 @@ public class DatasetServiceBean implements java.io.Serializable {
      * Check that a identifier entered by the user is unique (not currently used
      * for any other study in this Dataverse Network) also check for duplicate
      * in EZID if needed
+     *
      * @param userIdentifier
      * @param dataset
      * @param persistentIdSvc
      * @return {@code true} if the identifier is unique, {@code false} otherwise.
      */
     public boolean isIdentifierUnique(String userIdentifier, Dataset dataset, GlobalIdServiceBean persistentIdSvc) {
-        if ( ! isIdentifierLocallyUnique(userIdentifier, dataset) ) return false; // duplication found in local database
-        
+        if (!isIdentifierLocallyUnique(userIdentifier, dataset)) {
+            return false; // duplication found in local database
+        }
+
         // not in local DB, look in the persistent identifier service
         try {
-            return ! persistentIdSvc.alreadyExists(dataset);
-        } catch (Exception e){
+            return !persistentIdSvc.alreadyExists(dataset);
+        } catch (Exception e) {
             //we can live with failure - means identifier not found remotely
         }
 
         return true;
     }
-    
+
     public boolean isIdentifierLocallyUnique(Dataset dataset) {
         return isIdentifierLocallyUnique(dataset.getIdentifier(), dataset);
     }
-    
+
     public boolean isIdentifierLocallyUnique(String identifier, Dataset dataset) {
         return em.createNamedQuery("Dataset.findByIdentifierAuthorityProtocol")
-            .setParameter("identifier", identifier)
-            .setParameter("authority", dataset.getAuthority())
-            .setParameter("protocol", dataset.getProtocol())
-            .getResultList().isEmpty();
+                .setParameter("identifier", identifier)
+                .setParameter("authority", dataset.getAuthority())
+                .setParameter("protocol", dataset.getProtocol())
+                .getResultList().isEmpty();
     }
-    
+
     public Long getMaximumExistingDatafileIdentifier(Dataset dataset) {
         //Cannot rely on the largest table id having the greatest identifier counter
         long zeroFiles = new Long(0);
@@ -279,30 +283,30 @@ public class DatasetServiceBean implements java.io.Serializable {
         if (dsId != null) {
             try {
                 idResults = em.createNamedQuery("Dataset.findIdByOwnerId")
-                                .setParameter("ownerId", dsId).getResultList();
+                        .setParameter("ownerId", dsId).getResultList();
             } catch (NoResultException ex) {
                 logger.log(Level.FINE, "No files found in dataset id {0}. Returning a count of zero.", dsId);
                 return zeroFiles;
             }
             if (idResults != null) {
-                for (Object raw: idResults){
+                for (Object raw : idResults) {
                     String identifier = (String) raw;
-                    identifier =  identifier.substring(identifier.lastIndexOf("/") + 1);
-                    testVal = new Long(identifier) ;
-                    if (testVal > retVal){
+                    identifier = identifier.substring(identifier.lastIndexOf("/") + 1);
+                    testVal = new Long(identifier);
+                    if (testVal > retVal) {
                         retVal = testVal;
-                    }               
+                    }
                 }
             }
         }
         return retVal;
     }
 
-    public DatasetVersion storeVersion( DatasetVersion dsv ) {
+    public DatasetVersion storeVersion(DatasetVersion dsv) {
         em.persist(dsv);
         return dsv;
     }
-      
+
 
     public DatasetVersionUser getDatasetVersionUser(DatasetVersion version, User user) {
 
@@ -324,19 +328,19 @@ public class DatasetServiceBean implements java.io.Serializable {
         lockCounter.setParameter("datasetId", datasetId);
         lockCounter.setMaxResults(1);
         List<DatasetLock> lock = lockCounter.getResultList();
-        return lock.size()>0;
+        return lock.size() > 0;
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public DatasetLock addDatasetLock(Dataset dataset, DatasetLock lock) {
         lock.setDataset(dataset);
         dataset.addLock(lock);
-        lock.setStartTime( new Date() );
+        lock.setStartTime(new Date());
         em.persist(lock);
-        em.merge(dataset); 
+        em.merge(dataset);
         return lock;
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW) /*?*/
     public DatasetLock addDatasetLock(Long datasetId, DatasetLock.Reason reason, Long userId, String info) {
 
@@ -349,11 +353,11 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         // Check if the dataset is already locked for this reason:
         // (to prevent multiple, duplicate locks on the dataset!)
-        DatasetLock lock = dataset.getLockFor(reason); 
+        DatasetLock lock = dataset.getLockFor(reason);
         if (lock != null) {
             return lock;
         }
-        
+
         // Create new:
         lock = new DatasetLock(reason, user);
         lock.setDataset(dataset);
@@ -374,15 +378,16 @@ public class DatasetServiceBean implements java.io.Serializable {
     /**
      * Removes all {@link DatasetLock}s for the dataset whose id is passed and reason
      * is {@code aReason}.
+     *
      * @param dataset the dataset whose locks (for {@code aReason}) will be removed.
      * @param aReason The reason of the locks that will be removed.
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void removeDatasetLocks(Dataset dataset, DatasetLock.Reason aReason) {
-        if ( dataset != null ) {
+        if (dataset != null) {
             new HashSet<>(dataset.getLocks()).stream()
-                    .filter( l -> l.getReason() == aReason )
-                    .forEach( lock -> {
+                    .filter(l -> l.getReason() == aReason)
+                    .forEach(lock -> {
                         lock = em.merge(lock);
                         dataset.removeLock(lock);
 
@@ -403,29 +408,29 @@ public class DatasetServiceBean implements java.io.Serializable {
     If no Title found return empty string - protects against calling with
     include draft = false with no published version
     */
-    
-    public String getTitleFromLatestVersion(Long datasetId){
+
+    public String getTitleFromLatestVersion(Long datasetId) {
         return getTitleFromLatestVersion(datasetId, true);
     }
-    
-    public String getTitleFromLatestVersion(Long datasetId, boolean includeDraft){
+
+    public String getTitleFromLatestVersion(Long datasetId, boolean includeDraft) {
 
         String whereDraft = "";
         //This clause will exclude draft versions from the select
         if (!includeDraft) {
             whereDraft = " and v.versionstate !='DRAFT' ";
         }
-        
+
         try {
             return (String) em.createNativeQuery("select dfv.value  from dataset d "
-                + " join datasetversion v on d.id = v.dataset_id "
-                + " join datasetfield df on v.id = df.datasetversion_id "
-                + " join datasetfieldvalue dfv on df.id = dfv.datasetfield_id "
-                + " join datasetfieldtype dft on df.datasetfieldtype_id  = dft.id "
-                + " where dft.name = '" + DatasetFieldConstant.title + "' and  v.dataset_id =" + datasetId
-                + whereDraft
-                + " order by v.versionnumber desc, v.minorVersionNumber desc limit 1 "
-                + ";").getSingleResult();
+                                                         + " join datasetversion v on d.id = v.dataset_id "
+                                                         + " join datasetfield df on v.id = df.datasetversion_id "
+                                                         + " join datasetfieldvalue dfv on df.id = dfv.datasetfield_id "
+                                                         + " join datasetfieldtype dft on df.datasetfieldtype_id  = dft.id "
+                                                         + " where dft.name = '" + DatasetFieldConstant.title + "' and  v.dataset_id =" + datasetId
+                                                         + whereDraft
+                                                         + " order by v.versionnumber desc, v.minorVersionNumber desc limit 1 "
+                                                         + ";").getSingleResult();
 
         } catch (Exception ex) {
             logger.log(Level.INFO, "exception trying to get title from latest version: {0}", ex);
@@ -433,7 +438,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
 
     }
-    
+
     public Dataset getDatasetByHarvestInfo(Dataverse dataverse, String harvestIdentifier) {
         String queryStr = "SELECT d FROM Dataset d, DvObject o WHERE d.id = o.id AND o.owner.id = " + dataverse.getId() + " and d.harvestIdentifier = '" + harvestIdentifier + "'";
         Query query = em.createQuery(queryStr);
@@ -448,89 +453,88 @@ public class DatasetServiceBean implements java.io.Serializable {
         return dataset;
 
     }
-    
+
     public Long getDatasetVersionCardImage(Long versionId, User user) {
         if (versionId == null) {
             return null;
         }
-        
-        
-        
+
+
         return null;
     }
-    
+
     /**
      * Used to identify and properly display Harvested objects on the dataverse page.
-     * 
+     *
      * @param datasetIds
-     * @return 
+     * @return
      */
-    public Map<Long, String> getArchiveDescriptionsForHarvestedDatasets(Set<Long> datasetIds){
+    public Map<Long, String> getArchiveDescriptionsForHarvestedDatasets(Set<Long> datasetIds) {
         if (datasetIds == null || datasetIds.size() < 1) {
             return null;
         }
-        
+
         String datasetIdStr = Strings.join(datasetIds, ", ");
-        
+
         String qstr = "SELECT d.id, h.archiveDescription FROM harvestingClient h, dataset d WHERE d.harvestingClient_id = h.id AND d.id IN (" + datasetIdStr + ")";
         List<Object[]> searchResults;
-        
+
         try {
             searchResults = em.createNativeQuery(qstr).getResultList();
         } catch (Exception ex) {
             searchResults = null;
         }
-        
+
         if (searchResults == null) {
             return null;
         }
-        
+
         Map<Long, String> ret = new HashMap<>();
-        
+
         for (Object[] result : searchResults) {
             Long dsId;
             if (result[0] != null) {
                 try {
-                    dsId = (Long)result[0];
+                    dsId = (Long) result[0];
                 } catch (Exception ex) {
                     dsId = null;
                 }
                 if (dsId == null) {
                     continue;
                 }
-                
-                ret.put(dsId, (String)result[1]);
+
+                ret.put(dsId, (String) result[1]);
             }
         }
-        
-        return ret;        
+
+        return ret;
     }
-    
-    
+
+
     // reExportAll *forces* a reexport on all published datasets; whether they 
     // have the "last export" time stamp set or not. 
-    @Asynchronous 
+    @Asynchronous
     public void reExportAllAsync() {
         exportAllDatasets(true);
     }
-    
+
     public void reExportAll() {
         exportAllDatasets(true);
     }
-    
-    
+
+
     // exportAll() will try to export the yet unexported datasets (it will honor
     // and trust the "last export" time stamp).
-    
+
     @Asynchronous
     public void exportAllAsync() {
         exportAllDatasets(false);
     }
-    
+
     public void exportAll() {
         exportAllDatasets(false);
     }
-    
+
     public void exportAllDatasets(boolean forceReExport) {
         Integer countAll = 0;
         Integer countSuccess = 0;
@@ -593,16 +597,16 @@ public class DatasetServiceBean implements java.io.Serializable {
         exportLogger.info("Datasets exported successfully: " + countSuccess.toString());
         exportLogger.info("Datasets failures: " + countError.toString());
         exportLogger.info("Finished export-all job.");
-        
+
         if (fileHandlerSuceeded) {
             fileHandler.close();
         }
 
     }
-    
+
     public void updateLastExportTimeStamp(Long datasetId) {
         Date now = new Date();
-        em.createNativeQuery("UPDATE Dataset SET lastExportTime='"+now.toString()+"' WHERE id="+datasetId).executeUpdate();
+        em.createNativeQuery("UPDATE Dataset SET lastExportTime='" + now.toString() + "' WHERE id=" + datasetId).executeUpdate();
     }
 
     public Dataset setNonDatasetFileAsThumbnail(Dataset dataset, InputStream inputStream) {
@@ -644,7 +648,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         dataset.setUseGenericThumbnail(true);
         return merge(dataset);
     }
-    
+
     // persist assigned thumbnail in a single one-field-update query:
     // (the point is to avoid doing an em.merge() on an entire dataset object...)
     public void assignDatasetThumbnailByNativeQuery(Long datasetId, Long dataFileId) {
@@ -654,7 +658,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             // it's ok to just ignore... 
         }
     }
-    
+
     public void assignDatasetThumbnailByNativeQuery(Dataset dataset, DataFile dataFile) {
         try {
             em.createNativeQuery("UPDATE dataset SET thumbnailfile_id=" + dataFile.getId() + " WHERE id=" + dataset.getId()).executeUpdate();
@@ -667,7 +671,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         em.persist(workflowComment);
         return workflowComment;
     }
-    
+
     @Asynchronous
     public void callFinalizePublishCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request, boolean isPidPrePublished) throws CommandException {
 
@@ -684,7 +688,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         Dataset theDataset = find(datasetId);
         commandEngine.submit(new FinalizeDatasetPublicationCommand(theDataset, request, isPidPrePublished));
     }
-    
+
     /*
      Experimental asynchronous method for requesting persistent identifiers for 
      datafiles. We decided not to run this method on upload/create (so files 
@@ -708,7 +712,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         //If the Id type is sequential and Dependent then write file idenitifiers outside the command
         String datasetIdentifier = dataset.getIdentifier();
         Long maxIdentifier = null;
-        
+
         if (isDataFilePIDSequentialDependent()) {
             maxIdentifier = getMaximumExistingDatafileIdentifier(dataset);
         }
@@ -751,20 +755,17 @@ public class DatasetServiceBean implements java.io.Serializable {
                     datafile.setIdentifierRegistered(true);
                     datafile.setGlobalIdCreateTime(new Date());
                 }
-                
+
                 DataFile merged = em.merge(datafile);
-                merged = null; 
+                merged = null;
             }
 
         }
     }
-    
-    private boolean isDataFilePIDSequentialDependent(){
+
+    private boolean isDataFilePIDSequentialDependent() {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle);
         String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat);
-        if (doiIdentifierType.equals("sequentialNumber") && doiDataFileFormat.equals("DEPENDENT")){
-            return true;
-        }
-        return false;
+        return doiIdentifierType.equals("sequentialNumber") && doiDataFileFormat.equals("DEPENDENT");
     }
 }

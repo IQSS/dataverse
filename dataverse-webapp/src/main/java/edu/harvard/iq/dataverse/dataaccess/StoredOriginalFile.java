@@ -19,26 +19,26 @@
 */
 package edu.harvard.iq.dataverse.dataaccess;
 
-import java.io.IOException;
-
 import edu.harvard.iq.dataverse.DataFile;
+
+import java.io.IOException;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.logging.Logger;
+
 /**
- *
  * @author Leonid Andreev
  */
 public class StoredOriginalFile {
     private static Logger logger = Logger.getLogger(StoredOriginalFile.class.getPackage().getName());
-    
-    public StoredOriginalFile () {
-        
+
+    public StoredOriginalFile() {
+
     }
-    
+
     private static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
-    
+
     public static StorageIO<DataFile> retreive(StorageIO<DataFile> storageIO) {
         String originalMimeType;
 
@@ -54,20 +54,20 @@ public class StoredOriginalFile {
             return null;
         }
 
-        long storedOriginalSize; 
+        long storedOriginalSize;
         InputStreamIO inputStreamIO;
-        
+
         try {
             storageIO.open();
             Channel storedOriginalChannel = storageIO.openAuxChannel(SAVED_ORIGINAL_FILENAME_EXTENSION);
-            storedOriginalSize = dataFile.getDataTable().getOriginalFileSize() != null ? 
-                    dataFile.getDataTable().getOriginalFileSize() : 
+            storedOriginalSize = dataFile.getDataTable().getOriginalFileSize() != null ?
+                    dataFile.getDataTable().getOriginalFileSize() :
                     storageIO.getAuxObjectSize(SAVED_ORIGINAL_FILENAME_EXTENSION);
             inputStreamIO = new InputStreamIO(Channels.newInputStream((ReadableByteChannel) storedOriginalChannel), storedOriginalSize);
-            logger.fine("Opened stored original file as Aux "+SAVED_ORIGINAL_FILENAME_EXTENSION);
+            logger.fine("Opened stored original file as Aux " + SAVED_ORIGINAL_FILENAME_EXTENSION);
         } catch (IOException ioEx) {
             // The original file not saved, or could not be opened.
-            logger.fine("Failed to open stored original file as Aux "+SAVED_ORIGINAL_FILENAME_EXTENSION+"!");
+            logger.fine("Failed to open stored original file as Aux " + SAVED_ORIGINAL_FILENAME_EXTENSION + "!");
             return null;
         }
 
@@ -101,7 +101,7 @@ public class StoredOriginalFile {
     // -- L.A. 4.0 beta15
     // Shouldn't be here; should be part of the DataFileFormatType, or 
     // something like that... 
-    
+
     private static String generateOriginalExtension(String fileType) {
 
         if (fileType.equalsIgnoreCase("application/x-spss-sav")) {

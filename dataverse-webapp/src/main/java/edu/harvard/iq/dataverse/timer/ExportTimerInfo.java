@@ -23,18 +23,17 @@ package edu.harvard.iq.dataverse.timer;
 import java.io.Serializable;
 
 /**
- *
  * @author Leonid Andreev
- * This is the Export Timer, that executes regular export jobs. 
+ * This is the Export Timer, that executes regular export jobs.
  * As of now (4.5) there is only 1; it's not configurable - rather it gets started
- * on every restart/deployment automatically. 
- * If we have to add more configurable exports further down the road, more settings 
- * can be added here. 
+ * on every restart/deployment automatically.
+ * If we have to add more configurable exports further down the road, more settings
+ * can be added here.
  */
 public class ExportTimerInfo implements Serializable {
-    
-    String serverId; 
-    
+
+    String serverId;
+
     public String getServerId() {
         return serverId;
     }
@@ -42,13 +41,13 @@ public class ExportTimerInfo implements Serializable {
     public void setServerId(String serverId) {
         this.serverId = serverId;
     }
-    
+
     public ExportTimerInfo() {
-        
+
     }
-    
+
     public ExportTimerInfo(String serverId) {
         this.serverId = serverId;
     }
-    
+
 }

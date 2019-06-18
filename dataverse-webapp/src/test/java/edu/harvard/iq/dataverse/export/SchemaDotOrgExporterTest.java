@@ -156,7 +156,7 @@ public class SchemaDotOrgExporterTest {
                 new ControlledVocabularyValue(3l, "Editor", contributorTypes),
                 new ControlledVocabularyValue(3l, "Funder", contributorTypes),
                 new ControlledVocabularyValue(3l, "Hosting Institution", contributorTypes)
-        // Etc. There are more.
+                // Etc. There are more.
         ));
         contributorChildTypes.add(datasetFieldTypeSvc.add(contributorTypes));
         for (DatasetFieldType t : contributorChildTypes) {
@@ -183,7 +183,7 @@ public class SchemaDotOrgExporterTest {
                 new ControlledVocabularyValue(4l, "doi", publicationIdTypes),
                 new ControlledVocabularyValue(5l, "ean13", publicationIdTypes),
                 new ControlledVocabularyValue(6l, "handle", publicationIdTypes)
-        // Etc. There are more.
+                // Etc. There are more.
         ));
         publicationChildTypes.add(datasetFieldTypeSvc.add(publicationIdTypes));
         publicationChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("publicationIDNumber", FieldType.TEXT, false)));
@@ -206,7 +206,7 @@ public class SchemaDotOrgExporterTest {
                 // Why aren't these enforced?
                 new ControlledVocabularyValue(1l, "Afghanistan", countries),
                 new ControlledVocabularyValue(2l, "Albania", countries)
-        // And many more countries.
+                // And many more countries.
         ));
         geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(countries));
         geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("state", FieldType.TEXT, false)));
@@ -275,7 +275,7 @@ public class SchemaDotOrgExporterTest {
         fmd.setDescription("README file.");
         List<FileMetadata> fileMetadatas = new ArrayList<>();
         fileMetadatas.add(fmd);
-        dataFile.setFileMetadatas(fileMetadatas);;
+        dataFile.setFileMetadatas(fileMetadatas);
         dataFile.setOwner(dataset);
         version.setFileMetadatas(fileMetadatas);
 

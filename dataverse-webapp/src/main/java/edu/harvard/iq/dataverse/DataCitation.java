@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -34,7 +35,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- *
  * @author gdurand, qqmyers
  */
 public class DataCitation {
@@ -62,7 +62,7 @@ public class DataCitation {
     private List<String> spatialCoverages;
 
     private List<DatasetField> optionalValues = new ArrayList<>();
-    private int optionalURLcount = 0; 
+    private int optionalURLcount = 0;
 
     public DataCitation(DatasetVersion dsv) {
         this(dsv, false);
@@ -93,7 +93,7 @@ public class DataCitation {
             }
         }
     }
-    
+
     public DataCitation(FileMetadata fm) {
         this(fm, false);
     }
@@ -155,7 +155,7 @@ public class DataCitation {
         return direct;
     }
 
-    
+
     public String getYear() {
         return year;
     }
@@ -191,18 +191,18 @@ public class DataCitation {
             citationList.add(formatString(fileTitle, html, "\""));
             citationList.add(formatString(title, html, "<i>", "</i>"));
         } else {
-        citationList.add(formatString(title, html, "\""));
+            citationList.add(formatString(title, html, "\""));
         }
 
         if (persistentId != null) {
-        	// always show url format
-            citationList.add(formatURL(persistentId.toURL().toString(), persistentId.toURL().toString(), html)); 
+            // always show url format
+            citationList.add(formatURL(persistentId.toURL().toString(), persistentId.toURL().toString(), html));
         }
         citationList.add(formatString(publisher, html));
         citationList.add(version);
 
         StringBuilder citation = new StringBuilder(citationList.stream().filter(value -> !StringUtils.isEmpty(value))
-                .collect(Collectors.joining(separator)));
+                                                           .collect(Collectors.joining(separator)));
 
         if ((fileTitle != null) && !isDirect()) {
             citation.append("; " + formatString(fileTitle, html, "") + " [fileName]");
@@ -239,11 +239,11 @@ public class DataCitation {
         //Use UTF-8?
         return buffer.toString();
     }
-    
+
     public void writeAsBibtexCitation(OutputStream os) throws IOException {
         // Use UTF-8
-        Writer out = new BufferedWriter(new OutputStreamWriter(os, "utf-8"));
-        if(getFileTitle() !=null && isDirect()) {
+        Writer out = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
+        if (getFileTitle() != null && isDirect()) {
             out.write("@incollection{");
         } else {
             out.write("@data{");
@@ -255,7 +255,7 @@ public class DataCitation {
         out.write("publisher = {");
         out.write(publisher);
         out.write("},\r\n");
-        if(getFileTitle() !=null && isDirect()) {
+        if (getFileTitle() != null && isDirect()) {
             out.write("title = {");
             out.write(fileTitle);
             out.write("},\r\n");
@@ -270,7 +270,7 @@ public class DataCitation {
             out.write(title.replaceFirst(doubleQ, doubleTick).replaceFirst(doubleQ, doubleAp));
             out.write("}\",\r\n");
         }
-        if(UNF != null){
+        if (UNF != null) {
             out.write("UNF = {");
             out.write(UNF);
             out.write("},\r\n");
@@ -306,12 +306,12 @@ public class DataCitation {
 
     public void writeAsRISCitation(OutputStream os) throws IOException {
         // Use UTF-8
-        Writer out = new BufferedWriter(new OutputStreamWriter(os, "utf-8"));
+        Writer out = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
         out.write("Provider: " + publisher + "\r\n");
         out.write("Content: text/plain; charset=\"utf-8\"" + "\r\n");
         // Using type "DATA" - see https://github.com/IQSS/dataverse/issues/4816
-        
-        if ((getFileTitle()!=null)&&isDirect()) {
+
+        if ((getFileTitle() != null) && isDirect()) {
             out.write("TY  - DATA" + "\r\n");
             out.write("T1  - " + getFileTitle() + "\r\n");
             out.write("T2  - " + getTitle() + "\r\n");
@@ -329,7 +329,7 @@ public class DataCitation {
         for (String author : authors) {
             out.write("AU  - " + author + "\r\n");
         }
-        
+
         if (!producers.isEmpty()) {
             for (String author : producers) {
                 out.write("A2  - " + author + "\r\n");
@@ -344,7 +344,7 @@ public class DataCitation {
             for (String kod : kindsOfData) {
                 out.write("C3  - " + kod + "\r\n");
             }
-        }    
+        }
         if (!datesOfCollection.isEmpty()) {
             for (String dateRange : datesOfCollection) {
                 out.write("DA  - " + dateRange + "\r\n");
@@ -367,13 +367,13 @@ public class DataCitation {
         }
 
         out.write("PY  - " + year + "\r\n");
-        
+
         if (!spatialCoverages.isEmpty()) {
             for (String coverage : spatialCoverages) {
                 out.write("RI  - " + coverage + "\r\n");
             }
         }
-        
+
         out.write("SE  - " + date + "\r\n");
 
         out.write("UR  - " + persistentId.toURL().toString() + "\r\n");
@@ -381,7 +381,7 @@ public class DataCitation {
 
         // a DataFile citation also includes filename und UNF, if applicable:
         if (getFileTitle() != null) {
-            if(!isDirect()) {
+            if (!isDirect()) {
                 out.write("C1  - " + getFileTitle() + "\r\n");
             }
             if (getUNF() != null) {
@@ -399,9 +399,9 @@ public class DataCitation {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         writeAsEndNoteCitation(outStream);
         String xml = outStream.toString();
-        return xml; 
-    } 
-    
+        return xml;
+    }
+
     public void writeAsEndNoteCitation(OutputStream os) {
 
         xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
@@ -423,7 +423,7 @@ public class DataCitation {
             }
         }
     }
-    
+
     private void createEndNoteXML(XMLStreamWriter xmlw) throws XMLStreamException {
 
         xmlw.writeStartElement("xml");
@@ -445,7 +445,7 @@ public class DataCitation {
         // And "Custom1" still beats "legal notice". 
         // -- L.A. 12.12.2014 beta 10
         // and see https://github.com/IQSS/dataverse/issues/4816
-        
+
         xmlw.writeStartElement("ref-type");
         xmlw.writeAttribute("name", "Dataset");
         xmlw.writeCharacters("59");
@@ -453,13 +453,13 @@ public class DataCitation {
 
         xmlw.writeStartElement("contributors");
         if (!authors.isEmpty()) {
-        xmlw.writeStartElement("authors");
-        for (String author : authors) {
-            xmlw.writeStartElement("author");
-            xmlw.writeCharacters(author);
-            xmlw.writeEndElement(); // author                    
-        }
-        xmlw.writeEndElement(); // authors 
+            xmlw.writeStartElement("authors");
+            for (String author : authors) {
+                xmlw.writeStartElement("author");
+                xmlw.writeCharacters(author);
+                xmlw.writeEndElement(); // author
+            }
+            xmlw.writeEndElement(); // authors
         }
         if (!producers.isEmpty()) {
             xmlw.writeStartElement("secondary-authors");
@@ -490,11 +490,11 @@ public class DataCitation {
             xmlw.writeCharacters(title);
             xmlw.writeEndElement(); // secondary-title
         } else {
-        xmlw.writeStartElement("title");
-        xmlw.writeCharacters(title);
-        xmlw.writeEndElement(); // title
+            xmlw.writeStartElement("title");
+            xmlw.writeCharacters(title);
+            xmlw.writeEndElement(); // title
         }
-        
+
         if (seriesTitle != null) {
             xmlw.writeStartElement("tertiary-title");
             xmlw.writeCharacters(seriesTitle);
@@ -577,20 +577,20 @@ public class DataCitation {
         xmlw.writeEndElement(); // url
         xmlw.writeEndElement(); // related-urls
         xmlw.writeEndElement(); // urls
-        
+
         // a DataFile citation also includes the filename and (for Tabular
         // files) the UNF signature, that we put into the custom1 and custom2 
         // fields respectively:
-        
+
         if (getFileTitle() != null) {
             xmlw.writeStartElement("custom1");
             xmlw.writeCharacters(fileTitle);
             xmlw.writeEndElement(); // custom1
-            
-                if (getUNF() != null) {
-                    xmlw.writeStartElement("custom2");
-                    xmlw.writeCharacters(getUNF());
-                    xmlw.writeEndElement(); // custom2
+
+            if (getUNF() != null) {
+                xmlw.writeStartElement("custom2");
+                xmlw.writeCharacters(getUNF());
+                xmlw.writeEndElement(); // custom2
             }
         }
         if (persistentId != null) {
@@ -608,13 +608,13 @@ public class DataCitation {
 
     }
 
-	public Map<String, String> getDataCiteMetadata() {
+    public Map<String, String> getDataCiteMetadata() {
         Map<String, String> metadata = new HashMap<>();
         String authorString = getAuthorsString();
 
         if (authorString.isEmpty()) {
             authorString = ":unav";
-    }
+        }
         String producerString = getPublisher();
 
         if (producerString.isEmpty()) {
@@ -626,9 +626,9 @@ public class DataCitation {
         metadata.put("datacite.publisher", producerString);
         metadata.put("datacite.publicationyear", getYear());
         return metadata;
-	}
+    }
 
-	
+
     // helper methods   
     private String formatString(String value, boolean escapeHtml) {
         return formatString(value, escapeHtml, "");
@@ -658,13 +658,14 @@ public class DataCitation {
         }
     }
 
-    /** This method flattens html for the textual export formats.
-     * It removes <b> and <i> tags, replaces <br>, <p> and headers <hX> with 
+    /**
+     * This method flattens html for the textual export formats.
+     * It removes <b> and <i> tags, replaces <br>, <p> and headers <hX> with
      * line breaks, converts lists to form where items start with an indented '*  ',
-     * and converts links to simple text showing the label and, if different, 
+     * and converts links to simple text showing the label and, if different,
      * the url in parenthesis after it. Since these operations may create
-     * multiple line breaks, a final step limits the changes and compacts multiple 
-     * line breaks into one.  
+     * multiple line breaks, a final step limits the changes and compacts multiple
+     * line breaks into one.
      *
      * @param html input string
      * @return the flattened text output
@@ -676,7 +677,7 @@ public class DataCitation {
         html = html.replaceAll("<\\/[hH]\\d>", "\r\n");
         html = html.replaceAll("<[\\/]?[bB]>", "");
         html = html.replaceAll("<[\\/]?[iI]>", "\r\n");
-        
+
         html = html.replaceAll("<[bB][rR][\\/]?>", "\r\n");
         html = html.replaceAll("<[uU][lL]>", "\r\n");
         html = html.replaceAll("<\\/[uU][lL]>", "\r\n");
@@ -686,18 +687,18 @@ public class DataCitation {
         Matcher m = p.matcher(html);
         String url = null;
         String label = null;
-        while(m.find()) {
+        while (m.find()) {
             url = m.group(1); // this variable should contain the link URL
             label = m.group(2); // this variable should contain the label
             //display either the label or label(url)
-            if(!url.equals(label)) {
-                label = label + "(" + url +")";
+            if (!url.equals(label)) {
+                label = label + "(" + url + ")";
             }
             html = html.replaceFirst("<a\\W+href=\\\"(.*?)\\\".*?>(.*?)<\\/a>", label);
         }
         //Note, this does not affect single '\n' chars originally in the text
-        html=html.replaceAll("(\\r\\n?)+", "\r\n");
-        
+        html = html.replaceAll("(\\r\\n?)+", "\r\n");
+
         return html;
     }
 
@@ -715,7 +716,7 @@ public class DataCitation {
             }
         } else {
             try {
-                citationDate= sdf.parse(dsv.getDistributionDate());
+                citationDate = sdf.parse(dsv.getDistributionDate());
             } catch (ParseException ex) {
                 // ignore
             } catch (Exception ex) {
@@ -758,7 +759,7 @@ public class DataCitation {
             } else if (dsv.getVersionNumber() != null) {
                 version = "V" + dsv.getVersionNumber();
                 if (dsv.isDeaccessioned()) {
-                    version += ", "+ BundleUtil.getStringFromBundle("deaccessionedversion");
+                    version += ", " + BundleUtil.getStringFromBundle("deaccessionedversion");
                 }
             }
         }
@@ -770,17 +771,17 @@ public class DataCitation {
                 || HarvestingClient.HARVEST_STYLE_VDC.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
                 || HarvestingClient.HARVEST_STYLE_ICPSR.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
                 || HarvestingClient.HARVEST_STYLE_DATAVERSE
-                        .equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())) {
-                // creating a global id like this:
-                // persistentId = new GlobalId(dv.getGlobalId());
-                // you end up doing new GlobalId((New GlobalId(dv)).toString())
-                // - doing an extra formatting-and-parsing-again
-                // This achieves the same thing:
-                if(!isDirect()) {
+                .equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())) {
+            // creating a global id like this:
+            // persistentId = new GlobalId(dv.getGlobalId());
+            // you end up doing new GlobalId((New GlobalId(dv)).toString())
+            // - doing an extra formatting-and-parsing-again
+            // This achieves the same thing:
+            if (!isDirect()) {
                 if (!StringUtils.isEmpty(dsv.getDataset().getIdentifier())) {
                     return new GlobalId(dsv.getDataset());
                 }
-                } else {
+            } else {
                 if (!StringUtils.isEmpty(dv.getIdentifier())) {
                     return new GlobalId(dv);
                 }

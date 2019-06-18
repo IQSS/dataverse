@@ -1,29 +1,29 @@
 package edu.harvard.iq.dataverse.util.xml;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Logger;
-import javax.xml.transform.Source;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 import org.w3c.dom.Document;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.logging.Logger;
+
 public class XmlValidator {
 
     private static final Logger logger = Logger.getLogger(XmlValidator.class.getCanonicalName());
 
-    public static boolean validateXmlSchema(String fileToValidate, URL schemaToValidateAgainst) throws MalformedURLException, SAXException, IOException {
+    public static boolean validateXmlSchema(String fileToValidate, URL schemaToValidateAgainst) throws SAXException, IOException {
         Source xmlFile = new StreamSource(new File(fileToValidate));
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         Schema schema = schemaFactory.newSchema(schemaToValidateAgainst);

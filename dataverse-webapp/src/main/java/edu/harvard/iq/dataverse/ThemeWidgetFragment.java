@@ -37,7 +37,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author ellenk
  */
 @ViewScoped
@@ -47,15 +46,15 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     static final String DEFAULT_BACKGROUND_COLOR = "FFFFFF";
     static final String DEFAULT_LINK_COLOR = "428BCA";
     static final String DEFAULT_TEXT_COLOR = "888888";
-    private static final Logger logger = Logger.getLogger(ThemeWidgetFragment.class.getCanonicalName());   
+    private static final Logger logger = Logger.getLogger(ThemeWidgetFragment.class.getCanonicalName());
 
 
     private File tempDir;
     private File uploadedFile;
-    private Dataverse editDv= new Dataverse();
+    private Dataverse editDv = new Dataverse();
     private HtmlInputText linkUrlInput;
     private HtmlInputText taglineInput;
- 
+
 
     @EJB
     EjbDataverseEngine commandEngine;
@@ -65,11 +64,12 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     SettingsServiceBean settingsService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
-    
 
-    @Inject PermissionsWrapper permissionsWrapper;
-    
-    
+
+    @Inject
+    PermissionsWrapper permissionsWrapper;
+
+
     public HtmlInputText getLinkUrlInput() {
         return linkUrlInput;
     }
@@ -86,25 +86,23 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         this.taglineInput = taglineInput;
     }
 
- 
-   
-    
-    private  void createTempDir() {
-          try {
+
+    private void createTempDir() {
+        try {
             File tempRoot = Files.createDirectories(Paths.get("../docroot/logos/temp")).toFile();
-            tempDir = Files.createTempDirectory(tempRoot.toPath(),editDv.getId().toString()).toFile();
+            tempDir = Files.createTempDirectory(tempRoot.toPath(), editDv.getId().toString()).toFile();
         } catch (IOException e) {
             throw new RuntimeException("Error creating temp directory", e); // improve error handling
         }
     }
-    
+
     @PreDestroy
     /**
      *  Cleanup by deleting temp directory and uploaded files  
      */
     public void cleanupTempDirectory() {
         try {
-           
+
             if (tempDir != null) {
                 for (File f : tempDir.listFiles()) {
                     Files.deleteIfExists(f.toPath());
@@ -114,37 +112,37 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         } catch (IOException e) {
             throw new RuntimeException("Error deleting temp directory", e); // improve error handling
         }
-        uploadedFile=null;
-        tempDir=null;
+        uploadedFile = null;
+        tempDir = null;
     }
-    
+
     public void checkboxListener() {
         // not sure if this is needed for the ajax component
     }
-   
+
 
     public String initEditDv() {
         editDv = dataverseServiceBean.find(editDv.getId());
-        
+
         // check if dv exists and user has permission
         if (editDv == null) {
             return permissionsWrapper.notFound();
         }
         if (!permissionsWrapper.canIssueCommand(editDv, UpdateDataverseThemeCommand.class)) {
             return permissionsWrapper.notAuthorized();
-        }        
-        
-        
-        if (editDv.getOwner()==null) {
+        }
+
+
+        if (editDv.getOwner() == null) {
             editDv.setThemeRoot(true);
         }
-        if (editDv.getDataverseTheme()==null && editDv.isThemeRoot()) {
+        if (editDv.getDataverseTheme() == null && editDv.isThemeRoot()) {
             editDv.setDataverseTheme(initDataverseTheme());
-            
+
         }
         return null;
-     }
-    
+    }
+
     private DataverseTheme initDataverseTheme() {
         DataverseTheme dvt = new DataverseTheme();
         dvt.setLinkColor(DEFAULT_LINK_COLOR);
@@ -154,16 +152,17 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         dvt.setDataverse(editDv);
         return dvt;
     }
-    
+
     public Dataverse getEditDv() {
-        return editDv; 
+        return editDv;
     }
 
     public void setEditDv(Dataverse editDV) {
-         this.editDv = editDV;
-      
-          
+        this.editDv = editDV;
+
+
     }
+
     public void validateTagline(FacesContext context, UIComponent component, Object value) throws ValidatorException {
 
         if (!StringUtils.isEmpty((String) value) && ((String) value).length() > 140) {
@@ -174,7 +173,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         }
 
     }
-    
+
     public void validateUrl(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         try {
             if (!StringUtils.isEmpty((String) value)) {
@@ -183,46 +182,48 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         } catch (MalformedURLException e) {
             FacesMessage msg
                     = new FacesMessage(BundleUtil.getStringFromBundle("theme.urlValidate"),
-                    BundleUtil.getStringFromBundle("theme.urlValidate.msg"));
+                                       BundleUtil.getStringFromBundle("theme.urlValidate.msg"));
             msg.setSeverity(FacesMessage.SEVERITY_ERROR);
 
             throw new ValidatorException(msg);
         }
     }
-   
-    
+
+
     public String getTempDirName() {
-        if (tempDir!=null) {
+        if (tempDir != null) {
             return tempDir.getName();
         } else {
             return null;
         }
     }
-    
+
     public boolean uploadExists() {
-        return uploadedFile!=null;
+        return uploadedFile != null;
     }
+
     /**
      * Copy uploaded file to temp area, until we are ready to save
-     * Copy filename into Dataverse logo 
-     * @param event 
+     * Copy filename into Dataverse logo
+     *
+     * @param event
      */
 
     public void handleImageFileUpload(FileUploadEvent event) {
 
-            logger.finer("entering fileUpload");
-            if (this.tempDir==null) {
-                createTempDir();
-                logger.finer("created tempDir");
-            }
-            UploadedFile uFile = event.getFile();
-        try {         
-            uploadedFile = new File(tempDir, uFile.getFileName());     
+        logger.finer("entering fileUpload");
+        if (this.tempDir == null) {
+            createTempDir();
+            logger.finer("created tempDir");
+        }
+        UploadedFile uFile = event.getFile();
+        try {
+            uploadedFile = new File(tempDir, uFile.getFileName());
             if (!uploadedFile.exists()) {
                 uploadedFile.createNewFile();
             }
             logger.finer("created file");
-            Files.copy(uFile.getInputstream(), uploadedFile.toPath(),StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(uFile.getInputstream(), uploadedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             logger.finer("copied inputstream to file");
             editDv.getDataverseTheme().setLogo(uFile.getFileName());
 
@@ -232,71 +233,72 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             throw new RuntimeException("Error uploading logo file", e); // improve error handling
         }
         // If needed, set the default values for the logo
-        if (editDv.getDataverseTheme().getLogoFormat()==null) {
+        if (editDv.getDataverseTheme().getLogoFormat() == null) {
             editDv.getDataverseTheme().setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
         }
         logger.finer("end handelImageFileUpload");
     }
-    
+
     public void removeLogo() {
         editDv.getDataverseTheme().setLogo(null);
         this.cleanupTempDirectory();
-       
+
     }
 
     public boolean getInheritCustomization() {
-        boolean inherit= editDv==null ? true : !editDv.getThemeRoot();
-         return inherit;
+        boolean inherit = editDv == null || !editDv.getThemeRoot();
+        return inherit;
     }
-    
+
     public void setInheritCustomization(boolean inherit) {
         editDv.setThemeRoot(!inherit);
         if (!inherit) {
-            if (editDv.getDataverseTheme(true)==null) {
+            if (editDv.getDataverseTheme(true) == null) {
                 editDv.setDataverseTheme(initDataverseTheme());
             }
         }
     }
+
     public void resetForm() {
         RequestContext context = RequestContext.getCurrentInstance();
         context.reset(":dataverseForm:themeWidgetsTabView");
     }
-    
+
     public String cancel() {
-         return "dataverse.xhtml?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
+        return "dataverse.xhtml?faces-redirect=true&alias=" + editDv.getAlias();  // go to dataverse page
     }
-    
+
     public boolean isThemeEnabled() {
         if (editDv.getOwner() == null) { // is root dataverse
             return !settingsService.isTrueForKey(Key.DisableRootDataverseTheme);
         }
         return true;
     }
-    
-    
+
+
     public String save() {
         // If this Dv isn't the root, delete the uploaded file and remove theme
         // before saving.
         if (!editDv.isThemeRoot()) {
-            uploadedFile=null;
+            uploadedFile = null;
             editDv.setDataverseTheme(null);
         }
-        Command<Dataverse>    cmd = new UpdateDataverseThemeCommand(editDv, this.uploadedFile, dvRequestService.getDataverseRequest());
+        Command<Dataverse> cmd = new UpdateDataverseThemeCommand(editDv, this.uploadedFile, dvRequestService.getDataverseRequest());
         try {
             commandEngine.submit(cmd);
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "error updating dataverse theme", ex);
-           FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataverse.save.failed"), BundleUtil.getStringFromBundle("dataverse.theme.failure")));
-        
-          return null;
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataverse.save.failed"), BundleUtil.getStringFromBundle("dataverse.theme.failure")));
+
+            return null;
         } finally {
-              this.cleanupTempDirectory(); 
+            this.cleanupTempDirectory();
         }
         JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.theme.success"));
-        return "dataverse.xhtml?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
+        return "dataverse.xhtml?faces-redirect=true&alias=" + editDv.getAlias();  // go to dataverse page
     }
-      
- }
+
+}
 
 
 

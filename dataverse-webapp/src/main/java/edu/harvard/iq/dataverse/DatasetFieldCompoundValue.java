@@ -7,13 +7,8 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import org.apache.commons.lang.StringUtils;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -24,14 +19,18 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
-import org.apache.commons.lang.StringUtils;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- *
  * @author gdurand
  */
 @Entity
-@Table(indexes = {@Index(columnList="parentdatasetfield_id")})
+@Table(indexes = {@Index(columnList = "parentdatasetfield_id")})
 public class DatasetFieldCompoundValue implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -132,7 +131,7 @@ public class DatasetFieldCompoundValue implements Serializable {
         return compoundValue;
     }
 
-    public Map<DatasetField,String> getDisplayValueMap() {
+    public Map<DatasetField, String> getDisplayValueMap() {
         // todo - this currently only supports child datasetfields with single values
         // need to determine how we would want to handle multiple
         Map<DatasetField, String> fieldMap = new LinkedHashMap<>();
@@ -144,8 +143,8 @@ public class DatasetFieldCompoundValue implements Serializable {
                 if (StringUtils.isBlank(format)) {
                     format = "#VALUE";
                 }
-                String sanitizedValue = childDatasetField.getDatasetFieldType().isSanitizeHtml() ? MarkupChecker.sanitizeBasicHTML(childDatasetField.getValue()) :  childDatasetField.getValue();
-                if (!childDatasetField.getDatasetFieldType().isSanitizeHtml() && childDatasetField.getDatasetFieldType().isEscapeOutputText()){
+                String sanitizedValue = childDatasetField.getDatasetFieldType().isSanitizeHtml() ? MarkupChecker.sanitizeBasicHTML(childDatasetField.getValue()) : childDatasetField.getValue();
+                if (!childDatasetField.getDatasetFieldType().isSanitizeHtml() && childDatasetField.getDatasetFieldType().isEscapeOutputText()) {
                     sanitizedValue = MarkupChecker.stripAllTags(sanitizedValue);
                 }
                 // replace the special values in the format (note: we replace #VALUE last since we don't
@@ -155,9 +154,9 @@ public class DatasetFieldCompoundValue implements Serializable {
                         //todo: this should be handled in more generic way for any other text that can then be internationalized
                         // if we need to use replaceAll for regexp, then make sure to use: java.util.regex.Matcher.quoteReplacement(<target string>)
                         .replace("#EMAIL", BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
-                        .replace("#VALUE",  sanitizedValue );
+                        .replace("#VALUE", sanitizedValue);
 
-                fieldMap.put(childDatasetField,displayValue);
+                fieldMap.put(childDatasetField, displayValue);
             }
         }
 

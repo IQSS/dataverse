@@ -5,8 +5,8 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.io.Serializable;
-import java.util.Objects;
+import org.hibernate.validator.constraints.NotBlank;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -16,33 +16,32 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotBlank;
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
- *
  * @author gdurand
  */
 @Entity
-@Table(indexes = {@Index(columnList="dataverse_id")
-		, @Index(columnList="contactemail")
-		, @Index(columnList="displayorder")})
+@Table(indexes = {@Index(columnList = "dataverse_id")
+        , @Index(columnList = "contactemail")
+        , @Index(columnList = "displayorder")})
 public class DataverseContact implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     public DataverseContact() {
-    }      
-    
-    public DataverseContact(Dataverse dv) {
-        this.dataverse = dv; 
     }
-    
+
+    public DataverseContact(Dataverse dv) {
+        this.dataverse = dv;
+    }
+
     public DataverseContact(Dataverse dv, String contactEmail) {
-        this.dataverse = dv;        
+        this.dataverse = dv;
         this.contactEmail = contactEmail;
-    }      
-    
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -61,7 +60,7 @@ public class DataverseContact implements Serializable {
 
     @NotBlank(message = "{user.invalidEmail}")
     @ValidateEmail(message = "{user.invalidEmail}")
-    @Column( nullable = false )
+    @Column(nullable = false)
     private String contactEmail;
     private int displayOrder;
 

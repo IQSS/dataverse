@@ -4,18 +4,20 @@ import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
+
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 public class IpGroupsIT {
 
@@ -100,7 +102,7 @@ public class IpGroupsIT {
         addToGroup.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response grantRoleResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.FILE_DOWNLOADER.toString(), groupIdentifier, apiToken);
+        Response grantRoleResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.FILE_DOWNLOADER, groupIdentifier, apiToken);
         grantRoleResponse.prettyPrint();
         grantRoleResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -122,8 +124,8 @@ public class IpGroupsIT {
         ipGroupAllJson.add("name", "An IP Group that matches all IP addresses and has a unique identifier.");
         ipGroupAllJson.add("ranges", Json.createArrayBuilder()
                 .add(Json.createArrayBuilder()
-                        .add("0.0.0.0")
-                        .add("255.255.255.255")
+                             .add("0.0.0.0")
+                             .add("255.255.255.255")
                 ));
         Response createIpGroupAll = UtilIT.createIpGroup(ipGroupAllJson.build());
         createIpGroupAll.prettyPrint();
@@ -131,7 +133,7 @@ public class IpGroupsIT {
                 .statusCode(CREATED.getStatusCode());
 
         String ipGroupIdentifierString = "&ip/" + uniqueIdentifierForIpGroup;
-        Response grantIpAll = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.FILE_DOWNLOADER.toString(), ipGroupIdentifierString, apiToken);
+        Response grantIpAll = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.FILE_DOWNLOADER, ipGroupIdentifierString, apiToken);
         grantIpAll.prettyPrint();
         grantIpAll.then().assertThat()
                 .body("data.assignee", equalTo(ipGroupIdentifierString))

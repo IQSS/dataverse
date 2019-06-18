@@ -19,26 +19,24 @@
  */
 package edu.harvard.iq.dataverse.dataaccess;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-
-import java.util.Iterator;
-
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.image.BufferedImage;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import org.apache.commons.io.IOUtils;
+import org.primefaces.util.Base64;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
-
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.util.FileUtil;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
@@ -47,12 +45,10 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Iterator;
 import java.util.logging.Logger;
-import org.apache.commons.io.IOUtils;
-import org.primefaces.util.Base64;
 
 /**
- *
  * @author Leonid Andreev
  */
 public class ImageThumbConverter {
@@ -275,19 +271,19 @@ public class ImageThumbConverter {
             logger.warning("caught IOException trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier() + ioex);
             return false;
         }
-        
+
     }
 
     /*
-     * Note that the "WorldMapThumbnail" generator does the exact same thing as the 
-     * "regular image" thumbnail generator. 
-     * The only difference is that the image generator uses the main file as 
-     * as the source; and the one for the worldmap uses an auxiliary file 
-     * with the ".img" extension (or the swift, etc. equivalent). This file is 
+     * Note that the "WorldMapThumbnail" generator does the exact same thing as the
+     * "regular image" thumbnail generator.
+     * The only difference is that the image generator uses the main file as
+     * as the source; and the one for the worldmap uses an auxiliary file
+     * with the ".img" extension (or the swift, etc. equivalent). This file is
      * produced and dropped into the Dataset directory (Swift container, etc.)
-     * the first time the user actually runs WorldMap on the main file. 
+     * the first time the user actually runs WorldMap on the main file.
      * Also note that it works the exact same way for tabular-mapped-as-worldmap
-     * files as well. 
+     * files as well.
      */
     private static boolean generateWorldMapThumbnail(StorageIO<DataFile> storageIO, int size) {
 
@@ -323,8 +319,8 @@ public class ImageThumbConverter {
     }
 
     /*
-     * This is the actual workhorse method that does the rescaling of the full 
-     * size image: 
+     * This is the actual workhorse method that does the rescaling of the full
+     * size image:
      */
     private static boolean generateImageThumbnailFromInputStream(StorageIO<DataFile> storageIO, int size, InputStream inputStream) {
 
@@ -465,7 +461,7 @@ public class ImageThumbConverter {
         // we are skipping this StorageIO.open() call as well - since this 
         // is another (potentially expensive) S3/swift lookup.
         //storageIO.open(); 
-        
+
         Channel cachedThumbnailChannel = null;
         try {
             cachedThumbnailChannel = storageIO.openAuxChannel(THUMBNAIL_SUFFIX + size);
@@ -520,7 +516,7 @@ public class ImageThumbConverter {
                 // bytes at once; it's a thumbnail, but it can still be several K in size. 
                 // And with some input streams - notably, with swift - you CANNOT read 
                 // more than 8192 bytes in one .read().
-                
+
                 while ((bytes = inputStream.read(buffer)) > -1) {
                     cachingByteStream.write(buffer, 0, bytes);
                     total += bytes;
@@ -553,8 +549,8 @@ public class ImageThumbConverter {
      * downloadable image via an API call.
      */
     /*
-     * This is a version of the getImageAsBase64...() method that operates on 
-     * a File; it's used for generating Dataverse and Dataset thumbnails 
+     * This is a version of the getImageAsBase64...() method that operates on
+     * a File; it's used for generating Dataverse and Dataset thumbnails
      * from usr-uploaded images (i.e., from files not associated with datafiles)
      */
     public static String getImageAsBase64FromFile(File imageFile) {
@@ -582,11 +578,11 @@ public class ImageThumbConverter {
     }
 
     /*
-     * This is a version of generateImageThumbnail...() that works directly on 
-     * local files, for input and output. We still need it for various places 
-     * in the application - when we process uploaded images that are not 
-     * datafiles, etc. 
-     * 
+     * This is a version of generateImageThumbnail...() that works directly on
+     * local files, for input and output. We still need it for various places
+     * in the application - when we process uploaded images that are not
+     * datafiles, etc.
+     *
      */
     public static String generateImageThumbnailFromFile(String fileLocation, int size) {
 
@@ -638,10 +634,10 @@ public class ImageThumbConverter {
     }
 
     /*
-     * This is another public version of generateImageThumbnail...() that works directly on 
+     * This is another public version of generateImageThumbnail...() that works directly on
      * local files, for input and output. This one returns the output as Base64.
-     * Used by the DatasetWidgetsPage, to rescale the uploaded dataset logo. 
-     * 
+     * Used by the DatasetWidgetsPage, to rescale the uploaded dataset logo.
+     *
      */
     public static String generateImageThumbnailFromFileAsBase64(File file, int size) {
         String thumbnailFileLocation = generateImageThumbnailFromFile(file.getAbsolutePath(), size);
@@ -771,9 +767,9 @@ public class ImageThumbConverter {
         // it it doesn't exist yet, let's attempt to generate it:
         long sizeLimit = getThumbnailSizeLimitPDF();
 
-        /* 
-         * sizeLimit set to -1 means that generation of thumbnails on the fly 
-         * is disabled: 
+        /*
+         * sizeLimit set to -1 means that generation of thumbnails on the fly
+         * is disabled:
          */
         logger.fine("pdf size limit: " + sizeLimit);
 
@@ -782,9 +778,9 @@ public class ImageThumbConverter {
             return null;
         }
 
-        /* 
+        /*
          * sizeLimit set to 0 means no limit - generate thumbnails on the fly
-         * for all files, regardless of size. 
+         * for all files, regardless of size.
          */
         if (sizeLimit > 0) {
             long fileSize = 0;
@@ -931,29 +927,26 @@ public class ImageThumbConverter {
     private static boolean isFileOverSizeLimit(String fileType, long fileSize) {
         long sizeLimit = getThumbnailSizeLimit(fileType);
 
-        /* 
-         * sizeLimit set to -1 means that generation of thumbnails on the fly 
-         * is disabled: 
+        /*
+         * sizeLimit set to -1 means that generation of thumbnails on the fly
+         * is disabled:
          */
         if (sizeLimit < 0) {
             return true;
         }
 
-        /* 
+        /*
          * sizeLimit set to 0 means no limit - generate thumbnails on the fly
-         * for all files, regardless of size. 
+         * for all files, regardless of size.
          */
         if (sizeLimit == 0) {
             return false;
         }
 
-        if (fileSize == 0 || fileSize > sizeLimit) {
-            // this is a broken file of size 0, or 
-            // this file is too large - no thumbnail:
-            return true;
-        }
+        // this is a broken file of size 0, or
+        // this file is too large - no thumbnail:
+        return fileSize == 0 || fileSize > sizeLimit;
 
-        return false;
     }
 
     private static long getThumbnailSizeLimitPDF() {

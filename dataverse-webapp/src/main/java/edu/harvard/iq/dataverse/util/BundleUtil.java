@@ -54,7 +54,7 @@ public class BundleUtil {
 
         return displayNameFromExternalBundle.orElseGet(() -> getStringFromInternalBundle(bundleKey, bundleName));
     }
-    
+
     public static Locale getCurrentLocale() {
         if (FacesContext.getCurrentInstance() == null) {
             return new Locale("en");

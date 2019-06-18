@@ -56,15 +56,15 @@ public class IndexBatchServiceBean {
         JsonObjectBuilder response = Json.createObjectBuilder();
         JsonObjectBuilder previewOfWorkload = Json.createObjectBuilder();
         JsonObjectBuilder dvContainerIds = Json.createObjectBuilder();
-        
+
         List<Long> dataverseIds = dataverseService.findDataverseIdsForIndexing(skipIndexed);
-        
+
         JsonArrayBuilder dataverseIdsJson = Json.createArrayBuilder();
         //List<Dataverse> dataverses = dataverseService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
         for (Long id : dataverseIds) {
             dataverseIdsJson.add(id);
         }
-        
+
         List<Long> datasetIds = datasetService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
 
         JsonArrayBuilder datasetIdsJson = Json.createArrayBuilder();
@@ -117,7 +117,7 @@ public class IndexBatchServiceBean {
         // Note: no support for "partitions" in this experimental branch. 
         // The method below returns the ids of all the unindexed dataverses.
         List<Long> dataverseIds = dataverseIds = dataverseService.findDataverseIdsForIndexing(skipIndexed);
-        
+
         int dataverseIndexCount = 0;
         int dataverseFailureCount = 0;
         //for (Dataverse dataverse : dataverses) {
@@ -154,22 +154,22 @@ public class IndexBatchServiceBean {
         long indexAllTimeEnd = System.currentTimeMillis();
         String timeElapsed = "index all took " + (indexAllTimeEnd - indexAllTimeBegin) + " milliseconds";
         logger.info(timeElapsed);
-        if (datasetFailureCount + dataverseFailureCount > 0){
+        if (datasetFailureCount + dataverseFailureCount > 0) {
             String failureMessage = "There were index failures. " + dataverseFailureCount + " dataverse(s) and " + datasetFailureCount + " dataset(s) failed to index. Please check the log for more information.";
-            logger.info(failureMessage);            
+            logger.info(failureMessage);
         }
         status = dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed. " + timeElapsed + ". " + resultOfClearingIndexTimes + "\n";
         logger.info(status);
         return new AsyncResult<>(status);
     }
-        
+
     @Asynchronous
     public void indexDataverseRecursively(Dataverse dataverse) {
         long start = System.currentTimeMillis();
         int datasetIndexCount = 0, datasetFailureCount = 0, dataverseIndexCount = 0, dataverseFailureCount = 0;
         // get list of Dataverse children
         List<Long> dataverseChildren = dataverseService.findAllDataverseDataverseChildren(dataverse.getId());
-        
+
         // get list of Dataset children
         List<Long> datasetChildren = dataverseService.findAllDataverseDatasetChildren(dataverse.getId());
 
@@ -185,7 +185,7 @@ public class IndexBatchServiceBean {
             dataverseFailureCount++;
             logger.info("FAILURE indexing dataverse " + dataverseIndexCount + " of " + (dataverseChildren.size() + 1) + " (id=" + dataverse.getId() + ") Exception info: " + e.getMessage());
         }
-        
+
         // index the Dataverse children
         for (Long childId : dataverseChildren) {
             try {
@@ -200,7 +200,7 @@ public class IndexBatchServiceBean {
                 logger.info("FAILURE indexing dataverse " + dataverseIndexCount + " of " + dataverseChildren.size() + " (id=" + childId + ") Exception info: " + e.getMessage());
             }
         }
-        
+
         // index the Dataset children
         for (Long childId : datasetChildren) {
             try {
@@ -214,8 +214,8 @@ public class IndexBatchServiceBean {
             }
         }
         long end = System.currentTimeMillis();
-        if (datasetFailureCount + dataverseFailureCount > 0){
-            logger.info("There were index failures. " + dataverseFailureCount + " dataverse(s) and " + datasetFailureCount + " dataset(s) failed to index. Please check the log for more information.");            
+        if (datasetFailureCount + dataverseFailureCount > 0) {
+            logger.info("There were index failures. " + dataverseFailureCount + " dataverse(s) and " + datasetFailureCount + " dataset(s) failed to index. Please check the log for more information.");
         }
         logger.info(dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed. Total time to index " + (end - start) + ".");
     }

@@ -16,7 +16,7 @@ public class PrivateUrl {
     /**
      * The unique string of characters in the Private URL that associates it
      * (the link) with a particular dataset.
-     *
+     * <p>
      * The token is also available at roleAssignment.getPrivateUrlToken().
      */
     private final String token;

@@ -1,30 +1,28 @@
 package edu.harvard.iq.dataverse.datavariable;
 
-import java.io.Serializable;
-
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Index;
-import javax.persistence.UniqueConstraint;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.JoinColumn;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Column;
-import javax.persistence.OneToMany;
-import javax.persistence.CascadeType;
-
-import java.util.Collection;
-import java.util.ArrayList;
-
 import edu.harvard.iq.dataverse.FileMetadata;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+
 @Entity
-@Table(indexes = {@Index(columnList="datavariable_id"), @Index(columnList="filemetadata_id"),
-                  @Index(columnList="datavariable_id,filemetadata_id")},
-        uniqueConstraints={@UniqueConstraint(columnNames={"datavariable_id", "filemetadata_id"})})
-public class VariableMetadata implements Serializable  {
+@Table(indexes = {@Index(columnList = "datavariable_id"), @Index(columnList = "filemetadata_id"),
+        @Index(columnList = "datavariable_id,filemetadata_id")},
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"datavariable_id", "filemetadata_id"})})
+public class VariableMetadata implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,32 +32,32 @@ public class VariableMetadata implements Serializable  {
      * dataVariable: DataVariable to which this metadata belongs.
      */
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DataVariable dataVariable;
 
     /**
      * fileMetadta: FileMetadata to which this metadata belongs.
      */
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private FileMetadata fileMetadata;
 
     /**
      * label: variable label.
      */
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String label;
 
     /**
      * literalquestion: literal question, metadata variable field.
      */
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String literalquestion;
 
     /**
      * interviewinstruction: Interview Instruction, metadata variable field.
      */
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String interviewinstruction;
 
     /**
@@ -70,7 +68,7 @@ public class VariableMetadata implements Serializable  {
     /**
      * notes: notes, metadata variable field (CDATA).
      */
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String notes;
 
     /**
@@ -86,7 +84,7 @@ public class VariableMetadata implements Serializable  {
     /**
      * categoriesMetadata: variable metadata for categories that includes weighted frequencies
      */
-    @OneToMany (mappedBy="VariableMetadata", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    @OneToMany(mappedBy = "VariableMetadata", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<CategoryMetadata> categoriesMetadata;
 
     /**
@@ -94,14 +92,14 @@ public class VariableMetadata implements Serializable  {
      */
     private DataVariable weightvariable;
 
-    public VariableMetadata () {
-        categoriesMetadata = new ArrayList<CategoryMetadata>() ;
+    public VariableMetadata() {
+        categoriesMetadata = new ArrayList<CategoryMetadata>();
     }
 
-    public VariableMetadata (DataVariable dataVariable, FileMetadata fileMetadata) {
+    public VariableMetadata(DataVariable dataVariable, FileMetadata fileMetadata) {
         this.dataVariable = dataVariable;
         this.fileMetadata = fileMetadata;
-        categoriesMetadata = new ArrayList<CategoryMetadata>() ;
+        categoriesMetadata = new ArrayList<CategoryMetadata>();
     }
 
     /**
@@ -159,9 +157,13 @@ public class VariableMetadata implements Serializable  {
         this.notes = notes;
     }
 
-    public String getNotes() { return notes; }
+    public String getNotes() {
+        return notes;
+    }
 
-    public String getUniverse() { return this.universe; }
+    public String getUniverse() {
+        return this.universe;
+    }
 
     public void setUniverse(String universe) {
         this.universe = universe;
@@ -175,9 +177,13 @@ public class VariableMetadata implements Serializable  {
         return isweightvar;
     }
 
-    public DataVariable getWeightvariable() { return this.weightvariable; }
+    public DataVariable getWeightvariable() {
+        return this.weightvariable;
+    }
 
-    public void setWeightvariable(DataVariable weightvariable) { this.weightvariable = weightvariable; }
+    public void setWeightvariable(DataVariable weightvariable) {
+        this.weightvariable = weightvariable;
+    }
 
     public void setWeighted(boolean weighted) {
         this.weighted = weighted;
@@ -209,11 +215,9 @@ public class VariableMetadata implements Serializable  {
             return false;
         }
 
-        VariableMetadata other = (VariableMetadata)object;
-        if (this.id != other.id ) {
-            if (this.id == null || !this.id.equals(other.id)) {
-                return false;
-            }
+        VariableMetadata other = (VariableMetadata) object;
+        if (this.id != other.id) {
+            return this.id != null && this.id.equals(other.id);
         }
         return true;
     }

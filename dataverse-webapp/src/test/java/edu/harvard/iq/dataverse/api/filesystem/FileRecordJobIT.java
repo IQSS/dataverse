@@ -34,8 +34,8 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
 import org.junit.Ignore;
+import org.junit.Test;
 
 import javax.batch.runtime.BatchStatus;
 import java.io.BufferedWriter;
@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,12 +64,11 @@ import static org.hamcrest.Matchers.equalTo;
 
 /**
  * Batch File System Import Job Integration Tests
- *
+ * <p>
  * Gothchas:
- *
+ * <p>
  * - if you are testing from a dev server rebuilt from scratch, edit permissions such that:
- *   "Anyone with a Dataverse account can add sub dataverses and datasets"
- *
+ * "Anyone with a Dataverse account can add sub dataverses and datasets"
  */
 public class FileRecordJobIT {
 
@@ -101,7 +101,7 @@ public class FileRecordJobIT {
         if (specifiedUri != null) {
             restAssuredBaseUri = specifiedUri;
         }
-        System.out.println("Base URL for tests: " + restAssuredBaseUri +  "\n");
+        System.out.println("Base URL for tests: " + restAssuredBaseUri + "\n");
         RestAssured.baseURI = restAssuredBaseUri;
 
         // use properties file for everything else
@@ -132,11 +132,11 @@ public class FileRecordJobIT {
             // create user and set token
             token = given()
                     .body("{" +
-                            "   \"userName\": \"" + testName + "\"," +
-                            "   \"firstName\": \"" + testName + "\"," +
-                            "   \"lastName\": \"" + testName + "\"," +
-                            "   \"email\": \"" + testName + "@mailinator.com\"" +
-                            "}")
+                                  "   \"userName\": \"" + testName + "\"," +
+                                  "   \"firstName\": \"" + testName + "\"," +
+                                  "   \"lastName\": \"" + testName + "\"," +
+                                  "   \"email\": \"" + testName + "@mailinator.com\"" +
+                                  "}")
                     .contentType(ContentType.JSON)
                     .request()
                     .post("/api/builtin-users/secret/" + BUILTIN_USER_KEY)
@@ -145,20 +145,20 @@ public class FileRecordJobIT {
             System.out.println("TOKEN: " + token);
             // create dataverse
             given().body("{" +
-                    "    \"name\": \"" + testName + "\"," +
-                    "    \"alias\": \"" + testName + "\"," +
-                    "    \"affiliation\": \"Test-Driven University\"," +
-                    "    \"dataverseContacts\": [" +
-                    "        {" +
-                    "            \"contactEmail\": \"test@example.com\"" +
-                    "        }," +
-                    "        {" +
-                    "            \"contactEmail\": \"test@example.org\"" +
-                    "        }" +
-                    "    ]," +
-                    "    \"permissionRoot\": true," +
-                    "    \"description\": \"test Description.\"" +
-                    "}")
+                                 "    \"name\": \"" + testName + "\"," +
+                                 "    \"alias\": \"" + testName + "\"," +
+                                 "    \"affiliation\": \"Test-Driven University\"," +
+                                 "    \"dataverseContacts\": [" +
+                                 "        {" +
+                                 "            \"contactEmail\": \"test@example.com\"" +
+                                 "        }," +
+                                 "        {" +
+                                 "            \"contactEmail\": \"test@example.org\"" +
+                                 "        }" +
+                                 "    ]," +
+                                 "    \"permissionRoot\": true," +
+                                 "    \"description\": \"test Description.\"" +
+                                 "}")
                     .contentType(ContentType.JSON).request()
                     .post("/api/dataverses/:root?key=" + token)
                     .then().assertThat().statusCode(201);
@@ -237,7 +237,7 @@ public class FileRecordJobIT {
         try {
 
             // create a single test file and put it in two places
-            String file1 =  "testfile.txt";
+            String file1 = "testfile.txt";
             String file2 = "subdir/testfile.txt";
             File file = createTestFile(dsDir, file1, 0.25);
             if (file != null) {
@@ -286,8 +286,8 @@ public class FileRecordJobIT {
             List<String> storageIds = new ArrayList<>();
             storageIds.add(dsPath.getString("data.latestVersion.files[0].dataFile.storageIdentifier"));
             storageIds.add(dsPath.getString("data.latestVersion.files[1].dataFile.storageIdentifier"));
-            assert(storageIds.contains(file1));
-            assert(storageIds.contains(file2));
+            assert (storageIds.contains(file1));
+            assert (storageIds.contains(file2));
 
             // test the reporting apis
             given()
@@ -295,12 +295,12 @@ public class FileRecordJobIT {
                     .get(props.getProperty("job.status.api") + job.getId())
                     .then().assertThat()
                     .body("status", equalTo("COMPLETED"));
-            List<Integer> ids =  given()
+            List<Integer> ids = given()
                     .header(API_TOKEN_HTTP_HEADER, token)
                     .get(props.getProperty("job.status.api"))
                     .then().extract().jsonPath()
                     .getList("jobs.id");
-            assertTrue(ids.contains((int)job.getId()));
+            assertTrue(ids.contains((int) job.getId()));
 
         } catch (Exception e) {
             System.out.println("Error testIdenticalFilesInDifferentDirectories: " + e.getMessage());
@@ -319,24 +319,24 @@ public class FileRecordJobIT {
             String contribUser = UUID.randomUUID().toString().substring(0, 8);
             String contribToken = given()
                     .body("{" +
-                            "   \"userName\": \"" + contribUser + "\"," +
-                            "   \"firstName\": \"" + contribUser + "\"," +
-                            "   \"lastName\": \"" + contribUser + "\"," +
-                            "   \"email\": \"" + contribUser + "@mailinator.com\"" +
-                            "}")
+                                  "   \"userName\": \"" + contribUser + "\"," +
+                                  "   \"firstName\": \"" + contribUser + "\"," +
+                                  "   \"lastName\": \"" + contribUser + "\"," +
+                                  "   \"email\": \"" + contribUser + "@mailinator.com\"" +
+                                  "}")
                     .contentType(ContentType.JSON)
                     .request()
                     .post("/api/builtin-users/secret/" + props.getProperty("builtin.user.key"))
                     .then().assertThat().statusCode(200)
                     .extract().jsonPath().getString("data.apiToken");
 
-            Response grantRole = UtilIT.grantRoleOnDataverse(testName, DataverseRole.EDITOR.toString(),
-                    "@" + contribUser, token);
+            Response grantRole = UtilIT.grantRoleOnDataverse(testName, DataverseRole.EDITOR,
+                                                             "@" + contribUser, token);
 
             //grantRole.prettyPrint();
 
             // create a single test file and put it in two places
-            String file1 =  "testfile.txt";
+            String file1 = "testfile.txt";
             String file2 = "subdir/testfile.txt";
             File file = createTestFile(dsDir, file1, 0.25);
             if (file != null) {
@@ -385,8 +385,8 @@ public class FileRecordJobIT {
             List<String> storageIds = new ArrayList<>();
             storageIds.add(dsPath.getString("data.latestVersion.files[0].dataFile.storageIdentifier"));
             storageIds.add(dsPath.getString("data.latestVersion.files[1].dataFile.storageIdentifier"));
-            assert(storageIds.contains(file1));
-            assert(storageIds.contains(file2));
+            assert (storageIds.contains(file1));
+            assert (storageIds.contains(file2));
 
             // test the reporting apis
             given()
@@ -394,12 +394,12 @@ public class FileRecordJobIT {
                     .get(props.getProperty("job.status.api") + job.getId())
                     .then().assertThat()
                     .body("status", equalTo("COMPLETED"));
-            List<Integer> ids =  given()
+            List<Integer> ids = given()
                     .header(API_TOKEN_HTTP_HEADER, contribToken)
                     .get(props.getProperty("job.status.api"))
                     .then().extract().jsonPath()
                     .getList("jobs.id");
-            assertTrue(ids.contains((int)job.getId()));
+            assertTrue(ids.contains((int) job.getId()));
 
         } catch (Exception e) {
             System.out.println("Error testNewEditor: " + e.getMessage());
@@ -423,11 +423,11 @@ public class FileRecordJobIT {
             String unauthUser = UUID.randomUUID().toString().substring(0, 8);
             String unauthToken = given()
                     .body("{" +
-                            "   \"userName\": \"" + unauthUser + "\"," +
-                            "   \"firstName\": \"" + unauthUser + "\"," +
-                            "   \"lastName\": \"" + unauthUser + "\"," +
-                            "   \"email\": \"" + unauthUser + "@mailinator.com\"" +
-                            "}")
+                                  "   \"userName\": \"" + unauthUser + "\"," +
+                                  "   \"firstName\": \"" + unauthUser + "\"," +
+                                  "   \"lastName\": \"" + unauthUser + "\"," +
+                                  "   \"email\": \"" + unauthUser + "@mailinator.com\"" +
+                                  "}")
                     .contentType(ContentType.JSON)
                     .request()
                     .post("/api/builtin-users/secret/" + props.getProperty("builtin.user.key"))
@@ -435,7 +435,7 @@ public class FileRecordJobIT {
                     .extract().jsonPath().getString("data.apiToken");
 
             // create a single test file and put it in two places
-            String file1 =  "testfile.txt";
+            String file1 = "testfile.txt";
             String file2 = "subdir/testfile.txt";
             File file = createTestFile(dsDir, file1, 0.25);
             if (file != null) {
@@ -467,7 +467,7 @@ public class FileRecordJobIT {
 
             // delete unauthorized user
             given().header(API_TOKEN_HTTP_HEADER, token)
-                    .delete("/api/admin/authenticatedUsers/"+unauthUser+"/")
+                    .delete("/api/admin/authenticatedUsers/" + unauthUser + "/")
                     .then().assertThat().statusCode(200);
 
         } catch (Exception e) {
@@ -622,7 +622,7 @@ public class FileRecordJobIT {
         try {
 
             // create a single test file and put it in two places
-            String file1 =  "testfile.txt";
+            String file1 = "testfile.txt";
             String file2 = "subdir/testfile.txt";
             File file = createTestFile(dsDir, file1, 0.25);
             if (file != null) {
@@ -671,8 +671,8 @@ public class FileRecordJobIT {
             List<String> storageIds = new ArrayList<>();
             storageIds.add(dsPath.getString("data.latestVersion.files[0].dataFile.storageIdentifier"));
             storageIds.add(dsPath.getString("data.latestVersion.files[1].dataFile.storageIdentifier"));
-            assert(storageIds.contains(file1));
-            assert(storageIds.contains(file2));
+            assert (storageIds.contains(file1));
+            assert (storageIds.contains(file2));
 
             // test the reporting apis
             given()
@@ -680,16 +680,16 @@ public class FileRecordJobIT {
                     .get(props.getProperty("job.status.api") + job.getId())
                     .then().assertThat()
                     .body("status", equalTo("COMPLETED"));
-            List<Integer> ids =  given()
+            List<Integer> ids = given()
                     .header(API_TOKEN_HTTP_HEADER, token)
                     .get(props.getProperty("job.status.api"))
                     .then().extract().jsonPath()
                     .getList("jobs.id");
-            assertTrue(ids.contains((int)job.getId()));
+            assertTrue(ids.contains((int) job.getId()));
 
 
             // add a new file and run the job again
-            String file3 =  "addedfile.txt";
+            String file3 = "addedfile.txt";
             File addedFile = createTestFile(dsDir, file3, 0.25);
 
             // mock the checksum manifest
@@ -733,9 +733,9 @@ public class FileRecordJobIT {
             newStorageIds.add(dsPath.getString("data.latestVersion.files[0].dataFile.storageIdentifier"));
             newStorageIds.add(dsPath.getString("data.latestVersion.files[1].dataFile.storageIdentifier"));
             newStorageIds.add(dsPath.getString("data.latestVersion.files[2].dataFile.storageIdentifier"));
-            assert(newStorageIds.contains(file1));
-            assert(newStorageIds.contains(file2));
-            assert(newStorageIds.contains(file3));
+            assert (newStorageIds.contains(file1));
+            assert (newStorageIds.contains(file2));
+            assert (newStorageIds.contains(file3));
 
             // test the reporting apis
             given()
@@ -743,12 +743,12 @@ public class FileRecordJobIT {
                     .get(props.getProperty("job.status.api") + newJob.getId())
                     .then().assertThat()
                     .body("status", equalTo("COMPLETED"));
-            List<Integer> newIds =  given()
+            List<Integer> newIds = given()
                     .header(API_TOKEN_HTTP_HEADER, token)
                     .get(props.getProperty("job.status.api"))
                     .then().extract().jsonPath()
                     .getList("jobs.id");
-            assertTrue(newIds.contains((int)job.getId()));
+            assertTrue(newIds.contains((int) job.getId()));
 
         } catch (Exception e) {
             System.out.println("Error testIdenticalFilesInDifferentDirectories: " + e.getMessage());
@@ -809,15 +809,15 @@ public class FileRecordJobIT {
             List<String> filenames = new ArrayList<>();
             filenames.add(dsPath.getString("data.latestVersion.files[0].dataFile.filename"));
             filenames.add(dsPath.getString("data.latestVersion.files[1].dataFile.filename"));
-            assert(filenames.contains("testfile1.txt"));
-            assert(filenames.contains("testfile2.txt"));
+            assert (filenames.contains("testfile1.txt"));
+            assert (filenames.contains("testfile2.txt"));
 
             // confirm checksums were imported
             List<String> checksums = new ArrayList<>();
             checksums.add(dsPath.getString("data.latestVersion.files[0].dataFile.checksum.value"));
             checksums.add(dsPath.getString("data.latestVersion.files[1].dataFile.checksum.value"));
-            assert(checksums.contains(checksum1));
-            assert(checksums.contains(checksum2));
+            assert (checksums.contains(checksum1));
+            assert (checksums.contains(checksum2));
 
         } catch (Exception e) {
             System.out.println("Error testChecksumImport: " + e.getMessage());
@@ -867,10 +867,10 @@ public class FileRecordJobIT {
             List<String> filenames = new ArrayList<>();
             filenames.add(dsPath.getString("data.latestVersion.files[0].dataFile.filename"));
             filenames.add(dsPath.getString("data.latestVersion.files[1].dataFile.filename"));
-            assert(filenames.contains("testfile1.txt"));
-            assert(filenames.contains("testfile2.txt"));
-            assert(dsPath.getString("data.latestVersion.files[0].dataFile.checksum.value").equalsIgnoreCase("unknown"));
-            assert(dsPath.getString("data.latestVersion.files[1].dataFile.checksum.value").equalsIgnoreCase("unknown"));
+            assert (filenames.contains("testfile1.txt"));
+            assert (filenames.contains("testfile2.txt"));
+            assert (dsPath.getString("data.latestVersion.files[0].dataFile.checksum.value").equalsIgnoreCase("unknown"));
+            assert (dsPath.getString("data.latestVersion.files[1].dataFile.checksum.value").equalsIgnoreCase("unknown"));
 
         } catch (Exception e) {
             System.out.println("Error testChecksumImportMissingManifest: " + e.getMessage());
@@ -931,14 +931,14 @@ public class FileRecordJobIT {
             List<String> filenames = new ArrayList<>();
             filenames.add(dsPath.getString("data.latestVersion.files[0].dataFile.filename"));
             filenames.add(dsPath.getString("data.latestVersion.files[1].dataFile.filename"));
-            assert(filenames.contains("testfile1.txt"));
-            assert(filenames.contains("testfile2.txt"));
+            assert (filenames.contains("testfile1.txt"));
+            assert (filenames.contains("testfile2.txt"));
             // confirm one checksums was imported, one not
             List<String> checksums = new ArrayList<>();
             checksums.add(dsPath.getString("data.latestVersion.files[0].dataFile.checksum.value"));
             checksums.add(dsPath.getString("data.latestVersion.files[1].dataFile.checksum.value"));
-            assert(checksums.contains(checksum1));
-            assert(checksums.contains("Unknown"));
+            assert (checksums.contains(checksum1));
+            assert (checksums.contains("Unknown"));
 
         } catch (Exception e) {
             System.out.println("Error testChecksumImport: " + e.getMessage());
@@ -1003,14 +1003,14 @@ public class FileRecordJobIT {
             List<String> filenames = new ArrayList<>();
             filenames.add(dsPath.getString("data.latestVersion.files[0].dataFile.filename"));
             filenames.add(dsPath.getString("data.latestVersion.files[1].dataFile.filename"));
-            assert(filenames.contains("testfile1.txt"));
-            assert(filenames.contains("testfile2.txt"));
+            assert (filenames.contains("testfile1.txt"));
+            assert (filenames.contains("testfile2.txt"));
             // confirm checksums were imported
             List<String> checksums = new ArrayList<>();
             checksums.add(dsPath.getString("data.latestVersion.files[0].dataFile.checksum.value"));
             checksums.add(dsPath.getString("data.latestVersion.files[1].dataFile.checksum.value"));
-            assert(checksums.contains(checksum1));
-            assert(checksums.contains(checksum2));
+            assert (checksums.contains(checksum1));
+            assert (checksums.contains(checksum2));
 
         } catch (Exception e) {
             System.out.println("Error testChecksumImport: " + e.getMessage());
@@ -1031,15 +1031,15 @@ public class FileRecordJobIT {
             RestAssured.urlEncodingEnabled = false;
 
             // publish the dataverse
-            System.out.println("DATAVERSE: http://localhost:8080/api/dataverses/"+testName+"/actions/:publish?key="+token);
+            System.out.println("DATAVERSE: http://localhost:8080/api/dataverses/" + testName + "/actions/:publish?key=" + token);
             given().body("{}").contentType("application/json")
-                    .post("/api/dataverses/" + testName + "/actions/:publish?key="+token)
+                    .post("/api/dataverses/" + testName + "/actions/:publish?key=" + token)
                     .then().assertThat().statusCode(200);
 
             // publish the dataset
-            System.out.println("DATASET: http://localhost:8080/api/datasets/"+dsId+"/actions/:publish?type=major&key="+token);
+            System.out.println("DATASET: http://localhost:8080/api/datasets/" + dsId + "/actions/:publish?type=major&key=" + token);
             given()
-                    .get("/api/datasets/" + dsId + "/actions/:publish?type=major&key="+token)
+                    .get("/api/datasets/" + dsId + "/actions/:publish?type=major&key=" + token)
                     .then().assertThat().statusCode(200);
 
             isDraft = false;
@@ -1110,7 +1110,7 @@ public class FileRecordJobIT {
         try {
             String fakeDoi = "10.0001/FK2/FAKE";
             // run batch job
-            String dsNotFound  = given()
+            String dsNotFound = given()
                     .header(API_TOKEN_HTTP_HEADER, token)
                     .post(props.getProperty("filesystem.api") + "/" + fakeDoi)
                     .then().assertThat().statusCode(400)
@@ -1147,7 +1147,7 @@ public class FileRecordJobIT {
                 File file = new File(dir + SEP + name);
                 long start = System.currentTimeMillis();
                 PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(
-                        new FileOutputStream(file), "UTF-8")), false);
+                        new FileOutputStream(file), StandardCharsets.UTF_8)), false);
                 int counter = 0;
                 while (true) {
                     String sep = "";
@@ -1183,7 +1183,7 @@ public class FileRecordJobIT {
     /**
      * Get the SHA1 checksum for a file.
      *
-     * @param file absolute path to file
+     * @param file   absolute path to file
      * @param format the checksum format (e.g., SHA1, MD5)
      * @return the checksum for the file as a hex string
      */
@@ -1201,7 +1201,7 @@ public class FileRecordJobIT {
             byte[] mdbytes = md.digest();
 
             //convert the byte to hex format
-            StringBuilder sb = new StringBuilder("");
+            StringBuilder sb = new StringBuilder();
             for (byte b : mdbytes) {
                 sb.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
             }
@@ -1217,10 +1217,11 @@ public class FileRecordJobIT {
 
     /**
      * Poll the import job, pending completion
-     * @param jobId job execution id
+     *
+     * @param jobId    job execution id
      * @param apiToken user token
-     * @param retry max number of retry attempts
-     * @param sleep milliseconds to wait between attempts
+     * @param retry    max number of retry attempts
+     * @param sleep    milliseconds to wait between attempts
      * @return json job status
      */
     public static String pollJobStatus(String jobId, String apiToken, int retry, long sleep) {
@@ -1240,11 +1241,11 @@ public class FileRecordJobIT {
                     System.out.println("JOB STATUS RETRY ATTEMPT: " + maxTries);
                 } else {
                     System.out.println("JOB STATUS ERROR: Failed to get job status after " + maxTries
-                            + " attempts.");
+                                               + " attempts.");
                     break;
                 }
             }
-        }catch (InterruptedException ie) {
+        } catch (InterruptedException ie) {
             System.out.println(ie.getMessage());
             ie.printStackTrace();
         }
@@ -1253,6 +1254,7 @@ public class FileRecordJobIT {
 
     /**
      * A failed job is expected, get the json failure response
+     *
      * @return
      */
     private JsonPath getFaileJobJson() {
@@ -1267,6 +1269,7 @@ public class FileRecordJobIT {
 
     /**
      * Kick off a job with default mode (MERGE)
+     *
      * @return a job execution entity
      */
     private JobExecutionEntity getJob() {
@@ -1279,7 +1282,7 @@ public class FileRecordJobIT {
                     .then().assertThat().statusCode(200)
                     .extract().jsonPath().getString("data.executionId");
             String jobResult = pollJobStatus(jobId, token, Integer.valueOf(props.getProperty("polling.retries")),
-                    Integer.valueOf(props.getProperty("polling.wait")));
+                                             Integer.valueOf(props.getProperty("polling.wait")));
             System.out.println("JOB JSON: " + jobResult);
             return mapper.readValue(jobResult, JobExecutionEntity.class);
         } catch (IOException ioe) {
@@ -1290,6 +1293,7 @@ public class FileRecordJobIT {
 
     /**
      * Kick off a job with default mode (MERGE)
+     *
      * @return a job execution entity
      */
     private JobExecutionEntity getJobWithToken(String userToken) {
@@ -1303,7 +1307,7 @@ public class FileRecordJobIT {
                     .then().assertThat().statusCode(200)
                     .extract().jsonPath().getString("data.executionId");
             String jobResult = pollJobStatus(jobId, token, Integer.valueOf(props.getProperty("polling.retries")),
-                    Integer.valueOf(props.getProperty("polling.wait")));
+                                             Integer.valueOf(props.getProperty("polling.wait")));
             System.out.println("JOB JSON: " + jobResult);
             return mapper.readValue(jobResult, JobExecutionEntity.class);
         } catch (IOException ioe) {
@@ -1311,8 +1315,10 @@ public class FileRecordJobIT {
             return null;
         }
     }
+
     /**
      * Kick off a job with a specified mode: MERGE, UPDATE, REPLACE
+     *
      * @param mode
      * @return a job entity
      */
@@ -1326,7 +1332,7 @@ public class FileRecordJobIT {
                     .then().assertThat().statusCode(200)
                     .extract().jsonPath().getString("data.executionId");
             String jobResult = pollJobStatus(jobId, token, Integer.valueOf(props.getProperty("polling.retries")),
-                    Integer.valueOf(props.getProperty("polling.wait")));
+                                             Integer.valueOf(props.getProperty("polling.wait")));
             System.out.println("JOB JSON: " + jobResult);
             return mapper.readValue(jobResult, JobExecutionEntity.class);
         } catch (IOException ioe) {

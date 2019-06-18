@@ -1,16 +1,17 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.api.Util;
-import java.sql.Timestamp;
-import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.common.SolrInputDocument;
+
+import java.sql.Timestamp;
+import java.util.List;
 
 public class SearchUtil {
 
     /**
      * @param query The query string that might be mutated before feeding it
-     * into Solr.
+     *              into Solr.
      * @return The query string that may have been mutated or null if null was
      * passed in.
      */

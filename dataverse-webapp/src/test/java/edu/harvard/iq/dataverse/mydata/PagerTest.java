@@ -5,50 +5,52 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
-import java.util.Arrays;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
 
 /**
- *
  * @author rmp553
  */
 public class PagerTest {
     private Pager pager1;
-    
+
     public PagerTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
         this.pager1 = new Pager(100, 10, 1);
     }
-    
+
     @After
     public void tearDown() {
     }
-    
-    private void msg(String s){
+
+    private void msg(String s) {
         System.out.println(s);
     }
-    
-    private void msgt(String s){
+
+    private void msgt(String s) {
         msg("-------------------------------");
         msg(s);
         msg("-------------------------------");
     }
+
     /**
      * Test of getNumResults method, of class Pager.
      */
@@ -56,7 +58,7 @@ public class PagerTest {
     public void testBasics() {
         System.out.println("getNumResults");
 
-       
+
         pager1 = new Pager(102, 10, 1);
 
         msgt("Test: 102 results, 10 per page, page 1");
@@ -67,12 +69,12 @@ public class PagerTest {
         assertEquals(2, pager1.getNextPageNumber());
         assertEquals(false, pager1.hasPreviousPageNumber());
         assertEquals(true, pager1.hasNextPageNumber());
-        
+
         msg("page list: " + Arrays.toString(pager1.getPageNumberList()));
         //assertEquals(new int[]{1, 2, 3, 4, 5}, pager1.getPageNumberList());
         assertEquals(1, pager1.getPageNumberList()[0]);
         assertEquals(5, pager1.getPageNumberList()[4]);
-    
+
         assertEquals(1, pager1.getStartCardNumber());
         assertEquals(10, pager1.getEndCardNumber());
 
@@ -112,30 +114,30 @@ public class PagerTest {
         pager1 = new Pager(102, 10, 10);
    //     assertEquals(6, pager1.getPageNumberList()[0]);
 */
-    } 
+    }
 
     @Test
     public void testNoResults() {
-        
+
         System.out.println("getNumResults");
         pager1 = new Pager(0, 10, 1);
 
         assertEquals(false, pager1.isPagerNecessary());
-        
+
         assertEquals(0, pager1.getNumResults());
         assertEquals(0, pager1.getPreviousPageNumber());
         assertEquals(0, pager1.getNextPageNumber());
         assertEquals(false, pager1.hasPreviousPageNumber());
         assertEquals(false, pager1.hasNextPageNumber());
-        
+
         msgt("page list: " + Arrays.toString(pager1.getPageNumberList()));
         //assertEquals(null, pager1.getPageNumberList());
         //assertEquals(1, pager1.getPageNumberList()[pager1.getPageCount()-1]);
 
         assertEquals(0, pager1.getStartCardNumber());
         assertEquals(0, pager1.getEndCardNumber());
-       
-    } 
+
+    }
 
 
 }

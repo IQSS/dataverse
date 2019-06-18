@@ -20,136 +20,134 @@
 package edu.harvard.iq.dataverse.api;
 
 
-import java.io.File; 
-import java.util.List;
-import java.util.ArrayList;
-
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
- *
  * @author Leonid Andreev
  */
 public class DownloadInfo {
-    
-    private DataFile dataFile; 
-    //private String mimeType; 
-    
-    private String authUserName = "";
-    private String authMethod = "anonymous"; 
-    
-    Boolean accessGranted = false; 
-    
-    Boolean accessPermissionsApply = false; 
-    Boolean accessRestrictionsApply = false;
-    Boolean passAccessPermissions = false; 
-    Boolean passAccessRestrictions = false; 
 
-    private List<OptionalAccessService> optionalServicesAvailable; 
-    
+    private DataFile dataFile;
+    //private String mimeType; 
+
+    private String authUserName = "";
+    private String authMethod = "anonymous";
+
+    Boolean accessGranted = false;
+
+    Boolean accessPermissionsApply = false;
+    Boolean accessRestrictionsApply = false;
+    Boolean passAccessPermissions = false;
+    Boolean passAccessRestrictions = false;
+
+    private List<OptionalAccessService> optionalServicesAvailable;
+
     public DownloadInfo(DataFile sf) {
         dataFile = sf;
-        optionalServicesAvailable = new ArrayList<OptionalAccessService>();       
+        optionalServicesAvailable = new ArrayList<OptionalAccessService>();
     }
 
     public DataFile getDataFile() {
-        return dataFile; 
+        return dataFile;
     }
-     
-    public void setDataFile (DataFile sf) {
-        dataFile = sf; 
+
+    public void setDataFile(DataFile sf) {
+        dataFile = sf;
     }
-    
+
     public String getAuthUserName() {
-        return authUserName; 
+        return authUserName;
     }
-    
+
     public void setAuthUserName(String un) {
-        authUserName = un; 
+        authUserName = un;
     }
-    
+
     public String getAuthMethod() {
-        return authMethod; 
+        return authMethod;
     }
-    
+
     public void setAuthMethod(String am) {
-        authMethod = am; 
+        authMethod = am;
     }
-    
+
     public Boolean isPassAccessPermissions() {
         return passAccessPermissions;
     }
-    
+
     public void setPassAccessPermissions(Boolean pass) {
-        passAccessPermissions = pass; 
+        passAccessPermissions = pass;
     }
-    
+
     public Boolean isPassAccessRestrictions() {
         return passAccessRestrictions;
     }
-    
+
     public void setPassAccessRestrictions(Boolean pass) {
-        passAccessRestrictions = pass; 
+        passAccessRestrictions = pass;
     }
-    
+
     public Boolean isAccessPermissionsApply() {
         return accessPermissionsApply;
     }
-    
+
     public void setAccessPermissionsApply(Boolean pass) {
-        accessPermissionsApply = pass; 
+        accessPermissionsApply = pass;
     }
-    
+
     public Boolean isAccessRestrictionsApply() {
         return accessRestrictionsApply;
     }
-    
+
     public void setAccessRestrictionsAply(Boolean pass) {
-        accessRestrictionsApply = pass; 
+        accessRestrictionsApply = pass;
     }
-    
+
     public Boolean isAccessGranted() {
-        return (passAccessPermissions && passAccessRestrictions); 
+        return (passAccessPermissions && passAccessRestrictions);
     }
-    
+
     public String getMimeType() {
-        String mType = null; 
-        
+        String mType = null;
+
         if (dataFile != null) {
             mType = dataFile.getContentType();
         }
-        
-        return mType; 
+
+        return mType;
     }
-    
+
     public Long getDataFileId() {
-        Long sfId = null; 
-        
+        Long sfId = null;
+
         if (dataFile != null) {
-            sfId = dataFile.getId(); 
+            sfId = dataFile.getId();
         }
-        
-        return sfId; 
+
+        return sfId;
     }
-    
+
     public String getFileName() {
         if (dataFile != null) {
             if (dataFile.getFileMetadata() != null) {
                 return dataFile.getFileMetadata().getLabel();
             }
         }
-        
-        return null; 
+
+        return null;
     }
-    
+
     public List<OptionalAccessService> getServicesAvailable() {
-	return optionalServicesAvailable; 
+        return optionalServicesAvailable;
     }
-    
+
     public void addServiceAvailable(OptionalAccessService accessService) {
         this.optionalServicesAvailable.add(accessService);
     }
-    
+
 }

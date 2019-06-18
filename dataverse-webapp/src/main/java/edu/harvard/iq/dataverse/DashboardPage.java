@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- *
  * @author Leonid Andreev
  */
 @ViewScoped
@@ -41,7 +40,7 @@ public class DashboardPage implements java.io.Serializable {
     SystemConfig systemConfig;
     @EJB
     SettingsServiceBean settingsService;
-     
+
     @Inject
     DataverseSession session;
     @Inject
@@ -90,67 +89,67 @@ public class DashboardPage implements java.io.Serializable {
     public void setDataverseId(Long dataverseId) {
         this.dataverseId = dataverseId;
     }
-    
+
     public int getNumberOfConfiguredHarvestClients() {
         List<HarvestingClient> configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
         if (configuredHarvestingClients == null || configuredHarvestingClients.isEmpty()) {
             return 0;
         }
-        
+
         return configuredHarvestingClients.size();
     }
-    
+
     public long getNumberOfHarvestedDatasets() {
         List<HarvestingClient> configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
         if (configuredHarvestingClients == null || configuredHarvestingClients.isEmpty()) {
             return 0L;
         }
-        
+
         Long numOfDatasets = harvestingClientService.getNumberOfHarvestedDatasetByClients(configuredHarvestingClients);
-        
+
         if (numOfDatasets != null && numOfDatasets > 0L) {
             return numOfDatasets;
         }
-        
+
         return 0L;
     }
-    
+
     public boolean isHarvestServerEnabled() {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.OAIServerEnabled);
     }
-    
+
     public int getNumberOfOaiSets() {
         List<OAISet> configuredHarvestingSets = oaiSetService.findAll();
         if (configuredHarvestingSets == null || configuredHarvestingSets.isEmpty()) {
             return 0;
         }
-        
+
         return configuredHarvestingSets.size();
     }
-    
+
     @Deprecated
     public String getHarvestClientsInfoLabel() {
         List<HarvestingClient> configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
         if (configuredHarvestingClients == null || configuredHarvestingClients.isEmpty()) {
             return BundleUtil.getStringFromBundle("harvestclients.noClients.label");
         }
-        
+
         String infoLabel;
-        
+
         if (configuredHarvestingClients.size() == 1) {
             infoLabel = configuredHarvestingClients.size() + " configured harvesting client; ";
         } else {
             infoLabel = configuredHarvestingClients.size() + " harvesting clients configured; ";
-        }        
-        
+        }
+
         Long numOfDatasets = harvestingClientService.getNumberOfHarvestedDatasetByClients(configuredHarvestingClients);
-        
+
         if (numOfDatasets != null && numOfDatasets > 0L) {
             return infoLabel + numOfDatasets + " harvested datasets";
         }
         return infoLabel + "no datasets harvested.";
     }
-    
+
     @Deprecated
     public String getHarvestServerInfoLabel() {
         if (!settingsService.isTrueForKey(SettingsServiceBean.Key.OAIServerEnabled)) {
@@ -158,17 +157,17 @@ public class DashboardPage implements java.io.Serializable {
         }
 
         String infoLabel = "OAI server enabled; ";
-        
+
         List<OAISet> configuredHarvestingSets = oaiSetService.findAll();
         if (configuredHarvestingSets == null || configuredHarvestingSets.isEmpty()) {
             infoLabel = infoLabel.concat(BundleUtil.getStringFromBundle("harvestserver.service.empty"));
             return infoLabel;
         }
-        
+
         infoLabel = infoLabel.concat(configuredHarvestingSets.size() + " configured OAI sets. ");
         return infoLabel;
     }
-    
+
     public boolean isSessionUserAuthenticated() {
 
         if (session == null) {
@@ -179,11 +178,8 @@ public class DashboardPage implements java.io.Serializable {
             return false;
         }
 
-        if (session.getUser().isAuthenticated()) {
-            return true;
-        }
+        return session.getUser().isAuthenticated();
 
-        return false;
     }
 
     public boolean isSuperUser() {

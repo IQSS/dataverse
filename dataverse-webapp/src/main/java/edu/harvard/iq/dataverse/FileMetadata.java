@@ -43,10 +43,9 @@ import java.util.logging.Logger;
 
 
 /**
- *
  * @author skraffmiller
  */
-@Table(indexes = {@Index(columnList="datafile_id"), @Index(columnList="datasetversion_id")} )
+@Table(indexes = {@Index(columnList = "datafile_id"), @Index(columnList = "datasetversion_id")})
 @Entity
 public class FileMetadata implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -54,16 +53,16 @@ public class FileMetadata implements Serializable {
 
 
     @Expose
-    @Pattern(regexp="^[^:<>;#/\"\\*\\|\\?\\\\]*$",
+    @Pattern(regexp = "^[^:<>;#/\"\\*\\|\\?\\\\]*$",
             message = "{filename.illegalCharacters}")
     @NotBlank(message = "{filename.blank}")
-    @Column( nullable=false )
+    @Column(nullable = false)
     private String label = "";
 
-    @Pattern(regexp="|[^/\\\\]|^[^/\\\\]+.*[^/\\\\]+$",
+    @Pattern(regexp = "|[^/\\\\]|^[^/\\\\]+.*[^/\\\\]+$",
             message = "{directoryname.illegalCharacters}")
     @Expose
-    @Column ( nullable=true )
+    @Column(nullable = true)
     private String directoryLabel;
     @Column(columnDefinition = "TEXT")
     private String description = "";
@@ -79,11 +78,11 @@ public class FileMetadata implements Serializable {
     private boolean restricted;
 
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DatasetVersion datasetVersion;
 
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DataFile dataFile;
 
     /**
@@ -91,13 +90,13 @@ public class FileMetadata implements Serializable {
      * represented in the GUI as text box the user can type into. The other type
      * is based on PROV-JSON from the W3C.
      */
-    @Column(columnDefinition = "TEXT", nullable = true, name="prov_freeform")
+    @Column(columnDefinition = "TEXT", nullable = true, name = "prov_freeform")
     private String provFreeForm;
 
     private int displayOrder;
 
-    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true, fetch=FetchType.EAGER)
-    @JoinColumn(nullable=false, name = "termsofuse_id")
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(nullable = false, name = "termsofuse_id")
     private FileTermsOfUse termsOfUse;
 
     /**
@@ -108,17 +107,17 @@ public class FileMetadata implements Serializable {
      */
     public FileMetadata createCopy() {
         FileMetadata fmd = new FileMetadata();
-        fmd.setCategories(new LinkedList<>(getCategories()) );
-        fmd.setDataFile( getDataFile() );
-        fmd.setDatasetVersion( getDatasetVersion() );
-        fmd.setDescription( getDescription() );
-        fmd.setLabel( getLabel() );
-        fmd.setRestricted( isRestricted() );
-        fmd.setDisplayOrder( getDisplayOrder() );
-        
+        fmd.setCategories(new LinkedList<>(getCategories()));
+        fmd.setDataFile(getDataFile());
+        fmd.setDatasetVersion(getDatasetVersion());
+        fmd.setDescription(getDescription());
+        fmd.setLabel(getLabel());
+        fmd.setRestricted(isRestricted());
+        fmd.setDisplayOrder(getDisplayOrder());
+
         FileTermsOfUse termsOfUseCopy = getTermsOfUse().createCopy();
         termsOfUseCopy.setFileMetadata(fmd);
-        fmd.setTermsOfUse( termsOfUseCopy );
+        fmd.setTermsOfUse(termsOfUseCopy);
 
         return fmd;
     }
@@ -175,7 +174,7 @@ public class FileMetadata implements Serializable {
      * File Categories to which this version of the DataFile belongs:
      */
     @ManyToMany
-    @JoinTable(indexes = {@Index(columnList="filecategories_id"),@Index(columnList="filemetadatas_id")})
+    @JoinTable(indexes = {@Index(columnList = "filecategories_id"), @Index(columnList = "filemetadatas_id")})
     @OrderBy("name")
     private List<DataFileCategory> fileCategories;
 
@@ -196,6 +195,7 @@ public class FileMetadata implements Serializable {
 
     /**
      * Retrieve categories
+     *
      * @return
      */
     public List<String> getCategoriesByName() {
@@ -330,7 +330,7 @@ public class FileMetadata implements Serializable {
         }
     }
 
-     public String getFileDateToDisplay() {
+    public String getFileDateToDisplay() {
         Date fileDate = null;
         DataFile datafile = this.getDataFile();
         if (datafile != null) {
@@ -353,19 +353,17 @@ public class FileMetadata implements Serializable {
         return "";
     }
 
-    public String getFileCitation(){
-         return getFileCitation(false);
-     }
+    public String getFileCitation() {
+        return getFileCitation(false);
+    }
 
 
+    public String getFileCitation(boolean html) {
+        return new DataCitation(this).toString(html);
+    }
 
-
-    public String getFileCitation(boolean html){
-         return new DataCitation(this).toString(html);
-     }
-
-    public String getDirectFileCitation(boolean html){
-    	return new DataCitation(this, true).toString(html);
+    public String getDirectFileCitation(boolean html) {
+        return new DataCitation(this, true).toString(html);
     }
 
 
@@ -376,7 +374,6 @@ public class FileMetadata implements Serializable {
     public void setDatasetVersion(DatasetVersion datasetVersion) {
         this.datasetVersion = datasetVersion;
     }
-
 
 
     public DataFile getDataFile() {
@@ -394,6 +391,7 @@ public class FileMetadata implements Serializable {
 
     /**
      * Getter for property id.
+     *
      * @return Value of property id.
      */
     public Long getId() {
@@ -402,6 +400,7 @@ public class FileMetadata implements Serializable {
 
     /**
      * Setter for property id.
+     *
      * @param id New value of property id.
      */
     public void setId(Long id) {
@@ -414,6 +413,7 @@ public class FileMetadata implements Serializable {
 
     /**
      * Getter for property version.
+     *
      * @return Value of property version.
      */
     public Long getVersion() {
@@ -422,6 +422,7 @@ public class FileMetadata implements Serializable {
 
     /**
      * Setter for property version.
+     *
      * @param version New value of property version.
      */
     public void setVersion(Long version) {
@@ -451,7 +452,7 @@ public class FileMetadata implements Serializable {
     }
 
     @Transient
-    private FileVersionDifference fileVersionDifference ;
+    private FileVersionDifference fileVersionDifference;
 
     public FileVersionDifference getFileVersionDifference() {
         return fileVersionDifference;
@@ -472,13 +473,14 @@ public class FileMetadata implements Serializable {
         this.contributorNames = contributorNames;
     }
 
-    
+
     @Transient
     private TermsOfUseForm termsOfUseForm = new TermsOfUseForm();
-    
+
     public TermsOfUseForm getTermsOfUseForm() {
         return termsOfUseForm;
     }
+
     public void setTermsOfUseForm(TermsOfUseForm termsOfUseForm) {
         this.termsOfUseForm = termsOfUseForm;
     }
@@ -505,7 +507,7 @@ public class FileMetadata implements Serializable {
      * this would be for checking 2 metadatas from 2 different versions, to
      * determine if any of the actual metadata fields have changed between
      * versions.
-    */
+     */
     public boolean contentEquals(FileMetadata other) {
         if (other == null) {
             return false;
@@ -528,14 +530,9 @@ public class FileMetadata implements Serializable {
         }
 
         if (this.getDescription() != null) {
-            if (!this.getDescription().equals(other.getDescription())) {
-                return false;
-            }
-        } else if (other.getDescription() != null) {
-            return false;
-        }
+            return this.getDescription().equals(other.getDescription());
+        } else return other.getDescription() == null;
 
-        return true;
     }
 
 
@@ -552,51 +549,49 @@ public class FileMetadata implements Serializable {
     };
 
 
+    public String toPrettyJSON() {
 
-    public String toPrettyJSON(){
-        
         return serializeAsJSON(true);
     }
 
-    public String toJSON(){
-        
+    public String toJSON() {
+
         return serializeAsJSON(false);
     }
-    
-     /**
-     * 
+
+    /**
      * @param prettyPrint
-     * @return 
+     * @return
      */
-    private String serializeAsJSON(boolean prettyPrint){
-        
+    private String serializeAsJSON(boolean prettyPrint) {
+
         JsonObject jsonObj = asGsonObject(prettyPrint);
-                
+
         return jsonObj.toString();
-       
+
     }
 
-    
-    public JsonObject asGsonObject(boolean prettyPrint){
 
-        
+    public JsonObject asGsonObject(boolean prettyPrint) {
+
+
         GsonBuilder builder;
-        if (prettyPrint){  // Add pretty printing
+        if (prettyPrint) {  // Add pretty printing
             builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting();
-        }else{
-            builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation();                        
+        } else {
+            builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation();
         }
-        
+
         builder.serializeNulls();   // correctly capture nulls
         Gson gson = builder.create();
 
         // serialize this object
         JsonElement jsonObj = gson.toJsonTree(this);
         jsonObj.getAsJsonObject().addProperty("id", this.getId());
-        
+
         return jsonObj.getAsJsonObject();
     }
-    
+
     public String getProvFreeForm() {
         return provFreeForm;
     }
@@ -608,5 +603,5 @@ public class FileMetadata implements Serializable {
     public void decreaseDisplayOrder() {
         this.displayOrder--;
     }
-    
+
 }

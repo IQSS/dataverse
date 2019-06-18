@@ -14,7 +14,6 @@ import org.jsoup.select.Elements;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
@@ -31,7 +30,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author luopc
  */
 @Stateless
@@ -50,16 +48,16 @@ public class DOIDataCiteRegisterService {
 
     @EJB
     private SettingsServiceBean settingsService;
-    
-        
+
+
     //A singleton since it, and the httpClient in it can be reused.
-    private DataCiteRESTfullClient client=null;
-    
+    private DataCiteRESTfullClient client = null;
+
     private DataCiteRESTfullClient getClient() throws IOException {
         if (client == null) {
             client = new DataCiteRESTfullClient(settingsService.getValueForKey(SettingsServiceBean.Key.DoiBaseUrlString),
-                    settingsService.getValueForKey(SettingsServiceBean.Key.DoiUsername),
-                    settingsService.getValueForKey(SettingsServiceBean.Key.DoiPassword));
+                                                settingsService.getValueForKey(SettingsServiceBean.Key.DoiUsername),
+                                                settingsService.getValueForKey(SettingsServiceBean.Key.DoiPassword));
         }
         return client;
     }
@@ -169,7 +167,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
         String title = dvObject.getDisplayName();
-        if(dvObject.isInstanceofDataFile()) {
+        if (dvObject.isInstanceofDataFile()) {
             //Note file title is not currently escaped the way the dataset title is, so adding it here.
             title = StringEscapeUtils.escapeXml(title);
         }
@@ -285,7 +283,7 @@ public class DOIDataCiteRegisterService {
 
     public DOIDataCiteRegisterCache findByDOI(String doi) {
         TypedQuery<DOIDataCiteRegisterCache> query = em.createNamedQuery("DOIDataCiteRegisterCache.findByDoi",
-                DOIDataCiteRegisterCache.class);
+                                                                         DOIDataCiteRegisterCache.class);
         query.setParameter("doi", doi);
         List<DOIDataCiteRegisterCache> rc = query.getResultList();
         if (rc.size() == 1) {
@@ -491,7 +489,7 @@ class DataCiteMetadataTemplate {
             DataFile df = (DataFile) dvObject;
             sb.append("<relatedIdentifiers>");
             sb.append("<relatedIdentifier relatedIdentifierType=\"DOI\" relationType=\"IsPartOf\""
-                    + ">" + df.getOwner().getGlobalId() + "</relatedIdentifier>");
+                              + ">" + df.getOwner().getGlobalId() + "</relatedIdentifier>");
             sb.append("</relatedIdentifiers>");
         }
         return sb.toString();
@@ -626,5 +624,5 @@ class Util {
         }
         return str.toString();
     }
-    
+
 }

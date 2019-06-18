@@ -38,139 +38,139 @@ import java.util.concurrent.atomic.AtomicInteger;
  * methods created objects with reasonable defaults that should fit most tests.
  * Of course, feel free to change of make these mocks more elaborate as the code
  * evolves.
- * 
+ *
  * @author michael
  */
 public class MocksFactory {
-    
+
     private static final AtomicInteger NEXT_ID = new AtomicInteger();
-    
+
     public static Long nextId() {
-        return Long.valueOf( NEXT_ID.incrementAndGet() );
+        return Long.valueOf(NEXT_ID.incrementAndGet());
     }
-    
-    public static Date date(int year, int month, int day ) {
-        return new Date( LocalDate.of(year, Month.of(month), day).toEpochDay() );
+
+    public static Date date(int year, int month, int day) {
+        return new Date(LocalDate.of(year, Month.of(month), day).toEpochDay());
     }
-    
-    public static Timestamp timestamp(int year, int month, int day ) {
-        return new Timestamp( date(year, month, day).getTime() );
+
+    public static Timestamp timestamp(int year, int month, int day) {
+        return new Timestamp(date(year, month, day).getTime());
     }
-    
+
     public static DataFile makeDataFile() {
         DataFile retVal = new DataFile();
-        retVal.setId( nextId() );
+        retVal.setId(nextId());
         retVal.setContentType("application/unitTests");
-        retVal.setCreateDate( new Timestamp(System.currentTimeMillis()) );
-        addFileMetadata( retVal );
-        retVal.setModificationTime( retVal.getCreateDate() );
+        retVal.setCreateDate(new Timestamp(System.currentTimeMillis()));
+        addFileMetadata(retVal);
+        retVal.setModificationTime(retVal.getCreateDate());
         return retVal;
     }
-    
-    public static List<DataFile> makeFiles( int count ) {
+
+    public static List<DataFile> makeFiles(int count) {
         List<DataFile> retVal = new ArrayList<>(count);
-        for ( int i=0; i<count; i++ ) {
-            retVal.add( makeDataFile() );
+        for (int i = 0; i < count; i++) {
+            retVal.add(makeDataFile());
         }
         return retVal;
     }
-    
-     public static FileMetadata addFileMetadata( DataFile df ) {
+
+    public static FileMetadata addFileMetadata(DataFile df) {
         FileMetadata fmd = new FileMetadata();
-        
-        fmd.setId( nextId() );
-        fmd.setLabel( "Metadata for DataFile " + df.getId() );
-        
+
+        fmd.setId(nextId());
+        fmd.setLabel("Metadata for DataFile " + df.getId());
+
         fmd.setDataFile(df);
-        if ( df.getFileMetadatas() != null ) {
-            df.getFileMetadatas().add( fmd );
+        if (df.getFileMetadatas() != null) {
+            df.getFileMetadatas().add(fmd);
         } else {
-            df.setFileMetadatas( new LinkedList(Arrays.asList(fmd)) );
+            df.setFileMetadatas(new LinkedList(Arrays.asList(fmd)));
         }
-        
+
         return fmd;
     }
-    
-    public static AuthenticatedUser makeAuthenticatedUser( String firstName, String lastName ) {
+
+    public static AuthenticatedUser makeAuthenticatedUser(String firstName, String lastName) {
         AuthenticatedUser user = new AuthenticatedUser();
-        user.setId( nextId() );
+        user.setId(nextId());
         user.setAffiliation("UnitTester");
-        user.setEmail( firstName + "." + lastName + "@someU.edu" );
+        user.setEmail(firstName + "." + lastName + "@someU.edu");
         user.setLastName(lastName);
         user.setFirstName(firstName);
         user.setPosition("In-Memory user");
-        user.setUserIdentifier("unittest" + user.getId() );
+        user.setUserIdentifier("unittest" + user.getId());
         user.setCreatedTime(new Timestamp(new Date().getTime()));
         user.setLastLoginTime(user.getCreatedTime());
         return user;
     }
-    
+
     /**
      * @return A request with a guest user.
      */
     public static DataverseRequest makeRequest() {
-        return makeRequest( GuestUser.get() );
+        return makeRequest(GuestUser.get());
     }
-    
-    public static DataverseRequest makeRequest( User u ) {
-        return new DataverseRequest( u, IpAddress.valueOf("1.2.3.4") );
+
+    public static DataverseRequest makeRequest(User u) {
+        return new DataverseRequest(u, IpAddress.valueOf("1.2.3.4"));
     }
-    
+
     public static Dataverse makeDataverse() {
         Dataverse retVal = new Dataverse();
-        retVal.setId( nextId() );
-        
+        retVal.setId(nextId());
+
         retVal.setAffiliation("Unit Test U");
         retVal.setAlias("unitTest" + retVal.getId());
-        retVal.setCreateDate(timestamp(2012,4,5));
+        retVal.setCreateDate(timestamp(2012, 4, 5));
         retVal.setMetadataBlockRoot(true);
         retVal.setName("UnitTest Dataverse #" + retVal.getId());
-        
-        
+
+
         MetadataBlock mtb = new MetadataBlock();
         mtb.setDisplayName("Test Block #1-" + retVal.getId());
         mtb.setId(nextId());
-        mtb.setDatasetFieldTypes( Arrays.asList(
+        mtb.setDatasetFieldTypes(Arrays.asList(
                 new DatasetFieldType("JustAString", FieldType.TEXT, false),
                 new DatasetFieldType("ManyStrings", FieldType.TEXT, true),
                 new DatasetFieldType("AnEmail", FieldType.EMAIL, false)
         ));
-        
-        retVal.setMetadataBlocks( Arrays.asList(mtb) );
-        
+
+        retVal.setMetadataBlocks(Arrays.asList(mtb));
+
         return retVal;
     }
-    
+
     public static Dataset makeDataset() {
         Dataset ds = new Dataset();
-        ds.setId( nextId() );
-        ds.setIdentifier("sample-ds-" + ds.getId() );
-        ds.setCategoriesByName( Arrays.asList("CatOne", "CatTwo", "CatThree") );
+        ds.setId(nextId());
+        ds.setIdentifier("sample-ds-" + ds.getId());
+        ds.setCategoriesByName(Arrays.asList("CatOne", "CatTwo", "CatThree"));
         final List<DataFile> files = makeFiles(10);
         final List<FileMetadata> metadatas = new ArrayList<>(10);
         final List<DataFileCategory> categories = ds.getCategories();
         Random rand = new Random();
-        files.forEach( df ->{
+        files.forEach(df -> {
             df.getFileMetadata().addCategory(categories.get(rand.nextInt(categories.size())));
             df.getFileMetadata().setTermsOfUse(new FileTermsOfUse());
-            metadatas.add( df.getFileMetadata() );
+            metadatas.add(df.getFileMetadata());
         });
         ds.setFiles(files);
         final DatasetVersion initialVersion = ds.getVersions().get(0);
         initialVersion.setFileMetadatas(metadatas);
-        
+
         List<DatasetField> fields = new ArrayList<>();
         DatasetField field = new DatasetField();
         field.setId(nextId());
         field.setSingleValue("Sample Field Value");
-        field.setDatasetFieldType( makeDatasetFieldType() );
-        fields.add( field );
+        field.setDatasetFieldType(makeDatasetFieldType());
+        fields.add(field);
         initialVersion.setDatasetFields(fields);
-        ds.setOwner( makeDataverse() );
-        
+        ds.setOwner(makeDataverse());
+
         return ds;
     }
-    
+
     public static DatasetVersion makeDatasetVersion(List<DataFileCategory> categories) {
         final DatasetVersion retVal = new DatasetVersion();
         final List<DataFile> files = makeFiles(10);
@@ -178,66 +178,66 @@ public class MocksFactory {
         Random rand = new Random();
         files.forEach(df -> {
             df.getFileMetadata().addCategory(categories.get(rand.nextInt(categories.size())));
-            metadatas.add( df.getFileMetadata() );
+            metadatas.add(df.getFileMetadata());
         });
         retVal.setFileMetadatas(metadatas);
-        
+
         List<DatasetField> fields = new ArrayList<>();
         DatasetField field = new DatasetField();
         field.setId(nextId());
         field.setSingleValue("Sample Field Value");
-        field.setDatasetFieldType( makeDatasetFieldType() );
-        fields.add( field );
+        field.setDatasetFieldType(makeDatasetFieldType());
+        fields.add(field);
         retVal.setDatasetFields(fields);
-        
+
         return retVal;
     }
-    
+
     public static DatasetFieldType makeDatasetFieldType() {
         final Long id = nextId();
-        DatasetFieldType retVal = new DatasetFieldType("SampleType-"+id, FieldType.TEXT, false);
+        DatasetFieldType retVal = new DatasetFieldType("SampleType-" + id, FieldType.TEXT, false);
         retVal.setId(id);
         return retVal;
     }
-    
-    public static DataverseRole makeRole( String name ) {
+
+    public static DataverseRole makeRole(String name) {
         DataverseRole dvr = new DataverseRole();
-        
-        dvr.setId( nextId() );
-        dvr.setAlias( name );
-        dvr.setName( name );
-        dvr.setDescription( name + "  " + name + " " + name );
-        
+
+        dvr.setId(nextId());
+        dvr.setAlias(name);
+        dvr.setName(name);
+        dvr.setDescription(name + "  " + name + " " + name);
+
         dvr.addPermission(Permission.ManageDatasetPermissions);
         dvr.addPermission(Permission.EditDataset);
         dvr.addPermission(Permission.PublishDataset);
         dvr.addPermission(Permission.ViewUnpublishedDataset);
-        
+
         return dvr;
     }
-    
-    public static DataverseFieldTypeInputLevel makeDataverseFieldTypeInputLevel( DatasetFieldType fieldType ) {
+
+    public static DataverseFieldTypeInputLevel makeDataverseFieldTypeInputLevel(DatasetFieldType fieldType) {
         DataverseFieldTypeInputLevel retVal = new DataverseFieldTypeInputLevel();
-        
+
         retVal.setId(nextId());
         retVal.setInclude(true);
-        retVal.setDatasetFieldType( fieldType );
-        
+        retVal.setDatasetFieldType(fieldType);
+
         return retVal;
     }
-    
-    public static ExplicitGroup makeExplicitGroup( String name, ExplicitGroupProvider prv ) {
+
+    public static ExplicitGroup makeExplicitGroup(String name, ExplicitGroupProvider prv) {
         long id = nextId();
         ExplicitGroup eg = new ExplicitGroup(prv);
-        
+
         eg.setId(id);
-        eg.setDisplayName( name==null ? "explicitGroup-" + id : name );
+        eg.setDisplayName(name == null ? "explicitGroup-" + id : name);
         eg.setGroupAliasInOwner("eg" + id);
-        
+
         return eg;
     }
 
-    public static FileMetadata makeFileMetadata( Long id, String label, int displayOrder) {
+    public static FileMetadata makeFileMetadata(Long id, String label, int displayOrder) {
         FileMetadata fileMetadata = new FileMetadata();
         fileMetadata.setId(id);
 
@@ -248,8 +248,8 @@ public class MocksFactory {
 
         return fileMetadata;
     }
-    
-    public static ExplicitGroup makeExplicitGroup( ExplicitGroupProvider prv ) {
+
+    public static ExplicitGroup makeExplicitGroup(ExplicitGroupProvider prv) {
         return makeExplicitGroup(null, prv);
     }
 }

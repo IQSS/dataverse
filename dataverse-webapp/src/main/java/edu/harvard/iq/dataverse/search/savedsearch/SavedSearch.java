@@ -2,9 +2,7 @@ package edu.harvard.iq.dataverse.search.savedsearch;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,10 +13,13 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(indexes = {@Index(columnList="definitionpoint_id")
-		, @Index(columnList="creator_id")})
+@Table(indexes = {@Index(columnList = "definitionpoint_id")
+        , @Index(columnList = "creator_id")})
 public class SavedSearch implements Serializable {
 
     @Id
@@ -27,7 +28,7 @@ public class SavedSearch implements Serializable {
 
     /**
      * Must be non-null but a "*" (wildcard) can be used.
-     *
+     * <p>
      * https://wiki.apache.org/solr/CommonQueryParameters#q
      */
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -60,11 +61,11 @@ public class SavedSearch implements Serializable {
     /**
      * This default constructor is only here to prevent this error at
      * deployment:
-     *
+     * <p>
      * Exception Description: The instance creation method
      * [edu.harvard.iq.dataverse.search.savedsearch.SavedSearch.<Default Constructor>],
      * with no parameters, does not exist, or is not accessible
-     *
+     * <p>
      * Don't use it.
      */
     @Deprecated

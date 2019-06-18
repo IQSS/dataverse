@@ -18,12 +18,10 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-
 import java.util.List;
 import java.util.logging.Logger;
 
 /**
- *
  * @author skraffmi
  */
 @ViewScoped
@@ -36,26 +34,26 @@ public class GuestbookResponsesPage implements java.io.Serializable {
 
     @EJB
     GuestbookResponseServiceBean guestbookResponseService;
-    
+
     @EJB
     DataverseServiceBean dvService;
-    
+
     @EJB
     SystemConfig systemConfig;
-    
+
     @EJB
     SettingsServiceBean settingsService;
-    
+
     @Inject
     PermissionsWrapper permissionsWrapper;
-    
+
     private Long guestbookId;
-    
+
     private Long dataverseId;
 
 
     private Guestbook guestbook;
-    
+
     private Dataverse dataverse;
 
     private long displayLimit;
@@ -80,7 +78,7 @@ public class GuestbookResponsesPage implements java.io.Serializable {
     public void setResponsesAsArray(List<Object[]> responsesAsArray) {
         this.responsesAsArray = responsesAsArray;
     }
-    
+
     public String init() {
         guestbook = guestbookService.find(guestbookId);
         dataverse = dvService.find(dataverseId);
@@ -100,23 +98,22 @@ public class GuestbookResponsesPage implements java.io.Serializable {
         logger.info("Guestbook responses count: " + guestbook.getResponseCount());
         responsesAsArray = guestbookResponseService.findArrayByGuestbookIdAndDataverseId(guestbookId, dataverseId, displayLimit);
 
-        
 
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,
-                BundleUtil.getStringFromBundle("dataset.guestbooksResponses.tip.title"),
-                BundleUtil.getStringFromBundle("dataset.guestbooksResponses.tip.downloadascsv")));
+                                                                            BundleUtil.getStringFromBundle("dataset.guestbooksResponses.tip.title"),
+                                                                            BundleUtil.getStringFromBundle("dataset.guestbooksResponses.tip.downloadascsv")));
 
         return null;
     }
-    
-    private String getFileName(){
-       // The fix below replaces any spaces in the name of the dataverse with underscores;
-       // without it, the filename was chopped off (by the browser??), and the user 
-       // was getting the file name "Foo", instead of "Foo and Bar in Social Sciences.csv". -- L.A. 
-       return  dataverse.getName().replace(' ', '_') + "_" + guestbook.getId() + "_GuestbookReponses.csv";
+
+    private String getFileName() {
+        // The fix below replaces any spaces in the name of the dataverse with underscores;
+        // without it, the filename was chopped off (by the browser??), and the user
+        // was getting the file name "Foo", instead of "Foo and Bar in Social Sciences.csv". -- L.A.
+        return dataverse.getName().replace(' ', '_') + "_" + guestbook.getId() + "_GuestbookReponses.csv";
     }
 
-    public void streamResponsesByDataverseAndGuestbook(){
+    public void streamResponsesByDataverseAndGuestbook() {
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("text/comma-separated-values");
@@ -128,7 +125,7 @@ public class GuestbookResponsesPage implements java.io.Serializable {
             out.flush();
             ctx.responseComplete();
         } catch (Exception e) {
-            logger.warning("Failed to stream collected guestbook responses for guestbook " + guestbookId + ", dataverse "+dataverseId);
+            logger.warning("Failed to stream collected guestbook responses for guestbook " + guestbookId + ", dataverse " + dataverseId);
         }
     }
     
@@ -196,7 +193,7 @@ public class GuestbookResponsesPage implements java.io.Serializable {
 
         return sb.toString();
     } */
-    
+
     public Dataverse getDataverse() {
         return dataverse;
     }
@@ -204,8 +201,8 @@ public class GuestbookResponsesPage implements java.io.Serializable {
     public void setDataverse(Dataverse dataverse) {
         this.dataverse = dataverse;
     }
-    
-    
+
+
     public Long getDataverseId() {
         return dataverseId;
     }
@@ -213,7 +210,7 @@ public class GuestbookResponsesPage implements java.io.Serializable {
     public void setDataverseId(Long dataverseId) {
         this.dataverseId = dataverseId;
     }
-    
+
     public Long getGuestbookId() {
         return guestbookId;
     }

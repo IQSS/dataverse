@@ -1,47 +1,48 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
-import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.Response;
-import java.util.logging.Logger;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import com.jayway.restassured.parsing.Parser;
 import com.jayway.restassured.path.json.JsonPath;
-
-import java.util.List;
-import java.util.Map;
-import javax.json.JsonObject;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
+import com.jayway.restassured.path.xml.XmlPath;
+import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.DataFile;
-import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import java.util.UUID;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import org.apache.commons.lang.StringUtils;
-import com.jayway.restassured.parsing.Parser;
-import static com.jayway.restassured.path.json.JsonPath.with;
-import com.jayway.restassured.path.xml.XmlPath;
-import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.apache.commons.lang.StringUtils;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObjectBuilder;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.logging.Logger;
+
+import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.path.json.JsonPath.with;
+import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
+import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -100,7 +101,7 @@ public class DatasetsIT {
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        
+
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
@@ -112,7 +113,7 @@ public class DatasetsIT {
         Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
         datasetAsJson.then().assertThat()
                 .statusCode(OK.getStatusCode());
-       
+
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
         assertEquals(10, identifier.length());
 
@@ -129,7 +130,7 @@ public class DatasetsIT {
         assertEquals(200, deleteUserResponse.getStatusCode());
 
     }
-    
+
     @Test
     public void testAddUpdateDatasetViaNativeAPI() {
 
@@ -137,7 +138,7 @@ public class DatasetsIT {
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        
+
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
@@ -149,36 +150,35 @@ public class DatasetsIT {
         Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
         datasetAsJson.then().assertThat()
                 .statusCode(OK.getStatusCode());
-       
+
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
-        
+
         //Test Add Data
-        
-        
+
+
         Response getDatasetJsonBeforePublishing = UtilIT.nativeGet(datasetId, apiToken);
         getDatasetJsonBeforePublishing.prettyPrint();
         String protocol = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.protocol");
         String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
-        
+
         String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
         String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-add-metadata.json";
         Response addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);
         addSubjectViaNative.prettyPrint();
         addSubjectViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
 
-        
+
         RestAssured.registerParser("text/plain", Parser.JSON);
         Response exportDatasetAsJson = UtilIT.exportDataset(datasetPersistentId, "dataverse_json", apiToken);
         exportDatasetAsJson.prettyPrint();
-        
+
         pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-add-subject-metadata.json";
         addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);
         addSubjectViaNative.prettyPrint();
         addSubjectViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
 
         String pathToJsonFileSingle = "doc/sphinx-guides/source/_static/api/dataset-simple-update-metadata.json";
         Response addSubjectSingleViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileSingle, apiToken);
@@ -195,12 +195,12 @@ public class DatasetsIT {
 
 
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
-        
+
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
         //post publish update
-        String pathToJsonFilePostPub= "doc/sphinx-guides/source/_static/api/dataset-add-metadata-after-pub.json";
-       Response addDataToPublishedVersion = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFilePostPub, apiToken);
+        String pathToJsonFilePostPub = "doc/sphinx-guides/source/_static/api/dataset-add-metadata-after-pub.json";
+        Response addDataToPublishedVersion = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFilePostPub, apiToken);
         addDataToPublishedVersion.prettyPrint();
         addDataToPublishedVersion.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -210,34 +210,34 @@ public class DatasetsIT {
         String pathToJsonFileBadDataSubtitle = "doc/sphinx-guides/source/_static/api/dataset-edit-metadata-subtitle.json";
         Response addDataToBadData = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileBadDataSubtitle, apiToken);
         addDataToBadData.prettyPrint();
-        
+
         addDataToBadData.then().assertThat()
                 .body("message", equalToCI("Error parsing dataset update: Invalid value submitted for Subtitle. It should be a single value."))
                 .statusCode(400);
-        
-                addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);
+
+        addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);
         addSubjectViaNative.prettyPrint();
         addSubjectViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
-               String pathToJsonDeleteFile = "doc/sphinx-guides/source/_static/api/dataset-delete-subject-metadata.json";
+
+        String pathToJsonDeleteFile = "doc/sphinx-guides/source/_static/api/dataset-delete-subject-metadata.json";
         addSubjectViaNative = UtilIT.deleteDatasetMetadataViaNative(datasetPersistentId, pathToJsonDeleteFile, apiToken);
         addSubjectViaNative.prettyPrint();
         addSubjectViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         pathToJsonDeleteFile = "doc/sphinx-guides/source/_static/api/dataset-delete-author-metadata.json";
         addSubjectViaNative = UtilIT.deleteDatasetMetadataViaNative(datasetPersistentId, pathToJsonDeleteFile, apiToken);
         addSubjectViaNative.prettyPrint();
         addSubjectViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         pathToJsonDeleteFile = "doc/sphinx-guides/source/_static/api/dataset-delete-author-no-match.json";
         addSubjectViaNative = UtilIT.deleteDatasetMetadataViaNative(datasetPersistentId, pathToJsonDeleteFile, apiToken);
         addSubjectViaNative.prettyPrint();
         addSubjectViaNative.then().assertThat().body("message", equalTo("Delete metadata failed: Author: Spruce, Sabrina not found."))
                 .statusCode(400);
-        
+
         //"Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found."
     }
 
@@ -254,10 +254,10 @@ public class DatasetsIT {
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         Response makeSuperUser = UtilIT.makeSuperUser(username);
         assertEquals(200, makeSuperUser.getStatusCode());
-        
+
         Response createNoAccessUser = UtilIT.createRandomUser();
         createNoAccessUser.prettyPrint();
-        String apiTokenNoAccess= UtilIT.getApiTokenFromResponse(createNoAccessUser);
+        String apiTokenNoAccess = UtilIT.getApiTokenFromResponse(createNoAccessUser);
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
@@ -273,11 +273,11 @@ public class DatasetsIT {
         String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
         String identifier = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.identifier");
         String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
-        
+
         Response datasetAsJsonNoAccess = UtilIT.nativeGet(datasetId, apiTokenNoAccess);
         datasetAsJsonNoAccess.then().assertThat()
-                .statusCode(UNAUTHORIZED.getStatusCode());        
- 
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
         Response attemptToPublishZeroDotOne = UtilIT.publishDatasetViaNativeApiDeprecated(datasetPersistentId, "minor", apiToken);
@@ -297,10 +297,10 @@ public class DatasetsIT {
                 // FIXME: make this less brittle by removing "2" and "0". See also test below.
                 .body("data.latestVersion.metadataBlocks.citation.fields[2].value[0].datasetContactEmail.value", equalTo("finch@mailinator.com"))
                 .statusCode(OK.getStatusCode());
-        
+
         Response datasetAsJsonNoAccessPostPublish = UtilIT.nativeGet(datasetId, apiTokenNoAccess);
         datasetAsJsonNoAccessPostPublish.then().assertThat()
-                .statusCode(OK.getStatusCode());        
+                .statusCode(OK.getStatusCode());
         assertTrue(datasetAsJsonNoAccessPostPublish.body().asString().contains(identifier));
 
         List<JsonObject> datasetContactsFromNativeGet = with(getDatasetJsonAfterPublishing.body().asString()).param("datasetContact", "datasetContact")
@@ -686,7 +686,7 @@ public class DatasetsIT {
         String contributorUsername = UtilIT.getUsernameFromResponse(createContributorResponse);
         String contributorApiToken = UtilIT.getApiTokenFromResponse(createContributorResponse);
         UtilIT.getRoleAssignmentsOnDataverse(dataverseAlias, apiToken).prettyPrint();
-        Response grantRoleShouldFail = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.EDITOR.toString(), "doesNotExist", apiToken);
+        Response grantRoleShouldFail = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.EDITOR, "doesNotExist", apiToken);
         grantRoleShouldFail.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo("Assignee not found"));
@@ -695,7 +695,7 @@ public class DatasetsIT {
          * "EditDataset", "DownloadFile", and "DeleteDatasetDraft" per
          * scripts/api/data/role-editor.json
          */
-        Response grantRole = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.EDITOR.toString(), "@" + contributorUsername, apiToken);
+        Response grantRole = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.EDITOR, "@" + contributorUsername, apiToken);
         grantRole.prettyPrint();
         assertEquals(OK.getStatusCode(), grantRole.getStatusCode());
         UtilIT.getRoleAssignmentsOnDataverse(dataverseAlias, apiToken).prettyPrint();
@@ -761,14 +761,14 @@ public class DatasetsIT {
          * asadmin create-jvm-options
          * "-Ddataverse.siteUrl=http\://localhost\:8080"
          */
-        
-        /* 
-         * Attempt to follow the private link url; as a user not otherwise 
+
+        /*
+         * Attempt to follow the private link url; as a user not otherwise
          * authorized to view the draft - and make sure they get the dataset page:
-         * 
+         *
          * MAKE SURE TO READ the note below, about jsessions and cookies!
-        */
-        
+         */
+
         Response getDatasetAsUserWhoClicksPrivateUrl = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get(urlWithToken);
@@ -839,7 +839,7 @@ public class DatasetsIT {
         assertEquals("Darwin's Finches - " + dataverseAlias, title);
          
         */
-        
+
         Response junkPrivateUrlToken = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/privateurl.xhtml?token=" + "junk");
@@ -1099,7 +1099,7 @@ public class DatasetsIT {
         Response uploadIngestableFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFileThatGoesThroughIngest, apiToken);
         uploadIngestableFile.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         Response deleteDataset = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDataset.prettyPrint();
         deleteDataset.then().assertThat()
@@ -1217,7 +1217,7 @@ public class DatasetsIT {
         if (stopEarlyBecauseYouDoNotHaveDcmInstalled) {
             return;
         }
-        
+
         boolean stopEarlyToVerifyTheScriptWasCreated = false;
         if (stopEarlyToVerifyTheScriptWasCreated) {
             logger.info("On the DCM, does /deposit/gen/upload-" + datasetId + ".bash exist? It should! Creating the dataset should be enough to create it.");
@@ -1274,7 +1274,7 @@ public class DatasetsIT {
             the CreateDatasetCommand is not getting the rsync script so the dataset is not being created
             so the whole test is failing
         */
-        
+
         boolean disabled = true;
 
         if (disabled) {
@@ -1492,14 +1492,14 @@ public class DatasetsIT {
         }
         logger.info("username/password: " + username);
     }
-    
+
     @Test
     public void testCreateDeleteDatasetLink() {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        
+
         Response superuserResponse = UtilIT.makeSuperUser(username);
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
@@ -1509,7 +1509,7 @@ public class DatasetsIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
-        
+
         // This should fail, because we are attempting to link the dataset 
         // to its own dataverse:
         Response publishTargetDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
@@ -1521,13 +1521,13 @@ public class DatasetsIT {
         publishDatasetForLinking.prettyPrint();
         publishDatasetForLinking.then().assertThat()
                 .statusCode(OK.getStatusCode());
-                        
+
         Response createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
         createLinkingDatasetResponse.prettyPrint();
         createLinkingDatasetResponse.then().assertThat()
                 .body("message", equalTo("Can't link a dataset to its dataverse"))
                 .statusCode(FORBIDDEN.getStatusCode());
-        
+
         // OK, let's create a different random dataverse:
         createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
@@ -1536,30 +1536,30 @@ public class DatasetsIT {
         publishDatasetForLinking.prettyPrint();
         publishTargetDataverse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         // And link the dataset to this new dataverse:
         createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
         createLinkingDatasetResponse.prettyPrint();
         createLinkingDatasetResponse.then().assertThat()
-                .body("data.message", equalTo("Dataset " + datasetId +" linked successfully to " + dataverseAlias))
+                .body("data.message", equalTo("Dataset " + datasetId + " linked successfully to " + dataverseAlias))
                 .statusCode(200);
-        
+
         // And now test deleting it:
         Response deleteLinkingDatasetResponse = UtilIT.deleteDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
         deleteLinkingDatasetResponse.prettyPrint();
-        
+
         deleteLinkingDatasetResponse.then().assertThat()
                 .body("data.message", equalTo("Link from Dataset " + datasetId + " to linked Dataverse " + dataverseAlias + " deleted"))
                 .statusCode(200);
     }
-    
+
     @Test
     public void testDatasetLocksApi() {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        
+
         Response superuserResponse = UtilIT.makeSuperUser(username);
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
@@ -1569,7 +1569,7 @@ public class DatasetsIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
-        
+
         // This should return an empty list, as the dataset should have no locks just yet:
         Response checkDatasetLocks = UtilIT.checkDatasetLocks(datasetId.longValue(), null, apiToken);
         checkDatasetLocks.prettyPrint();
@@ -1577,14 +1577,14 @@ public class DatasetsIT {
         checkDatasetLocks.then().assertThat()
                 .body("data", equalTo(emptyArray))
                 .statusCode(200);
-        
+
         // Lock the dataset with an ingest lock: 
         Response lockDatasetResponse = UtilIT.lockDataset(datasetId.longValue(), "Ingest", apiToken);
         lockDatasetResponse.prettyPrint();
         lockDatasetResponse.then().assertThat()
                 .body("data.message", equalTo("dataset locked with lock type Ingest"))
                 .statusCode(200);
-        
+
         // Check again: 
         // This should return an empty list, as the dataset should have no locks just yet:
         checkDatasetLocks = UtilIT.checkDatasetLocks(datasetId.longValue(), "Ingest", apiToken);
@@ -1592,7 +1592,7 @@ public class DatasetsIT {
         checkDatasetLocks.then().assertThat()
                 .body("data[0].lockType", equalTo("Ingest"))
                 .statusCode(200);
-        
+
         // Try to lock the dataset with the same type lock, AGAIN 
         // (this should fail, of course!)
         lockDatasetResponse = UtilIT.lockDataset(datasetId.longValue(), "Ingest", apiToken);
@@ -1600,15 +1600,15 @@ public class DatasetsIT {
         lockDatasetResponse.then().assertThat()
                 .body("message", equalTo("dataset already locked with lock type Ingest"))
                 .statusCode(FORBIDDEN.getStatusCode());
-             
+
         // And now test deleting the lock:
         Response unlockDatasetResponse = UtilIT.unlockDataset(datasetId.longValue(), "Ingest", apiToken);
         unlockDatasetResponse.prettyPrint();
-        
+
         unlockDatasetResponse.then().assertThat()
                 .body("data.message", equalTo("lock type Ingest removed"))
                 .statusCode(200);
-        
+
         // ... and check for the lock on the dataset again, this time by specific lock type: 
         // (should return an empty list, now that we have unlocked it)
         checkDatasetLocks = UtilIT.checkDatasetLocks(datasetId.longValue(), "Ingest", apiToken);
@@ -1617,7 +1617,7 @@ public class DatasetsIT {
                 .body("data", equalTo(emptyArray))
                 .statusCode(200);
     }
-    
+
     /**
      * This test requires the root dataverse to be published to pass.
      */
@@ -1673,5 +1673,5 @@ public class DatasetsIT {
         logger.info("datasetPersistentId: " + datasetPersistentId);
 
     }
-    
+
 }

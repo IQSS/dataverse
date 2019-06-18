@@ -9,14 +9,13 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 /**
- *
  * @author michael
  */
-@RequiredPermissions( Permission.ManageDataversePermissions )
+@RequiredPermissions(Permission.ManageDataversePermissions)
 public class DeleteExplicitGroupCommand extends AbstractVoidCommand {
-    
+
     private final ExplicitGroup explicitGroup;
-    
+
     public DeleteExplicitGroupCommand(DataverseRequest aRequest, ExplicitGroup anExplicitGroup) {
         super(aRequest, anExplicitGroup.getOwner());
         explicitGroup = anExplicitGroup;
@@ -29,11 +28,11 @@ public class DeleteExplicitGroupCommand extends AbstractVoidCommand {
         // Remove this group from all explicit groups it belongs to.
         ctxt.em().createNativeQuery(
                 "DELETE FROM explicitgroup_explicitgroup "
-              + "WHERE containedexplicitgroups_id=" + merged.getId()
+                        + "WHERE containedexplicitgroups_id=" + merged.getId()
         ).executeUpdate();
 
-        ctxt.explicitGroups().removeGroup( merged );
-        
+        ctxt.explicitGroups().removeGroup(merged);
+
     }
-    
+
 }

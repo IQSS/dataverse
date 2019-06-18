@@ -5,72 +5,73 @@
  */
 package edu.harvard.iq.dataverse.ingest;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+
+import static org.junit.Assert.assertEquals;
+
 /**
- *
  * @author rmp553
  */
 public class IngestableDataCheckerTest {
-   
+
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
-   
+
     public IngestableDataCheckerTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
 
     }
-    
+
     @Before
-    public void setUp() {     
+    public void setUp() {
     }
-    
+
     @After
     public void tearDown() {
-        
-     
+
+
     }
 
-    
+
     private File createTempFile(String filename, String fileContents) throws IOException {
 
-        if (filename == null){
+        if (filename == null) {
             return null;
         }
         File fh = this.tempFolder.newFile(filename);
         fh.createNewFile();
-        
-        if (fileContents != null){
+
+        if (fileContents != null) {
             FileUtils.writeStringToFile(fh, fileContents);
         }
-        
+
         return fh;
     }
-    
+
     private MappedByteBuffer createTempFileAndGetBuffer(String filename, String fileContents) throws IOException {
-        
+
         File fh = this.createTempFile(filename, fileContents);
-        
+
         FileChannel srcChannel = new FileInputStream(fh).getChannel();
 
         // create a read-only MappedByteBuffer
@@ -94,26 +95,26 @@ public class IngestableDataCheckerTest {
         fail("The test case is a prototype.");
     }
     */
-    
-    private void msg(String m){
+    private void msg(String m) {
         System.out.println(m);
     }
 
 
-    private void msgt(String m){
+    private void msgt(String m) {
         msg("---------------------------");
         msg(m);
         msg("---------------------------");
     }
-    
+
     /**
      * Test of testDTAformat method, of class IngestableDataChecker.
+     *
      * @throws java.io.IOException
      */
     @Test
     public void testTestDTAformat() throws IOException {
         msgt("(1) testDTAformat");
-        
+
         msgt("(1a) Mock a Legit Stata File (application/x-stata)");
         MappedByteBuffer buff = createTempFileAndGetBuffer("testDTA.txt", "l   ");
 
@@ -121,16 +122,16 @@ public class IngestableDataCheckerTest {
         String result = instance.testDTAformat(buff);
         msg("result 1a: " + result);
         assertEquals(result, "application/x-stata");
-   
-        
+
+
         msgt("(1b) File is empty string (non-DTA)");
         buff = createTempFileAndGetBuffer("notDTA.txt", "");
         instance = new IngestableDataChecker();
         result = instance.testDTAformat(buff);
         msg("result 1b: " + result);
         assertEquals(result, null);
-        
-        
+
+
         msgt("(1c) File is some random text (non-DTA)");
         buff = createTempFileAndGetBuffer("notDTA2.txt", "hello-non-stata-file-how-are-you");
         instance = new IngestableDataChecker();
@@ -138,17 +139,17 @@ public class IngestableDataCheckerTest {
         msg("result 1c: " + result);
         assertEquals(result, null);
 
-        
+
         msgt("(1d) Mock a Legit Stata File with STATA_13_HEADER");
         buff = createTempFileAndGetBuffer("testDTA2.txt", IngestableDataChecker.STATA_13_HEADER);
         result = instance.testDTAformat(buff);
         msg("result 1d: " + result);
         assertEquals(result, "application/x-stata-13");
-        
-   
+
+
     }
 
-    
+
     /**
      * Test of testSAVformat method, of class IngestableDataChecker.
      */

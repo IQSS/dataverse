@@ -6,7 +6,8 @@
 package edu.harvard.iq.dataverse;
 
 
-import java.io.Serializable;
+import org.hibernate.validator.constraints.NotBlank;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -15,35 +16,34 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import org.hibernate.validator.constraints.NotBlank;
+import java.io.Serializable;
 
 /**
- *
  * @author luopc
  */
 @NamedQueries(
-        @NamedQuery( name="DOIDataCiteRegisterCache.findByDoi",
-                     query="SELECT d FROM DOIDataCiteRegisterCache d WHERE d.doi=:doi")
+        @NamedQuery(name = "DOIDataCiteRegisterCache.findByDoi",
+                query = "SELECT d FROM DOIDataCiteRegisterCache d WHERE d.doi=:doi")
 )
 @Entity
-public class DOIDataCiteRegisterCache implements Serializable{
+public class DOIDataCiteRegisterCache implements Serializable {
 
     private static final long serialVersionUID = 8030143094734315681L;
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @NotBlank
-    @Column(unique=true)
+    @Column(unique = true)
     private String doi;
-    
+
     @NotBlank
     private String url;
-    
+
     @NotBlank
     private String status;
-    
+
     @NotBlank
     @Lob
     private String xml;

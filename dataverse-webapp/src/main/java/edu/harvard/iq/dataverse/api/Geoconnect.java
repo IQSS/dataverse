@@ -4,9 +4,7 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.logging.Logger;
+
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -14,6 +12,10 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.logging.Logger;
+
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 /**

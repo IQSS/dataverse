@@ -4,15 +4,16 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+
+import javax.ejb.EJB;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
 
 /**
  * @todo Rename this to ApiTokenFragment? The separate page is being taken out
@@ -30,14 +31,12 @@ public class ApiTokenPage implements java.io.Serializable {
     AuthenticationServiceBean authSvc;
 
     ApiToken apiToken;
-    
+
     public boolean checkForApiToken() {
-        if (session.getUser().isAuthenticated()){
+        if (session.getUser().isAuthenticated()) {
             AuthenticatedUser au = (AuthenticatedUser) session.getUser();
             apiToken = authSvc.findApiTokenByUser(au);
-            if (apiToken != null) {
-                return true;
-            }
+            return apiToken != null;
         }
         return false;
     }
@@ -80,7 +79,7 @@ public class ApiTokenPage implements java.io.Serializable {
             c.roll(Calendar.YEAR, 1);
             newToken.setExpireTime(new Timestamp(c.getTimeInMillis()));
             authSvc.save(newToken);
-            
+
         }
     }
 }

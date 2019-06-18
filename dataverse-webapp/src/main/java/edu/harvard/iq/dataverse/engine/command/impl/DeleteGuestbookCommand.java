@@ -15,16 +15,15 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 /**
- *
  * @author skraffmi
  */
-@RequiredPermissions( Permission.EditDataverse )
-public class DeleteGuestbookCommand extends AbstractCommand<Dataverse>{
+@RequiredPermissions(Permission.EditDataverse)
+public class DeleteGuestbookCommand extends AbstractCommand<Dataverse> {
 
     private final Guestbook doomed;
     private final Dataverse editedDv;
-    
-    public DeleteGuestbookCommand(DataverseRequest aRequest, Dataverse editedDv , Guestbook doomed) {
+
+    public DeleteGuestbookCommand(DataverseRequest aRequest, Dataverse editedDv, Guestbook doomed) {
         super(aRequest, editedDv);
         this.editedDv = editedDv;
         this.doomed = doomed;
@@ -37,5 +36,5 @@ public class DeleteGuestbookCommand extends AbstractCommand<Dataverse>{
         ctxt.em().remove(doomedAndMerged);
         return merged;
     }
-    
+
 }

@@ -6,14 +6,15 @@
 package edu.harvard.iq.dataverse.api;
 
 //import java.io.ByteArrayOutputStream;
+
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GuestbookResponse;
-import java.util.List;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 
+import java.util.List;
+
 /**
- *
  * @author Leonid Andreev
  */
 public class DownloadInstance {
@@ -28,33 +29,33 @@ public class DownloadInstance {
      public void setOutStream(ByteArrayOutputStream outStream) {
      this.outStream = outStream;
      }*/
-    
-    private List<Object> extraArguments = null; 
-    
+
+    private List<Object> extraArguments = null;
+
     public List<Object> getExtraArguments() {
-        return extraArguments; 
+        return extraArguments;
     }
-    
+
     public void setExtraArguments(List<Object> extraArguments) {
-        this.extraArguments = extraArguments; 
+        this.extraArguments = extraArguments;
     }
-     
+
 
     private DownloadInfo downloadInfo = null;
     private String conversionParam = null;
     private String conversionParamValue = null;
-    
+
     private EjbDataverseEngine command;
 
     private DataverseRequestServiceBean dataverseRequestService;
 
     private GuestbookResponse gbr;
-      
+
 
     public DownloadInstance() {
-        
+
     }
-    
+
     public DownloadInstance(DownloadInfo info) {
         this.downloadInfo = info;
     }
@@ -97,8 +98,8 @@ public class DownloadInstance {
                     // Special case for the subsetting parameter (variables=<LIST>):
                     if ("subset".equals(dataService.getServiceName())) {
                         conversionParam = "subset";
-                        conversionParamValue = serviceArgValue; 
-                        return true; 
+                        conversionParamValue = serviceArgValue;
+                        return true;
                     }
                 } else if (serviceArg.equals("noVarHeader")) {
                     // Another special case available for tabular ("subsettable") data files - 
@@ -161,8 +162,8 @@ public class DownloadInstance {
         }
         return null;
     }
-    
-    
+
+
     public EjbDataverseEngine getCommand() {
         return command;
     }
@@ -178,8 +179,8 @@ public class DownloadInstance {
     public void setGbr(GuestbookResponse gbr) {
         this.gbr = gbr;
     }
-    
-    
+
+
     public DataverseRequestServiceBean getDataverseRequestService() {
         return dataverseRequestService;
     }
@@ -187,5 +188,5 @@ public class DownloadInstance {
     public void setDataverseRequestService(DataverseRequestServiceBean dataverseRequestService) {
         this.dataverseRequestService = dataverseRequestService;
     }
-    
+
 }

@@ -20,11 +20,16 @@
 
 package edu.harvard.iq.dataverse.ingest.tabulardata;
 
-import edu.harvard.iq.dataverse.ingest.tabulardata.spi.*;
-//import edu.harvard.iq.dataverse.ingest.plugin.metadata.*;
-import java.io.*;
-import static java.lang.System.*;
+import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.regex.Matcher;
+
+import static java.lang.System.out;
+
+//import edu.harvard.iq.dataverse.ingest.plugin.metadata.*;
 
 /**
  * An abstract superclass for reading and writing of a statistical data file.
@@ -35,37 +40,36 @@ import java.util.regex.Matcher;
  */
 public abstract class TabularDataFileReader {
 
-    
+
     /*
-     * TODO: rename! -- L.A. 4.0 
+     * TODO: rename! -- L.A. 4.0
      */
     public static String SDIO_VERSION = "4.0";
 
 
-    
     protected TabularDataFileReaderSpi originatingProvider;
 
-    protected TabularDataFileReader(TabularDataFileReaderSpi originatingProvider){
+    protected TabularDataFileReader(TabularDataFileReaderSpi originatingProvider) {
         this.originatingProvider = originatingProvider;
     }
-    
-    public TabularDataFileReader(){
+
+    public TabularDataFileReader() {
     }
 
     public TabularDataFileReaderSpi getOriginatingProvider() {
         return originatingProvider;
     }
-    
+
     public String getFormatName() throws IOException {
         return originatingProvider.getFormatNames()[0];
     }
-    
+
     public void dispose() {
-    
+
     }
-    
-    protected String dataLanguageEncoding; 
-    
+
+    protected String dataLanguageEncoding;
+
     public String getDataLanguageEncoding() {
         return dataLanguageEncoding;
     }
@@ -73,37 +77,32 @@ public abstract class TabularDataFileReader {
     public void setDataLanguageEncoding(String dataLanguageEncoding) {
         this.dataLanguageEncoding = dataLanguageEncoding;
     }
-    
+
     /**
      * Reads the statistical data file from a supplied
-     * <code>BufferedInputStream</code> and 
+     * <code>BufferedInputStream</code> and
      * returns its contents as a <code>SDIOData</code>.
-     *
+     * <p>
      * The second parameter, dataFile has been added to the method
      * declaration in for implementation by plugins that provide
      * 2 file ingest, with the data set metadata in one file
      * (for ex., SPSS control card) and the raw data in a separate
      * file (character-delimited, fixed-field, etc.)
      *
-     * 
-     * @param stream  a <code>BufferedInputStream</code>
-     * where a statistical data file is connected.
-     *
+     * @param stream   a <code>BufferedInputStream</code>
+     *                 where a statistical data file is connected.
      * @param dataFile <code>File</code> optional parameter
-     * representing the raw data file. For the plugins that only support
-     * single file ingest, this should be set to null.
-     *
-     *
+     *                 representing the raw data file. For the plugins that only support
+     *                 single file ingest, this should be set to null.
      * @return reading results as a <code>SDIOData</code>
-     *
      * @throws java.io.IOException if a reading error occurs.
      */
     public abstract TabularDataIngest read(BufferedInputStream stream, File dataFile)
-        throws IOException;
+            throws IOException;
 
-    
+
     // should this be an abstract method as well? 
-    
+
     public boolean isValid(File ddiFile) throws IOException {
         return false;
     }
@@ -131,17 +130,17 @@ public abstract class TabularDataFileReader {
     }
 
     /**
-     * Returns a new null-character-free <code>String</code> object 
+     * Returns a new null-character-free <code>String</code> object
      * from an original <code>String</code> one that may contains
      * null characters.
-     * 
+     *
      * @param rawString a<code>String</code> object
      * @return a new, null-character-free <code>String</code> object
      */
-    protected String getNullStrippedString(String rawString){
+    protected String getNullStrippedString(String rawString) {
         String nullRemovedString = null;
         int null_position = rawString.indexOf(0);
-        if (null_position >= 0){
+        if (null_position >= 0) {
             // string is terminated by the null
             nullRemovedString = rawString.substring(0, null_position);
         } else {
@@ -150,13 +149,13 @@ public abstract class TabularDataFileReader {
         }
         return nullRemovedString;
     }
-    
+
     protected String escapeCharacterString(String rawString) {
         /*
-         * Some special characters, like new lines and tabs need to 
-         * be escaped - otherwise they will break our TAB file 
-         * structure! 
-         * But before we escape anything, all the back slashes 
+         * Some special characters, like new lines and tabs need to
+         * be escaped - otherwise they will break our TAB file
+         * structure!
+         * But before we escape anything, all the back slashes
          * already in the string need to be escaped themselves.
          */
         String escapedString = rawString.replace("\\", "\\\\");
@@ -166,14 +165,14 @@ public abstract class TabularDataFileReader {
         escapedString = escapedString.replaceAll("\t", Matcher.quoteReplacement("\\t"));
         escapedString = escapedString.replaceAll("\n", Matcher.quoteReplacement("\\n"));
         escapedString = escapedString.replaceAll("\r", Matcher.quoteReplacement("\\r"));
-        
+
         // the escaped version of the string is stored in the tab file 
         // enclosed in double-quotes; this is in order to be able 
         // to differentiate between an empty string (tab-delimited empty string in 
         // double quotes) and a missing value (tab-delimited empty string). 
-     
+
         escapedString = "\"" + escapedString + "\"";
-        
+
         return escapedString;
     }
 

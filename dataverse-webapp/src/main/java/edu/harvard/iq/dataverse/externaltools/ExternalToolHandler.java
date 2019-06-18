@@ -2,19 +2,18 @@ package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
+
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Handles an operation on a specific file. Requires a file id in order to be
@@ -33,9 +32,9 @@ public class ExternalToolHandler {
 
     /**
      * @param externalTool The database entity.
-     * @param dataFile Required.
-     * @param apiToken The apiToken can be null because "explore" tools can be
-     * used anonymously.
+     * @param dataFile     Required.
+     * @param apiToken     The apiToken can be null because "explore" tools can be
+     *                     used anonymously.
      */
     public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken) {
         this.externalTool = externalTool;
@@ -106,7 +105,7 @@ public class ExternalToolHandler {
                 }
                 if (("DRAFT").equals(version)) {
                     version = ":draft"; // send the token needed in api calls that can be substituted for a numeric
-                                        // version.
+                    // version.
                 }
                 return key + "=" + version;
             default:

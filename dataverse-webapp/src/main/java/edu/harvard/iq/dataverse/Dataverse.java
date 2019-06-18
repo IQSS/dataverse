@@ -67,8 +67,6 @@ public class Dataverse extends DvObjectContainer {
         RESEARCHERS, RESEARCH_PROJECTS, JOURNALS, ORGANIZATIONS_INSTITUTIONS, TEACHING_COURSES, UNCATEGORIZED, LABORATORY, RESEARCH_GROUP, DEPARTMENT
     }
 
-    ;
-
     private static final long serialVersionUID = 1L;
 
     @NotBlank(message = "{dataverse.name}")

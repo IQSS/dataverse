@@ -6,7 +6,11 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
-import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataset;
+import org.dataverse.unf.UNFUtil;
+import org.dataverse.unf.UnfException;
+import org.junit.Test;
+
+import javax.validation.ConstraintViolation;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -16,13 +20,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.validation.ConstraintViolation;
-import org.dataverse.unf.UNFUtil;
-import org.dataverse.unf.UnfException;
-import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataset;
+import static org.junit.Assert.assertEquals;
 
 public class IngestUtilTest {
 

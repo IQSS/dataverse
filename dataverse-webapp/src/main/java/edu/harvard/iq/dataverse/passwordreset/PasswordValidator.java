@@ -5,6 +5,7 @@ package edu.harvard.iq.dataverse.passwordreset;
  * @todo perhaps replace with
  * https://code.google.com/p/vt-middleware/wiki/vtpassword
  */
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,10 +32,10 @@ public class PasswordValidator {
      * @return
      */
     public static PasswordValidator buildValidator(boolean forceSpecialChar,
-            boolean forceCapitalLetter,
-            boolean forceNumber,
-            int minLength,
-            int maxLength) {
+                                                   boolean forceCapitalLetter,
+                                                   boolean forceNumber,
+                                                   int minLength,
+                                                   int maxLength) {
         // [a-z] is why one letter is required
         StringBuilder patternBuilder = new StringBuilder("((?=.*[a-z])");
 

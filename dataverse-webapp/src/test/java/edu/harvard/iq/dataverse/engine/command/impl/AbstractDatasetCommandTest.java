@@ -6,29 +6,31 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
-import static edu.harvard.iq.dataverse.mocks.MocksFactory.*;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataverse;
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author michael
  */
 public class AbstractDatasetCommandTest {
-    
-   
-    @Test(expected=IllegalArgumentException.class)
+
+
+    @Test(expected = IllegalArgumentException.class)
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testNullDataset() {
         new AbstractDatasetCommandImpl(makeRequest(), null);
     }
-    
-    @Test(expected=IllegalArgumentException.class)
+
+    @Test(expected = IllegalArgumentException.class)
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testNullDatasetNonNullParent() {
         new AbstractDatasetCommandImpl(makeRequest(), null, makeDataverse());
     }
-    
+
     /**
      * Test of getDataset method, of class AbstractDatasetCommand.
      */
@@ -36,7 +38,7 @@ public class AbstractDatasetCommandTest {
     public void testGetDataset() {
         Dataset ds = MocksFactory.makeDataset();
         AbstractDatasetCommand instance = new AbstractDatasetCommandImpl(makeRequest(), ds);
-        assertEquals( ds, instance.getDataset() );
+        assertEquals(ds, instance.getDataset());
     }
 
     /**
@@ -47,7 +49,7 @@ public class AbstractDatasetCommandTest {
         Dataset ds = MocksFactory.makeDataset();
         AbstractDatasetCommand instance = new AbstractDatasetCommandImpl(makeRequest(), ds);
         long now = System.currentTimeMillis();
-        assertTrue( Math.abs(now-instance.getTimestamp().getTime()) < 20 ); // 20 milliseconds is equal enough.
+        assertTrue(Math.abs(now - instance.getTimestamp().getTime()) < 20); // 20 milliseconds is equal enough.
     }
 
     public class AbstractDatasetCommandImpl extends AbstractDatasetCommand {
@@ -67,5 +69,5 @@ public class AbstractDatasetCommandTest {
 
 
     }
-    
+
 }

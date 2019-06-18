@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.authorization;
 
-import java.util.Objects;
 import org.hibernate.validator.constraints.NotBlank;
 
+import java.util.Objects;
+
 /**
- *
  * @author gdurand
  */
 public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
@@ -14,34 +14,35 @@ public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
     @NotBlank(message = "{user.firstName}")
     private String firstName;
     private String position;
-    
+
     /*
      * @todo Shouldn't we persist the displayName too? It still exists on the
      * authenticateduser table.
      */
     public AuthenticatedUserDisplayInfo(String firstName, String lastName, String emailAddress, String affiliation, String position) {
-        super(firstName + " " + lastName,emailAddress,affiliation);
+        super(firstName + " " + lastName, emailAddress, affiliation);
         this.firstName = firstName;
         this.lastName = lastName;
-        this.position = position;        
+        this.position = position;
     }
 
     public AuthenticatedUserDisplayInfo() {
-        super("","","");
-        firstName="";
-        lastName="";
-        position="";
+        super("", "", "");
+        firstName = "";
+        lastName = "";
+        position = "";
     }
 
-    
+
     /**
      * Copy constructor (old school!)
+     *
      * @param src the display info {@code this} will be a copy of.
      */
-    public AuthenticatedUserDisplayInfo( AuthenticatedUserDisplayInfo src ) {
-        this( src.getFirstName(), src.getLastName(), src.getEmailAddress(), src.getAffiliation(), src.getPosition());
+    public AuthenticatedUserDisplayInfo(AuthenticatedUserDisplayInfo src) {
+        this(src.getFirstName(), src.getLastName(), src.getEmailAddress(), src.getAffiliation(), src.getPosition());
     }
-    
+
     public String getLastName() {
         return lastName;
     }
@@ -98,6 +99,6 @@ public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
         }
         return Objects.equals(this.position, other.position) && super.equals(obj);
     }
-    
+
 }
 

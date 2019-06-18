@@ -19,67 +19,70 @@
 */
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx;
 
-import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
+import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 
-import java.io.*;
-import java.util.logging.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.Locale;
+import java.util.logging.Logger;
 
 /*
- * New (in 4.0) Excel xslx (XML) spreadsheet ingest plugin, 
+ * New (in 4.0) Excel xslx (XML) spreadsheet ingest plugin,
  * Service Provider registry class.
  *
  * @author Leonid Andreev
  */
-public class XLSXFileReaderSpi extends TabularDataFileReaderSpi{
+public class XLSXFileReaderSpi extends TabularDataFileReaderSpi {
 
-  private static Logger LOG = Logger.getLogger(XLSXFileReaderSpi.class.getPackage().getName());
+    private static Logger LOG = Logger.getLogger(XLSXFileReaderSpi.class.getPackage().getName());
 
-  private static String[] formatNames = {"xlsx", "XLSX"};
-  private static String[] extensions = {"xlsx", "XLSX"};
-  private static String[] mimeType = {"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"};
-  // Yep, that's the official mime type for .xlsx spreadsheets!
-  // It's ok, we'll replace it with something user-friendly, when presenting it 
-  // to the user. 
+    private static String[] formatNames = {"xlsx", "XLSX"};
+    private static String[] extensions = {"xlsx", "XLSX"};
+    private static String[] mimeType = {"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"};
+    // Yep, that's the official mime type for .xlsx spreadsheets!
+    // It's ok, we'll replace it with something user-friendly, when presenting it
+    // to the user.
 
-  /*
-   * Construct  Object
-   */
-  public XLSXFileReaderSpi() {
-    super("HU-IQSS-DVN-project", "4.0", formatNames, extensions, mimeType, XLSXFileReaderSpi.class.getName());
-    LOG.fine(XLSXFileReaderSpi.class.getName()+" is called");
-  }
-  
-  public String getDescription(Locale locale) {
-    return "HU-IQSS-DVN-project Excel/XLSX";
-  }
-  
-  @Override
-  public boolean canDecodeInput(Object source) throws IOException {
-    
-    if (!(source instanceof BufferedInputStream))
-      return false;
+    /*
+     * Construct  Object
+     */
+    public XLSXFileReaderSpi() {
+        super("HU-IQSS-DVN-project", "4.0", formatNames, extensions, mimeType, XLSXFileReaderSpi.class.getName());
+        LOG.fine(XLSXFileReaderSpi.class.getName() + " is called");
+    }
 
-    return canDecodeInput((BufferedInputStream)source);
-  }
-  
-  @Override
-  public boolean canDecodeInput(BufferedInputStream stream) throws IOException {
-    return false;
-  }
-  
-  @Override
-  public boolean canDecodeInput(File file) throws IOException {
-    return true;
-  }
-  
-  public boolean fileIsValid() throws IOException {
-    return false; 
-  }
-  
-  @Override
-  public TabularDataFileReader createReaderInstance(Object ext) throws IOException {
-    return new XLSXFileReader(this);
-  }
+    public String getDescription(Locale locale) {
+        return "HU-IQSS-DVN-project Excel/XLSX";
+    }
+
+    @Override
+    public boolean canDecodeInput(Object source) throws IOException {
+
+        if (!(source instanceof BufferedInputStream)) {
+            return false;
+        }
+
+        return canDecodeInput((BufferedInputStream) source);
+    }
+
+    @Override
+    public boolean canDecodeInput(BufferedInputStream stream) throws IOException {
+        return false;
+    }
+
+    @Override
+    public boolean canDecodeInput(File file) throws IOException {
+        return true;
+    }
+
+    public boolean fileIsValid() throws IOException {
+        return false;
+    }
+
+    @Override
+    public TabularDataFileReader createReaderInstance(Object ext) throws IOException {
+        return new XLSXFileReader(this);
+    }
 }

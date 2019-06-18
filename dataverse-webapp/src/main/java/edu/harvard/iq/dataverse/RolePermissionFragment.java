@@ -17,15 +17,10 @@ import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdatePermissionRootCommand;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
+
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.event.ActionEvent;
@@ -34,13 +29,18 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
- *
  * @author gdurand
  */
 @ViewScoped
@@ -83,7 +83,7 @@ public class RolePermissionFragment implements java.io.Serializable {
 
     /* Inherit assignments related code */
     boolean inheritAssignments;
-    
+
     public boolean isInheritAssignments() {
         return inheritAssignments;
     }
@@ -95,7 +95,7 @@ public class RolePermissionFragment implements java.io.Serializable {
     public void updatePermissionRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
         try {
             dvObject = commandEngine.submit(
-                    new UpdatePermissionRootCommand(!inheritAssignments, 
+                    new UpdatePermissionRootCommand(!inheritAssignments,
                                                     dvRequestService.getDataverseRequest(),
                                                     (Dataverse) dvObject));
             inheritAssignments = !((DvObjectContainer) dvObject).isPermissionRoot();
@@ -125,9 +125,9 @@ public class RolePermissionFragment implements java.io.Serializable {
         }
         return returnList;
     }
-    
+
     private final List<RoleAssignee> roleAssigneeList = new ArrayList<>();
-    
+
     public List<RoleAssignee> completeRoleAssignee(String query) {
         if (roleAssigneeList.isEmpty()) {
             for (AuthenticatedUser au : authenticationService.findAllAuthenticatedUsers()) {
@@ -137,12 +137,12 @@ public class RolePermissionFragment implements java.io.Serializable {
         List<RoleAssignee> returnList = new ArrayList<>();
         for (RoleAssignee ra : roleAssigneeList) {
             // @todo unsure if containsIgnore case will work for all locales
-            if (StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(),query)) {
+            if (StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query)) {
                 returnList.add(ra);
             }
         }
         return returnList;
-    }    
+    }
 
     public List<DataverseRole> getAvailableRoles() {
         List<DataverseRole> roles = new LinkedList<>();
@@ -176,12 +176,13 @@ public class RolePermissionFragment implements java.io.Serializable {
         DataFile file = (DataFile) dvObject;
         file.setRestricted(!file.isRestricted());
     }
-    
+
     public void grantAccess(ActionEvent evt) {
         //RoleAssignee assignRoleRoleAssignee = roleAssigneeService.getRoleAssignee(assignRoleUsername);
-	// Find the built in file downloader role (currently by alias)        
+        // Find the built in file downloader role (currently by alias)
         assignRole(assignRoleRoleAssignee, roleService.findBuiltinRoleByAlias("fileDownloader"));
     }
+
     public void assignRole(ActionEvent evt) {
         //RoleAssignee assignRoleRoleAssignee = roleAssigneeService.getRoleAssignee(assignRoleUsername);
         assignRole(assignRoleRoleAssignee, roleService.find(assignRoleRoleId));
@@ -192,23 +193,23 @@ public class RolePermissionFragment implements java.io.Serializable {
             String privateUrlToken = null;
             commandEngine.submit(new AssignRoleCommand(ra, r, dvObject, dvRequestService.getDataverseRequest(), privateUrlToken));
             JH.addMessage(FacesMessage.SEVERITY_INFO,
-                BundleUtil.getStringFromBundle("permission.roleAssignedToOn" ,
-                        Arrays.asList( r.getName() , ra.getDisplayInfo().getTitle() , StringEscapeUtils.escapeHtml(dvObject.getDisplayName()) )) );
+                          BundleUtil.getStringFromBundle("permission.roleAssignedToOn",
+                                                         Arrays.asList(r.getName(), ra.getDisplayInfo().getTitle(), StringEscapeUtils.escapeHtml(dvObject.getDisplayName()))));
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.cannotAssignRole" , Arrays.asList( ex.getMessage())));
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.cannotAssignRole", Arrays.asList(ex.getMessage())));
         }
     }
 
     public void revokeRole(Long roleAssignmentId) {
         try {
             commandEngine.submit(new RevokeRoleCommand(em.find(RoleAssignment.class, roleAssignmentId), dvRequestService.getDataverseRequest()));
-            JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("permission.roleRevoked" ));
+            JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("permission.roleRevoked"));
         } catch (PermissionException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.cannotRevokeRole1" , Arrays.asList(ex.getRequiredPermissions().toString())));
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.cannotRevokeRole1", Arrays.asList(ex.getRequiredPermissions().toString())));
             logger.log(Level.SEVERE, "Error revoking role assignment: " + ex.getMessage(), ex);
 
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.cannotRevokeRole2" , Arrays.asList( ex.getMessage())));
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.cannotRevokeRole2", Arrays.asList(ex.getMessage())));
             logger.log(Level.SEVERE, "Error revoking role assignment: " + ex.getMessage(), ex);
         }
     }
@@ -228,7 +229,7 @@ public class RolePermissionFragment implements java.io.Serializable {
     public void setAssignRoleRoleAssignee(RoleAssignee assignRoleRoleAssignee) {
         this.assignRoleRoleAssignee = assignRoleRoleAssignee;
     }
-    
+
     public Long getAssignRoleRoleId() {
         return assignRoleRoleId;
     }
@@ -292,16 +293,16 @@ public class RolePermissionFragment implements java.io.Serializable {
         setRole(new DataverseRole());
         role.setOwner(dvObject);
     }
-    
+
     public void cloneRole(String roleId) {
         DataverseRole clonedRole = new DataverseRole();
         clonedRole.setOwner(dvObject);
-        
+
         DataverseRole originalRole = roleService.find(Long.parseLong(roleId));
         clonedRole.addPermissions(originalRole.permissions());
         setRole(clonedRole);
     }
-    
+
 
     public void editRole(String roleId) {
         setRole(roleService.find(Long.parseLong(roleId)));
@@ -317,9 +318,9 @@ public class RolePermissionFragment implements java.io.Serializable {
             }
             try {
                 setRole(commandEngine.submit(new CreateRoleCommand(role, dvRequestService.getDataverseRequest(), (Dataverse) role.getOwner())));
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("permission.roleSave" , Arrays.asList( role.getName() )));
+                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("permission.roleSave", Arrays.asList(role.getName())));
             } catch (CommandException ex) {
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.cannotSaveRole" , Arrays.asList( ex.getMessage())));
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.cannotSaveRole", Arrays.asList(ex.getMessage())));
                 logger.log(Level.SEVERE, "Saving role failed", ex);
             }
         }

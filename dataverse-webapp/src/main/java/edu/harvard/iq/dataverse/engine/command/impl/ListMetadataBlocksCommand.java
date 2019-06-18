@@ -15,14 +15,14 @@ import java.util.Set;
 
 /**
  * Lists the metadata blocks of a {@link Dataverse}.
- * 
+ *
  * @author michael
  */
 // no annotations here, since permissions are dynamically decided
-public class ListMetadataBlocksCommand extends AbstractCommand<List<MetadataBlock>>{
-    
+public class ListMetadataBlocksCommand extends AbstractCommand<List<MetadataBlock>> {
+
     private final Dataverse dv;
-    
+
     public ListMetadataBlocksCommand(DataverseRequest aRequest, Dataverse aDataverse) {
         super(aRequest, aDataverse);
         dv = aDataverse;
@@ -32,12 +32,12 @@ public class ListMetadataBlocksCommand extends AbstractCommand<List<MetadataBloc
     public List<MetadataBlock> execute(CommandContext ctxt) throws CommandException {
         return dv.getRootMetadataBlocks();
     }
-    
+
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         return Collections.singletonMap("",
-                dv.isReleased() ? Collections.<Permission>emptySet()
-                : Collections.singleton(Permission.ViewUnpublishedDataverse));
-    }    
-    
+                                        dv.isReleased() ? Collections.emptySet()
+                                                : Collections.singleton(Permission.ViewUnpublishedDataverse));
+    }
+
 }

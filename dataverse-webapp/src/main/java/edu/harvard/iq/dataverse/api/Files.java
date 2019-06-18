@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
@@ -22,8 +21,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteMapLayerMetadataCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
@@ -34,12 +33,10 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -50,20 +47,23 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.glassfish.jersey.media.multipart.FormDataParam;
 
 @Path("files")
 public class Files extends AbstractApiBean {
-    
+
     @EJB
     DatasetServiceBean datasetService;
     @EJB
     DatasetVersionServiceBean datasetVersionService;
     @EJB
-    DataverseServiceBean dataverseService;    
+    DataverseServiceBean dataverseService;
     @EJB
     IngestServiceBean ingestService;
     @Inject
@@ -78,28 +78,31 @@ public class Files extends AbstractApiBean {
     SettingsServiceBean settingsService;
     @Inject
     private TermsOfUseFactory termsOfUseFactory;
-    
+
     private static final Logger logger = Logger.getLogger(Files.class.getName());
-    
-    
-    
-    private void msg(String m){
+
+
+    private void msg(String m) {
         System.out.println(m);
     }
-    private void dashes(){
+
+    private void dashes() {
         msg("----------------");
     }
-    private void msgt(String m){
-        dashes(); msg(m); dashes();
+
+    private void msgt(String m) {
+        dashes();
+        msg(m);
+        dashes();
     }
-    
+
     /**
      * Restrict or Unrestrict an Existing File
-     * @author sarahferry
-     * 
+     *
      * @param fileToRestrictId
      * @param restrictStr
      * @return
+     * @author sarahferry
      */
     @PUT
     @Path("{id}/restrict")
@@ -115,7 +118,7 @@ public class Files extends AbstractApiBean {
         }
 
         boolean restrict = Boolean.valueOf(restrictStr);
-  
+
         try {
             dataverseRequest = createDataverseRequest(findUserOrDie());
         } catch (WrappedResponse wr) {
@@ -136,30 +139,30 @@ public class Files extends AbstractApiBean {
             return error(BAD_REQUEST, "Problem saving datafile " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());
         }
 
-        String text =  restrict ? "restricted." : "unrestricted.";
+        String text = restrict ? "restricted." : "unrestricted.";
         return ok("File " + dataFile.getDisplayName() + " " + text);
     }
-        
-    
+
+
     /**
-     * Replace an Existing File 
-     * 
+     * Replace an Existing File
+     *
      * @param datasetId
      * @param testFileInputStream
      * @param contentDispositionHeader
      * @param formDataBodyPart
-     * @return 
+     * @return
      */
     @POST
     @Path("{id}/replace")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response replaceFileInDataset(
-                    @PathParam("id") String fileIdOrPersistentId,
-                    @FormDataParam("jsonData") String jsonData,
-                    @FormDataParam("file") InputStream testFileInputStream,
-                    @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-                    @FormDataParam("file") final FormDataBodyPart formDataBodyPart
-                    ){
+            @PathParam("id") String fileIdOrPersistentId,
+            @FormDataParam("jsonData") String jsonData,
+            @FormDataParam("file") InputStream testFileInputStream,
+            @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+            @FormDataParam("file") final FormDataBodyPart formDataBodyPart
+    ) {
 
         if (!systemConfig.isHTTPUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
@@ -171,9 +174,9 @@ public class Files extends AbstractApiBean {
         try {
             authUser = findUserOrDie();
         } catch (AbstractApiBean.WrappedResponse ex) {
-            return error(Response.Status.FORBIDDEN, 
-                    BundleUtil.getStringFromBundle("file.addreplace.error.auth")
-                    );
+            return error(Response.Status.FORBIDDEN,
+                         BundleUtil.getStringFromBundle("file.addreplace.error.auth")
+            );
         }
 
         // -------------------------------------
@@ -211,8 +214,8 @@ public class Files extends AbstractApiBean {
         // -------------------------------------
         String newFilename = contentDispositionHeader.getFileName();
         String newFileContentType = formDataBodyPart.getMediaType().toString();
-        
-        
+
+
         //-------------------
         // (4) Create the AddReplaceFileHelper object
         //-------------------
@@ -220,13 +223,13 @@ public class Files extends AbstractApiBean {
 
         DataverseRequest dvRequest2 = createDataverseRequest(authUser);
         AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
-                                                this.ingestService,
-                                                this.datasetService,
-                                                this.fileService,
-                                                this.permissionSvc,
-                                                this.commandEngine,
-                                                this.settingsService,
-                                                this.termsOfUseFactory);
+                                                                      this.ingestService,
+                                                                      this.datasetService,
+                                                                      this.fileService,
+                                                                      this.permissionSvc,
+                                                                      this.commandEngine,
+                                                                      this.settingsService,
+                                                                      this.termsOfUseFactory);
 
         //-------------------
         // (5) Run "runReplaceFileByDatasetId"
@@ -235,8 +238,8 @@ public class Files extends AbstractApiBean {
         try {
             DataFile dataFile = findDataFileOrDie(fileIdOrPersistentId);
             fileToReplaceId = dataFile.getId();
-            
-            if (dataFile.isFilePackage()) {                           
+
+            if (dataFile.isFilePackage()) {
                 return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile"));
             }
         } catch (WrappedResponse ex) {
@@ -244,26 +247,26 @@ public class Files extends AbstractApiBean {
             // TODO: Some day, return ex.getResponse() instead. Also run FilesIT and updated expected status code and message.
             return error(BAD_REQUEST, error);
         }
-        if (forceReplace){
+        if (forceReplace) {
             addFileHelper.runForceReplaceFile(fileToReplaceId,
-                                    newFilename,
-                                    newFileContentType,
-                                    testFileInputStream,
-                                    optionalFileParams);
-        }else{
+                                              newFilename,
+                                              newFileContentType,
+                                              testFileInputStream,
+                                              optionalFileParams);
+        } else {
             addFileHelper.runReplaceFile(fileToReplaceId,
-                                    newFilename,
-                                    newFileContentType,
-                                    testFileInputStream,
-                                    optionalFileParams);            
-        }    
-            
+                                         newFilename,
+                                         newFileContentType,
+                                         testFileInputStream,
+                                         optionalFileParams);
+        }
+
         msg("we're back.....");
-        if (addFileHelper.hasError()){
-            msg("yes, has error");          
+        if (addFileHelper.hasError()) {
+            msg("yes, has error");
             return error(addFileHelper.getHttpErrorCode(), addFileHelper.getErrorMessagesAsString("\n"));
-        
-        }else{
+
+        } else {
             msg("no error");
             String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.replace");
 
@@ -287,7 +290,7 @@ public class Files extends AbstractApiBean {
 
             }
         }
-            
+
     } // end: replaceFileInDataset
 
     // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
@@ -313,7 +316,7 @@ public class Files extends AbstractApiBean {
             return error(BAD_REQUEST, "Problem trying to delete map from file id " + dataFile.getId() + ": " + ex.getLocalizedMessage());
         }
     }
-    
+
     @Path("{id}/uningest")
     @POST
     public Response uningestDatafile(@PathParam("id") String id) {
@@ -345,7 +348,7 @@ public class Files extends AbstractApiBean {
         }
 
     }
-    
+
     // reingest attempts to queue an *existing* DataFile 
     // for tabular ingest. It can be used on non-tabular datafiles; to try to 
     // ingest a file that has previously failed ingest, or to ingest a file of a
@@ -353,7 +356,7 @@ public class Files extends AbstractApiBean {
     // We are considering making it possible, in the future, to reingest 
     // a datafile that's already ingested as Tabular; for example, to address a 
     // bug that has been found in an ingest plugin. 
-    
+
     @Path("{id}/reingest")
     @POST
     public Response reingest(@PathParam("id") String id) {
@@ -367,7 +370,7 @@ public class Files extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        
+
         DataFile dataFile;
         try {
             dataFile = findDataFileOrDie(id);
@@ -376,39 +379,39 @@ public class Files extends AbstractApiBean {
         }
 
         Dataset dataset = dataFile.getOwner();
-        
+
         if (dataset == null) {
             return error(Response.Status.BAD_REQUEST, "Failed to locate the parent dataset for the datafile.");
         }
-        
+
         if (dataFile.isTabularData()) {
             return error(Response.Status.BAD_REQUEST, "The datafile is already ingested as Tabular.");
         }
-        
+
         boolean ingestLock = dataset.isLockedFor(DatasetLock.Reason.Ingest);
-        
+
         if (ingestLock) {
             return error(Response.Status.FORBIDDEN, "Dataset already locked with an Ingest lock");
         }
-        
+
         if (!FileUtil.canIngestAsTabular(dataFile)) {
-            return error(Response.Status.BAD_REQUEST, "Tabular ingest is not supported for this file type (id: "+id+", type: "+dataFile.getContentType()+")");
+            return error(Response.Status.BAD_REQUEST, "Tabular ingest is not supported for this file type (id: " + id + ", type: " + dataFile.getContentType() + ")");
         }
-        
+
         dataFile.SetIngestScheduled();
-                
+
         if (dataFile.getIngestRequest() == null) {
             dataFile.setIngestRequest(new IngestRequest(dataFile));
         }
 
         dataFile.getIngestRequest().setForceTypeCheck(true);
-        
+
         // update the datafile, to save the newIngest request in the database:
         dataFile = fileService.save(dataFile);
-        
+
         // queue the data ingest job for asynchronous execution: 
         String status = ingestService.startIngestJobs(new ArrayList<>(Arrays.asList(dataFile)), u);
-        
+
         if (!StringUtil.isEmpty(status)) {
             // This most likely indicates some sort of a problem (for example, 
             // the ingest job was not put on the JMS queue because of the size
@@ -416,13 +419,13 @@ public class Files extends AbstractApiBean {
             // from the point of view of the API, it's a success - we have 
             // successfully gone through the process of trying to schedule the 
             // ingest job...
-            
+
             return ok(status);
         }
         return ok("Datafile " + id + " queued for ingest");
 
     }
-            
+
     /**
      * Attempting to run metadata export, for all the formats for which we have
      * metadata Exporters.

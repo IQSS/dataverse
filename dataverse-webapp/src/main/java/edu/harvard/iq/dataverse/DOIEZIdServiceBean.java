@@ -14,7 +14,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author skraffmiller
  */
 @Stateless
@@ -48,7 +47,7 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public boolean alreadyExists(DvObject dvObject) throws Exception {
-        if(dvObject==null) {
+        if (dvObject == null) {
             logger.severe("Null DvObject sent to alreadyExists().");
             return false;
         }
@@ -57,18 +56,18 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public boolean alreadyExists(GlobalId pid) throws Exception {
-        logger.log(Level.FINE,"alreadyExists");
+        logger.log(Level.FINE, "alreadyExists");
         try {
             HashMap<String, String> result = ezidService.getMetadata(pid.asString());
             return result != null && !result.isEmpty();
             // TODO just check for HTTP status code 200/404, sadly the status code is swept under the carpet
-        } catch (EZIDException e ){
+        } catch (EZIDException e) {
             //No such identifier is treated as an exception
             //but if that is the case then we want to just return false
-            if(pid.getIdentifier() == null){
+            if (pid.getIdentifier() == null) {
                 return false;
             }
-            if (e.getLocalizedMessage().contains("no such identifier")){
+            if (e.getLocalizedMessage().contains("no such identifier")) {
                 return false;
             }
             logger.log(Level.WARNING, "alreadyExists failed");
@@ -83,7 +82,7 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public Map<String, String> getIdentifierMetadata(DvObject dvObject) {
-        logger.log(Level.FINE,"getIdentifierMetadata");
+        logger.log(Level.FINE, "getIdentifierMetadata");
         String identifier = getIdentifier(dvObject);
         Map<String, String> metadata = new HashMap<>();
         try {
@@ -102,17 +101,17 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
     /**
      * Looks up the metadata for a Global Identifier
      *
-     * @param protocol the identifier system, e.g. "doi"
-     * @param authority the namespace that the authority manages in the
-     * identifier system
-     * identifier part
+     * @param protocol   the identifier system, e.g. "doi"
+     * @param authority  the namespace that the authority manages in the
+     *                   identifier system
+     *                   identifier part
      * @param identifier the local identifier part
      * @return a Map of metadata. It is empty when the lookup failed, e.g. when
      * the identifier does not exist.
      */
     @Override
     public HashMap<String, String> lookupMetadataFromIdentifier(String protocol, String authority, String identifier) {
-        logger.log(Level.FINE,"lookupMetadataFromIdentifier");
+        logger.log(Level.FINE, "lookupMetadataFromIdentifier");
         String identifierOut = getIdentifierForLookup(protocol, authority, identifier);
         HashMap<String, String> metadata = new HashMap<>();
         try {
@@ -138,7 +137,7 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put("_target", getTargetUrl(dvObject));
         try {
-            ezidService.setMetadata(identifier,metadata);
+            ezidService.setMetadata(identifier, metadata);
             return identifier;
         } catch (EZIDException e) {
             logger.log(Level.WARNING, "modifyMetadata failed");
@@ -152,7 +151,7 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public void deleteIdentifier(DvObject dvObject) throws Exception {
-                logger.log(Level.FINE,"deleteIdentifier");
+        logger.log(Level.FINE, "deleteIdentifier");
         String identifier = getIdentifier(dvObject);
         HashMap<String, String> doiMetadata;
         try {
@@ -195,7 +194,7 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
                         metadata = new HashMap<>();
                         metadata.put("_target", "http://ezid.cdlib.org/id/" + df.getProtocol() + ":" + df.getAuthority()
                                 + "/" + df.getIdentifier());
-                                        modifyIdentifierTargetURL(df);
+                        modifyIdentifierTargetURL(df);
                     }
                 }
 
@@ -207,11 +206,11 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public boolean publicizeIdentifier(DvObject dvObject) {
-        logger.log(Level.FINE,"publicizeIdentifier - dvObject");
-        if(!dvObject.isIdentifierRegistered()){
+        logger.log(Level.FINE, "publicizeIdentifier - dvObject");
+        if (!dvObject.isIdentifierRegistered()) {
             try {
                 createIdentifier(dvObject);
-            } catch (Throwable e){
+            } catch (Throwable e) {
                 return false;
             }
         }
@@ -245,8 +244,8 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
     }
 
     @Override
-    public List<String> getProviderInformation(){
-        ArrayList <String> providerInfo = new ArrayList<>();
+    public List<String> getProviderInformation() {
+        ArrayList<String> providerInfo = new ArrayList<>();
         String providerName = "EZID";
         String providerLink = baseURLString;
         providerInfo.add(providerName);
@@ -257,7 +256,7 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
     @Override
     public String createIdentifier(DvObject dvObject) throws Throwable {
         logger.log(Level.FINE, "createIdentifier");
-        if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
+        if (dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty()) {
             dvObject = generateIdentifier(dvObject);
         }
         String identifier = getIdentifier(dvObject);
@@ -287,15 +286,16 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
     /**
      * Returns a HashMap with the same values as {@code map}. This can be either
      * {@code map} itself, or a new instance with the same values.
-     *
+     * <p>
      * This is needed as some of the internal APIs here require HashMap, but we
      * don't want the external APIs to use an implementation class.
+     *
      * @param <T>
      * @param map
      * @return A HashMap with the same values as {@code map}
      */
-    private <T> HashMap<T,T> asHashMap(Map<T,T> map) {
-        return (map instanceof HashMap) ? (HashMap)map : new HashMap<>(map);
+    private <T> HashMap<T, T> asHashMap(Map<T, T> map) {
+        return (map instanceof HashMap) ? (HashMap) map : new HashMap<>(map);
     }
 
 }

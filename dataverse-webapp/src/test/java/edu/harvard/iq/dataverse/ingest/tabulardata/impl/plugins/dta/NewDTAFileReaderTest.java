@@ -4,18 +4,20 @@ import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Ignore;
-import org.junit.Assert;
+
+import static org.junit.Assert.assertEquals;
 
 public class NewDTAFileReaderTest {
     NewDTAFileReader instance;
@@ -37,7 +39,7 @@ public class NewDTAFileReaderTest {
         assertEquals("Domestic", origins.get(0).getLabel());
         assertEquals("Foreign", origins.get(1).getLabel());
     }
-    
+
     @Test
     public void testStrl() throws IOException {
         instance = new NewDTAFileReader(null, 118);
@@ -47,17 +49,17 @@ public class NewDTAFileReaderTest {
         assertEquals("application/x-stata", table.getOriginalFileFormat());
         assertEquals("STATA 14", table.getOriginalFormatVersion());
         assertEquals(7, table.getDataVariables().size());
-        assertEquals(3, (long)table.getCaseQuantity());
-        
-        String[] vars = {"make","price","mpg","rep78","trunk","gear_ratio","strls"};
+        assertEquals(3, (long) table.getCaseQuantity());
+
+        String[] vars = {"make", "price", "mpg", "rep78", "trunk", "gear_ratio", "strls"};
         String[] actualVars = table.getDataVariables().stream().map((var) -> var.getName()).toArray(String[]::new);
         Assert.assertArrayEquals(vars, actualVars);
         String expected = "\"Buick LeSabre\"	5788	1.1111111111111111E21	100	32767	2.73	\"a\"\n" +
-                          "\"Buick Opel\"	4453	26.0		10	2.87	\"bb\"\n" +
-                          "\"Buick Regal\"	5189	20.0	3	16	2.93	\"ccc\"\n";
+                "\"Buick Opel\"	4453	26.0		10	2.87	\"bb\"\n" +
+                "\"Buick Regal\"	5189	20.0	3	16	2.93	\"ccc\"\n";
         assertEquals(expected, FileUtils.readFileToString(result.getTabDelimitedFile()));
     }
-    
+
     @Test
     public void testDates() throws IOException {
         instance = new NewDTAFileReader(null, 118);
@@ -67,17 +69,17 @@ public class NewDTAFileReaderTest {
         assertEquals("application/x-stata", table.getOriginalFileFormat());
         assertEquals("STATA 14", table.getOriginalFormatVersion());
         assertEquals(7, table.getDataVariables().size());
-        assertEquals(4, (long)table.getCaseQuantity());
-        String[] vars = {"Clock","Daily","Weekly","Monthly","Quarterly","BiAnnually","Annually"};
+        assertEquals(4, (long) table.getCaseQuantity());
+        String[] vars = {"Clock", "Daily", "Weekly", "Monthly", "Quarterly", "BiAnnually", "Annually"};
         String[] actualVars = table.getDataVariables().stream().map((var) -> var.getName()).toArray(String[]::new);
         Assert.assertArrayEquals(vars, actualVars);
         String expected = "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-01-01	2018-01-01	2018\n" +
-                          "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-04-01	2018-01-01	2018\n" +
-                          "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-07-01	2018-07-01	2018\n" +
-                          "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-11-01	2018-07-01	2018\n";
+                "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-04-01	2018-01-01	2018\n" +
+                "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-07-01	2018-07-01	2018\n" +
+                "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-11-01	2018-07-01	2018\n";
         assertEquals(expected, FileUtils.readFileToString(result.getTabDelimitedFile()));
     }
-    
+
     @Test(expected = IOException.class)
     public void testNull() throws IOException {
         instance = new NewDTAFileReader(null, 117);
@@ -124,7 +126,7 @@ public class NewDTAFileReaderTest {
         assertEquals("None matched", matching.get(0).getLabel());
         assertEquals("All matched", matching.get(1).getLabel());
     }
-    
+
     // TODO: Is there a way to exersise this code with a smaller file? 33k.dta is 21MB.
     @Ignore
     @Test
@@ -133,7 +135,7 @@ public class NewDTAFileReaderTest {
         // for i in `echo {0..33000}`; do echo -n "var$i,"; done > 33k.csv
         // Then open Stata 15, run `set maxvar 40000` and import.
     }
-    
+
     // TODO: Can we create a small file to check into the code base that exercises the characteristics issue?
     // FIXME: testCharacteristics is passing in DTA117FileReaderTest but not here.
     @Ignore

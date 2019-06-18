@@ -26,11 +26,10 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
- *
  * @author tjanek
  */
 @Entity
-@Table(indexes = {@Index(columnList="dataverse_id")})
+@Table(indexes = {@Index(columnList = "dataverse_id")})
 public class DataverseTextMessage implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DataverseTextMessage.class.getCanonicalName());
@@ -133,8 +132,12 @@ public class DataverseTextMessage implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         DataverseTextMessage that = (DataverseTextMessage) o;
         return Objects.equals(uuid, that.uuid);
     }

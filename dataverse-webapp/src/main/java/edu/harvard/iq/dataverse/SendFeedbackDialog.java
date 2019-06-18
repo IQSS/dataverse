@@ -7,9 +7,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.util.List;
-import java.util.Random;
-import java.util.logging.Logger;
+import org.apache.commons.validator.routines.EmailValidator;
+
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
@@ -20,7 +19,9 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.mail.internet.InternetAddress;
-import org.apache.commons.validator.routines.EmailValidator;
+import java.util.List;
+import java.util.Random;
+import java.util.logging.Logger;
 
 @ViewScoped
 @Named
@@ -132,7 +133,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
         if (recipient == null) {
             return BrandingUtil.getSupportTeamName(systemAddress, dataverseService.findRootDataverse().getName());
         } else if (recipient.isInstanceofDataverse()) {
-            return ((Dataverse) recipient).getDisplayName() + " " + BundleUtil.getStringFromBundle("contact.contact");
+            return recipient.getDisplayName() + " " + BundleUtil.getStringFromBundle("contact.contact");
         } else {
             return BundleUtil.getStringFromBundle("dataset") + " " + BundleUtil.getStringFromBundle("contact.contact");
         }

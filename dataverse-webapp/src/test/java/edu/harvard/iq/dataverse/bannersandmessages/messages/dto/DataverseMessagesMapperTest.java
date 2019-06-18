@@ -33,7 +33,7 @@ public class DataverseMessagesMapperTest {
             LocalDateTime.of(2018, 11, 2, 10, 25, 55));
 
     private DataverseMessagesMapper mapper;
-    
+
     @Mock
     private SettingsWrapper settingsWrapper;
 
@@ -41,7 +41,7 @@ public class DataverseMessagesMapperTest {
     @Before
     public void setUp() {
         mapper = new DataverseMessagesMapper(settingsWrapper);
-        
+
         when(settingsWrapper.getConfiguredLocales()).thenReturn(ImmutableMap.of("en", "English", "pl", "Polski"));
     }
 
@@ -102,17 +102,17 @@ public class DataverseMessagesMapperTest {
         // then
         assertEquals(2, localesDto.size());
         assertTrue(localesDto.containsAll(asList(
-                    new DataverseLocalizedMessageDto("pl", "", "Polski"),
-                    new DataverseLocalizedMessageDto("en", "", "English"))
-                )
+                new DataverseLocalizedMessageDto("pl", "", "Polski"),
+                new DataverseLocalizedMessageDto("en", "", "English"))
+                   )
         );
     }
 
     private void verifyThatLocalesWasMapped(DataverseTextMessageDto dto, String locale, String language, String message) {
         assertTrue(dto.getDataverseLocalizedMessage().stream()
-                .anyMatch(lm -> lm.getLocale().equals(locale) &&
-                        lm.getLanguage().equals(language) &&
-                        lm.getMessage().equals(message)));
+                           .anyMatch(lm -> lm.getLocale().equals(locale) &&
+                                   lm.getLanguage().equals(language) &&
+                                   lm.getMessage().equals(message)));
     }
 
     private void verifySuccessfullDtoMapping(DataverseTextMessageDto dto, Long id, boolean active,

@@ -21,11 +21,9 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.logging.Logger;
 
 
-
 /**
- *
  * Restrict or unrestricts an existing datafile
- * 
+ *
  * @author sarahferry
  */
 
@@ -35,18 +33,18 @@ public class RestrictFileCommand extends AbstractVoidCommand {
 
     private final DataFile file;
     private final boolean restrict;
-    
+
     public RestrictFileCommand(DataFile file, DataverseRequest aRequest, boolean restrict) {
         super(aRequest, file.getOwner());
         this.file = file;
         this.restrict = restrict;
-    }    
-       
+    }
+
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         // check if public install & don't allow
         boolean publicInstall = ctxt.settings().isTrueForKey(SettingsServiceBean.Key.PublicInstall);
-        
+
         if (publicInstall) {
             throw new CommandExecutionException("Restricting files is not permitted on a public installation.", this);
         }
@@ -60,8 +58,7 @@ public class RestrictFileCommand extends AbstractVoidCommand {
             // this is a new file through upload, restrict
             file.getFileMetadata().setRestricted(restrict);
             file.setRestricted(restrict);
-        }
-        else {
+        } else {
             Dataset dataset = file.getOwner();
             DatasetVersion workingVersion = dataset.getEditVersion();
             // We need the FileMetadata for the file in the draft dataset version and the
@@ -71,7 +68,7 @@ public class RestrictFileCommand extends AbstractVoidCommand {
                 // We want to update the draft version, which may not exist (if the file has
                 // been deleted from an existing draft, so we want null unless this file's
                 // metadata can be found in the current version
-                draftFmd=null;
+                draftFmd = null;
                 for (FileMetadata fmw : workingVersion.getFileMetadatas()) {
                     if (file.equals(fmw.getDataFile())) {
                         draftFmd = fmw;

@@ -46,7 +46,7 @@ public class IndexableDataset extends IndexableObject {
 
         private String suffix;
 
-        private DatasetState(String string) {
+        DatasetState(String string) {
             suffix = string;
         }
 

@@ -6,7 +6,6 @@
 
 package edu.harvard.iq.dataverse.api.imports;
 
-import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -15,18 +14,18 @@ import javax.persistence.Index;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 /**
- *
  * @author ekraffmiller
  */
 
 @Entity
 @NamedQueries(
-        @NamedQuery( name="CustomFieldMap.findByTemplateField",
-                     query="SELECT cfm FROM CustomFieldMap cfm WHERE cfm.sourceTemplate=:template and cfm.sourceDatasetField =:field")
+        @NamedQuery(name = "CustomFieldMap.findByTemplateField",
+                query = "SELECT cfm FROM CustomFieldMap cfm WHERE cfm.sourceTemplate=:template and cfm.sourceDatasetField =:field")
 )
-@Table(indexes = {@Index(columnList="sourcedatasetfield"), @Index(columnList="sourcetemplate")})
+@Table(indexes = {@Index(columnList = "sourcedatasetfield"), @Index(columnList = "sourcetemplate")})
 public class CustomFieldMap implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -43,9 +42,9 @@ public class CustomFieldMap implements Serializable {
     }
 
     private String sourceTemplate;
-    
+
     private String sourceDatasetField;
-    
+
     private String targetDatasetField;
 
     public String getSourceTemplate() {
@@ -72,6 +71,5 @@ public class CustomFieldMap implements Serializable {
         this.targetDatasetField = targetDatasetField;
     }
 
-   
-    
+
 }

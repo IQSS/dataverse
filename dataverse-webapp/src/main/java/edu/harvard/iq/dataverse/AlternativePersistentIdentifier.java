@@ -1,8 +1,5 @@
-
 package edu.harvard.iq.dataverse;
 
-import java.io.Serializable;
-import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -11,26 +8,27 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
- *
  * @author skraffmi
  */
 @Entity
 public class AlternativePersistentIdentifier implements Serializable {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-     /**
+
+    /**
      * Holds value of the DvObject
-     * a dvObject may have many Alternate Persistent Identifiers 
+     * a dvObject may have many Alternate Persistent Identifiers
      */
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DvObject dvObject;
-    
+
     private String protocol;
     private String authority;
 
@@ -38,11 +36,11 @@ public class AlternativePersistentIdentifier implements Serializable {
     private Date globalIdCreateTime;
 
     private String identifier;
-    
+
     private boolean identifierRegistered;
-    
+
     private boolean storageLocationDesignator;
-    
+
     public Long getId() {
         return id;
     }
@@ -98,7 +96,7 @@ public class AlternativePersistentIdentifier implements Serializable {
     public void setIdentifierRegistered(boolean identifierRegistered) {
         this.identifierRegistered = identifierRegistered;
     }
-    
+
     public boolean isStorageLocationDesignator() {
         return storageLocationDesignator;
     }
@@ -106,5 +104,5 @@ public class AlternativePersistentIdentifier implements Serializable {
     public void setStorageLocationDesignator(boolean localFileDirectory) {
         this.storageLocationDesignator = localFileDirectory;
     }
-    
+
 }

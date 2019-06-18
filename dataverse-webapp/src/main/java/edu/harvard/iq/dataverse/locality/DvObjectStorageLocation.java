@@ -1,17 +1,18 @@
 package edu.harvard.iq.dataverse.locality;
 
 import edu.harvard.iq.dataverse.DvObject;
-import java.io.Serializable;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+import java.io.Serializable;
 
 /**
  * Future use, maybe. Once we're happy with the design we'll enable it as an
  * entity.
- *
+ * <p>
  * TODO: Think more about what problems we're solving, what need to persist and
  * why.
  */
@@ -35,7 +36,7 @@ public class DvObjectStorageLocation implements Serializable {
 
     /**
      * See "primary" on the StorageSite object, which we are using instead.
-     *
+     * <p>
      * TODO: Consider deleting this field if we don't need it.
      */
     private Boolean primaryLocation;

@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.api.errorhandlers;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import javax.json.Json;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
@@ -15,20 +16,19 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 /**
- *
  * @author skraffmi
  */
 @Provider
 public class BadRequestExceptionHandler implements ExceptionMapper<BadRequestException> {
-    
+
     @Context
     HttpServletRequest request;
 
     @Override
     public Response toResponse(BadRequestException ex) {
-        System.out.print( ex.getMessage());
+        System.out.print(ex.getMessage());
         String uri = request.getRequestURI();
-        String exMessage = ex.getMessage(); 
+        String exMessage = ex.getMessage();
         String outputMessage;
         if (exMessage != null && exMessage.toLowerCase().startsWith("tabular data required")) {
             outputMessage = BundleUtil.getStringFromBundle("access.api.exception.metadata.not.available.for.nontabular.file");
@@ -36,14 +36,14 @@ public class BadRequestExceptionHandler implements ExceptionMapper<BadRequestExc
             outputMessage = "Bad Request. The API request cannot be completed with the parameters supplied. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.";
         }
         return Response.status(400)
-                .entity( Json.createObjectBuilder()
-                             .add("status", "ERROR")
-                             .add("code", 400)
-                             .add("message", "'" + uri + "' " + outputMessage)
-                        .build())
+                .entity(Json.createObjectBuilder()
+                                .add("status", "ERROR")
+                                .add("code", 400)
+                                .add("message", "'" + uri + "' " + outputMessage)
+                                .build())
                 .type("application/json").build();
-        
-       
+
+
     }
-    
+
 }

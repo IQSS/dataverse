@@ -17,11 +17,12 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 /**
  * Get the latest version of a dataset a user can view.
+ *
  * @author Naomi
  */
 // No permission needed to view published dvObjects
 @RequiredPermissions({})
-public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<DatasetVersion>{
+public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
     private final Dataset ds;
 
     public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset) {
@@ -39,7 +40,6 @@ public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<Da
         return ctxt.engine().submit(new GetLatestPublishedDatasetVersionCommand(getRequest(), ds));
 
     }
-    
-    
-    
+
+
 }

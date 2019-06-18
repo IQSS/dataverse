@@ -3,10 +3,12 @@ package edu.harvard.iq.dataverse.authorization.groups;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AllUsers;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import org.junit.Test;
+
 import java.util.LinkedHashSet;
 import java.util.Set;
+
 import static org.junit.Assert.assertEquals;
-import org.junit.Test;
 
 public class GroupUtilTest {
 

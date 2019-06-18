@@ -6,37 +6,37 @@
 
 package edu.harvard.iq.dataverse.api;
 
-import java.lang.reflect.Type;
-import java.lang.annotation.Annotation;
-import java.io.InputStream; 
-import java.io.OutputStream;
-import java.io.IOException;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessRequest;
+import edu.harvard.iq.dataverse.dataaccess.DataConverter;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataaccess.StoredOriginalFile;
 
 import javax.ws.rs.WebApplicationException;
-
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
-
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.dataaccess.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- *
  * @author Leonid Andreev
  */
 @Provider
 public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDownloadInstance> {
-    
+
     private static final Logger logger = Logger.getLogger(BundleDownloadInstanceWriter.class.getCanonicalName());
 
-    
+
     @Override
     public boolean isWriteable(Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType) {
         return clazz == BundleDownloadInstance.class;
@@ -47,8 +47,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
         return -1;
     }
 
-    
-    
+
     @Override
     public void writeTo(BundleDownloadInstance di, Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream outstream) throws IOException, WebApplicationException {
 
@@ -89,10 +88,10 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                     }
                     instream.close();
                     zout.closeEntry();
-                    instream = null; 
-                    
+                    instream = null;
+
                     // Now, the original format: 
-                    String origFormat = null; 
+                    String origFormat = null;
                     try {
                         StorageIO<DataFile> accessObjectOrig = StoredOriginalFile.retreive(accessObject); //.retrieve(sf, (FileAccessIO) accessObject);
                         if (accessObjectOrig != null) {
@@ -116,19 +115,25 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                         logger.warning("failed to retrieve saved original for " + fileName);
                     } finally {
                         if (instream != null) {
-                            try {instream.close();} catch (IOException ioex) {}
-                            try {zout.closeEntry();} catch (IOException ioex) {}
+                            try {
+                                instream.close();
+                            } catch (IOException ioex) {
+                            }
+                            try {
+                                zout.closeEntry();
+                            } catch (IOException ioex) {
+                            }
                         }
                     }
-                   
-                    instream = null; 
-                    
+
+                    instream = null;
+
                     // And, if the original format was NOT RData, 
                     // add an RData version: 
                     if (!"application/x-rlang-transport".equals(origFormat)) {
                         try {
                             StorageIO<DataFile> accessObjectRdata = DataConverter.performFormatConversion(sf, accessObject,
-                                                                                                           "RData", "application/x-rlang-transport");
+                                                                                                          "RData", "application/x-rlang-transport");
 
                             if (accessObjectRdata != null) {
                                 instream = accessObjectRdata.getInputStream();
@@ -147,15 +152,21 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                         } catch (IOException ioex) {
                             // ignore; if for whatever reason RData conversion is not
                             // available, we'll just skip it.
-                            logger.warning("failed to convert tabular data file "+fileName+" to RData.");
+                            logger.warning("failed to convert tabular data file " + fileName + " to RData.");
                         } finally {
                             if (instream != null) {
-                                try{instream.close();}catch(IOException ioex){}
-                                try{zout.closeEntry();}catch(IOException ioex){}
+                                try {
+                                    instream.close();
+                                } catch (IOException ioex) {
+                                }
+                                try {
+                                    zout.closeEntry();
+                                } catch (IOException ioex) {
+                                }
                             }
                         }
                     }
-                        
+
                     // And the variable metadata (DDI/XML), if available: 
                     if (di.getFileDDIXML() != null) {
                         e = new ZipEntry(fileName.replaceAll("\\.tab$", "-ddi.xml"));
@@ -167,7 +178,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
 
                     // And now the citations: 
                     if (di.getFileCitationEndNote() != null) {
-                        e = new ZipEntry(fileName.replaceAll("\\.tab$","citation-endnote.xml"));
+                        e = new ZipEntry(fileName.replaceAll("\\.tab$", "citation-endnote.xml"));
 
                         zout.putNextEntry(e);
                         zout.write(di.getFileCitationEndNote().getBytes());
@@ -176,7 +187,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                     }
 
                     if (di.getFileCitationRIS() != null) {
-                        e = new ZipEntry(fileName.replaceAll("\\.tab$","citation-ris.ris"));
+                        e = new ZipEntry(fileName.replaceAll("\\.tab$", "citation-ris.ris"));
 
                         zout.putNextEntry(e);
                         zout.write(di.getFileCitationRIS().getBytes());
@@ -184,7 +195,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                     }
 
                     if (di.getFileCitationBibtex() != null) {
-                        e = new ZipEntry(fileName.replaceAll("\\.tab$","citation-bib.bib"));
+                        e = new ZipEntry(fileName.replaceAll("\\.tab$", "citation-bib.bib"));
 
                         zout.putNextEntry(e);
                         zout.write(di.getFileCitationBibtex().getBytes());

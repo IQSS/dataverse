@@ -33,8 +33,9 @@ public class DvObjectServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     private static final Logger logger = Logger.getLogger(DvObjectServiceBean.class.getCanonicalName());
+
     /**
      * @param dvoc The object we check
      * @return {@code true} iff the passed object is the owner of any
@@ -59,8 +60,8 @@ public class DvObjectServiceBean implements java.io.Serializable {
     public List<DvObject> findAll() {
         return em.createNamedQuery("DvObject.findAll", DvObject.class).getResultList();
     }
-    
-    
+
+
     public List<DvObject> findByOwnerId(Long ownerId) {
         return em.createNamedQuery("DvObject.findByOwnerId").setParameter("ownerId", ownerId).getResultList();
     }
@@ -69,8 +70,8 @@ public class DvObjectServiceBean implements java.io.Serializable {
     public DvObject findByGlobalId(String globalIdString, String typeString) {
         return findByGlobalId(globalIdString, typeString, false);
     }
-    
-        // FIXME This type-by-string has to go, in favor of passing a class parameter.
+
+    // FIXME This type-by-string has to go, in favor of passing a class parameter.
     public DvObject findByGlobalId(String globalIdString, String typeString, Boolean altId) {
 
         try {
@@ -78,11 +79,11 @@ public class DvObjectServiceBean implements java.io.Serializable {
 
             DvObject foundDvObject = null;
             try {
-                Query query;                                
+                Query query;
                 if (altId) {
-                   query = em.createNamedQuery("DvObject.findByAlternativeGlobalId"); 
-                } else{
-                   query = em.createNamedQuery("DvObject.findByGlobalId");
+                    query = em.createNamedQuery("DvObject.findByAlternativeGlobalId");
+                } else {
+                    query = em.createNamedQuery("DvObject.findByGlobalId");
                 }
                 query.setParameter("identifier", gid.getIdentifier());
                 query.setParameter("protocol", gid.getProtocol());
@@ -121,7 +122,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
 
     /**
      * @param dvObject
-     * @return 
+     * @return
      * @todo DRY! Perhaps we should merge this with the older
      * updateContentIndexTime method.
      */
@@ -156,115 +157,115 @@ public class DvObjectServiceBean implements java.io.Serializable {
         int numRowsUpdated = clearIndexTimes.executeUpdate();
         return numRowsUpdated;
     }
-    
-    private String getDvObjectIdListClause(List<Long> dvObjectIdList){
-        if (dvObjectIdList == null){
+
+    private String getDvObjectIdListClause(List<Long> dvObjectIdList) {
+        if (dvObjectIdList == null) {
             return null;
         }
         List<String> outputList = new ArrayList<>();
-        
-        for(Long id : dvObjectIdList){
-            if (id != null){
+
+        for (Long id : dvObjectIdList) {
+            if (id != null) {
                 outputList.add(id.toString());
             }
         }
-        if (outputList.isEmpty()){
+        if (outputList.isEmpty()) {
             return null;
-        }        
-        return " (" + StringUtils.join(outputList, ",") + ")";        
+        }
+        return " (" + StringUtils.join(outputList, ",") + ")";
     }
-    
-    public List<Object[]> getDvObjectInfoForMyData(List<Long> dvObjectIdList){
+
+    public List<Object[]> getDvObjectInfoForMyData(List<Long> dvObjectIdList) {
         //msgt("getAssigneeAndRoleIdListFor");
 
         String dvObjectClause = getDvObjectIdListClause(dvObjectIdList);
-        if (dvObjectClause==null){
+        if (dvObjectClause == null) {
             return null;
         }
-        
+
         String qstr = "SELECT dv.id, dv.dtype, dv.owner_id"; // dv.modificationtime,
         qstr += " FROM dvobject dv";
         qstr += " WHERE  dv.id IN " + dvObjectClause;
         qstr += ";";
 
         return em.createNativeQuery(qstr).getResultList();
-        
+
     }
-    
+
     /**
      * Used for retrieving DvObject based on a list of parent Ids
-     *  MyData use case: The Dataverse has file permissions and we want to know 
-     *  the Datasets under that Dataverse (and subsequently query files by
-     *  their parent id--but in solr)
-     * 
+     * MyData use case: The Dataverse has file permissions and we want to know
+     * the Datasets under that Dataverse (and subsequently query files by
+     * their parent id--but in solr)
+     *
      * @param dvObjectParentIdList
-     * @return 
+     * @return
      */
-    public List<Object[]> getDvObjectInfoByParentIdForMyData(List<Long> dvObjectParentIdList){
+    public List<Object[]> getDvObjectInfoByParentIdForMyData(List<Long> dvObjectParentIdList) {
         //msgt("getAssigneeAndRoleIdListFor");
 
         String dvObjectClause = getDvObjectIdListClause(dvObjectParentIdList);
-        if (dvObjectClause==null){
+        if (dvObjectClause == null) {
             return null;
         }
-        
+
         String qstr = "SELECT dv.id, dv.dtype, dv.owner_id"; // dv.modificationtime,
         qstr += " FROM dvobject dv";
         qstr += " WHERE  dv.owner_id IN " + dvObjectClause;
         qstr += ";";
 
         return em.createNativeQuery(qstr).getResultList();
-        
+
     }
-    
+
     /**
      * Used to exclude Harvested Data from the Mydata page
-     * 
-     * @return 
+     *
+     * @return
      */
-    public List<Long> getAllHarvestedDataverseIds(){
-        
+    public List<Long> getAllHarvestedDataverseIds() {
+
         String qstr = "SELECT h.dataverse_id FROM harvestingclient h;";
 
         return em.createNativeQuery(qstr).getResultList();
-        
+
     }
-    
+
     /**
      * Used to calculate the dvObject tree paths for the search results on the
      * dataverse page. (In order to determine if "linked" or not).
      * *done in recursive 1 query!*
-     * 
+     *
      * @param objectIds
-     * @return 
+     * @return
      */
-    public Map<Long, String> getObjectPathsByIds(Set<Long> objectIds){
+    public Map<Long, String> getObjectPathsByIds(Set<Long> objectIds) {
         if (objectIds == null || objectIds.size() < 1) {
             return null;
         }
-        
+
         String datasetIdStr = Strings.join(objectIds, ", ");
-        
+
         String qstr = "WITH RECURSIVE path_elements AS ((" +
-            " SELECT id, owner_id FROM dvobject WHERE id in (" + datasetIdStr + "))" +
-            " UNION\n" +
-            " SELECT o.id, o.owner_id FROM path_elements p, dvobject o WHERE o.id = p.owner_id) " +
-            "SELECT id, owner_id FROM path_elements WHERE owner_id IS NOT NULL;"; // ORDER by id ASC;";
-        
+                " SELECT id, owner_id FROM dvobject WHERE id in (" + datasetIdStr + "))" +
+                " UNION\n" +
+                " SELECT o.id, o.owner_id FROM path_elements p, dvobject o WHERE o.id = p.owner_id) " +
+                "SELECT id, owner_id FROM path_elements WHERE owner_id IS NOT NULL;"; // ORDER by id ASC;";
+
         List<Object[]> searchResults;
-        
+
         try {
             searchResults = em.createNativeQuery(qstr).getResultList();
         } catch (Exception ex) {
             searchResults = null;
         }
-        
+
         if (searchResults == null || searchResults.size() < 1) {
             return null;
         }
-        
+
         Map<Long, Long> treeMap = new HashMap<>();
-        
+
         for (Object[] result : searchResults) {
             Long objectId;
             Long ownerId;
@@ -278,29 +279,29 @@ public class DvObjectServiceBean implements java.io.Serializable {
                 if (objectId == null) {
                     continue;
                 }
-                
-                ownerId = (Long)result[1];
-                logger.fine("OBJECT PATH: id: "+objectId+", owner: "+ownerId);
+
+                ownerId = (Long) result[1];
+                logger.fine("OBJECT PATH: id: " + objectId + ", owner: " + ownerId);
                 if (ownerId != null && (ownerId != 1L)) {
                     treeMap.put(objectId, ownerId);
                 }
             }
         }
-        
+
         Map<Long, String> ret = new HashMap<>();
-        
+
         for (Long objectId : objectIds) {
             String treePath = "/" + objectId;
             Long treePosition = treeMap.get(objectId);
-            
+
             while (treePosition != null) {
                 treePath = "/" + treePosition + treePath;
                 treePosition = treeMap.get(treePosition);
             }
-            
-            logger.fine("OBJECT PATH: returning "+treePath+" for "+objectId);
+
+            logger.fine("OBJECT PATH: returning " + treePath + " for " + objectId);
             ret.put(objectId, treePath);
         }
-        return ret;        
+        return ret;
     }
 }

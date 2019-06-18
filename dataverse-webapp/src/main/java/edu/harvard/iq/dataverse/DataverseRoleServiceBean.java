@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 //import javax.validation.constraints.NotNull;
 
 /**
- *
  * @author michael
  */
 @Stateless
@@ -68,7 +67,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     public RoleAssignment save(RoleAssignment assignment) {
         return save(assignment, true);
     }
-    
+
     public RoleAssignment save(RoleAssignment assignment, boolean createIndex) {
         if (assignment.getId() == null) {
             em.persist(assignment);
@@ -78,7 +77,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         /**
          * @todo update permissionModificationTime here.
          */
-        if ( createIndex ) {
+        if (createIndex) {
             indexAsync.indexRole(assignment);
         }
         return assignment;
@@ -103,41 +102,41 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 
     public void delete(Long id) {
         em.createNamedQuery("DataverseRole.deleteById", DataverseRole.class)
-            .setParameter("id", id)
-            .executeUpdate();
+                .setParameter("id", id)
+                .executeUpdate();
     }
 
     public List<DataverseRole> findByOwnerId(Long ownerId) {
         return em.createNamedQuery("DataverseRole.findByOwnerId", DataverseRole.class)
-            .setParameter("ownerId", ownerId)
-            .getResultList();
+                .setParameter("ownerId", ownerId)
+                .getResultList();
     }
 
     public List<DataverseRole> findBuiltinRoles() {
         return em.createNamedQuery("DataverseRole.findBuiltinRoles", DataverseRole.class)
-            .getResultList();
+                .getResultList();
     }
 
     public DataverseRole findBuiltinRoleByAlias(String alias) {
         return em.createNamedQuery("DataverseRole.findBuiltinRoleByAlias", DataverseRole.class)
-            .setParameter("alias", alias)
-            .getSingleResult();
+                .setParameter("alias", alias)
+                .getSingleResult();
     }
-    
+
     public DataverseRole findCustomRoleByAliasAndOwner(String alias, Long ownerId) {
         return em.createNamedQuery("DataverseRole.findCustomRoleByAliasAndOwner", DataverseRole.class)
-            .setParameter("alias", alias)
-            .setParameter("ownerId", ownerId)
-            .getSingleResult();
+                .setParameter("alias", alias)
+                .setParameter("ownerId", ownerId)
+                .getSingleResult();
     }
 
     public void revoke(Set<DataverseRole> roles, RoleAssignee assignee, DvObject defPoint) {
         for (DataverseRole role : roles) {
             em.createNamedQuery("RoleAssignment.deleteByAssigneeIdentifier_RoleIdDefinition_PointId")
-                .setParameter("assigneeIdentifier", assignee.getIdentifier())
-                .setParameter("roleId", role.getId())
-                .setParameter("definitionPointId", defPoint.getId())
-                .executeUpdate();
+                    .setParameter("assigneeIdentifier", assignee.getIdentifier())
+                    .setParameter("roleId", role.getId())
+                    .setParameter("definitionPointId", defPoint.getId())
+                    .executeUpdate();
             em.refresh(role);
         }
         em.refresh(assignee);
@@ -187,8 +186,8 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 
     public List<RoleAssignment> roleAssignments(Long roleId) {
         return em.createNamedQuery("RoleAssignment.listByRoleId", RoleAssignment.class)
-            .setParameter("roleId", roleId)
-            .getResultList();
+                .setParameter("roleId", roleId)
+                .getResultList();
     }
 
     public RoleAssignmentSet assignmentsFor(final User u, final DvObject d) {
@@ -219,22 +218,22 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         Set<RoleAssignment> ras = new HashSet<>();
         while (!dv.isEffectivelyPermissionRoot()) {
             ras.addAll(em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
-                .setParameter("definitionPointId", dv.getId()).getResultList());
+                               .setParameter("definitionPointId", dv.getId()).getResultList());
             dv = dv.getOwner();
         }
 
         ras.addAll(em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
-            .setParameter("definitionPointId", dv.getId()).getResultList());
+                           .setParameter("definitionPointId", dv.getId()).getResultList());
 
         return ras;
     }
-    
+
     /**
      * Retrieves the roles assignments for {@code user}, directly on {@code dv}.
      * No traversal on the containment hierarchy is done.
      *
      * @param roas the user whose roles are given
-     * @param dvo the object where the roles are defined.
+     * @param dvo  the object where the roles are defined.
      * @return Set of roles defined for the user in the given dataverse.
      * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser,
      * edu.harvard.iq.dataverse.Dataverse)
@@ -242,19 +241,19 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     //public List<RoleAssignment> directRoleAssignments(@NotNull RoleAssignee roas, @NotNull DvObject dvo) {
     public List<RoleAssignment> directRoleAssignments(RoleAssignee roas, DvObject dvo) {
         List<RoleAssignment> unfiltered = em.createNamedQuery("RoleAssignment.listByAssigneeIdentifier", RoleAssignment.class).
-                            setParameter("assigneeIdentifier", roas.getIdentifier())
-                            .getResultList();
+                setParameter("assigneeIdentifier", roas.getIdentifier())
+                .getResultList();
         return unfiltered.stream()
                 .filter(roleAssignment -> Objects.equals(roleAssignment.getDefinitionPoint().getId(), dvo.getId()))
                 .collect(Collectors.toList());
     }
-    
+
     /**
      * Retrieves the roles assignments for {@code user}, directly on {@code dv}.
      * No traversal on the containment hierarchy is done.
      *
      * @param roleAssignees the user whose roles are given
-     * @param dvos the objects where the roles are defined.
+     * @param dvos          the objects where the roles are defined.
      * @return Set of roles defined for the user in the given dataverse.
      * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser,
      * edu.harvard.iq.dataverse.Dataverse)
@@ -264,14 +263,14 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         if (dvos.isEmpty()) {
             return new ArrayList<>();
         }
-        
+
         List<String> raIds = roleAssignees.stream().map(roas -> roas.getIdentifier()).collect(Collectors.toList());
         List<Long> dvoIds = dvos.stream().filter(dvo -> !(dvo.getId() == null)).map(dvo -> dvo.getId()).collect(Collectors.toList());
-        
+
         return em.createNamedQuery("RoleAssignment.listByAssigneeIdentifiers", RoleAssignment.class)
-                        .setParameter("assigneeIdentifiers", raIds)
-                        .setParameter("definitionPointIds", dvoIds)
-                        .getResultList();
+                .setParameter("assigneeIdentifiers", raIds)
+                .setParameter("definitionPointIds", dvoIds)
+                .getResultList();
     }
 
     /**
@@ -285,8 +284,8 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      */
     public List<RoleAssignment> directRoleAssignments(DvObject dvo) {
         TypedQuery<RoleAssignment> query = em.createNamedQuery(
-            "RoleAssignment.listByDefinitionPointId",
-            RoleAssignment.class);
+                "RoleAssignment.listByDefinitionPointId",
+                RoleAssignment.class);
         query.setParameter("definitionPointId", dvo.getId());
         return query.getResultList();
     }

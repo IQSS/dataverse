@@ -23,6 +23,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -36,14 +37,14 @@ public class OREMap {
     private Map<String, String> localContext = new TreeMap<String, String>();
     private DatasetVersion version;
     private boolean excludeEmail = false;
-    
+
     public OREMap(DatasetVersion version, boolean excludeEmail) {
         this.version = version;
         this.excludeEmail = excludeEmail;
     }
 
     public void writeOREMap(OutputStream outputStream) throws Exception {
-        outputStream.write(getOREMap().toString().getBytes("UTF8"));
+        outputStream.write(getOREMap().toString().getBytes(StandardCharsets.UTF_8));
         outputStream.flush();
     }
 
@@ -98,7 +99,7 @@ public class OREMap {
                                 JsonLDTerm subFieldName = getTermFor(dfType, dsft);
                                 if (subFieldName.inNamespace()) {
                                     localContext.putIfAbsent(subFieldName.getNamespace().getPrefix(),
-                                            subFieldName.getNamespace().getUrl());
+                                                             subFieldName.getNamespace().getUrl());
                                 } else {
                                     localContext.putIfAbsent(subFieldName.getLabel(), subFieldName.getUrl());
                                 }
@@ -127,8 +128,8 @@ public class OREMap {
         // Add metadata related to the Dataset/DatasetVersion
         aggBuilder.add("@id", id)
                 .add("@type",
-                        Json.createArrayBuilder().add(JsonLDTerm.ore("Aggregation").getLabel())
-                                .add(JsonLDTerm.schemaOrg("Dataset").getLabel()))
+                     Json.createArrayBuilder().add(JsonLDTerm.ore("Aggregation").getLabel())
+                             .add(JsonLDTerm.schemaOrg("Dataset").getLabel()))
                 .add(JsonLDTerm.schemaOrg("version").getLabel(), version.getFriendlyVersionNumber())
                 .add(JsonLDTerm.schemaOrg("datePublished").getLabel(), dataset.getPublicationDateFormattedYYYYMMDD())
                 .add(JsonLDTerm.schemaOrg("name").getLabel(), version.getTitle())
@@ -137,7 +138,7 @@ public class OREMap {
         TermsOfUseAndAccess terms = version.getTermsOfUseAndAccess();
         if (terms.getLicense() == TermsOfUseAndAccess.License.CC0) {
             aggBuilder.add(JsonLDTerm.schemaOrg("license").getLabel(),
-                    "https://creativecommons.org/publicdomain/zero/1.0/");
+                           "https://creativecommons.org/publicdomain/zero/1.0/");
         } else {
             addIfNotNull(aggBuilder, JsonLDTerm.termsOfUse, terms.getTermsOfUse());
         }
@@ -165,7 +166,7 @@ public class OREMap {
         }
 
         aggBuilder.add(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel(),
-                dataset.getDataverseContext().getDisplayName());
+                       dataset.getDataverseContext().getDisplayName());
 
         // The aggregation aggregates aggregatedresources (Datafiles) which each have
         // their own entry and metadata
@@ -246,17 +247,17 @@ public class OREMap {
         JsonObject oremap = Json.createObjectBuilder()
                 .add(JsonLDTerm.dcTerms("modified").getLabel(), LocalDate.now().toString())
                 .add(JsonLDTerm.dcTerms("creator").getLabel(),
-                        ResourceBundle.getBundle("Bundle").getString("institution.name"))
+                     ResourceBundle.getBundle("Bundle").getString("institution.name"))
                 .add("@type", JsonLDTerm.ore("ResourceMap").getLabel())
                 // Define an id for the map itself (separate from the @id of the dataset being
                 // described
                 .add("@id",
-                        SystemConfig.getDataverseSiteUrlStatic() + "/api/datasets/export?exporter="
-                                + OAI_OREExporter.NAME + "&persistentId=" + id)
+                     SystemConfig.getDataverseSiteUrlStatic() + "/api/datasets/export?exporter="
+                             + OAI_OREExporter.NAME + "&persistentId=" + id)
                 // Add the aggregation (Dataset) itself to the map.
                 .add(JsonLDTerm.ore("describes").getLabel(),
-                        aggBuilder.add(JsonLDTerm.ore("aggregates").getLabel(), aggResArrayBuilder.build())
-                                .add(JsonLDTerm.schemaOrg("hasPart").getLabel(), fileArray.build()).build())
+                     aggBuilder.add(JsonLDTerm.ore("aggregates").getLabel(), aggResArrayBuilder.build())
+                             .add(JsonLDTerm.schemaOrg("hasPart").getLabel(), fileArray.build()).build())
                 // and finally add the context
                 .add("@context", contextBuilder.build()).build();
         return oremap;

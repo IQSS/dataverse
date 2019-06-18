@@ -63,8 +63,8 @@ public class LazyBannerHistory extends LazyDataModel<DataverseBannerDto> {
 
     private List<DataverseBannerDto> sortMessageLocales(List<DataverseBannerDto> dataList) {
         dataList.forEach(dataverseBannerDto ->
-                dataverseBannerDto.getDataverseLocalizedBanner()
-                        .sort(Comparator.comparing(DataverseLocalizedBannerDto::getLocale)));
+                                 dataverseBannerDto.getDataverseLocalizedBanner()
+                                         .sort(Comparator.comparing(DataverseLocalizedBannerDto::getLocale)));
         return dataList;
     }
 

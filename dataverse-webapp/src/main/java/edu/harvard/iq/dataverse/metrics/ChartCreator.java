@@ -46,7 +46,7 @@ public class ChartCreator {
         datasetsChart.setLabel(BundleUtil.getStringFromBundle("metrics.datasets"));
 
         datasets.forEach(datasetStats ->
-                datasetsChart.set(datasetStats.getYear(), datasetStats.getCount()));
+                                 datasetsChart.set(datasetStats.getYear(), datasetStats.getCount()));
 
         model.addSeries(datasetsChart);
 
@@ -59,8 +59,8 @@ public class ChartCreator {
         datasetsChart.setLabel("Datasets");
 
         datasets.forEach(datasetStats ->
-                datasetsChart.set(BundleUtil.getStringFromBundle("metrics.month-" + datasetStats.getMonth()),
-                        datasetStats.getCount()));
+                                 datasetsChart.set(BundleUtil.getStringFromBundle("metrics.month-" + datasetStats.getMonth()),
+                                                   datasetStats.getCount()));
 
         model.addSeries(datasetsChart);
 

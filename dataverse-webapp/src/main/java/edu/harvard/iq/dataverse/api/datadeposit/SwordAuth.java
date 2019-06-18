@@ -2,10 +2,11 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import java.util.logging.Logger;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.SwordAuthException;
 import org.swordapp.server.SwordServerException;
+
+import java.util.logging.Logger;
 
 /**
  * In early version of Dataverse 4 this class was responsible for both

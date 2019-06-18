@@ -10,7 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -21,18 +20,17 @@ import java.util.logging.Logger;
 /**
  * Service bean accessing and manipulating application settings.
  * Settings are resolved from database and property files (db ones takes precedence).
- * 
+ *
  * @author michael
- * 
  * @see FileBasedSettingsFetcher
  */
 @Stateless
 public class SettingsServiceBean {
-    
+
     /**
-     * Some convenient keys for the settings. Note that the setting's 
+     * Some convenient keys for the settings. Note that the setting's
      * name is really a {@code String}, but it's good to have the compiler look
-     * over your shoulder when typing strings in various places of a large app. 
+     * over your shoulder when typing strings in various places of a large app.
      * So there.
      */
     public enum Key {
@@ -53,7 +51,7 @@ public class SettingsServiceBean {
         CloudEnvironmentName,
         /**
          * Defines the base for a computing environment URL.
-         * The container name will be appended to this on the "Compute" button 
+         * The container name will be appended to this on the "Compute" button
          */
         ComputeBaseUrl,
         /**
@@ -72,7 +70,7 @@ public class SettingsServiceBean {
          * If the data replicated around the world using RSAL (Repository
          * Storage Abstraction Layer) is locally available, this is its file
          * path, such as "/programs/datagrid".
-         *
+         * <p>
          * TODO: Think about if it makes sense to make this a column in the
          * StorageSite database table.
          */
@@ -113,38 +111,45 @@ public class SettingsServiceBean {
          * API endpoints that are not accessible. Comma separated list.
          */
         BlockedApiEndpoints,
-        
+
         /**
          * A key that, with the right {@link ApiBlockingFilter.BlockPolicy},
          * allows calling blocked APIs.
          */
         BlockedApiKey,
-        
-        
+
+
         /**
          * How to treat blocked APIs. One of drop, localhost-only, unblock-key
          */
         BlockedApiPolicy,
-        
+
         /**
          * For development only (see dev guide for details). Backed by an enum
          * of possible account types.
          */
         DebugShibAccountType,
         DebugOAuthAccountType,
-        /** Application-wide Terms of Use per installation. */
+        /**
+         * Application-wide Terms of Use per installation.
+         */
         ApplicationTermsOfUse,
-        /** Terms of Use specific to API per installation. */
+        /**
+         * Terms of Use specific to API per installation.
+         */
         ApiTermsOfUse,
         /**
          * URL for the application-wide Privacy Policy per installation, linked
          * to from the footer.
          */
         ApplicationPrivacyPolicyUrl,
-        /** Solr hostname and port, such as "localhost:8983". */
+        /**
+         * Solr hostname and port, such as "localhost:8983".
+         */
         SolrHostColonPort,
-        /** Enable full-text indexing in solr
-         *  Defaults to false
+        /**
+         * Enable full-text indexing in solr
+         * Defaults to false
          **/
         SolrFullTextIndexing,
         /**
@@ -154,30 +159,47 @@ public class SettingsServiceBean {
          * Defaults to 0
          */
         SolrMaxFileSizeForFullTextIndexing, //
-        /** Key for limiting the number of bytes uploaded via the Data Deposit API, UI
-         *  If not set then not limit
+        /**
+         * Key for limiting the number of bytes uploaded via the Data Deposit API, UI
+         * If not set then not limit
          **/
         MaxFileUploadSizeInBytes,
-        /** Key for if ScrubMigrationData is enabled or disabled. */
+        /**
+         * Key for if ScrubMigrationData is enabled or disabled.
+         */
         ScrubMigrationData,
-        /** Key for the url to send users who want to sign up to. */
+        /**
+         * Key for the url to send users who want to sign up to.
+         */
         SignUpUrl,
-        /** Key for whether we allow users to sign up */
+        /**
+         * Key for whether we allow users to sign up
+         */
         AllowSignUp,
-        /** protocol for global id */
+        /**
+         * protocol for global id
+         */
         Protocol,
-        /** authority for global id */
+        /**
+         * authority for global id
+         */
         Authority,
-        /** DoiProvider for global id */
+        /**
+         * DoiProvider for global id
+         */
         DoiProvider,
-        /** Shoulder for global id - used to create a common prefix on identifiers */
+        /**
+         * Shoulder for global id - used to create a common prefix on identifiers
+         */
         Shoulder,
         /* Removed for now - tried to add here but DOI Service Bean didn't like it at start-up
         DoiUsername,
         DoiPassword,
         DoiBaseurlstring,
         */
-        /** Optionally override http://guides.dataverse.org . */
+        /**
+         * Optionally override http://guides.dataverse.org .
+         */
         GuidesBaseUrl,
 
         /**
@@ -185,14 +207,16 @@ public class SettingsServiceBean {
          * some other metrics app.
          */
         MetricsUrl,
-        
+
         /**
          * Number of minutes before a metrics query can be rerun. Otherwise a cached value is returned.
          * Previous month dates always return cache. Only applies to new internal caching system (not miniverse).
          */
         MetricsCacheTimeoutMinutes,
         /* zip download size limit */
-        /** Optionally override version number in guides. */
+        /**
+         * Optionally override version number in guides.
+         */
         GuidesVersion,
         /**
          * Download-as-zip size limit.
@@ -201,13 +225,13 @@ public class SettingsServiceBean {
          */
         ZipDownloadLimit,
         /**
-         * Number of datafiles that we allow to be created through 
+         * Number of datafiles that we allow to be created through
          * zip file upload.
          */
         ZipUploadFilesLimit,
-        /** 
-         *  the number of files the GUI user is allowed to upload in one batch, 
-         *  via drag-and-drop, or through the file select dialog
+        /**
+         * the number of files the GUI user is allowed to upload in one batch,
+         * via drag-and-drop, or through the file select dialog
          */
         MultipleUploadFilesLimit,
 
@@ -215,86 +239,89 @@ public class SettingsServiceBean {
          * status message that will appear on the home page
          */
         StatusMessageHeader,
-        /** full text of status message, to appear in popup */
+        /**
+         * full text of status message, to appear in popup
+         */
         StatusMessageText,
-        /** return email address for system emails such as notifications */
+        /**
+         * return email address for system emails such as notifications
+         */
         SystemEmail,
-        /** 
+        /**
          * size limit for Tabular data file ingests <br/>
          * (can be set separately for specific ingestable formats; in which
          * case the actual stored option will be TabularIngestSizeLimit:{FORMAT_NAME}
-         * where {FORMAT_NAME} is the format identification tag returned by the 
-         * getFormatName() method in the format-specific plugin; "sav" for the 
+         * where {FORMAT_NAME} is the format identification tag returned by the
+         * getFormatName() method in the format-specific plugin; "sav" for the
          * SPSS/sav format, "RData" for R, etc.
          * for example: :TabularIngestSizeLimit:RData <br/>
-         * -1 means no limit is set; 
+         * -1 means no limit is set;
          * 0 on the other hand would mean that ingest is fully disabled for tabular data.
          */
         TabularIngestSizeLimit,
         /**
-        Whether to allow user to create GeoConnect Maps
-        This boolean effects whether the user sees the map button on 
-        the dataset page and if the ingest will create a shape file
-        Default is false
-        */
+         * Whether to allow user to create GeoConnect Maps
+         * This boolean effects whether the user sees the map button on
+         * the dataset page and if the ingest will create a shape file
+         * Default is false
+         */
         GeoconnectCreateEditMaps,
         /**
-        Whether to allow a user to view existing maps
-        This boolean effects whether a user may see the 
-        Explore World Map Button
-        Default is false;
-        */
+         * Whether to allow a user to view existing maps
+         * This boolean effects whether a user may see the
+         * Explore World Map Button
+         * Default is false;
+         */
         GeoconnectViewMaps,
         /**
-         The message added to a popup upon dataset publish
-         * 
+         * The message added to a popup upon dataset publish
          */
         DatasetPublishPopupCustomText,
         /**
-        Whether to display the publish text for every published version
-        */
+         * Whether to display the publish text for every published version
+         */
         DatasetPublishPopupCustomTextOnAllVersions,
         /**
-        Whether Harvesting (OAI) service is enabled
-        */
+         * Whether Harvesting (OAI) service is enabled
+         */
         OAIServerEnabled,
-        
+
         /**
-        * Whether Shibboleth passive authentication mode is enabled
-        */
+         * Whether Shibboleth passive authentication mode is enabled
+         */
         ShibPassiveLoginEnabled,
         /**
          * Whether Export should exclude FieldType.EMAIL
          */
         ExcludeEmailFromExport,
         /**
-         Location and name of HomePage customization file
-        */
+         * Location and name of HomePage customization file
+         */
         HomePageCustomizationFile,
         /**
-         Location and name of Header customization file
-        */
+         * Location and name of Header customization file
+         */
         HeaderCustomizationFile,
         /**
-         Location and name of Footer customization file
-        */
+         * Location and name of Footer customization file
+         */
         FooterCustomizationFile,
         /**
-         Location and name of CSS customization file
-        */
+         * Location and name of CSS customization file
+         */
         StyleCustomizationFile,
         /**
-         Location and name of analytics code file
-        */
+         * Location and name of analytics code file
+         */
         WebAnalyticsCode,
         /**
-         Location and name of installation logo customization file
-        */
+         * Location and name of installation logo customization file
+         */
         LogoCustomizationFile,
-        
+
         // Option to override the navbar url underlying the "About" link
         NavbarAboutUrl,
-        
+
         // Option to override multiple guides with a single url
         NavbarGuidesUrl,
 
@@ -335,8 +362,8 @@ public class SettingsServiceBean {
         /**
          * One letter, 2 special characters, etc. (string in form Alphabetical:1,Digit:1)
          * Defaults to (string in form Alphabetical:1,Digit:1):
-         *  - one alphabetical
-         *  - one digit
+         * - one alphabetical
+         * - one digit
          */
         PVCharacterRules,
 
@@ -345,7 +372,7 @@ public class SettingsServiceBean {
          * Defaults to 2.
          */
         PVNumberOfCharacteristics,
-        
+
         /**
          * The number of consecutive digits allowed for a password.
          * Defaults to highest int
@@ -356,20 +383,21 @@ public class SettingsServiceBean {
          */
         PVCustomPasswordResetAlertMessage,
         /**
-        String to describe DOI format for data files. Default is DEPENDENT. 
-        'DEPENEDENT' means the DOI will be the Dataset DOI plus a file DOI with a slash in between.
-        'INDEPENDENT' means a new global id, completely independent from the dataset-level global id.
-        */
+         * String to describe DOI format for data files. Default is DEPENDENT.
+         * 'DEPENEDENT' means the DOI will be the Dataset DOI plus a file DOI with a slash in between.
+         * 'INDEPENDENT' means a new global id, completely independent from the dataset-level global id.
+         */
         DataFilePIDFormat,
-        /** Json array of supported languages
-        */
+        /**
+         * Json array of supported languages
+         */
         Languages,
         /**
-        Number for the minimum number of files to send PID registration to asynchronous workflow
-        */
+         * Number for the minimum number of files to send PID registration to asynchronous workflow
+         */
         PIDAsynchRegFileCount,
         /**
-         * 
+         *
          */
         FilePIDsEnabled,
 
@@ -381,22 +409,22 @@ public class SettingsServiceBean {
         /**
          * Archiving can be configured by providing an Archiver class name (class must extend AstractSubmitToArchiverCommand)
          * and a list of settings that should be passed to the Archiver.
-         * Note: 
+         * Note:
          * Configuration may also require adding Archiver-specific jvm-options (i.e. for username and password) in glassfish.
-         * 
+         * <p>
          * To automate the submission of an archival copy step as part of publication, a post-publication workflow must also be configured.
-         * 
+         * <p>
          * For example:
          * ArchiverClassName - "edu.harvard.iq.dataverse.engine.command.impl.DPNSubmitToArchiveCommand"
          * ArchiverSettings - "DuraCloudHost, DuraCloudPort, DuraCloudContext"
-         * 
-         * Note: Dataverse must be configured with values for these dynamically defined settings as well, e.g. 
-         * 
+         * <p>
+         * Note: Dataverse must be configured with values for these dynamically defined settings as well, e.g.
+         * <p>
          * DuraCloudHost , eg. "qdr.duracloud.org", a non-null value enables submission
          * DuraCloudPort, default is 443
          * DuraCloudContext, default is "durastore"
          */
-        
+
         ArchiverClassName,
         ArchiverSettings,
         /**
@@ -432,8 +460,7 @@ public class SettingsServiceBean {
 
         TimerServer,
 
-        MinutesUntilPasswordResetTokenExpires
-        ;
+        MinutesUntilPasswordResetTokenExpires;
 
         @Override
         public String toString() {
@@ -442,13 +469,13 @@ public class SettingsServiceBean {
     }
 
     private static final Logger logger = Logger.getLogger(SettingsServiceBean.class.getCanonicalName());
-    
+
     @EJB
     private SettingDao settingDao;
-    
+
     @EJB
     private ActionLogServiceBean actionLogSvc;
-    
+
     @EJB
     private FileBasedSettingsFetcher fileBasedSettingsFetcher;
 
@@ -456,37 +483,40 @@ public class SettingsServiceBean {
 
     /**
      * Basic functionality - get the name, return the setting from db if present or from properties file if not.
+     *
      * @param name of the setting
      * @return the actual setting or empty string.
      */
-    public String get( String name ) {
+    public String get(String name) {
         Setting s = settingDao.find(name);
-        return (s!=null) ? s.getContent() : fileBasedSettingsFetcher.getSetting(name);
+        return (s != null) ? s.getContent() : fileBasedSettingsFetcher.getSetting(name);
     }
-    
+
     /**
      * Same as {@link #get(java.lang.String)}, but with static checking.
+     *
      * @param key Enum value of the name.
      * @return The setting, or  empty string.
      */
     public String getValueForKey(Key key) {
         return get(key.toString());
     }
-    
-    
+
+
     /**
      * Attempt to convert the value to an integer
-     *  - Applicable for keys such as MaxFileUploadSizeInBytes
-     * 
+     * - Applicable for keys such as MaxFileUploadSizeInBytes
+     * <p>
      * On failure (key not found or string not convertible to a long), returns null
+     *
      * @param key
-     * @return 
+     * @return
      */
-    public Long getValueForKeyAsLong(Key key){
+    public Long getValueForKeyAsLong(Key key) {
 
         String val = this.getValueForKey(key);
 
-        if (StringUtils.isEmpty(val)){
+        if (StringUtils.isEmpty(val)) {
             return null;
         }
 
@@ -499,34 +529,35 @@ public class SettingsServiceBean {
         }
 
     }
-    
-    public Integer getValueForKeyAsInt(Key key){
+
+    public Integer getValueForKeyAsInt(Key key) {
         Long value = getValueForKeyAsLong(key);
         if (value == null) {
             return null;
         }
         return value.intValue();
     }
-    
+
     public List<String> getValueForKeyAsList(Key key) {
         return Arrays.asList(StringUtils.split(getValueForKey(key), ","));
     }
-    
-    
-    public Setting set( String name, String content ) {
-        Setting s = settingDao.save(new Setting( name, content ));
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
-                            .setInfo(name + ": " + content));
+
+
+    public Setting set(String name, String content) {
+        Setting s = settingDao.save(new Setting(name, content));
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
+                                 .setInfo(name + ": " + content));
         return s;
     }
-    
-    public Setting setValueForKey( Key key, String content ) {
-        return set( key.toString(), content );
+
+    public Setting setValueForKey(Key key, String content) {
+        return set(key.toString(), content);
     }
-    
+
     /**
      * The correct way to decide whether a string value in the
      * settings table should be considered as {@code true}.
+     *
      * @param name name of the setting.
      * @return boolean value of the setting.
      */
@@ -536,29 +567,29 @@ public class SettingsServiceBean {
     }
 
     public boolean isTrueForKey(Key key) {
-        return isTrue( key.toString());
+        return isTrue(key.toString());
     }
-            
-    public void deleteValueForKey( Key name ) {
-        delete( name.toString() );
+
+    public void deleteValueForKey(Key name) {
+        delete(name.toString());
     }
-    
-    public void delete( String name ) {
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
-                            .setInfo(name));
+
+    public void delete(String name) {
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
+                                 .setInfo(name));
         settingDao.delete(name);
     }
-    
+
     public Map<String, String> listAll() {
-    	Map<String, String> mergedSettings = new HashMap<>();
-    	
-    	Map<String, String> fileSettings = fileBasedSettingsFetcher.getAllSettings();
-    	mergedSettings.putAll(fileSettings);
-    	
-    	List<Setting> dbSettings = settingDao.findAll();
-    	dbSettings.forEach(s -> mergedSettings.put(s.getName(), s.getContent()));
-    	
-    	return mergedSettings;
+        Map<String, String> mergedSettings = new HashMap<>();
+
+        Map<String, String> fileSettings = fileBasedSettingsFetcher.getAllSettings();
+        mergedSettings.putAll(fileSettings);
+
+        List<Setting> dbSettings = settingDao.findAll();
+        dbSettings.forEach(s -> mergedSettings.put(s.getName(), s.getContent()));
+
+        return mergedSettings;
     }
-    
+
 }

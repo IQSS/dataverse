@@ -38,11 +38,11 @@ public class BannerMapperTest {
 
     @Mock
     private UploadedFile uploadedFile;
-    
+
     @Mock
     private SettingsWrapper settingsWrapper;
 
-    
+
     private BannerMapper bannerMapper;
 
     @Before
@@ -116,7 +116,7 @@ public class BannerMapperTest {
 
         dataverseBannerDto.getDataverseLocalizedBanner()
                 .forEach(localeDto -> Assert.assertTrue(localeDto.getLocale().equals("pl")
-                        || localeDto.getLocale().equals("en")));
+                                                                || localeDto.getLocale().equals("en")));
     }
 
     private DataverseBanner createBannerEntity() throws IOException {

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.util.xml;
 
 import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 
 public class XmlPrinterTest {

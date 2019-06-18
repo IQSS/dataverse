@@ -75,7 +75,7 @@ import java.util.stream.Collectors;
 public class PasswordValidatorServiceBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(PasswordValidatorServiceBean.class.getCanonicalName());
-    
+
     //FIXME: hardcoding this dictionary... I think its overwritten but should remove or something.
     private static String DICTIONARY_FILES = "weak_passwords.txt";
 
@@ -92,7 +92,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     List<CharacterRule> characterRules;
     private String dictionaries = DICTIONARY_FILES;
     private PropertiesMessageResolver messageResolver;
-    
+
     @EJB
     private SettingsServiceBean settingsService;
 
@@ -100,7 +100,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     public PasswordValidatorServiceBean() {
         final Properties properties = PropertiesMessageResolver.getDefaultProperties();
         properties.setProperty(GoodStrengthRule.ERROR_CODE_GOODSTRENGTH, GoodStrengthRule.ERROR_MESSAGE_GOODSTRENGTH);
-         messageResolver = new PropertiesMessageResolver(properties);
+        messageResolver = new PropertiesMessageResolver(properties);
     }
 
     public PasswordValidatorServiceBean(List<CharacterRule> characterRules) {
@@ -158,8 +158,9 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
             logger.fine("numberOfCharacteristics: " + numberOfCharacteristics);
 
             RuleResult r = currentUser.validate(passwordData);
-            if (r.isValid())
+            if (r.isValid()) {
                 return Collections.emptyList();
+            }
             result.getDetails().addAll(r.getDetails());
         }
 
@@ -254,11 +255,11 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         }
         return rule;
     }
-    
-        /**
+
+    /**
      * dictionarySubstringRule
      * <p>
-     * Reads in the getDictionaries from a file. 
+     * Reads in the getDictionaries from a file.
      * Substring means that passwords containing a dictionary string fail.
      *
      * @return A rule.
@@ -295,8 +296,9 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
                 logger.log(Level.CONFIG, e.getMessage());
             }
         });
-        if (fileReaders.size() == 0)
+        if (fileReaders.size() == 0) {
             logger.fine(BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnDictionaryRead"));
+        }
         return fileReaders.toArray(new FileReader[fileReaders.size()]);
     }
 
@@ -304,10 +306,11 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         if (StringUtils.isEmpty(dictionaries)) {
             final URL url = PasswordValidatorServiceBean.class.getResource(DICTIONARY_FILES);
             if (url == null) {
-                logger.fine(BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnDictionaryObj")+" " + DICTIONARY_FILES);
+                logger.fine(BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnDictionaryObj") + " " + DICTIONARY_FILES);
                 dictionaries = DICTIONARY_FILES;
-            } else
+            } else {
                 dictionaries = url.getPath() + File.pathSeparator + url.getFile();
+            }
         }
         if (!dictionaries.equals(this.dictionaries)) {
             this.dictionaries = dictionaries;
@@ -366,7 +369,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
             dictionaryEnabled = true;
         }
         logger.fine("dictionaryEnabled: " + dictionaryEnabled);
-        if (errors == null){
+        if (errors == null) {
             errors = new ArrayList<>();
         }
         return PasswordValidatorUtil.getPasswordRequirements(getMinLength(), getMaxLength(), getCharacterRules(), getNumberOfCharacteristics(), getNumberOfConsecutiveDigitsAllowed(), getGoodStrength(), dictionaryEnabled, errors);
@@ -386,13 +389,13 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     }
 
     void setGoodStrength(int goodStrength) {
-        if (goodStrength == 0)
+        if (goodStrength == 0) {
             validators.remove(ValidatorTypes.GoodStrengthValidator);
-        else {
+        } else {
             int minLength = getMinLength();
             if (goodStrength <= minLength) {
-                int reset = minLength + 1;                
-                logger.log(Level.WARNING, BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnSetStrength" , Arrays.asList(Integer.toString(goodStrength),Integer.toString(minLength),Integer.toString(reset))));
+                int reset = minLength + 1;
+                logger.log(Level.WARNING, BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnSetStrength", Arrays.asList(Integer.toString(goodStrength), Integer.toString(minLength), Integer.toString(reset))));
                 goodStrength = reset;
             }
         }
@@ -441,9 +444,9 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
             validators.remove(ValidatorTypes.StandardValidator);
         }
     }
-    
+
     public void setCharacterRules(List<CharacterRule> characterRules) {
-        if(!characterRules.equals(this.characterRules)) {
+        if (!characterRules.equals(this.characterRules)) {
             this.characterRules = characterRules;
             validators.remove(ValidatorTypes.StandardValidator);
         }

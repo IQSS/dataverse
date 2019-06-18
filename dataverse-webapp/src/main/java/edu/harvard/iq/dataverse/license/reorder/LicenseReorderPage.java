@@ -62,11 +62,11 @@ public class LicenseReorderPage implements Serializable {
     public String saveChanges() {
 
         licenses.forEach(licenseDto ->
-        {
-            License license = licenseDAO.find(licenseDto.getLicenseId());
-            license.setPosition(licenses.indexOf(licenseDto) + 1L);
-            licenseDAO.saveChanges(license);
-        });
+                         {
+                             License license = licenseDAO.find(licenseDto.getLicenseId());
+                             license.setPosition(licenses.indexOf(licenseDto) + 1L);
+                             licenseDAO.saveChanges(license);
+                         });
 
         return "/dashboard-licenses.xhtml?&faces-redirect=true";
     }

@@ -5,8 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.io.Serializable;
-import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -16,13 +14,14 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
- *
  * @author ellenk
  */
 @Entity
-@Table(indexes = {@Index(columnList="controlledvocabularyvalue_id"), @Index(columnList="datasetfieldtype_id")})
+@Table(indexes = {@Index(columnList = "controlledvocabularyvalue_id"), @Index(columnList = "datasetfieldtype_id")})
 public class ControlledVocabAlternate implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,31 +34,33 @@ public class ControlledVocabAlternate implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
-    @Column(columnDefinition="TEXT", nullable = false) 
+
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String strValue;
 
     public String getStrValue() {
         return strValue;
     }
+
     public void setStrValue(String strValue) {
         this.strValue = strValue;
-        
+
     }
-    
+
     @ManyToOne
-    @JoinColumn( nullable = false )
+    @JoinColumn(nullable = false)
     private DatasetFieldType datasetFieldType;
-    
+
     public DatasetFieldType getDatasetFieldType() {
         return datasetFieldType;
     }
+
     public void setDatasetFieldType(DatasetFieldType datasetFieldType) {
         this.datasetFieldType = datasetFieldType;
     }
-    
+
     @ManyToOne
-    @JoinColumn( nullable = false )
+    @JoinColumn(nullable = false)
     private ControlledVocabularyValue controlledVocabularyValue;
 
     public ControlledVocabularyValue getControlledVocabularyValue() {
@@ -86,11 +87,8 @@ public class ControlledVocabAlternate implements Serializable {
             return false;
         }
         final ControlledVocabAlternate other = (ControlledVocabAlternate) obj;
-        if (!Objects.equals(this.id, other.id)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.id, other.id);
     }
-    
-    
+
+
 }

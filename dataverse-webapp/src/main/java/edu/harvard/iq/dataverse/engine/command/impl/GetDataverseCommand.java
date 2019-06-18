@@ -6,16 +6,16 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
 /**
- *
  * @author Naomi
  */
 // no annotations here, since permissions are dynamically decided
-public class GetDataverseCommand extends AbstractCommand<Dataverse>{
+public class GetDataverseCommand extends AbstractCommand<Dataverse> {
     private final Dataverse dv;
 
     public GetDataverseCommand(DataverseRequest aRequest, Dataverse anAffectedDataverse) {
@@ -31,7 +31,7 @@ public class GetDataverseCommand extends AbstractCommand<Dataverse>{
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         return Collections.singletonMap("",
-                dv.isReleased() ? Collections.<Permission>emptySet()
-                : Collections.singleton(Permission.ViewUnpublishedDataverse));
-    }    
+                                        dv.isReleased() ? Collections.emptySet()
+                                                : Collections.singleton(Permission.ViewUnpublishedDataverse));
+    }
 }

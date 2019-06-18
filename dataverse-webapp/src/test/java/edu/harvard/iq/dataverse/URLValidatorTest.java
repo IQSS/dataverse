@@ -1,11 +1,10 @@
-
 package edu.harvard.iq.dataverse;
 
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+
 /**
- *
  * @author skraffmi
  */
 public class URLValidatorTest {

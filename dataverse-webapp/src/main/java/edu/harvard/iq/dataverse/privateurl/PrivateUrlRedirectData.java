@@ -15,7 +15,7 @@ public class PrivateUrlRedirectData {
 
     /**
      * @throws java.lang.Exception The reason why a PrivateUrlRedirectData
-     * object could not be instantiated.
+     *                             object could not be instantiated.
      */
     public PrivateUrlRedirectData(PrivateUrlUser privateUrlUser, String draftDatasetPageToBeRedirectedTo) throws Exception {
         if (privateUrlUser == null) {

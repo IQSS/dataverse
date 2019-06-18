@@ -1,16 +1,18 @@
 package edu.harvard.iq.dataverse.util.xml;
 
 import edu.harvard.iq.dataverse.NonEssentialTests;
-import java.io.IOException;
-import java.net.URL;
-import java.util.logging.Logger;
-import javax.xml.parsers.ParserConfigurationException;
 import org.junit.Assert;
-import static org.junit.Assert.assertTrue;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.net.URL;
+import java.util.logging.Logger;
+
+import static org.junit.Assert.assertTrue;
 
 public class XmlValidatorTest {
 

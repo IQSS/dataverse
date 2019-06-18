@@ -1,13 +1,14 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
-import java.io.IOException;
+import org.swordapp.server.StatementAPI;
+import org.swordapp.server.StatementManager;
+import org.swordapp.server.servlets.SwordServlet;
+
 import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.swordapp.server.StatementAPI;
-import org.swordapp.server.StatementManager;
-import org.swordapp.server.servlets.SwordServlet;
+import java.io.IOException;
 
 public class SWORDv2StatementServlet extends SwordServlet {
 

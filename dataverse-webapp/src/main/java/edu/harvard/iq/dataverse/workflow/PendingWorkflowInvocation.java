@@ -6,9 +6,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -17,46 +15,51 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A workflow whose current step waits for an external system to complete a
  * (probably lengthy) process. Meanwhile, it sits in the database, pending away.
- * 
+ *
  * @author michael
  */
 @NamedQueries({
-    @NamedQuery( name="PendingWorkflowInvocation.listAll", query="SELECT pw FROM PendingWorkflowInvocation pw")
+        @NamedQuery(name = "PendingWorkflowInvocation.listAll", query = "SELECT pw FROM PendingWorkflowInvocation pw")
 })
 @Entity
 public class PendingWorkflowInvocation implements Serializable {
-    
+
     @Id
     String invocationId;
-    
+
     @ManyToOne
     Workflow workflow;
-    
+
     @OneToOne
     Dataset dataset;
-    
+
     long nextVersionNumber;
     long nextMinorVersionNumber;
-    
-    @ElementCollection( fetch=FetchType.EAGER )
-    private Map<String,String> localData;
-    
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Map<String, String> localData;
+
     int pendingStepIdx;
-    
+
     String userId;
     String ipAddress;
     int typeOrdinal;
     boolean datasetExternallyReleased;
 
-    /** Empty constructor for JPA */
-    public PendingWorkflowInvocation(){
-        
+    /**
+     * Empty constructor for JPA
+     */
+    public PendingWorkflowInvocation() {
+
     }
-    
+
     public PendingWorkflowInvocation(Workflow wf, WorkflowContext ctxt, Pending result) {
         invocationId = ctxt.getInvocationId();
         workflow = wf;
@@ -67,17 +70,17 @@ public class PendingWorkflowInvocation implements Serializable {
         ipAddress = ctxt.getRequest().getSourceAddress().toString();
         localData = new HashMap<>(result.getData());
         typeOrdinal = ctxt.getType().ordinal();
-        datasetExternallyReleased=ctxt.getDatasetExternallyReleased();
+        datasetExternallyReleased = ctxt.getDatasetExternallyReleased();
     }
-    
+
     public WorkflowContext reCreateContext(RoleAssigneeServiceBean roleAssignees) {
-        DataverseRequest aRequest = new DataverseRequest((User)roleAssignees.getRoleAssignee(userId), IpAddress.valueOf(ipAddress));
-        final WorkflowContext workflowContext = new WorkflowContext(aRequest, dataset, nextVersionNumber, 
-                nextMinorVersionNumber, WorkflowContext.TriggerType.values()[typeOrdinal], null, null, datasetExternallyReleased);
+        DataverseRequest aRequest = new DataverseRequest((User) roleAssignees.getRoleAssignee(userId), IpAddress.valueOf(ipAddress));
+        final WorkflowContext workflowContext = new WorkflowContext(aRequest, dataset, nextVersionNumber,
+                                                                    nextMinorVersionNumber, WorkflowContext.TriggerType.values()[typeOrdinal], null, null, datasetExternallyReleased);
         workflowContext.setInvocationId(invocationId);
         return workflowContext;
     }
-    
+
     public String getInvocationId() {
         return invocationId;
     }

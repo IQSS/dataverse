@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.providers;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
-import java.util.Objects;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Index;
@@ -9,27 +9,28 @@ import javax.persistence.Lob;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import java.util.Objects;
 
 /**
  * Database-storable form of an {@code AuthenticationProvider}.
  * An instance of this class is translated to an actual {@link AuthenticationProvider}
- * instance by the {@link AuthenticationProviderFactory} whose alias appears in 
+ * instance by the {@link AuthenticationProviderFactory} whose alias appears in
  * {@link #factoryAlias}.
- * 
+ *
  * @author michael
  */
 @NamedQueries({
-    @NamedQuery( name="AuthenticationProviderRow.findAllEnabled",
-                 query="SELECT r FROM AuthenticationProviderRow r WHERE r.enabled=true" ),
-    @NamedQuery( name="AuthenticationProviderRow.findById",
-                 query="SELECT r FROM AuthenticationProviderRow r WHERE r.id=:id" ),
-    @NamedQuery( name="AuthenticationProviderRow.findAll",
-                 query="SELECT r FROM AuthenticationProviderRow r" )
+        @NamedQuery(name = "AuthenticationProviderRow.findAllEnabled",
+                query = "SELECT r FROM AuthenticationProviderRow r WHERE r.enabled=true"),
+        @NamedQuery(name = "AuthenticationProviderRow.findById",
+                query = "SELECT r FROM AuthenticationProviderRow r WHERE r.id=:id"),
+        @NamedQuery(name = "AuthenticationProviderRow.findAll",
+                query = "SELECT r FROM AuthenticationProviderRow r")
 })
 @Entity
-@Table(indexes = {@Index(columnList="enabled")})
+@Table(indexes = {@Index(columnList = "enabled")})
 public class AuthenticationProviderRow implements java.io.Serializable {
-    
+
     @Id
     private String id;
 
@@ -38,13 +39,13 @@ public class AuthenticationProviderRow implements java.io.Serializable {
      * internationalize it. Or add a translatableTitle field?
      */
     private String title;
-    
+
     private String subtitle;
-    
+
     private String factoryAlias;
-    
+
     private boolean enabled;
-    
+
     @Lob
     private String factoryData;
 
@@ -95,7 +96,7 @@ public class AuthenticationProviderRow implements java.io.Serializable {
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 7;
@@ -108,12 +109,12 @@ public class AuthenticationProviderRow implements java.io.Serializable {
         if (obj == null) {
             return false;
         }
-        if ( !(obj instanceof AuthenticationProviderRow)) {
+        if (!(obj instanceof AuthenticationProviderRow)) {
             return false;
         }
         final AuthenticationProviderRow other = (AuthenticationProviderRow) obj;
         return Objects.equals(this.id, other.id);
     }
-    
-    
+
+
 }

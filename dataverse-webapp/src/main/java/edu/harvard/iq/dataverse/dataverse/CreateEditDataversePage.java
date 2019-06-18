@@ -317,7 +317,7 @@ public class CreateEditDataversePage implements Serializable {
 
     private void showSuccessMessage() {
         JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.create.success",
-                Arrays.asList(settingsWrapper.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
+                                                                        Arrays.asList(settingsWrapper.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
     }
 
     private String setupViewForDataverseEdit() {

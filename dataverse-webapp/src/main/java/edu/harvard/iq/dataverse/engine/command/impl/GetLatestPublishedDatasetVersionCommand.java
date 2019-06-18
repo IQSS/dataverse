@@ -9,14 +9,13 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 /**
- *
  * @author Naomi
  */
 // No permission needed to view published dvObjects
 @RequiredPermissions({})
-public class GetLatestPublishedDatasetVersionCommand extends AbstractCommand<DatasetVersion>{
+public class GetLatestPublishedDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
     private final Dataset ds;
-    
+
     public GetLatestPublishedDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset) {
         super(aRequest, anAffectedDataset);
         ds = anAffectedDataset;
@@ -24,11 +23,11 @@ public class GetLatestPublishedDatasetVersionCommand extends AbstractCommand<Dat
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-        for (DatasetVersion dsv: ds.getVersions()) {
+        for (DatasetVersion dsv : ds.getVersions()) {
             if (dsv.isReleased()) {
                 return dsv;
-                }
             }
-        return null;
         }
+        return null;
     }
+}

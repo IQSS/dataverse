@@ -5,19 +5,21 @@ import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.path.xml.XmlPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+import java.util.logging.Logger;
+
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static org.hamcrest.CoreMatchers.equalTo;
 
 public class InReviewWorkflowIT {
 
@@ -59,7 +61,7 @@ public class InReviewWorkflowIT {
                 .body("message", equalTo("User @" + authorUsername + " is not permitted to perform requested action."))
                 .statusCode(UNAUTHORIZED.getStatusCode());
 
-        Response grantAuthorAddDataset = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR.toString(), "@" + authorUsername, curatorApiToken);
+        Response grantAuthorAddDataset = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR, "@" + authorUsername, curatorApiToken);
         grantAuthorAddDataset.prettyPrint();
         grantAuthorAddDataset.then().assertThat()
                 .body("data.assignee", equalTo("@" + authorUsername))
@@ -248,7 +250,7 @@ public class InReviewWorkflowIT {
         Response getFileIdRequest = UtilIT.nativeGet(datasetId, curatorApiToken);
         getFileIdRequest.prettyPrint();
         getFileIdRequest.then().assertThat()
-                .statusCode(OK.getStatusCode());;
+                .statusCode(OK.getStatusCode());
         int fileId1 = JsonPath.from(getFileIdRequest.getBody().asString()).getInt("data.latestVersion.files[0].dataFile.id");
         Response deleteFile1 = UtilIT.deleteFile(fileId1, curatorApiToken);
         deleteFile1.prettyPrint();

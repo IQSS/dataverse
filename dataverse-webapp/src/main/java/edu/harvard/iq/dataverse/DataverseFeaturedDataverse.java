@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import java.io.Serializable;
-import java.util.Objects;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -12,23 +10,24 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
- *
  * @author skraffmiller
  */
 
 @NamedQueries({
-	@NamedQuery( name="DataverseFeaturedDataverse.removeByOwnerId",
-				 query="DELETE FROM DataverseFeaturedDataverse f WHERE f.dataverse.id=:ownerId")
+        @NamedQuery(name = "DataverseFeaturedDataverse.removeByOwnerId",
+                query = "DELETE FROM DataverseFeaturedDataverse f WHERE f.dataverse.id=:ownerId")
 })
 
 @Entity
-@Table(indexes = {@Index(columnList="dataverse_id")
-		, @Index(columnList="featureddataverse_id")
-		, @Index(columnList="displayorder")})
+@Table(indexes = {@Index(columnList = "dataverse_id")
+        , @Index(columnList = "featureddataverse_id")
+        , @Index(columnList = "displayorder")})
 public class DataverseFeaturedDataverse implements Serializable {
-        private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,11 +42,11 @@ public class DataverseFeaturedDataverse implements Serializable {
     }
 
     @ManyToOne
-    @JoinColumn(name="dataverse_id")
+    @JoinColumn(name = "dataverse_id")
     private Dataverse dataverse;
 
     @ManyToOne
-    @JoinColumn(name="featureddataverse_id")
+    @JoinColumn(name = "featureddataverse_id")
     private Dataverse featuredDataverse;
 
     private int displayOrder;
@@ -74,8 +73,8 @@ public class DataverseFeaturedDataverse implements Serializable {
 
     public void setDisplayOrder(int displayOrder) {
         this.displayOrder = displayOrder;
-    } 
-  
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -96,5 +95,5 @@ public class DataverseFeaturedDataverse implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.DataverseFeaturedDataverse[ id=" + id + " ]";
     }
-    
+
 }

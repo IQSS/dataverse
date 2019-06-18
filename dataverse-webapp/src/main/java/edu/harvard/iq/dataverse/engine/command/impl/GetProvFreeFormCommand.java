@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+
 import java.util.logging.Logger;
 
 
@@ -29,7 +30,7 @@ public class GetProvFreeFormCommand extends AbstractCommand<String> {
     @Override
     public String execute(CommandContext ctxt) throws CommandException {
         FileMetadata fileMetadata = dataFile.getFileMetadata();
-        
+
         //logger.info("prov free-form: " + fileMetadata.getProvFreeForm());
         return fileMetadata.getProvFreeForm();
     }

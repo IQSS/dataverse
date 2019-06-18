@@ -5,7 +5,9 @@ import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import static edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil.getRandomUserStatic;
+import org.apache.commons.lang.StringUtils;
+
+import javax.ejb.Stateless;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -15,8 +17,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.ejb.Stateless;
-import org.apache.commons.lang.StringUtils;
+
+import static edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil.getRandomUserStatic;
 
 @Stateless
 public class AuthTestDataServiceBean {

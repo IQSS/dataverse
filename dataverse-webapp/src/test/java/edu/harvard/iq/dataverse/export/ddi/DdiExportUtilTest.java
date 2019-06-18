@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse.export.ddi;
 
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
+import org.junit.Test;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
-import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 
 public class DdiExportUtilTest {

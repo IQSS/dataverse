@@ -35,7 +35,8 @@ public class JobExecutionEntity {
     private List<StepExecutionEntity> steps;
 
 
-    public JobExecutionEntity() { }
+    public JobExecutionEntity() {
+    }
 
     public static JobExecutionEntity create(final JobExecution jobExecution) {
 

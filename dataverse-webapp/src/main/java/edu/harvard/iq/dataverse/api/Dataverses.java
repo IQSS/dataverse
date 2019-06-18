@@ -5,20 +5,18 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.ExplicitGroupDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportException;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
@@ -46,9 +44,9 @@ import edu.harvard.iq.dataverse.engine.command.impl.ListFacetsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRolesCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.MoveDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
-import edu.harvard.iq.dataverse.engine.command.impl.MoveDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RemoveRoleAssigneesFromExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
@@ -56,19 +54,10 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContributorRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
-import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
-import java.io.StringReader;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
@@ -95,12 +84,21 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.io.StringReader;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
-import javax.persistence.NoResultException;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 
 /**
  * A REST API for dataverses.
@@ -140,7 +138,7 @@ public class Dataverses extends AbstractApiBean {
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Error parsing dataverse from json: " + ex.getMessage(), ex);
             return error(Response.Status.BAD_REQUEST,
-                    "Error parsing the POSTed json into a dataverse: " + ex.getMessage());
+                         "Error parsing the POSTed json into a dataverse: " + ex.getMessage());
         }
 
         try {
@@ -233,9 +231,9 @@ public class Dataverses extends AbstractApiBean {
 
             Dataset managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
             return created("/datasets/" + managedDs.getId(),
-                    Json.createObjectBuilder()
-                            .add("id", managedDs.getId())
-                            .add("persistentId", managedDs.getGlobalIdString())
+                           Json.createObjectBuilder()
+                                   .add("id", managedDs.getId())
+                                   .add("persistentId", managedDs.getGlobalIdString())
             );
 
         } catch (WrappedResponse ex) {
@@ -323,9 +321,8 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = null;
             try {
                 ds = jsonParser().parseDataset(importService.ddiToJson(xml));
-            }
-            catch (JsonParseException jpe) {
-                return badRequest("Error parsing datas as Json: "+jpe.getMessage());
+            } catch (JsonParseException jpe) {
+                return badRequest("Error parsing datas as Json: " + jpe.getMessage());
             }
             ds.setOwner(owner);
             if (nonEmpty(pidParam)) {
@@ -347,8 +344,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset managedDs = null;
             if (nonEmpty(pidParam)) {
                 managedDs = execCommand(new ImportDatasetCommand(ds, request));
-            }
-            else {
+            } else {
                 managedDs = execCommand(new CreateNewDatasetCommand(ds, request));
             }
 
@@ -584,7 +580,7 @@ public class Dataverses extends AbstractApiBean {
         return allowCors(response(req -> ok(
                 execCommand(new ListDataverseContentCommand(req, findDataverseOrDie(dvIdtf)))
                         .stream()
-                        .map(dvo -> (JsonObjectBuilder) dvo.accept(ser))
+                        .map(dvo -> dvo.accept(ser))
                         .collect(toJsonArray()))
         ));
     }
@@ -752,8 +748,8 @@ public class Dataverses extends AbstractApiBean {
                 findDataverseOrDie(dvIdtf);
                 execCommand(new RevokeRoleCommand(ra, createDataverseRequest(findUserOrDie())));
                 return ok("Role " + ra.getRole().getName()
-                        + " revoked for assignee " + ra.getAssigneeIdentifier()
-                        + " in " + ra.getDefinitionPoint().accept(DvObject.NamePrinter));
+                                  + " revoked for assignee " + ra.getAssigneeIdentifier()
+                                  + " in " + ra.getDefinitionPoint().accept(DvObject.NamePrinter));
             } catch (WrappedResponse ex) {
                 return ex.getResponse();
             }
@@ -801,22 +797,22 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @Path("{identifier}/groups/{aliasInOwner}")
     public Response getGroupByOwnerAndAliasInOwner(@PathParam("identifier") String dvIdtf,
-            @PathParam("aliasInOwner") String grpAliasInOwner) {
+                                                   @PathParam("aliasInOwner") String grpAliasInOwner) {
         return response(req -> ok(json(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf),
-                req,
-                grpAliasInOwner))));
+                                                              req,
+                                                              grpAliasInOwner))));
     }
 
     @PUT
     @Path("{identifier}/groups/{aliasInOwner}")
     public Response updateGroup(ExplicitGroupDTO groupDto,
-            @PathParam("identifier") String dvIdtf,
-            @PathParam("aliasInOwner") String grpAliasInOwner) {
+                                @PathParam("identifier") String dvIdtf,
+                                @PathParam("aliasInOwner") String grpAliasInOwner) {
         return response(req -> ok(json(execCommand(
                 new UpdateExplicitGroupCommand(req,
-                        groupDto.apply(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner)))))));
+                                               groupDto.apply(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner)))))));
     }
-    
+
     @PUT
     @Path("{identifier}/defaultContributorRole/{roleAlias}")
     public Response updateDefaultContributorRole(
@@ -824,7 +820,7 @@ public class Dataverses extends AbstractApiBean {
             @PathParam("roleAlias") String roleAlias) {
 
         DataverseRole defaultRole;
-        
+
         if (roleAlias.equals(DataverseRole.NONE)) {
             defaultRole = null;
         } else {
@@ -847,7 +843,7 @@ public class Dataverses extends AbstractApiBean {
 
         try {
             Dataverse dv = findDataverseOrDie(dvIdtf);
-            
+
             String defaultRoleName = defaultRole == null ? BundleUtil.getStringFromBundle("permission.default.contributor.role.none.name") : defaultRole.getName();
 
             return response(req -> {
@@ -866,10 +862,10 @@ public class Dataverses extends AbstractApiBean {
     @DELETE
     @Path("{identifier}/groups/{aliasInOwner}")
     public Response deleteGroup(@PathParam("identifier") String dvIdtf,
-            @PathParam("aliasInOwner") String grpAliasInOwner) {
+                                @PathParam("aliasInOwner") String grpAliasInOwner) {
         return response(req -> {
             execCommand(new DeleteExplicitGroupCommand(req,
-                    findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner)));
+                                                       findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner)));
             return ok("Group " + dvIdtf + "/" + grpAliasInOwner + " deleted");
         });
     }
@@ -878,33 +874,33 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/groups/{aliasInOwner}/roleAssignees")
     @Consumes("application/json")
     public Response addRoleAssingees(List<String> roleAssingeeIdentifiers,
-            @PathParam("identifier") String dvIdtf,
-            @PathParam("aliasInOwner") String grpAliasInOwner) {
+                                     @PathParam("identifier") String dvIdtf,
+                                     @PathParam("aliasInOwner") String grpAliasInOwner) {
         return response(req -> ok(
                 json(
-                    execCommand(
+                        execCommand(
                                 new AddRoleAssigneesToExplicitGroupCommand(req,
-                                        findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner),
-                                        new TreeSet<>(roleAssingeeIdentifiers))))));
+                                                                           findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner),
+                                                                           new TreeSet<>(roleAssingeeIdentifiers))))));
     }
 
     @PUT
     @Path("{identifier}/groups/{aliasInOwner}/roleAssignees/{roleAssigneeIdentifier: .*}")
     public Response addRoleAssingee(@PathParam("identifier") String dvIdtf,
-            @PathParam("aliasInOwner") String grpAliasInOwner,
-            @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
+                                    @PathParam("aliasInOwner") String grpAliasInOwner,
+                                    @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
         return addRoleAssingees(Collections.singletonList(roleAssigneeIdentifier), dvIdtf, grpAliasInOwner);
     }
 
     @DELETE
     @Path("{identifier}/groups/{aliasInOwner}/roleAssignees/{roleAssigneeIdentifier: .*}")
     public Response deleteRoleAssingee(@PathParam("identifier") String dvIdtf,
-            @PathParam("aliasInOwner") String grpAliasInOwner,
-            @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
+                                       @PathParam("aliasInOwner") String grpAliasInOwner,
+                                       @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
         return response(req -> ok(json(execCommand(
                 new RemoveRoleAssigneesFromExplicitGroupCommand(req,
-                        findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner),
-                        Collections.singleton(roleAssigneeIdentifier))))));
+                                                                findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner),
+                                                                Collections.singleton(roleAssigneeIdentifier))))));
     }
 
     private ExplicitGroup findExplicitGroupOrDie(DvObject dv, DataverseRequest req, String groupIdtf) throws WrappedResponse {

@@ -28,7 +28,7 @@ public class MetricsPage implements Serializable {
     private String mode = "YEAR";
     private int selectedYear;
 
-    public void init(){
+    public void init() {
         selectedYear = LocalDate.now().getYear();
         yearlyDatasetStats = MetricsUtil.countDatasetsPerYear(repository.countPublishedDatasets());
 

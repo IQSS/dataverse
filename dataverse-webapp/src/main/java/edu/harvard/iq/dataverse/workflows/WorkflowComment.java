@@ -2,9 +2,7 @@ package edu.harvard.iq.dataverse.workflows;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import java.io.Serializable;
-import java.sql.Timestamp;
-import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -13,6 +11,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import java.io.Serializable;
+import java.sql.Timestamp;
+import java.util.Date;
 
 @Entity
 public class WorkflowComment implements Serializable {
@@ -23,8 +24,8 @@ public class WorkflowComment implements Serializable {
     */
     public enum Type {
         RETURN_TO_AUTHOR //, SUBMIT_FOR_REVIEW not available in this release but may be added in the future
-    };
-    
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -35,7 +36,7 @@ public class WorkflowComment implements Serializable {
      * table for discussion of other entities such as files in the "Request
      * Access" workflow. We may even allow for discussion of datasets to allow
      * users to explain why they'd like to have a contributor role on a dataset.
-     *
+     * <p>
      * TODO: In the future, make this nullable=true for when entities other than
      * DatasetVersion are being discussed, such as DataFile or Dataset.
      */
@@ -80,11 +81,11 @@ public class WorkflowComment implements Serializable {
     /**
      * This default constructor is only here to prevent this error at
      * deployment:
-     *
+     * <p>
      * Exception Description: The instance creation method [...[class
      * name].<Default Constructor>], with no parameters, does not exist, or is
      * not accessible
-     *
+     * <p>
      * Don't use this constructor.
      */
     @Deprecated
@@ -116,7 +117,7 @@ public class WorkflowComment implements Serializable {
     }
 
     public void setDatasetVersion(DatasetVersion dv) {
-        datasetVersion=dv;
+        datasetVersion = dv;
     }
 
 }

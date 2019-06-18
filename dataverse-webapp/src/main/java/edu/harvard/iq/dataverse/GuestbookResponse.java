@@ -7,15 +7,28 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import javax.persistence.*;
 
 /**
- *
  * @author skraffmiller
  */
 @Entity
@@ -29,29 +42,29 @@ public class GuestbookResponse implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private Guestbook guestbook;
-    
+
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DataFile dataFile;
-    
+
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private Dataset dataset;
-    
+
     @ManyToOne
-    @JoinColumn(nullable=true)
+    @JoinColumn(nullable = true)
     private DatasetVersion datasetVersion;
 
     @ManyToOne
-    @JoinColumn(nullable=true)
+    @JoinColumn(nullable = true)
     private AuthenticatedUser authenticatedUser;
 
-    @OneToMany(mappedBy="guestbookResponse",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval=true)
-    @OrderBy ("id")
+    @OneToMany(mappedBy = "guestbookResponse", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
+    @OrderBy("id")
     private List<CustomQuestionResponse> customQuestionResponses;
 
 
@@ -62,7 +75,7 @@ public class GuestbookResponse implements Serializable {
     /**
      * Possible values for downloadType include "Download", "Subset",
      * "WorldMap", or the displayName of an ExternalTool.
-     *
+     * <p>
      * TODO: Types like "Download" and "Subset" and probably "WorldMap" should
      * be defined once as constants (likely an enum) rather than having these
      * strings duplicated in various places when setDownloadtype() is called.
@@ -71,7 +84,7 @@ public class GuestbookResponse implements Serializable {
      */
     private String downloadtype;
     private String sessionId;
-        
+
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date responseTime;
     
@@ -82,14 +95,14 @@ public class GuestbookResponse implements Serializable {
     - fileFormat tells the download api which format a subsettable file should be downloaded as
     - writeResponse is set to false when dataset version is draft.
     */
-    
+
     @Transient
     private String selectedFileIds;
-    
-    @Transient 
+
+    @Transient
     private String fileFormat;
-    
-    @Transient 
+
+    @Transient
     private boolean writeResponse = true;
 
     /**
@@ -115,8 +128,8 @@ public class GuestbookResponse implements Serializable {
     public void setSelectedFileIds(String selectedFileIds) {
         this.selectedFileIds = selectedFileIds;
     }
-    
-    
+
+
     public String getFileFormat() {
         return fileFormat;
     }
@@ -133,11 +146,11 @@ public class GuestbookResponse implements Serializable {
         this.externalTool = externalTool;
     }
 
-    public GuestbookResponse(){
-        
+    public GuestbookResponse() {
+
     }
-    
-    public GuestbookResponse(GuestbookResponse source){
+
+    public GuestbookResponse(GuestbookResponse source) {
         //makes a clone of a response for adding of studyfiles in case of multiple downloads
         this.setName(source.getName());
         this.setEmail(source.getEmail());
@@ -148,21 +161,21 @@ public class GuestbookResponse implements Serializable {
         this.setDatasetVersion(source.getDatasetVersion());
         this.setAuthenticatedUser(source.getAuthenticatedUser());
         this.setSessionId(source.getSessionId());
-        List <CustomQuestionResponse> customQuestionResponses = new ArrayList<>();
-        if (!source.getCustomQuestionResponses().isEmpty()){
-            for (CustomQuestionResponse customQuestionResponse : source.getCustomQuestionResponses() ){
+        List<CustomQuestionResponse> customQuestionResponses = new ArrayList<>();
+        if (!source.getCustomQuestionResponses().isEmpty()) {
+            for (CustomQuestionResponse customQuestionResponse : source.getCustomQuestionResponses()) {
                 CustomQuestionResponse customQuestionResponseAdd = new CustomQuestionResponse();
-                customQuestionResponseAdd.setResponse(customQuestionResponse.getResponse());  
+                customQuestionResponseAdd.setResponse(customQuestionResponse.getResponse());
                 customQuestionResponseAdd.setCustomQuestion(customQuestionResponse.getCustomQuestion());
                 customQuestionResponseAdd.setGuestbookResponse(this);
                 customQuestionResponses.add(customQuestionResponseAdd);
-            }           
+            }
         }
         this.setCustomQuestionResponses(customQuestionResponses);
         this.setGuestbook(source.getGuestbook());
     }
-    
-    
+
+
     public String getEmail() {
         return email;
     }
@@ -210,7 +223,7 @@ public class GuestbookResponse implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public Date getResponseTime() {
         return responseTime;
     }
@@ -222,11 +235,11 @@ public class GuestbookResponse implements Serializable {
     public String getResponseDate() {
         return new SimpleDateFormat("MMMM d, yyyy").format(responseTime);
     }
-    
-    public String getResponseDateForDisplay(){
+
+    public String getResponseDateForDisplay() {
         return null; //    SimpleDateFormat("yyyy").format(new Timestamp(new Date().getTime()));
     }
-    
+
 
     public List<CustomQuestionResponse> getCustomQuestionResponses() {
         return customQuestionResponses;
@@ -235,7 +248,7 @@ public class GuestbookResponse implements Serializable {
     public void setCustomQuestionResponses(List<CustomQuestionResponse> customQuestionResponses) {
         this.customQuestionResponses = customQuestionResponses;
     }
-    
+
     public Dataset getDataset() {
         return dataset;
     }
@@ -251,7 +264,7 @@ public class GuestbookResponse implements Serializable {
     public void setDataFile(DataFile dataFile) {
         this.dataFile = dataFile;
     }
-       
+
     public DatasetVersion getDatasetVersion() {
         return datasetVersion;
     }
@@ -267,7 +280,7 @@ public class GuestbookResponse implements Serializable {
     public void setAuthenticatedUser(AuthenticatedUser authenticatedUser) {
         this.authenticatedUser = authenticatedUser;
     }
-    
+
     public String getDownloadtype() {
         return downloadtype;
     }
@@ -275,7 +288,7 @@ public class GuestbookResponse implements Serializable {
     public void setDownloadtype(String downloadtype) {
         this.downloadtype = downloadtype;
     }
-    
+
     public String getSessionId() {
         return sessionId;
     }
@@ -283,7 +296,7 @@ public class GuestbookResponse implements Serializable {
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -298,16 +311,13 @@ public class GuestbookResponse implements Serializable {
             return false;
         }
         GuestbookResponse other = (GuestbookResponse) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
 
     @Override
     public String toString() {
         return "edu.harvard.iq.dvn.core.vdc.GuestBookResponse[ id=" + id + " ]";
     }
-    
+
 }
 

@@ -10,10 +10,9 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 
 /**
- *
  * @author gdurand
  */
-public class FileUploadRenderer extends org.primefaces.component.fileupload.FileUploadRenderer{
+public class FileUploadRenderer extends org.primefaces.component.fileupload.FileUploadRenderer {
     @Override
     public void decode(FacesContext context, UIComponent component) {
         if (context.getExternalContext().getRequestContentType().toLowerCase().startsWith("multipart/")) {

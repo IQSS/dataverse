@@ -11,21 +11,21 @@ import com.lyncode.xoai.model.oaipmh.About;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecord;
 import edu.harvard.iq.dataverse.util.StringUtil;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 
 /**
- *
  * @author Leonid Andreev
- * 
- * This is an implemention of an Lyncode XOAI Item; 
+ * <p>
+ * This is an implemention of an Lyncode XOAI Item;
  * You can think of it as an XOAI Item wrapper around the
  * Dataverse OAIRecord entity.
  */
 public class Xitem implements Item {
-    
+
     public Xitem(OAIRecord oaiRecord) {
         super();
         this.oaiRecord = oaiRecord;
@@ -34,28 +34,28 @@ public class Xitem implements Item {
             oaisets.add(new Set(oaiRecord.getSetName()));
         }
     }
-    
+
     private OAIRecord oaiRecord;
-    
+
     public OAIRecord getOaiRecord() {
         return oaiRecord;
     }
-    
+
     public void setOaiRecord(OAIRecord oaiRecord) {
         this.oaiRecord = oaiRecord;
     }
 
-    private Dataset dataset; 
-    
+    private Dataset dataset;
+
     public Dataset getDataset() {
         return dataset;
     }
-    
+
     public Xitem withDataset(Dataset dataset) {
-        this.dataset = dataset; 
-        return this; 
+        this.dataset = dataset;
+        return this;
     }
-    
+
     @Override
     public List<About> getAbout() {
         return null;
@@ -63,7 +63,7 @@ public class Xitem implements Item {
 
     @Override
     public Xmetadata getMetadata() {
-        return new Xmetadata((String)null);
+        return new Xmetadata(null);
     }
 
     @Override
@@ -75,14 +75,14 @@ public class Xitem implements Item {
     public Date getDatestamp() {
         return oaiRecord.getLastUpdateTime();
     }
-    
-    private  List<Set> oaisets;
+
+    private List<Set> oaisets;
 
     @Override
     public List<Set> getSets() {
-        
+
         return oaisets;
- 
+
     }
 
     @Override

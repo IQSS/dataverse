@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -42,8 +43,8 @@ public class ListDataverseContentCommand extends AbstractCommand<List<DvObject>>
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         return Collections.singletonMap("",
-                dvToList.isReleased() ? Collections.<Permission>emptySet()
-                : Collections.singleton(Permission.ViewUnpublishedDataverse));
+                                        dvToList.isReleased() ? Collections.emptySet()
+                                                : Collections.singleton(Permission.ViewUnpublishedDataverse));
     }
 
 }

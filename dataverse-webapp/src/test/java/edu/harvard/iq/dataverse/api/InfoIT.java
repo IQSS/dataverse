@@ -1,9 +1,10 @@
 package edu.harvard.iq.dataverse.api;
 
-import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.junit.Test;
+
+import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
@@ -15,7 +16,7 @@ public class InfoIT {
         given().urlEncodingEnabled(false)
                 .body("Hello world!")
                 .put("/api/admin/settings/"
-                        + SettingsServiceBean.Key.DatasetPublishPopupCustomText);
+                             + SettingsServiceBean.Key.DatasetPublishPopupCustomText);
 
         Response response = given().urlEncodingEnabled(false)
                 .get("/api/info/settings/" + SettingsServiceBean.Key.DatasetPublishPopupCustomText);
@@ -25,15 +26,15 @@ public class InfoIT {
 
         given().urlEncodingEnabled(false)
                 .delete("/api/admin/settings/"
-                        + SettingsServiceBean.Key.DatasetPublishPopupCustomText);
+                                + SettingsServiceBean.Key.DatasetPublishPopupCustomText);
 
         response = given().urlEncodingEnabled(false)
                 .get("/api/info/settings/" + SettingsServiceBean.Key.DatasetPublishPopupCustomText);
         response.prettyPrint();
         response.then().assertThat().statusCode(404)
                 .body("message", equalTo("Setting "
-                        + SettingsServiceBean.Key.DatasetPublishPopupCustomText
-                        + " not found"));
+                                                 + SettingsServiceBean.Key.DatasetPublishPopupCustomText
+                                                 + " not found"));
     }
 
     @Test
@@ -53,7 +54,7 @@ public class InfoIT {
         response.then().assertThat().statusCode(200)
                 .body("data.message", notNullValue());
     }
-    
+
     @Test
     public void getTermsOfUse() {
         Response response = given().urlEncodingEnabled(false)

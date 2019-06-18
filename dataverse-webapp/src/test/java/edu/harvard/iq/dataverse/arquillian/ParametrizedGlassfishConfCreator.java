@@ -80,27 +80,27 @@ public class ParametrizedGlassfishConfCreator {
         List<Node> list = document.selectNodes("/resources/jdbc-connection-pool/child::*");
 
         list.forEach(node -> {
-                    Element element = (Element) node;
-                    String propertyName = element.attribute(0).getValue();
+                         Element element = (Element) node;
+                         String propertyName = element.attribute(0).getValue();
 
-                    switch (propertyName) {
-                        case "password":
-                            element.attribute(1).setValue(properties.getProperty("db.password"));
-                            break;
-                        case "PortNumber":
-                            element.attribute(1).setValue(properties.getProperty("db.portnumber"));
-                            break;
-                        case "User":
-                            element.attribute(1).setValue(properties.getProperty("db.user"));
-                            break;
-                        case "databaseName":
-                            element.attribute(1).setValue(properties.getProperty("db.databasename"));
-                            break;
-                        case "ServerName":
-                            element.attribute(1).setValue(properties.getProperty("db.host"));
-                            break;
-                    }
-                }
+                         switch (propertyName) {
+                             case "password":
+                                 element.attribute(1).setValue(properties.getProperty("db.password"));
+                                 break;
+                             case "PortNumber":
+                                 element.attribute(1).setValue(properties.getProperty("db.portnumber"));
+                                 break;
+                             case "User":
+                                 element.attribute(1).setValue(properties.getProperty("db.user"));
+                                 break;
+                             case "databaseName":
+                                 element.attribute(1).setValue(properties.getProperty("db.databasename"));
+                                 break;
+                             case "ServerName":
+                                 element.attribute(1).setValue(properties.getProperty("db.host"));
+                                 break;
+                         }
+                     }
         );
         return document;
     }

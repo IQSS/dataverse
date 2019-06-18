@@ -4,19 +4,20 @@ import java.util.Objects;
 
 /**
  * Contains display info for an assignee.
+ *
  * @author michael
  */
 
 public class RoleAssigneeDisplayInfo implements java.io.Serializable {
-    
+
     private String title;
     private String emailAddress;
     private String affiliation;
 
     public RoleAssigneeDisplayInfo(String title, String emailAddress) {
-        this( title, emailAddress, null );
+        this(title, emailAddress, null);
     }
-    
+
     public RoleAssigneeDisplayInfo(String title, String emailAddress, String anAffiliation) {
         this.title = title;
         this.emailAddress = emailAddress;
@@ -67,7 +68,7 @@ public class RoleAssigneeDisplayInfo implements java.io.Serializable {
         if (obj == null) {
             return false;
         }
-        if ( ! (obj instanceof RoleAssigneeDisplayInfo)) {
+        if (!(obj instanceof RoleAssigneeDisplayInfo)) {
             return false;
         }
         final RoleAssigneeDisplayInfo other = (RoleAssigneeDisplayInfo) obj;
@@ -79,5 +80,5 @@ public class RoleAssigneeDisplayInfo implements java.io.Serializable {
         }
         return Objects.equals(this.affiliation, other.affiliation);
     }
-    
+
 }

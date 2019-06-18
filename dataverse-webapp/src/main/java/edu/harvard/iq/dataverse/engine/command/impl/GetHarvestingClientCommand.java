@@ -8,12 +8,12 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
 /**
- *
  * @author Leonid Andreev
  */
 // One can view the configuration of a Harvesting Client if and only if 
@@ -23,7 +23,7 @@ import java.util.Set;
 // Everybody can view a published Dataverse; otherwise, an explicit 
 // ViewUnpublishedDataverse is needed. 
 // This is defined in the getRequiredPermissions() method, below. 
-public class GetHarvestingClientCommand extends AbstractCommand<HarvestingClient>{
+public class GetHarvestingClientCommand extends AbstractCommand<HarvestingClient> {
     private final Dataverse ownerDataverse;
     private final HarvestingClient harvestingClient;
 
@@ -47,7 +47,7 @@ public class GetHarvestingClientCommand extends AbstractCommand<HarvestingClient
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         return Collections.singletonMap("",
-                ownerDataverse.isReleased() ? Collections.<Permission>emptySet()
-                : Collections.singleton(Permission.ViewUnpublishedDataverse));
-    }    
+                                        ownerDataverse.isReleased() ? Collections.emptySet()
+                                                : Collections.singleton(Permission.ViewUnpublishedDataverse));
+    }
 }

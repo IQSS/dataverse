@@ -13,13 +13,12 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 
 /**
- *
  * @author skraffmiller
  */
 @FacesConverter("dataverseConverter")
 public class DataverseConverter implements Converter {
 
-    
+
     @EJB
     DataverseServiceBean dataverseService;
 

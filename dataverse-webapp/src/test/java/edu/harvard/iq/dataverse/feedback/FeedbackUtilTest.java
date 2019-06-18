@@ -18,8 +18,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
-
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -29,12 +27,9 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -162,7 +157,7 @@ public class FeedbackUtilTest {
         JsonObject jsonNoContacts = jsonReaderNoContacts.readObject();
         JsonParser jsonParserNoContacts = new JsonParser(datasetFieldTypeSvc, null, null);
         dsVersionNoContacts = jsonParserNoContacts.parseDatasetVersion(jsonNoContacts.getJsonObject("datasetVersion"));
-        
+
     }
 
     @Test
@@ -333,7 +328,7 @@ public class FeedbackUtilTest {
         fmd.setCategories(fileCategories);
         List<FileMetadata> fileMetadatas = new ArrayList<>();
         fileMetadatas.add(fmd);
-        dataFile.setFileMetadatas(fileMetadatas);;
+        dataFile.setFileMetadatas(fileMetadatas);
         Dataset dataset = new Dataset();
         dataFile.setOwner(dataset);
 
@@ -372,7 +367,7 @@ public class FeedbackUtilTest {
                 + supportTeamName + "\n"
                 + systemEmail + "\n\n"
                 + "Go to file https://dataverse.librascholar.edu/file.xhtml?fileId=42\n\n"
-                + "You received this email because you have been listed as a contact for the dataset. If you believe this was an error, please contact " + supportTeamName + " at " + systemEmail + ". To respond directly to the individual who sent the message, simply reply to this email.";;
+                + "You received this email because you have been listed as a contact for the dataset. If you believe this was an error, please contact " + supportTeamName + " at " + systemEmail + ". To respond directly to the individual who sent the message, simply reply to this email.";
         System.out.println("body:\n\n" + feedback.getBody());
         assertEquals(expectedBody, feedback.getBody());
 
@@ -402,7 +397,7 @@ public class FeedbackUtilTest {
         fmd.setCategories(fileCategories);
         List<FileMetadata> fileMetadatas = new ArrayList<>();
         fileMetadatas.add(fmd);
-        dataFile.setFileMetadatas(fileMetadatas);;
+        dataFile.setFileMetadatas(fileMetadatas);
         Dataset dataset = new Dataset();
         dataFile.setOwner(dataset);
 

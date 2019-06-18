@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -21,12 +22,14 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * Testing DataCitation class
+ *
  * @author pkiraly@gwdg.de
  */
 public class DataCitationTest {
 
     /**
      * Test the public properties of DataCitation class via their getters
+     *
      * @throws ParseException
      */
     @Test
@@ -44,6 +47,7 @@ public class DataCitationTest {
 
     /**
      * Test DataCite metadata
+     *
      * @throws ParseException
      */
     @Test
@@ -52,8 +56,8 @@ public class DataCitationTest {
         Map<String, String> properties = dataCitation.getDataCiteMetadata();
         assertEquals(4, properties.size());
         assertEquals(
-           "datacite.creator, datacite.publisher, datacite.title, datacite.publicationyear",
-           StringUtils.join(properties.keySet(), ", ")
+                "datacite.creator, datacite.publisher, datacite.title, datacite.publicationyear",
+                StringUtils.join(properties.keySet(), ", ")
         );
         assertEquals("First Last", properties.get("datacite.creator"));
         assertEquals("LibraScholar", properties.get("datacite.publisher"));
@@ -63,6 +67,7 @@ public class DataCitationTest {
 
     /**
      * Test that bibtex data export contains a closing bracket
+     *
      * @throws ParseException
      * @throws IOException
      */
@@ -73,17 +78,17 @@ public class DataCitationTest {
         DataCitation dataCitation = new DataCitation(datasetVersion);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         dataCitation.writeAsBibtexCitation(os);
-        String out = new String(os.toByteArray(), "UTF-8");
+        String out = new String(os.toByteArray(), StandardCharsets.UTF_8);
         assertEquals(
                 "@data{LK0D1H_1955,\r\n"
-                + "author = {First Last},\r\n"
-                + "publisher = {LibraScholar},\r\n"
-                + "title = \"{Dataset Title}\",\r\n"
-                + "year = {1955},\r\n"
-                + "version = {V1},\r\n"
-                + "doi = {10.5072/FK2/LK0D1H},\r\n"
-                + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
-                + "}\r\n",
+                        + "author = {First Last},\r\n"
+                        + "publisher = {LibraScholar},\r\n"
+                        + "title = \"{Dataset Title}\",\r\n"
+                        + "year = {1955},\r\n"
+                        + "version = {V1},\r\n"
+                        + "doi = {10.5072/FK2/LK0D1H},\r\n"
+                        + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
+                        + "}\r\n",
                 out
         );
     }
@@ -99,14 +104,14 @@ public class DataCitationTest {
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
                 "@data{LK0D1H_1955,\r\n"
-                + "author = {First Last},\r\n"
-                + "publisher = {LibraScholar},\r\n"
-                + "title = \"{Dataset Title}\",\r\n"
-                + "year = {1955},\r\n"
-                + "version = {V1},\r\n"
-                + "doi = {10.5072/FK2/LK0D1H},\r\n"
-                + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
-                + "}\r\n",
+                        + "author = {First Last},\r\n"
+                        + "publisher = {LibraScholar},\r\n"
+                        + "title = \"{Dataset Title}\",\r\n"
+                        + "year = {1955},\r\n"
+                        + "version = {V1},\r\n"
+                        + "doi = {10.5072/FK2/LK0D1H},\r\n"
+                        + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
+                        + "}\r\n",
                 dataCitation.toBibtexString()
         );
     }
@@ -123,14 +128,14 @@ public class DataCitationTest {
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
                 "@data{LK0D1H_1955,\r\n"
-                + "author = {},\r\n"
-                + "publisher = {LibraScholar},\r\n"
-                + "title = \"{Dataset Title}\",\r\n"
-                + "year = {1955},\r\n"
-                + "version = {V1},\r\n"
-                + "doi = {10.5072/FK2/LK0D1H},\r\n"
-                + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
-                + "}\r\n",
+                        + "author = {},\r\n"
+                        + "publisher = {LibraScholar},\r\n"
+                        + "title = \"{Dataset Title}\",\r\n"
+                        + "year = {1955},\r\n"
+                        + "version = {V1},\r\n"
+                        + "doi = {10.5072/FK2/LK0D1H},\r\n"
+                        + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
+                        + "}\r\n",
                 dataCitation.toBibtexString()
         );
     }
@@ -148,14 +153,14 @@ public class DataCitationTest {
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
                 "@data{LK0D1H_1955,\r\n"
-                + "author = {First Last},\r\n"
-                + "publisher = {LibraScholar},\r\n"
-                + "title = \"{}\",\r\n"
-                + "year = {1955},\r\n"
-                + "version = {V1},\r\n"
-                + "doi = {10.5072/FK2/LK0D1H},\r\n"
-                + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
-                + "}\r\n",
+                        + "author = {First Last},\r\n"
+                        + "publisher = {LibraScholar},\r\n"
+                        + "title = \"{}\",\r\n"
+                        + "year = {1955},\r\n"
+                        + "version = {V1},\r\n"
+                        + "doi = {10.5072/FK2/LK0D1H},\r\n"
+                        + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
+                        + "}\r\n",
                 dataCitation.toBibtexString()
         );
     }
@@ -173,14 +178,14 @@ public class DataCitationTest {
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
                 "@data{LK0D1H_1955,\r\n"
-                + "author = {},\r\n"
-                + "publisher = {LibraScholar},\r\n"
-                + "title = \"{}\",\r\n"
-                + "year = {1955},\r\n"
-                + "version = {V1},\r\n"
-                + "doi = {10.5072/FK2/LK0D1H},\r\n"
-                + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
-                + "}\r\n",
+                        + "author = {},\r\n"
+                        + "publisher = {LibraScholar},\r\n"
+                        + "title = \"{}\",\r\n"
+                        + "year = {1955},\r\n"
+                        + "version = {V1},\r\n"
+                        + "doi = {10.5072/FK2/LK0D1H},\r\n"
+                        + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
+                        + "}\r\n",
                 dataCitation.toBibtexString()
         );
     }
@@ -190,19 +195,19 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion("Dataset Title", true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "Provider: LibraScholar\r\n" +
-           "Content: text/plain; charset=\"utf-8\"\r\n" +
-           "TY  - DATA\r\n" +
-           "T1  - Dataset Title\r\n" +
-           "AU  - First Last\r\n" +
-           "DO  - doi:10.5072/FK2/LK0D1H\r\n" +
-           "ET  - V1\r\n" +
-           "PY  - 1955\r\n" +
-           "SE  - 1955-11-05 00:00:00.0\r\n" +
-           "UR  - https://doi.org/10.5072/FK2/LK0D1H\r\n" +
-           "PB  - LibraScholar\r\n" +
-           "ER  - \r\n",
-           dataCitation.toRISString()
+                "Provider: LibraScholar\r\n" +
+                        "Content: text/plain; charset=\"utf-8\"\r\n" +
+                        "TY  - DATA\r\n" +
+                        "T1  - Dataset Title\r\n" +
+                        "AU  - First Last\r\n" +
+                        "DO  - doi:10.5072/FK2/LK0D1H\r\n" +
+                        "ET  - V1\r\n" +
+                        "PY  - 1955\r\n" +
+                        "SE  - 1955-11-05 00:00:00.0\r\n" +
+                        "UR  - https://doi.org/10.5072/FK2/LK0D1H\r\n" +
+                        "PB  - LibraScholar\r\n" +
+                        "ER  - \r\n",
+                dataCitation.toRISString()
         );
     }
 
@@ -212,18 +217,18 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion(nullDatasetTitle, false);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "Provider: LibraScholar\r\n" +
-           "Content: text/plain; charset=\"utf-8\"\r\n" +
-           "TY  - DATA\r\n" +
-           "T1  - \r\n" +
-           "DO  - doi:10.5072/FK2/LK0D1H\r\n" +
-           "ET  - V1\r\n" +
-           "PY  - 1955\r\n" +
-           "SE  - 1955-11-05 00:00:00.0\r\n" +
-           "UR  - https://doi.org/10.5072/FK2/LK0D1H\r\n" +
-           "PB  - LibraScholar\r\n" +
-           "ER  - \r\n",
-           dataCitation.toRISString()
+                "Provider: LibraScholar\r\n" +
+                        "Content: text/plain; charset=\"utf-8\"\r\n" +
+                        "TY  - DATA\r\n" +
+                        "T1  - \r\n" +
+                        "DO  - doi:10.5072/FK2/LK0D1H\r\n" +
+                        "ET  - V1\r\n" +
+                        "PY  - 1955\r\n" +
+                        "SE  - 1955-11-05 00:00:00.0\r\n" +
+                        "UR  - https://doi.org/10.5072/FK2/LK0D1H\r\n" +
+                        "PB  - LibraScholar\r\n" +
+                        "ER  - \r\n",
+                dataCitation.toRISString()
         );
     }
 
@@ -232,25 +237,25 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion("Dataset Title", true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "<?xml version='1.0' encoding='UTF-8'?>" +
-           "<xml>" +
-           "<records>" +
-           "<record>" +
-           "<ref-type name=\"Dataset\">59</ref-type>" +
-           "<contributors>" +
-           "<authors><author>First Last</author></authors>" +
-           "</contributors>" +
-           "<titles><title>Dataset Title</title></titles>" +
-           "<section>1955-11-05</section>" +
-           "<dates><year>1955</year></dates>" +
-           "<edition>V1</edition>" +
-           "<publisher>LibraScholar</publisher>" +
-           "<urls><related-urls><url>https://doi.org/10.5072/FK2/LK0D1H</url></related-urls></urls>" +
-           "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
-           "</record>" +
-           "</records>" +
-           "</xml>",
-           dataCitation.toEndNoteString()
+                "<?xml version='1.0' encoding='UTF-8'?>" +
+                        "<xml>" +
+                        "<records>" +
+                        "<record>" +
+                        "<ref-type name=\"Dataset\">59</ref-type>" +
+                        "<contributors>" +
+                        "<authors><author>First Last</author></authors>" +
+                        "</contributors>" +
+                        "<titles><title>Dataset Title</title></titles>" +
+                        "<section>1955-11-05</section>" +
+                        "<dates><year>1955</year></dates>" +
+                        "<edition>V1</edition>" +
+                        "<publisher>LibraScholar</publisher>" +
+                        "<urls><related-urls><url>https://doi.org/10.5072/FK2/LK0D1H</url></related-urls></urls>" +
+                        "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
+                        "</record>" +
+                        "</records>" +
+                        "</xml>",
+                dataCitation.toEndNoteString()
         );
     }
 
@@ -260,23 +265,23 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion(nullDatasetTitle, false);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "<?xml version='1.0' encoding='UTF-8'?>" +
-           "<xml>" +
-           "<records>" +
-           "<record>" +
-           "<ref-type name=\"Dataset\">59</ref-type>" +
-           "<contributors />" +
-           "<titles><title></title></titles>" +
-           "<section>1955-11-05</section>" +
-           "<dates><year>1955</year></dates>" +
-           "<edition>V1</edition>" +
-           "<publisher>LibraScholar</publisher>" +
-           "<urls><related-urls><url>https://doi.org/10.5072/FK2/LK0D1H</url></related-urls></urls>" +
-           "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
-           "</record>" +
-           "</records>" +
-           "</xml>",
-           dataCitation.toEndNoteString()
+                "<?xml version='1.0' encoding='UTF-8'?>" +
+                        "<xml>" +
+                        "<records>" +
+                        "<record>" +
+                        "<ref-type name=\"Dataset\">59</ref-type>" +
+                        "<contributors />" +
+                        "<titles><title></title></titles>" +
+                        "<section>1955-11-05</section>" +
+                        "<dates><year>1955</year></dates>" +
+                        "<edition>V1</edition>" +
+                        "<publisher>LibraScholar</publisher>" +
+                        "<urls><related-urls><url>https://doi.org/10.5072/FK2/LK0D1H</url></related-urls></urls>" +
+                        "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
+                        "</record>" +
+                        "</records>" +
+                        "</xml>",
+                dataCitation.toEndNoteString()
         );
     }
 
@@ -285,8 +290,8 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion("Dataset Title", true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "First Last, 1955, \"Dataset Title\", https://doi.org/10.5072/FK2/LK0D1H, LibraScholar, V1",
-           dataCitation.toString()
+                "First Last, 1955, \"Dataset Title\", https://doi.org/10.5072/FK2/LK0D1H, LibraScholar, V1",
+                dataCitation.toString()
         );
     }
 
@@ -296,8 +301,8 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion(nullDatasetTitle, false);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "1955, https://doi.org/10.5072/FK2/LK0D1H, LibraScholar, V1",
-           dataCitation.toString()
+                "1955, https://doi.org/10.5072/FK2/LK0D1H, LibraScholar, V1",
+                dataCitation.toString()
         );
     }
 
@@ -306,10 +311,10 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion("Dataset Title", true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "First Last, 1955, \"Dataset Title\"," +
-           " <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>," +
-           " LibraScholar, V1",
-           dataCitation.toString(true)
+                "First Last, 1955, \"Dataset Title\"," +
+                        " <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>," +
+                        " LibraScholar, V1",
+                dataCitation.toString(true)
         );
     }
 
@@ -319,10 +324,10 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion(nullDatasetTitle, false);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "1955," +
-           " <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>," +
-           " LibraScholar, V1",
-           dataCitation.toString(true)
+                "1955," +
+                        " <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>," +
+                        " LibraScholar, V1",
+                dataCitation.toString(true)
         );
     }
 
@@ -339,14 +344,14 @@ public class DataCitationTest {
         assertEquals("1955", dataCitation.getYear());
         assertEquals(
                 "@data{LK0D1H_1955,\r\n"
-                + "author = {First Last},\r\n"
-                + "publisher = {LibraScholar},\r\n"
-                + "title = \"{This Title ``Has Quotes'' In It}\",\r\n"
-                + "year = {1955},\r\n"
-                + "version = {V1},\r\n"
-                + "doi = {10.5072/FK2/LK0D1H},\r\n"
-                + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
-                + "}\r\n",
+                        + "author = {First Last},\r\n"
+                        + "publisher = {LibraScholar},\r\n"
+                        + "title = \"{This Title ``Has Quotes'' In It}\",\r\n"
+                        + "year = {1955},\r\n"
+                        + "version = {V1},\r\n"
+                        + "doi = {10.5072/FK2/LK0D1H},\r\n"
+                        + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
+                        + "}\r\n",
                 dataCitation.toBibtexString()
         );
 
@@ -397,7 +402,7 @@ public class DataCitationTest {
         DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();
         compoundValue.setParentDatasetField(author);
         compoundValue.setChildDatasetFields(Arrays.asList(
-           constructPrimitive(DatasetFieldConstant.authorName, value)
+                constructPrimitive(DatasetFieldConstant.authorName, value)
         ));
         compoundValues.add(compoundValue);
         author.setDatasetFieldCompoundValues(compoundValues);
@@ -413,8 +418,8 @@ public class DataCitationTest {
         field.setDatasetFieldType(
                 new DatasetFieldType(fieldName, FieldType.TEXT, false));
         field.setDatasetFieldValues(
-           Collections.singletonList(
-              new DatasetFieldValue(field, value)));
+                Collections.singletonList(
+                        new DatasetFieldValue(field, value)));
         return field;
     }
 }

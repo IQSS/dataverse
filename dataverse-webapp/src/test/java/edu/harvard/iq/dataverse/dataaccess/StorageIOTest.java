@@ -30,7 +30,6 @@ import static org.junit.Assert.fail;
 //import org.apache.commons.httpclient.methods.GetMethod;
 
 /**
- *
  * @author oscardssmith
  */
 public class StorageIOTest {
@@ -234,11 +233,11 @@ public class StorageIOTest {
 
     @Test
     public void testGenerateVariableHeader() {
-        DataVariable var = new DataVariable(0,null);
+        DataVariable var = new DataVariable(0, null);
         var.setName("Random");
 
         @SuppressWarnings("unchecked")
-        List<DataVariable> dvs = Arrays.asList(new DataVariable[]{var, var});
+        List<DataVariable> dvs = Arrays.asList(var, var);
         assertEquals("Random	Random\n", instance.generateVariableHeader(dvs));
         assertEquals(null, instance.generateVariableHeader(null));
     }

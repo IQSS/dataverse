@@ -5,26 +5,25 @@
  */
 package edu.harvard.iq.dataverse.datasetutility;
 
+import org.junit.Test;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
-import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
- * 
  * @author rmp553
  */
 public class OptionalFileParamsTest {
-    
+
     public OptionalFileParamsTest() {
     }
-    
+
     /**
      * Good Json Description
      */
@@ -35,7 +34,7 @@ public class OptionalFileParamsTest {
 
         String val = "A new file";
         String jsonParams = "{\"description\": \"" + val + "\"}";
-        
+
         OptionalFileParams instance = new OptionalFileParams(jsonParams);
 
         assertEquals(instance.getDescription(), val);
@@ -43,7 +42,7 @@ public class OptionalFileParamsTest {
         assertNull(instance.getDataFileTags());
 
     }
-    
+
     /**
      * Good Json Description
      */
@@ -53,13 +52,13 @@ public class OptionalFileParamsTest {
         msgt("test_02_jsonDescriptionNumeric");
 
         String jsonParams = "{\"description\": 250 }";
-        
+
         OptionalFileParams instance = new OptionalFileParams(jsonParams);
 
         assertEquals(instance.getDescription(), "250");
-    
+
     }
-    
+
     /**
      * Good Json Description
      */
@@ -70,11 +69,11 @@ public class OptionalFileParamsTest {
 
         //String val = "A new file";
         String jsonParams = null;
-        
+
         OptionalFileParams instance = new OptionalFileParams(jsonParams);
 
         assertNull(instance.getDescription());
-    
+
     }
 
     /**
@@ -87,11 +86,11 @@ public class OptionalFileParamsTest {
 
         String val = "A new file";
         String jsonParams = "{\"description\": \"A new file\", \"categories\": [\"dog\", \"cat\", \"mouse\"]}";
-        
+
         OptionalFileParams instance = new OptionalFileParams(jsonParams);
 
         assertEquals(instance.getDescription(), val);
-    
+
         List<String> expectedCategories = Arrays.asList("dog", "cat", "mouse");
         assertEquals(expectedCategories, instance.getCategories());
 
@@ -99,9 +98,9 @@ public class OptionalFileParamsTest {
         assertTrue(instance.hasCategories());
         assertTrue(instance.hasDescription());
         assertFalse(instance.hasFileDataTags());
-    
+
     }
-    
+
     @Test
     public void test_05_jsonTabularTagsGood() throws DataFileTagException {
 
@@ -109,11 +108,11 @@ public class OptionalFileParamsTest {
 
         String val = "A new file";
         String jsonParams = "{\"dataFileTags\": [\"Survey\", \"Event\", \"Panel\"], \"description\": \"A new file\"}";
-        
+
         OptionalFileParams instance = new OptionalFileParams(jsonParams);
 
         assertEquals(instance.getDescription(), val);
-    
+
         List<String> expectedTags = Arrays.asList("Survey", "Event", "Panel");
         assertEquals(expectedTags, instance.getDataFileTags());
 
@@ -122,7 +121,7 @@ public class OptionalFileParamsTest {
         assertTrue(instance.hasDescription());
         assertTrue(instance.hasFileDataTags());
     }
-    
+
     @Test
     public void test_06_jsonTabularTagsBad() throws DataFileTagException {
 
@@ -130,18 +129,18 @@ public class OptionalFileParamsTest {
 
         String val = "A new file";
         String jsonParams = "{\"dataFileTags\": [\"Survey\", \"Event\", \"xPanel\"], \"description\": \"A new file\"}";
-        
-        try{
+
+        try {
             OptionalFileParams instance = new OptionalFileParams(jsonParams);
-        }catch(DataFileTagException ex){
-           // msgt("ex: " + ex.getMessage());
+        } catch (DataFileTagException ex) {
+            // msgt("ex: " + ex.getMessage());
             String errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.invalid_datafile_tag");
             msgt("errMsg: " + errMsg);
             assertTrue(ex.getMessage().startsWith(errMsg));
         }
     }
-    
-    
+
+
     @Test
     public void test_07_regularInstanceGood() throws DataFileTagException {
 
@@ -150,17 +149,17 @@ public class OptionalFileParamsTest {
         String val = "A new file";
         List<String> categories = Arrays.asList("dog", " dog ", "cat", "mouse", "dog ");
         List<String> dataFileTags = Arrays.asList("Survey", "Event", "Panel");
-        
-        OptionalFileParams instance = new OptionalFileParams(val,   
-                                categories,
-                                dataFileTags);
 
-         assertEquals(val, instance.getDescription());
-         assertEquals( Arrays.asList("dog", "cat", "mouse"), instance.getCategories());
-         assertEquals(dataFileTags, instance.getDataFileTags());
-         
+        OptionalFileParams instance = new OptionalFileParams(val,
+                                                             categories,
+                                                             dataFileTags);
+
+        assertEquals(val, instance.getDescription());
+        assertEquals(Arrays.asList("dog", "cat", "mouse"), instance.getCategories());
+        assertEquals(dataFileTags, instance.getDataFileTags());
+
     }
-    
+
     @Test
     public void test_08_regularInstanceGoodWithNulls() throws DataFileTagException {
 
@@ -169,26 +168,26 @@ public class OptionalFileParamsTest {
         String val = null;
         List<String> categories = null;//Arrays.asList("dog", "cat", "mouse");
         List<String> dataFileTags = Arrays.asList("Survey", "Survey", "Event", "Panel", "Survey", " ");
-        
-        OptionalFileParams instance = new OptionalFileParams(val,   
-                                categories,
-                                dataFileTags);
 
-         assertEquals(val, instance.getDescription());
-         assertEquals(categories, instance.getCategories());
-         assertEquals(Arrays.asList("Survey", "Event", "Panel"), instance.getDataFileTags());
-         
+        OptionalFileParams instance = new OptionalFileParams(val,
+                                                             categories,
+                                                             dataFileTags);
+
+        assertEquals(val, instance.getDescription());
+        assertEquals(categories, instance.getCategories());
+        assertEquals(Arrays.asList("Survey", "Event", "Panel"), instance.getDataFileTags());
+
     }
-    
+
     @Test
     public void test_09_unusedParamsGood() throws DataFileTagException {
 
         msgt("test_08_regularInstanceGoodWithNulls");
-      
+
         String jsonParams = "{\"forceReplace\": \"unused within OptionalFileParams\", \"oldFileId\": \"unused within OptionalFileParams\", \"description\": null, \"unusedParam1\": \"haha\", \"categories\": []}";
-        
+
         OptionalFileParams instance = new OptionalFileParams(jsonParams);
-        
+
         assertNull(instance.getDescription());
         assertFalse(instance.hasDescription());
 
@@ -220,11 +219,11 @@ public class OptionalFileParamsTest {
 
     }
 
-    private void msg(String s){
+    private void msg(String s) {
         System.out.println(s);
     }
-    
-    private void msgt(String s){
+
+    private void msgt(String s) {
         msg("-------------------------------");
         msg(s);
         msg("-------------------------------");

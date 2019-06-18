@@ -87,8 +87,12 @@ public class DataverseBannerDto {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         DataverseBannerDto that = (DataverseBannerDto) o;
         return active == that.active &&
                 Objects.equals(id, that.id) &&

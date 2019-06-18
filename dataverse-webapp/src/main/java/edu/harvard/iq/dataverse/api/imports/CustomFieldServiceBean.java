@@ -10,22 +10,21 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 /**
- *
  * @author ellenk
  */
 @Stateless
 public class CustomFieldServiceBean {
 
-   
-     @PersistenceContext(unitName = "VDCNet-ejbPU")
+
+    @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-     
+
     public CustomFieldMap findByTemplateField(String template, String field) {
         try {
             CustomFieldMap map = (CustomFieldMap) em.createNamedQuery("CustomFieldMap.findByTemplateField").setParameter("template", template).setParameter("field", field).getSingleResult();
             return map;
         } catch (Exception ex) {
-            System.out.println("Exception "+ ex + "template: "+template+" field: "+ field);
+            System.out.println("Exception " + ex + "template: " + template + " field: " + field);
             return null;
         }
 

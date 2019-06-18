@@ -6,38 +6,38 @@
 
 package edu.harvard.iq.dataverse.ingest.metadataextraction.spi;
 
-import edu.harvard.iq.dataverse.ingest.metadataextraction.*;
-import java.util.logging.*;
-import java.io.*;
-
-import edu.harvard.iq.dataverse.ingest.plugin.spi.RegisterableService;
+import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
 import edu.harvard.iq.dataverse.ingest.plugin.spi.IngestServiceProvider;
 import edu.harvard.iq.dataverse.ingest.plugin.spi.ServiceRegistry;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.util.Locale;
+import java.util.logging.Logger;
 
 /**
- *
  * @author Leonid Andreev
  */
 
 public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
-    private static Logger dbgLog = 
-    Logger.getLogger(FileMetadataExtractorSpi.class.getPackage().getName());
+    private static Logger dbgLog =
+            Logger.getLogger(FileMetadataExtractorSpi.class.getPackage().getName());
 
-    
+
     protected FileMetadataExtractorSpi() {
     }
 
-    
+
     protected String vendorName;
     protected String version;
 
     public FileMetadataExtractorSpi(String vendorName, String version) {
-        if (vendorName == null){
+        if (vendorName == null) {
             throw new IllegalArgumentException("vendorName is null!");
         }
-        if (version == null){
+        if (version == null) {
             throw new IllegalArgumentException("version string is null");
         }
         this.vendorName = vendorName;
@@ -45,12 +45,14 @@ public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
     }
 
     public void onRegistration(ServiceRegistry registry,
-                               Class<?> category) {}
-                               
-    
+                               Class<?> category) {
+    }
+
+
     public void onDeregistration(ServiceRegistry registry,
-                                 Class<?> category) {}
-    
+                                 Class<?> category) {
+    }
+
     public String getVersion() {
         return version;
     }
@@ -59,35 +61,35 @@ public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
         return vendorName;
     }
 
-    
+
     public abstract String getDescription(Locale locale);
-    
+
     protected String[] names = null;
 
     public String[] getFormatNames() {
-        return (String[])names.clone();
+        return names.clone();
     }
 
     protected String[] suffixes = null;
-    
+
     public String[] getFileSuffixes() {
-        return suffixes == null ? null : (String[])suffixes.clone();
+        return suffixes == null ? null : suffixes.clone();
     }
-    
-    
+
+
     protected String[] MIMETypes = null;
-    
+
     public String[] getMIMETypes() {
-        return MIMETypes == null ? null : (String[])MIMETypes.clone();
+        return MIMETypes == null ? null : MIMETypes.clone();
     }
-    
+
     protected String pluginClassName = null;
 
     public String getPluginClassName() {
         return pluginClassName;
     }
 
-   
+
     public FileMetadataExtractorSpi(
             String vendorName,
             String version,
@@ -95,8 +97,8 @@ public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
             String[] suffixes,
             String[] MIMETypes,
             String pluginClassName
-            ) {
-        
+    ) {
+
         this(vendorName, version);
 
         if (names == null) {
@@ -106,17 +108,17 @@ public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
         if (names.length == 0) {
             throw new IllegalArgumentException("names.length is 0!");
         }
-        this.names = (String[])names.clone();
+        this.names = names.clone();
         if (pluginClassName == null) {
             throw new IllegalArgumentException("pluginClassName is null!");
         }
 
         if (suffixes != null && suffixes.length > 0) {
-            this.suffixes = (String[])suffixes.clone();
+            this.suffixes = suffixes.clone();
         }
 
         if (MIMETypes != null && MIMETypes.length > 0) {
-            this.MIMETypes = (String[])MIMETypes.clone();
+            this.MIMETypes = MIMETypes.clone();
         }
 
         this.pluginClassName = pluginClassName;
@@ -141,7 +143,7 @@ public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
         System.out.println();
         buff.rewind();
     }
-    
+
     public void printHexDump(byte[] buff, String hdr) {
         int counter = 0;
         if (hdr != null) {
@@ -162,18 +164,19 @@ public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
     }
 
     public abstract boolean canDecodeInput(Object source) throws IOException;
-    
-    
+
+
     public abstract boolean canDecodeInput(File file) throws IOException;
+
     public abstract boolean canDecodeInput(BufferedInputStream stream) throws IOException;
-    
+
     public abstract FileMetadataExtractor createIngesterInstance(Object extension)
-        throws IOException;
-    
-    public FileMetadataExtractor createIngesterInstance() throws IOException{
+            throws IOException;
+
+    public FileMetadataExtractor createIngesterInstance() throws IOException {
         return createIngesterInstance(null);
     }
-    
+
     public boolean isOwnReader(FileMetadataExtractor reader) {
         if (reader == null) {
             throw new IllegalArgumentException("reader == null!");
@@ -182,5 +185,5 @@ public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
         return name.equals(pluginClassName);
     }
 
-    
+
 }

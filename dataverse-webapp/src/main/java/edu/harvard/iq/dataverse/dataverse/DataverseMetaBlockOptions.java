@@ -48,6 +48,7 @@ public class DataverseMetaBlockOptions implements Serializable {
 
     /**
      * Indicates if dataset field should be editable.
+     *
      * @return true/false or false if null.
      */
     public boolean isEditableDatasetFieldTypes(Long mdbId) {
@@ -56,6 +57,7 @@ public class DataverseMetaBlockOptions implements Serializable {
 
     /**
      * Indicates if dataset field is included (required/optional).
+     *
      * @return true/false or false if null.
      */
     public boolean isDsftIncludedField(Long dsftId) {

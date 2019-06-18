@@ -6,18 +6,19 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.persistence.*;
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -36,7 +37,7 @@ public class PasswordResetServiceBean {
 
     @EJB
     PasswordValidatorServiceBean passwordValidatorService;
-    
+
     @EJB
     AuthenticationServiceBean authService;
 
@@ -56,45 +57,45 @@ public class PasswordResetServiceBean {
     // inspired by Troy Hunt: Everything you ever wanted to know about building a secure password reset feature - http://www.troyhunt.com/2012/05/everything-you-ever-wanted-to-know.html
     public PasswordResetInitResponse requestReset(String emailAddress) throws PasswordResetException {
         deleteAllExpiredTokens();
-        AuthenticatedUser authUser = authService.getAuthenticatedUserByEmail(emailAddress);        
+        AuthenticatedUser authUser = authService.getAuthenticatedUserByEmail(emailAddress);
         BuiltinUser user = dataverseUserService.findByUserName(authUser.getUserIdentifier());
 
         if (user != null) {
-            return requestPasswordReset( user, true, PasswordResetData.Reason.FORGOT_PASSWORD );
+            return requestPasswordReset(user, true, PasswordResetData.Reason.FORGOT_PASSWORD);
         } else {
             return new PasswordResetInitResponse(false);
         }
     }
-    
-    public PasswordResetInitResponse requestPasswordReset( BuiltinUser aUser, boolean sendEmail, PasswordResetData.Reason reason ) throws PasswordResetException {
+
+    public PasswordResetInitResponse requestPasswordReset(BuiltinUser aUser, boolean sendEmail, PasswordResetData.Reason reason) throws PasswordResetException {
         AuthenticatedUser authUser = authService.getAuthenticatedUser(aUser.getUserName());
-        
+
         // delete old tokens for the user
         List<PasswordResetData> oldTokens = findPasswordResetDataByDataverseUser(aUser);
         for (PasswordResetData oldToken : oldTokens) {
             em.remove(oldToken);
         }
-        
+
         // create a fresh token for the user
         PasswordResetData passwordResetData = new PasswordResetData(aUser);
         passwordResetData.setExpires(new Timestamp(
-                        passwordResetData.getCreated().getTime() +
-                            TimeUnit.MINUTES.toMillis(systemConfig.getMinutesUntilPasswordResetTokenExpires())));
+                passwordResetData.getCreated().getTime() +
+                        TimeUnit.MINUTES.toMillis(systemConfig.getMinutesUntilPasswordResetTokenExpires())));
         passwordResetData.setReason(reason);
         try {
             em.persist(passwordResetData);
             PasswordResetInitResponse passwordResetInitResponse = new PasswordResetInitResponse(true, passwordResetData);
-            if ( sendEmail ) {
+            if (sendEmail) {
                 sendPasswordResetEmail(aUser, passwordResetInitResponse.getResetUrl());
             }
 
             return passwordResetInitResponse;
-            
+
         } catch (Exception ex) {
             String msg = "Unable to save token for " + authUser.getEmail();
             throw new PasswordResetException(msg, ex);
         }
-        
+
     }
 
     private void sendPasswordResetEmail(BuiltinUser aUser, String passwordResetUrl) throws PasswordResetException {
@@ -102,7 +103,7 @@ public class PasswordResetServiceBean {
 
         String pattern = BundleUtil.getStringFromBundle("notification.email.passwordReset");
 
-        String[] paramArray = {authUser.getName(), aUser.getUserName() ,passwordResetUrl, systemConfig.getMinutesUntilPasswordResetTokenExpires() +""  };
+        String[] paramArray = {authUser.getName(), aUser.getUserName(), passwordResetUrl, systemConfig.getMinutesUntilPasswordResetTokenExpires() + ""};
         String messageBody = MessageFormat.format(pattern, paramArray);
 
         try {
@@ -119,7 +120,7 @@ public class PasswordResetServiceBean {
         }
         logger.log(Level.INFO, "attempted to send mail to {0}", authUser.getEmail());
     }
-    
+
     /**
      * Process the password reset token, allowing the user to reset the password
      * or report on a invalid token.
@@ -223,7 +224,7 @@ public class PasswordResetServiceBean {
         int latestVersionNumber = PasswordEncryption.getLatestVersionNumber();
         user.updateEncryptedPassword(newHashedPass, latestVersionNumber);
         BuiltinUser savedUser = dataverseUserService.save(user);
-        
+
         if (savedUser != null) {
             messageSummary = messageSummarySuccess;
             messageDetail = messageDetailSuccess;
@@ -233,7 +234,7 @@ public class PasswordResetServiceBean {
                 logger.info("token " + token + " for user id " + user.getId() + " was not deleted");
             }
             AuthenticatedUser authUser = authService.getAuthenticatedUser(user.getUserName());
-            
+
             String toAddress = authUser.getEmail();
             String subject = "Dataverse Password Reset Successfully Changed";
 

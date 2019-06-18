@@ -15,13 +15,14 @@ import static javax.faces.application.FacesMessage.SEVERITY_ERROR;
 
 /**
  * Translate validation exception to message at given clientId field.
+ *
  * @author tjanek
  */
 public final class JsfValidationHelper {
 
     private static final Logger logger = Logger.getLogger(JsfValidationHelper.class.getCanonicalName());
 
-    public static String execute(Supplier<String> action, ValidationCondition...conditions) {
+    public static String execute(Supplier<String> action, ValidationCondition... conditions) {
         try {
             logger.info("Executing action with validation translator");
             return action.get();
@@ -38,8 +39,8 @@ public final class JsfValidationHelper {
                 if (condition != null) {
                     logger.info("Find validation exception translate for: " + condition);
                     FacesContext.getCurrentInstance().addMessage(condition.clientId,
-                            new FacesMessage(SEVERITY_ERROR, null,
-                                    BundleUtil.getStringFromBundle(condition.message)));
+                                                                 new FacesMessage(SEVERITY_ERROR, null,
+                                                                                  BundleUtil.getStringFromBundle(condition.message)));
                     return null;
                 }
             }
@@ -75,8 +76,12 @@ public final class JsfValidationHelper {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
             ValidationCondition condition = (ValidationCondition) o;
             return Objects.equals(exception, condition.exception) &&
                     Objects.equals(clientId, condition.clientId) &&

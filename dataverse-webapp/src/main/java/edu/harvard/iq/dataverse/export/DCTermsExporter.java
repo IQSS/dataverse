@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
@@ -6,19 +5,18 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.dublincore.DublinCoreExportUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.io.OutputStream;
+
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
+import java.io.OutputStream;
 
 /**
- *
  * @author Leonid Andreev
  */
 @AutoService(Exporter.class)
 public class DCTermsExporter implements Exporter {
-    
-    
-    
+
+
     @Override
     public String getProviderName() {
         return "dcterms";
@@ -26,7 +24,7 @@ public class DCTermsExporter implements Exporter {
 
     @Override
     public String getDisplayName() {
-        return  BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dublinCore") != null ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dublinCore") : "Dublin Core (DCTERMS)";
+        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dublinCore") != null ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dublinCore") : "Dublin Core (DCTERMS)";
     }
 
     @Override
@@ -42,32 +40,32 @@ public class DCTermsExporter implements Exporter {
     public Boolean isXMLFormat() {
         return true;
     }
-    
+
     @Override
     public Boolean isHarvestable() {
         return false;
     }
-    
+
     @Override
     public Boolean isAvailableToUsers() {
         return true;
     }
-    
+
     @Override
     public String getXMLNameSpace() throws ExportException {
-        return DublinCoreExportUtil.DCTERMS_XML_NAMESPACE;   
+        return DublinCoreExportUtil.DCTERMS_XML_NAMESPACE;
     }
-    
+
     @Override
     public String getXMLSchemaLocation() throws ExportException {
         return DublinCoreExportUtil.DCTERMS_XML_SCHEMALOCATION;
     }
-    
+
     @Override
     public String getXMLSchemaVersion() throws ExportException {
         return DublinCoreExportUtil.DEFAULT_XML_VERSION;
     }
-    
+
     @Override
     public void setParam(String name, Object value) {
         // this exporter doesn't need/doesn't currently take any parameters

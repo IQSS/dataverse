@@ -5,10 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.sql.Timestamp;
-import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -18,14 +14,17 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import java.io.IOException;
+import java.io.Serializable;
+import java.sql.Timestamp;
+import java.util.Date;
 
 /**
- *
  * @author madunlap
  */
 @Entity
 @Table(indexes = {
-    @Index(columnList = "id")
+        @Index(columnList = "id")
 })
 public class Metric implements Serializable {
 
@@ -39,10 +38,10 @@ public class Metric implements Serializable {
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String valueJson;
-        
+
     @Column(columnDefinition = "TEXT", nullable = true)
     private String dataLocation;
-    
+
     @Column(columnDefinition = "TEXT", nullable = true)
     private String dayString;
 
@@ -55,9 +54,9 @@ public class Metric implements Serializable {
     }
 
     //For monthly and day metrics
-    
+
     public Metric(String name, String dayString, String dataLocation, String value) throws IOException {
-        if(null == name || null == value) {
+        if (null == name || null == value) {
             throw new IOException("A created metric must have a metricName and metricValue");
         }
         this.name = name;
@@ -88,7 +87,7 @@ public class Metric implements Serializable {
     public String getDataLocation() {
         return dataLocation;
     }
-    
+
     public String getName() {
         return name;
     }

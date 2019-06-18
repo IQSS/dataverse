@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.confirmemail;
 
 /**
- *
  * @author bsilverstein
  */
 public class ConfirmEmailException extends Exception {

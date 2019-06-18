@@ -19,27 +19,23 @@
  */
 package edu.harvard.iq.dataverse.ingest.metadataextraction;
 
-import java.io.File;
-import edu.harvard.iq.dataverse.DataTable;
-import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * An object that stores the metadata that was extracted
  * from a file during ingest.
- *
- *
  */
 public class FileMetadataIngest {
     private Set<String> fileTypes;
-    
-    private String metadataBlockName; 
 
-    private Map<String, Set<String>>  metadataMap; 
-    
-    private String metadataSummary; 
-    
+    private String metadataBlockName;
+
+    private Map<String, Set<String>> metadataMap;
+
+    private String metadataSummary;
+
     public FileMetadataIngest() {
         fileTypes = new HashSet<String>();
     }
@@ -47,33 +43,33 @@ public class FileMetadataIngest {
     public Set<String> getFileTypes() {
         return fileTypes;
     }
-    
+
     public void setFileTypes(Set<String> fileTypes) {
         this.fileTypes = fileTypes;
     }
-    
+
     public String getMetadataBlockName() {
-        return metadataBlockName; 
+        return metadataBlockName;
     }
-    
+
     public void setMetadataBlockName(String metadataBlockName) {
         this.metadataBlockName = metadataBlockName;
     }
-    
+
     public Map<String, Set<String>> getMetadataMap() {
-        return metadataMap; 
+        return metadataMap;
     }
-    
+
     public void setMetadataMap(Map<String, Set<String>> metadataMap) {
         this.metadataMap = metadataMap;
     }
-    
+
     public String getMetadataSummary() {
-        return metadataSummary; 
+        return metadataSummary;
     }
-    
+
     public void setMetadataSummary(String metadataSummary) {
         this.metadataSummary = metadataSummary;
     }
-    
+
 }

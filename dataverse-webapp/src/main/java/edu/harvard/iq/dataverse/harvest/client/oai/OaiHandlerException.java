@@ -6,7 +6,6 @@
 package edu.harvard.iq.dataverse.harvest.client.oai;
 
 /**
- *
  * @author Leonid Andreev
  */
 public class OaiHandlerException extends Exception {
@@ -17,5 +16,5 @@ public class OaiHandlerException extends Exception {
     public OaiHandlerException(String message, Throwable cause) {
         super(message, cause);
     }
-    
+
 }

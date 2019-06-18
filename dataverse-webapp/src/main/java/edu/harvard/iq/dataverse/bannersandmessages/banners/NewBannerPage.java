@@ -88,8 +88,8 @@ public class NewBannerPage implements Serializable {
                     dlb.setFile(event.getFile());
                     dlb.setDisplayedImage(
                             new ByteArrayContent(event.getFile().getContents(),
-                                    event.getFile().getContentType(),
-                                    event.getFile().getFileName()));
+                                                 event.getFile().getContentType(),
+                                                 event.getFile().getFileName()));
                 });
     }
 
@@ -98,7 +98,7 @@ public class NewBannerPage implements Serializable {
                 mapper.mapToEntity(dto, em.find(Dataverse.class, dto.getDataverseId()));
 
         banner.getDataverseLocalizedBanner().forEach(dlb ->
-                errorHandler.handleBannerAddingErrors(banner, dlb, FacesContext.getCurrentInstance()));
+                                                             errorHandler.handleBannerAddingErrors(banner, dlb, FacesContext.getCurrentInstance()));
 
         if (errorsOccurred()) {
             return StringUtils.EMPTY;

@@ -4,10 +4,11 @@ import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.locality.StorageSite;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 
 public class StorageSitesIT {
 

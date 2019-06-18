@@ -15,21 +15,21 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+
 import java.util.Collections;
 
 /**
- *
  * @author sarahferry
  */
 
-@RequiredPermissions( Permission.EditDataverse )
+@RequiredPermissions(Permission.EditDataverse)
 public class DeleteDataverseLinkingDataverseCommand extends AbstractCommand<Dataverse> {
 
     private final DataverseLinkingDataverse doomed;
     private final Dataverse editedDv;
     private final boolean index;
-    
-    public DeleteDataverseLinkingDataverseCommand(DataverseRequest aRequest, Dataverse editedDv , DataverseLinkingDataverse doomed, boolean index) {
+
+    public DeleteDataverseLinkingDataverseCommand(DataverseRequest aRequest, Dataverse editedDv, DataverseLinkingDataverse doomed, boolean index) {
         super(aRequest, editedDv);
         this.editedDv = editedDv;
         this.doomed = doomed;
@@ -40,16 +40,16 @@ public class DeleteDataverseLinkingDataverseCommand extends AbstractCommand<Data
     public Dataverse execute(CommandContext ctxt) throws CommandException {
         if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
             throw new PermissionException("Delete dataverse linking dataverse can only be called by superusers.",
-                    this, Collections.singleton(Permission.DeleteDataverse), editedDv);
+                                          this, Collections.singleton(Permission.DeleteDataverse), editedDv);
         }
         Dataverse merged = ctxt.em().merge(editedDv);
         DataverseLinkingDataverse doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);
-        
+
         if (index) {
             ctxt.index().indexDataverse(editedDv);
             ctxt.index().indexDataverse(doomed.getLinkingDataverse());
         }
         return merged;
-    } 
+    }
 }

@@ -197,7 +197,7 @@ public class JsonPrinterTest {
 
         SettingsServiceBean nullServiceBean = null;
         JsonPrinter.setSettingsService(nullServiceBean);
-        
+
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
 

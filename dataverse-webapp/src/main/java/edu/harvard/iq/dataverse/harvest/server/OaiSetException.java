@@ -6,7 +6,6 @@
 package edu.harvard.iq.dataverse.harvest.server;
 
 /**
- *
  * @author Leonid Andreev
  */
 public class OaiSetException extends Exception {

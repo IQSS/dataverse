@@ -9,9 +9,6 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
-import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -21,20 +18,6 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.Deposit;
 import org.swordapp.server.DepositReceipt;
@@ -45,6 +28,21 @@ import org.swordapp.server.SwordConfiguration;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 import org.swordapp.server.UriRegistry;
+
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
 
 public class MediaResourceManagerImpl implements MediaResourceManager {
 
@@ -163,15 +161,15 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         logger.fine("preparing to delete file id " + fileIdLong);
                         DataFile fileToDelete = dataFileService.find(fileIdLong);
                         if (fileToDelete != null) {
-                            boolean deleteCommandSuccess = false; 
+                            boolean deleteCommandSuccess = false;
                             Dataset dataset = fileToDelete.getOwner();
                             Dataset datasetThatOwnsFile = fileToDelete.getOwner();
                             Dataverse dataverseThatOwnsFile = datasetThatOwnsFile.getOwner();
-                            String deleteStorageLocation = null; 
-                            
-                            
+                            String deleteStorageLocation = null;
+
+
                             deleteStorageLocation = dataFileService.getPhysicalFileToDelete(fileToDelete);
-                            
+
                             /**
                              * @todo it would be nice to have this check higher
                              * up. Do we really need the file ID? Should the
@@ -184,11 +182,11 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                             }
                             try {
                                 commandEngine.submit(updateDatasetCommand);
-                                deleteCommandSuccess = true; 
+                                deleteCommandSuccess = true;
                             } catch (CommandException ex) {
                                 throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_BAD_REQUEST, "Could not delete file: " + ex);
                             }
-                            
+
                             if (deleteCommandSuccess) {
                                 if (deleteStorageLocation != null) {
                                     // Finalize the delete of the physical file 
@@ -199,7 +197,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                                         dataFileService.finalizeFileDelete(fileIdLong, deleteStorageLocation);
                                     } catch (IOException ioex) {
                                         logger.warning("Failed to delete the physical file associated with the deleted datafile id="
-                                                + fileIdLong + ", storage location: " + deleteStorageLocation);
+                                                               + fileIdLong + ", storage location: " + deleteStorageLocation);
                                     }
                                 }
                             }
@@ -245,16 +243,16 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataset with global ID " + dataset.getGlobalIdString());
             }
-            
+
             //---------------------------------------
             // Make sure that the upload type is not rsync - handled above for dual mode
             // ------------------------------------- 
 
-            if (dataset.getEditVersion().isHasPackageFile()) {                
+            if (dataset.getEditVersion().isHasPackageFile()) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile"));
             }
-            
-            
+
+
             // Right now we are only supporting UriRegistry.PACKAGE_SIMPLE_ZIP but
             // in the future maybe we'll support other formats? Rdata files? Stata files?
             /**

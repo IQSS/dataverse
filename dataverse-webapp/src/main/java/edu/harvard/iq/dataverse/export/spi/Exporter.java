@@ -7,12 +7,12 @@ package edu.harvard.iq.dataverse.export.spi;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ExportException;
-import java.io.OutputStream;
+
 import javax.json.JsonObject;
 import javax.ws.rs.core.MediaType;
+import java.io.OutputStream;
 
 /**
- *
  * @author skraffmi
  */
 public interface Exporter {
@@ -25,28 +25,30 @@ public interface Exporter {
        OAI-PMH record). -- L.A.  4.5
     */
     //public void exportDataset(JsonObject json, OutputStream outputStream) throws ExportException;
-    
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException;
-    
-    public String getProviderName();
-    
-    public String getDisplayName();
-    
-    public Boolean isXMLFormat();
-    
-    public Boolean isHarvestable();
-    
-    public Boolean isAvailableToUsers();
-    
-    /* These should throw an ExportException if called on an Exporter that is not isXMLFormat(): */
-    public String getXMLNameSpace() throws ExportException;
-    public String getXMLSchemaLocation() throws ExportException; 
-    public String getXMLSchemaVersion() throws ExportException; 
-    
-    public void setParam(String name, Object value);
 
-	public default String getMediaType() {
-	    return MediaType.APPLICATION_XML;
-	};
-    
+    void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException;
+
+    String getProviderName();
+
+    String getDisplayName();
+
+    Boolean isXMLFormat();
+
+    Boolean isHarvestable();
+
+    Boolean isAvailableToUsers();
+
+    /* These should throw an ExportException if called on an Exporter that is not isXMLFormat(): */
+    String getXMLNameSpace() throws ExportException;
+
+    String getXMLSchemaLocation() throws ExportException;
+
+    String getXMLSchemaVersion() throws ExportException;
+
+    void setParam(String name, Object value);
+
+    default String getMediaType() {
+        return MediaType.APPLICATION_XML;
+    }
+
 }

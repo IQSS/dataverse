@@ -71,7 +71,7 @@ public class Shib implements java.io.Serializable {
      * per user into the same field and a separator between these two would be
      * nice, in case we ever want to answer questions like "How many users
      * logged in from Harvard's Identity Provider?".
-     *
+     * <p>
      * A pipe ("|") is used as a separator because it's considered "unwise" to
      * use in a URL and the "entityId" for a Shibboleth Identity Provider (IdP)
      * looks like a URL:
@@ -100,7 +100,7 @@ public class Shib implements java.io.Serializable {
      * it's a new account).
      */
     private String redirectPage;
-//    private boolean debug = false;
+    //    private boolean debug = false;
     private String emailAddress;
 
     public enum State {
@@ -109,7 +109,7 @@ public class Shib implements java.io.Serializable {
         REGULAR_LOGIN_INTO_EXISTING_SHIB_ACCOUNT,
         PROMPT_TO_CREATE_NEW_ACCOUNT,
         PROMPT_TO_CONVERT_EXISTING_ACCOUNT,
-    };
+    }
 
     public void init() {
         state = State.INIT;
@@ -186,7 +186,7 @@ public class Shib implements java.io.Serializable {
         if (!EMailValidator.isEmailValid(emailAddressInAssertion, null)) {
             String msg = "The SAML assertion contained an invalid email address: \"" + emailAddressInAssertion + "\".";
             logger.info(msg);
-            msg=BundleUtil.getStringFromBundle("shib.invalidEmailAddress",   Arrays.asList(emailAddressInAssertion));
+            msg = BundleUtil.getStringFromBundle("shib.invalidEmailAddress", Arrays.asList(emailAddressInAssertion));
             String singleEmailAddress = ShibUtil.findSingleValue(emailAddressInAssertion);
             if (EMailValidator.isEmailValid(singleEmailAddress, null)) {
                 msg = "Multiple email addresses were asserted by the Identity Provider (" + emailAddressInAssertion + " ). These were sorted and the first was chosen: " + singleEmailAddress;
@@ -303,8 +303,8 @@ public class Shib implements java.io.Serializable {
              * AuthenticationServiceBean.createAuthenticatedUser
              */
             userNotificationService.sendNotification(au,
-                    new Timestamp(new Date().getTime()),
-                    UserNotification.Type.CREATEACC, null);
+                                                     new Timestamp(new Date().getTime()),
+                                                     UserNotification.Type.CREATEACC, null);
             return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
         } else {
             JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("shib.createUser.fail"));
@@ -366,7 +366,6 @@ public class Shib implements java.io.Serializable {
 
     /**
      * @return The trimmed value of a Shib attribute (if non-empty) or null.
-     *
      * @todo Move this to ShibUtil
      */
     private String getValueFromAssertion(String key) {
@@ -389,7 +388,6 @@ public class Shib implements java.io.Serializable {
 
     /**
      * @return The trimmed value of a Shib attribute (if non-empty) or null.
-     *
      * @todo Move this to ShibUtil. More objects might be required since
      * sometimes we want to show messages, etc.
      */
@@ -403,7 +401,7 @@ public class Shib implements java.io.Serializable {
                 showMessage = false;
             }
             if (showMessage) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, identityProviderProblem, BundleUtil.getStringFromBundle("shib.nullerror",Arrays.asList(key))));
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, identityProviderProblem, BundleUtil.getStringFromBundle("shib.nullerror", Arrays.asList(key))));
             }
             throw new Exception(msg);
         }
@@ -420,20 +418,16 @@ public class Shib implements java.io.Serializable {
         Dataverse rootDataverse = dataverseService.findRootDataverse();
         if (rootDataverse != null) {
             String rootDvAlias = rootDataverse.getAlias();
-            if (rootDvAlias != null) {
-                return rootDvAlias;
-            }
+            return rootDvAlias;
         }
         return null;
     }
 
     /**
      * @param includeFacetDashRedirect if true, include "faces-redirect=true" in
-     * the string
-     *
+     *                                 the string
      * @todo Once https://github.com/IQSS/dataverse/issues/1519 is done, revisit
      * this method and have the home page be "/" rather than "/dataverses/root".
-     *
      * @todo Like builtin users, Shibboleth should benefit from redirectPage
      * logic per https://github.com/IQSS/dataverse/issues/1551
      */
@@ -445,9 +439,9 @@ public class Shib implements java.io.Serializable {
         String rootDvAlias = getRootDataverseAlias();
         if (includeFacetDashRedirect) {
             if (rootDvAlias != null) {
-                return plainHomepageString + "?alias="  + rootDvAlias + "&faces-redirect=true";
+                return plainHomepageString + "?alias=" + rootDvAlias + "&faces-redirect=true";
             } else {
-                return  plainHomepageString + "?faces-redirect=true";
+                return plainHomepageString + "?faces-redirect=true";
             }
         } else if (rootDvAlias != null) {
             /**

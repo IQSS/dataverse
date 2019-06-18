@@ -10,16 +10,6 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.logging.Logger;
-import static java.util.stream.Collectors.joining;
-import javax.ejb.EJB;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.i18n.iri.IRISyntaxException;
 import org.apache.abdera.model.AtomDate;
@@ -33,6 +23,18 @@ import org.swordapp.server.SwordConfiguration;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 import org.swordapp.server.UriRegistry;
+
+import javax.ejb.EJB;
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.logging.Logger;
+
+import static java.util.stream.Collectors.joining;
 
 public class StatementManagerImpl implements StatementManager {
 
@@ -93,16 +95,16 @@ public class StatementManagerImpl implements StatementManager {
             states.put("latestVersionState", dataset.getLatestVersion().getVersionState().toString());
             Boolean isMinorUpdate = dataset.getLatestVersion().isMinorUpdate();
             states.put("isMinorUpdate", isMinorUpdate.toString());
-            
-            if ( dataset.isLocked() ) {
+
+            if (dataset.isLocked()) {
                 states.put("locked", "true");
-                states.put("lockedDetail", dataset.getLocks().stream().map( l-> l.getInfo() ).collect( joining(",")) );
-                Optional<DatasetLock> earliestLock = dataset.getLocks().stream().min((l1, l2) -> (int)Math.signum(l1.getStartTime().getTime()-l2.getStartTime().getTime()) );
+                states.put("lockedDetail", dataset.getLocks().stream().map(l -> l.getInfo()).collect(joining(",")));
+                Optional<DatasetLock> earliestLock = dataset.getLocks().stream().min((l1, l2) -> (int) Math.signum(l1.getStartTime().getTime() - l2.getStartTime().getTime()));
                 states.put("lockedStartTime", earliestLock.get().getStartTime().toString());
             } else {
                 states.put("locked", "false");
             }
-            
+
             statement.setStates(states);
             List<FileMetadata> fileMetadatas = dataset.getLatestVersion().getFileMetadatas();
             for (FileMetadata fileMetadata : fileMetadatas) {

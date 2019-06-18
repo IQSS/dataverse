@@ -9,10 +9,11 @@ import java.util.Map;
 
 /**
  * Memory-backed SettingsBean, for tests.
+ *
  * @author michael
  */
 public class TestSettingsServiceBean extends SettingsServiceBean {
-    
+
     private final Map<String, String> settings = new HashMap<>();
 
     @Override

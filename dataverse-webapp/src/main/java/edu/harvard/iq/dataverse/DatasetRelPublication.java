@@ -8,7 +8,6 @@ package edu.harvard.iq.dataverse;
 
 
 /**
- *
  * @author skraffmiller
  */
 
@@ -29,6 +28,7 @@ public class DatasetRelPublication {
     public int getDisplayOrder() {
         return displayOrder;
     }
+
     public void setDisplayOrder(int displayOrder) {
         this.displayOrder = displayOrder;
     }
@@ -64,8 +64,8 @@ public class DatasetRelPublication {
     public void setUrl(String url) {
         this.url = url;
     }
-    
-    
+
+
     public String getTitle() {
         return title;
     }
@@ -82,12 +82,12 @@ public class DatasetRelPublication {
         this.description = description;
     }
 
-     public boolean isEmpty() {
-        return ((text==null || text.trim().equals(""))
-            && (!replicationData)
-            && (idType==null || idType.trim().equals(""))
-            && (idNumber==null || idNumber.trim().equals(""))                
-            && (url==null || url.trim().equals("")));
-    }        
+    public boolean isEmpty() {
+        return ((text == null || text.trim().equals(""))
+                && (!replicationData)
+                && (idType == null || idType.trim().equals(""))
+                && (idNumber == null || idNumber.trim().equals(""))
+                && (url == null || url.trim().equals("")));
+    }
 
 }

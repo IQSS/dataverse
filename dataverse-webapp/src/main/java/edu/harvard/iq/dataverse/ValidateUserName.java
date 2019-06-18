@@ -5,16 +5,16 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.lang.annotation.Documented;
-import static java.lang.annotation.ElementType.FIELD;
-import java.lang.annotation.Retention;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- *
  * @author sarahferry
  */
 
@@ -22,12 +22,12 @@ import javax.validation.Payload;
 @Retention(RUNTIME)
 @Constraint(validatedBy = {UserNameValidator.class})
 @Documented
-public @interface  ValidateUserName {
-  String message() default "Failed Validation Username";
+public @interface ValidateUserName {
+    String message() default "Failed Validation Username";
 
-  Class<?>[] groups() default {};
+    Class<?>[] groups() default {};
 
-  Class<? extends Payload>[] payload() default {};
-    
+    Class<? extends Payload>[] payload() default {};
+
 }
 

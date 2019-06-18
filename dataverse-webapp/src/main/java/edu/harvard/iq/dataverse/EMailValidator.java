@@ -5,14 +5,13 @@
  */
 package edu.harvard.iq.dataverse;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.validator.routines.EmailValidator;
 
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+
 /**
- *
  * @author skraffmi
  */
 public class EMailValidator implements ConstraintValidator<ValidateEmail, String> {
@@ -24,12 +23,12 @@ public class EMailValidator implements ConstraintValidator<ValidateEmail, String
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        
+
         return isEmailValid(value, context);
 
-        
+
     }
-    
+
     public static boolean isEmailValid(String value, ConstraintValidatorContext context) {
         //this null check is not needed any more as the null check is done in datasetfieldvaluevalidator
 //        if (value == null) {

@@ -6,14 +6,14 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import javax.json.Json;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 
+import javax.json.Json;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class ExternalToolHandlerTest {
 
@@ -26,12 +26,12 @@ public class ExternalToolHandlerTest {
 
         // One query parameter, not a reserved word, no {fileId} (required) used.
         externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
-                                .add("mode", "mode1")
-                        )
-                )
-                .build().toString());
+                                               .add("queryParameters", Json.createArrayBuilder()
+                                                       .add(Json.createObjectBuilder()
+                                                                    .add("mode", "mode1")
+                                                       )
+                                               )
+                                               .build().toString());
         DataFile nullDataFile = null;
         ApiToken nullApiToken = null;
         Exception expectedException1 = null;
@@ -45,15 +45,15 @@ public class ExternalToolHandlerTest {
 
         // Two query parameters.
         externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
-                                .add("mode", "mode1")
-                        )
-                        .add(Json.createObjectBuilder()
-                                .add("key2", "value2")
-                        )
-                )
-                .build().toString());
+                                               .add("queryParameters", Json.createArrayBuilder()
+                                                       .add(Json.createObjectBuilder()
+                                                                    .add("mode", "mode1")
+                                                       )
+                                                       .add(Json.createObjectBuilder()
+                                                                    .add("key2", "value2")
+                                                       )
+                                               )
+                                               .build().toString());
         Exception expectedException2 = null;
         try {
             ExternalToolHandler externalToolHandler2 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken);
@@ -65,15 +65,15 @@ public class ExternalToolHandlerTest {
 
         // Two query parameters, both reserved words, one is {fileId} which is required.
         externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
-                                .add("key1", "{fileId}")
-                        )
-                        .add(Json.createObjectBuilder()
-                                .add("key2", "{apiToken}")
-                        )
-                )
-                .build().toString());
+                                               .add("queryParameters", Json.createArrayBuilder()
+                                                       .add(Json.createObjectBuilder()
+                                                                    .add("key1", "{fileId}")
+                                                       )
+                                                       .add(Json.createObjectBuilder()
+                                                                    .add("key2", "{apiToken}")
+                                                       )
+                                               )
+                                               .build().toString());
         DataFile dataFile = new DataFile();
         dataFile.setId(42l);
         FileMetadata fmd = new FileMetadata();
@@ -93,15 +93,15 @@ public class ExternalToolHandlerTest {
 
         // Two query parameters, both reserved words, no apiToken
         externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
-                                .add("key1", "{fileId}")
-                        )
-                        .add(Json.createObjectBuilder()
-                                .add("key2", "{apiToken}")
-                        )
-                )
-                .build().toString());
+                                               .add("queryParameters", Json.createArrayBuilder()
+                                                       .add(Json.createObjectBuilder()
+                                                                    .add("key1", "{fileId}")
+                                                       )
+                                                       .add(Json.createObjectBuilder()
+                                                                    .add("key2", "{apiToken}")
+                                                       )
+                                               )
+                                               .build().toString());
         ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, nullApiToken);
         String result4 = externalToolHandler4.getQueryParametersForUrl();
         System.out.println("result4: " + result4);
@@ -109,15 +109,15 @@ public class ExternalToolHandlerTest {
 
         // Two query parameters, attempt to use a reserved word that doesn't exist.
         externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
-                                .add("key1", "{junk}")
-                        )
-                        .add(Json.createObjectBuilder()
-                                .add("key2", "{apiToken}")
-                        )
-                )
-                .build().toString());
+                                               .add("queryParameters", Json.createArrayBuilder()
+                                                       .add(Json.createObjectBuilder()
+                                                                    .add("key1", "{junk}")
+                                                       )
+                                                       .add(Json.createObjectBuilder()
+                                                                    .add("key2", "{apiToken}")
+                                                       )
+                                               )
+                                               .build().toString());
         Exception expectedException = null;
         try {
             ExternalToolHandler externalToolHandler5 = new ExternalToolHandler(externalTool, dataFile, nullApiToken);

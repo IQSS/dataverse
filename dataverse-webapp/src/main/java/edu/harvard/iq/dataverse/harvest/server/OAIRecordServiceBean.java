@@ -30,31 +30,30 @@ import java.util.logging.Logger;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 
 /**
- *
  * @author Leonid Andreev
  * based on the implementation of "HarvestStudyServiceBean" from
- * DVN 3*, by Gustavo Durand. 
+ * DVN 3*, by Gustavo Durand.
  */
 
 @Stateless
 public class OAIRecordServiceBean implements java.io.Serializable {
 
-    @EJB 
+    @EJB
     DatasetServiceBean datasetService;
-    @EJB 
+    @EJB
     SettingsServiceBean settingsService;
     //@EJB
     //ExportService exportService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
-    EntityManager em;   
-    
+    EntityManager em;
+
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean");
 
     public void updateOaiRecords(String setName, List<Long> datasetIds, Date updateTime, boolean doExport) {
         updateOaiRecords(setName, datasetIds, updateTime, doExport, logger);
     }
-    
+
     public void updateOaiRecords(String setName, List<Long> datasetIds, Date updateTime, boolean doExport, Logger setUpdateLogger) {
 
         // create Map of OaiRecords
@@ -106,7 +105,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
                             setUpdateLogger.fine("Attempting to run export on dataset " + dataset.getGlobalIdString());
                             exportAllFormats(dataset);
                         }
-                        
+
                         // TODO: should probably bail if the export attempt has failed! -- L.A. 4.9.2
                     }
 
@@ -120,10 +119,10 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         }
 
         // anything left in the map should be marked as removed!
-        markOaiRecordsAsRemoved( recordMap.values(), updateTime, setUpdateLogger);
-        
+        markOaiRecordsAsRemoved(recordMap.values(), updateTime, setUpdateLogger);
+
     }
-    
+
     // This method updates -  creates/refreshes/un-marks-as-deleted - one OAI 
     // record at a time. It does so inside its own transaction, to ensure that 
     // the changes take place immediately. (except the method is called from 
@@ -135,7 +134,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         // simply returns (publicationDate != null). And the publication date 
         // stays in place even if all the released versions have been deaccessioned. 
         boolean isReleased = dataset.getReleasedVersion() != null;
-        
+
         if (isReleased && dataset.getLastExportTime() != null) {
             OAIRecord record = recordMap.get(dataset.getGlobalIdString());
             if (record == null) {
@@ -156,8 +155,8 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             }
         }
     }
-    
-    
+
+
     // Updates any existing OAI records for this dataset
     // Should be called whenever there's a change in the release status of the Dataset
     // (i.e., when it's published or deaccessioned), so that the timestamps and 
@@ -182,7 +181,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
                 return;
 
             }
-            
+
             for (OAIRecord record : oaiRecords) {
                 if (record.isRemoved()) {
                     logger.fine("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalIdString());
@@ -196,20 +195,20 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             logger.fine("Null returned - no records found.");
         }
     }
-    
+
     public void markOaiRecordsAsRemoved(Collection<OAIRecord> records, Date updateTime, Logger setUpdateLogger) {
         for (OAIRecord oaiRecord : records) {
-            if ( !oaiRecord.isRemoved() ) {
-                setUpdateLogger.fine("marking OAI record "+oaiRecord.getGlobalId()+" as removed");
+            if (!oaiRecord.isRemoved()) {
+                setUpdateLogger.fine("marking OAI record " + oaiRecord.getGlobalId() + " as removed");
                 oaiRecord.setRemoved(true);
                 oaiRecord.setLastUpdateTime(updateTime);
             } else {
-                setUpdateLogger.fine("OAI record "+oaiRecord.getGlobalId()+" is already marked as removed.");
+                setUpdateLogger.fine("OAI record " + oaiRecord.getGlobalId() + " is already marked as removed.");
             }
         }
-       
+
     }
-    
+
     // TODO: 
     // Export functionality probably deserves its own EJB ServiceBean - 
     // so maybe create ExportServiceBean, and move these methods there? 
@@ -217,17 +216,20 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     // them in the loadable ExportService? - since we need to modify the 
     // "last export" timestamp on the dataset, being able to do that in the 
     // @EJB context is convenient. 
-    
+
     public void exportAllFormats(Dataset dataset) {
         try {
             ExportService exportServiceInstance = ExportService.getInstance(settingsService);
             logger.log(Level.FINE, "Attempting to run export on dataset {0}", dataset.getGlobalId());
             exportServiceInstance.exportAllFormats(dataset);
             datasetService.updateLastExportTimeStamp(dataset.getId());
-        } catch (ExportException ee) {logger.fine("Caught export exception while trying to export. (ignoring)");}
-        catch (Exception e) {logger.fine("Caught unknown exception while trying to export (ignoring)");}
+        } catch (ExportException ee) {
+            logger.fine("Caught export exception while trying to export. (ignoring)");
+        } catch (Exception e) {
+            logger.fine("Caught unknown exception while trying to export (ignoring)");
+        }
     }
-    
+
     @TransactionAttribute(REQUIRES_NEW)
     public void exportAllFormatsInNewTransaction(Dataset dataset) throws ExportException {
         try {
@@ -239,74 +241,80 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             throw new ExportException(e.getMessage());
         }
     }
-    
-    
+
+
     public OAIRecord findOAIRecordBySetNameandGlobalId(String setName, String globalId) {
         OAIRecord oaiRecord = null;
-        
+
         String queryString = "SELECT object(h) from OAIRecord h where h.globalId = :globalId";
         queryString += setName != null ? " and h.setName = :setName" : ""; // and h.setName is null";
-        
-        logger.fine("findOAIRecordBySetNameandGlobalId; query: "+queryString+"; globalId: "+globalId+"; setName: "+setName);
-                
-        
-        TypedQuery query = em.createQuery(queryString, OAIRecord.class).setParameter("globalId",globalId);
-        if (setName != null) { query.setParameter("setName",setName); }        
-        
+
+        logger.fine("findOAIRecordBySetNameandGlobalId; query: " + queryString + "; globalId: " + globalId + "; setName: " + setName);
+
+
+        TypedQuery query = em.createQuery(queryString, OAIRecord.class).setParameter("globalId", globalId);
+        if (setName != null) {
+            query.setParameter("setName", setName);
+        }
+
         try {
-           oaiRecord = (OAIRecord) query.setMaxResults(1).getSingleResult();
+            oaiRecord = (OAIRecord) query.setMaxResults(1).getSingleResult();
         } catch (javax.persistence.NoResultException e) {
-           // Do nothing, just return null. 
+            // Do nothing, just return null.
         }
         logger.fine("returning oai record.");
-        return oaiRecord;       
+        return oaiRecord;
     }
-    
+
     public List<OAIRecord> findOaiRecordsByGlobalId(String globalId) {
-        String query="SELECT object(h) from OAIRecord h where h.globalId = :globalId";
+        String query = "SELECT object(h) from OAIRecord h where h.globalId = :globalId";
         List<OAIRecord> oaiRecords = null;
         try {
-            oaiRecords = em.createQuery(query, OAIRecord.class).setParameter("globalId",globalId).getResultList();
+            oaiRecords = em.createQuery(query, OAIRecord.class).setParameter("globalId", globalId).getResultList();
         } catch (Exception ex) {
             // Do nothing, return null. 
         }
-        return oaiRecords;     
+        return oaiRecords;
     }
 
     public List<OAIRecord> findOaiRecordsBySetName(String setName) {
         return findOaiRecordsBySetName(setName, null, null);
-    }    
-    
+    }
+
     public List<OAIRecord> findOaiRecordsBySetName(String setName, Date from, Date until) {
         return findOaiRecordsBySetName(setName, from, until, false);
     }
-    
+
     public List<OAIRecord> findOaiRecordsNotInThisSet(String setName, Date from, Date until) {
         return findOaiRecordsBySetName(setName, from, until, true);
     }
-    
+
     public List<OAIRecord> findOaiRecordsBySetName(String setName, Date from, Date until, boolean excludeSet) {
-                
+
         if (setName == null) {
             setName = "";
         }
-        
+
         String queryString = "SELECT object(h) from OAIRecord h where h.id is not null";
         if (excludeSet) {
             queryString += " and h.setName is not null and h.setName != '' and h.setName != :setName";
         } else {
             queryString += " and h.setName = :setName";
         }
-        
+
         queryString += from != null ? " and h.lastUpdateTime >= :from" : "";
         queryString += until != null ? " and h.lastUpdateTime<=:until" : "";
         queryString += " order by h.globalId";
 
-        logger.fine("Query: "+queryString);
-        
+        logger.fine("Query: " + queryString);
+
         TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
-        if (setName != null) { query.setParameter("setName",setName); }
-        if (from != null) { query.setParameter("from",from,TemporalType.TIMESTAMP); }
+        if (setName != null) {
+            query.setParameter("setName", setName);
+        }
+        if (from != null) {
+            query.setParameter("from", from, TemporalType.TIMESTAMP);
+        }
         // In order to achieve inclusivity on the "until" matching, we need to do 
         // the following (if the "until" parameter is supplied):
         // 1) if the supplied "until" parameter has the time portion (and is not just
@@ -320,66 +328,70 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         // match " <= 2016-10-23" - which is really going to be interpreted as 
         // "2016-10-23T00:00:00.000". 
         // -- L.A. 4.6
-        
-        if (until != null) { 
+
+        if (until != null) {
             // 24 * 3600 * 1000 = number of milliseconds in a day. 
-            
+
             if (until.getTime() % (24 * 3600 * 1000) == 0) {
                 // The supplied "until" parameter is a date, with no time
                 // portion. 
                 logger.fine("plain date. incrementing by one day");
-                until.setTime(until.getTime()+(24 * 3600 * 1000));
+                until.setTime(until.getTime() + (24 * 3600 * 1000));
             } else {
                 logger.fine("date and time. incrementing by one second");
-                until.setTime(until.getTime()+1000);
+                until.setTime(until.getTime() + 1000);
             }
-            query.setParameter("until",until,TemporalType.TIMESTAMP); 
+            query.setParameter("until", until, TemporalType.TIMESTAMP);
         }
-                
+
         try {
-            return query.getResultList();      
+            return query.getResultList();
         } catch (Exception ex) {
             logger.fine("Caught exception; returning null.");
             return null;
         }
     }
-    
+
     // This method is to only get the records NOT marked as "deleted":
     public List<OAIRecord> findActiveOaiRecordsBySetName(String setName) {
-        
-        
-        String queryString ="SELECT object(h) from OAIRecord as h WHERE (h.removed != true)";
+
+
+        String queryString = "SELECT object(h) from OAIRecord as h WHERE (h.removed != true)";
         queryString += setName != null ? " and (h.setName = :setName)" : "and (h.setName is null)";
-        logger.fine("Query: "+queryString);
-        
+        logger.fine("Query: " + queryString);
+
         TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
-        if (setName != null) { query.setParameter("setName",setName); }
-        
+        if (setName != null) {
+            query.setParameter("setName", setName);
+        }
+
         try {
-            return query.getResultList();      
+            return query.getResultList();
         } catch (Exception ex) {
             logger.fine("Caught exception; returning null.");
             return null;
         }
     }
-    
+
     // This method is to only get the records marked as "deleted":
     public List<OAIRecord> findDeletedOaiRecordsBySetName(String setName) {
-        
-        
-        String queryString ="SELECT object(h) from OAIRecord as h WHERE (h.removed = true)";
+
+
+        String queryString = "SELECT object(h) from OAIRecord as h WHERE (h.removed = true)";
         queryString += setName != null ? " and (h.setName = :setName)" : "and (h.setName is null)";
-        logger.fine("Query: "+queryString);
-        
+        logger.fine("Query: " + queryString);
+
         TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
-        if (setName != null) { query.setParameter("setName",setName); }
-        
+        if (setName != null) {
+            query.setParameter("setName", setName);
+        }
+
         try {
-            return query.getResultList();      
+            return query.getResultList();
         } catch (Exception ex) {
             logger.fine("Caught exception; returning null.");
             return null;
         }
     }
-    
+
 }

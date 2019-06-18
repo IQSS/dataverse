@@ -44,7 +44,7 @@ public class OAuth2LoginBackingBean implements Serializable {
 
     @EJB
     AuthenticationServiceBean authenticationSvc;
-    
+
     @EJB
     OAuth2TokenDataServiceBean oauth2Tokens;
 
@@ -59,7 +59,7 @@ public class OAuth2LoginBackingBean implements Serializable {
 
     public String linkFor(String idpId, String redirectPage) {
         AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(idpId);
-        return idp.getService(createState(idp, toOption(redirectPage) ), getCallbackUrl()).getAuthorizationUrl();
+        return idp.getService(createState(idp, toOption(redirectPage)), getCallbackUrl()).getAuthorizationUrl();
     }
 
     public String getCallbackUrl() {
@@ -93,7 +93,7 @@ public class OAuth2LoginBackingBean implements Serializable {
             oauthUser = idp.getUserRecord(code, state, getCallbackUrl());
             UserRecordIdentifier idtf = oauthUser.getUserRecordIdentifier();
             AuthenticatedUser dvUser = authenticationSvc.lookupUser(idtf);
-            
+
             if (dvUser == null) {
                 // need to create the user
                 newAccountPage.setNewUser(oauthUser);
@@ -137,7 +137,7 @@ public class OAuth2LoginBackingBean implements Serializable {
             long timeOrigin = Long.parseLong(stateFields[1]);
             long timeDifference = System.currentTimeMillis() - timeOrigin;
             if (timeDifference > 0 && timeDifference < STATE_TIMEOUT) {
-                if ( stateFields.length > 3) {
+                if (stateFields.length > 3) {
                     redirectPage = Optional.ofNullable(stateFields[3]);
                 }
                 return idp;
@@ -151,13 +151,13 @@ public class OAuth2LoginBackingBean implements Serializable {
         }
     }
 
-    private String createState(AbstractOAuth2AuthenticationProvider idp, Optional<String> redirectPage ) {
+    private String createState(AbstractOAuth2AuthenticationProvider idp, Optional<String> redirectPage) {
         if (idp == null) {
             throw new IllegalArgumentException("idp cannot be null");
         }
-        String base = idp.getId() + "~" + System.currentTimeMillis() 
-                                  + "~" + (int) java.lang.Math.round(java.lang.Math.random() * 1000)
-                                  + redirectPage.map( page -> "~"+page).orElse("");
+        String base = idp.getId() + "~" + System.currentTimeMillis()
+                + "~" + (int) java.lang.Math.round(java.lang.Math.random() * 1000)
+                + redirectPage.map(page -> "~" + page).orElse("");
 
         String encrypted = StringUtil.encrypt(base, idp.clientSecret);
         final String state = idp.getId() + "~" + encrypted;

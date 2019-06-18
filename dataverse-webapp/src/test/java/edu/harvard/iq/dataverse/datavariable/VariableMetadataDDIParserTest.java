@@ -6,13 +6,14 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.FileInputStream;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
-import java.util.Collection;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class VariableMetadataDDIParserTest {
 
@@ -20,12 +21,12 @@ public class VariableMetadataDDIParserTest {
     /**
      * Test XML ddi parser
      */
-    public void testDDIReader()  {
+    public void testDDIReader() {
 
         String fileName = "src/test/resources/xml/dct.xml";
         XMLStreamReader xmlr = null;
 
-        XMLInputFactory factory=XMLInputFactory.newInstance();
+        XMLInputFactory factory = XMLInputFactory.newInstance();
         try {
             xmlr = factory.createXMLStreamReader(new FileInputStream(fileName));
         } catch (Exception e) {
@@ -34,21 +35,21 @@ public class VariableMetadataDDIParserTest {
         }
         VariableMetadataDDIParser dti = new VariableMetadataDDIParser();
 
-        Map<Long,VariableMetadata> mapVarToVarMet = new HashMap<Long, VariableMetadata>();
-        Map<Long,VarGroup> varGroupMap = new HashMap<Long, VarGroup>();
+        Map<Long, VariableMetadata> mapVarToVarMet = new HashMap<Long, VariableMetadata>();
+        Map<Long, VarGroup> varGroupMap = new HashMap<Long, VarGroup>();
 
         try {
 
-            dti.processDataDscr(xmlr,  mapVarToVarMet, varGroupMap);
+            dti.processDataDscr(xmlr, mapVarToVarMet, varGroupMap);
 
-        } catch ( XMLStreamException e) {
+        } catch (XMLStreamException e) {
             assertNotNull(null);
         }
 
-        assertEquals(mapVarToVarMet.size(),3);
+        assertEquals(mapVarToVarMet.size(), 3);
         variableTest(mapVarToVarMet);
 
-        assertEquals(varGroupMap.size(),2);
+        assertEquals(varGroupMap.size(), 2);
         groupTest(varGroupMap);
 
 
@@ -56,27 +57,27 @@ public class VariableMetadataDDIParserTest {
 
     }
 
-    void variableTest(Map<Long,VariableMetadata> vmMap) {
+    void variableTest(Map<Long, VariableMetadata> vmMap) {
 
-        VariableMetadata vm =  vmMap.get(1170L);
+        VariableMetadata vm = vmMap.get(1170L);
         assertNotNull(vm);
 
-        assertEquals(vm.getLabel(),"gender");
-        assertEquals(vm.getInterviewinstruction(),"These are interview instructions.");
+        assertEquals(vm.getLabel(), "gender");
+        assertEquals(vm.getInterviewinstruction(), "These are interview instructions.");
         assertEquals(vm.getLiteralquestion(), "This is a literal question.");
         assertEquals(vm.getNotes(), "These are notes.\nA lot of them.");
-        assertEquals(vm.getUniverse(),"Our universe");
+        assertEquals(vm.getUniverse(), "Our universe");
         assertEquals(false, vm.isIsweightvar());
         assertEquals(false, vm.isWeighted());
 
         testCategoriesVar1(vm);
 
 
-        vm =  vmMap.get(1169L);
+        vm = vmMap.get(1169L);
         assertNotNull(vm);
         assertEquals(false, vm.isIsweightvar());
         assertEquals(true, vm.isWeighted());
-        assertEquals(vm.getLabel(), "age_rollup"  );
+        assertEquals(vm.getLabel(), "age_rollup");
 
         assertEquals(vm.getInterviewinstruction(), null);
         assertEquals(vm.getLiteralquestion(), null);
@@ -88,11 +89,11 @@ public class VariableMetadataDDIParserTest {
 
         testCategoriesVar2(vm);
 
-        vm =  vmMap.get(1168L);
+        vm = vmMap.get(1168L);
         assertNotNull(vm);
         assertEquals(true, vm.isIsweightvar());
         assertEquals(false, vm.isWeighted());
-        assertEquals(vm.getLabel(), "weight"  );
+        assertEquals(vm.getLabel(), "weight");
         assertEquals(vm.getInterviewinstruction(), null);
         assertEquals(vm.getLiteralquestion(), "Literal question for weight");
         assertEquals(vm.getNotes(), "Notes");
@@ -104,7 +105,7 @@ public class VariableMetadataDDIParserTest {
 
     void testCategoriesVar2(VariableMetadata vm) {
         Collection<CategoryMetadata> cms = vm.getCategoriesMetadata();
-        assertEquals(cms.size(),4);
+        assertEquals(cms.size(), 4);
 
         for (CategoryMetadata cm : cms) {
             switch (cm.getCategory().getValue()) {
@@ -121,25 +122,25 @@ public class VariableMetadataDDIParserTest {
                     assertEquals(Math.abs(cm.getWfreq() - 952.22) <= 0.01, true);
                     break;
                 default:
-                    assertEquals(0,1);
+                    assertEquals(0, 1);
             }
         }
     }
 
     void testCategoriesVar1(VariableMetadata vm) {
         Collection<CategoryMetadata> cms = vm.getCategoriesMetadata();
-        assertEquals(cms.size(),0);
+        assertEquals(cms.size(), 0);
 
     }
 
     void testCategoriesVar3(VariableMetadata vm) {
         Collection<CategoryMetadata> cms = vm.getCategoriesMetadata();
-        assertEquals(cms.size(),0);
+        assertEquals(cms.size(), 0);
     }
 
-    void groupTest(Map<Long,VarGroup> varGroupMap) {
+    void groupTest(Map<Long, VarGroup> varGroupMap) {
 
-        VarGroup vg1 =  varGroupMap.get(1L);
+        VarGroup vg1 = varGroupMap.get(1L);
         assertNotNull(vg1);
 
         //first group
@@ -149,23 +150,23 @@ public class VariableMetadataDDIParserTest {
         dvSet1.add(dv);
         dv.setId(1170L);
         dvSet1.add(dv);
-        eachGroupTest(vg1,"New Group 1",dvSet1);
+        eachGroupTest(vg1, "New Group 1", dvSet1);
 
         //second group
-        VarGroup vg2 =  varGroupMap.get(2L);
+        VarGroup vg2 = varGroupMap.get(2L);
         assertNotNull(vg2);
         Set<DataVariable> dvSet2 = new HashSet<DataVariable>();
         dv.setId(1168L);
         dvSet2.add(dv);
-        eachGroupTest(vg2,"New Group 2",dvSet2);
+        eachGroupTest(vg2, "New Group 2", dvSet2);
 
     }
 
-    void eachGroupTest( VarGroup vg, String label, Set<DataVariable> dvSet) {
+    void eachGroupTest(VarGroup vg, String label, Set<DataVariable> dvSet) {
         assertEquals(vg.getLabel(), label);
         Set<DataVariable> varsInGroups = vg.getVarsInGroup();
         assertNotNull(varsInGroups);
-        assertEquals(varsInGroups.size(),dvSet.size());
+        assertEquals(varsInGroups.size(), dvSet.size());
         assertEquals(varsInGroups, dvSet);
     }
 }

@@ -13,7 +13,6 @@ import javax.inject.Named;
 import java.util.logging.Logger;
 
 /**
- *
  * @author bsilverstein
  */
 @ViewScoped
@@ -98,11 +97,7 @@ public class ConfirmEmailPage implements java.io.Serializable {
     }
 
     public boolean isInvalidToken() {
-        if (confirmEmailData == null) {
-            return true;
-        } else {
-            return false;
-        }
+        return confirmEmailData == null;
     }
 
     public String getRedirectToAccountInfoTab() {

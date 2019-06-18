@@ -3,14 +3,16 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import java.util.logging.Logger;
+
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 public class MoveIT {
 
@@ -51,7 +53,7 @@ public class MoveIT {
                 .statusCode(UNAUTHORIZED.getStatusCode())
                 .body("message", equalTo("User @" + authorUsername + " is not permitted to perform requested action."));
 
-        Response grantAuthorAddDataset = UtilIT.grantRoleOnDataverse(curatorDataverseAlias1, DataverseRole.DS_CONTRIBUTOR.toString(), "@" + authorUsername, curatorApiToken);
+        Response grantAuthorAddDataset = UtilIT.grantRoleOnDataverse(curatorDataverseAlias1, DataverseRole.DS_CONTRIBUTOR, "@" + authorUsername, curatorApiToken);
         grantAuthorAddDataset.prettyPrint();
         grantAuthorAddDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())

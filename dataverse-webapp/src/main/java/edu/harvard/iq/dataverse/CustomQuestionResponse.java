@@ -5,13 +5,21 @@
  */
 package edu.harvard.iq.dataverse;
 
+import javax.faces.model.SelectItem;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.List;
-import javax.faces.model.SelectItem;
-import javax.persistence.*;
 
 /**
- *
  * @author skraffmiller
  */
 @Entity
@@ -31,7 +39,7 @@ public class CustomQuestionResponse implements Serializable {
     @ManyToOne
     @JoinColumn(nullable = false)
     private CustomQuestion customQuestion;
-    
+
     @Column(name = "response", columnDefinition = "TEXT", nullable = true)
     private String response;
 
@@ -42,7 +50,7 @@ public class CustomQuestionResponse implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public GuestbookResponse getGuestbookResponse() {
         return guestbookResponse;
     }
@@ -58,8 +66,8 @@ public class CustomQuestionResponse implements Serializable {
     public void setResponse(String response) {
         this.response = response;
     }
-    
-    
+
+
     public CustomQuestion getCustomQuestion() {
         return customQuestion;
     }
@@ -67,7 +75,7 @@ public class CustomQuestionResponse implements Serializable {
     public void setCustomQuestion(CustomQuestion customQuestion) {
         this.customQuestion = customQuestion;
     }
-    
+
     @Transient
     private List<SelectItem> responseSelectItems;
 
@@ -93,18 +101,16 @@ public class CustomQuestionResponse implements Serializable {
             return false;
         }
         CustomQuestionResponse other = (CustomQuestionResponse) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
 
     @Override
     public String toString() {
         return "edu.harvard.iq.dvn.core.vdc.CustomQuestionResponse[ id=" + id + " ]";
     }
-    
-    @Transient private String validationMessage;
+
+    @Transient
+    private String validationMessage;
 
     public String getValidationMessage() {
         return validationMessage;
@@ -113,7 +119,7 @@ public class CustomQuestionResponse implements Serializable {
     public void setValidationMessage(String validationMessage) {
         this.validationMessage = validationMessage;
     }
-    
-    
+
+
 }
 

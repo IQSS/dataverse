@@ -1,15 +1,16 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
-import java.io.IOException;
-import java.util.concurrent.locks.ReentrantLock;
-import javax.inject.Inject;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.swordapp.server.ContainerAPI;
 import org.swordapp.server.ContainerManager;
 import org.swordapp.server.StatementManager;
 import org.swordapp.server.servlets.SwordServlet;
+
+import javax.inject.Inject;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class SWORDv2ContainerServlet extends SwordServlet {
 
@@ -21,8 +22,8 @@ public class SWORDv2ContainerServlet extends SwordServlet {
     private ContainerAPI api;
     private StatementManager sm;
     private final ReentrantLock lock = new ReentrantLock();
-    
-    
+
+
     @Override
     public void init() throws ServletException {
         super.init();
@@ -96,8 +97,8 @@ public class SWORDv2ContainerServlet extends SwordServlet {
             lock.unlock();
         }
     }
-    
-    private void setRequest( HttpServletRequest r ) {
+
+    private void setRequest(HttpServletRequest r) {
         containerManagerImpl.setHttpRequest(r);
         statementManagerImpl.setHttpRequest(r);
     }
