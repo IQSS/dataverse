@@ -430,7 +430,10 @@ public class SettingsServiceBean {
         HandleNetAdmPrivPhrase,
         HandleNetIndex,
 
-        TimerServer;
+        TimerServer,
+
+        MinutesUntilPasswordResetTokenExpires
+        ;
 
         @Override
         public String toString() {

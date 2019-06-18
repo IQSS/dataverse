@@ -6,19 +6,20 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
+import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,6 +39,9 @@ public class PasswordResetServiceBean {
     
     @EJB
     AuthenticationServiceBean authService;
+
+    @EJB
+    private SystemConfig systemConfig;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -73,6 +77,9 @@ public class PasswordResetServiceBean {
         
         // create a fresh token for the user
         PasswordResetData passwordResetData = new PasswordResetData(aUser);
+        passwordResetData.setExpires(new Timestamp(
+                        passwordResetData.getCreated().getTime() +
+                            TimeUnit.MINUTES.toMillis(systemConfig.getMinutesUntilPasswordResetTokenExpires())));
         passwordResetData.setReason(reason);
         try {
             em.persist(passwordResetData);
@@ -95,7 +102,7 @@ public class PasswordResetServiceBean {
 
         String pattern = BundleUtil.getStringFromBundle("notification.email.passwordReset");
 
-        String[] paramArray = {authUser.getName(), aUser.getUserName() ,passwordResetUrl,  SystemConfig.getMinutesUntilPasswordResetTokenExpires()+""  };
+        String[] paramArray = {authUser.getName(), aUser.getUserName() ,passwordResetUrl, systemConfig.getMinutesUntilPasswordResetTokenExpires() +""  };
         String messageBody = MessageFormat.format(pattern, paramArray);
 
         try {

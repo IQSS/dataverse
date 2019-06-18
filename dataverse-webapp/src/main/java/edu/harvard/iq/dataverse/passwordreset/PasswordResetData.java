@@ -1,11 +1,15 @@
 package edu.harvard.iq.dataverse.passwordreset;
 
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import javax.ejb.EJB;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -81,9 +85,6 @@ public class PasswordResetData implements Serializable {
         token = UUID.randomUUID().toString();
         long nowInMilliseconds = new Date().getTime();
         created = new Timestamp(nowInMilliseconds);
-        long ONE_MINUTE_IN_MILLISECONDS = 60000;
-        long futureInMilliseconds = nowInMilliseconds + (SystemConfig.getMinutesUntilPasswordResetTokenExpires() * ONE_MINUTE_IN_MILLISECONDS);
-        expires = new Timestamp(new Date(futureInMilliseconds).getTime());
         reason = Reason.FORGOT_PASSWORD;
     }
 
@@ -128,4 +129,7 @@ public class PasswordResetData implements Serializable {
         this.reason = reason;
     }
 
+    public void setExpires(Timestamp expires) {
+        this.expires = expires;
+    }
 }

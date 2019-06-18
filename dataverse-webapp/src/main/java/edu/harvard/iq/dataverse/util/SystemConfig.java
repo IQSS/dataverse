@@ -60,12 +60,6 @@ public class SystemConfig {
      */
     public static final String FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS = "dataverse.files.hide-schema-dot-org-download-urls";
 
-    /**
-     * A JVM option to override the number of minutes for which a password reset
-     * token is valid ({@link #minutesUntilPasswordResetTokenExpires}).
-     */
-    private static final String PASSWORD_RESET_TIMEOUT_IN_MINUTES = "dataverse.auth.password-reset-timeout-in-minutes";
-
     private static String appVersionString = null;
     private static String buildNumberString = null;
 
@@ -197,28 +191,8 @@ public class SystemConfig {
         return appVersionString;
     }
 
-    /**
-     * The number of minutes for which a password reset token is valid. Can be
-     * overridden by {@link #PASSWORD_RESET_TIMEOUT_IN_MINUTES}.
-     */
-    public static int getMinutesUntilPasswordResetTokenExpires() {
-        final int reasonableDefault = 60;
-        String configuredValueAsString = System.getProperty(PASSWORD_RESET_TIMEOUT_IN_MINUTES);
-        if (configuredValueAsString != null) {
-            int configuredValueAsInteger = 0;
-            try {
-                configuredValueAsInteger = Integer.parseInt(configuredValueAsString);
-                if (configuredValueAsInteger > 0) {
-                    return configuredValueAsInteger;
-                } else {
-                    logger.info(PASSWORD_RESET_TIMEOUT_IN_MINUTES + " is configured as a negative number \"" + configuredValueAsInteger + "\". Using default value instead: " + reasonableDefault);
-                    return reasonableDefault;
-                }
-            } catch (NumberFormatException ex) {
-                logger.info("Unable to convert " + PASSWORD_RESET_TIMEOUT_IN_MINUTES + " from \"" + configuredValueAsString + "\" into an integer value: " + ex + ". Using default value " + reasonableDefault);
-            }
-        }
-        return reasonableDefault;
+    public int getMinutesUntilPasswordResetTokenExpires() {
+        return settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.MinutesUntilPasswordResetTokenExpires);
     }
 
     /**
