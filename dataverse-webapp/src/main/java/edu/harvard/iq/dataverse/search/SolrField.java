@@ -25,25 +25,21 @@ public class SolrField {
              */
             if (solrType.equals(SolrType.STRING)) {
                 nameSearchable = "dsf_str_" + name;
-                nameFacetable = "dsf_str_" + name;
             } else if (solrType.equals(SolrType.TEXT_EN) ||
                     solrType.equals(SolrType.EMAIL) ||
                     solrType.equals(SolrType.DATE)) {
                 nameSearchable = "dsf_txt_" + name;
-                nameFacetable = "dsf_txt_" + name;
             } else if (solrType.equals(SolrType.INTEGER)) {
                 nameSearchable = "dsf_int_" + name;
-                nameFacetable = "dsf_int_" + name;
             } else if (solrType.equals(SolrType.FLOAT)) {
                 nameSearchable = "dsf_flt_" + name;
-                nameFacetable = name;
                 this.facetable = false;
             } else {
                 nameSearchable = name;
-                nameFacetable = name;
             }
 
             this.allowedToBeMultivalued = true; // by default, dynamicFields are multivalued
+            this.nameFacetable = name + "_ss";
         } else {
             this.nameSearchable = name;
             if (allowedToBeMultivalued) {

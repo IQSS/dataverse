@@ -114,6 +114,19 @@ public class DatasetFieldTypeTest {
         instance.setFieldType(FieldType.EMAIL);
         solrField = instance.getSolrField();
         assertEquals(SolrField.SolrType.EMAIL, solrField.getSolrType());
+
+        instance.setFieldType(FieldType.INT);
+        solrField = instance.getSolrField();
+        assertEquals(SolrField.SolrType.INTEGER, solrField.getSolrType());
+
+        instance.setFieldType(FieldType.FLOAT);
+        solrField = instance.getSolrField();
+        assertEquals(SolrField.SolrType.FLOAT, solrField.getSolrType());
+
+        instance.setFieldType(FieldType.TEXT);
+        solrField = instance.getSolrField();
+        assertEquals(SolrField.SolrType.TEXT_EN, solrField.getSolrType());
+
         DatasetFieldType parent = new DatasetFieldType();
         parent.setAllowMultiples(true);
         instance.setParentDatasetFieldType(parent);
