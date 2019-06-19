@@ -40,7 +40,7 @@ public class CollectionListManagerImpl implements CollectionListManager {
     @Inject
     SwordAuth swordAuth;
     @Inject
-    UrlManager urlManager;
+    private UrlManagerServiceBean urlManagerServiceBean;
 
     private HttpServletRequest request;
 
@@ -48,7 +48,8 @@ public class CollectionListManagerImpl implements CollectionListManager {
     public Feed listCollectionContents(IRI iri, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordServerException, SwordAuthException, SwordError {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         DataverseRequest dvReq = new DataverseRequest(user, request);
-        urlManager.processUrl(iri.toString());
+        urlManagerServiceBean.processUrl(iri.toString());
+        UrlManager urlManager = urlManagerServiceBean.getUrlManager();
         String dvAlias = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("dataverse") && dvAlias != null) {
 
@@ -68,7 +69,7 @@ public class CollectionListManagerImpl implements CollectionListManager {
                 Abdera abdera = new Abdera();
                 Feed feed = abdera.newFeed();
                 feed.setTitle(dv.getName());
-                String baseUrl = urlManager.getHostnamePlusBaseUrlPath(iri.toString());
+                String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath(iri.toString());
                 List<Dataset> datasets = datasetService.findByOwnerId(dv.getId());
                 for (Dataset dataset : datasets) {
                     /**

@@ -48,7 +48,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
     @Inject
     SwordAuth swordAuth;
     @Inject
-    UrlManager urlManager;
+    private UrlManagerServiceBean urlManagerServiceBean;
     @EJB
     EjbDataverseEngine engineSvc;
     @EJB
@@ -69,7 +69,9 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         DataverseRequest dvReq = new DataverseRequest(user, request);
 
-        urlManager.processUrl(collectionUri);
+        urlManagerServiceBean.processUrl(collectionUri);
+        UrlManager urlManager = urlManagerServiceBean.getUrlManager();
+
         String dvAlias = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("dataverse") && dvAlias != null) {
 
@@ -163,7 +165,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                     }
                     if (createdDataset != null) {
                         ReceiptGenerator receiptGenerator = new ReceiptGenerator();
-                        String baseUrl = urlManager.getHostnamePlusBaseUrlPath(collectionUri);
+                        String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath(collectionUri);
                         DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, createdDataset);
                         return depositReceipt;
                     } else {

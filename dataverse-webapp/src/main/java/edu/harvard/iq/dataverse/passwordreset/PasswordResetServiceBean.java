@@ -12,12 +12,15 @@ import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import java.sql.Timestamp;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -41,7 +44,7 @@ public class PasswordResetServiceBean {
     @EJB
     AuthenticationServiceBean authService;
 
-    @EJB
+    @Inject
     private SystemConfig systemConfig;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -84,8 +87,9 @@ public class PasswordResetServiceBean {
         passwordResetData.setReason(reason);
         try {
             em.persist(passwordResetData);
-            PasswordResetInitResponse passwordResetInitResponse = new PasswordResetInitResponse(true, passwordResetData);
-            if (sendEmail) {
+            PasswordResetInitResponse passwordResetInitResponse =
+                    new PasswordResetInitResponse(true, passwordResetData, createResetUrl(passwordResetData));
+            if ( sendEmail ) {
                 sendPasswordResetEmail(aUser, passwordResetInitResponse.getResetUrl());
             }
 
@@ -97,6 +101,28 @@ public class PasswordResetServiceBean {
         }
 
     }
+
+    private String createResetUrl(PasswordResetData passwordResetData) {
+        // default to localhost
+        String finalHostname = "localhost";
+        String configuredHostname = systemConfig.getFqdnProperty();
+        if (configuredHostname != null) {
+            if (configuredHostname.equals("localhost")) {
+                // must be a dev environment
+                finalHostname = "localhost:8181";
+            } else {
+                finalHostname = configuredHostname;
+            }
+        } else {
+            try {
+                finalHostname = InetAddress.getLocalHost().getHostName();
+            } catch (UnknownHostException ex) {
+                // just use the dev address
+            }
+        }
+        return "https://" + finalHostname + "/passwordreset.xhtml?token=" + passwordResetData.getToken();
+    }
+
 
     private void sendPasswordResetEmail(BuiltinUser aUser, String passwordResetUrl) throws PasswordResetException {
         AuthenticatedUser authUser = authService.getAuthenticatedUser(aUser.getUserName());

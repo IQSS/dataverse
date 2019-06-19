@@ -67,18 +67,22 @@ public class ContainerManagerImpl implements ContainerManager {
     @Inject
     SwordAuth swordAuth;
     @Inject
-    UrlManager urlManager;
+    private UrlManagerServiceBean urlManagerServiceBean;
     SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
     @EJB
     SwordServiceBean swordService;
     private HttpServletRequest httpRequest;
 
     @Override
-    public DepositReceipt getEntry(String uri, Map<String, String> map, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordServerException, SwordError, SwordAuthException {
+    public DepositReceipt getEntry(String uri, Map<String, String> map, AuthCredentials authCredentials,
+                                   SwordConfiguration swordConfiguration) throws SwordServerException,
+                                    SwordError, SwordAuthException {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         DataverseRequest dvReq = new DataverseRequest(user, httpRequest);
         logger.fine("getEntry called with url: " + uri);
-        urlManager.processUrl(uri);
+        urlManagerServiceBean.processUrl(uri);
+        UrlManager urlManager = urlManagerServiceBean.getUrlManager();
+
         String targetType = urlManager.getTargetType();
         if (!targetType.isEmpty()) {
             logger.fine("operating on target type: " + urlManager.getTargetType());
@@ -87,11 +91,12 @@ public class ContainerManagerImpl implements ContainerManager {
                 Dataset dataset = datasetService.findByGlobalId(globalId);
                 if (dataset != null) {
                     if (!permissionService.isUserAllowedOn(user, new GetDraftDatasetVersionCommand(dvReq, dataset), dataset)) {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to retrieve entry for " + dataset.getGlobalIdString());
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() +
+                                " is not authorized to retrieve entry for " + dataset.getGlobalIdString());
                     }
                     Dataverse dvThatOwnsDataset = dataset.getOwner();
                     ReceiptGenerator receiptGenerator = new ReceiptGenerator();
-                    String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
+                    String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath(uri);
                     DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
                     if (depositReceipt != null) {
                         return depositReceipt;
@@ -114,12 +119,14 @@ public class ContainerManagerImpl implements ContainerManager {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         DataverseRequest dvReq = new DataverseRequest(user, httpRequest);
         logger.fine("replaceMetadata called with url: " + uri);
-        urlManager.processUrl(uri);
+        UrlManager urlManager = urlManagerServiceBean.getUrlManager();
+        urlManagerServiceBean.processUrl(uri);
         String targetType = urlManager.getTargetType();
         if (!targetType.isEmpty()) {
             logger.fine("operating on target type: " + urlManager.getTargetType());
             if ("dataverse".equals(targetType)) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Metadata replace of dataverse is not supported.");
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST,
+                        "Metadata replace of dataverse is not supported.");
             } else if ("study".equals(targetType)) {
                 logger.fine("replacing metadata for dataset");
                 // do a sanity check on the XML received
@@ -127,7 +134,8 @@ public class ContainerManagerImpl implements ContainerManager {
                     SwordEntry swordEntry = deposit.getSwordEntry();
                     logger.fine("deposit XML received by replaceMetadata():\n" + swordEntry);
                 } catch (ParseException ex) {
-                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can not replace dataset metadata due to malformed Atom entry: " + ex);
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "" +
+                            "Can not replace dataset metadata due to malformed Atom entry: " + ex);
                 }
 
                 String globalId = urlManager.getTargetIdentifier();
@@ -158,7 +166,7 @@ public class ContainerManagerImpl implements ContainerManager {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem updating dataset: " + ex);
                     }
                     ReceiptGenerator receiptGenerator = new ReceiptGenerator();
-                    String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
+                    String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath(uri);
                     DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
                     return depositReceipt;
                 } else {
@@ -178,36 +186,43 @@ public class ContainerManagerImpl implements ContainerManager {
     }
 
     @Override
-    public DepositReceipt addMetadataAndResources(String string, Deposit dpst, AuthCredentials ac, SwordConfiguration sc) throws SwordError, SwordServerException, SwordAuthException {
+    public DepositReceipt addMetadataAndResources(String string, Deposit dpst, AuthCredentials ac, SwordConfiguration sc)
+            throws SwordError, SwordServerException, SwordAuthException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public DepositReceipt addMetadata(String string, Deposit dpst, AuthCredentials ac, SwordConfiguration sc) throws SwordError, SwordServerException, SwordAuthException {
+    public DepositReceipt addMetadata(String string, Deposit dpst, AuthCredentials ac, SwordConfiguration sc)
+            throws SwordError, SwordServerException, SwordAuthException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public DepositReceipt addResources(String string, Deposit dpst, AuthCredentials ac, SwordConfiguration sc) throws SwordError, SwordServerException, SwordAuthException {
+    public DepositReceipt addResources(String string, Deposit dpst, AuthCredentials ac, SwordConfiguration sc)
+            throws SwordError, SwordServerException, SwordAuthException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void deleteContainer(String uri, AuthCredentials authCredentials, SwordConfiguration sc) throws SwordError, SwordServerException, SwordAuthException {
+    public void deleteContainer(String uri, AuthCredentials authCredentials, SwordConfiguration sc) throws SwordError,
+            SwordServerException, SwordAuthException {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         DataverseRequest dvRequest = new DataverseRequest(user, httpRequest);
         logger.fine("deleteContainer called with url: " + uri);
-        urlManager.processUrl(uri);
+        urlManagerServiceBean.processUrl(uri);
+        UrlManager urlManager = urlManagerServiceBean.getUrlManager();
         logger.fine("original url: " + urlManager.getOriginalUrl());
         if (!"edit".equals(urlManager.getServlet())) {
-            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "edit servlet expected, not " + urlManager.getServlet());
+            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "edit servlet expected, not " +
+                    urlManager.getServlet());
         }
         String targetType = urlManager.getTargetType();
         if (!targetType.isEmpty()) {
             logger.fine("operating on target type: " + urlManager.getTargetType());
 
             if ("dataverse".equals(targetType)) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Dataverses can not be deleted via the Data Deposit API but other Dataverse APIs may support this operation.");
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST,
+                        "Dataverses can not be deleted via the Data Deposit API but other Dataverse APIs may support this operation.");
             } else if ("study".equals(targetType)) {
                 String globalId = urlManager.getTargetIdentifier();
                 logger.fine("globalId: " + globalId);
@@ -223,7 +238,8 @@ public class ContainerManagerImpl implements ContainerManager {
                          */
                         DeleteDatasetVersionCommand deleteDatasetVersionCommand = new DeleteDatasetVersionCommand(dvRequest, dataset);
                         if (!permissionService.isUserAllowedOn(user, deleteDatasetVersionCommand, dataset)) {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify " + dvThatOwnsDataset.getAlias());
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " +
+                                    user.getDisplayInfo().getTitle() + " is not authorized to modify " + dvThatOwnsDataset.getAlias());
                         }
                         Map<Long, String> deleteStorageLocations = datafileService.getPhysicalFilesToDelete(dataset.getLatestVersion());
                         DatasetVersion.VersionState datasetVersionState = dataset.getLatestVersion().getVersionState();
@@ -233,17 +249,26 @@ public class ContainerManagerImpl implements ContainerManager {
                                 try {
                                     engineSvc.submit(deleteDatasetVersionCommand);
                                 } catch (CommandException ex) {
-                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can't delete dataset version for " + dataset.getGlobalIdString() + ": " + ex);
+                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can't delete dataset version for " +
+                                            dataset.getGlobalIdString() + ": " + ex);
                                 }
                                 logger.info("dataset version deleted for dataset id " + dataset.getId());
                             } else if (datasetVersionState.equals(DatasetVersion.VersionState.RELEASED)) {
-                                throw new SwordError(UriRegistry.ERROR_METHOD_NOT_ALLOWED, "Deaccessioning a dataset is no longer supported as of Data Deposit API version in URL (" + swordConfiguration.getBaseUrlPathV1() + ") Equivalent functionality is being developed at https://github.com/IQSS/dataverse/issues/778");
+                                throw new SwordError(UriRegistry.ERROR_METHOD_NOT_ALLOWED,
+                                        "Deaccessioning a dataset is no longer supported as of Data Deposit API version in URL (" +
+                                                swordConfiguration.getBaseUrlPathV1() + ") Equivalent functionality is being developed at https://github.com/IQSS/dataverse/issues/778");
                             } else if (datasetVersionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
-                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of dataset " + dataset.getGlobalIdString() + " has already been deaccessioned.");
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST,
+                                        "Lastest version of dataset " + dataset.getGlobalIdString() +
+                                                " has already been deaccessioned.");
                             } else if (datasetVersionState.equals(DatasetVersion.VersionState.ARCHIVED)) {
-                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of dataset " + dataset.getGlobalIdString() + " has been archived and can not be deleted or deaccessioned.");
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST,
+                                        "Lastest version of dataset " + dataset.getGlobalIdString() +
+                                                " has been archived and can not be deleted or deaccessioned.");
                             } else {
-                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Operation not valid for dataset " + dataset.getGlobalIdString() + " in state " + datasetVersionState);
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST,
+                                        "Operation not valid for dataset " + dataset.getGlobalIdString() +
+                                                " in state " + datasetVersionState);
                             }
                             /**
                              * @todo Reformat else below properly so you can
@@ -258,13 +283,16 @@ public class ContainerManagerImpl implements ContainerManager {
                                     logger.fine("dataset deleted");
                                 } catch (CommandExecutionException ex) {
                                     // internal error
-                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can't delete dataset: " + ex.getMessage());
+                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST,
+                                            "Can't delete dataset: " + ex.getMessage());
                                 } catch (CommandException ex) {
-                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can't delete dataset: " + ex.getMessage());
+                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST,
+                                            "Can't delete dataset: " + ex.getMessage());
                                 }
                             } else {
                                 // we should never get here. throw an error explaining why
-                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "dataset is in illegal state (not published yet not in draft)");
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST,
+                                        "dataset is in illegal state (not published yet not in draft)");
                             }
                         }
                         // If we have gotten this far, the delete command has succeeded - 
@@ -281,13 +309,16 @@ public class ContainerManagerImpl implements ContainerManager {
                         throw new SwordError(404);
                     }
                 } else {
-                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset to delete from URL: " + uri);
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST,
+                            "Could not find dataset to delete from URL: " + uri);
                 }
             } else {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unsupported delete target in URL:" + uri);
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST,
+                        "Unsupported delete target in URL:" + uri);
             }
         } else {
-            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "No target for deletion specified");
+            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST,
+                    "No target for deletion specified");
         }
     }
 
@@ -297,7 +328,8 @@ public class ContainerManagerImpl implements ContainerManager {
         logger.fine("isInProgress:" + deposit.isInProgress());
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         DataverseRequest dvRequest = new DataverseRequest(user, httpRequest);
-        urlManager.processUrl(uri);
+        urlManagerServiceBean.processUrl(uri);
+        UrlManager urlManager = urlManagerServiceBean.getUrlManager();
         String targetType = urlManager.getTargetType();
         if (!targetType.isEmpty()) {
             logger.fine("operating on target type: " + urlManager.getTargetType());
@@ -350,7 +382,7 @@ public class ContainerManagerImpl implements ContainerManager {
                                     throw SwordUtil.throwRegularSwordErrorWithoutStackTrace(msg);
                                 }
                                 ReceiptGenerator receiptGenerator = new ReceiptGenerator();
-                                String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
+                                String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath(uri);
                                 DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
                                 return depositReceipt;
                             } else {
@@ -380,7 +412,7 @@ public class ContainerManagerImpl implements ContainerManager {
                         try {
                             engineSvc.submit(publishDataverseCommand);
                             ReceiptGenerator receiptGenerator = new ReceiptGenerator();
-                            String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
+                            String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath(uri);
                             DepositReceipt depositReceipt = receiptGenerator.createDataverseReceipt(baseUrl, dvToRelease);
                             return depositReceipt;
                         } catch (CommandException ex) {
@@ -402,8 +434,8 @@ public class ContainerManagerImpl implements ContainerManager {
 
     @Override
     public boolean isStatementRequest(String uri, Map<String, String> map, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
-        urlManager.processUrl(uri);
-        String servlet = urlManager.getServlet();
+        urlManagerServiceBean.processUrl(uri);
+        String servlet = urlManagerServiceBean.getUrlManager().getServlet();
         if (servlet != null) {
             return servlet.equals("statement");
         } else {

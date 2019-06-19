@@ -204,7 +204,24 @@ public class SystemConfig {
      * by the Settings Service configuration.
      */
     public String getDataverseSiteUrl() {
-        return getDataverseSiteUrlStatic();
+        String hostUrl = System.getProperty(SITE_URL);
+        if (hostUrl != null && !"".equals(hostUrl)) {
+            return hostUrl;
+        }
+        String hostName = getFqdnProperty();
+        if (hostName == null) {
+            try {
+                hostName = InetAddress.getLocalHost().getCanonicalHostName();
+            } catch (UnknownHostException e) {
+                return null;
+            }
+        }
+        hostUrl = "https://" + hostName;
+        return hostUrl;
+    }
+
+    public String getFqdnProperty() {
+        return System.getProperty(SystemConfig.FQDN);
     }
 
     public static String getDataverseSiteUrlStatic() {

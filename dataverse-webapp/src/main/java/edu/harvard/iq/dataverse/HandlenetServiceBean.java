@@ -21,6 +21,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import net.handle.hdllib.AbstractMessage;
 import net.handle.hdllib.AbstractResponse;
 import net.handle.hdllib.AdminRecord;
@@ -250,12 +251,11 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     }
 
     public String getSiteUrl() {
-        logger.log(Level.FINE, "getSiteUrl");
         String hostUrl = System.getProperty("dataverse.siteUrl");
         if (hostUrl != null && !"".equals(hostUrl)) {
             return hostUrl;
         }
-        String hostName = System.getProperty("dataverse.fqdn");
+        String hostName = systemConfig.getFqdnProperty();
         if (hostName == null) {
             try {
                 hostName = InetAddress.getLocalHost().getCanonicalHostName();

@@ -34,14 +34,14 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
     @Inject
     SwordAuth swordAuth;
     @Inject
-    UrlManager urlManager;
+    private UrlManagerServiceBean urlManagerServiceBean;
 
     @Override
     public ServiceDocument getServiceDocument(String sdUri, AuthCredentials authCredentials, SwordConfiguration config)
             throws SwordError, SwordServerException, SwordAuthException {
 
         AuthenticatedUser user = swordAuth.auth(authCredentials);
-        String warning = urlManager.processUrl(sdUri);
+        String warning = urlManagerServiceBean.processUrl(sdUri);
         ServiceDocument service = new ServiceDocument();
         SwordWorkspace swordWorkspace = new SwordWorkspace();
         Dataverse rootDataverse = dataverseService.findRootDataverse();
@@ -55,7 +55,7 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
             swordWorkspace.getWrappedWorkspace().setAttributeValue("warning", warning);
         }
         service.setMaxUploadSize(config.getMaxUploadSize());
-        String hostnamePlusBaseUrl = urlManager.getHostnamePlusBaseUrlPath(sdUri);
+        String hostnamePlusBaseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath(sdUri);
         if (hostnamePlusBaseUrl == null) {
             ServiceDocument serviceDocument = new ServiceDocument();
             return serviceDocument;
