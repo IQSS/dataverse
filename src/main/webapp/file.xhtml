@@ -554,7 +554,12 @@
                                 #{bundle.cancel}
                             </button>
                         </div>
-                    </p:dialog>
+                    </p:dialog><ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
+                            <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                            <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
+                            <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
+                            <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
+                            <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                     <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
                          <ui:include src="file-download-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
@@ -583,7 +588,13 @@
                             <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                         </ui:include>
                     </p:dialog>
-                    
+                    <p:dialog id="requestAccessPopup" styleClass="largePopUp" header="#{bundle['file.requestAccess']}" widgetVar="requestAccessPopup" modal="true">
+                        <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
+                        <ui:include src="file-request-access-popup-fragment.xhtml">
+                            <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
+                            <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
+                        </ui:include>
+                    </p:dialog>
                     <p:dialog id="configureToolPopup" styleClass="smallPopUp" header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true" 
                                 rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset()}">
                         <ui:include src="file-configure-popup-fragment.xhtml">
