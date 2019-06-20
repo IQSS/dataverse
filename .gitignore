@@ -5,6 +5,7 @@ nbactions.xml
 .settings
 .classpath
 .project
+.factorypath
 michael-local
 GPATH
 GTAGS

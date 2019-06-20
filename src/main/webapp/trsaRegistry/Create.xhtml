@@ -24,19 +24,9 @@
                                      required="true" requiredMessage="#{bundle_trsa_registry.CreateTrsaRegistryRequiredMessage_email}"/>
                         <p:outputLabel value="#{bundle_trsa_registry.CreateTrsaRegistryLabel_dataverseurl}" 
                                        for="dataverseurl" />
-                        <p:inputText id="dataverseurl" value="#{trsaRegistryController.selected.dataverseurl}" 
+                        <p:inputText id="dataverseurl" value="#{trsaRegistryController.selected.datafileserverurl}" 
                                      title="#{bundle_trsa_registry.CreateTrsaRegistryTitle_dataverseurl}" 
                                      required="true" requiredMessage="#{bundle_trsa_registry.CreateTrsaRegistryRequiredMessage_dataverseurl}"/>
-                        <p:outputLabel value="#{bundle_trsa_registry.CreateTrsaRegistryLabel_apitoken}" 
-                                       for="apitoken" />
-                        <p:inputText id="apitoken" value="#{trsaRegistryController.selected.apitoken}" 
-                                     title="#{bundle_trsa_registry.CreateTrsaRegistryTitle_apitoken}" 
-                                     required="true" requiredMessage="#{bundle_trsa_registry.CreateTrsaRegistryRequiredMessage_apitoken}"/>
-                        <p:outputLabel value="#{bundle_trsa_registry.CreateTrsaRegistryLabel_datastoragelocation}" 
-                                       for="datastoragelocation" />
-                        <p:inputText id="datastoragelocation" value="#{trsaRegistryController.selected.datastoragelocation}" 
-                                     title="#{bundle_trsa_registry.CreateTrsaRegistryTitle_datastoragelocation}" 
-                                     required="true" requiredMessage="#{bundle_trsa_registry.CreateTrsaRegistryRequiredMessage_datastoragelocation}"/>
                         <p:outputLabel value="#{bundle_trsa_registry.CreateTrsaRegistryLabel_dataaccessinfo}" 
                                        for="dataaccessinfo" />
                         <p:inputText id="dataaccessinfo" value="#{trsaRegistryController.selected.dataaccessinfo}" 
@@ -49,9 +39,9 @@
                                      required="true" requiredMessage="#{bundle_trsa_registry.CreateTrsaRegistryRequiredMessage_notaryserviceurl}"/>
                         <p:outputLabel value="#{bundle_trsa_registry.CreateTrsaRegistryLabel_safeserviceurl}" 
                                        for="safeserviceurl" />
-                        <p:inputText id="safeserviceurl" value="#{trsaRegistryController.selected.safeserviceurl}" 
+                        <p:inputText id="safeserviceurl" value="#{trsaRegistryController.selected.trsaurl}" 
                                      title="#{bundle_trsa_registry.CreateTrsaRegistryTitle_safeserviceurl}" 
-                                     required="true" requiredMessage="#{bundle_trsa_registry.CreateTrsaRegistryRequiredMessage_safeserviceurl}"/>
+                                     required="false" requiredMessage="#{bundle_trsa_registry.CreateTrsaRegistryRequiredMessage_safeserviceurl}"/>
                         <p:outputLabel value="#{bundle_trsa_registry.CreateTrsaRegistryLabel_registertime}" 
                                        for="registertime" />
                         <p:calendar id="registertime" pattern="yyyy-MM-dd HH:mm:ss" value="#{trsaRegistryController.selected.registertime}" 

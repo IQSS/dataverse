@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
+import edu.harvard.iq.dataverse.trsa.Trsa;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -678,6 +679,28 @@ public class Dataset extends DvObjectContainer {
     public void setHarvestIdentifier(String harvestIdentifier) {
         this.harvestIdentifier = harvestIdentifier;
     }
+    
+    
+    
+    @ManyToOne
+    @JoinColumn(name="trsa_id")
+    private  Trsa trsa;
+
+    public Trsa getTrsa() {
+        return this.trsa;
+    }
+
+    public void setTrsam(Trsa trsa) {
+        this.trsa = trsa;
+    }
+    
+    public boolean isTrsaCoupled() {
+        return this.trsa != null;
+    }
+    
+    
+    
+    
 
     public String getRemoteArchiveURL() {
         if (isHarvested()) {
@@ -749,7 +772,7 @@ public class Dataset extends DvObjectContainer {
 
         return null;
     }
-
+    
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set

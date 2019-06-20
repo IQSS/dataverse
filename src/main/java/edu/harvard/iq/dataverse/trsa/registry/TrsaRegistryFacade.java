@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse.trsa.registry;
 
-import edu.harvard.iq.dataverse.trsa.TrsaRegistry;
+import edu.harvard.iq.dataverse.trsa.Trsa;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -15,7 +15,7 @@ import javax.persistence.PersistenceContext;
  * @author asone
  */
 @Stateless
-public class TrsaRegistryFacade extends AbstractFacade<TrsaRegistry> {
+public class TrsaRegistryFacade extends AbstractFacade<Trsa> {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -26,7 +26,7 @@ public class TrsaRegistryFacade extends AbstractFacade<TrsaRegistry> {
     }
 
     public TrsaRegistryFacade() {
-        super(TrsaRegistry.class);
+        super(Trsa.class);
     }
     
 }

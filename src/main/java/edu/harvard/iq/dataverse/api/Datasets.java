@@ -100,6 +100,10 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.trsa.Trsa;
+import edu.harvard.iq.dataverse.trsa.TrsaRegistration;
+import edu.harvard.iq.dataverse.trsa.TrsaRegistryServiceBean;
+import edu.harvard.iq.dataverse.trsa.registry.TrsaRegistryFacade;
 import edu.harvard.iq.dataverse.util.DateUtil;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
@@ -123,6 +127,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.inject.Inject;
@@ -136,6 +141,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -149,6 +155,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.UriInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -214,6 +221,9 @@ public class Datasets extends AbstractApiBean {
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    
+    @Inject
+    TrsaRegistryServiceBean trsaRegistryServiceBean;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -1610,12 +1620,29 @@ public class Datasets extends AbstractApiBean {
      * 
      * @param jsonBody
      * @param datasetId
+     * @param httpHeaders
      * @return 
      */
     @POST
     @Path("{id}/addFileMetadata")
-    public Response addFileMetadataToDataset(String jsonBody, @PathParam("id") String datasetId
+    public Response addFileMetadataToDataset(String jsonBody, 
+            @PathParam("id") String datasetId,
+            @Context HttpHeaders httpHeaders
                     ){
+        logger.log(Level.INFO, "========== Datasets#addFileMetadataToDataset : start ==========");
+        logger.log(Level.INFO, "headers:dump={0}", 
+              httpHeaders.getRequestHeaders().entrySet()
+                     .stream()
+                     .map(e -> e.getKey() + " = " + e.getValue())
+                     .collect(Collectors.joining("\n")));
+        
+        
+        
+        String trsaRegistrationIdString=httpHeaders.getHeaderString("X-TRSA-registrationId");
+        logger.log(Level.INFO, "trsaRegistrationIdString={0}", trsaRegistrationIdString);
+        // the following is a temporary solution
+        Long trsaRegistrationId  = StringUtils.isEmpty(trsaRegistrationIdString) ? 1L :  Long.parseLong(trsaRegistrationIdString);
+                
         try ( StringReader rdr = new StringReader(jsonBody) ) {
             logger.log(Level.INFO, "addFileMetadataToDataset:received jsonBody={0}", jsonBody);
             DataverseRequest req = createDataverseRequest(findUserOrDie());
@@ -1659,13 +1686,15 @@ public class Datasets extends AbstractApiBean {
                 
             }
             // call UpdateDatasetVersion command
-            
+            Trsa trsa = trsaRegistryServiceBean.find(trsaRegistrationId);
+            ds.setTrsam(trsa);
+            logger.log(Level.INFO, "before update: isTrsaCoupled={0}", ds.isTrsaCoupled());
             ds = execCommand(new UpdateDatasetVersionCommand(ds, req));
             
             // save datafiles
             // from addFileToDataset case
            dataFiles = ds.getFiles();
-
+           logger.log(Level.INFO, "after update: isTrsaCoupled={0}", ds.isTrsaCoupled());
             if (dataFiles != null) {
                 for (DataFile df : dataFiles) {
                     if (df.getOwner() == null){
@@ -1687,7 +1716,7 @@ public class Datasets extends AbstractApiBean {
             
             logger.log(Level.INFO, "newlyAddedFiles: how many={0}", dataFiles.size());
             logger.log(Level.INFO, "newlyAddedFiles={0}",  xstream.toXML(dataFiles));
-            
+        logger.log(Level.INFO, "========== Datasets#addFileMetadataToDataset : end (OK) ==========");
             return ok( JsonPrinter.jsonDataFileList(dataFiles));
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset version Json: " + ex.getMessage(), ex);

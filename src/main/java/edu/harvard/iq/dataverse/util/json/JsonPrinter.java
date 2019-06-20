@@ -588,6 +588,7 @@ public class JsonPrinter {
                 .add("description", df.getDescription())    
                 //.add("released", df.isReleased())
                 .add("restricted", df.isRestricted())
+                .add("notaryServiceBound", df.isNotaryServiceBound())           // 2019-06
                 .add("storageIdentifier", df.getStorageIdentifier())
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())

@@ -172,6 +172,12 @@ public class DataFile extends DvObject implements Comparable {
     @Expose
     private boolean restricted;
     
+    
+    @Expose
+    @Column(nullable = false)
+    private boolean notaryServiceBound=false;
+    
+    
     @Expose
     @Column(columnDefinition = "TEXT", nullable = true, name="prov_entityname")
     private String provEntityName;
@@ -531,6 +537,26 @@ public class DataFile extends DvObject implements Comparable {
     public void setRestricted(boolean restricted) {
         this.restricted = restricted;
     }
+    
+
+    /**
+     * Get the value of notaryServiceBound
+     *
+     * @return the value of notaryServiceBound
+     */
+    public boolean isNotaryServiceBound() {
+        return notaryServiceBound;
+    }
+
+    /**
+     * Set the value of notaryServiceBound
+     *
+     * @param notaryServiceBound new value of notaryServiceBound
+     */
+    public void setNotaryServiceBound(boolean notaryServiceBound) {
+        this.notaryServiceBound = notaryServiceBound;
+    }
+    
 
     public ChecksumType getChecksumType() {
         return checksumType;

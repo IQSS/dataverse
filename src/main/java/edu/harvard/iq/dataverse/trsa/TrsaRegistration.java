@@ -6,7 +6,7 @@
 package edu.harvard.iq.dataverse.trsa;
 
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
-import edu.harvard.iq.dataverse.trsa.TrsaRegistry;
+import edu.harvard.iq.dataverse.trsa.Trsa;
 import edu.harvard.iq.dataverse.trsa.TrsaRegistryServiceBean;
 import java.util.List;
 import javax.ejb.EJB;
@@ -31,8 +31,8 @@ import javax.ws.rs.core.Response;
  * @author asone
  */
 
-@Path("admin/trsaRegistries")
-public class TrsaRegistries extends AbstractApiBean {
+@Path("admin/trsaRegistration")
+public class TrsaRegistration extends AbstractApiBean {
 
     @EJB
     TrsaRegistryServiceBean trsaRegistryServiceBean;
@@ -40,14 +40,14 @@ public class TrsaRegistries extends AbstractApiBean {
     
     @POST
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public void create(TrsaRegistry entity) {
+    public void create(Trsa entity) {
         trsaRegistryServiceBean.create(entity);
     }
 
     @PUT
     @Path("{id}")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public void edit(@PathParam("id") Long id, TrsaRegistry entity) {
+    public void edit(@PathParam("id") Long id, Trsa entity) {
         trsaRegistryServiceBean.edit(entity);
     }
 
@@ -60,7 +60,7 @@ public class TrsaRegistries extends AbstractApiBean {
     @GET
     @Path("{id}")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public TrsaRegistry find(@PathParam("id") Long id) {
+    public Trsa find(@PathParam("id") Long id) {
         return trsaRegistryServiceBean.find(id);
     }
 
@@ -81,7 +81,7 @@ public class TrsaRegistries extends AbstractApiBean {
     @GET
     @Path("{from}/{to}")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public List<TrsaRegistry> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
+    public List<Trsa> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
         return trsaRegistryServiceBean.findRange(new int[]{from, to});
     }
 

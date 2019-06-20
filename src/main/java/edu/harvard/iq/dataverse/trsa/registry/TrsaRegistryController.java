@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.trsa.registry;
 
-import edu.harvard.iq.dataverse.trsa.TrsaRegistry;
+import edu.harvard.iq.dataverse.trsa.Trsa;
 import edu.harvard.iq.dataverse.trsa.registry.util.JsfUtil;
 import edu.harvard.iq.dataverse.trsa.registry.util.JsfUtil.PersistAction;
 
@@ -24,17 +24,17 @@ public class TrsaRegistryController implements Serializable {
 
     @EJB
     private edu.harvard.iq.dataverse.trsa.registry.TrsaRegistryFacade ejbFacade;
-    private List<TrsaRegistry> items = null;
-    private TrsaRegistry selected;
+    private List<Trsa> items = null;
+    private Trsa selected;
 
     public TrsaRegistryController() {
     }
 
-    public TrsaRegistry getSelected() {
+    public Trsa getSelected() {
         return selected;
     }
 
-    public void setSelected(TrsaRegistry selected) {
+    public void setSelected(Trsa selected) {
         this.selected = selected;
     }
 
@@ -48,8 +48,8 @@ public class TrsaRegistryController implements Serializable {
         return ejbFacade;
     }
 
-    public TrsaRegistry prepareCreate() {
-        selected = new TrsaRegistry();
+    public Trsa prepareCreate() {
+        selected = new Trsa();
         initializeEmbeddableKey();
         return selected;
     }
@@ -73,7 +73,7 @@ public class TrsaRegistryController implements Serializable {
         }
     }
 
-    public List<TrsaRegistry> getItems() {
+    public List<Trsa> getItems() {
         if (items == null) {
             items = getFacade().findAll();
         }
@@ -108,19 +108,19 @@ public class TrsaRegistryController implements Serializable {
         }
     }
 
-    public TrsaRegistry getTrsaRegistry(java.lang.Long id) {
+    public Trsa getTrsaRegistry(java.lang.Long id) {
         return getFacade().find(id);
     }
 
-    public List<TrsaRegistry> getItemsAvailableSelectMany() {
+    public List<Trsa> getItemsAvailableSelectMany() {
         return getFacade().findAll();
     }
 
-    public List<TrsaRegistry> getItemsAvailableSelectOne() {
+    public List<Trsa> getItemsAvailableSelectOne() {
         return getFacade().findAll();
     }
 
-    @FacesConverter(forClass = TrsaRegistry.class)
+    @FacesConverter(forClass = Trsa.class)
     public static class TrsaRegistryControllerConverter implements Converter {
 
         @Override
@@ -150,11 +150,13 @@ public class TrsaRegistryController implements Serializable {
             if (object == null) {
                 return null;
             }
-            if (object instanceof TrsaRegistry) {
-                TrsaRegistry o = (TrsaRegistry) object;
+            if (object instanceof Trsa) {
+                Trsa o = (Trsa) object;
                 return getStringKey(o.getId());
             } else {
-                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "object {0} is of type {1}; expected type: {2}", new Object[]{object, object.getClass().getName(), TrsaRegistry.class.getName()});
+                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, 
+                    "object {0} is of type {1}; expected type: {2}", 
+                    new Object[]{object, object.getClass().getName(), Trsa.class.getName()});
                 return null;
             }
         }

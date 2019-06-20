@@ -46,21 +46,9 @@
                         </p:column>
                         <p:column>
                             <f:facet name="header">
-                                <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_dataverseurl}"/>
-                            </f:facet>
-                            <h:outputText value="#{item.dataverseurl}"/>
-                        </p:column>
-                        <p:column>
-                            <f:facet name="header">
-                                <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_apitoken}"/>
-                            </f:facet>
-                            <h:outputText value="#{item.apitoken}"/>
-                        </p:column>
-                        <p:column>
-                            <f:facet name="header">
                                 <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_datastoragelocation}"/>
                             </f:facet>
-                            <h:outputText value="#{item.datastoragelocation}"/>
+                            <h:outputText value="#{item.datafileserverurl}"/>
                         </p:column>
                         <p:column>
                             <f:facet name="header">
@@ -78,7 +66,7 @@
                             <f:facet name="header">
                                 <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_safeserviceurl}"/>
                             </f:facet>
-                            <h:outputText value="#{item.safeserviceurl}"/>
+                            <h:outputText value="#{item.trsaurl}"/>
                         </p:column>
                         <p:column>
                             <f:facet name="header">
@@ -103,10 +91,30 @@
                             <p:selectBooleanCheckbox value="#{item.disabled}" disabled="false"/>
                         </p:column>
                         <f:facet name="footer">
-                            <p:commandButton id="createButton" icon="ui-icon-plus"   value="#{bundle_trsa_registry.Create}" actionListener="#{trsaRegistryController.prepareCreate}" update=":TrsaRegistryCreateForm" oncomplete="PF('TrsaRegistryCreateDialog').show()"/>
-                            <p:commandButton id="viewButton"   icon="ui-icon-search" value="#{bundle_trsa_registry.View}" update=":TrsaRegistryViewForm" oncomplete="PF('TrsaRegistryViewDialog').show()" disabled="#{empty trsaRegistryController.selected}"/>
-                            <p:commandButton id="editButton"   icon="ui-icon-pencil" value="#{bundle_trsa_registry.Edit}" update=":TrsaRegistryEditForm" oncomplete="PF('TrsaRegistryEditDialog').show()" disabled="#{empty trsaRegistryController.selected}"/>
-                            <p:commandButton id="deleteButton" icon="ui-icon-trash"  value="#{bundle_trsa_registry.Delete}" actionListener="#{trsaRegistryController.destroy}" update=":growl,datalist" disabled="#{empty trsaRegistryController.selected}"/>
+                            <p:commandButton id="createButton"
+                                icon="ui-icon-plus"   
+                                value="#{bundle_trsa_registry.Create}" 
+                                actionListener="#{trsaRegistryController.prepareCreate}" 
+                                update=":TrsaRegistryCreateForm" 
+                                oncomplete="PF('TrsaRegistryCreateDialog').show()"/>
+                            <p:commandButton id="viewButton"   
+                                icon="ui-icon-search" 
+                                value="#{bundle_trsa_registry.View}" 
+                                update=":TrsaRegistryViewForm" 
+                                oncomplete="PF('TrsaRegistryViewDialog').show()" 
+                                disabled="#{empty trsaRegistryController.selected}"/>
+                            <p:commandButton id="editButton"   
+                                icon="ui-icon-pencil" 
+                                value="#{bundle_trsa_registry.Edit}" 
+                                update=":TrsaRegistryEditForm" 
+                                oncomplete="PF('TrsaRegistryEditDialog').show()" 
+                                disabled="#{empty trsaRegistryController.selected}"/>
+                            <p:commandButton id="deleteButton" 
+                                icon="ui-icon-trash"  
+                                value="#{bundle_trsa_registry.Delete}" 
+                                actionListener="#{trsaRegistryController.destroy}" 
+                                update=":growl,datalist" 
+                                disabled="#{empty trsaRegistryController.selected}"/>
                         </f:facet>
                     </p:dataTable>
                 </p:panel>

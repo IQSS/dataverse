@@ -201,6 +201,9 @@
                 <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and fileDownloadHelper.canDownloadFile(fileMetadata) }">
                     <span class="icon-unlock text-success"/>
                 </div>
+                <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.dataFile.notaryServiceBound and fileDownloadHelper.canDownloadFile(fileMetadata)}">
+                    <span  title="Notary Service Bound" class="glyphicon glyphicon-tower text-danger"/>
+                </div>
             </div>
         </p:column>
         <p:column class="col-file-metadata">

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -131,15 +132,68 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         redirectToBatchDownloadAPI(guestbookResponse.getSelectedFileIds(), "original".equals(guestbookResponse.getFileFormat()));
     }
     
+    // must modify these two methods
+    // url generation:
+    // 1. ns case: NS server page 
+    // non-ns case: file-server + prefix + id ? is direct-access possible?
+    // format conversion issue use original only 
+    
     public void writeGuestbookAndStartFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
+        logger.log(Level.INFO, "========== FileDownloadServiceBean#writeGuestbookAndStartFileDownload : start ==========");
         if(!fileMetadata.getDatasetVersion().isDraft()){
             guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
             writeGuestbookResponseRecord(guestbookResponse);
         }
-        
-        // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
-        redirectToDownloadAPI(format, fileMetadata.getDataFile().getId(), true);
-        logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
+        // trsa or not: dataset-wise
+        boolean isTrsaCoupled = fileMetadata.getDatasetVersion().getDataset().isTrsaCoupled();
+        // datafile-wise
+        boolean isNSBound = fileMetadata.getDataFile().isNotaryServiceBound();
+        if (!isTrsaCoupled){
+            // convential cases 
+            // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
+            redirectToDownloadAPI(format, fileMetadata.getDataFile().getId(), true);
+            logger.info("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
+        } else {
+            logger.log(Level.INFO, "========== FileDownloadServiceBean#writeGuestbookAndStartFileDownload: TRSA case: start ==========");
+            String fileDownloadUrl="";
+            
+            if (isNSBound){
+                // NS case: forwarding the NS server
+                logger.log(Level.INFO, "========== FileDownloadServiceBean#writeGuestbookAndStartFileDownload: NS case: start ==========");
+                logger.log(Level.INFO, "========== FileDownloadServiceBean#writeGuestbookAndStartFileDownload: NS case: end ==========");
+                // how to call the sever info that is
+                String nsServerURL = fileMetadata.getDatasetVersion().getDataset().getTrsa().getNotaryserviceurl();
+                logger.log(Level.INFO, "nsServerURL={0}", nsServerURL);
+                // fileDownloadUrl = nsServerURL + ${datasetPath} + "/" + ${datafileId};
+                fileDownloadUrl = nsServerURL+"/datasets";
+                logger.log(Level.INFO, "NS case:fileDownloadUrl={0}", fileDownloadUrl);
+            } else {
+                // non-NS case: forwarding file-server
+                logger.log(Level.INFO, "========== FileDownloadServiceBean#writeGuestbookAndStartFileDownload: nonNS case: start ==========");
+                logger.log(Level.INFO, "========== FileDownloadServiceBean#writeGuestbookAndStartFileDownload: nonNS case: end ==========");
+                String datafileServerURl = fileMetadata.getDatasetVersion().getDataset().getTrsa().getDatafileserverurl();
+                String doi = fileMetadata.getDatasetVersion().getDataset().getStorageIdentifier();
+                logger.log(Level.INFO, "doi={0}", doi);
+                String datasetIdPath = doi.replaceFirst("file:/", "");
+                logger.log(Level.INFO, "datasetIdPath={0}", datasetIdPath);
+                // must get file id from dvobject table
+                String storageId = fileMetadata.getDataFile().getStorageIdentifier();
+                logger.log(Level.INFO, "storageId={0}", storageId);
+                logger.log(Level.INFO, "datafileServerURl={0}", datafileServerURl);
+                fileDownloadUrl = datafileServerURl+"/files"+datasetIdPath+ "/"+storageId;
+                logger.log(Level.INFO, "nonNS case:fileDownloadUrl={0}", fileDownloadUrl);
+                 
+            }
+            logger.log(Level.INFO, "redirecting to the URL");
+            
+            try {
+                FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
+            } catch (IOException ex) {
+                logger.log(Level.WARNING, "Failed to issue a redirect to file download url (" + fileDownloadUrl + "):={0}",  ex);
+            }
+            logger.log(Level.INFO, "========== FileDownloadServiceBean#writeGuestbookAndStartFileDownload: TRSA case: end ==========");
+        }
+        logger.log(Level.INFO, "========== FileDownloadServiceBean#writeGuestbookAndStartFileDownload : end ==========");
     }
     
     public void writeGuestbookAndStartFileDownload(GuestbookResponse guestbookResponse) {

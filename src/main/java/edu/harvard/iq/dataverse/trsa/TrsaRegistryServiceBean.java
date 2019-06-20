@@ -29,36 +29,36 @@ public class TrsaRegistryServiceBean {
     private EntityManager em;
     
     
-    public void create(TrsaRegistry entity) {
+    public void create(Trsa entity) {
         em.persist(entity);
     }
     
     
-    public void edit(TrsaRegistry entity) {
+    public void edit(Trsa entity) {
         em.merge(entity);
     }
     
     
-    public void remove(TrsaRegistry entity) {
+    public void remove(Trsa entity) {
         em.remove(em.merge(entity));
     }
     
     
-    public TrsaRegistry find(long id) {
-        return em.find(TrsaRegistry.class, id);
+    public Trsa find(long id) {
+        return em.find(Trsa.class, id);
     }
     
     
-    public List<TrsaRegistry> findAll() {
+    public List<Trsa> findAll() {
         javax.persistence.criteria.CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-        cq.select(cq.from(TrsaRegistry.class));
+        cq.select(cq.from(Trsa.class));
         return em.createQuery(cq).getResultList();
     }
     
     
-    public List<TrsaRegistry> findRange(int[] range) {
+    public List<Trsa> findRange(int[] range) {
         javax.persistence.criteria.CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-        cq.select(cq.from(TrsaRegistry.class));
+        cq.select(cq.from(Trsa.class));
         javax.persistence.Query q = em.createQuery(cq);
         q.setMaxResults(range[1] - range[0] + 1);
         q.setFirstResult(range[0]);
@@ -67,19 +67,19 @@ public class TrsaRegistryServiceBean {
 
     public long count() {
         javax.persistence.criteria.CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-        javax.persistence.criteria.Root<TrsaRegistry> rt = cq.from(TrsaRegistry.class);
+        javax.persistence.criteria.Root<Trsa> rt = cq.from(Trsa.class);
         cq.select(em.getCriteriaBuilder().count(rt));
         javax.persistence.Query q = em.createQuery(cq);
         return (long) q.getSingleResult();
     }    
     
     
-    public TrsaRegistry findById(long id) {
-        TypedQuery<TrsaRegistry> typedQuery = em.createQuery("SELECT OBJECT(o) FROM TrsaRegistry AS o WHERE o.id = :id", TrsaRegistry.class);
+    public Trsa findById(long id) {
+        TypedQuery<Trsa> typedQuery = em.createQuery("SELECT OBJECT(o) FROM Trsa AS o WHERE o.id = :id", Trsa.class);
         typedQuery.setParameter("id", id);
         try {
-            TrsaRegistry trsaRegistry = typedQuery.getSingleResult();
-            return trsaRegistry;
+            Trsa trsa = typedQuery.getSingleResult();
+            return trsa;
         } catch (NoResultException | NonUniqueResultException ex) {
             return null;
         }

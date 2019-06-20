@@ -482,7 +482,7 @@ public class JsonParser {
             contentType = "application/octet-stream";
         }
         String storageIdentifier = datafileJson.getString("storageIdentifier", " ");
-        
+        boolean isNotaryServiceBound= datafileJson.getBoolean("notaryServiceBound", false );
         // available items
         // filename
         String filename = datafileJson.getString("filename", null);
@@ -544,6 +544,7 @@ public class JsonParser {
         if (filesize != null){
             dataFile.setFilesize(filesize);
         }
+        dataFile.setNotaryServiceBound(isNotaryServiceBound);
         logger.log(Level.INFO, "parsing DataTable");
         // parse DataTable
         JsonArray dataTablesJson = datafileJson.getJsonArray("dataTables");
