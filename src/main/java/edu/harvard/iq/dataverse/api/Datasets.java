@@ -1650,6 +1650,14 @@ public class Datasets extends AbstractApiBean {
             logger.log(Level.INFO, "datasetId={0}", datasetId);
             Dataset ds = findDatasetOrDie(datasetId);
             logger.log(Level.INFO, "dataset display name={0}", ds.getDisplayName());
+            
+            // get datasetfield data here
+            
+            List<DatasetField> dsflist = ds.getLatestVersion().getDatasetFields();
+            // 
+            
+            logger.log(Level.FINE, "datasetfields retrieved={0}", xstream.toXML(dsflist));
+            
             // parse jsonbody and create metadata instances
             JsonObject json = Json.createReader(rdr).readObject();
             
@@ -1689,9 +1697,13 @@ public class Datasets extends AbstractApiBean {
             Trsa trsa = trsaRegistryServiceBean.find(trsaRegistrationId);
             ds.setTrsam(trsa);
             logger.log(Level.INFO, "before update: isTrsaCoupled={0}", ds.isTrsaCoupled());
+            
+            // copy DatasetFields back to this Dataset
+            incomingVersion.setDatasetFields(dsflist);
+            logger.log(Level.FINE, "datasetfields attached={0}", xstream.toXML(incomingVersion.getDatasetFields()));
             ds = execCommand(new UpdateDatasetVersionCommand(ds, req));
             
-            // save datafiles
+            // save datafiles 
             // from addFileToDataset case
            dataFiles = ds.getFiles();
            logger.log(Level.INFO, "after update: isTrsaCoupled={0}", ds.isTrsaCoupled());
