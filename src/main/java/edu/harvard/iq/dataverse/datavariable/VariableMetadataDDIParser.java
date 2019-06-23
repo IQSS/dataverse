@@ -164,6 +164,9 @@ public class VariableMetadataDDIParser {
                 } else if (xmlr.getLocalName().equals("ivuInstr")) {
                     String text = parseText(xmlr, false);
                     newVM.setInterviewinstruction(text);
+                } else if (xmlr.getLocalName().equals("postQTxt")) {
+                    String text = parseText(xmlr, false);
+                    newVM.setPostquestion(text);
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("qstn")) return;

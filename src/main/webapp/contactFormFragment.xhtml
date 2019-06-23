@@ -8,6 +8,7 @@
     <p:dialog id="contactDialog" header="#{sendFeedbackDialog.getFormHeader()}" widgetVar="contactForm" modal="true">
         <p:fragment>
             <h:form id="emailForm" class="form-horizontal">
+                <p:focus context="contactDialog"/>
                 <!-- to: Support -->
                 <div class="form-group">
                     <label for="messageTo" class="col-sm-3 control-label">#{bundle['contact.to']}</label>
@@ -70,11 +71,11 @@
                 </div>
                 <!-- send | cancel buttons -->
                 <div class="button-block">
-                    <p:commandLink styleClass="btn btn-default" value="#{bundle['contact.send']}"
-                                    update="@form" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('contactForm').hide();" actionListener="#{sendFeedbackDialog.sendMessage}">
+                    <p:commandButton styleClass="btn btn-default" value="#{bundle['contact.send']}"
+                                   update="@form" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('contactForm').hide();" actionListener="#{sendFeedbackDialog.sendMessage}">
                         <f:param name="DO_VALIDATION" value="true"/>
-                    </p:commandLink>
-                    <button type="button" onclick="PF('contactForm').hide()" class="btn btn-default" value="#{bundle.cancel}">
+                    </p:commandButton>
+                    <button class="btn btn-link" onclick="PF('contactForm').hide()" type="button">
                         #{bundle.cancel}
                     </button>
                 </div>

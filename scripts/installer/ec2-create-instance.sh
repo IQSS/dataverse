@@ -5,16 +5,18 @@
 # repo and branch defaults
 REPO_URL='https://github.com/IQSS/dataverse.git'
 BRANCH='develop'
+PEM_DEFAULT=${HOME}
 
 usage() {
-  echo "Usage: $0 -b <branch> -r <repo> -g <group_vars>" 1>&2
+  echo "Usage: $0 -b <branch> -r <repo> -p <pem_dir> -g <group_vars>" 1>&2
   echo "default branch is develop"
   echo "default repo is https://github.com/IQSS/dataverse"
+  echo "default .pem location is ${HOME}"
   echo "example group_vars may be retrieved from https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/defaults/main.yml"
   exit 1
 }
 
-while getopts ":r:b:g:" o; do
+while getopts ":r:b:g:p:" o; do
   case "${o}" in
   r)
     REPO_URL=${OPTARG}
@@ -24,6 +26,9 @@ while getopts ":r:b:g:" o; do
     ;;
   g)
     GRPVRS=${OPTARG}
+    ;;
+  p)
+    PEM_DIR=${OPTARG}
     ;;
   *)
     usage
@@ -46,6 +51,11 @@ fi
 if [ ! -z "$BRANCH" ]; then
    GVARG+=" -e dataverse_branch=$BRANCH"
    echo "building $BRANCH"
+fi
+
+if [ -z "$PEM_DIR" ]; then
+   PEM_DIR="$PEM_DEFAULT"
+   echo "using $PEM_DIR"
 fi
 
 AWS_CLI_VERSION=$(aws --version)
@@ -74,9 +84,9 @@ fi
 RANDOM_STRING="$(uuidgen | cut -c-8)"
 KEY_NAME="key-$USER-$RANDOM_STRING"
 
-PRIVATE_KEY=$(aws ec2 create-key-pair --key-name $KEY_NAME --query 'KeyMaterial' --output text)
+PRIVATE_KEY=$(aws ec2 create-key-pair --key-name $PEM_DIR/$KEY_NAME --query 'KeyMaterial' --output text)
 if [[ $PRIVATE_KEY == '-----BEGIN RSA PRIVATE KEY-----'* ]]; then
-  PEM_FILE="$KEY_NAME.pem"
+  PEM_FILE="$PEM_DIR/$KEY_NAME.pem"
   printf -- "$PRIVATE_KEY" >$PEM_FILE
   chmod 400 $PEM_FILE
   echo "Your newly created private key file is \"$PEM_FILE\". Keep it secret. Keep it safe."
@@ -97,7 +107,7 @@ AMI_ID='ami-9887c6e7'
 SIZE='t2.medium'
 echo "Creating EC2 instance"
 # TODO: Add some error checking for "ec2 run-instances".
-INSTANCE_ID=$(aws ec2 run-instances --image-id $AMI_ID --security-groups $SECURITY_GROUP --count 1 --instance-type $SIZE --key-name $KEY_NAME --query 'Instances[0].InstanceId' --block-device-mappings '[ { "DeviceName": "/dev/sda1", "Ebs": { "DeleteOnTermination": true } } ]' | tr -d \")
+INSTANCE_ID=$(aws ec2 run-instances --image-id $AMI_ID --security-groups $SECURITY_GROUP --count 1 --instance-type $SIZE --key-name $PEM_DIR/$KEY_NAME --query 'Instances[0].InstanceId' --block-device-mappings '[ { "DeviceName": "/dev/sda1", "Ebs": { "DeleteOnTermination": true } } ]' | tr -d \")
 echo "Instance ID: "$INSTANCE_ID
 echo "giving instance 30 seconds to wake up..."
 sleep 30
@@ -120,7 +130,8 @@ fi
 # TODO: Add some error checking for this ssh command.
 ssh -T -i $PEM_FILE -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' -o 'ConnectTimeout=300' $USER_AT_HOST <<EOF
 sudo yum -y install epel-release
-sudo yum -y install git nano ansible
+sudo yum -y install https://releases.ansible.com/ansible/rpm/release/epel-7-x86_64/ansible-2.7.9-1.el7.ans.noarch.rpm
+sudo yum -y install git nano
 git clone https://github.com/IQSS/dataverse-ansible.git dataverse
 export ANSIBLE_ROLES_PATH=.
 echo $extra_vars
