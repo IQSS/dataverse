@@ -34,10 +34,10 @@
            update=":#{p:resolveClientId('datasetForm:tabView:versionsTable', view)}"
            actionListener="#{DatasetPage.postLoadSetVersionTabList()}" />
     <div class="text-right margin-bottom">
-        <button type="button" class="btn btn-default" onclick="testCheckBoxes();"
-                         jsf:rendered="#{DatasetPage.compareVersionsCount > 2}">
+        <p:commandLink styleClass="btn btn-default" onclick="testCheckBoxes();"
+                         rendered="#{DatasetPage.compareVersionsCount > 2}">
             <span class="glyphicon glyphicon-transfer"/> #{bundle['file.dataFilesTab.versions.viewDiffBtn']}
-        </button>
+        </p:commandLink>
         <p:commandButton value="#{bundle['file.dataFilesTab.button.direct']}" id="compareVersions"
                          style="display:none"
                          update=":datasetForm"
