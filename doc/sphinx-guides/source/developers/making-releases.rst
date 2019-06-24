@@ -5,7 +5,7 @@ Making Releases
 .. contents:: |toctitle|
 	:local:
 
-Use the number of the milestone with a "v" in front for the relase tag. For example: ``v4.6.2``.
+Use the number of the milestone with a "v" in front for the release tag. For example: ``v4.6.2``.
 
 Create the release GitHub issue and branch 
 ------------------------------------------
@@ -32,18 +32,7 @@ Add the version being released to the lists in the following two files:
 
 Here's an example commit where three of the four files above were updated at once: https://github.com/IQSS/dataverse/commit/99e23f96ec362ac2f524cb5cd80ca375fa13f196
 
-2. Save the EJB Database Create Script
-======================================
-
-Save the script ``domains/domain1/generated/ejb/dataverse/dataverse_VDCNet-ejbPU_createDDL.jdbc`` created by EJB during the deployment of the release candidate. **Important:** add semicolons to the ends of the SQL commands in the EJB-generated file (see below)! Save the resulting file as ``scripts/database/create/create_v{VERSION_TAG}.sql`` using the version number tag for the release. For example: 
-
-.. code-block:: none
-
-	sed 's/$/;/' dataverse_VDCNet-ejbPU_createDDL.jdbc > scripts/database/create/create_v4.10.sql
-
-(We are saving the script above to support the new experimental process for updating the database across multiple versions; see ``scripts/database/README_upgrade_across_versions.txt`` for more information.)
-
-3. Check in the Changes Above... 
+2. Check in the Changes Above...
 ================================
 
 ... into the release branch, make a pull request and merge the release branch into develop. 

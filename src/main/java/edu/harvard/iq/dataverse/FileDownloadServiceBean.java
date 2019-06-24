@@ -110,7 +110,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 writeGuestbookResponseRecord(guestbookResponse);
             }
         
-            redirectToDownloadAPI(guestbookResponse.getFileFormat(), fileId, true);
+            redirectToDownloadAPI(guestbookResponse.getFileFormat(), fileId, true, null);
             return;
         }
         
@@ -136,7 +136,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     // url generation:
     // 1. ns case: NS server page 
     // non-ns case: file-server + prefix + id ? is direct-access possible?
-    // format conversion issue use original only 
+    // TODO: format-conversion cases
     
     public void writeGuestbookAndStartFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
         logger.log(Level.INFO, "========== FileDownloadServiceBean#writeGuestbookAndStartFileDownload : start ==========");
@@ -151,7 +151,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         if (!isTrsaCoupled){
             // convential cases 
             // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
-            redirectToDownloadAPI(format, fileMetadata.getDataFile().getId(), true);
+            redirectToDownloadAPI(format, fileMetadata.getDataFile().getId(), true, fileMetadata.getId());
             logger.info("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
         } else {
             logger.log(Level.INFO, "========== FileDownloadServiceBean#writeGuestbookAndStartFileDownload: TRSA case: start ==========");
@@ -269,8 +269,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     }
 
-    private void redirectToDownloadAPI(String downloadType, Long fileId, boolean guestBookRecordAlreadyWritten) {
-        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, guestBookRecordAlreadyWritten);
+    private void redirectToDownloadAPI(String downloadType, Long fileId, boolean guestBookRecordAlreadyWritten, Long fileMetadataId) {
+        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, guestBookRecordAlreadyWritten, fileMetadataId);
         logger.fine("Redirecting to file download url: " + fileDownloadUrl);
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
@@ -280,7 +280,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     private void redirectToDownloadAPI(String downloadType, Long fileId) {
-        redirectToDownloadAPI(downloadType, fileId, true);
+        redirectToDownloadAPI(downloadType, fileId, true, null);
     }
     
     private void redirectToBatchDownloadAPI(String multiFileString, Boolean downloadOriginal){
@@ -312,7 +312,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         if(dataFile.getFileMetadata()==null) {
             dataFile=datafileService.find(dataFile.getId());
         }
-        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken);
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd);
         // Back when we only had TwoRavens, the downloadType was always "Explore". Now we persist the name of the tool (i.e. "TwoRavens", "Data Explorer", etc.)
         guestbookResponse.setDownloadtype(externalTool.getDisplayName());
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();

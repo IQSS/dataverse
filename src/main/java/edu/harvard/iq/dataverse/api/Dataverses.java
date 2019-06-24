@@ -39,6 +39,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseLinkingDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseStorageSizeCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ImportDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
@@ -99,6 +100,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
@@ -602,6 +604,15 @@ public class Dataverses extends AbstractApiBean {
         ));
     }
 
+    @GET
+    @Path("{identifier}/storagesize")
+    public Response getStorageSize(@PathParam("identifier") String dvIdtf, @QueryParam("includeCached") boolean includeCached) throws WrappedResponse {
+                
+        return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.datasize"),
+                execCommand(new GetDataverseStorageSizeCommand(req, findDataverseOrDie(dvIdtf), includeCached)))));
+    }
+    
+    
     @GET
     @Path("{identifier}/roles")
     public Response listRoles(@PathParam("identifier") String dvIdtf) {

@@ -71,3 +71,8 @@ In real life production use, it may be possible to end up in a situation where s
 (contrary to what the message suggests, there are no specific "details" anywhere in the stack trace that would explain what values violate which constraints)  
 
 To identifiy the specific invalid values in the affected datasets, or to check all the datasets in the Dataverse for constraint violations, see :ref:`Dataset Validation <dataset-validation-api>` in the :doc:`/api/native-api` section of the User Guide.
+
+Many Files with a File Type of "Unknown", "Application", or "Binary"
+--------------------------------------------------------------------
+
+From the home page of a Dataverse installation you can get a count of files by file type by clicking "Files" and then scrolling down to "File Type". If you see a lot of files that are "Unknown", "Application", or "Binary" you can have Dataverse attempt to redetect the file type by using the :ref:`Redetect File Type <redetect-file-type>` API endpoint.
