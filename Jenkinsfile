@@ -3,7 +3,7 @@
 node {
   workspace = pwd()
   properties([[$class: 'ParametersDefinitionProperty', parameterDefinitions: [
-    [ name: 'DEPLOY_TARGET',  $class: 'StringParameterDefinition', defaultValue: 'dev-ec2-01' ],
+    [ name: 'DEPLOY_TARGET',  $class: 'StringParameterDefinition', defaultValue: 'qdr-dev-ec2-01' ],
   ]]])
 
   stage('Init') {
@@ -61,7 +61,7 @@ node {
     * Deploy
     */
     timeout(time: 2, unit: "HOURS") {
-      def DEPLOY_TARGET = input message: 'Deploy to', parameters: [string(defaultValue: "${DEPLOY_TARGET}", description: 'dev, stage, prod', name: 'DEPLOY_TARGET')]
+      def DEPLOY_TARGET = input message: 'Deploy to', parameters: [string(defaultValue: "${DEPLOY_TARGET}", description: 'qdr-dev-ec2-01, qdr-stage, qdr-prod', name: 'DEPLOY_TARGET')]
     }
 
     notifyBuild("Deploying ${ARTIFACT_ID}-${VERSION} to ${DEPLOY_TARGET}", "good")
