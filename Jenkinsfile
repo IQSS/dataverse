@@ -3,7 +3,7 @@
 node {
   workspace = pwd()
   properties([[$class: 'ParametersDefinitionProperty', parameterDefinitions: [
-    [ name: 'DEPLOY_TARGET',  $class: 'StringParameterDefinition', defaultValue: 'dev' ],
+    [ name: 'DEPLOY_TARGET',  $class: 'StringParameterDefinition', defaultValue: 'dev-ec2-01' ],
   ]]])
 
   stage('Init') {
@@ -68,9 +68,9 @@ node {
     unstash 'dataverse-war'
     try {
       sh """
-        ssh qdradmin@qdr-${DEPLOY_TARGET}-ec2-01.int.qdr.org \"sudo mkdir -p /srv/dataverse-releases; sudo chown qdradmin /srv/dataverse-releases\"
-        rsync -av target/${ARTIFACT_ID}-${VERSION}.war qdradmin@qdr-${DEPLOY_TARGET}-ec2-01.int.qdr.org:/srv/dataverse-releases
-        ssh qdradmin@qdr-${DEPLOY_TARGET}-ec2-01.int.qdr.org ' sudo chmod 644 /srv/dataverse-releases/${ARTIFACT_ID}-${VERSION}.war; sudo su - glassfish -c \"dv-deploy /srv/dataverse-releases/${ARTIFACT_ID}-${VERSION}.war\"'
+        ssh qdradmin@qdr-${DEPLOY_TARGET}.int.qdr.org \"sudo mkdir -p /srv/dataverse-releases; sudo chown qdradmin /srv/dataverse-releases\"
+        rsync -av target/${ARTIFACT_ID}-${VERSION}.war qdradmin@qdr-${DEPLOY_TARGET}.int.qdr.org:/srv/dataverse-releases
+        ssh qdradmin@qdr-${DEPLOY_TARGET}.int.qdr.org ' sudo chmod 644 /srv/dataverse-releases/${ARTIFACT_ID}-${VERSION}.war; sudo su - glassfish -c \"dv-deploy /srv/dataverse-releases/${ARTIFACT_ID}-${VERSION}.war\"'
       """
       notifyBuild("Success", "good")
       sh "curl -sX POST http://graphite.int.qdr.org:81/events/ -d '{\"what\": \"${ARTIFACT_ID}-${VERSION} to ${DEPLOY_TARGET}\", \"tags\" : \"deployment\"}'"
