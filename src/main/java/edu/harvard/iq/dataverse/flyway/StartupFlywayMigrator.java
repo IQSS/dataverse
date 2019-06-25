@@ -28,7 +28,6 @@ public class StartupFlywayMigrator {
         Flyway flyway = Flyway.configure()
                 .dataSource(dataSource)
                 .baselineOnMigrate(true)
-                .outOfOrder(true)
                 .load();
 
         flyway.migrate();
