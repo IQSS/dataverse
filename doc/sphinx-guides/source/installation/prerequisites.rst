@@ -228,26 +228,27 @@ Solr launches asynchronously and attempts to use the ``lsof`` binary to watch fo
 
 	# yum install lsof
 
-Finally, you may start Solr and create the core that will be used to manage search information::
+Finally, you need to tell Solr to create the core "collection1" on startup:
 
-        cd /usr/local/solr/solr-7.3.1
-        bin/solr start
-        bin/solr create_core -c collection1 -d server/solr/collection1/conf/
-	
+        echo "name=collection1" > /usr/local/solr/solr-7.3.1/server/solr/collection1/core.properties
 
 Solr Init Script
 ================
 
-For systems running systemd, as root, download :download:`solr.service<../_static/installation/files/etc/systemd/solr.service>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
+Please choose the right option for your underlying Linux operating system.
+It will not be necessary to execute both!
 
-        cp /tmp/solr.service /usr/lib/systemd/system
+For systems running systemd (like CentOS/RedHat since 7, Debian since 9, Ubuntu since 15.04), as root, download :download:`solr.service<../_static/installation/files/etc/systemd/solr.service>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
+
+        cp /tmp/solr.service /etc/systemd/system
+        systemctl daemon-reload
         systemctl start solr.service
         systemctl enable solr.service
 
-For systems using init.d, download this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
+For systems using init.d (like CentOS 6), download this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
 
         cp /tmp/solr /etc/init.d
-        systemctl restart solr.service
+        service start solr
         chkconfig solr on
 
 Securing Solr
