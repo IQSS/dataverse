@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.ArrayList;
 
 import edu.harvard.iq.dataverse.FileMetadata;
-import io.searchbox.core.Cat;
 
 @Entity
 @Table(indexes = {@Index(columnList="datavariable_id"), @Index(columnList="filemetadata_id"),

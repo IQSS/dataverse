@@ -13,13 +13,17 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 
-import javax.xml.stream.*;
-import java.io.*;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import java.io.InputStream;
+import java.io.IOException;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamException;
 
 
 import static javax.ws.rs.core.Response.Status.OK;
