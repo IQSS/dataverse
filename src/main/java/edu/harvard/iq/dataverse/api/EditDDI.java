@@ -1,53 +1,58 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.*;
-import edu.harvard.iq.dataverse.api.imports.ImportGenericServiceBean;
-import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
-import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
-import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.datavariable.*;
-import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
-import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataset;
+
+import edu.harvard.iq.dataverse.engine.command.Command;
+
+import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
+import edu.harvard.iq.dataverse.datavariable.VarGroup;
+import edu.harvard.iq.dataverse.datavariable.CategoryMetadata;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.VariableCategory;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadataDDIParser;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.faces.application.FacesMessage;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.Path;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.PathParam;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import java.io.InputStream;
 
-import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collection;
+import java.util.Date;
 import java.sql.Timestamp;
 
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 
 import javax.validation.ConstraintViolationException;
 
@@ -285,9 +290,7 @@ public class EditDDI  extends AbstractApiBean {
             vm.setDataVariable(dv);
             updateCategories(vm);
             List<VariableMetadata> vmOld = variableService.findByDataVarIdAndFileMetaId(vm.getDataVariable().getId(), fml.getId());
-            System.out.println("Got vmOld ");
             if (vmOld.size() > 0) {
-                System.out.println("Got vmOld " + vmOld.get(0).getId());
                 vm.setId(vmOld.get(0).getId());
                 if (!vm.isWeighted() && vmOld.get(0).isWeighted()) { //unweight the variable
                     for (CategoryMetadata cm : vmOld.get(0).getCategoriesMetadata()) {
@@ -298,11 +301,9 @@ public class EditDDI  extends AbstractApiBean {
                     updateCategoryMetadata(vm, vmOld.get(0));
                 }
             }
-            System.out.println("Start updating vm");
             try {
                 vm.setFileMetadata(fml);
                 em.merge(vm);
-                System.out.println("It was inserted");
             } catch (ConstraintViolationException e) {
                 logger.log(Level.SEVERE,"Exception: ");
                 e.getConstraintViolations().forEach(err->logger.log(Level.SEVERE,err.toString()));
