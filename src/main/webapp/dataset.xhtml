@@ -332,18 +332,15 @@
                             </p:dialog>
                             <!-- END: Contact/Share Button Group -->
 
-                            <!-- Metrics -->
-                            <div id="metrics-block" class="col-xs-3" jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">
-                                <div id="metrics-label" class="col-xs-4 small text-center">
-                                    <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
-                                </div>
-                                <div id="metrics-content" class="col-xs-8 small text-center">
-                                    <h:outputFormat styleClass="metrics-downloads" value="{0} #{bundle['metrics.downloads']}">
-                                        <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
-                                    </h:outputFormat>
-                                </div>
+                            
+                            
+                            
+                            <div class="col-xs-3" jsf:rendered="#{true}">
+                                NO MAS METRICS
                             </div>
-                            <!-- END: Metrics -->
+                            
+                            
+                            
                         </div>
                         
                         <div id="datasetVersionBlock" class="container-fluid">
@@ -365,29 +362,57 @@
                                                   value="#{bundle['file.DatasetVersion']} #{DatasetPage.workingVersion.versionState}"/>
                                 </div>
                             </div>
-                            <!-- CITATION BLOCK -->
-                            <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
-                                <ui:include src="dataset-citation.xhtml">
-                                    <ui:param name="datasetPage" value="true"/>
-                                </ui:include>
-                            </ui:fragment>
-                            <!-- END: CITATION BLOCK -->
-                            <div id="deaccession-reason-block" class="row bg-danger" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
-                                <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
-                                <p>#{DatasetPage.workingVersion.versionNote}</p>
-                                <ui:fragment rendered="#{!empty DatasetPage.workingVersion.archiveNote}">
-                                    <p>#{bundle['dataset.beAccessedAt']} <a href="#{DatasetPage.workingVersion.archiveNote}" target="_blank">#{DatasetPage.workingVersion.archiveNote}</a></p>
+                            
+                            
+                            <div class="row">
+                                
+                                
+                                <!-- CITATION BLOCK   ****REMOVED ROW CLASS****-->
+                                <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
+                                    <ui:include src="dataset-citation.xhtml">
+                                        <ui:param name="datasetPage" value="true"/>
+                                    </ui:include>
                                 </ui:fragment>
+                                <!-- END: CITATION BLOCK   ****REMOVED ROW CLASS****-->
+                                <div id="deaccession-reason-block" class="bg-danger" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
+                                    <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
+                                    <p>#{DatasetPage.workingVersion.versionNote}</p>
+                                    <ui:fragment rendered="#{!empty DatasetPage.workingVersion.archiveNote}">
+                                        <p>#{bundle['dataset.beAccessedAt']} <a href="#{DatasetPage.workingVersion.archiveNote}" target="_blank">#{DatasetPage.workingVersion.archiveNote}</a></p>
+                                    </ui:fragment>
+                                </div>
+                                
+                                
+                                <!-- Metrics -->
+                                <div style="margin-bottom:20px;" id="metrics-block" class="col-sm-3" jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">
+                                    <div id="metrics-label" class="">
+                                        #{bundle['metrics.title']}
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                      data-toggle="tooltip" data-placement="auto top" data-original-title="METRICS LABEL DESC HERE"></span>
+                                    </div>
+                                    <div id="metrics-content" class="small" style="border:1px solid #EEE; border-top-width:0;">
+                                        <h:outputFormat styleClass="metrics-downloads" value="{0} #{bundle['metrics.downloads']}">
+                                            <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
+                                        </h:outputFormat>
+                                    </div>
+                                </div>
+                                <!-- END: Metrics -->
+                                
+                                
                             </div>
+                            
+                            
                             <!-- BEGIN: DATASET SUMMARY -->
-                            <div id="dataset-summary-metadata" class="row panel panel-default"
+                            <div id="dataset-summary-metadata" class="row"
                                  jsf:rendered="#{!widgetWrapper.widgetView and !DatasetPage.workingVersion.deaccessioned and 
                                                    ( !empty DatasetPage.datasetVersionUI.descriptionDisplay
                                                  or !empty DatasetPage.datasetVersionUI.keywordDisplay
                                                  or !empty DatasetPage.datasetVersionUI.subject.value
                                                  or !empty DatasetPage.datasetVersionUI.relPublicationCitation
                                                  or !empty DatasetPage.datasetVersionUI.notes.value  ) and !empty DatasetPage.datasetSummaryFields }">
-                                <div class="panel-body metadata-panel-body">
+                                
+                                
+                                <div class="col-sm-12 metadata-container">
                                     <ui:repeat value="#{DatasetPage.datasetSummaryFields}" var="dsf">
                                         
                                         <div id="keywords" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.keywordDisplay and dsf.datasetFieldType.id==DatasetPage.datasetVersionUI.keyword.datasetFieldType.id}">

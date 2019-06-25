@@ -7,10 +7,10 @@
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
     
-    <div class="row citation-block">
-        <div class="col-xs-12  #{DatasetPage.workingVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
+    <div class="#{widgetWrapper.widgetView ? 'col-sm-12' : 'col-sm-9'} citation-block">
+        <div class="col-sm-12 #{DatasetPage.workingVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
             <div class="row ">
-                <div class="#{DatasetPage.workingVersion.deaccessioned ? 'col-xs-12' : 'col-xs-7 col-md-8'} citation">
+                <div class="#{DatasetPage.workingVersion.deaccessioned ? 'col-sm-12' : 'col-sm-7 col-md-8'} citation">
                     <span class="citation-select" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
                         <h:outputText value="#{DatasetPage.displayCitation}" escape="false"/>
                     </span>
@@ -21,7 +21,7 @@
                     <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}" 
                           data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
                 </div>
-                <div class="col-xs-5 col-md-4 text-right citation-download" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
+                <div class="col-sm-5 col-md-4 text-right citation-download" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                     <div class="dropdown">
                         <button type="button" class="btn btn-default dropdown-toggle downloadCitation" data-toggle="dropdown">
                             <span class="glyphicon glyphicon-list"/> #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
