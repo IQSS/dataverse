@@ -473,7 +473,7 @@ span.search-term-match {font-weight: bold;}
 [id$='resultsTable'] div.card-preview-icon-block span[class^='icon'],
 [id$='resultsTable'] div.card-preview-icon-block span[class^='glyphicon'] {font-size:2.8em;}
 
-[id$='title-block'] div[class^='col'].vcenter {display:inline-block; vertical-align:middle; float:none; padding:0;}
+[id$='title-block'] div[class^='col'].vcenter {display:inline-block; vertical-align:middle; float:none; /*-- padding:0; --*/}
 [id$='title-block'] div.title-preview-icon-block {width:48px; font-size:110%; color:#428BCA;}
 [id$='title-block'] div.title-preview-icon-block img {margin:6px 0;}
 [id$='title-block'] div.title-preview-icon-block span[class^='icon'] {font-size:2.8em;}

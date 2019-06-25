@@ -75,7 +75,7 @@
                     <!-- Header / Button Panel -->
                     <!-- View editMode -->
                     <p:fragment id="topDatasetBlockFragment">
-                    <div id="topDatasetBlock" jsf:rendered="#{empty DatasetPage.editMode}">
+                    <div id="topDatasetBlock" class="row" jsf:rendered="#{empty DatasetPage.editMode}">
                         <div id="actionButtonBlock" class="button-block clearfix" jsf:rendered="#{!widgetWrapper.widgetView}">
                             <div class="btn-group pull-right" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
                                                                               and !DatasetPage.dataset.deaccessioned
@@ -335,16 +335,20 @@
                             
                             
                             
-                            <div class="col-xs-3" jsf:rendered="#{true}">
+                            <!-- <div class="col-xs-3" jsf:rendered="# {true}">
                                 NO MAS METRICS
-                            </div>
+                            </div> -->
                             
                             
                             
                         </div>
                         
-                        <div id="datasetVersionBlock" class="container-fluid">
-                            <div id="title-block" class="row" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
+                        
+                        
+                        <div id="datasetVersionBlock" class="col-sm-12" style="background-color:white;">
+                            
+                            
+                            <div id="title-block" class="row" style="background-color:white;" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
                                 <div class="col-xs-1 vcenter title-preview-icon-block">
                                     <img src="#{DatasetPage.thumbnailString}" jsf:rendered="#{!empty DatasetPage.thumbnailString}"/>
                                     <span class="icon-dataset" jsf:rendered="#{empty DatasetPage.thumbnailString}"/>
@@ -364,7 +368,7 @@
                             </div>
                             
                             
-                            <div class="row">
+                            <div class="row"  style="background-color:white;">
                                 
                                 
                                 <!-- CITATION BLOCK   ****REMOVED ROW CLASS****-->
@@ -384,13 +388,13 @@
                                 
                                 
                                 <!-- Metrics -->
-                                <div style="margin-bottom:20px;" id="metrics-block" class="col-sm-3" jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">
+                                <div style="margin-bottom:20px;background-color:white;" id="metrics-block" class="col-sm-3" jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">
                                     <div id="metrics-label" class="">
-                                        #{bundle['metrics.title']}
+                                        Dataset #{bundle['metrics.title']}
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                       data-toggle="tooltip" data-placement="auto top" data-original-title="METRICS LABEL DESC HERE"></span>
                                     </div>
-                                    <div id="metrics-content" class="small" style="border:1px solid #EEE; border-top-width:0;">
+                                    <div id="metrics-content" class="" style="border:1px solid #EEE; border-top-width:0;">
                                         <h:outputFormat styleClass="metrics-downloads" value="{0} #{bundle['metrics.downloads']}">
                                             <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
                                         </h:outputFormat>
