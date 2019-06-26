@@ -232,7 +232,7 @@ If you restrict files, you will also prompted with a popup asking you to fill ou
 Edit File Variable Metadata
 ---------------------------
 
-Variable Metadata can be edited directly through an API call (link to guides page) or by using the https://github.com/scholarsportal/Dataverse-Data-Curation-Tool
+Variable Metadata can be edited directly through an API call (:ref:`API Guide: Editing Variable Level Metadata <EditingVariableMetadata>`) or by using the  `Dataverse Data Curation Tool <https://github.com/scholarsportal/Dataverse-Data-Curation-Tool>`_.
 
 File Path
 ---------
