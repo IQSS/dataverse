@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import javax.ejb.EJB;
@@ -446,15 +447,13 @@ public class PermissionServiceBean {
             //      -- L.A. 4.0 beta12
 
             DataFile df = (DataFile) dvo;
+            DatasetVersion realeasedDatasetVersion = df.getOwner().getReleasedVersion();
 
-            if (!df.isRestricted()) {
-                if (df.getOwner().getReleasedVersion() != null) {
-                    if (df.getOwner().getReleasedVersion().getFileMetadatas() != null) {
-                        for (FileMetadata fm : df.getOwner().getReleasedVersion().getFileMetadatas()) {
-                            if (df.equals(fm.getDataFile())) {
-                                return true;
-                            }
-                        }
+            if (realeasedDatasetVersion != null) {
+                for (FileMetadata fm : realeasedDatasetVersion.getFileMetadatas()) {
+                    if (df.equals(fm.getDataFile())) {
+                        return fm.getTermsOfUse().getTermsOfUseType() != TermsOfUseType.RESTRICTED;
+
                     }
                 }
             }

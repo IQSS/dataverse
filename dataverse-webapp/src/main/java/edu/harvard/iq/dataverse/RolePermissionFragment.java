@@ -172,11 +172,6 @@ public class RolePermissionFragment implements java.io.Serializable {
         return raList;
     }
 
-    public void toggleFileRestrict(ActionEvent evt) {
-        DataFile file = (DataFile) dvObject;
-        file.setRestricted(!file.isRestricted());
-    }
-
     public void grantAccess(ActionEvent evt) {
         //RoleAssignee assignRoleRoleAssignee = roleAssigneeService.getRoleAssignee(assignRoleUsername);
         // Find the built in file downloader role (currently by alias)

@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.license.FileTermsOfUse;
+import edu.harvard.iq.dataverse.license.License;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -244,7 +245,13 @@ public class MocksFactory {
         fileMetadata.setLabel(label);
         fileMetadata.setDisplayOrder(displayOrder);
         fileMetadata.setCategories(new ArrayList<>());
-        fileMetadata.setTermsOfUse(new FileTermsOfUse());
+
+        FileTermsOfUse termsOfUse = new FileTermsOfUse();
+        License license = new License();
+        license.setId(90l);
+        license.setName("License name");
+        termsOfUse.setLicense(license);
+        fileMetadata.setTermsOfUse(termsOfUse);
 
         return fileMetadata;
     }

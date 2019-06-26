@@ -10,6 +10,9 @@
     xmlns:cc="http://java.sun.com/jsf/composite"
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+    
+    <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
+    
     <p:outputPanel>
         <div id="fileInfoInclude-filesTable" class="col-sm-12 row">
             <div class="pull-left col-file-thumb">
@@ -20,10 +23,10 @@
                         <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
                     </span>
                     <!-- Restricted File Icon -->
-                    <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(fileMetadata)}">                  
+                    <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.termsOfUse.termsOfUseType eq termsOfUseTypeEnum.RESTRICTED and !fileDownloadHelper.canDownloadFile(fileMetadata)}">                
                         <span class="glyphicon glyphicon-lock text-danger"/>
                     </div>
-                    <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and fileDownloadHelper.canDownloadFile(fileMetadata) }">
+                    <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.termsOfUse.termsOfUseType eq termsOfUseTypeEnum.RESTRICTED and fileDownloadHelper.canDownloadFile(fileMetadata) }">
                         <span class="icon-unlock text-success"/>
                     </div>
                 </div>

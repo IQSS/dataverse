@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.FieldType;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.export.OAI_OREExporter;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
@@ -182,7 +183,7 @@ public class OREMap {
                 addIfNotNull(aggRes, JsonLDTerm.schemaOrg("description"), df.getDescription());
             }
             addIfNotNull(aggRes, JsonLDTerm.schemaOrg("name"), fmd.getLabel()); // "label" is the filename
-            addIfNotNull(aggRes, JsonLDTerm.restricted, fmd.isRestricted());
+            addIfNotNull(aggRes, JsonLDTerm.restricted, fmd.getTermsOfUse().getTermsOfUseType() == TermsOfUseType.RESTRICTED);
             addIfNotNull(aggRes, JsonLDTerm.directoryLabel, fmd.getDirectoryLabel());
             addIfNotNull(aggRes, JsonLDTerm.schemaOrg("version"), fmd.getVersion());
             addIfNotNull(aggRes, JsonLDTerm.datasetVersionId, fmd.getDatasetVersion().getId());

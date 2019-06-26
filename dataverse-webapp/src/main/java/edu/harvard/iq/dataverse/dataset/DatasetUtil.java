@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import org.apache.commons.io.IOUtils;
 
@@ -85,7 +86,7 @@ public class DatasetUtil {
 
             if (dataFile != null && FileUtil.isThumbnailSupported(dataFile)
                     && ImageThumbConverter.isThumbnailAvailable(dataFile)
-                    && !dataFile.isRestricted()) {
+                    && fileMetadata.getTermsOfUse().getTermsOfUseType() != TermsOfUseType.RESTRICTED) {
                 String imageSourceBase64 = null;
                 imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
@@ -163,7 +164,7 @@ public class DatasetUtil {
                         return defaultDatasetThumbnail;
                     }
                 }
-            } else if (thumbnailFile.isRestricted()) {
+            } else if (thumbnailFile.getFileMetadata().getTermsOfUse().getTermsOfUseType() == TermsOfUseType.RESTRICTED) {
                 logger.fine("Dataset (id :" + dataset.getId() + ") has a thumbnail the user selected but the file must have later been restricted. Returning null.");
                 return null;
             } else {
@@ -249,7 +250,9 @@ public class DatasetUtil {
         for (FileMetadata fmd : datasetVersion.getFileMetadatas()) {
             DataFile testFile = fmd.getDataFile();
             // We don't want to use a restricted image file as the dedicated thumbnail:
-            if (!testFile.isRestricted() && FileUtil.isThumbnailSupported(testFile) && ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE)) {
+            if (fmd.getTermsOfUse().getTermsOfUseType() != TermsOfUseType.RESTRICTED && 
+                    FileUtil.isThumbnailSupported(testFile) && 
+                    ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE)) {
                 return testFile;
             }
         }

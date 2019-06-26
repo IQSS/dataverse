@@ -289,10 +289,9 @@
                 </ul>
             </li>
         </ul>
-    </div>        
+    </div>
     <p:commandLink type="button" styleClass="btn btn-default btn-request" rendered="#{(fileDownloadHelper.session.user.authenticated 
                                                                           and !fileMetadata.datasetVersion.deaccessioned
-                                                                          and fileMetadata.dataFile.owner.fileAccessRequest 
                                                                           and !(fileDownloadHelper.canDownloadFile(fileMetadata)))
                                                                           and !requestAccessPopupRequired}"
                    process="@this"
@@ -304,7 +303,6 @@
     
     <p:commandLink type="button" styleClass="btn btn-default btn-request" rendered="#{fileDownloadHelper.session.user.authenticated 
                                                                           and !fileMetadata.datasetVersion.deaccessioned
-                                                                          and fileMetadata.dataFile.owner.fileAccessRequest 
                                                                           and !(fileDownloadHelper.canDownloadFile(fileMetadata))
                                                                             and requestAccessPopupRequired}"
                    process="@this"
@@ -319,7 +317,7 @@
                    process="@this"
                    rendered="#{!fileDownloadHelper.session.user.authenticated 
                                                                           and !fileMetadata.datasetVersion.deaccessioned
-                                                                          and fileMetadata.dataFile.owner.fileAccessRequest and !(fileDownloadHelper.canDownloadFile(fileMetadata))}"
+                                                                          and !(fileDownloadHelper.canDownloadFile(fileMetadata))}"
                    onclick="PF('accessSignUpLogIn_popup').show()">
         <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
         <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}

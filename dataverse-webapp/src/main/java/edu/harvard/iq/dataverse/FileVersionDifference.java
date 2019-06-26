@@ -184,17 +184,6 @@ public class FileVersionDifference {
                 }
 
             }
-            
-            /*
-            Get Restriction Differences
-            */
-            value1 = originalFileMetadata.isRestricted() ? BundleUtil.getStringFromBundle("file.versionDifferences.fileRestricted") : BundleUtil.getStringFromBundle("file.versionDifferences.fileUnrestricted");
-            value2 = newFileMetadata.isRestricted() ? BundleUtil.getStringFromBundle("file.versionDifferences.fileRestricted") : BundleUtil.getStringFromBundle("file.versionDifferences.fileUnrestricted");
-            if (!value1.equals(value2)) {
-                if (!value1.equals(value2)) {
-                    updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileAccessTitle"), value2, 0, 0, 0, 0);
-                }
-            }
         }
     }
 

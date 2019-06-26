@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.junit.Before;
@@ -143,7 +144,7 @@ public class JsonPrinterTest {
 
     @Test
     public void testGetFileCategories() {
-        FileMetadata fmd = new FileMetadata();
+        FileMetadata fmd = MocksFactory.makeFileMetadata(10L, "", 0);
         DatasetVersion dsVersion = new DatasetVersion();
         DataFile dataFile = new DataFile();
         dataFile.setProtocol("doi");

@@ -49,6 +49,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -601,7 +602,7 @@ public class Access extends AbstractApiBean {
 
                                         zipper.addToManifest(fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + zipDownloadSizeLimit + " bytes.\r\n");
                                     }
-                                } else if (file.isRestricted()) {
+                                } else if (file.getFileMetadata().getTermsOfUse().getTermsOfUseType() == TermsOfUseType.RESTRICTED) {
                                     if (zipper == null) {
                                         fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n";
                                     } else {
@@ -978,10 +979,6 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
         }
 
-        if (!dataFile.getOwner().isFileAccessRequest()) {
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.requestsNotAccepted"));
-        }
-
         AuthenticatedUser requestor;
 
         try {
@@ -1290,6 +1287,14 @@ public class Access extends AbstractApiBean {
             }
         }
 
+        boolean allFileMetadataRestricted = true;
+        
+        for (FileMetadata fm : df.getFileMetadatas()) {
+            if (fm.getTermsOfUse().getTermsOfUseType() != TermsOfUseType.RESTRICTED) {
+                allFileMetadataRestricted = false;
+                break;
+            }
+        }
 
         // TODO: (IMPORTANT!)
         // Business logic like this should NOT be maintained in individual 
@@ -1313,41 +1318,11 @@ public class Access extends AbstractApiBean {
         // We don't need to check permissions on files that are 
         // from released Dataset versions and not restricted: 
 
-        boolean restricted = false;
-
-        if (df.isRestricted()) {
-            restricted = true;
-        } else {
-
-            // There is also a special case of a restricted file that only exists
-            // in a draft version (i.e., a new file, that hasn't been published yet).
-            // Such files must be considered restricted, for access purposes. I.e.,
-            // users with no download access to this particular file, but with the
-            // permission to ViewUnpublished on the dataset, should NOT be allowed
-            // to download it.
-            // Up until 4.2.1 restricting unpublished files was only restricting them
-            // in their Draft version fileMetadata, but not in the DataFile object.
-            // (this is what we still want to do for published files; restricting those
-            // only restricts them in the new draft FileMetadata; until it becomes the
-            // published version, the restriction flag on the DataFile is what governs
-            // the download authorization).
-
-            //if (!published && df.getOwner().getVersions().size() == 1 && df.getOwner().getLatestVersion().isDraft()) {
-            // !df.isReleased() really means just this: new file, only exists in a Draft version!
-            if (!df.isReleased()) {
-                if (df.getFileMetadata().isRestricted()) {
-                    restricted = true;
-                }
-            }
-        }
-
-        if (!restricted) {
+        if (!allFileMetadataRestricted && published) {
             // And if they are not published, they can still be downloaded, if the user
             // has the permission to view unpublished versions! (this case will 
             // be handled below)
-            if (published) {
-                return true;
-            }
+            return true;
         }
 
         User user = null;
@@ -1396,17 +1371,13 @@ public class Access extends AbstractApiBean {
             } catch (WrappedResponse wr) {
                 logger.log(Level.FINE, "Message from findUserOrDie(): {0}", wr.getMessage());
             }
-
-            if (apiTokenUser == null) {
-                logger.warning("API token-based auth: Unable to find a user with the API token provided.");
-            }
         }
 
         // OK, let's revisit the case of non-restricted files, this time in        
         // an unpublished version:         
         // (if (published) was already addressed above)
 
-        if (!restricted) {
+        if (!published) {
             // If the file is not published, they can still download the file, if the user
             // has the permission to view unpublished versions:
 

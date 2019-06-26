@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -76,7 +77,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         theDataset.getLatestVersion().setReleaseTime(getTimestamp());
         theDataset.getLatestVersion().setLastUpdateTime(getTimestamp());
         theDataset.setModificationTime(getTimestamp());
-        theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
 
         updateFiles(getTimestamp(), ctxt);
 
@@ -242,13 +242,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 notifyUsersFileDownload(ctxt, dataFile);
             }
 
-            // set the files restriction flag to the same as the latest version's
-            if (dataFile.getFileMetadata() != null && dataFile.getFileMetadata().getDatasetVersion().equals(getDataset().getLatestVersion())) {
-                dataFile.setRestricted(dataFile.getFileMetadata().isRestricted());
-            }
 
-
-            if (dataFile.isRestricted()) {
+            if (dataFile.getFileMetadata().getTermsOfUse().getTermsOfUseType() == TermsOfUseType.RESTRICTED) {
                 // A couple things need to happen if the file has been restricted: 
                 // 1. If there's a map layer associated with this shape file, or 
                 //    tabular-with-geo-tag file, all that map layer data (that 

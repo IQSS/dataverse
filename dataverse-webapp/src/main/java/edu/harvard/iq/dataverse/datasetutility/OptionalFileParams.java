@@ -47,9 +47,6 @@ public class OptionalFileParams {
     private List<String> dataFileTags;
     public static final String FILE_DATA_TAGS_ATTR_NAME = "dataFileTags";
 
-    private boolean restrict = false;
-    public static final String RESTRICT_ATTR_NAME = "restrict";
-
 
     public OptionalFileParams(String jsonData) throws DataFileTagException {
 
@@ -77,7 +74,6 @@ public class OptionalFileParams {
         this.description = description;
         setCategories(newCategories);
         this.addFileDataTags(potentialFileDataTags);
-        this.restrict = restrict;
     }
 
 
@@ -97,14 +93,6 @@ public class OptionalFileParams {
      */
     public String getDescription() {
         return this.description;
-    }
-
-    public void setRestriction(boolean restrict) {
-        this.restrict = restrict;
-    }
-
-    public boolean getRestriction() {
-        return this.restrict;
     }
 
     public boolean hasCategories() {
@@ -185,14 +173,6 @@ public class OptionalFileParams {
         if ((jsonObj.has(DESCRIPTION_ATTR_NAME)) && (!jsonObj.get(DESCRIPTION_ATTR_NAME).isJsonNull())) {
 
             this.description = jsonObj.get(DESCRIPTION_ATTR_NAME).getAsString();
-        }
-
-        // -------------------------------
-        // get restriction as boolean
-        // -------------------------------
-        if ((jsonObj.has(RESTRICT_ATTR_NAME)) && (!jsonObj.get(RESTRICT_ATTR_NAME).isJsonNull())) {
-
-            this.restrict = Boolean.valueOf(jsonObj.get(RESTRICT_ATTR_NAME).getAsString());
         }
 
         // -------------------------------

@@ -81,7 +81,6 @@
                         <p:inputText id="searchFiles" styleClass="form-control" value="#{DatasetPage.fileLabelSearchTerm}" widgetVar="inputSearchTerm"
                                      onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
                         <p:watermark for="searchFiles" value="#{bundle['file.search.placeholder']}"/>
-                        <h:inputHidden id="showAccessPopup" value="#{DatasetPage.showAccessPopup}"/>
                         <p:remoteCommand name="submitsearch" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
                         
                         <span class="input-group-btn">
@@ -186,10 +185,10 @@
                 </ui:fragment>
 
                 <!-- Restricted File Icon -->
-                <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(fileMetadata)}">                  
+                <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.termsOfUse.termsOfUseType eq termsOfUseTypeEnum.RESTRICTED and !fileDownloadHelper.canDownloadFile(fileMetadata)}">
                     <span class="glyphicon glyphicon-lock text-danger"/>
                 </div>
-                <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and fileDownloadHelper.canDownloadFile(fileMetadata) }">
+                <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.termsOfUse.termsOfUseType eq termsOfUseTypeEnum.RESTRICTED and fileDownloadHelper.canDownloadFile(fileMetadata) }">
                     <span class="icon-unlock text-success"/>
                 </div>
             </div>
@@ -296,21 +295,6 @@
                                     <h:outputText value="#{bundle['file.license']}" />
                                 </p:commandLink>
                             </li>
-                            <!--no restrict on non-s3 package file -->
-                            <ui:fragment rendered="#{!settingsWrapper.publicInstall and (!DatasetPage.workingVersion.hasPackageFile or DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://')) }">
-                                <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}"> 
-                                    <p:commandLink oncomplete="toggle_dropdown();" 
-                                                   onclick="testFilesSelectedForRestriction()">
-                                        <h:outputText value="#{bundle['file.restrict']}"/>
-                                    </p:commandLink>
-                                </li>
-                                <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
-                                    <p:commandLink update=":datasetForm,,:messagePanel" oncomplete="toggle_dropdown();" 
-                                                   action="#{DatasetPage.restrictSelectedFiles(false)}">
-                                        <h:outputText value="#{bundle['file.unrestrict']}"/>
-                                    </p:commandLink>
-                                </li>
-                            </ui:fragment>
                             <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                 <p:commandLink id="fileCategoriesLinkTwo"    
                                                onclick="testFilesSelectedForTags()">
@@ -422,7 +406,7 @@
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                     <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
                     <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
-                    <ui:param name="requestAccessPopupRequired" value="#{DatasetPage.requestAccessPopupRequired}"/>
+                    <ui:param name="requestAccessPopupRequired" value="#{DatasetPage.isRequestAccessPopupRequired(fileMetadata)}"/>
                     <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}"/>
                     <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}"/>
                     <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>

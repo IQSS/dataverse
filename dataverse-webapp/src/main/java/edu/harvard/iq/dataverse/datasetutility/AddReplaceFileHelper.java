@@ -19,7 +19,6 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.license.TermsOfUseFactory;
@@ -523,49 +522,6 @@ public class AddReplaceFileHelper {
         for (DataFile df : finalFileList) {
 
             df.getFileMetadata().setCategoriesByName(categoriesList);
-        }
-
-        return true;
-    }
-
-    /**
-     * Called from the UI backing bean
-     *
-     * @param label
-     * @param description
-     * @param restricted
-     * @return
-     */
-    public boolean updateLabelDescriptionRestrictedFromUI(String label, String description, Boolean restricted) {
-
-        if (hasError()) {
-            logger.severe("Should not be calling this method");
-            return false;
-        }
-
-        if ((finalFileList == null) || (finalFileList.size() == 0)) {
-            throw new NullPointerException("finalFileList needs at least 1 file!!");
-        }
-
-
-        for (DataFile df : finalFileList) {
-
-            // update description
-            if (description != null) {
-                df.getFileMetadata().setDescription(description.trim());
-            }
-
-            // update label
-            if (label != null) {
-                df.getFileMetadata().setLabel(label.trim());
-            }
-
-            // update restriction
-            if (restricted == null) {
-                restricted = false;
-            }
-
-            df.getFileMetadata().setRestricted(restricted);
         }
 
         return true;
@@ -1339,18 +1295,10 @@ public class AddReplaceFileHelper {
             try {
                 optionalFileParams.addOptionalParams(df);
 
-                // call restriction command here
-                boolean restrict = optionalFileParams.getRestriction();
-                if (restrict != df.getFileMetadata().isRestricted()) {
-                    commandEngine.submit(new RestrictFileCommand(df, dvRequest, restrict));
-                }
-
             } catch (DataFileTagException ex) {
                 Logger.getLogger(AddReplaceFileHelper.class.getName()).log(Level.SEVERE, null, ex);
                 addError(ex.getMessage());
                 return false;
-            } catch (CommandException ex) {
-                addError(ex.getMessage());
             }
         }
 

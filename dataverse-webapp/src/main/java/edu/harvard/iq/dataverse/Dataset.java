@@ -123,7 +123,6 @@ public class Dataset extends DvObjectContainer {
         this.datasetLinkingDataverses = datasetLinkingDataverses;
     }
 
-    private boolean fileAccessRequest;
     @OneToMany(mappedBy = "dataset", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DataFileCategory> dataFileCategories = null;
 
@@ -224,14 +223,6 @@ public class Dataset extends DvObjectContainer {
         this.guestbook = guestbook;
     }
 
-    public boolean isFileAccessRequest() {
-        return fileAccessRequest;
-    }
-
-    public void setFileAccessRequest(boolean fileAccessRequest) {
-        this.fileAccessRequest = fileAccessRequest;
-    }
-
     public String getPersistentURL() {
         return new GlobalId(this).toURL().toString();
     }
@@ -326,7 +317,6 @@ public class Dataset extends DvObjectContainer {
                 newFm.setDescription(fm.getDescription());
                 newFm.setLabel(fm.getLabel());
                 newFm.setDirectoryLabel(fm.getDirectoryLabel());
-                newFm.setRestricted(fm.isRestricted());
                 newFm.setDataFile(fm.getDataFile());
                 newFm.setDatasetVersion(dsv);
                 newFm.setProvFreeForm(fm.getProvFreeForm());

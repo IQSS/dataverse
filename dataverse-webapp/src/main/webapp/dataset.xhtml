@@ -535,7 +535,7 @@
                                 </p:selectOneMenu>
                                 <p:commandButton value="#{bundle['file.dataFilesTab.button.direct']}" id="updateTemplate"
                                                  style="display:none"
-                                                 update=":datasetForm,accessPopup"
+                                                 update=":datasetForm"
                                                  action="#{DatasetPage.handleChangeButton}" oncomplete="javascript:bind_bsui_components();">
                                 </p:commandButton>
                             </div>
@@ -729,9 +729,6 @@
                     <!-- Popups -->
                     <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadInvalid" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noValidSelectedFilesForDownload']}</p>
-                        <ui:fragment rendered="#{DatasetPage.dataset.fileAccessRequest}">
-                            <p class="help-block">#{bundle['dataset.requestAccessToRestrictedFiles']}</p>
-                        </ui:fragment>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.close}" onclick="PF('downloadInvalid').hide();" type="button" />
                         </div>
@@ -1084,14 +1081,6 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog id="selectFilesForRestrict" styleClass="smallPopUp"
-                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForRestrict" modal ="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForRestrict']}</p>
-                        <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" onclick="PF('selectFilesForRestrict').hide();PF('blockDatasetForm').hide();"/>
-                        </div>
-                    </p:dialog>
-
                     <p:dialog id="selectFilesForUnRestrict" styleClass="smallPopUp"
                               header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForUnRestrict" modal ="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForUnRestrict']}</p>
@@ -1382,43 +1371,6 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog id="accessPopup" header="#{bundle['dataset.access.accessHeader']}"  widgetVar="accessPopup" modal="true">
-                        <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE' or empty DatasetPage.editMode }">
-                            <div class="form-horizontal">
-                                <div class="form-group">
-                                    <label for="metadata_TermsAccess" class="col-sm-3 control-label">
-                                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <p:inputTextarea value="#{DatasetPage.workingVersion.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa" />
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="metadata_RequestAccess" class="col-sm-3 control-label">
-                                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
-                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <p:selectBooleanCheckbox id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}"
-                                                                 value="#{DatasetPage.workingVersion.termsOfUseAndAccess.fileAccessRequest}" widgetVar="inputfar"/>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="button-block">
-                                <ui:fragment rendered="#{DatasetPage.editMode != 'CREATE'}">
-                                    <p:commandButton value="#{bundle.continue}" onclick="PF('accessPopup').hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.restrictSelectedFiles(true)}" />
-                                </ui:fragment>
-                                <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
-                                    <p:commandButton value="#{bundle.continue}" onclick="PF('accessPopup').hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.save()}" />
-                                </ui:fragment>
-                                <p:commandButton value="#{bundle.cancel}" onclick="PF('accessPopup').hide();PF('blockDatasetForm').hide();" type="button" />
-                            </div>
-                        </ui:fragment>
-                    </p:dialog>
-
                     <p:dialog id="inreview" header="#{bundle['dataset.submitBtn']}" widgetVar="inreview" modal="true">
                         <p class="text-warning">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.submitMessage']}
@@ -1596,15 +1548,6 @@
                             $('button[id$="compareVersions"]').trigger('click');
                         }
                     }
-                    function testFilesSelectedForRestriction() {
-                        var count = PF('filesTable').getSelectedRowsCount();
-                        if (count === 0) {
-                            PF('selectFilesForRestrict').show();
-                        } else {
-                            PF('accessPopup').show();
-                        }
-
-                    }
                     function testFilesSelectedForTags() {
                         var count = PF('filesTable').getSelectedRowsCount();
                         if (count === 0) {
@@ -1654,11 +1597,7 @@
                         $('button[id$="updateTemplate"]').trigger('click');
                     }
                     function checkNewlyRestricted() {
-                        if ($('input[id$="showAccessPopup"]').val() === 'true') {
-                            PF('accessPopup').show();
-                        } else {
-                            $('button[id$="datasetSave"]').trigger('click');
-                        }
+                        $('button[id$="datasetSave"]').trigger('click');
                     }
                     function updateHiddenReason(textArea) {
                         $('input[id$="hiddenReasonInput"]').val(textArea.value);

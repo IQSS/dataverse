@@ -14,6 +14,7 @@
 
     <script type="text/javascript" language="javascript" src="#{resource['js/fileupload.js']}"></script>
 
+    <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
     <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.RestrictType" var="restrictTypeEnum"/>
 
     <!-- Static Tab Layout -->
@@ -322,7 +323,6 @@
                              emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
                     <f:facet name="header">
                         <div jsf:id="filesHeaderBlock" class="row">
-                            <h:inputHidden id="showAccessPopup" value="#{EditDatafilesPage.showAccessPopup}"/>
                             <div id="filesHeaderCount" class="col-xs-6 text-left">
                                 <!-- Files Count -->
                                 <h:outputFormat value="#{datasetPage ? bundle['file.count.shown'] : bundle['file.count.shown']}" styleClass="highlightBold" rendered="#{!empty EditDatafilesPage.fileMetadatas}">
@@ -346,7 +346,7 @@
                                 <h:outputText id="imgPreview" value="#{bundle['preview']}" styleClass="bg-info text-info text-center show"/>
                             </ui:fragment>
                             <!-- Restricted File Icon -->
-                            <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted}">
+                            <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.termsOfUse.termsOfUseType eq termsOfUseTypeEnum.RESTRICTED }">
                                 <span class="icon-unlock text-success"/>
                             </div>
                             <!-- Dataset Thumbnail -->
@@ -457,16 +457,6 @@
                                             <h:outputText value="#{bundle['file.license']}"/>
                                         </p:commandLink>
                                     </li>
-                                    <li>
-                                        <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{EditDatafilesPage.restrictFiles(true)}">
-                                            <h:outputText value="#{bundle['file.restrict']}"/>
-                                        </p:commandLink>
-                                    </li>
-                                    <li>
-                                        <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{EditDatafilesPage.restrictFiles(false)}">
-                                            <h:outputText value="#{bundle['file.unrestrict']}"/>
-                                        </p:commandLink>
-                                    </li>
                                     <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}" jsf:rendered="#{false}">
                                         <p:commandLink id="fileCategoriesButton2"
                                                    actionListener="#{EditDatafilesPage.refreshTagsPopUp(fileMetadata)}"
@@ -495,27 +485,13 @@
                                     </li> 
                                 </ui:fragment>
                                 
-                                <ui:fragment rendered="#{false and !settingsWrapper.publicInstall}">
-                                    <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
-                                        <p:commandLink oncomplete="toggle_dropdown();" 
-                                                       onclick="testFilesSelectedForRestriction()">
-                                            <h:outputText value="#{bundle['file.restrict']}"/>
-                                        </p:commandLink>
-                                    </li>
-                                    <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
-                                        <p:commandLink update=":datasetForm,,:messagePanel" oncomplete="toggle_dropdown();" 
-                                                       action="#{DatasetPage.restrictSelectedFiles(false)}">
-                                            <h:outputText value="#{bundle['file.unrestrict']}"/>
-                                        </p:commandLink>
-                                    </li>
-                                </ui:fragment>
                                 <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
                                     <p:commandLink id="fileCategoriesButton"
                                                actionListener="#{EditDatafilesPage.refreshTagsPopUp(fileMetadata)}"
                                                update=":datasetForm:editFileTagsPopup"
                                                oncomplete="PF('editFileTagsPopup').show();bind_bsui_components();">
                                                 #{bundle['file.tags']} 
-                                    </p:commandLink>    
+                                    </p:commandLink>
                                 </li>        
                                 <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}" jsf:rendered="#{false}">
                                     <p:commandLink onclick="testFilesSelectedForDelete();" id="deleteSelectedFile"> 
@@ -607,49 +583,6 @@
         action="#{EditDatafilesPage.updateTermsOfUseForSelectedFiles(editTermsOfUseDialog.termsOfUseForm)}"
         update=":datasetForm" />
 
-    <p:dialog id="editFileAccessPopup" header="#{bundle['dataset.access.accessHeader']}" widgetVar="editFileAccessPopup" modal="true">
-        <div class="form-horizontal">
-            <div class="form-group">
-                <label for="metadata_TermsAccess" class="col-sm-3 control-label">
-                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                          data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
-                </label>
-                <ui:fragment rendered="#{!datasetPage}">
-                <div class="col-sm-9" jsf:rendered="#{!empty version.termsOfUseAndAccess}">
-                    <p:inputTextarea value="#{version.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" />
-                </div>
-                </ui:fragment> 
-                <ui:fragment rendered="#{datasetPage}">
-                <div class="col-sm-9" jsf:rendered="#{!empty version.termsOfUseAndAccess}">
-                    <p:inputTextarea value="#{DatasetPage.enteredTermsOfAccess}" autoResize="false" rows="5" styleClass="form-control" />
-                </div>
-                </ui:fragment> 
-            </div>
-            <div class="form-group">
-                <label for="metadata_RequestAccess" class="col-sm-3 control-label">
-                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
-                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                          data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
-                </label>
-                <ui:fragment rendered="#{!datasetPage}">
-                <div class="col-sm-9" jsf:rendered="#{!empty version.termsOfUseAndAccess}">
-                    <p:selectBooleanCheckbox id="editFileRequestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" value="#{version.termsOfUseAndAccess.fileAccessRequest}"/>
-                </div>
-                </ui:fragment> 
-                <ui:fragment rendered="#{datasetPage}">
-                <div class="col-sm-9" jsf:rendered="#{!empty version.termsOfUseAndAccess}">
-                    <p:selectBooleanCheckbox id="editFileRequestAccessDSP" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" value="#{DatasetPage.enteredFileAccessRequest}"/>
-                </div>
-                </ui:fragment>
-            </div>
-        </div>
-        <div class="button-block">
-            <p:commandButton rendered="#{!datasetPage}" value="#{bundle.continue}" onclick="PF('editFileAccessPopup').hide()" update=":datasetForm,:messagePanel" action="#{EditDatafilesPage.saveWithTermsOfUse()}" />
-            <p:commandButton rendered="#{datasetPage}" value="#{bundle.continue}" onclick="PF('editFileAccessPopup').hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.saveWithTermsOfUse()}" />
-            <p:commandButton value="#{bundle.cancel}" onclick="PF('editFileAccessPopup').hide();PF('blockFileForm').hide();" type="button" />
-        </div>
-    </p:dialog>
     <p:dialog id="fileAdvancedOptions" styleClass="dialog-submenu smallPopUp" header="#{bundle['file.advancedIngestOptions']}" widgetVar="fileAdvancedOptions" modal="true">
         <div class="form-horizontal">
             <!-- select text encoding, for SPSS-SAV (and, and possibly, other) (this option is only available during ingest) data files; not implemented yet -->
@@ -982,12 +915,7 @@
             }
         }
         function checkNewlyRestricted() {
-            if ($('input[id$="showAccessPopup"]').val() === 'true') {
-                PF('editFileAccessPopup').show();
-            }
-            else {
-                $('button[id$="datasetSave"]').trigger('click');
-            }
+            $('button[id$="datasetSave"]').trigger('click');
         }
         function openDropboxChooser() {
             options = {

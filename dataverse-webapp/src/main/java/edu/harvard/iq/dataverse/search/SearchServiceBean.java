@@ -575,6 +575,9 @@ public class SearchServiceBean {
                 if (null != filePID && !"".equals(filePID) && !"".equals("null")) {
                     solrSearchResult.setFilePersistentId(filePID);
                 }
+                
+                String fileAccess = (String) solrDocument.getFirstValue(SearchFields.ACCESS);
+                solrSearchResult.setFileAccess(fileAccess);
             }
             /**
              * @todo store PARENT_ID as a long instead and cast as such

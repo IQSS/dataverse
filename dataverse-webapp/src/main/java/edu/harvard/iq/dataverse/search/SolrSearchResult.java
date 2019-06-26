@@ -81,6 +81,7 @@ public class SolrSearchResult {
     private String filetype;
     private String fileContentType;
     private Long fileSizeInBytes;
+    private String fileAccess;
     /**
      * fileMD5 is here for legacy and backward-compatibility reasons. It might be deprecated some day in favor of "fileChecksumType" and "fileChecksumValue"
      */
@@ -1101,4 +1102,13 @@ public class SolrSearchResult {
     public void setNameOfDataverse(String id) {
         this.nameOfDataverse = id;
     }
+
+    public String getFileAccess() {
+        return fileAccess;
+    }
+
+    public void setFileAccess(String fileAccess) {
+        this.fileAccess = fileAccess;
+    }
+
 }

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import com.amazonaws.thirdparty.apache.codec.binary.StringUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -67,16 +68,6 @@ public class FileMetadata implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String description = "";
 
-    /**
-     * At the FileMetadata level, "restricted" is a historical indication of the
-     * data owner's intent for the file by version. Permissions are actually
-     * enforced based on the "restricted" boolean at the *DataFile* level. On
-     * publish, the latest intent is copied from the FileMetadata level to the
-     * DataFile level.
-     */
-    @Expose
-    private boolean restricted;
-
     @ManyToOne
     @JoinColumn(nullable = false)
     private DatasetVersion datasetVersion;
@@ -112,7 +103,6 @@ public class FileMetadata implements Serializable {
         fmd.setDatasetVersion(getDatasetVersion());
         fmd.setDescription(getDescription());
         fmd.setLabel(getLabel());
-        fmd.setRestricted(isRestricted());
         fmd.setDisplayOrder(getDisplayOrder());
 
         FileTermsOfUse termsOfUseCopy = getTermsOfUse().createCopy();
@@ -144,14 +134,6 @@ public class FileMetadata implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public boolean isRestricted() {
-        return restricted;
-    }
-
-    public void setRestricted(boolean restricted) {
-        this.restricted = restricted;
     }
 
     public int getDisplayOrder() {
@@ -441,17 +423,6 @@ public class FileMetadata implements Serializable {
     }
 
     @Transient
-    private boolean restrictedUI;
-
-    public boolean isRestrictedUI() {
-        return restrictedUI;
-    }
-
-    public void setRestrictedUI(boolean restrictedUI) {
-        this.restrictedUI = restrictedUI;
-    }
-
-    @Transient
     private FileVersionDifference fileVersionDifference;
 
     public FileVersionDifference getFileVersionDifference() {
@@ -513,28 +484,17 @@ public class FileMetadata implements Serializable {
             return false;
         }
 
-        if (this.getLabel() != null) {
-            if (!this.getLabel().equals(other.getLabel())) {
-                return false;
-            }
-        } else if (other.getLabel() != null) {
+        if (!StringUtils.equals(getLabel(), other.getLabel())) {
+            return false;
+        }
+        if (!StringUtils.equals(getDirectoryLabel(), other.getDirectoryLabel())) {
+            return false;
+        }
+        if (!StringUtils.equals(getDescription(), other.getDescription())) {
             return false;
         }
 
-        if (this.getDirectoryLabel() != null) {
-            if (!this.getDirectoryLabel().equals(other.getDirectoryLabel())) {
-                return false;
-            }
-        } else if (other.getDirectoryLabel() != null) {
-            return false;
-        }
-
-        if (this.getDescription() != null) {
-            return this.getDescription().equals(other.getDescription());
-        } else {
-            return other.getDescription() == null;
-        }
-
+        return true;
     }
 
 

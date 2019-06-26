@@ -162,7 +162,7 @@
                                             <c:set var="fileVersionCount" value="#{fileEntry.key.fileMetadatas.size()}" />
                                             <c:set var="fileVersion" value="#{fileEntry.key.fileMetadata.datasetVersion.id}" />
                                             <c:set var="dsPublishedVersion" value="#{manageFilePermissionsPage.dataset.releasedVersion.id}" />
-                                            <c:set var="fileRestricted" value="#{fileEntry.key.restricted}" />
+                                            <c:set var="fileRestricted" value="#{fileEntry.key.fileMetadata.termsOfUse.termsOfUseType eq termsOfUseTypeEnum.RESTRICTED}" />
                                             <h:outputText value="#{bundle['dataverse.permissionsFiles.files.deleted']}" rendered="#{fileVersion lt dsPublishedVersion}"/>
                                             <h:outputText value="#{bundle['dataverse.permissionsFiles.files.restricted']}" rendered="#{fileRestricted and fileVersion ge dsPublishedVersion}"/>
                                             <h:outputText value="#{bundle['dataverse.permissionsFiles.files.public']}" rendered="#{!fileRestricted and fileVersionCount ne 1}"/>
@@ -171,7 +171,7 @@
                                             <c:set var="fileVersion" value="#{fileEntry.key.fileMetadata.datasetVersion.id}" />
                                             <c:set var="dsPublishedVersion" value="#{manageFilePermissionsPage.dataset.releasedVersion.id}" />
                                             <c:set var="dsLatestVersion" value="#{manageFilePermissionsPage.dataset.latestVersion.id}" />
-                                            <c:set var="latestVersionRestricted" value="#{fileEntry.key.fileMetadata.restricted}" />
+                                             <c:set var="latestVersionRestricted" value="#{fileEntry.key.fileMetadata.termsOfUse.termsOfUseType eq termsOfUseTypeEnum.RESTRICTED}" />
                                             <h:outputText value="#{bundle['dataverse.permissionsFiles.files.deleted']}" rendered="#{fileVersion eq dsPublishedVersion}"/>
                                             <h:outputText value="#{bundle['dataverse.permissionsFiles.files.restricted']}" rendered="#{fileVersion eq dsLatestVersion and latestVersionRestricted}"/>
                                             <h:outputText value="#{bundle['dataverse.permissionsFiles.files.public']}" rendered="#{fileVersion eq dsLatestVersion and !latestVersionRestricted}"/>

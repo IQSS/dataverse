@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.FieldType;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import org.junit.After;
@@ -261,7 +262,7 @@ public class SchemaDotOrgExporterTest {
             System.setProperty(FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS, "true");
         }
 
-        FileMetadata fmd = new FileMetadata();
+        FileMetadata fmd = MocksFactory.makeFileMetadata(10L, "README.md", 0);
         DataFile dataFile = new DataFile();
         dataFile.setId(42l);
         dataFile.setFilesize(1234);
@@ -271,7 +272,6 @@ public class SchemaDotOrgExporterTest {
         dataFile.setIdentifier("7V5MPI");
         fmd.setDatasetVersion(version);
         fmd.setDataFile(dataFile);
-        fmd.setLabel("README.md");
         fmd.setDescription("README file.");
         List<FileMetadata> fileMetadatas = new ArrayList<>();
         fileMetadatas.add(fmd);

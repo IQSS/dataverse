@@ -14,11 +14,14 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.collections4.CollectionUtils;
 
 /**
  * @author qqmyers
@@ -69,7 +72,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         getDataset().getEditVersion().setTermsOfUseAndAccess(oldTerms);
 
         List<WorkflowComment> newComments = getDataset().getEditVersion().getWorkflowComments();
-        if (newComments != null && newComments.size() > 0) {
+        if (CollectionUtils.isNotEmpty(newComments)) {
             for (WorkflowComment wfc : newComments) {
                 wfc.setDatasetVersion(updateVersion);
             }
@@ -108,12 +111,17 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                     publishedFmd.setCategories(draftFmd.getCategories());
                     metadataUpdated = true;
                 }
-                if (!draftFmd.isRestricted() == publishedFmd.isRestricted()) {
-                    publishedFmd.setRestricted(draftFmd.isRestricted());
+                FileTermsOfUse draftTermsOfUse = draftFmd.getTermsOfUse();
+                FileTermsOfUse publishedTermsOfUse = publishedFmd.getTermsOfUse();
+                if (!ctxt.files().isSameTermsOfUse(draftTermsOfUse, publishedTermsOfUse)) {
+                    publishedTermsOfUse.setLicense(draftTermsOfUse.getLicense());
+                    publishedTermsOfUse.setAllRightsReserved(draftTermsOfUse.isAllRightsReserved());
+                    publishedTermsOfUse.setRestrictType(draftTermsOfUse.getRestrictType());
+                    publishedTermsOfUse.setRestrictCustomText(draftTermsOfUse.getRestrictCustomText());
+                    
                     metadataUpdated = true;
-                    //Must also update state of file
-                    dataFile.setRestricted(draftFmd.isRestricted());
                 }
+
                 String draftProv = draftFmd.getProvFreeForm();
                 String pubProv = publishedFmd.getProvFreeForm();
                 if ((draftProv != null && (!draftProv.equals(pubProv))) || (draftProv == null && pubProv != null)) {

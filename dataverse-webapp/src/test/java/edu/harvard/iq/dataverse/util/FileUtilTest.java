@@ -7,6 +7,9 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse.RestrictType;
+import edu.harvard.iq.dataverse.mocks.MocksFactory;
+
 import org.junit.Test;
 
 import java.io.File;
@@ -16,6 +19,7 @@ import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FileUtilTest {
 
@@ -113,26 +117,26 @@ public class FileUtilTest {
 
     @Test
     public void testIsPubliclyDownloadable() {
-        assertEquals(false, FileUtil.isPubliclyDownloadable(null));
+        assertFalse(FileUtil.isPubliclyDownloadable(null));
 
-        FileMetadata restrictedFileMetadata = new FileMetadata();
-        restrictedFileMetadata.setRestricted(true);
-        assertEquals(false, FileUtil.isPubliclyDownloadable(restrictedFileMetadata));
+        FileMetadata restrictedFileMetadata = MocksFactory.makeFileMetadata(123l, "file.txt", 0);
+        restrictedFileMetadata.getTermsOfUse().setLicense(null);
+        restrictedFileMetadata.getTermsOfUse().setRestrictType(RestrictType.ACADEMIC_PURPOSE);
+        assertFalse(FileUtil.isPubliclyDownloadable(restrictedFileMetadata));
 
-        FileMetadata nonRestrictedFileMetadata = new FileMetadata();
+        FileMetadata nonRestrictedFileMetadata = MocksFactory.makeFileMetadata(123l, "file.txt", 0);
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.RELEASED);
         nonRestrictedFileMetadata.setDatasetVersion(dsv);
         Dataset dataset = new Dataset();
         dsv.setDataset(dataset);
-        nonRestrictedFileMetadata.setRestricted(false);
-        assertEquals(true, FileUtil.isPubliclyDownloadable(nonRestrictedFileMetadata));
+        assertTrue(FileUtil.isPubliclyDownloadable(nonRestrictedFileMetadata));
     }
 
     @Test
     public void testIsPubliclyDownloadable2() {
 
-        FileMetadata nonRestrictedFileMetadata = new FileMetadata();
+        FileMetadata nonRestrictedFileMetadata = MocksFactory.makeFileMetadata(123l, "file.txt", 0);
         DatasetVersion dsv = new DatasetVersion();
         TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
         termsOfUseAndAccess.setTermsOfUse("be excellent to each other");
@@ -141,8 +145,7 @@ public class FileUtilTest {
         nonRestrictedFileMetadata.setDatasetVersion(dsv);
         Dataset dataset = new Dataset();
         dsv.setDataset(dataset);
-        nonRestrictedFileMetadata.setRestricted(false);
-        assertEquals(false, FileUtil.isPubliclyDownloadable(nonRestrictedFileMetadata));
+        assertFalse(FileUtil.isPubliclyDownloadable(nonRestrictedFileMetadata));
     }
 
     @Test

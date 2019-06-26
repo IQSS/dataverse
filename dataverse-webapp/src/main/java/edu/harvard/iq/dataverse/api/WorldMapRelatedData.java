@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.worldmapauth.TokenApplicationTypeServiceBean;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
@@ -497,16 +498,13 @@ public class WorldMapRelatedData extends AbstractApiBean {
         //jsonData.add("filename", dfile_meta.getLabel());
         jsonData.add("datafile_expected_md5_checksum", dfile.getChecksumValue());
         Long fsize = dfile.getFilesize();
-        if (fsize == null) {
-            fsize = new Long(-1);
-        }
 
         jsonData.add("datafile_filesize", fsize);
         jsonData.add("datafile_content_type", dfile.getContentType());
         jsonData.add("datafile_create_datetime", dfile.getCreateDate().toString());
 
         // restriction status of the DataFile
-        jsonData.add("datafile_is_restricted", dfile.isRestricted());
+        jsonData.add("datafile_is_restricted", dfile_meta.getTermsOfUse().getTermsOfUseType() == TermsOfUseType.RESTRICTED);
 
         return ok(jsonData);
 

@@ -20,7 +20,6 @@ import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteMapLayerMetadataCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
@@ -97,53 +96,6 @@ public class Files extends AbstractApiBean {
         dashes();
         msg(m);
         dashes();
-    }
-
-    /**
-     * Restrict or Unrestrict an Existing File
-     *
-     * @param fileToRestrictId
-     * @param restrictStr
-     * @return
-     * @author sarahferry
-     */
-    @PUT
-    @Path("{id}/restrict")
-    public Response restrictFileInDataset(@PathParam("id") String fileToRestrictId, String restrictStr) {
-        //create request
-        DataverseRequest dataverseRequest = null;
-        //get the datafile
-        DataFile dataFile;
-        try {
-            dataFile = findDataFileOrDie(fileToRestrictId);
-        } catch (WrappedResponse ex) {
-            return error(BAD_REQUEST, "Could not find datafile with id " + fileToRestrictId);
-        }
-
-        boolean restrict = Boolean.valueOf(restrictStr);
-
-        try {
-            dataverseRequest = createDataverseRequest(findUserOrDie());
-        } catch (WrappedResponse wr) {
-            return error(BAD_REQUEST, "Couldn't find user to execute command: " + wr.getLocalizedMessage());
-        }
-
-        // try to restrict the datafile
-        try {
-            engineSvc.submit(new RestrictFileCommand(dataFile, dataverseRequest, restrict));
-        } catch (CommandException ex) {
-            return error(BAD_REQUEST, "Problem trying to update restriction status on " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());
-        }
-
-        // update the dataset
-        try {
-            engineSvc.submit(new UpdateDatasetVersionCommand(dataFile.getOwner(), dataverseRequest));
-        } catch (CommandException ex) {
-            return error(BAD_REQUEST, "Problem saving datafile " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());
-        }
-
-        String text = restrict ? "restricted." : "unrestricted.";
-        return ok("File " + dataFile.getDisplayName() + " " + text);
     }
 
 

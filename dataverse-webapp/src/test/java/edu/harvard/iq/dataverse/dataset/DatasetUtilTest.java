@@ -5,8 +5,11 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse.RestrictType;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import org.junit.Test;
+
+import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,9 +59,16 @@ public class DatasetUtilTest {
         Dataset dataset = new Dataset();
         DataFile thumbnailFile = new DataFile();
         thumbnailFile.setId(42l);
-        thumbnailFile.setRestricted(true);
+        
+        FileMetadata thumbnailFileMetadata = MocksFactory.makeFileMetadata(123l, "file.png", 0);
+        thumbnailFileMetadata.getTermsOfUse().setLicense(null);
+        thumbnailFileMetadata.getTermsOfUse().setRestrictType(RestrictType.ACADEMIC_PURPOSE);
+        
+        thumbnailFile.setFileMetadatas(Lists.newArrayList(thumbnailFileMetadata));
         dataset.setThumbnailFile(thumbnailFile);
+        
         DatasetThumbnail result = DatasetUtil.getThumbnail(dataset);
+        
         assertNull(result);
     }
 

@@ -32,11 +32,14 @@ import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
 import edu.harvard.iq.dataverse.license.FileTermsOfUse;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.license.TermsOfUseFactory;
 import edu.harvard.iq.dataverse.license.TermsOfUseFormMapper;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import io.vavr.control.Try;
 import org.apache.commons.io.FileUtils;
+
+import com.google.common.base.Preconditions;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.ejb.EJBException;
@@ -1300,35 +1303,26 @@ public class FileUtil implements java.io.Serializable {
         return false;
     }
 
-    public static boolean isRequestAccessPopupRequired(DatasetVersion datasetVersion) {
+    public static boolean isRequestAccessPopupRequired(FileMetadata fileMetadata) {
+        Preconditions.checkNotNull(fileMetadata);
         // Each of these conditions is sufficient reason to have to 
         // present the user with the popup: 
-        if (datasetVersion == null) {
-            logger.fine("Download popup required because datasetVersion is null.");
-            return false;
-        }
+
         //0. if version is draft then Popup "not required"
-        if (!datasetVersion.isReleased()) {
-            logger.fine("Download popup required because datasetVersion has not been released.");
+        if (!fileMetadata.getDatasetVersion().isReleased()) {
+            logger.fine("Request access popup not required because datasetVersion has not been released.");
             return false;
         }
-        // 1. License and Terms of Use:
-        if (datasetVersion.getTermsOfUseAndAccess() != null) {
-            if (!TermsOfUseAndAccess.License.CC0.equals(datasetVersion.getTermsOfUseAndAccess().getLicense())
-                    && !(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
-                    || datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
-                logger.fine("Download popup required because of license or terms of use.");
-                return true;
-            }
 
-            // 2. Terms of Access:
-            if (!(datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess() == null) && !datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess().equals("")) {
-                logger.fine("Download popup required because of terms of access.");
-                return true;
-            }
+        // 1. Terms of Use:
+        FileTermsOfUse termsOfUse = fileMetadata.getTermsOfUse();
+        if (termsOfUse.getTermsOfUseType() == TermsOfUseType.RESTRICTED) {
+            logger.fine("Request access popup required because file is restricted.");
+            return true;
         }
 
-        logger.fine("Download popup is not required.");
+
+        logger.fine("Request access popup is not required.");
         return false;
     }
 
@@ -1340,7 +1334,7 @@ public class FileUtil implements java.io.Serializable {
         if (fileMetadata == null) {
             return false;
         }
-        if (fileMetadata.isRestricted()) {
+        if (fileMetadata.getTermsOfUse().getTermsOfUseType() == TermsOfUseType.RESTRICTED) {
             String msg = "Not publicly downloadable because the file is restricted.";
             logger.fine(msg);
             return false;

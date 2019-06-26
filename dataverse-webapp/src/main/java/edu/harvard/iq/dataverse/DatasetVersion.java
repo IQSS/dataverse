@@ -593,7 +593,6 @@ public class DatasetVersion implements Serializable {
             newFm.setDescription(fm.getDescription());
             newFm.setLabel(fm.getLabel());
             newFm.setDirectoryLabel(fm.getDirectoryLabel());
-            newFm.setRestricted(fm.isRestricted());
             newFm.setDataFile(fm.getDataFile());
             newFm.setDatasetVersion(dsv);
             newFm.setProvFreeForm(fm.getProvFreeForm());
