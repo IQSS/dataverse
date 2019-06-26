@@ -229,6 +229,11 @@ You will not have to leave the dataset page to complete these action, except for
 
 If you restrict files, you will also prompted with a popup asking you to fill out the Terms of Access for the files. If Terms of Access already exist, you will be asked to confirm them. Note that some Dataverse installations do not allow for file restrictions.
 
+Edit File Variable Metadata
+---------------------------
+
+Variable Metadata can be edited directly through an API call (link to guides page) or by using the https://github.com/scholarsportal/Dataverse-Data-Curation-Tool
+
 File Path
 ---------
 
