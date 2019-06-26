@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.io.filefilter.NotFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 
@@ -64,6 +65,9 @@ public class FileRecordReader extends AbstractItemReader {
     @BatchProperty
     String excludes;
 
+    @Inject
+    private SystemConfig systemConfig;
+
     @EJB
     DatasetServiceBean datasetServiceBean;
 
@@ -95,7 +99,7 @@ public class FileRecordReader extends AbstractItemReader {
     @Override
     public void open(Serializable checkpoint) throws Exception {
 
-        directory = new File(System.getProperty("dataverse.files.directory")
+        directory = new File(systemConfig.getFilesDirectory()
                                      + SEP + dataset.getAuthority() + SEP + dataset.getIdentifier() + SEP + uploadFolder);
         getJobLogger().log(Level.INFO, "Reading dataset directory: " + directory.getAbsolutePath()
                 + " (excluding: " + excludes + ")");

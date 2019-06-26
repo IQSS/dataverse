@@ -4,11 +4,12 @@ import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
+import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import javax.inject.Inject;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -82,11 +83,9 @@ public class SwordIT {
         Response serviceDocumentResponse = UtilIT.getServiceDocument(apitoken);
         serviceDocumentResponse.prettyPrint();
 
-        SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
-
         serviceDocumentResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("service.version", equalTo(swordConfiguration.generatorVersion()));
+                .body("service.version", equalTo("2.0"));
 
         String collection = serviceDocumentResponse.getBody().xmlPath().get("service.workspace.collection").toString();
         System.out.println("collection: " + collection);

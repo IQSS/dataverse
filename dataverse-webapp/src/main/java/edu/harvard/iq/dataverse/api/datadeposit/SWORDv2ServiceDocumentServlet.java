@@ -20,12 +20,12 @@ public class SWORDv2ServiceDocumentServlet extends SwordServlet {
      * that we can inject SettingsServiceBean in SwordConfigurationImpl.
      */
     @Inject
-    SwordConfigurationImpl swordConfigurationImpl;
+    SwordConfigurationFactory swordConfigurationFactory;
 
     @Override
     public void init() throws ServletException {
         super.init();
-        this.api = new ServiceDocumentAPI(serviceDocumentManagerImpl, swordConfigurationImpl);
+        this.api = new ServiceDocumentAPI(serviceDocumentManagerImpl, swordConfigurationFactory.createSwordConfiguration());
     }
 
     @Override

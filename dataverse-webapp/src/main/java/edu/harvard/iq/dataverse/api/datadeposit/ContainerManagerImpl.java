@@ -68,7 +68,6 @@ public class ContainerManagerImpl implements ContainerManager {
     SwordAuth swordAuth;
     @Inject
     private UrlManagerServiceBean urlManagerServiceBean;
-    SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
     @EJB
     SwordServiceBean swordService;
     private HttpServletRequest httpRequest;
@@ -256,7 +255,7 @@ public class ContainerManagerImpl implements ContainerManager {
                             } else if (datasetVersionState.equals(DatasetVersion.VersionState.RELEASED)) {
                                 throw new SwordError(UriRegistry.ERROR_METHOD_NOT_ALLOWED,
                                         "Deaccessioning a dataset is no longer supported as of Data Deposit API version in URL (" +
-                                                swordConfiguration.getBaseUrlPathV1() + ") Equivalent functionality is being developed at https://github.com/IQSS/dataverse/issues/778");
+                                                SwordConfigurationConstants.BASE_URL_PATH_V1 + ") Equivalent functionality is being developed at https://github.com/IQSS/dataverse/issues/778");
                             } else if (datasetVersionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
                                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST,
                                         "Lastest version of dataset " + dataset.getGlobalIdString() +

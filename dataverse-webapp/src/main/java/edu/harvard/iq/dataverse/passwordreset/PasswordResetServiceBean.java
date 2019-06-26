@@ -105,7 +105,7 @@ public class PasswordResetServiceBean {
     private String createResetUrl(PasswordResetData passwordResetData) {
         // default to localhost
         String finalHostname = "localhost";
-        String configuredHostname = systemConfig.getFqdnProperty();
+        String configuredHostname = systemConfig.getFqdn();
         if (configuredHostname != null) {
             if (configuredHostname.equals("localhost")) {
                 // must be a dev environment

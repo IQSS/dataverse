@@ -8,7 +8,7 @@ import com.jayway.restassured.specification.RequestSpecification;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
-import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
+import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationConstants;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import org.apache.commons.io.IOUtils;
@@ -51,8 +51,6 @@ public class UtilIT {
     private static final String API_TOKEN_KEY = "apiToken";
     private static final String BUILTIN_USER_KEY = "burrito";
     private static final String EMPTY_STRING = "";
-
-    private static SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
 
     static Matcher<String> equalToCI(String value) {
         String valueLc = value.toLowerCase();
@@ -242,7 +240,7 @@ public class UtilIT {
     public static Response getServiceDocument(String apiToken) {
         Response response = given()
                 .auth().basic(apiToken, EMPTY_STRING)
-                .get(swordConfiguration.getBaseUrlPathCurrent() + "/service-document");
+                .get(SwordConfigurationConstants.BASE_URL_PATH_CURRENT + "/service-document");
         return response;
     }
 
@@ -352,7 +350,7 @@ public class UtilIT {
                 .auth().basic(apiToken, EMPTY_STRING)
                 .body(xmlIn)
                 .contentType("application/atom+xml")
-                .post(swordConfiguration.getBaseUrlPathCurrent() + "/collection/dataverse/" + dataverseToCreateDatasetIn);
+                .post(SwordConfigurationConstants.BASE_URL_PATH_CURRENT + "/collection/dataverse/" + dataverseToCreateDatasetIn);
         return createDatasetResponse;
     }
 
@@ -370,7 +368,7 @@ public class UtilIT {
     static Response listDatasetsViaSword(String dataverseAlias, String apiToken) {
         Response response = given()
                 .auth().basic(apiToken, EMPTY_STRING)
-                .get(swordConfiguration.getBaseUrlPathCurrent() + "/collection/dataverse/" + dataverseAlias);
+                .get(SwordConfigurationConstants.BASE_URL_PATH_CURRENT + "/collection/dataverse/" + dataverseAlias);
         return response;
     }
 
@@ -380,7 +378,7 @@ public class UtilIT {
                 .auth().basic(apiToken, EMPTY_STRING)
                 .body(xmlIn)
                 .contentType("application/atom+xml")
-                .put(swordConfiguration.getBaseUrlPathCurrent() + "/edit/study/" + persistentId);
+                .put(SwordConfigurationConstants.BASE_URL_PATH_CURRENT + "/edit/study/" + persistentId);
         return updateDatasetResponse;
     }
 
@@ -490,7 +488,7 @@ public class UtilIT {
                  * https://github.com/jayway/rest-assured/issues/507#issuecomment-162963787
                  */
                 .auth().preemptive().basic(apiToken, EMPTY_STRING)
-                .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit-media/study/" + persistentId);
+                .post(SwordConfigurationConstants.BASE_URL_PATH_CURRENT + "/edit-media/study/" + persistentId);
         return swordStatementResponse;
 
     }
@@ -517,7 +515,7 @@ public class UtilIT {
                  * https://github.com/jayway/rest-assured/issues/507#issuecomment-162963787
                  */
                 .auth().preemptive().basic(apiToken, EMPTY_STRING)
-                .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit-media/study/" + persistentId);
+                .post(SwordConfigurationConstants.BASE_URL_PATH_CURRENT + "/edit-media/study/" + persistentId);
         return swordStatementResponse;
 
     }
@@ -670,14 +668,14 @@ public class UtilIT {
     static Response getSwordAtomEntry(String persistentId, String apiToken) {
         Response response = given()
                 .auth().basic(apiToken, EMPTY_STRING)
-                .get(swordConfiguration.getBaseUrlPathCurrent() + "/edit/study/" + persistentId);
+                .get(SwordConfigurationConstants.BASE_URL_PATH_CURRENT + "/edit/study/" + persistentId);
         return response;
     }
 
     static Response getSwordStatement(String persistentId, String apiToken) {
         Response swordStatementResponse = given()
                 .auth().basic(apiToken, EMPTY_STRING)
-                .get(swordConfiguration.getBaseUrlPathCurrent() + "/statement/study/" + persistentId);
+                .get(SwordConfigurationConstants.BASE_URL_PATH_CURRENT + "/statement/study/" + persistentId);
         return swordStatementResponse;
     }
 
@@ -816,7 +814,7 @@ public class UtilIT {
         return given()
                 .auth().basic(apiToken, EMPTY_STRING)
                 .relaxedHTTPSValidation()
-                .delete(swordConfiguration.getBaseUrlPathCurrent() + "/edit/study/" + persistentId);
+                .delete(SwordConfigurationConstants.BASE_URL_PATH_CURRENT + "/edit/study/" + persistentId);
     }
 
     static Response destroyDataset(Integer datasetId, String apiToken) {
@@ -829,14 +827,14 @@ public class UtilIT {
         return given()
                 .auth().basic(apiToken, EMPTY_STRING)
                 .relaxedHTTPSValidation()
-                .delete(swordConfiguration.getBaseUrlPathCurrent() + "/edit-media/file/" + fileId);
+                .delete(SwordConfigurationConstants.BASE_URL_PATH_CURRENT + "/edit-media/file/" + fileId);
     }
 
     static Response publishDatasetViaSword(String persistentId, String apiToken) {
         return given()
                 .auth().basic(apiToken, EMPTY_STRING)
                 .header("In-Progress", "false")
-                .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit/study/" + persistentId);
+                .post(SwordConfigurationConstants.BASE_URL_PATH_CURRENT + "/edit/study/" + persistentId);
     }
 
     static Response publishDatasetViaNativeApi(String idOrPersistentId, String majorOrMinor, String apiToken) {
@@ -892,7 +890,7 @@ public class UtilIT {
         return given()
                 .auth().basic(apiToken, EMPTY_STRING)
                 .header("In-Progress", "false")
-                .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit/dataverse/" + alias);
+                .post(SwordConfigurationConstants.BASE_URL_PATH_CURRENT + "/edit/dataverse/" + alias);
     }
 
     static Response publishDataverseViaNativeApi(String dataverseAlias, String apiToken) {

@@ -19,7 +19,7 @@ public class SWORDv2MediaResourceServlet extends SwordServlet {
      * that we can inject SettingsServiceBean in SwordConfigurationImpl.
      */
     @Inject
-    SwordConfigurationImpl swordConfigurationImpl;
+    SwordConfigurationFactory swordConfigurationFactory;
 
     protected MediaResourceAPI api;
 
@@ -30,7 +30,7 @@ public class SWORDv2MediaResourceServlet extends SwordServlet {
         super.init();
 
         // load the api
-        this.api = new MediaResourceAPI(mediaResourceManagerImpl, swordConfigurationImpl);
+        this.api = new MediaResourceAPI(mediaResourceManagerImpl, swordConfigurationFactory.createSwordConfiguration());
     }
 
     @Override
