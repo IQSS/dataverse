@@ -775,7 +775,10 @@ public class IndexServiceBean {
                         // no-op. we want to keep email address out of Solr per
                         // https://github.com/IQSS/dataverse/issues/759
                     } else if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.DATE)) {
-                        String dateAsString = dsf.getValues_nondisplay().get(0);
+                        String dateAsString = "";
+                        if (!dsf.getValues_nondisplay().isEmpty()) {
+                            dateAsString = dsf.getValues_nondisplay().get(0);
+                        }                      
                         logger.fine("date as string: " + dateAsString);
                         if (dateAsString != null && !dateAsString.isEmpty()) {
                             SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
