@@ -76,7 +76,7 @@
                     <!-- View editMode -->
                     <p:fragment id="topDatasetBlockFragment">
                     <div id="topDatasetBlock" class="row" jsf:rendered="#{empty DatasetPage.editMode}">
-                        <div id="actionButtonBlock" class="button-block clearfix" jsf:rendered="#{!widgetWrapper.widgetView}">
+                        <div style="border:0px solid purple;" id="actionButtonBlock" class="button-block clearfix" jsf:rendered="#{!widgetWrapper.widgetView}">
                             <div class="btn-group pull-right" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
                                                                               and !DatasetPage.dataset.deaccessioned
                                                                               and DatasetPage.showComputeButton()}">
@@ -345,30 +345,33 @@
                         
                         
                         
-                        <div id="datasetVersionBlock" class="col-sm-12" style="background-color:white;">
+                        <div id="datasetVersionBlock" class="col-sm-12" style="border:0px solid red;">
                             
                             
-                            <div id="title-block" class="row" style="background-color:white;" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
+                            <div id="title-block" class="row margin-bottom-half" style="background-color:lightsalmon;background:none;" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
                                 <div class="col-xs-1 vcenter title-preview-icon-block">
                                     <img src="#{DatasetPage.thumbnailString}" jsf:rendered="#{!empty DatasetPage.thumbnailString}"/>
                                     <span class="icon-dataset" jsf:rendered="#{empty DatasetPage.thumbnailString}"/>
                                 </div>
                                 <div class="col-xs-11 vcenter">
                                     <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
-                                    <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{DatasetPage.workingVersion.draft}"/>
-                                    <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{DatasetPage.workingVersion.inReview}"/>
-                                    <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
-                                    <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
-                                    <!-- DATASET VERSION NUMBER -->
-                                    <h:outputText styleClass="label label-default" rendered="#{DatasetPage.workingVersion.released and !(DatasetPage.workingVersion.draft or DatasetPage.workingVersion.inReview or DatasetPage.workingVersion.deaccessioned)}"
-                                                  value="#{bundle['file.DatasetVersion']} #{DatasetPage.workingVersion.versionNumber}.#{DatasetPage.workingVersion.minorVersionNumber}" /> 
-                                    <h:outputText styleClass="label label-default" rendered="#{!DatasetPage.workingVersion.released and !(DatasetPage.workingVersion.draft or DatasetPage.workingVersion.inReview or DatasetPage.workingVersion.deaccessioned)}"
-                                                  value="#{bundle['file.DatasetVersion']} #{DatasetPage.workingVersion.versionState}"/>
+                                    
+                                    <div id="title-label-block" class="margin-top-half">
+                                        <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{DatasetPage.workingVersion.draft}"/>
+                                        <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{DatasetPage.workingVersion.inReview}"/>
+                                        <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
+                                        <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
+                                        <!-- DATASET VERSION NUMBER -->
+                                        <h:outputText styleClass="label label-default" rendered="#{DatasetPage.workingVersion.released and !(DatasetPage.workingVersion.draft or DatasetPage.workingVersion.inReview or DatasetPage.workingVersion.deaccessioned)}"
+                                                      value="#{bundle['file.DatasetVersion']} #{DatasetPage.workingVersion.versionNumber}.#{DatasetPage.workingVersion.minorVersionNumber}" /> 
+                                        <h:outputText styleClass="label label-default" rendered="#{!DatasetPage.workingVersion.released and !(DatasetPage.workingVersion.draft or DatasetPage.workingVersion.inReview or DatasetPage.workingVersion.deaccessioned)}"
+                                                      value="#{bundle['file.DatasetVersion']} #{DatasetPage.workingVersion.versionState}"/>
+                                    </div>
                                 </div>
                             </div>
                             
                             
-                            <div class="row"  style="background-color:white;">
+                            <div class="row"  style="background-color:lightpink;background:none;">
                                 
                                 
                                 <!-- CITATION BLOCK   ****REMOVED ROW CLASS****-->
@@ -388,16 +391,38 @@
                                 
                                 
                                 <!-- Metrics -->
-                                <div style="margin-bottom:20px;background-color:white;" id="metrics-block" class="col-sm-3" jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">
-                                    <div id="metrics-label" class="">
+                                <div style="margin-bottom:20px;background-color:lightgreen;background:none;" id="metrics-block" class="col-sm-3" jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">
+                                    <div id="metrics-label" class="highlightBold">
                                         Dataset #{bundle['metrics.title']}
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                       data-toggle="tooltip" data-placement="auto top" data-original-title="METRICS LABEL DESC HERE"></span>
                                     </div>
                                     <div id="metrics-content" class="" style="border:1px solid #EEE; border-top-width:0;">
-                                        <h:outputFormat styleClass="metrics-downloads" value="{0} #{bundle['metrics.downloads']}">
-                                            <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
-                                        </h:outputFormat>
+                                        <div class="metrics-downloads margin-bottom-half" style="padding-bottom:.5em; border-bottom:1px solid #EEE" jsf:rendered="#{true}">
+                                            <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
+                                                <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
+                                            </h:outputFormat>
+                                        </div>
+                                        
+                                        <div class="metrics-downloads-mdc margin-bottom-half" style="padding-bottom:.5em; border-bottom:1px solid #EEE" jsf:rendered="#{true}">
+                                            <h:outputLink value="https://makedatacount.org/" target="_blank">
+                                                <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
+                                                    <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
+                                                </h:outputFormat>
+                                            </h:outputLink>
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                          data-toggle="tooltip" data-placement="auto top" data-original-title="METRICS LABEL DESC HERE"></span>
+                                        </div>
+
+                                        <div class="metrics-citations-mdc" jsf:rendered="#{true}">
+                                            <h:outputLink value="https://makedatacount.org/" target="_blank">
+                                                <h:outputFormat value="{0} #{bundle['metrics.citations']}">
+                                                    <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
+                                                </h:outputFormat>
+                                            </h:outputLink>
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                          data-toggle="tooltip" data-placement="auto top" data-original-title="METRICS LABEL DESC HERE"></span>
+                                        </div>
                                     </div>
                                 </div>
                                 <!-- END: Metrics -->
@@ -407,7 +432,7 @@
                             
                             
                             <!-- BEGIN: DATASET SUMMARY -->
-                            <div id="dataset-summary-metadata" class="row"
+                            <div id="dataset-summary-metadata" class="row" style="background-color:lightgoldenrodyellow;background:none;"
                                  jsf:rendered="#{!widgetWrapper.widgetView and !DatasetPage.workingVersion.deaccessioned and 
                                                    ( !empty DatasetPage.datasetVersionUI.descriptionDisplay
                                                  or !empty DatasetPage.datasetVersionUI.keywordDisplay
