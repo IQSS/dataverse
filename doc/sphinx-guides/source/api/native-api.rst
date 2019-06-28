@@ -823,6 +823,8 @@ Updates variable level metadata using ddi xml ``$file``, where ``$id`` is file i
 
 Example: ``curl -H "X-Dataverse-key:$API_TOKEN" -X PUT http://localhost:8080/api/edit/95 --upload-file dct.xml``
 
+You can download :download:`dct.xml <../../../../src/test/resources/xml/dct.xml>` from the example above to see what the XML looks like.
+
 Provenance
 ~~~~~~~~~~
 Get Provenance JSON for an uploaded file::
