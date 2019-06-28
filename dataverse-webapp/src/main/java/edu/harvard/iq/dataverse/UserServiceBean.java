@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.RoleTranslationUtil;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
@@ -142,7 +143,7 @@ public class UserServiceBean {
      * Attempt to retrieve all the user roles in 1 query
      * Consider putting limits on this -- e.g. no more than 1,000 user identifiers or something similar
      *
-     * @param userIdentifierList
+     * @param userObjectList
      * @return
      */
     private HashMap<String, List<String>> retrieveRolesForUsers(List<Object[]> userObjectList) {
@@ -184,12 +185,13 @@ public class UserServiceBean {
         // Create/Run the query to find directly assigned roles
         // -------------------------------------------------
         String qstr = "SELECT distinct a.assigneeidentifier,";
+        qstr += " d.alias";
         qstr += " d.name";
         qstr += " FROM roleassignment a,";
         qstr += " dataverserole d";
         qstr += " WHERE d.id = a.role_id";
         qstr += " AND a.assigneeidentifier IN (" + identifierListString + ")";
-        qstr += " ORDER by a.assigneeidentifier, d.name;";
+        qstr += " ORDER by a.assigneeidentifier, d.alias;";
 
         Query nativeQuery = em.createNativeQuery(qstr);
 
@@ -205,7 +207,8 @@ public class UserServiceBean {
         for (Object[] dbResultRow : dbRoleResults) {
 
             userIdentifier = UserUtil.getStringOrNull(dbResultRow[0]);
-            userRole = UserUtil.getStringOrNull(dbResultRow[1]);
+            userRole = RoleTranslationUtil.getLocaleNameFromAlias(UserUtil.getStringOrNull(dbResultRow[1]),
+                        UserUtil.getStringOrNull(dbResultRow[2]));
             if ((userIdentifier != null) && (userRole != null)) {  // should never be null
 
                 List<String> userRoleList = userRoleLookup.getOrDefault(userIdentifier, new ArrayList<String>());
@@ -281,13 +284,14 @@ public class UserServiceBean {
         }
 
         qstr = "SELECT distinct a.assigneeidentifier,";
+        qstr += " d.alias";
         qstr += " d.name";
         qstr += " FROM roleassignment a,";
         qstr += " dataverserole d";
         qstr += " WHERE d.id = a.role_id";
         qstr += " AND a.assigneeidentifier IN (";
         qstr += groupIdentifiers;
-        qstr += ") ORDER by a.assigneeidentifier, d.name;";
+        qstr += ") ORDER by a.assigneeidentifier, d.alias;";
 
         //System.out.println("qstr: " + qstr);
 
@@ -302,7 +306,8 @@ public class UserServiceBean {
         for (Object[] dbResultRow : dbRoleResults) {
 
             String groupIdentifier = UserUtil.getStringOrNull(dbResultRow[0]);
-            String groupRole = UserUtil.getStringOrNull(dbResultRow[1]);
+            String groupRole = RoleTranslationUtil.getLocaleNameFromAlias(UserUtil.getStringOrNull(dbResultRow[1]),
+                        UserUtil.getStringOrNull(dbResultRow[2]));
             if ((groupIdentifier != null) && (groupRole != null)) {  // should never be null
 
                 List<String> groupUserList = groupsLookup.get(groupIdentifier);

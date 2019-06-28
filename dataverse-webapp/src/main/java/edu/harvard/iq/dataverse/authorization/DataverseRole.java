@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.authorization;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.util.BitSet;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -21,7 +20,6 @@ import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.Set;
 
@@ -130,22 +128,7 @@ public class DataverseRole implements Serializable {
     }
 
     public String getName() {
-        if (alias != null) {
-            try {
-                String key = "role." + alias.toLowerCase() + ".name";
-                String _name = BundleUtil.getStringFromPropertyFile(key, "BuiltInRoles");
-                if (_name == null) {
-                    return name;
-                } else {
-                    return _name;
-                }
-            } catch (MissingResourceException mre) {
-                return name;
-            }
-
-        } else {
-            return name;
-        }
+        return RoleTranslationUtil.getLocaleNameFromAlias(alias, name);
     }
 
     public void setName(String name) {
@@ -153,23 +136,7 @@ public class DataverseRole implements Serializable {
     }
 
     public String getDescription() {
-        if (alias != null) {
-            String key = "role." + alias.toLowerCase() + ".description";
-            try {
-                String _description = BundleUtil.getStringFromPropertyFile(key, "BuiltInRoles");
-                if (_description == null) {
-                    return description;
-                } else {
-                    return _description;
-                }
-
-            } catch (MissingResourceException mre) {
-                return description;
-            }
-
-        } else {
-            return description;
-        }
+        return RoleTranslationUtil.getLocaleDescriptionFromAlias(alias, description);
     }
 
     public void setDescription(String description) {
