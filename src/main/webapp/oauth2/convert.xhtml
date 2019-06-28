@@ -28,6 +28,7 @@
                 <p:tabView id="tabView">
                     <p:tab id="convertAccountTab" title="#{bundle['account.info']}">
                         <h:form id="convertAccountForm" styleClass="form-horizontal">
+                            <p:focus context="convertAccountForm"/>
                             <p class="help-block">
                                 <h:outputFormat value="#{OAuth2FirstLoginPage.convertTip}" escape="false"/>
                             </p>
@@ -58,7 +59,6 @@
                                 </div>
                             </div>
                             
-                            
                             <div class="form-group">
                                 <div class="col-sm-offset-3 col-sm-9">
                                     <a href="/passwordreset.xhtml">
@@ -70,8 +70,8 @@
                                 <div class="col-md-12 button-block">
                                     <p:commandButton value="#{bundle['oauth2.convertAccount.buttonTitle']}" styleClass="btn btn-default"
                                                      action="#{OAuth2FirstLoginPage.convertExistingAccount}"
-                                                     ajax="false" update="@all" />
-                                    <p:commandButton value="#{bundle['cancel']}" styleClass="btn btn-default"
+                                                     ajax="false" update="@all"/>
+                                    <p:commandButton value="#{bundle['cancel']}" styleClass="btn btn-link"
                                                      action="/oauth2/firstLogin.xhtml?faces-redirect=true"/>
                                 </div>
                             </div>
