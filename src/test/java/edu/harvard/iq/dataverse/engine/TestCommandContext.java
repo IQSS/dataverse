@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.util.List;
+import java.util.Stack;
 import javax.persistence.EntityManager;
 
 /**
@@ -260,7 +261,7 @@ public class TestCommandContext implements CommandContext {
     }
 
     @Override
-    public List<Command> getCommandsCalled() {
+    public Stack<Command> getCommandsCalled() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

@@ -29,7 +29,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
+import edu.harvard.iq.dataverse.engine.command.Command;
 import java.util.concurrent.Future;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  *
@@ -102,9 +105,22 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         ddu.setLastUpdateDate(getTimestamp());
         ctxt.em().merge(ddu);
         
-        updateParentDataversesSubjectsField(theDataset, ctxt);
+        try {
+            updateParentDataversesSubjectsField(theDataset, ctxt);
+        } catch (IOException | SolrServerException e) {
+            String failureLogText = "Post-publication indexing failed for Dataverse subject update. ";
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, theDataset);
 
+        }
+
+        List<Command> previouslyCalled = ctxt.getCommandsCalled();
+        
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
+        List<Command> afterSub = ctxt.getCommandsCalled();
+        previouslyCalled.forEach((c) -> {
+            ctxt.getCommandsCalled().add(c);
+        });
         if (privateUrl != null) {
             ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
         }
@@ -116,6 +132,13 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 		}
 		theDataset.getLatestVersion().setVersionState(RELEASED);
 	}
+        
+        /* it was here...
+                exportMetadata(ctxt.settings());
+        boolean doNormalSolrDocCleanUp = true;
+        ctxt.index().indexDataset(theDataset, doNormalSolrDocCleanUp);
+        ctxt.solrIndex().indexPermissionsForOneDvObject(theDataset);
+        */
         
 
         // Remove locks
@@ -148,22 +171,23 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
         boolean retVal = true;
-        Future<String> indexString = ctxt.index().indexDataset((Dataset) r, true);
-        
-        /*
-        
-        - trying to get a reasonable return to the admion when there's a failure
-        need some work here on the innards of the Future<String> return value of the indexDataset method
-        try {
-            System.out.print("Done?" + indexString.isDone());
-        } catch (Exception e) {
-            System.out.print("Done Exception" + e.getMessage());
+        Dataset dataset = null;
+        try{
+            dataset = (Dataset) r;
+        } catch (ClassCastException e){
+            dataset  = ((PublishDatasetResult) r).getDataset();
         }
-        
-        */
 
+        try {
+            Future<String> indexString = ctxt.index().indexDataset(dataset, true);                   
+        } catch (IOException | SolrServerException e) {    
+            String failureLogText = "Post-publication indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText,  dataset);
+            retVal = false;
+        }
 
-        ctxt.solrIndex().indexPermissionsForOneDvObject((Dataset) r);
+        ctxt.solrIndex().indexPermissionsForOneDvObject(dataset);
         exportMetadata(ctxt.settings());
         return retVal;
     }
@@ -190,7 +214,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     /**
      * add the dataset subjects to all parent dataverses.
      */
-    private void updateParentDataversesSubjectsField(Dataset savedDataset, CommandContext ctxt) {
+    private void updateParentDataversesSubjectsField(Dataset savedDataset, CommandContext ctxt) throws  SolrServerException, IOException {
         for (DatasetField dsf : savedDataset.getLatestVersion().getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {
                 Dataverse dv = savedDataset.getOwner();

@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -18,6 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.io.IOException;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -25,6 +27,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  * TODO make override the date and user more active, so prevent code errors.
@@ -166,7 +169,15 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
     
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
-        ctxt.index().indexDataverse((Dataverse) r);
+        try{
+            ctxt.index().indexDataverse((Dataverse) r);
+        } catch (IOException | SolrServerException e){           
+            Dataverse dv = (Dataverse) r;            
+            String failureLogText = "Indexing failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + dv.getId().toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText,  dv);
+            return false;
+        }
         return true;
     }
 

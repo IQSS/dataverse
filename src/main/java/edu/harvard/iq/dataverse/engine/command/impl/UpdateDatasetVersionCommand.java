@@ -3,15 +3,19 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  *
@@ -185,9 +189,22 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
     }
     
     @Override
-    public boolean onSuccess(CommandContext ctxt, Object r){
-        ctxt.index().indexDataset((Dataset) r, true);
-        return true;
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+
+        boolean retVal = true;
+        Dataset dataset = (Dataset) r;
+
+        try {
+            Future<String> indexString = ctxt.index().indexDataset(dataset, true);
+        } catch (IOException | SolrServerException e) {
+            String failureLogText = "Post update dataset indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, dataset);
+            retVal = false;
+        }
+
+        return retVal;
+
     }
 
 }

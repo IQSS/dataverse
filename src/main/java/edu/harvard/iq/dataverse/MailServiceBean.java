@@ -220,7 +220,8 @@ public class MailServiceBean implements java.io.Serializable {
     
     
     public Boolean sendNotificationEmail(UserNotification notification, String comment, AuthenticatedUser requestor){  
-
+        return true;
+        /*
         boolean retval = false;
         String emailAddress = getUserEmailAddress(notification);
         if (emailAddress != null){
@@ -241,6 +242,7 @@ public class MailServiceBean implements java.io.Serializable {
             logger.warning("Skipping " + notification.getType() +  " notification, because email address is null");
         }
         return retval;
+        */
     }
 
     private String getDatasetManageFileAccessLink(DataFile datafile){

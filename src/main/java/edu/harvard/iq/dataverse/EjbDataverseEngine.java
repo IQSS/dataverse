@@ -8,6 +8,9 @@ import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import static edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordJobListener.SEP;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -15,7 +18,6 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
@@ -32,9 +34,12 @@ import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
@@ -252,8 +257,15 @@ public class EjbDataverseEngine {
                     getContext().beginCommandSequence();
                 }
                 getContext().addCommand(aCommand);
-                R r = innerEngine.submit(aCommand, getContext());              
-                this.myCompleteCommand(aCommand, r, getContext().getCommandsCalled());
+                Stack<Command> previouslyCalled = getContext().getCommandsCalled();
+                R r = innerEngine.submit(aCommand, getContext());   
+                if (getContext().getCommandsCalled().empty() && !previouslyCalled.empty()){
+                    for (Command c: previouslyCalled){
+                        getContext().getCommandsCalled().add(c);
+                    }
+                }
+                boolean onCompleteSucceded = this.myCompleteCommand(aCommand, r, getContext().getCommandsCalled());
+                //Nothing to do with this boolean "onCompleteSucceded" - failures are sent to the log.
                 return r;
                 
             } catch ( EJBException ejbe ) {
@@ -305,22 +317,29 @@ public class EjbDataverseEngine {
         }
     }
     
-    protected boolean myCompleteCommand(Command command, Object r, List<Command> called) {
+    protected boolean myCompleteCommand(Command command, Object r, Stack<Command> called) {
+        System.out.print("Starting myCompleteCommand: " +  command);
+        
         if (called.isEmpty()){
+            System.out.print("Called is empty: ");
             return true;
         }
+        System.out.print("Called Stack: " +  called);
         Command test = called.get(0);
         if (!test.equals(command)) {
+            System.out.print("Inner command: ");
             return true;
         }
                 
+        boolean retVal = true;
         
         for (Command commandLoop : called) {
-            commandLoop.onSuccess(ctxt, r);
+            System.out.print("on success called: " + commandLoop);
+           retVal &=  commandLoop.onSuccess(ctxt, r);
         }
-        
+        System.out.print("calling clear from : " +  command);
         called.clear();
-        return true;
+        return retVal;
 
     }
     
@@ -329,15 +348,16 @@ public class EjbDataverseEngine {
         if (ctxt == null) {
             ctxt = new CommandContext() {
                 
-                public List<Command> commandsCalled;
+                public Stack<Command> commandsCalled;
                 
                 @Override
                 public void addCommand (Command command){
-                    commandsCalled.add(command);
+                    commandsCalled.push(command);
                 }
                 
+                
                 @Override
-                public List<Command> getCommandsCalled(){
+                public Stack<Command> getCommandsCalled(){
                     return commandsCalled;
                 }
                 
@@ -558,7 +578,7 @@ public class EjbDataverseEngine {
 
                 @Override
                 public void beginCommandSequence() {
-                    this.commandsCalled = new ArrayList();
+                    this.commandsCalled = new Stack();
                 }
 
                 @Override
@@ -569,7 +589,7 @@ public class EjbDataverseEngine {
 
                 @Override
                 public void cancelCommandSequence() {
-                    this.commandsCalled = new ArrayList();
+                    this.commandsCalled = new Stack();
                 }
 
             };

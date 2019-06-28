@@ -42,6 +42,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.util.List;
+import java.util.Stack;
 import javax.persistence.EntityManager;
 
 /**
@@ -149,7 +150,7 @@ public interface CommandContext {
     
     public void cancelCommandSequence();
     
-    public List<Command> getCommandsCalled();
+    public Stack<Command> getCommandsCalled();
     
     public void addCommand(Command command);
 }
