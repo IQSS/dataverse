@@ -3,31 +3,39 @@ package edu.harvard.iq.dataverse.util;
 import edu.harvard.iq.dataverse.metadata.DefaultMetadataBlocks;
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.collect.Sets;
+
 import javax.faces.context.FacesContext;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.logging.Logger;
 
 public class BundleUtil {
 
     private static final Logger logger = Logger.getLogger(BundleUtil.class.getCanonicalName());
 
-    private static final String defaultBundleFile = "Bundle";
+    private static final String DEFAULT_BUNDLE_FILE = "Bundle";
+
+    private static final Set<String> INTERNAL_BUNDLE_NAMES = Sets.newHashSet(
+            DEFAULT_BUNDLE_FILE, "BuiltInRoles", "MimeTypeDisplay", "MimeTypeFacets", "ValidationMessages");
+
 
     public static String getStringFromBundle(String key) {
-        return getStringFromPropertyFile(key, defaultBundleFile);
+        return getStringFromPropertyFile(key, DEFAULT_BUNDLE_FILE);
     }
 
     public static String getStringFromBundle(String key, List<String> arguments) {
-        String stringFromPropertyFile = getStringFromPropertyFile(key, defaultBundleFile);
+        String stringFromPropertyFile = getStringFromPropertyFile(key, DEFAULT_BUNDLE_FILE);
 
         if (arguments != null) {
             return MessageFormat.format(stringFromPropertyFile, arguments.toArray());
@@ -47,7 +55,7 @@ public class BundleUtil {
     public static String getStringFromPropertyFile(String bundleKey, String bundleName) throws MissingResourceException {
         Optional<String> displayNameFromExternalBundle = Optional.empty();
 
-        if ((!DefaultMetadataBlocks.METADATA_BLOCK_NAMES.contains(bundleName) && !bundleName.equals(defaultBundleFile))
+        if ((!DefaultMetadataBlocks.METADATA_BLOCK_NAMES.contains(bundleName) && !INTERNAL_BUNDLE_NAMES.contains(bundleName))
                 && System.getProperty("dataverse.lang.directory") != null) {
             displayNameFromExternalBundle = getStringFromExternalBundle(bundleKey, bundleName);
         }

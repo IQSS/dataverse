@@ -122,7 +122,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
             List<SearchField> searchFields = mapMetadataBlockFieldsToSearchFields(filteredDatasetFields, mdb);
 
-            metadataSearchBlocks.add(new SearchBlock(mdb.getName(), mdb.getDisplayName(), searchFields));
+            metadataSearchBlocks.add(new SearchBlock(mdb.getName(), mdb.getLocaleDisplayName(), searchFields));
         }
         addExtraFieldsToCitationMetadataBlock();
     }

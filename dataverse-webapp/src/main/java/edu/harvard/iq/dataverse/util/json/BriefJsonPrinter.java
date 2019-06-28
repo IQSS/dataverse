@@ -29,7 +29,7 @@ public class BriefJsonPrinter {
         return (blk == null)
                 ? null
                 : jsonObjectBuilder().add("id", blk.getId())
-                .add("displayName", blk.getDisplayName())
+                .add("displayName", blk.getLocaleDisplayName())
                 .add("name", blk.getName())
                 ;
     }

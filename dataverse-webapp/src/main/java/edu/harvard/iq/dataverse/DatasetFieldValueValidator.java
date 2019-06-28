@@ -7,6 +7,10 @@ package edu.harvard.iq.dataverse;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.collect.Lists;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import java.net.MalformedURLException;
@@ -34,29 +38,27 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
 
         context.disableDefaultConstraintViolation(); // we do this so we can have different messages depending on the different issue
 
-        boolean lengthOnly = false;
-
         DatasetFieldType dsfType = value.getDatasetField().getDatasetFieldType();
         FieldType fieldType = dsfType.getFieldType();
 
         if (value.getDatasetField().getTemplate() != null) {
-            lengthOnly = true;
+            return true;
         }
 
         if (value.getDatasetField().getParentDatasetFieldCompoundValue() != null
                 && value.getDatasetField().getParentDatasetFieldCompoundValue().getParentDatasetField().getTemplate() != null) {
-            lengthOnly = true;
+            return true;
         }
 
         if (StringUtils.isBlank(value.getValue()) || StringUtils.equals(value.getValue(), DatasetField.NA_VALUE)) {
             return true;
         }
 
-        if (fieldType.equals(FieldType.TEXT) && !lengthOnly && value.getDatasetField().getDatasetFieldType().getValidationFormat() != null) {
+        if (fieldType.equals(FieldType.TEXT) && value.getDatasetField().getDatasetFieldType().getValidationFormat() != null) {
             boolean valid = value.getValue().matches(value.getDatasetField().getDatasetFieldType().getValidationFormat());
             if (!valid) {
                 try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " is not a valid entry.").addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + BundleUtil.getStringFromBundle("isNotValidEntry")).addConstraintViolation();
                 } catch (NullPointerException e) {
                     return false;
                 }
@@ -64,7 +66,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             }
         }
 
-        if (fieldType.equals(FieldType.DATE) && !lengthOnly) {
+        if (fieldType.equals(FieldType.DATE)) {
             boolean valid = false;
             String testString = value.getValue();
 
@@ -125,7 +127,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             }
             if (!valid) {
                 try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " is not a valid date. \"" + YYYYformat + "\" is a supported format.").addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + BundleUtil.getStringFromBundle("isNotValidDate", Lists.newArrayList(YYYYformat))).addConstraintViolation();
                 } catch (NullPointerException npe) {
 
                 }
@@ -134,13 +136,13 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             }
         }
 
-        if (fieldType.equals(FieldType.FLOAT) && !lengthOnly) {
+        if (fieldType.equals(FieldType.FLOAT)) {
             try {
                 Double.parseDouble(value.getValue());
             } catch (Exception e) {
                 logger.fine("Float value failed validation: " + value.getValue() + " (" + dsfType.getDisplayName() + ")");
                 try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " is not a valid number.").addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + BundleUtil.getStringFromBundle("isNotValidNumber")).addConstraintViolation();
                 } catch (NullPointerException npe) {
 
                 }
@@ -149,12 +151,12 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             }
         }
 
-        if (fieldType.equals(FieldType.INT) && !lengthOnly) {
+        if (fieldType.equals(FieldType.INT)) {
             try {
                 Integer.parseInt(value.getValue());
             } catch (Exception e) {
                 try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " is not a valid integer.").addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + BundleUtil.getStringFromBundle("isNotValidInteger")).addConstraintViolation();
                 } catch (NullPointerException npe) {
 
                 }
@@ -164,12 +166,14 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         }
         // Note, length validation for FieldType.TEXT was removed to accommodate migrated data that is greater than 255 chars.
 
-        if (fieldType.equals(FieldType.URL) && !lengthOnly) {
+        if (fieldType.equals(FieldType.URL)) {
             try {
                 URL url = new URL(value.getValue());
             } catch (MalformedURLException e) {
                 try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() + "  is not a valid URL.").addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(
+                            dsfType.getDisplayName() + " " + value.getValue() + " " + 
+                                    BundleUtil.getStringFromBundle("isNotValidUrl")).addConstraintViolation();
                 } catch (NullPointerException npe) {
 
                 }
@@ -178,7 +182,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             }
         }
 
-        if (fieldType.equals(FieldType.EMAIL) && !lengthOnly) {
+        if (fieldType.equals(FieldType.EMAIL)) {
             if (value.getDatasetField().isRequired() && value.getValue() == null) {
                 return false;
             }

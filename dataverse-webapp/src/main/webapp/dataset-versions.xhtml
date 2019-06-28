@@ -88,8 +88,8 @@
                 </ui:fragment>
                 <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.blockDataForNote)}">
                     <ui:repeat value="#{versionTab.defaultVersionDifference.blockDataForNote}" var="blockNote">
-                        <h:outputText styleClass="highlightBold" rendered="#{blockNote[0].datasetFieldType.metadataBlock.displayName == 'Citation Metadata'}" value="#{bundle['file.dataFilesTab.versions.additionalCitationMetadata']} " />
-                        <h:outputText styleClass="highlightBold" rendered="#{!(blockNote[0].datasetFieldType.metadataBlock.displayName == 'Citation Metadata')}" value=" #{blockNote[0].datasetFieldType.metadataBlock.displayName}: " />
+                        <h:outputText styleClass="highlightBold" rendered="#{blockNote[0].datasetFieldType.metadataBlock.isCitationMetaBlock()}" value="#{bundle['file.dataFilesTab.versions.additionalCitationMetadata']} " />
+                        <h:outputText styleClass="highlightBold" rendered="#{!(blockNote[0].datasetFieldType.metadataBlock.isCitationMetaBlock())}" value=" #{blockNote[0].datasetFieldType.metadataBlock.localeDisplayName}: " />
                         <h:outputText value=" (" />
                         <h:outputText rendered="#{blockNote[1] > 0}" value="#{blockNote[1]} #{bundle['file.dataFilesTab.versions.added']}" />
                         <h:outputText rendered="#{(blockNote[1]) > 0 and (blockNote[2] + blockNote[3]) > 0}" value=", " />

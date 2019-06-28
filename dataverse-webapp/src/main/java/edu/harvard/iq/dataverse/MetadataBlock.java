@@ -98,8 +98,7 @@ public class MetadataBlock implements Serializable {
     }
 
     public String getDisplayName() {
-        String bundleDisplayName = getStringFromBundle(format("metadata.type.%s.title", this.name));
-        return isNotBlank(bundleDisplayName) ? bundleDisplayName : displayName;
+        return displayName;
     }
 
     public void setDisplayName(String displayName) {

@@ -466,7 +466,7 @@ public class JsonPrinter {
     public static JsonObjectBuilder json(MetadataBlock block, List<DatasetField> fields) {
         JsonObjectBuilder blockBld = jsonObjectBuilder();
 
-        blockBld.add("displayName", block.getDisplayName());
+        blockBld.add("displayName", block.getLocaleDisplayName());
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
 
         DatasetFieldWalker.walk(fields, settingsService, new DatasetFieldsToJson(fieldsArray));
@@ -500,7 +500,7 @@ public class JsonPrinter {
         JsonObjectBuilder bld = jsonObjectBuilder();
         bld.add("id", blk.getId());
         bld.add("name", blk.getName());
-        bld.add("displayName", blk.getDisplayName());
+        bld.add("displayName", blk.getLocaleDisplayName());
 
         JsonObjectBuilder fieldsBld = jsonObjectBuilder();
         for (DatasetFieldType df : new TreeSet<>(blk.getDatasetFieldTypes())) {

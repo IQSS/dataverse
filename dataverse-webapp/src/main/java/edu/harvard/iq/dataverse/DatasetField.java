@@ -310,8 +310,8 @@ public class DatasetField implements Serializable {
             }
         } else {
             for (ControlledVocabularyValue cvv : controlledVocabularyValues) {
-                if (cvv != null && cvv.getStrValue() != null) {
-                    returnList.add(cvv.getStrValue());
+                if (cvv != null && cvv.getLocaleStrValue() != null) {
+                    returnList.add(cvv.getLocaleStrValue());
                 }
             }
         }

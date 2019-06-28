@@ -1148,7 +1148,7 @@ public final class DatasetVersionDifference {
         if (!this.detailDataByBlock.isEmpty()) {
             for (List<DatasetField[]> blocks : detailDataByBlock) {
                 groupString = System.lineSeparator() + " " + BundleUtil.getStringFromBundle("dataset.versionDifferences.metadataBlock");
-                String blockDisplay = " " + blocks.get(0)[0].getDatasetFieldType().getMetadataBlock().getDisplayName() + ": " + System.lineSeparator();
+                String blockDisplay = " " + blocks.get(0)[0].getDatasetFieldType().getMetadataBlock().getLocaleDisplayName() + ": " + System.lineSeparator();
                 groupString += blockDisplay;
                 for (DatasetField[] dsfArray : blocks) {
                     valueString = " " + BundleUtil.getStringFromBundle("dataset.versionDifferences.field") + ": ";
