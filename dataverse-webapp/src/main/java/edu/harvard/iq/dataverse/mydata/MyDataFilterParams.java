@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang.StringUtils;
 
 import javax.json.Json;
@@ -91,8 +92,8 @@ public class MyDataFilterParams {
     /**
      * Constructor used to get total counts
      *
-     * @param authenticatedUser
-     * @param userIdentifier
+     * @param dataverseRequest
+     * @param roleHelper
      */
     public MyDataFilterParams(DataverseRequest dataverseRequest, DataverseRolePermissionHelper roleHelper) {
         if (dataverseRequest == null) {
@@ -112,7 +113,7 @@ public class MyDataFilterParams {
     }
 
     /**
-     * @param userIdentifier
+     * @param dataverseRequest
      * @param dvObjectTypes
      * @param publicationStatuses
      * @param searchTerm
@@ -173,28 +174,32 @@ public class MyDataFilterParams {
     private void checkParams() {
 
         if ((this.userIdentifier == null) || (this.userIdentifier.isEmpty())) {
-            this.addError("Sorry!  No user was found!");
+            this.addError(BundleUtil.getStringFromBundle("mydataFragment.errorMessage.noUserSelected"));
             return;
         }
 
         if ((this.roleIds == null) || (this.roleIds.isEmpty())) {
-            this.addError("No results. Please select at least one Role.");
+            this.addError(BundleUtil.getStringFromBundle("mydataFragment.errorMessage.noRoleSelected"));
             return;
         }
 
         if ((this.dvObjectTypes == null) || (this.dvObjectTypes.isEmpty())) {
-            this.addError("No results. Please select one of Dataverses, Datasets, Files.");
+            this.addError(BundleUtil.getStringFromBundle("mydataFragment.errorMessage.noDvObjectsSelected"));
             return;
         }
 
         if ((this.publicationStatuses == null) || (this.publicationStatuses.isEmpty())) {
-            this.addError("No results. Please select one of " + StringUtils.join(MyDataFilterParams.defaultPublishedStates, ", ") + ".");
+            this.addError(BundleUtil.getStringFromBundle("mydataFragment.errorMessage.noPublicationStatusSelected")
+                    + " " + StringUtils.join(MyDataFilterParams.defaultPublishedStates, ", ")
+                                .replace("_", " ") + ".");
             return;
         }
 
         for (String dtype : this.dvObjectTypes) {
             if (!DvObject.DTYPE_LIST.contains(dtype)) {
-                this.addError("Sorry!  The type '" + dtype + "' is not known.");
+                this.addError(BundleUtil.getStringFromBundle("mydataFragment.errorMessage.unknownType.prefix") +
+                        dtype +
+                        BundleUtil.getStringFromBundle("mydataFragment.errorMessage.unknownType.suffix"));
                 return;
             }
         }
@@ -339,7 +344,7 @@ public class MyDataFilterParams {
         List<String[]> publicationStateInfoList = new ArrayList<String[]>();
         String stateNameAsVariable;
         for (String displayState : defaultPublishedStates) {
-            stateNameAsVariable = displayState.toLowerCase().replace(" ", "_");
+            stateNameAsVariable = displayState.toLowerCase();
             String[] singleInfoRow = {displayState, stateNameAsVariable};
             publicationStateInfoList.add(singleInfoRow);
         }

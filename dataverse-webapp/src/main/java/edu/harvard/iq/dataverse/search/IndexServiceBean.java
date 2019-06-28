@@ -124,7 +124,7 @@ public class IndexServiceBean {
     public static final String PUBLISHED_STRING = "Published";
     private static final String UNPUBLISHED_STRING = "Unpublished";
     private static final String DRAFT_STRING = "Draft";
-    private static final String IN_REVIEW_STRING = "In Review";
+    private static final String IN_REVIEW_STRING = "In_Review";
     private static final String DEACCESSIONED_STRING = "Deaccessioned";
     public static final String HARVESTED = "Harvested";
     private String rootDataverseName;
