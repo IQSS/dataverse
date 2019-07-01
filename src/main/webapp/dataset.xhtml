@@ -177,28 +177,29 @@
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
                                     <!-- END: Publish Buttons -->
-
-                                    <!-- Return to Author Button -->
-                                    <button type="button" class="btn btn-default btn-access #{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}" 
-                                                          onclick="PF('sendBackToContributor').show()"
-                                                          jsf:rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview
+                                    
+                                    <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview
                                                                and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
-                                        <span class="glyphicon glyphicon-repeat"/> #{bundle['dataset.rejectBtn']}
-                                    </button>
-                                    <!-- END: Return to Author Button -->
+                                        <!-- Return to Author Button -->
+                                        <button type="button" class="btn btn-default btn-access #{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}" 
+                                                              onclick="PF('sendBackToContributor').show()">
+                                            <span class="glyphicon glyphicon-repeat"/> #{bundle['dataset.rejectBtn']}
+                                        </button>
+                                        <!-- END: Return to Author Button -->
+                                    </ui:fragment>
 
-                                    <!-- Submit for Review Button -->
-                                    <button type="button" class="btn btn-default btn-access #{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}" 
-                                                          onclick="PF('inreview').show()"
-                                                          jsf:rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+                                    <ui:fragment rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                             and !DatasetPage.datasetLockedInWorkflow
                                                             and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                             and DatasetPage.canUpdateDataset()
                                                             and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
-                                        <span class="glyphicon glyphicon-globe"/> #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
-                                    </button>
-                                        
-                                    <!-- End: Submit for Review Button -->
+                                        <!-- Submit for Review Button -->
+                                        <button type="button" class="btn btn-default btn-access #{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}" 
+                                                              onclick="PF('inreview').show()">
+                                            <span class="glyphicon glyphicon-globe"/> #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
+                                        </button>
+                                        <!-- End: Submit for Review Button -->
+                                    </ui:fragment>
                                 </ui:fragment>
                                 <!-- END: Publish/Submit for Review/Return to Author Button Group -->
                                 
