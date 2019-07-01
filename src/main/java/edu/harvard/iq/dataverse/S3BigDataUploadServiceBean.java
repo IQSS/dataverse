@@ -27,7 +27,6 @@ public class S3BigDataUploadServiceBean {
           String fileName, String checksum, String checksumType, String contentType, Timestamp creationTime) {
 
     try {
-      em.getTransaction().begin();
       S3BigDataUpload bigData = new S3BigDataUpload();
       bigData.setPreSignedUrl(preSignedUrl);
       bigData.setUser(user);
@@ -40,7 +39,6 @@ public class S3BigDataUploadServiceBean {
       bigData.setContentType(contentType);
       bigData.setCreationTime(creationTime);
       em.persist(bigData);
-      em.getTransaction().commit();
     } catch (ConstraintViolationException e) {
       logger.warning("Exception: ");
       e.getConstraintViolations().forEach(err->logger.warning(err.toString()));
@@ -51,6 +49,18 @@ public class S3BigDataUploadServiceBean {
     try {
       Query query = em.createQuery("SELECT s FROM S3BigDataUpload s WHERE s.preSignedUrl = :preSignedUrl");
       query.setParameter("preSignedUrl", preSignedUrl);
+      return (S3BigDataUpload) query.getSingleResult();
+    } catch (ConstraintViolationException e) {
+      logger.warning("Exception: ");
+      e.getConstraintViolations().forEach(err->logger.warning(err.toString()));
+    }
+    return null;
+  }
+
+  public S3BigDataUpload getS3BigDataUploadByStorageId(String storageId) {
+    try {
+      Query query = em.createQuery("SELECT s FROM S3BigDataUpload s WHERE s.storageId = :storageId");
+      query.setParameter("storageId", storageId);
       return (S3BigDataUpload) query.getSingleResult();
     } catch (ConstraintViolationException e) {
       logger.warning("Exception: ");

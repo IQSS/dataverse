@@ -130,17 +130,21 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -190,6 +194,9 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     S3BigDataUploadServiceBean s3BigDataUploadServiceBean;
+
+    @Context
+    protected HttpServletRequest httpRequest;
      
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -1234,19 +1241,31 @@ public class Datasets extends AbstractApiBean {
         // -------------------------------------
         User authUser;
         try {
-            authUser = findUserOrDie();
-        } catch (WrappedResponse ex) {
+            String apiKey = httpRequest.getHeader("X-Dataverse-key");
+            if (apiKey == null) {
+                apiKey = httpRequest.getParameter("key");
+            }
+            authUser = authSvc.lookupUser(apiKey);
+        } catch (Exception ex) {
+            ex.printStackTrace();
             return error(Response.Status.FORBIDDEN, ResourceBundle.getBundle("Bundle").getString("file.addreplace"
                     + ".error.auth"));
         }
         // -------------------------------------
         // (1a) Find dataset
         // -------------------------------------
-        Dataset dataset;
+        Dataset dataset = null;
+        String datasetId = null;
         try {
-            dataset = findDatasetOrDie(idSupplied);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
+            if (idSupplied.equals(":persistentId")) {
+                datasetId = httpRequest.getParameter("persistentId");
+                dataset = datasetService.findByGlobalId(datasetId);
+                logger.info("Dataset Identifier: " + dataset.getIdentifier());
+                logger.info("Dataset Id: " + dataset.getId());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return error(Response.Status.NOT_FOUND, "dataset not found");
         }
 
         // -------------------------------------
@@ -1258,6 +1277,7 @@ public class Datasets extends AbstractApiBean {
         try {
             dataAccess = DataAccess.createNewStorageIO(emptyFile, "s3");
             FileUtil.generateStorageIdentifier(emptyFile);
+            logger.info("StorageId is: " + emptyFile.getStorageIdentifier());
         } catch (IOException e) {
             Logger.getLogger(Files.class.getName()).warning("Failed to save the file, storage id " + emptyFile.getStorageIdentifier() + " (" + e.getMessage() + ")");
         }
@@ -1268,10 +1288,11 @@ public class Datasets extends AbstractApiBean {
         // -------------------------------------
         // (3) Save the pre-signed URL and provided JSON-Data in database
         // -------------------------------------
-        s3BigDataUploadServiceBean.addS3BigDataUpload(url.toString(), authUser, jsonData, idSupplied, emptyFile.getStorageIdentifier(),
+        s3BigDataUploadServiceBean.addS3BigDataUpload(url.toString(), authUser, jsonData, datasetId,
+                emptyFile.getStorageIdentifier(),
                 fileName, checksum, checksumType, contentType, creationTime);
 
-        DeleteOneTimeUrlTask task = new DeleteOneTimeUrlTask(url.toString(), 90 * 60 * 1000,
+        DeleteOneTimeUrlTask task = new DeleteOneTimeUrlTask(url.toString(), 2880 * 60 * 1000,
                 s3BigDataUploadServiceBean);
         task.schedule();
 
@@ -1280,6 +1301,65 @@ public class Datasets extends AbstractApiBean {
         // -------------------------------------
 
         return Response.ok().entity(url).build();
+    }
+
+    @POST
+    @Path("/notifyS3upload")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response registerFileFromS3(@HeaderParam("x-amz-sns-message-type") String messageType,
+            @HeaderParam("x-amz-sns-message-id") String messageId, @FormDataParam("message") String message) {
+        if (!messageType.equals("Notification")) {
+            return Response.status(418).build();
+        }
+        logger.info(message);
+        JSONObject messageBody = new JSONObject(message);
+        String eventType = messageBody.getJSONArray("Records").getJSONObject(0).getString("eventName");
+        String requestId =
+                messageBody.getJSONArray("Records").getJSONObject(0).getJSONObject("responseElements").getString("x"
+                        + "-amz-request-id");
+
+        if(eventType.equals("ObjectCreated:Put")) {
+            String storageId =
+                    messageBody.getJSONArray("Records").getJSONObject(0).getJSONObject("s3").getJSONObject("object").getString("key");
+            logger.info("StorageId: " + storageId);
+
+            S3BigDataUpload s3BigDataUpload = s3BigDataUploadServiceBean.getS3BigDataUploadByStorageId(storageId);
+            if(s3BigDataUpload != null) {
+                try {
+                    logger.info("DatasetId in DB: " + s3BigDataUpload.getDatasetId());
+                    DataverseRequest dvRequest = createDataverseRequest(s3BigDataUpload.getUser());
+                    AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest, ingestService,
+                            datasetService, fileService, permissionService, commandEngine, systemConfig);
+
+                    Dataset dataset = datasetService.findByGlobalId(s3BigDataUpload.getDatasetId());
+
+                    OptionalFileParams optionalFileParams = new OptionalFileParams(s3BigDataUpload.getJsonData());
+
+                    addFileHelper.runAddFileS3BigData(dataset, s3BigDataUpload.getFileName(),
+                            s3BigDataUpload.getContentType(), optionalFileParams, storageId,
+                            s3BigDataUpload.getChecksumType(), s3BigDataUpload.getChecksum(),
+                            messageBody.getJSONArray("Records").getJSONObject(0).getJSONObject("s3").getJSONObject(
+                                    "object").getInt("size"));
+
+                } catch (DataFileTagException e) {
+                    e.printStackTrace();
+                    return error(Response.Status.INTERNAL_SERVER_ERROR, " Error while processing request occured");
+                }
+            }
+        }
+
+        StringBuilder response = new StringBuilder("<PublishResponse xmlns=\"http://vishnus-sns-server/\">");
+        response.append("<PublishResult>" );
+        response.append("<MessageId>" + messageId + "</MessageId> ");
+        response.append("</PublishResult>");
+        response.append("<ResponseMetadata>");
+        response.append("<RequestId>" + requestId + "</RequestId>");
+        response.append("</ResponseMetadata> ");
+        response.append("\n" + "    </PublishResponse>\n");
+        response.toString();
+
+
+        return Response.ok(response.toString()).build();
     }
 
     /**

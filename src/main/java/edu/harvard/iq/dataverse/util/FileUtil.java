@@ -945,7 +945,46 @@ public class FileUtil implements java.io.Serializable  {
         
         return null;
     }   // end createDataFiles
-    
+
+
+    public static List<DataFile> createDataFilesWithoutTempFile( String fileName,
+            String contentType, String storageId, String checksumType, String checksum, int fileSize) {
+        try {
+            DataFile datafile = createSingleDataFileWithoutTempFile(fileName, contentType, storageId, checksumType,
+                    checksum, fileSize);
+            if (datafile != null) {
+                List<DataFile> dataFiles = new ArrayList<>();
+                dataFiles.add(datafile);
+                return dataFiles;
+            }
+        } catch (Exception e) {
+            logger.severe(e.getMessage());
+        }
+        return null;
+    }
+
+    private static DataFile createSingleDataFileWithoutTempFile(String fileName, String contentType, String storageId, String checksumType,
+            String checksum, int fileSize) {
+        DataFile dataFile = new DataFile(contentType);
+        dataFile.setModificationTime(new Timestamp(new Date().getTime()));
+        dataFile.setPermissionModificationTime(new Timestamp(new Date().getTime()));
+        dataFile.setStorageIdentifier(storageId);
+        dataFile.setFilesize(fileSize);
+
+        FileMetadata fmd = new FileMetadata();
+        fmd.setLabel(fileName);
+
+        fmd.setDataFile(dataFile);
+        dataFile.getFileMetadatas().add(fmd);
+
+        try {
+            dataFile.setChecksumType(ChecksumType.fromString(checksumType));
+            dataFile.setChecksumValue(checksum);
+        } catch (Exception e) {
+            logger.severe(e.getMessage());
+        }
+        return dataFile;
+    }
 
     private static File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit)
             throws IOException, FileExceedsMaxSizeException {

@@ -1805,6 +1805,52 @@ public class IngestServiceBean {
         }
         
     }
+
+    public List<DataFile> addFileToDatasetS3BigData(DatasetVersion workingVersion, List<DataFile> fileList) {
+        IngestUtil.checkForDuplicateFileNamesFinal(workingVersion, fileList);
+        Dataset dataset = workingVersion.getDataset();
+
+        List<DataFile> result = new ArrayList<>();
+
+        if (fileList != null && fileList.size() > 0) {
+
+            for (DataFile file : fileList) {
+                FileMetadata fileMetadata = file.getFileMetadatas().get(0);
+                String fileName = fileMetadata.getLabel();
+
+                if(file.getOwner() == null) {
+                    file.setOwner(dataset);
+
+                    workingVersion.getFileMetadatas().add(file.getFileMetadata());
+                    file.getFileMetadata().setDatasetVersion(workingVersion);
+                    dataset.getFiles().add(file);
+
+                    if(file.getFileMetadata().getCategories() != null) {
+                        ListIterator<DataFileCategory> dfcIt = file.getFileMetadata().getCategories().listIterator();
+
+                        while (dfcIt.hasNext()) {
+                            DataFileCategory dataFileCategory = dfcIt.next();
+
+                            if (dataFileCategory.getDataset() == null) {
+                                DataFileCategory newCategory = dataset.getCategoryByName(dataFileCategory.getName());
+                                if (newCategory != null) {
+                                    newCategory.addFileMetadata(file.getFileMetadata());
+                                    dfcIt.set(newCategory);
+                                } else {
+                                    dfcIt.remove();
+                                }
+                            }
+                        }
+                    }
+                }
+
+                result.add(file);
+            }
+
+        }
+        return result;
+    }
+
     /*
     private class InternalIngestException extends Exception {
         
@@ -1814,4 +1860,5 @@ public class IngestServiceBean {
         
     }
     */
+
 }
