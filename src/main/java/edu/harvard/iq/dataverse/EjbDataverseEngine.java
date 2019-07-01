@@ -318,26 +318,21 @@ public class EjbDataverseEngine {
     }
     
     protected boolean myCompleteCommand(Command command, Object r, Stack<Command> called) {
-        System.out.print("Starting myCompleteCommand: " +  command);
         
         if (called.isEmpty()){
-            System.out.print("Called is empty: ");
             return true;
         }
-        System.out.print("Called Stack: " +  called);
+        
         Command test = called.get(0);
         if (!test.equals(command)) {
-            System.out.print("Inner command: ");
             return true;
         }
                 
         boolean retVal = true;
         
         for (Command commandLoop : called) {
-            System.out.print("on success called: " + commandLoop);
            retVal &=  commandLoop.onSuccess(ctxt, r);
         }
-        System.out.print("calling clear from : " +  command);
         called.clear();
         return retVal;
 
