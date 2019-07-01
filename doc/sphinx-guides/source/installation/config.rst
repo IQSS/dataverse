@@ -667,7 +667,9 @@ Dataverse offers an internal archive workflow which may be configured as a PostP
 
 At present, the DPNSubmitToArchiveCommand and LocalSubmitToArchiveCommand are the only implementations extending the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
 
-.. **Duracloud Configuration**
+.. _Duracloud Configuration:
+
+**Duracloud Configuration**
 
 Also note that while the current Chronopolis implementation generates the bag and submits it to the archive's DuraCloud interface, the step to make a 'snapshot' of the space containing the Bag (and verify it's successful submission) are actions a curator must take in the DuraCloud interface.
 
@@ -695,13 +697,15 @@ Archivers may require glassfish settings as well. For the Chronopolis archiver, 
     
 ``./asadmin create-jvm-options '-Dduracloud.password=YOUR_PASSWORD_HERE'``
 
-.. **Local Path Configuration**
+.. _Local Path Configuration:
 
-ArchiverClassName - the fully qualified class to be used for archiving. For example::
+**Local Path Configuration**
 
-``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.LocalSubmitToArchiveCommand"``
+ArchiverClassName - the fully qualified class to be used for archiving. For example\:
 
-\:BagItLocalPath - the path to where you want to store BagIt. For example::
+``curl -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.LocalSubmitToArchiveCommand" http://localhost:8080/api/admin/settings/:ArchiverClassName``
+
+\:BagItLocalPath - the path to where you want to store BagIt. For example\:
 
 ``curl -X PUT -d /home/path/to/storage http://localhost:8080/api/admin/settings/:BagItLocalPath``
 
