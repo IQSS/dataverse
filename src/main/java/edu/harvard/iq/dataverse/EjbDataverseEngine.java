@@ -266,6 +266,7 @@ public class EjbDataverseEngine {
                 }
                 boolean onCompleteSucceded = this.myCompleteCommand(aCommand, r, getContext().getCommandsCalled());
                 //Nothing to do with this boolean "onCompleteSucceded" - failures are sent to the log.
+                //Note: there's a separate folder for onComplete failures - similar to harvesting
                 return r;
                 
             } catch ( EJBException ejbe ) {
@@ -325,6 +326,8 @@ public class EjbDataverseEngine {
         
         Command test = called.get(0);
         if (!test.equals(command)) {
+            //if it's not the first command on the stack it must be an "inner" command
+            //and we don't want to run its onSuccess until all commands have comepleted successfully
             return true;
         }
                 
