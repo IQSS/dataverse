@@ -669,7 +669,8 @@ At present, the DPNSubmitToArchiveCommand and LocalSubmitToArchiveCommand are th
 
 .. _Duracloud Configuration:
 
-**Duracloud Configuration**
+Duracloud Configuration
++++++++++++++++++++++++
 
 Also note that while the current Chronopolis implementation generates the bag and submits it to the archive's DuraCloud interface, the step to make a 'snapshot' of the space containing the Bag (and verify it's successful submission) are actions a curator must take in the DuraCloud interface.
 
@@ -699,7 +700,8 @@ Archivers may require glassfish settings as well. For the Chronopolis archiver, 
 
 .. _Local Path Configuration:
 
-**Local Path Configuration**
+Local Path Configuration
+++++++++++++++++++++++++
 
 ArchiverClassName - the fully qualified class to be used for archiving. For example\:
 
@@ -715,7 +717,8 @@ ArchiverClassName - the fully qualified class to be used for archiving. For exam
 
 :BagItLocalPath is the file path that you've set in :ArchiverSettings.
 
-**API Call**
+API Call
+++++++++
 
 Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the API call to manually submit a DatasetVersion for processing:
 
@@ -731,7 +734,8 @@ The submitDataVersionToArchive API (and the workflow discussed below) attempt to
 
 In the Chronopolis case, since the transfer from the DuraCloud front-end to archival storage in Chronopolis can take significant time, it is currently up to the admin/curator to submit a 'snap-shot' of the space within DuraCloud and to monitor its successful transfer. Once transfer is complete the space should be deleted, at which point the Dataverse API call can be used to submit a Bag for other versions of the same Dataset. (The space is reused, so that archival copies of different Dataset versions correspond to different snapshots of the same DuraCloud space.).
 
-**PostPublication Workflow**
+PostPublication Workflow
+++++++++++++++++++++++++
 
 To automate the submission of archival copies to an archive as part of publication, one can setup a Dataverse Workflow using the "archiver" workflow step - see the :doc:`/developers/workflows` guide.
 . The archiver step uses the configuration information discussed above including the :ArchiverClassName setting. The workflow step definition should include the set of properties defined in \:ArchiverSettings in the workflow definition.
