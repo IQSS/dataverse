@@ -78,6 +78,14 @@ public class SearchServiceBean {
     SystemConfig systemConfig;
 
     private SolrClient solrServer;
+
+    public SolrClient getSolrServer() {
+        return solrServer;
+    }
+
+    public void setSolrServer(SolrClient solrServer) {
+        this.solrServer = solrServer;
+    }
     
     @PostConstruct
     public void init() {
