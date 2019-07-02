@@ -8,9 +8,6 @@ import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import static edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordJobListener.SEP;
-import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -34,11 +31,7 @@ import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -264,9 +257,8 @@ public class EjbDataverseEngine {
                         getContext().getCommandsCalled().add(c);
                     }
                 }
-                boolean onCompleteSucceded = this.myCompleteCommand(aCommand, r, getContext().getCommandsCalled());
-                //Nothing to do with this boolean "onCompleteSucceded" - failures are sent to the log.
-                //Note: there's a separate folder for onComplete failures - similar to harvesting
+                //This runs the onSuccess Methods for all commands in the stack when the outermost command completes
+                this.completeCommand(aCommand, r, getContext().getCommandsCalled());
                 return r;
                 
             } catch ( EJBException ejbe ) {
@@ -318,26 +310,24 @@ public class EjbDataverseEngine {
         }
     }
     
-    protected boolean myCompleteCommand(Command command, Object r, Stack<Command> called) {
+    protected void completeCommand(Command command, Object r, Stack<Command> called) {
         
         if (called.isEmpty()){
-            return true;
+            return;
         }
         
         Command test = called.get(0);
         if (!test.equals(command)) {
             //if it's not the first command on the stack it must be an "inner" command
             //and we don't want to run its onSuccess until all commands have comepleted successfully
-            return true;
+            return;
         }
-                
-        boolean retVal = true;
         
         for (Command commandLoop : called) {
-           retVal &=  commandLoop.onSuccess(ctxt, r);
+           commandLoop.onSuccess(ctxt, r);
         }
+        
         called.clear();
-        return retVal;
 
     }
     
