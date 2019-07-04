@@ -1065,6 +1065,8 @@ public class FileUtil implements java.io.Serializable {
         fmd.setTermsOfUse(termsOfUse);
         termsOfUse.setFileMetadata(fmd);
 
+        fmd.setTermsOfUseForm(termsOfUseFormMapper.mapToForm(termsOfUse));
+
         if (addToDataset) {
             datafile.setOwner(version.getDataset());
         }
