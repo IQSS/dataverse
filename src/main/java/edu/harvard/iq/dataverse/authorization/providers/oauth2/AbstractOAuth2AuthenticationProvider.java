@@ -10,6 +10,7 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
@@ -127,27 +128,46 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         throws IOException, OAuth2Exception, InterruptedException, ExecutionException {
         
         OAuth2AccessToken accessToken = service.getAccessToken(code);
-        String userEndpoint = getUserEndpoint(accessToken);
+    
+        if ( ! accessToken.getScope().contains(scope) ) {
+            // We did not get the permissions on the scope we need. Abort and inform the user.
+            throw new OAuth2Exception(200, BundleUtil.getStringFromBundle("auth.providers.orcid.insufficientScope"), "");
+        }
         
-        OAuthRequest request = new OAuthRequest(Verb.GET, userEndpoint);
+        OAuthRequest request = new OAuthRequest(Verb.GET, getUserEndpoint(accessToken));
         request.setCharset("UTF-8");
         service.signRequest(accessToken, request);
-        
+    
         Response response = service.execute(request);
         int responseCode = response.getCode();
         String body = response.getBody();
-        logger.log(Level.FINE, "In getUserRecord. Body: {0}", body);
-
-        if ( responseCode == 200 ) {
-            final ParsedUserResponse parsed = parseUserResponse(body);
-            return new OAuth2UserRecord(getId(), parsed.userIdInProvider,
-                                        parsed.username, 
-                                        OAuth2TokenData.from(accessToken),
-                                        parsed.displayInfo,
-                                        parsed.emails);
+        logger.log(Level.FINE, "In requestUserRecord. Body: {0}", body);
+        if ( responseCode == 200 && body != null ) {
+            return getUserRecord(body, accessToken, service);
         } else {
             throw new OAuth2Exception(responseCode, body, "Error getting the user info record.");
         }
+    }
+    
+    /**
+     * Get the user record from the response body.
+     * Might be overriden by subclasses to add information from the access token response not included
+     * within the request response body.
+     * @param accessToken Access token used to create the request
+     * @param responseBody The response body = message from provider
+     * @param service Not used in base class, but may be used in overrides to lookup more data
+     * @return A complete record to be forwarded to user handling logic
+     * @throws OAuth2Exception When some lookup fails in overrides
+     */
+    protected OAuth2UserRecord getUserRecord(@NotNull String responseBody, @NotNull OAuth2AccessToken accessToken, @NotNull OAuth20Service service)
+        throws OAuth2Exception {
+        
+        final ParsedUserResponse parsed = parseUserResponse(responseBody);
+        return new OAuth2UserRecord(getId(), parsed.userIdInProvider,
+            parsed.username,
+            OAuth2TokenData.from(accessToken),
+            parsed.displayInfo,
+            parsed.emails);
     }
 
     @Override

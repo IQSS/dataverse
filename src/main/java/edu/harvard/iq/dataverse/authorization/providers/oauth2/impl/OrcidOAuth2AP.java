@@ -15,11 +15,8 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -29,6 +26,7 @@ import java.util.stream.Stream;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.validation.constraints.NotNull;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -78,42 +76,31 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     }
     
     @Override
-    public OAuth2UserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception {
-        OAuth20Service service = getService(state, redirectUrl);
-        OAuth2AccessToken accessToken = service.getAccessToken(code);
+    final protected OAuth2UserRecord getUserRecord(@NotNull String responseBody, @NotNull OAuth2AccessToken accessToken, @NotNull OAuth20Service service)
+        throws OAuth2Exception {
         
-        if ( ! accessToken.getScope().contains(scope) ) {
-            // We did not get the permissions on the scope we need. Abort and inform the user.
-            throw new OAuth2Exception(200, BundleUtil.getStringFromBundle("auth.providers.orcid.insufficientScope"), "");
+        // parse the main response
+        final ParsedUserResponse parsed = parseUserResponse(responseBody);
+        
+        // mixin org data, but optional
+        try {
+            Optional<AuthenticatedUserDisplayInfo> orgData = getOrganizationalData(accessToken, service);
+            if (orgData.isPresent()) {
+                parsed.displayInfo.setAffiliation(orgData.get().getAffiliation());
+                parsed.displayInfo.setPosition(orgData.get().getPosition());
+            }
+        } catch (IOException ex) {
+            logger.log(Level.WARNING, "Could not get affiliation data from ORCiD due to an IO problem: {0}", ex.getLocalizedMessage());
         }
         
+        // mixin ORCiD not present in main response
         String orcidNumber = extractOrcidNumber(accessToken.getRawResponse());
-        
-        final String userEndpoint = getUserEndpoint(accessToken);
-        
-        final OAuthRequest request = new OAuthRequest(Verb.GET, userEndpoint, service);
-        request.addHeader("Authorization", "Bearer " + accessToken.getAccessToken());
-        request.setCharset("UTF-8");
-        
-        final Response response = request.send();
-        int responseCode = response.getCode();
-        final String body = response.getBody();        
-        logger.log(Level.FINE, "In getUserRecord. Body: {0}", body);
-
-        if ( responseCode == 200 ) {
-            final ParsedUserResponse parsed = parseUserResponse(body);
-            AuthenticatedUserDisplayInfo orgData = getOrganizationalData(userEndpoint, accessToken.getAccessToken(), service);
-            parsed.displayInfo.setAffiliation(orgData.getAffiliation());
-            parsed.displayInfo.setPosition(orgData.getPosition());
-            
-            return new OAuth2UserRecord(getId(), orcidNumber,
-                                        parsed.username, 
-                                        OAuth2TokenData.from(accessToken),
-                                        parsed.displayInfo,
-                                        parsed.emails);
-        } else {
-            throw new OAuth2Exception(responseCode, body, "Error getting the user info record.");
-        }
+    
+        return new OAuth2UserRecord(getId(), orcidNumber,
+            parsed.username,
+            OAuth2TokenData.from(accessToken),
+            parsed.displayInfo,
+            parsed.emails);
     }
     
     @Override
@@ -280,23 +267,29 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         }
     }
 
-    protected AuthenticatedUserDisplayInfo getOrganizationalData(String userEndpoint, String accessToken, OAuth20Service service) throws IOException {
-        final OAuthRequest request = new OAuthRequest(Verb.GET, userEndpoint.replace("/person", "/employments"), service);
-        request.addHeader("Authorization", "Bearer " + accessToken);
+    protected Optional<AuthenticatedUserDisplayInfo> getOrganizationalData(OAuth2AccessToken accessToken, OAuth20Service service) throws IOException {
+        
+        OAuthRequest request = new OAuthRequest(Verb.GET, getUserEndpoint(accessToken).replace("/person", "/employments"));
         request.setCharset("UTF-8");
+        service.signRequest(accessToken, request);
         
-        final Response response = request.send();
-        int responseCode = response.getCode();
-        final String responseBody = response.getBody();
-        
-        if ( responseCode != 200 ) {
-            // This is bad, but not bad enough to stop a signup/in process.
-            logger.log(Level.WARNING, "Cannot get affiliation data from ORCiD. Response code: {0} body:\n{1}\n/body",
-                        new Object[]{responseCode, responseBody});
-            return null;
-            
-        } else {
-            return parseActivitiesResponse(responseBody);
+        try {
+            Response response = service.execute(request);
+            int responseCode = response.getCode();
+            String responseBody = response.getBody();
+    
+            if (responseCode != 200 && responseBody != null) {
+                // This is bad, but not bad enough to stop a signup/in process.
+                logger.log(Level.WARNING, "Cannot get affiliation data from ORCiD. Response code: {0} body:\n{1}\n/body",
+                    new Object[]{responseCode, responseBody});
+                return Optional.empty();
+                
+            } else {
+                return Optional.of(parseActivitiesResponse(responseBody));
+            }
+        } catch (InterruptedException | ExecutionException ex) {
+            logger.log(Level.WARNING, "Could not get affiliation data from ORCiD due to threading problems.");
+            return Optional.empty();
         }
     }
     
