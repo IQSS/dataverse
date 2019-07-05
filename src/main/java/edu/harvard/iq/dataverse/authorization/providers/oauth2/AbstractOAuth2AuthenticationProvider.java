@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import com.github.scribejava.core.builder.ServiceBuilder;
-import com.github.scribejava.core.builder.api.BaseApi;
+import com.github.scribejava.core.builder.api.DefaultApi20;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Response;
@@ -10,12 +10,15 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
+
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -91,35 +94,48 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     protected String redirectUrl;
     protected String scope;
     
-    public abstract BaseApi<OAuth20Service> getApiInstance();
+    public abstract DefaultApi20 getApiInstance();
     
     protected abstract ParsedUserResponse parseUserResponse( String responseBody );
     
-    public OAuth20Service getService(String state, String redirectUrl) {
-        ServiceBuilder svcBuilder = new ServiceBuilder()
-                .apiKey(getClientId())
-                .apiSecret(getClientSecret())
-                .state(state)
-                .callback(redirectUrl);
-        if ( scope != null ) {        
-            svcBuilder.scope(scope);
-        }
-        return svcBuilder.build( getApiInstance() );
+    /**
+     * Build an OAuth20Service based on client ID & secret. Add default scope and insert
+     * callback URL. Build uses the real API object for the target service like GitHub etc.
+     * @param callbackUrl URL where the OAuth2 Provider should send browsers to after authz.
+     * @return A usable OAuth20Service object
+     */
+    public OAuth20Service getService(String callbackUrl) {
+        return new ServiceBuilder(getClientId())
+                      .apiSecret(getClientSecret())
+                      .defaultScope(getScope())
+                      .callback(callbackUrl)
+                      .build(getApiInstance());
     }
     
-    public OAuth2UserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception {
-        OAuth20Service service = getService(state, redirectUrl);
+    /**
+     * Receive user data from OAuth2 provider after authn/z has been successfull. (Callback view uses this)
+     * Request a token and access the resource, parse output and return user details.
+     * @param code The authz code sent from the provider
+     * @param service The service object in use to communicate with the provider
+     * @return A user record containing all user details accessible for us
+     * @throws IOException Thrown when communication with the provider fails
+     * @throws OAuth2Exception Thrown when we cannot access the user details for some reason
+     * @throws InterruptedException Thrown when the requests thread is failing
+     * @throws ExecutionException Thrown when the requests thread is failing
+     */
+    public OAuth2UserRecord getUserRecord(String code, @NotNull OAuth20Service service)
+        throws IOException, OAuth2Exception, InterruptedException, ExecutionException {
+        
         OAuth2AccessToken accessToken = service.getAccessToken(code);
-
-        final String userEndpoint = getUserEndpoint(accessToken);
+        String userEndpoint = getUserEndpoint(accessToken);
         
-        final OAuthRequest request = new OAuthRequest(Verb.GET, userEndpoint, service);
-        request.addHeader("Authorization", "Bearer " + accessToken.getAccessToken());
+        OAuthRequest request = new OAuthRequest(Verb.GET, userEndpoint);
         request.setCharset("UTF-8");
+        service.signRequest(accessToken, request);
         
-        final Response response = request.send();
+        Response response = service.execute(request);
         int responseCode = response.getCode();
-        final String body = response.getBody();        
+        String body = response.getBody();
         logger.log(Level.FINE, "In getUserRecord. Body: {0}", body);
 
         if ( responseCode == 200 ) {
@@ -195,6 +211,8 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     public String getSubTitle() {
         return subTitle;
     }
+    
+    public String getScope() { return scope; }
 
     @Override
     public int hashCode() {
