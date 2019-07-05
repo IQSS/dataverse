@@ -812,6 +812,19 @@ Example::
 
 Also note that dataFileTags are not versioned and changes to these will update the published version of the file.
 
+.. _EditingVariableMetadata:
+
+Editing Variable Level Metadata
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates variable level metadata using ddi xml ``$file``, where ``$id`` is file id::
+
+    PUT https://$SERVER/api/edit/$id --upload-file $file
+
+Example: ``curl -H "X-Dataverse-key:$API_TOKEN" -X PUT http://localhost:8080/api/edit/95 --upload-file dct.xml``
+
+You can download :download:`dct.xml <../../../../src/test/resources/xml/dct.xml>` from the example above to see what the XML looks like.
+
 Provenance
 ~~~~~~~~~~
 Get Provenance JSON for an uploaded file::
@@ -1472,3 +1485,5 @@ Recursively applies the role assignments of the specified dataverse, for the rol
   GET http://$SERVER/api/admin/dataverse/{dataverse alias}/addRoleAssignmentsToChildren
   
 Note: setting ``:InheritParentRoleAssignments`` will automatically trigger inheritance of the parent dataverse's role assignments for a newly created dataverse. Hence this API call is intended as a way to update existing child dataverses or to update children after a change in role assignments has been made on a parent dataverse.
+
+
