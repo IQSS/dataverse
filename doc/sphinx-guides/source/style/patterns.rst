@@ -378,7 +378,7 @@ For action buttons on a page, we include an icon and text label. Action buttons 
 Form Buttons
 ------------
 
-Form buttons typically appear at the bottom of a form, aligned to the left. They do not have icons, just text labels.
+Form buttons typically appear at the bottom of a form, aligned to the left. They do not have icons, just text labels. The primary button is styled differently.
 
 .. raw:: html
 
@@ -388,7 +388,7 @@ Form buttons typically appear at the bottom of a form, aligned to the left. They
 	  		<button id="datasetForm:save" name="datasetForm:save" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only btn btn-default" onclick="return false;" tabindex="1000" type="submit" role="button" aria-disabled="false">
 	  			<span class="ui-button-text ui-c">Save Changes</span>
 	  		</button>
-	  		<button id="datasetForm:cancel" name="datasetForm:cancel" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only btn btn-default" onclick="return false;" tabindex="1000" type="submit" role="button" aria-disabled="false">
+	  		<button id="datasetForm:cancel" name="datasetForm:cancel" class="btn btn-link" onclick="return false;" tabindex="1000" type="submit" role="button" aria-disabled="false">
 	  			<span class="ui-button-text ui-c">Cancel</span>
 	  		</button>
   		</div>
@@ -399,7 +399,7 @@ Form buttons typically appear at the bottom of a form, aligned to the left. They
 
     <div class="button-block">
       <p:commandButton id="save" styleClass="btn btn-default" value="#{bundle.saveChanges}" action="#{page.save}" update="@form,:messagePanel" />
-      <p:commandButton id="cancel" styleClass="btn btn-default" value="#{bundle.cancel}" action="#{page.cancel}" process="@this" update="@form">
+      <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{page.cancel}" process="@this" update="@form">
         <p:resetInput target="@form" />
       </p:commandButton>
     </div>

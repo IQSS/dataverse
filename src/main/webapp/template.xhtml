@@ -25,6 +25,7 @@
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(TemplatePage.template.dataverse, (TemplatePage.editMode == 'CREATE' ? bundle['dataset.manageTemplates.createBtn'] : TemplatePage.template.name))}"/>
                 </f:metadata>
                 <h:form id="templateForm">
+                    <p:focus context="templateForm"/>
                     <!-- Header / Button Panel -->
                     <ui:fragment rendered="#{empty TemplatePage.editMode}">
                         <!-- View mode -->
@@ -98,7 +99,6 @@
                                 <ui:param name="metadataBlocks" value="#{!empty TemplatePage.editMode ? TemplatePage.template.metadataBlocksForEdit.entrySet().toArray() : TemplatePage.template.metadataBlocksForView.entrySet().toArray()}"/>   
                             </ui:include>  
                         </ui:fragment>
-                        
                         <ui:fragment rendered="#{TemplatePage.editMode == 'LICENSE' or TemplatePage.editMode == 'LICENSEADD'}">
                             <ui:include src="dataset-license-terms.xhtml" >
                                 <ui:param name="datasetPage" value="false"/>
@@ -107,30 +107,22 @@
                                 <ui:param name="termsOfUseAndAccess" value="#{TemplatePage.template.termsOfUseAndAccess}"/>   
                             </ui:include> 
                         </ui:fragment>
-
-                        </ui:fragment>
+                    </ui:fragment>
                     <!-- Create/Save Dataset Button Panel -->
-                    <ui:fragment rendered="#{TemplatePage.editMode == 'CREATE'}" >
                     <div class="button-block" jsf:rendered="#{!empty TemplatePage.editMode}">
-                        <p:commandButton styleClass="btn btn-default"  action="#{TemplatePage.save('Terms')}" update="@all"
-                                         value="#{bundle['dataset.create.add.terms'] }">  
-                             <f:ajax onerror="window.scrollTo(0, 0)" />
+                        <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save('Terms')}" update="@all"
+                                         value="#{bundle['dataset.create.add.terms']}"
+                                         rendered="#{TemplatePage.editMode == 'CREATE'}">  
+                             <f:ajax onerror="window.scrollTo(0, 0)"/>
                         </p:commandButton>
-                        <h:button styleClass="btn btn-default" value="#{bundle.cancel}" 
+                        <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save('')}" update="@all"
+                                         value="#{TemplatePage.editMode == 'LICENSEADD' ? bundle['dataset.manageTemplates.saveNewTerms'] : bundle.saveChanges}"
+                                         rendered="#{TemplatePage.editMode == 'METADATA' or TemplatePage.editMode == 'LICENSE' or TemplatePage.editMode == 'LICENSEADD'}">
+                            <f:ajax onerror="window.scrollTo(0, 0)"/>
+                        </p:commandButton>
+                        <h:button styleClass="btn btn-link" value="#{bundle.cancel}" 
                                   outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}"></h:button>
                     </div>
-                    </ui:fragment>
-                    <ui:fragment rendered="#{TemplatePage.editMode == 'METADATA' or TemplatePage.editMode == 'LICENSE' or TemplatePage.editMode == 'LICENSEADD'}" >
-                    <div class="button-block" jsf:rendered="#{!empty TemplatePage.editMode}">
-                        <p:commandButton styleClass="btn btn-default"  action="#{TemplatePage.save('')}" update="@all"
-                                         value="#{TemplatePage.editMode == 'LICENSEADD' ? bundle['dataset.manageTemplates.saveNewTerms'] : bundle.saveChanges}">
-                            <f:ajax onerror="window.scrollTo(0, 0)" />
-                        </p:commandButton>
-                        <h:button styleClass="btn btn-default" value="#{bundle.cancel}" 
-                                  outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}"></h:button>
-                    </div>
-                    </ui:fragment>
-
                 </h:form>
             </ui:define>
         </ui:composition>

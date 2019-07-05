@@ -63,10 +63,10 @@
                                 <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true"  rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                     <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
 
-                                        <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{FilePage.fileMetadata.datasetVersion.dataset.globalIdString}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
+                                    <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{FilePage.fileMetadata.datasetVersion.dataset.globalIdString}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
 
                                     <div class="button-block">
-                                        <button type="button" onclick="PF('shareDialog').hide()" class="btn btn-default" value="#{bundle.close}">
+                                        <button class="btn btn-default" onclick="PF('shareDialog').hide()" type="button">
                                             #{bundle.close}
                                         </button>
                                     </div>
@@ -103,8 +103,7 @@
                                     <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
                                                              and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
                                                              and !FilePage.lockedFromEdits
-                                                             and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}"
-                                          >
+                                                             and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
                                         <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
                                         </button>
@@ -198,7 +197,7 @@
                         <div id="file-preview-icon-block" class="col-xs-4">
                             <div id="border-block">
                                 <div id="preview-square">
-                                    <span class="icon-#{dataFileServiceBean.getFileClass(FilePage.fileMetadata.dataFile)} text-muted" jsf:rendered="#{!FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
+                                    <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(FilePage.fileMetadata.dataFile)} text-muted" jsf:rendered="#{!FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
                                     <p:graphicImage styleClass="img-responsive" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" rendered="#{FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
                                 </div>
                             </div>
@@ -395,15 +394,14 @@
                                     <div class="btn-group" jsf:rendered="#{!widgetWrapper.widgetView and (dataverseSession.user.authenticated
                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
                                                          and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile)))}">
-                                        <p:commandLink styleClass="btn btn-default btn-access" onclick="PF('fileAlreadyReplacedPrevious').show()"
-                                                       disabled="#{FilePage.lockedFromEdits}">
+                                        <button class="btn btn-default btn-access" onclick="PF('fileAlreadyReplacedPrevious').show()" type="button" disabled="#{FilePage.lockedFromEdits}">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']}
-                                        </p:commandLink>
+                                        </button>
                                     </div>
 
                                     <!-- Export Button -->
                                     <div class="btn-group" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released}">
-                                        <button class="btn btn-default btn-export dropdown-toggle" type="button" styleClass="btn btn-default" data-toggle="dropdown">
+                                        <button class="btn btn-default btn-export dropdown-toggle" type="button" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-export"/> #{bundle['dataset.exportBtn']} <span class="caret"/></button>
                                         <ul class="dropdown-menu" role="menu">
                                             <ui:repeat var="exporter" value="#{FilePage.getExporters()}">
@@ -544,15 +542,17 @@
                         </p:tabView>
                     </div>
 
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
+                    <p:dialog id="deleteFileConfirm" styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
                         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.immediate']}</p>
                         <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.owner.released}">
                             <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
                         </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').hide()" 
-                                             action="#{FilePage.deleteFile()}" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()" type="button" />
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').hide()" 
+                                             action="#{FilePage.deleteFile()}"/>
+                            <button class="btn btn-link" onclick="PF('deleteFileConfirmation').hide()" type="button">
+                                #{bundle.cancel}
+                            </button>
                         </div>
                     </p:dialog>
                     <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
@@ -583,9 +583,15 @@
                             <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                         </ui:include>
                     </p:dialog>
-                    
-                    <p:dialog header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true" 
-                        id="configureToolPopup" styleClass="smallPopUp" rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset()}">
+                    <p:dialog id="requestAccessPopup" styleClass="largePopUp" header="#{bundle['file.requestAccess']}" widgetVar="requestAccessPopup" modal="true">
+                        <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
+                        <ui:include src="file-request-access-popup-fragment.xhtml">
+                            <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
+                            <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
+                        </ui:include>
+                    </p:dialog>
+                    <p:dialog id="configureToolPopup" styleClass="smallPopUp" header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true" 
+                                rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset()}">
                         <ui:include src="file-configure-popup-fragment.xhtml">
                             <ui:param name="externalTools" value="#{FilePage.getExternalTools()}"/>
                             <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
@@ -597,7 +603,7 @@
                     </ui:include>
                     
                     <!-- Request Access Sign Up/Log In Button -->
-                    <p:dialog header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup" modal="true">
+                    <p:dialog id="accessGuest" header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup" modal="true">
                         <p class="help-block">
                             <span class="glyphicon glyphicon-exclamation-sign text-danger"/>&#160;
                             <h:outputFormat styleClass="text-danger" value="#{dataverseHeaderFragment.signupAllowed ? bundle['file.requestAccess.dialog.msg.signup'] : bundle['file.requestAccess.dialog.msg']}" escape="false">
@@ -607,53 +613,58 @@
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" onclick="PF('accessSignUpLogIn_popup').hide();PF('blockDatasetForm').hide();"/>
+                            <button class="btn btn-default" onclick="PF('accessSignUpLogIn_popup').hide();PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
                     <p:dialog id="accessPopup" styleClass="smallPopUp" header="#{bundle['file.restrictions']}" widgetVar="accessPopup" modal="true">
-                        <ui:fragment rendered="true">
-                            <p class="help-block">
-                                #{bundle['file.restrictions.description']}
-                            </p>
-                            <ui:fragment rendered="#{FilePage.worldMapPermissionHelper.hasMapLayerMetadata(FilePage.fileMetadata)}">
-                            <p class="help-block">
-                                <span class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"></span> #{bundle['file.restrictions.worldmap.warning']}</span>
-                            </p>
-                            </ui:fragment>
-                            <div class="form-horizontal">
-                                <div class="form-group">
-                                    <label for="metadata_TermsAccess" class="col-sm-3 control-label">
-                                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <p:inputTextarea value="#{FilePage.fileMetadata.datasetVersion.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa" />
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="metadata_RequestAccess" class="col-sm-3 control-label">
-                                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
-                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                             data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <p:selectBooleanCheckbox id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}"
-                                                                 value="#{FilePage.fileMetadata.datasetVersion.termsOfUseAndAccess.fileAccessRequest}" widgetVar="inputfar"/>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="button-block">
-                                <p:commandButton value="#{bundle.continue}" onclick="PF('accessPopup').hide();" update=":messagePanel" action="#{FilePage.restrictFile(true)}" />
-                                <p:commandButton value="#{bundle.cancel}" onclick="PF('accessPopup').hide();" type="button" />
-                            </div>
+                        <p:focus context="accessPopup"/>
+                        <p class="help-block">
+                            #{bundle['file.restrictions.description']}
+                        </p>
+                        <ui:fragment rendered="#{FilePage.worldMapPermissionHelper.hasMapLayerMetadata(FilePage.fileMetadata)}">
+                        <p class="help-block">
+                            <span class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"></span> #{bundle['file.restrictions.worldmap.warning']}</span>
+                        </p>
                         </ui:fragment>
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label for="metadata_TermsAccess" class="col-sm-3 control-label">
+                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
+                                </label>
+                                <div class="col-sm-9">
+                                    <p:inputTextarea value="#{FilePage.fileMetadata.datasetVersion.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="metadata_RequestAccess" class="col-sm-3 control-label">
+                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                         data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
+                                </label>
+                                <div class="col-sm-9">
+                                    <p:selectBooleanCheckbox id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}"
+                                                             value="#{FilePage.fileMetadata.datasetVersion.termsOfUseAndAccess.fileAccessRequest}" widgetVar="inputfar"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="button-block">
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('accessPopup').hide();" update=":messagePanel" action="#{FilePage.restrictFile(true)}"/>
+                            <button class="btn btn-link" onclick="PF('accessPopup').hide();" type="button">
+                                #{bundle.cancel}
+                            </button>
+                        </div>
                     </p:dialog>
                     <p:dialog id="fileAlreadyReplacedDraft" styleClass="smallPopUp"
                               header="#{bundle['file.replaced.warning.header']}" widgetVar="fileAlreadyReplacedDraft" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.replaced.warning.draft.warningMessage']}</p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" onclick="PF('fileAlreadyReplacedDraft').hide();"/>
+                            <button class="btn btn-default" onclick="PF('fileAlreadyReplacedDraft').hide();" type="button">
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
                     <p:dialog id="fileAlreadyReplacedPrevious" styleClass="smallPopUp"
@@ -665,13 +676,17 @@
                             <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.alreadyDeleted.previous.warningMessage']}</p>
                         </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" onclick="PF('fileAlreadyReplacedPrevious').hide();"/>
+                            <button class="btn btn-default" onclick="PF('fileAlreadyReplacedPrevious').hide();" type="button">
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.compute.computeBtn']}" widgetVar="computeAccessDeniedPopup" modal="true">
+                    <p:dialog id="computeAccessDenied" styleClass="smallPopUp" header="#{bundle['dataset.compute.computeBtn']}" widgetVar="computeAccessDeniedPopup" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.compute.fileAccessDenied']}</p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" onclick="PF('computeAccessDeniedPopup').hide();" type="button" />
+                            <button class="btn btn-default" onclick="PF('computeAccessDeniedPopup').hide();" type="button">
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
                 </h:form>
