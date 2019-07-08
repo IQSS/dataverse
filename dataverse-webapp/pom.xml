@@ -62,6 +62,12 @@
             <version>4.4.9</version>
         </dependency>
 
+        <!-- Named Entity Recognition -->
+        <dependency>
+            <groupId>org.apache.opennlp</groupId>
+            <artifactId>opennlp-tools</artifactId>
+            <version>1.9.1</version>
+        </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <!-- Once on Eclipse Glassfish 5.1 or Payara 5.x, this should be changed to aws-java-sdk-s3,
@@ -456,6 +462,7 @@
                     <include>**/*.conf</include>
                     <include>**/*.png</include>
                     <include>**/*.providers</include>
+                    <include>**/firstNames/*.*</include>
                 </includes>
             </resource>
         </resources>

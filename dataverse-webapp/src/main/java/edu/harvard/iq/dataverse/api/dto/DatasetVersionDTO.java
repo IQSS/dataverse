@@ -13,8 +13,8 @@ public class DatasetVersionDTO {
     String archiveNote;
     String deacessionLink;
     Long versionNumber;
-    String minorVersionNumber;
-    long id;
+    Long versionMinorNumber;
+    Long id;
     VersionState versionState;
     String releaseDate;
     String releaseTime;
@@ -37,6 +37,7 @@ public class DatasetVersionDTO {
     String contactForAccess;
     String sizeOfCollection;
     String studyCompletion;
+    boolean fileAccessRequest;
     String citation;
     String license;
     boolean inReview;
@@ -229,19 +230,19 @@ public class DatasetVersionDTO {
         this.versionNumber = versionNumber;
     }
 
-    public String getMinorVersionNumber() {
-        return minorVersionNumber;
+    public Long getVersionMinorNumber() {
+        return versionMinorNumber;
     }
 
-    public void setMinorVersionNumber(String minorVersionNumber) {
-        this.minorVersionNumber = minorVersionNumber;
+    public void setVersionMinorNumber(Long versionMinorNumber) {
+        this.versionMinorNumber = versionMinorNumber;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -311,6 +312,14 @@ public class DatasetVersionDTO {
         this.metadataBlocks = metadataBlocks;
     }
 
+    public boolean isFileAccessRequest() {
+        return fileAccessRequest;
+    }
+
+    public void setFileAccessRequest(boolean fileAccessRequest) {
+        this.fileAccessRequest = fileAccessRequest;
+    }
+
     public List<FieldDTO> getDatasetFields() {
         List<FieldDTO> fields = new ArrayList<>();
         //TODO: finish this
@@ -319,7 +328,7 @@ public class DatasetVersionDTO {
 
     @Override
     public String toString() {
-        return "DatasetVersionDTO{" + "archiveNote=" + archiveNote + ", deacessionLink=" + deacessionLink + ", versionNumber=" + versionNumber + ", minorVersionNumber=" + minorVersionNumber + ", id=" + id + ", versionState=" + versionState + ", releaseDate=" + releaseDate + ", lastUpdateTime=" + lastUpdateTime + ", createTime=" + createTime + ", archiveTime=" + archiveTime + ", UNF=" + UNF + ", metadataBlocks=" + metadataBlocks + ", fileMetadatas=" + fileMetadatas + '}';
+        return "DatasetVersionDTO{" + "archiveNote=" + archiveNote + ", deacessionLink=" + deacessionLink + ", versionNumber=" + versionNumber + ", versionMinorNumber=" + versionMinorNumber + ", id=" + id + ", versionState=" + versionState + ", releaseDate=" + releaseDate + ", lastUpdateTime=" + lastUpdateTime + ", createTime=" + createTime + ", archiveTime=" + archiveTime + ", UNF=" + UNF + ", metadataBlocks=" + metadataBlocks + ", fileMetadatas=" + fileMetadatas + '}';
     }
 
 

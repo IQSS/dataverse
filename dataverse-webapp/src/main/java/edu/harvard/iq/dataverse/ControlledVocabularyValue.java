@@ -123,8 +123,8 @@ public class ControlledVocabularyValue implements Serializable {
         key = StringUtils.stripAccents(key);
         try {
             return BundleUtil.getStringFromPropertyFile("controlledvocabulary." + this.datasetFieldType.getName() + "." + key, getDatasetFieldType().getMetadataBlock().getName());
-        } catch (MissingResourceException e) {
-            return strValue;
+        } catch (MissingResourceException | NullPointerException e) {
+            return getStrValue();
         }
     }
 

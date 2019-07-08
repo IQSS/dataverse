@@ -76,7 +76,7 @@
             </ui:fragment>
             <ui:fragment rendered="#{versionTab.datasetVersion == FilePage.fileMetadata.datasetVersion }">
                 <h:outputText rendered="#{!versionTab.datasetVersion.draft}" styleClass="highlightBold"
-                              value="#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" /> 
+                              value="#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" />
                 <h:outputText rendered="#{versionTab.datasetVersion.draft}" styleClass="highlightBold"
                               value="#{versionTab.datasetVersion.versionState}"/> 
             </ui:fragment>    

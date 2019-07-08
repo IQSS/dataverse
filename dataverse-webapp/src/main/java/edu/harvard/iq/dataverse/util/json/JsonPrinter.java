@@ -344,7 +344,8 @@ public class JsonPrinter {
                 .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus())
                 .add("contactForAccess", dsv.getTermsOfUseAndAccess().getContactForAccess())
                 .add("sizeOfCollection", dsv.getTermsOfUseAndAccess().getSizeOfCollection())
-                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion());
+                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion())
+                .add("fileAccessRequest", dsv.getTermsOfUseAndAccess().isFileAccessRequest());
 
         bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields()));
 

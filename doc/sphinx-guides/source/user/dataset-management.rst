@@ -20,7 +20,20 @@ A dataset contains three levels of metadata:
 
 For more details about what Citation and Domain Specific Metadata is supported please see our :ref:`user-appendix`.
 
-Note that once a dataset has been published its metadata may be exported. A button on the dataset page's metadata tab will allow a user to export the metadata of the most recently published version of the dataset. Currently supported export formats are DDI, Dublin Core, Schema.org JSON-LD, and Dataverse's native JSON format.
+.. _metadata-export-formats:
+
+Supported Metadata Export Formats
+---------------------------------
+
+Once a dataset has been published its metadata is exported in a variety of formats. A button on the dataset page's metadata tab will allow a user to export the metadata of the most recently published version of the dataset. Currently supported export formats are:
+
+- Dublin Core
+- DDI (Data Documentation Initiative)
+- DataCite 4
+- JSON (native Dataverse format)
+- OAI_ORE
+- OpenAIRE
+- Schema.org JSON-LD
 
 Adding a New Dataset
 ====================

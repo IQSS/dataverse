@@ -185,7 +185,7 @@ public class UserServiceBean {
         // Create/Run the query to find directly assigned roles
         // -------------------------------------------------
         String qstr = "SELECT distinct a.assigneeidentifier,";
-        qstr += " d.alias";
+        qstr += " d.alias,";
         qstr += " d.name";
         qstr += " FROM roleassignment a,";
         qstr += " dataverserole d";
@@ -284,7 +284,7 @@ public class UserServiceBean {
         }
 
         qstr = "SELECT distinct a.assigneeidentifier,";
-        qstr += " d.alias";
+        qstr += " d.alias,";
         qstr += " d.name";
         qstr += " FROM roleassignment a,";
         qstr += " dataverserole d";

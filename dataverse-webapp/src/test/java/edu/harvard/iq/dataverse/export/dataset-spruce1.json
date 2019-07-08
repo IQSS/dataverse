@@ -1,0 +1,86 @@
+{
+  "id": 10,
+  "identifier": "OZDVMO",
+  "persistentUrl": "https://doi.org/10.5072/FK2/OZDVMO",
+  "protocol": "doi",
+  "authority": "10.5072/FK2",
+  "datasetVersion": {
+    "id": 1,
+    "versionNumber": 1,
+    "versionMinorNumber": 0,
+    "versionState": "RELEASED",
+    "productionDate": "Production Date",
+    "lastUpdateTime": "2015-09-29T17:47:35Z",
+    "releaseTime": "2015-09-29T17:47:35Z",
+    "createTime": "2015-09-24T16:47:50Z",
+    "metadataBlocks": {
+      "citation": {
+        "displayName": "Citation Metadata",
+        "fields": [
+          {
+            "typeName": "title",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "Spruce Goose"
+          },
+          {
+            "typeName": "author",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "authorName": {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Spruce, Sabrina"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "datasetContact",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "datasetContactEmail": {
+                  "typeName": "datasetContactEmail",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "spruce@mailinator.com"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "dsDescription",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "dsDescriptionValue": {
+                  "typeName": "dsDescriptionValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "What the Spruce Goose was really made of."
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "subject",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "value": [
+              "Other"
+            ]
+          }
+        ]
+      }
+    },
+    "files": [
+    ],
+    "citation": "Spruce, Sabrina, 2015, \"Spruce Goose\", https://doi.org/10.5072/FK2/OZDVMO,  Root Dataverse,  V1"
+  }
+}

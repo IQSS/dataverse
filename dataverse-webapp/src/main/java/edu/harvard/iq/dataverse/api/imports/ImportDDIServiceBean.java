@@ -1217,10 +1217,10 @@ public class ImportDDIServiceBean {
         int firstIndex = versionNumber.indexOf('.');
         if (firstIndex == -1) {
             dvDTO.setVersionNumber(Long.parseLong(versionNumber));
-            dvDTO.setMinorVersionNumber("0");
+            dvDTO.setVersionMinorNumber(0L);
         } else {
             dvDTO.setVersionNumber(Long.parseLong(versionNumber.substring(0, firstIndex - 1)));
-            dvDTO.setMinorVersionNumber(versionNumber.substring(firstIndex + 1));
+            dvDTO.setVersionMinorNumber(Long.valueOf(versionNumber.substring(firstIndex + 1)));
         }
 
 
