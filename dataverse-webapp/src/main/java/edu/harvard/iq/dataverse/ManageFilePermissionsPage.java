@@ -5,13 +5,10 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
-import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
@@ -59,12 +56,6 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     RoleAssigneeServiceBean roleAssigneeService;
     @EJB
     PermissionServiceBean permissionService;
-    @EJB
-    AuthenticationServiceBean authenticationService;
-    @EJB
-    ExplicitGroupServiceBean explicitGroupService;
-    @EJB
-    GroupServiceBean groupService;
     @EJB
     UserNotificationServiceBean userNotificationService;
     @EJB
@@ -116,7 +107,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             return permissionsWrapper.notFound();
         }
 
-        if (!permissionService.on(dataset).has(Permission.ManageDatasetPermissions) ||
+        if (!permissionService.on(dataset).has(Permission.ManageDatasetPermissions) &&
                 !permissionService.on(dataset).has(Permission.ManageMinorDatasetPermissions)) {
             return permissionsWrapper.notAuthorized();
         }
