@@ -444,51 +444,6 @@ public class ManagePermissionsPage implements java.io.Serializable {
         return null;
     }
 
-    public String getAssignedRoleObjectTypes() {
-        String retString = "";
-        if (selectedRoleId != null) {
-            /* SEK 09/15/2016 SEK commenting out for now
-                because permissions are not inherited
-
-            if (dataverseRolePermissionHelper.hasDataversePermissions(selectedRoleId) && dvObject instanceof Dataverse){
-                String dvLabel = BundleUtil.getStringFromBundle("dataverses");
-                retString = dvLabel;
-            }
-            */
-            if (dataverseRolePermissionHelper.hasDatasetPermissions(selectedRoleId) && dvObject instanceof Dataverse) {
-                String dsLabel = BundleUtil.getStringFromBundle("datasets");
-                if (!retString.isEmpty()) {
-                    retString += ", " + dsLabel;
-                } else {
-                    retString = dsLabel;
-                }
-
-            }
-            if (dataverseRolePermissionHelper.hasFilePermissions(selectedRoleId)) {
-                String filesLabel = BundleUtil.getStringFromBundle("files");
-                if (!retString.isEmpty()) {
-                    retString += ", " + filesLabel;
-                } else {
-                    retString = filesLabel;
-                }
-            }
-            return retString;
-        }
-        return null;
-    }
-
-    public String getDefinitionLevelString() {
-        if (dvObject != null) {
-            if (dvObject instanceof Dataverse) {
-                return BundleUtil.getStringFromBundle("dataverse");
-            }
-            if (dvObject instanceof Dataset) {
-                return BundleUtil.getStringFromBundle("dataset");
-            }
-        }
-        return null;
-    }
-
     public void assignRole(ActionEvent evt) {
         logger.info("Got to assignRole");
         List<RoleAssignee> selectedRoleAssigneesList = getRoleAssignSelectedRoleAssignees();
