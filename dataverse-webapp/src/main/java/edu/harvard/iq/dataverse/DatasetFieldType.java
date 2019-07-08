@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.search.SolrField;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import javax.faces.model.SelectItem;
@@ -525,48 +524,6 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         }
     }
 
-    public SolrField getSolrField() {
-        SolrField.SolrType solrType = SolrField.SolrType.TEXT_EN;
-        if (fieldType != null) {
-
-            /**
-             * make more decisions based on fieldType: index as dates, url (?)
-             */
-            if (fieldType.equals(FieldType.INT)) {
-                solrType = SolrField.SolrType.INTEGER;
-            } else if (fieldType.equals(FieldType.FLOAT)) {
-                solrType = SolrField.SolrType.FLOAT;
-            } else if (fieldType.equals(FieldType.DATE)) {
-                solrType = SolrField.SolrType.DATE;
-            } else if (fieldType.equals(FieldType.EMAIL)) {
-                solrType = SolrField.SolrType.EMAIL;
-            }
-
-            Boolean parentAllowsMultiplesBoolean = false;
-            if (isHasParent()) {
-                if (getParentDatasetFieldType() != null) {
-                    DatasetFieldType parent = getParentDatasetFieldType();
-                    parentAllowsMultiplesBoolean = parent.isAllowMultiples();
-                }
-            }
-
-            boolean makeSolrFieldMultivalued;
-            // http://stackoverflow.com/questions/5800762/what-is-the-use-of-multivalued-field-type-in-solr
-            makeSolrFieldMultivalued = allowMultiples || parentAllowsMultiplesBoolean;
-
-            return new SolrField(name, solrType, makeSolrFieldMultivalued, facetable, true);
-
-        } else {
-            /**
-             * @todo: clean this up
-             */
-            String oddValue = name + getTmpNullFieldTypeIdentifier();
-            boolean makeSolrFieldMultivalued = false;
-            SolrField solrField = new SolrField(oddValue, solrType, makeSolrFieldMultivalued, facetable, true);
-            return solrField;
-        }
-    }
-
     public String getLocaleTitle() {
         if (getMetadataBlock() == null) {
             return title;
@@ -603,9 +560,16 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         }
     }
 
-    // help us identify fields that have null fieldType values
-    public String getTmpNullFieldTypeIdentifier() {
-        return "NullFieldType_s";
+    /**
+     * Determinate if this DatasetFieldType or it's parent allows multiple values for solr field.
+     */
+    public boolean isThisOrParentAllowsMultipleValues() {
+        return allowMultiples || isParentAllowsMutlipleValues();
+    }
+
+    private boolean isParentAllowsMutlipleValues() {
+        return getParentDatasetFieldType() != null &&
+                getParentDatasetFieldType().isAllowMultiples();
     }
 
     @Override

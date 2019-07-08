@@ -12,6 +12,8 @@ import edu.harvard.iq.dataverse.FieldType;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockDao;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import edu.harvard.iq.dataverse.search.SolrField;
+import edu.harvard.iq.dataverse.search.SolrFieldFactory;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import org.apache.commons.lang.StringUtils;
 
@@ -56,6 +58,9 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
 
     @EJB
     ControlledVocabularyValueServiceBean controlledVocabularyValueService;
+
+    @EJB
+    private SolrFieldFactory solrFieldFactory;
 
     private static final Logger logger = Logger.getLogger(DatasetFieldServiceApi.class.getName());
 
@@ -123,8 +128,12 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             Long id = dsf.getId();
             String title = dsf.getTitle();
             FieldType fieldType = dsf.getFieldType();
-            String solrFieldSearchable = dsf.getSolrField().getNameSearchable();
-            String solrFieldFacetable = dsf.getSolrField().getNameFacetable();
+            SolrField dsfSolrField = solrFieldFactory.getSolrField(dsf.getName(),
+                                                                   dsf.getFieldType(),
+                                                                   dsf.isThisOrParentAllowsMultipleValues(),
+                                                                   dsf.isFacetable());
+            String solrFieldSearchable = dsfSolrField.getNameSearchable();
+            String solrFieldFacetable = dsfSolrField.getNameFacetable();
             String metadataBlock = dsf.getMetadataBlock().getName();
             boolean hasParent = dsf.isHasParent();
             boolean allowsMultiples = dsf.isAllowMultiples();

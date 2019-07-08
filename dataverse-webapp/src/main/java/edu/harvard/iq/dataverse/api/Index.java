@@ -31,6 +31,7 @@ import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrField;
+import edu.harvard.iq.dataverse.search.SolrFieldFactory;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
@@ -92,6 +93,8 @@ public class Index extends AbstractApiBean {
     DatasetFieldServiceBean datasetFieldService;
     @EJB
     SearchFilesServiceBean searchFilesService;
+    @EJB
+    private SolrFieldFactory solrFieldFactory;
 
     public static String contentChanged = "contentChanged";
     public static String contentIndexed = "contentIndexed";
@@ -466,8 +469,13 @@ public class Index extends AbstractApiBean {
         StringBuilder sb = new StringBuilder();
 
         for (DatasetFieldType datasetField : datasetFieldService.findAllOrderedByName()) {
-            String nameSearchable = datasetField.getSolrField().getNameSearchable();
-            SolrField.SolrType solrType = datasetField.getSolrField().getSolrType();
+            SolrField dsfSolrField = solrFieldFactory.getSolrField(datasetField.getName(),
+                                                                   datasetField.getFieldType(),
+                                                                   datasetField.isThisOrParentAllowsMultipleValues(),
+                                                                   datasetField.isFacetable());
+            String nameSearchable = dsfSolrField.getNameSearchable();
+
+            SolrField.SolrType solrType = dsfSolrField.getSolrType();
             String type = solrType.getType();
             if (solrType.equals(SolrField.SolrType.EMAIL)) {
                 /**
@@ -486,7 +494,7 @@ public class Index extends AbstractApiBean {
                  */
                 logger.info("email type detected (" + nameSearchable + ") See also https://github.com/IQSS/dataverse/issues/759");
             }
-            String multivalued = datasetField.getSolrField().isAllowedToBeMultivalued().toString();
+            String multivalued = dsfSolrField.isAllowedToBeMultivalued().toString();
             // <field name="datasetId" type="text_general" multiValued="false" stored="true" indexed="true"/>
             sb.append("    <field name=\"" + nameSearchable + "\" type=\"" + type + "\" multiValued=\"" + multivalued + "\" stored=\"true\" indexed=\"true\"/>\n");
         }
@@ -516,8 +524,13 @@ public class Index extends AbstractApiBean {
         sb.append("---\n");
 
         for (DatasetFieldType datasetField : datasetFieldService.findAllOrderedByName()) {
-            String nameSearchable = datasetField.getSolrField().getNameSearchable();
-            String nameFacetable = datasetField.getSolrField().getNameFacetable();
+            SolrField dsfSolrField = solrFieldFactory.getSolrField(datasetField.getName(),
+                                                                   datasetField.getFieldType(),
+                                                                   datasetField.isThisOrParentAllowsMultipleValues(),
+                                                                   datasetField.isFacetable());
+            String nameSearchable = dsfSolrField.getNameSearchable();
+
+            String nameFacetable = dsfSolrField.getNameFacetable();
 
             if (listOfStaticFields.contains(nameSearchable)) {
                 if (nameSearchable.equals(SearchFields.DATASET_DESCRIPTION)) {

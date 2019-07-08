@@ -5,9 +5,9 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.search.SolrField;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -104,36 +104,35 @@ public class DatasetFieldTypeTest {
     }
 
     @Test
-    public void testGetSolrField() {
+    public void isParentAllowsMutlipleValues_parentReturnsTrue() {
+        //given
+        DatasetFieldType parentDsf = new DatasetFieldType();
+        parentDsf.setAllowMultiples(true);
 
-        DatasetFieldType instance = new DatasetFieldType();
-        instance.setFieldType(FieldType.DATE);
-        SolrField solrField = instance.getSolrField();
-        assertEquals(SolrField.SolrType.DATE, solrField.getSolrType());
+        DatasetFieldType datasetFieldType = new DatasetFieldType();
+        datasetFieldType.setParentDatasetFieldType(parentDsf);
 
-        instance.setFieldType(FieldType.EMAIL);
-        solrField = instance.getSolrField();
-        assertEquals(SolrField.SolrType.EMAIL, solrField.getSolrType());
+        //when
+        boolean parentAllowsMutlipleValues = datasetFieldType.isThisOrParentAllowsMultipleValues();
 
-        instance.setFieldType(FieldType.INT);
-        solrField = instance.getSolrField();
-        assertEquals(SolrField.SolrType.INTEGER, solrField.getSolrType());
-
-        instance.setFieldType(FieldType.FLOAT);
-        solrField = instance.getSolrField();
-        assertEquals(SolrField.SolrType.FLOAT, solrField.getSolrType());
-
-        instance.setFieldType(FieldType.TEXT);
-        solrField = instance.getSolrField();
-        assertEquals(SolrField.SolrType.TEXT_EN, solrField.getSolrType());
-
-        DatasetFieldType parent = new DatasetFieldType();
-        parent.setAllowMultiples(true);
-        instance.setParentDatasetFieldType(parent);
-        solrField = instance.getSolrField();
-        assertEquals(true, solrField.isAllowedToBeMultivalued());
-
+        //then
+        Assert.assertTrue(parentAllowsMutlipleValues);
     }
 
+    @Test
+    public void isParentAllowsMutlipleValues_parentReturnsFalse() {
+        //given
+        DatasetFieldType parentDsf = new DatasetFieldType();
+        parentDsf.setAllowMultiples(false);
+
+        DatasetFieldType datasetFieldType = new DatasetFieldType();
+        datasetFieldType.setParentDatasetFieldType(parentDsf);
+
+        //when
+        boolean parentAllowsMutlipleValues = datasetFieldType.isThisOrParentAllowsMultipleValues();
+
+        //then
+        Assert.assertFalse(parentAllowsMutlipleValues);
+    }
 
 }
