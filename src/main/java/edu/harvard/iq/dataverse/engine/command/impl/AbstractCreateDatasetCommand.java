@@ -142,17 +142,6 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
          
         ctxt.solrIndex().indexPermissionsOnSelfAndChildren(theDataset.getId());
         
-        /*
-        if (DataCaptureModuleUtil.rsyncSupportEnabled(ctxt.settings().getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
-            logger.fine("Requesting rsync support.");
-            try {
-                ScriptRequestResponse scriptRequestResponse = ctxt.engine().submit(new RequestRsyncScriptCommand(getRequest(), theDataset));
-                logger.log(Level.FINE, "script: {0}", scriptRequestResponse.getScript());
-            } catch (RuntimeException ex) {
-                logger.log(Level.WARNING, "Problem getting rsync script: {0}", ex.getLocalizedMessage());
-            }
-            logger.fine("Done with rsync request.");
-        }*/
         return theDataset;
     }
 
