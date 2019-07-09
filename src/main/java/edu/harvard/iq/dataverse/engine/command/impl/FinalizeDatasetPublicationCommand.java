@@ -133,13 +133,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 		theDataset.getLatestVersion().setVersionState(RELEASED);
 	}
         
-        /* it was here...
-                exportMetadata(ctxt.settings());
-        boolean doNormalSolrDocCleanUp = true;
-        ctxt.index().indexDataset(theDataset, doNormalSolrDocCleanUp);
-        ctxt.solrIndex().indexPermissionsForOneDvObject(theDataset);
-        */
-        
 
         // Remove locks
         ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.Workflow));
