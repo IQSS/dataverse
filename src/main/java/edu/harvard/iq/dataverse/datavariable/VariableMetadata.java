@@ -201,7 +201,7 @@ public class VariableMetadata implements Serializable  {
         return categoriesMetadata;
     }
 
-    public void setCategoriesMetadata(ArrayList<CategoryMetadata> categoriesMetadata) {
+    public void setCategoriesMetadata(Collection<CategoryMetadata> categoriesMetadata) {
         this.categoriesMetadata = categoriesMetadata;
 
     }
