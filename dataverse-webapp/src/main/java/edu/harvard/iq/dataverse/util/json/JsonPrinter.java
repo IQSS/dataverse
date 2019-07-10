@@ -35,7 +35,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
@@ -77,13 +76,6 @@ import static java.util.stream.Collectors.toList;
 public class JsonPrinter {
 
     private static final Logger logger = Logger.getLogger(JsonPrinter.class.getCanonicalName());
-
-    static SettingsServiceBean settingsService = null;
-
-    // Passed to DatasetFieldWalker so it can check the :ExcludeEmailFromExport setting
-    public static void setSettingsService(SettingsServiceBean ssb) {
-        settingsService = ssb;
-    }
 
     public JsonPrinter() {
 
@@ -311,7 +303,7 @@ public class JsonPrinter {
                 .add("storageIdentifier", ds.getStorageIdentifier());
     }
 
-    public static JsonObjectBuilder json(DatasetVersion dsv) {
+    public static JsonObjectBuilder json(DatasetVersion dsv, boolean excludeEmailFields) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId())
                 .add("storageIdentifier", dsv.getDataset().getStorageIdentifier())
@@ -347,7 +339,7 @@ public class JsonPrinter {
                 .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion())
                 .add("fileAccessRequest", dsv.getTermsOfUseAndAccess().isFileAccessRequest());
 
-        bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields()));
+        bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields(), excludeEmailFields));
 
         bld.add("files", jsonFileMetadatas(dsv.getFileMetadatas()));
 
@@ -402,8 +394,9 @@ public class JsonPrinter {
      * to the regular `json` method for DatasetVersion? Will anything break?
      * Unit tests for that method could not be found.
      */
-    public static JsonObjectBuilder jsonWithCitation(DatasetVersion dsv) {
-        JsonObjectBuilder dsvWithCitation = JsonPrinter.json(dsv);
+    public static JsonObjectBuilder jsonWithCitation(DatasetVersion dsv, boolean excludeEmailFromExport) {
+        JsonObjectBuilder dsvWithCitation =
+                JsonPrinter.json(dsv, excludeEmailFromExport);
         dsvWithCitation.add("citation", dsv.getCitation());
         return dsvWithCitation;
     }
@@ -420,9 +413,9 @@ public class JsonPrinter {
      * tests for that method could not be found. If we keep this method as-is
      * should the method be renamed?
      */
-    public static JsonObjectBuilder jsonAsDatasetDto(DatasetVersion dsv) {
+    public static JsonObjectBuilder jsonAsDatasetDto(DatasetVersion dsv, boolean excludeEmailFromExport) {
         JsonObjectBuilder datasetDtoAsJson = JsonPrinter.json(dsv.getDataset());
-        datasetDtoAsJson.add("datasetVersion", jsonWithCitation(dsv));
+        datasetDtoAsJson.add("datasetVersion", jsonWithCitation(dsv, excludeEmailFromExport));
         return datasetDtoAsJson;
     }
 
@@ -446,12 +439,12 @@ public class JsonPrinter {
                 .add("url", JsonPrinter.json(dist.getUrl()));
     }
 
-    public static JsonObjectBuilder jsonByBlocks(List<DatasetField> fields) {
+    public static JsonObjectBuilder jsonByBlocks(List<DatasetField> fields, boolean excludeEmailFromExport) {
         JsonObjectBuilder blocksBld = jsonObjectBuilder();
 
         for (Map.Entry<MetadataBlock, List<DatasetField>> blockAndFields : DatasetField.groupByBlock(fields).entrySet()) {
             MetadataBlock block = blockAndFields.getKey();
-            blocksBld.add(block.getName(), JsonPrinter.json(block, blockAndFields.getValue()));
+            blocksBld.add(block.getName(), JsonPrinter.json(block, blockAndFields.getValue(), excludeEmailFromExport));
         }
         return blocksBld;
     }
@@ -464,13 +457,13 @@ public class JsonPrinter {
      * @param fields
      * @return JSON Object builder with the block and fields information.
      */
-    public static JsonObjectBuilder json(MetadataBlock block, List<DatasetField> fields) {
+    public static JsonObjectBuilder json(MetadataBlock block, List<DatasetField> fields, boolean excludeEmailFromExport) {
         JsonObjectBuilder blockBld = jsonObjectBuilder();
 
         blockBld.add("displayName", block.getLocaleDisplayName());
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
 
-        DatasetFieldWalker.walk(fields, settingsService, new DatasetFieldsToJson(fieldsArray));
+        DatasetFieldWalker.walk(fields, new DatasetFieldsToJson(fieldsArray), excludeEmailFromExport);
 
         blockBld.add("fields", fieldsArray);
         return blockBld;

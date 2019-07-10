@@ -67,7 +67,6 @@ public class ExportService {
     public static synchronized ExportService getInstance(SettingsServiceBean settingsService) {
         ExportService.settingsService = settingsService;
         // We pass settingsService into the JsonPrinter so it can check the :ExcludeEmailFromExport setting in calls to JsonPrinter.jsonAsDatasetDto().
-        JsonPrinter.setSettingsService(settingsService);
         if (service == null) {
             service = new ExportService();
         }
@@ -87,7 +86,8 @@ public class ExportService {
         return retList;
     }
 
-    public InputStream getExport(Dataset dataset, String formatName) throws ExportException, IOException {
+    public InputStream getExport(Dataset dataset, String formatName)
+            throws ExportException, IOException {
         // first we will try to locate an already existing, cached export 
         // for this format: 
         InputStream exportInputStream = getCachedExportFormat(dataset, formatName);
@@ -158,7 +158,9 @@ public class ExportService {
                 throw new ExportException("No released version for dataset " + dataset.getGlobalId().toString());
             }
 
-            final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.jsonAsDatasetDto(releasedVersion);
+            final JsonObjectBuilder datasetAsJsonBuilder =
+                    JsonPrinter.jsonAsDatasetDto(releasedVersion,
+                                        settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport));
             JsonObject datasetAsJson = datasetAsJsonBuilder.build();
 
             Iterator<Exporter> exporters = loader.iterator();
@@ -209,7 +211,9 @@ public class ExportService {
                     if (releasedVersion == null) {
                         throw new IllegalStateException("No Released Version");
                     }
-                    final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.jsonAsDatasetDto(releasedVersion);
+                    final JsonObjectBuilder datasetAsJsonBuilder =
+                            JsonPrinter.jsonAsDatasetDto(releasedVersion,
+                                    settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport));
                     cacheExport(releasedVersion, formatName, datasetAsJsonBuilder.build(), e);
                 }
             }
@@ -240,7 +244,8 @@ public class ExportService {
 
     // This method runs the selected metadata exporter, caching the output 
     // in a file in the dataset directory / container based on its DOI:
-    private void cacheExport(DatasetVersion version, String format, JsonObject datasetAsJson, Exporter exporter) throws ExportException {
+    private void cacheExport(DatasetVersion version, String format, JsonObject datasetAsJson, Exporter exporter)
+            throws ExportException {
         boolean tempFileRequired = false;
         File tempFile = null;
         OutputStream outputStream = null;

@@ -63,7 +63,7 @@ public class Xrecord extends Record {
         return this;
     }
 
-    public void writeToStream(OutputStream outputStream) throws IOException {
+    public void writeToStream(OutputStream outputStream, boolean excludeEmailFromExport) throws IOException {
         outputStream.flush();
 
         String headerString = itemHeaderToString(this.header);

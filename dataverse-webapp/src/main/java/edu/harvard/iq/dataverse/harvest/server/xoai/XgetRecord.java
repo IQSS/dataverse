@@ -31,7 +31,7 @@ public class XgetRecord extends GetRecord {
         super(record);
     }
 
-    public void writeToStream(OutputStream outputStream) throws IOException {
+    public void writeToStream(OutputStream outputStream, boolean excludeEmailFromExport) throws IOException {
 
         if (this.getRecord() == null) {
             throw new IOException("XgetRecord: null Record");
@@ -41,7 +41,7 @@ public class XgetRecord extends GetRecord {
         outputStream.write(RECORD_START_ELEMENT.getBytes());
         outputStream.flush();
 
-        xrecord.writeToStream(outputStream);
+        xrecord.writeToStream(outputStream, excludeEmailFromExport);
 
         outputStream.write(RECORD_CLOSE_ELEMENT.getBytes());
         outputStream.flush();

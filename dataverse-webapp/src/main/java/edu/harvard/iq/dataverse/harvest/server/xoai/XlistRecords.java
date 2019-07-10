@@ -31,13 +31,13 @@ public class XlistRecords extends ListRecords {
     private static final String COMPLETE_LIST_SIZE_ATTRIBUTE = "completeListSize";
     private static final String CURSOR_ATTRIBUTE = "cursor";
 
-    public void writeToStream(OutputStream outputStream) throws IOException {
+    public void writeToStream(OutputStream outputStream, boolean excludeEmailFromExport) throws IOException {
         if (!this.records.isEmpty()) {
             for (Record record : this.records) {
                 outputStream.write(RECORD_START_ELEMENT.getBytes());
                 outputStream.flush();
 
-                ((Xrecord) record).writeToStream(outputStream);
+                ((Xrecord) record).writeToStream(outputStream, excludeEmailFromExport);
 
                 outputStream.write(RECORD_CLOSE_ELEMENT.getBytes());
                 outputStream.flush();

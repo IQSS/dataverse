@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.license.FileTermsOfUse;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 
 import java.util.List;

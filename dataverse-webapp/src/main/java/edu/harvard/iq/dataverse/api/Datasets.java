@@ -210,7 +210,9 @@ public class Datasets extends AbstractApiBean {
             final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
             final JsonObjectBuilder jsonbuilder = json(retrieved);
 
-            return allowCors(ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null)));
+            return allowCors(ok(jsonbuilder.add("latestVersion", (latest != null) ?
+                    json(latest, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport))
+                    : null)));
         });
     }
 
@@ -407,10 +409,10 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/versions")
     public Response listVersions(@PathParam("id") String id) {
         return allowCors(response(req ->
-                                          ok(execCommand(new ListVersionsCommand(req, findDatasetOrDie(id)))
-                                                     .stream()
-                                                     .map(d -> json(d))
-                                                     .collect(toJsonArray()))));
+                      ok(execCommand(new ListVersionsCommand(req, findDatasetOrDie(id)))
+                         .stream()
+                         .map(d -> json(d, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)))
+                         .collect(toJsonArray()))));
     }
 
     @GET
@@ -419,7 +421,7 @@ public class Datasets extends AbstractApiBean {
         return allowCors(response(req -> {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId));
             return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
-                    : ok(json(dsv));
+                    : ok(json(dsv, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)));
         }));
     }
 
@@ -436,7 +438,8 @@ public class Datasets extends AbstractApiBean {
         return allowCors(response(req -> ok(
                 jsonByBlocks(
                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId))
-                                .getDatasetFields()))));
+                                .getDatasetFields(),
+                        settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)))));
     }
 
     @GET
@@ -451,7 +454,9 @@ public class Datasets extends AbstractApiBean {
             Map<MetadataBlock, List<DatasetField>> fieldsByBlock = DatasetField.groupByBlock(dsv.getDatasetFields());
             for (Map.Entry<MetadataBlock, List<DatasetField>> p : fieldsByBlock.entrySet()) {
                 if (p.getKey().getName().equals(blockName)) {
-                    return ok(json(p.getKey(), p.getValue()));
+                    return ok(json(p.getKey(),
+                                p.getValue(),
+                                settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)));
                 }
             }
             return notFound("metadata block named " + blockName + " not found");
@@ -555,7 +560,7 @@ public class Datasets extends AbstractApiBean {
 //            DatasetVersion managedVersion = execCommand( updateDraft
 //                                                             ? new UpdateDatasetVersionCommand(req, incomingVersion)
 //                                                             : new CreateDatasetVersionCommand(req, ds, incomingVersion));
-            return ok(json(managedVersion));
+            return ok(json(managedVersion, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)));
 
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset version Json: " + ex.getMessage(), ex);
@@ -696,7 +701,7 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion managedVersion = updateDraft
                     ? execCommand(new UpdateDatasetVersionCommand(ds, req)).getEditVersion()
                     : execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
-            return ok(json(managedVersion));
+            return ok(json(managedVersion, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)));
 
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
@@ -837,7 +842,7 @@ public class Datasets extends AbstractApiBean {
                 managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
             }
 
-            return ok(json(managedVersion));
+            return ok(json(managedVersion, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)));
 
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
