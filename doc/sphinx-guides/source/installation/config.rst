@@ -226,7 +226,7 @@ Then create a password alias by running (without changes):
 
 .. code-block:: none
 
-    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.password.endpoint1='${ALIAS=swiftpassword-alias}'"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.password.endpoint1='\${ALIAS=swiftpassword-alias}'"
     ./asadmin $ASADMIN_OPTS create-password-alias swiftpassword-alias
 
 The second command will trigger an interactive prompt asking you to input your Swift password.
@@ -658,16 +658,19 @@ For Google Analytics, the example script at :download:`analytics-code.html </_st
 
 Once this script is running, you can look in the Google Analytics console (Realtime/Events or Behavior/Events) and view events by type and/or the Dataset or File the event involves.
 
-DuraCloud/Chronopolis Integration
----------------------------------
+BagIt Export
+------------
 
-It's completely optional to integrate your installation of Dataverse with DuraCloud/Chronopolis but the details are listed here to keep the :doc:`/admin/integrations` section of the Admin Guide shorter.
+Dataverse may be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ bags to `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_ or alternately to any folder on the local filesystem.
 
-Dataverse can be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ bags to the `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_
+Dataverse offers an internal archive workflow which may be configured as a PostPublication workflow via an admin API call to manually submit previously published Datasets and prior versions to a configured archive such as Chronopolis. The workflow creates a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse web interface.
 
-This integration is occurs through customization of an internal Dataverse archiver workflow that can be configured as a PostPublication workflow to submit the bag to Chronopolis' Duracloud interface using your organization's credentials. An admin API call exists that can manually submit previously published Datasets, and prior versions, to a configured archive such as Chronopolis. The workflow leverages new functionality in Dataverse to create a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse web interface.
+At present, the DPNSubmitToArchiveCommand and LocalSubmitToArchiveCommand are the only implementations extending the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
 
-At present, the DPNSubmitToArchiveCommand is the only implementation extending the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
+.. _Duracloud Configuration:
+
+Duracloud Configuration
++++++++++++++++++++++++
 
 Also note that while the current Chronopolis implementation generates the bag and submits it to the archive's DuraCloud interface, the step to make a 'snapshot' of the space containing the Bag (and verify it's successful submission) are actions a curator must take in the DuraCloud interface.
 
@@ -695,7 +698,27 @@ Archivers may require glassfish settings as well. For the Chronopolis archiver, 
     
 ``./asadmin create-jvm-options '-Dduracloud.password=YOUR_PASSWORD_HERE'``
 
-**API Call**
+.. _Local Path Configuration:
+
+Local Path Configuration
+++++++++++++++++++++++++
+
+ArchiverClassName - the fully qualified class to be used for archiving. For example\:
+
+``curl -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.LocalSubmitToArchiveCommand" http://localhost:8080/api/admin/settings/:ArchiverClassName``
+
+\:BagItLocalPath - the path to where you want to store BagIt. For example\:
+
+``curl -X PUT -d /home/path/to/storage http://localhost:8080/api/admin/settings/:BagItLocalPath``
+
+\:ArchiverSettings - the archiver class can access required settings including existing Dataverse settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. For example\: 
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath”``
+
+:BagItLocalPath is the file path that you've set in :ArchiverSettings.
+
+API Call
+++++++++
 
 Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the API call to manually submit a DatasetVersion for processing:
 
@@ -711,7 +734,8 @@ The submitDataVersionToArchive API (and the workflow discussed below) attempt to
 
 In the Chronopolis case, since the transfer from the DuraCloud front-end to archival storage in Chronopolis can take significant time, it is currently up to the admin/curator to submit a 'snap-shot' of the space within DuraCloud and to monitor its successful transfer. Once transfer is complete the space should be deleted, at which point the Dataverse API call can be used to submit a Bag for other versions of the same Dataset. (The space is reused, so that archival copies of different Dataset versions correspond to different snapshots of the same DuraCloud space.).
 
-**PostPublication Workflow**
+PostPublication Workflow
+++++++++++++++++++++++++
 
 To automate the submission of archival copies to an archive as part of publication, one can setup a Dataverse Workflow using the "archiver" workflow step - see the :doc:`/developers/workflows` guide.
 . The archiver step uses the configuration information discussed above including the :ArchiverClassName setting. The workflow step definition should include the set of properties defined in \:ArchiverSettings in the workflow definition.
