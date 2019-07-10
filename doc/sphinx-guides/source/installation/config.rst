@@ -226,7 +226,7 @@ Then create a password alias by running (without changes):
 
 .. code-block:: none
 
-    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.password.endpoint1='${ALIAS=swiftpassword-alias}'"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.password.endpoint1='\${ALIAS=swiftpassword-alias}'"
     ./asadmin $ASADMIN_OPTS create-password-alias swiftpassword-alias
 
 The second command will trigger an interactive prompt asking you to input your Swift password.

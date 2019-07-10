@@ -9,7 +9,7 @@ public class FacetLabel {
     private Long count;
     private String filterQuery;
 
-    FacetLabel(String name, Long count) {
+    public FacetLabel(String name, Long count) {
         this.name = name;
         this.count = count;
     }
