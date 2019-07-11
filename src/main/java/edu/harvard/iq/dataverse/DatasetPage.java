@@ -64,6 +64,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Collection;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -74,7 +75,6 @@ import javax.faces.event.ValueChangeEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.mail.internet.InternetAddress;
 
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
@@ -122,6 +122,7 @@ import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.FacetLabel;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import java.util.Comparator;
 import java.util.TimeZone;
@@ -189,6 +190,8 @@ public class DatasetPage implements java.io.Serializable {
     DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService;
     @EJB
     SettingsServiceBean settingsService;
+    @EJB
+    SearchServiceBean searchService;
     @EJB
     AuthenticationServiceBean authService;
     @EJB
@@ -1746,7 +1749,7 @@ public class DatasetPage implements java.io.Serializable {
         String nonNullDefaultIfKeyNotFound = "";
         protocol = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         authority = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset     
+        if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset
 
             DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
 
@@ -1923,7 +1926,7 @@ public class DatasetPage implements java.io.Serializable {
                         selectedTemplate = testT;
                     }
                 }
-                workingVersion = dataset.getEditVersion(selectedTemplate);
+                workingVersion = dataset.getEditVersion(selectedTemplate, null);
                 updateDatasetFieldInputLevels();
             } else {
                 workingVersion = dataset.getCreateVersion();
@@ -3298,7 +3301,6 @@ public class DatasetPage implements java.io.Serializable {
                 if (!filesToBeDeleted.isEmpty()) {
                     deleteStorageLocations = datafileService.getPhysicalFilesToDelete(filesToBeDeleted);
                 }
-                
                 cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, clone );
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);  
             }
@@ -3361,7 +3363,7 @@ public class DatasetPage implements java.io.Serializable {
                     
                     // and another update command: 
                     boolean addFilesSuccess = false;
-                    cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), new ArrayList<FileMetadata>());
+                    cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest());
                     try {
                         dataset = commandEngine.submit(cmd);
                         addFilesSuccess = true; 
@@ -3900,6 +3902,11 @@ public class DatasetPage implements java.io.Serializable {
 
         if (permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {
             for (DatasetVersion version : dataset.getVersions()) {
+                Collection<FileMetadata> fml = version.getFileMetadatas();
+                for (FileMetadata fm : fml) {
+                    fm.setVariableMetadatas(variableService.findVarMetByFileMetaId(fm.getId()));
+                    fm.setVarGroups(variableService.findAllGroupsByFileMetadata(fm.getId()));
+                }
                 version.setContributorNames(datasetVersionService.getContributorsNames(version));
                 retList.add(version);
             }
@@ -5128,13 +5135,7 @@ public class DatasetPage implements java.io.Serializable {
     private SolrClient solrServer = null;
     
     private SolrClient getSolrServer () {
-        if (solrServer == null) {
-        }
-        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
-        solrServer = new HttpSolrClient.Builder(urlString).build();
-        
-        return solrServer;
-        
+        return searchService.getSolrServer();       
     }
     
     private static Date getFileDateToCompare(FileMetadata fileMetadata) {
