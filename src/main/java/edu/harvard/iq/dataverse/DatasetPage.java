@@ -122,6 +122,7 @@ import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.FacetLabel;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import java.util.Comparator;
 import java.util.TimeZone;
@@ -189,6 +190,8 @@ public class DatasetPage implements java.io.Serializable {
     DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService;
     @EJB
     SettingsServiceBean settingsService;
+    @EJB
+    SearchServiceBean searchService;
     @EJB
     AuthenticationServiceBean authService;
     @EJB
@@ -5132,13 +5135,7 @@ public class DatasetPage implements java.io.Serializable {
     private SolrClient solrServer = null;
     
     private SolrClient getSolrServer () {
-        if (solrServer == null) {
-        }
-        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
-        solrServer = new HttpSolrClient.Builder(urlString).build();
-        
-        return solrServer;
-        
+        return searchService.getSolrServer();       
     }
     
     private static Date getFileDateToCompare(FileMetadata fileMetadata) {
