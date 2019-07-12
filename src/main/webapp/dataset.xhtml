@@ -401,14 +401,16 @@
                                     <div id="metrics-content" class="" style="border:1px solid #EEE; border-top-width:0;">
                                         <div class="metrics-downloads margin-bottom-half" style="padding-bottom:.5em; border-bottom:1px solid #EEE" jsf:rendered="#{true}">
                                             <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
-                                                <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
+                                                <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getDownloadsTotal()}"/>
+                                                <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}" rendered="#{false}"/>
                                             </h:outputFormat>
                                         </div>
                                         
-                                        <div class="metrics-downloads-mdc margin-bottom-half" style="padding-bottom:.5em; border-bottom:1px solid #EEE" jsf:rendered="#{true}">
+                                        <div class="metrics-views-mdc margin-bottom-half" style="padding-bottom:.5em; border-bottom:1px solid #EEE" jsf:rendered="#{true}">
                                             <h:outputLink value="https://makedatacount.org/" target="_blank">
-                                                <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
-                                                    <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
+                                                <h:outputFormat value="{0} #{bundle['metrics.views']}">
+                                                    <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getViewsTotal()}"/>
+                                                    <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}" rendered="#{false}"/>
                                                 </h:outputFormat>
                                             </h:outputLink>
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
