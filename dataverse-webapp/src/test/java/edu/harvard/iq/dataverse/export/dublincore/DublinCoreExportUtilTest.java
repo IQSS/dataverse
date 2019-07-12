@@ -6,17 +6,12 @@
 package edu.harvard.iq.dataverse.export.dublincore;
 
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.nio.file.Files;
@@ -56,15 +51,15 @@ public class DublinCoreExportUtilTest {
      */
     @Test
     public void testDatasetJson2dublincore() throws Exception {
-
-        File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.json");
-        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
-
+        byte[] file = Files.readAllBytes(Paths.get(getClass().getClassLoader()
+                .getResource("json/export/ddi/dataset-finch1.json").toURI()));
+        String datasetVersionAsJson = new String(file);
         JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
         JsonObject obj = jsonReader.readObject();
 
-        File dubCoreFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finchDC.xml");
-        String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(dubCoreFile.getAbsolutePath()))));
+        String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files
+                .readAllBytes(Paths.get(getClass().getClassLoader()
+                        .getResource("xml/export/ddi/dataset-finchDC.xml").toURI()))));
         logger.info(datasetAsDdi);
 
         OutputStream output = new ByteArrayOutputStream();
