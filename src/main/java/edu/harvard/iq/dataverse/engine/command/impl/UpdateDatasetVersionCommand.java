@@ -3,12 +3,15 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.datavariable.VarGroup;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,23 +27,27 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
     private final List<FileMetadata> filesToDelete;
     private boolean validateLenient = false;
     private final DatasetVersion clone;
+    private final FileMetadata fmVarMet;
     
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
         this.filesToDelete = new ArrayList<>();
         this.clone = null;
+        this.fmVarMet = null;
     }    
     
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, List<FileMetadata> filesToDelete) {
         super(aRequest, theDataset);
         this.filesToDelete = filesToDelete;
         this.clone = null;
+        this.fmVarMet = null;
     }
     
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, List<FileMetadata> filesToDelete, DatasetVersion clone) {
         super(aRequest, theDataset);
         this.filesToDelete = filesToDelete;
         this.clone = clone;
+        this.fmVarMet = null;
     }
     
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, DataFile fileToDelete) {
@@ -49,6 +56,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         // get the latest file metadata for the file; ensuring that it is a draft version
         this.filesToDelete = new ArrayList<>();
         this.clone = null;
+        this.fmVarMet = null;
         for (FileMetadata fmd : theDataset.getEditVersion().getFileMetadatas()) {
             if (fmd.getDataFile().equals(fileToDelete)) {
                 filesToDelete.add(fmd);
@@ -61,7 +69,15 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         super(aRequest, theDataset);
         this.filesToDelete = new ArrayList<>();
         this.clone = clone;
-    } 
+        this.fmVarMet = null;
+    }
+
+    public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, FileMetadata fm) {
+        super(aRequest, theDataset);
+        this.filesToDelete = new ArrayList<>();
+        this.clone = null;
+        this.fmVarMet = fm;
+    }
 
     public boolean isValidateLenient() {
         return validateLenient;
@@ -90,10 +106,12 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             } else {
                 logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", getDataset().getId());
             }
-            theDataset.getEditVersion().setDatasetFields(theDataset.getEditVersion().initDatasetFields());
-            validateOrDie(theDataset.getEditVersion(), isValidateLenient());
+            
+            getDataset().getEditVersion(fmVarMet).setDatasetFields(getDataset().getEditVersion(fmVarMet).initDatasetFields());
+            validateOrDie(getDataset().getEditVersion(fmVarMet), isValidateLenient());
 
-            final DatasetVersion editVersion = theDataset.getEditVersion();
+            final DatasetVersion editVersion = getDataset().getEditVersion(fmVarMet);
+            
             tidyUpFields(editVersion);
 
             // Merge the new version into out JPA context, if needed.
