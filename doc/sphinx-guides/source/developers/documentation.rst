@@ -13,8 +13,11 @@ If you find a typo or a small error in the documentation you can easily fix it u
 - Fork the repository
 - Go to [your GitHub username]/dataverse/doc/sphinx-guides/source and access the file you would like to fix
 - Switch to the branch that is currently under development
-- Click the Edit button in the upper-right corner and fix the error
-- Submit a pull request
+- Click the *Edit* button in the upper-right corner and fix the error
+- Enter a description for the changes you have done on the *Commit changes* form
+- Select option  *Create a new branch for this commit and start a pull request*
+- Enter patch name (refer to http://guides.dataverse.org/en/latest/developers/version-control.html > *Create a New Branch off the develop Branch*) and click button *Propose file change*
+- Submit a pull request to the original (upstream) repo using procedure depicted in https://help.github.com/en/articles/creating-a-pull-request-from-a-fork
 
 Other Changes (Sphinx)
 ----------------------
