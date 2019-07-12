@@ -20,7 +20,20 @@ A dataset contains three levels of metadata:
 
 For more details about what Citation and Domain Specific Metadata is supported please see our :ref:`user-appendix`.
 
-Note that once a dataset has been published its metadata may be exported. A button on the dataset page's metadata tab will allow a user to export the metadata of the most recently published version of the dataset. Currently supported export formats are DDI, Dublin Core, Datacite 4, OAI_ORE, Schema.org JSON-LD, and Dataverse's native JSON format.
+.. _metadata-export-formats:
+
+Supported Metadata Export Formats
+---------------------------------
+
+Once a dataset has been published its metadata is exported in a variety of formats. A button on the dataset page's metadata tab will allow a user to export the metadata of the most recently published version of the dataset. Currently supported export formats are:
+
+- Dublin Core
+- DDI (Data Documentation Initiative)
+- DataCite 4
+- JSON (native Dataverse format)
+- OAI_ORE
+- OpenAIRE
+- Schema.org JSON-LD
 
 Adding a New Dataset
 ====================
@@ -53,7 +66,7 @@ If there are multiple upload options available, then you must choose which one t
 
 You can upload files to a dataset while first creating that dataset. You can also upload files after creating a dataset by clicking the "Edit" button at the top of the dataset page and from the dropdown list selecting "Files (Upload)" or clicking the "Upload Files" button above the files table in the Files tab. From either option you will be brought to the Upload Files page for that dataset.
 
-Certain file types in Dataverse are supported by additional functionality, which can include downloading in different formats, subsets, file-level metadata preservation, file-level data citation; and exploration through data visualization and analysis. See the File Handling section of this page for more information.
+Certain file types in Dataverse are supported by additional functionality, which can include downloading in different formats, subsets, file-level metadata preservation, file-level data citation with UNFs, and exploration through data visualization and analysis. See the File Handling section of this page for more information.
 
 
 HTTP Upload
@@ -215,6 +228,11 @@ Go to the dataset you would like to edit, where you will see the listing of file
 You will not have to leave the dataset page to complete these action, except for editing file metadata, which will bring you to the Edit Files page. There you will have to click the "Save Changes" button to apply your edits and return to the dataset page.
 
 If you restrict files, you will also prompted with a popup asking you to fill out the Terms of Access for the files. If Terms of Access already exist, you will be asked to confirm them. Note that some Dataverse installations do not allow for file restrictions.
+
+Edit File Variable Metadata
+---------------------------
+
+Variable Metadata can be edited directly through an API call (:ref:`API Guide: Editing Variable Level Metadata <EditingVariableMetadata>`) or by using the  `Dataverse Data Curation Tool <https://github.com/scholarsportal/Dataverse-Data-Curation-Tool>`_.
 
 File Path
 ---------

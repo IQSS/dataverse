@@ -78,6 +78,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
+import org.apache.commons.io.FilenameUtils;
 
 
 /**
@@ -147,6 +148,59 @@ public class FileUtil implements java.io.Serializable  {
     
     public static final String MIME_TYPE_INGESTED_FILE = "text/tab-separated-values";
 
+    // File type "thumbnail classes" tags:
+    
+    public static final String FILE_THUMBNAIL_CLASS_AUDIO = "audio";
+    public static final String FILE_THUMBNAIL_CLASS_CODE = "code";
+    public static final String FILE_THUMBNAIL_CLASS_DOCUMENT = "document";
+    public static final String FILE_THUMBNAIL_CLASS_ASTRO = "astro";
+    public static final String FILE_THUMBNAIL_CLASS_IMAGE = "image";
+    public static final String FILE_THUMBNAIL_CLASS_NETWORK = "network";
+    public static final String FILE_THUMBNAIL_CLASS_GEOSHAPE = "geodata";
+    public static final String FILE_THUMBNAIL_CLASS_TABULAR = "tabular";
+    public static final String FILE_THUMBNAIL_CLASS_VIDEO = "video";
+    public static final String FILE_THUMBNAIL_CLASS_PACKAGE = "package";
+    public static final String FILE_THUMBNAIL_CLASS_OTHER = "other";
+    
+    // File type facets, as returned by the getFacetFileType() method in this utility: 
+    
+    private static final String FILE_FACET_CLASS_ARCHIVE = "Archive";
+    private static final String FILE_FACET_CLASS_AUDIO = "Audio";
+    private static final String FILE_FACET_CLASS_CODE = "Code";
+    private static final String FILE_FACET_CLASS_DATA = "Data";
+    private static final String FILE_FACET_CLASS_DOCUMENT = "Document";
+    private static final String FILE_FACET_CLASS_ASTRO = "FITS";
+    private static final String FILE_FACET_CLASS_IMAGE = "Image";
+    private static final String FILE_FACET_CLASS_NETWORK = "Network Data";
+    private static final String FILE_FACET_CLASS_GEOSHAPE = "Shape";
+    private static final String FILE_FACET_CLASS_TABULAR = "Tabular Data";
+    private static final String FILE_FACET_CLASS_VIDEO = "Video";
+    private static final String FILE_FACET_CLASS_TEXT = "Text";
+    private static final String FILE_FACET_CLASS_OTHER = "Other";
+    private static final String FILE_FACET_CLASS_UNKNOWN = "Unknown";
+
+    // The file type facets and type-specific thumbnail classes (above) are
+    // very similar, but not exactly 1:1; so the following map is for 
+    // maintaining the relationship between the two:
+    
+    public static Map<String, String> FILE_THUMBNAIL_CLASSES = new HashMap<String, String>();
+    
+    static {
+        FILE_THUMBNAIL_CLASSES.put(FILE_FACET_CLASS_VIDEO, FILE_THUMBNAIL_CLASS_VIDEO);
+        FILE_THUMBNAIL_CLASSES.put(FILE_FACET_CLASS_AUDIO, FILE_THUMBNAIL_CLASS_AUDIO);
+        FILE_THUMBNAIL_CLASSES.put(FILE_FACET_CLASS_CODE, FILE_THUMBNAIL_CLASS_CODE);
+        FILE_THUMBNAIL_CLASSES.put(FILE_FACET_CLASS_DATA, FILE_THUMBNAIL_CLASS_TABULAR);
+        FILE_THUMBNAIL_CLASSES.put(FILE_FACET_CLASS_NETWORK, FILE_THUMBNAIL_CLASS_NETWORK);
+        FILE_THUMBNAIL_CLASSES.put(FILE_FACET_CLASS_ASTRO, FILE_THUMBNAIL_CLASS_ASTRO);
+        FILE_THUMBNAIL_CLASSES.put(FILE_FACET_CLASS_IMAGE, FILE_THUMBNAIL_CLASS_IMAGE);
+        FILE_THUMBNAIL_CLASSES.put(FILE_FACET_CLASS_DOCUMENT, FILE_THUMBNAIL_CLASS_DOCUMENT);
+        FILE_THUMBNAIL_CLASSES.put(FILE_FACET_CLASS_GEOSHAPE, FILE_THUMBNAIL_CLASS_GEOSHAPE);
+        FILE_THUMBNAIL_CLASSES.put(FILE_FACET_CLASS_TABULAR, FILE_THUMBNAIL_CLASS_TABULAR);
+        FILE_THUMBNAIL_CLASSES.put(FILE_FACET_CLASS_TEXT, FILE_THUMBNAIL_CLASS_DOCUMENT);
+        FILE_THUMBNAIL_CLASSES.put(FILE_FACET_CLASS_OTHER, FILE_THUMBNAIL_CLASS_OTHER);
+        FILE_THUMBNAIL_CLASSES.put(FILE_FACET_CLASS_UNKNOWN, FILE_THUMBNAIL_CLASS_OTHER);
+        FILE_THUMBNAIL_CLASSES.put(FILE_FACET_CLASS_ARCHIVE, FILE_THUMBNAIL_CLASS_PACKAGE);
+    }
 
     /**
      * This string can be prepended to a Base64-encoded representation of a PNG
@@ -233,11 +287,10 @@ public class FileUtil implements java.io.Serializable  {
             } catch (MissingResourceException e) {
                 // if there's no defined "facet-friendly" form of this mime type
                 // we'll truncate the available type by "/", e.g., all the 
-                // unknown image/* types will become "image"; many other, quite
-                // different types will all become "application" this way - 
-                // but it is probably still better than to tag them all as 
-                // "uknown". 
-                // -- L.A. 4.0 alpha 1
+                // unknown image/* types will become "image". 
+                // Since many other, quite different types would then all become 
+                // "application" - we will use the facet "Other" for all the 
+                // application/* types not specifically defined in the properties file.
                 //
                 // UPDATE, MH 4.9.2
                 // Since production is displaying both "tabulardata" and "Tabular Data"
@@ -245,6 +298,9 @@ public class FileUtil implements java.io.Serializable  {
                 // in order to capitalize all the unknown types that are not called
                 // out in MimeTypeFacets.properties
                 String typeClass = fileType.split("/")[0];
+                if ("application".equalsIgnoreCase(typeClass)) {
+                    return FILE_FACET_CLASS_OTHER;
+                }
                 return Character.toUpperCase(typeClass.charAt(0)) + typeClass.substring(1);
             }
         } else {
@@ -414,13 +470,34 @@ public class FileUtil implements java.io.Serializable  {
         logger.fine("returning fileType "+fileType);
         return fileType;
     }
-    
+
     public static String determineFileTypeByExtension(String fileName) {
-        logger.fine("Type by extension, for "+fileName+": "+MIME_TYPE_MAP.getContentType(fileName));
-        return MIME_TYPE_MAP.getContentType(fileName);
+        String mimetypesFileTypeMapResult = MIME_TYPE_MAP.getContentType(fileName);
+        logger.fine("MimetypesFileTypeMap type by extension, for " + fileName + ": " + mimetypesFileTypeMapResult);
+        if (mimetypesFileTypeMapResult != null) {
+            if ("application/octet-stream".equals(mimetypesFileTypeMapResult)) {
+                return lookupFileTypeFromPropertiesFile(fileName);
+            } else {
+                return mimetypesFileTypeMapResult;
+            }
+        } else {
+            return null;
+        }
     }
-    
-    
+
+    public static String lookupFileTypeFromPropertiesFile(String fileName) {
+        String fileExtension = FilenameUtils.getExtension(fileName);
+        String propertyFileName = "MimeTypeDetectionByFileExtension";
+        String propertyFileNameOnDisk = propertyFileName + ".properties";
+        try {
+            logger.fine("checking " + propertyFileNameOnDisk + " for file extension " + fileExtension);
+            return BundleUtil.getStringFromPropertyFile(fileExtension, propertyFileName);
+        } catch (MissingResourceException ex) {
+            logger.info(fileExtension + " is a file extension Dataverse doesn't know about. Consider adding it to the " + propertyFileNameOnDisk + " file.");
+            return null;
+        }
+    }
+
     /* 
      * Custom method for identifying FITS files: 
      * TODO: 
@@ -938,7 +1015,14 @@ public class FileUtil implements java.io.Serializable  {
             }
             
             // Delete the temp directory used for unzipping
-            FileUtils.deleteDirectory(rezipFolder);
+            // The try-catch is due to error encountered in using NFS for stocking file,
+            // cf. https://github.com/IQSS/dataverse/issues/5909
+            try {
+            	FileUtils.deleteDirectory(rezipFolder);
+            } catch (IOException ioex) {
+                // do nothing - it's a tempo folder.
+                logger.warning("Could not remove temp folder, error message : " + ioex.getMessage());
+            }
             
             if (datafiles.size() > 0) {
                 // remove the uploaded zip file:
@@ -1364,10 +1448,14 @@ public class FileUtil implements java.io.Serializable  {
     /**
      * The FileDownloadServiceBean operates on file IDs, not DOIs.
      */
-    public static String getFileDownloadUrlPath(String downloadType, Long fileId, boolean gbRecordsWritten) {
+    public static String getFileDownloadUrlPath(String downloadType, Long fileId, boolean gbRecordsWritten, Long fileMetadataId) {
         String fileDownloadUrl = "/api/access/datafile/" + fileId;
         if (downloadType != null && downloadType.equals("bundle")) {
-            fileDownloadUrl = "/api/access/datafile/bundle/" + fileId;
+            if (fileMetadataId == null) {
+                fileDownloadUrl = "/api/access/datafile/bundle/" + fileId;
+            } else {
+                fileDownloadUrl = "/api/access/datafile/bundle/" + fileId + "?fileMetadataId=" + fileMetadataId;
+            }
         }
         if (downloadType != null && downloadType.equals("original")) {
             fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=original";
@@ -1376,13 +1464,18 @@ public class FileUtil implements java.io.Serializable  {
             fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=RData";
         }
         if (downloadType != null && downloadType.equals("var")) {
-            fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata";
+            if (fileMetadataId == null) {
+                fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata";
+            } else {
+                fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata?fileMetadataId=" + fileMetadataId;
+            }
         }
         if (downloadType != null && downloadType.equals("tab")) {
             fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=tab";
         }
         if (gbRecordsWritten) {
-            if (downloadType != null && (downloadType.equals("original") || downloadType.equals("RData") || downloadType.equals("tab"))) {
+            if (downloadType != null && ((downloadType.equals("original") || downloadType.equals("RData") || downloadType.equals("tab")) ||
+                    ((downloadType.equals("var") || downloadType.equals("bundle") ) && fileMetadataId != null))) {
                 fileDownloadUrl += "&gbrecs=true";
             } else {
                 fileDownloadUrl += "?gbrecs=true";

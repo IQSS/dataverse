@@ -1,11 +1,18 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.VarGroup;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
-import java.util.ResourceBundle;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
 import java.util.Date;
@@ -24,11 +31,14 @@ public final class DatasetVersionDifference {
     private List<FileMetadata> addedFiles = new ArrayList<>();
     private List<FileMetadata> removedFiles = new ArrayList<>();
     private List<FileMetadata> changedFileMetadata = new ArrayList<>();
+    private List<FileMetadata> changedVariableMetadata = new ArrayList<>();
     private List<FileMetadata[]> replacedFiles = new ArrayList<>();
     private List<String[]> changedTermsAccess = new ArrayList<>();
     private List<Object[]> summaryDataForNote = new ArrayList<>();
     private List<Object[]> blockDataForNote = new ArrayList<>();
     String noFileDifferencesFoundLabel = "";
+
+    private VariableMetadataUtil variableMetadataUtil;
     
     private List<DifferenceSummaryGroup> differenceSummaryGroups = new ArrayList<>();
 
@@ -114,6 +124,10 @@ public final class DatasetVersionDifference {
                     if (!compareFileMetadatas(fmdo, fmdn)) {
                         changedFileMetadata.add(fmdo);
                         changedFileMetadata.add(fmdn);
+                    }
+                    if (!compareVariableMetadata(fmdo,fmdn) || !compareVarGroup(fmdo, fmdn)) {
+                        changedVariableMetadata.add(fmdo);
+                        changedVariableMetadata.add(fmdn);
                     }
                     break;
                 }
@@ -510,6 +524,63 @@ public final class DatasetVersionDifference {
         summaryDataForNote.add(noteArray);
     }
 
+    private boolean compareVariableMetadata(FileMetadata fmdo, FileMetadata fmdn) {
+        Collection<VariableMetadata> vmlo = fmdo.getVariableMetadatas();
+        Collection<VariableMetadata> vmln = fmdn.getVariableMetadatas();
+
+        int count = 0;
+        if (vmlo.size() != vmln.size()) {
+            return false;
+        } else {
+            for (VariableMetadata vmo : vmlo) {
+                for (VariableMetadata vmn : vmln) {
+                    if (vmo.getDataVariable().getId().equals(vmn.getDataVariable().getId())) {
+                        count++;
+                        if (!variableMetadataUtil.compareVarMetadata(vmo, vmn)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        if (count == vmlo.size()) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    private boolean compareVarGroup(FileMetadata fmdo, FileMetadata fmdn) {
+        List<VarGroup> vglo = fmdo.getVarGroups();
+        List<VarGroup> vgln = fmdn.getVarGroups();
+
+        if (vglo.size() != vgln.size()) {
+            return false;
+        }
+        int count = 0;
+        for (VarGroup vgo : vglo) {
+            for (VarGroup vgn : vgln) {
+                if (!variableMetadataUtil.checkDiff(vgo.getLabel(), vgn.getLabel())) {
+                    Set<DataVariable> dvo = vgo.getVarsInGroup();
+                    Set<DataVariable> dvn = vgn.getVarsInGroup();
+                    if (dvo.equals(dvn)) {
+                        count++;
+                    } else {
+                        return false;
+                    }
+                }
+            }
+        }
+        if (count == vglo.size()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+
     private boolean compareFileMetadatas(FileMetadata fmdo, FileMetadata fmdn) {
 
         if (!StringUtils.equals(fmdo.getDescription(), fmdn.getDescription())) {
@@ -639,6 +710,14 @@ public final class DatasetVersionDifference {
                 retString = BundleUtil.getStringFromBundle("dataset.version.file.changed", Arrays.asList(changedFileMetadata.size() / 2+""));
             } else {
                 retString += BundleUtil.getStringFromBundle("dataset.version.file.changed2", Arrays.asList(changedFileMetadata.size() / 2+""));
+            }
+        }
+
+        if (changedVariableMetadata.size()  > 0) {
+            if (retString.isEmpty()) {
+                retString = BundleUtil.getStringFromBundle("dataset.version.variablemetadata.changed", Arrays.asList(changedVariableMetadata.size() / 2+""));
+            } else {
+                retString += BundleUtil.getStringFromBundle("dataset.version.variablemetadata.changed2", Arrays.asList(changedVariableMetadata.size() / 2+""));
             }
         }
 

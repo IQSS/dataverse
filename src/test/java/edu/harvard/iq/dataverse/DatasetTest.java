@@ -23,37 +23,38 @@ public class DatasetTest {
     @Test
     public void testIsLockedFor() {
         Dataset sut = new Dataset();
-        assertFalse( sut.isLockedFor(DatasetLock.Reason.Ingest) );
+        assertFalse( "Initially verify that the dataset is not locked because data being ingested", sut.isLockedFor(DatasetLock.Reason.Ingest) );
+
         DatasetLock dl = new DatasetLock(DatasetLock.Reason.Ingest, MocksFactory.makeAuthenticatedUser("jane", "doe"));
         sut.addLock(dl);
-        assertTrue( sut.isLockedFor(DatasetLock.Reason.Ingest) );
-        assertFalse( sut.isLockedFor(DatasetLock.Reason.Workflow) );
+        assertTrue( "Verify that the dataset now has an ingest lock", sut.isLockedFor(DatasetLock.Reason.Ingest) );
+        assertFalse( "Verify that the dataset does not have a workflow lock", sut.isLockedFor(DatasetLock.Reason.Workflow) );
     }
     
     @Test
     public void testLocksManagement() {
         Dataset sut = new Dataset();
-        assertFalse( sut.isLocked() );
+        assertFalse( "Initially verify that the dataset is not locked", sut.isLocked() );
         
         DatasetLock dlIngest = new DatasetLock(DatasetLock.Reason.Ingest, MocksFactory.makeAuthenticatedUser("jane", "doe"));
         dlIngest.setId(MocksFactory.nextId());
         sut.addLock(dlIngest);
-        assertTrue( sut.isLocked() );
+        assertTrue( "After adding an ingest lock, verify that the dataset is locked", sut.isLocked() );
 
         final DatasetLock dlInReview = new DatasetLock(DatasetLock.Reason.InReview, MocksFactory.makeAuthenticatedUser("jane", "doe"));
         dlInReview.setId(MocksFactory.nextId());
         sut.addLock(dlInReview);
-        assertEquals( 2, sut.getLocks().size() );
+        assertEquals( "After adding a review lock, verify that the dataset is locked by two locks", 2, sut.getLocks().size() );
         
         DatasetLock retrievedDl = sut.getLockFor(DatasetLock.Reason.Ingest);
         assertEquals( dlIngest, retrievedDl );
         sut.removeLock(dlIngest);
-        assertNull( sut.getLockFor(DatasetLock.Reason.Ingest) );
+        assertNull( "After removing the ingest lock, verify that the dataset does not have any ingest locks", sut.getLockFor(DatasetLock.Reason.Ingest) );
         
-        assertTrue( sut.isLocked() );
+        assertTrue( "After removing the ingest lock, verify that the dataset is still locked (review lock)", sut.isLocked() );
         
         sut.removeLock(dlInReview);
-        assertFalse( sut.isLocked() );
+        assertFalse( "After removing the review lock, verify that the dataset is not locked anymore", sut.isLocked() );
         
     }
 

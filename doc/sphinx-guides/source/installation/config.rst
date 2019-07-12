@@ -226,7 +226,7 @@ Then create a password alias by running (without changes):
 
 .. code-block:: none
 
-    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.password.endpoint1='${ALIAS=swiftpassword-alias}'"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.password.endpoint1='\${ALIAS=swiftpassword-alias}'"
     ./asadmin $ASADMIN_OPTS create-password-alias swiftpassword-alias
 
 The second command will trigger an interactive prompt asking you to input your Swift password.
@@ -540,6 +540,84 @@ Once you have the location of your custom CSS file, run this curl command to add
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-stylesheet.css' http://localhost:8080/api/admin/settings/:StyleCustomizationFile``
 
+.. _i18n:
+
+Internationalization
+--------------------
+
+Dataverse is being translated into multiple languages by the Dataverse community! Please see below for how to help with this effort!
+
+Adding Multiple Languages to the Dropdown in the Header
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+The presence of the :ref:`:Languages` database setting adds a dropdown in the header for multiple languages. For example to add English and French to the dropdown:
+
+``curl http://localhost:8080/api/admin/settings/:Languages -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'``
+
+Configuring the "lang" Directory
+++++++++++++++++++++++++++++++++
+
+Translations for Dataverse are stored in "properties" files in a directory on disk (e.g. ``/home/glassfish/langBundles``) that you specify with the :ref:`dataverse.lang.directory` ``dataverse.lang.directory`` JVM option, like this:
+
+``./asadmin create-jvm-options '-Ddataverse.lang.directory=/home/glassfish/langBundles'``
+
+Go ahead and create the directory you specified.
+
+``mkdir /home/glassfish/langBundles``
+
+Creating a languages.zip File
++++++++++++++++++++++++++++++
+
+Dataverse provides and API endpoint for adding languages using a zip file.
+
+First, clone the "dataverse-language-packs" git repo.
+
+``git clone https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs.git``
+
+Take a look at https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs/branches to see if the version of Dataverse you're running has translations.
+
+Change to the directory for the git repo you just cloned.
+
+``cd dataverse-language-packs``
+
+Switch (``git checkout``) to the branch based on Dataverse version you are running. The branch "dataverse-v4.13" is used in the example below.
+
+``export BRANCH_NAME=dataverse-v4.13``
+
+``git checkout $BRANCH_NAME``
+
+Create a "languages" directory in "/tmp".
+
+``mkdir /tmp/languages``
+
+Copy the properties files into the "languages" directory
+
+``cp -R en_US/*.properties /tmp/languages``
+
+``cp -R fr_CA/*.properties /tmp/languages``
+
+Create the zip file
+
+``cd /tmp/languages``
+
+``zip languages.zip *.properties``
+
+Load the languages.zip file into Dataverse
+++++++++++++++++++++++++++++++++++++++++++
+
+Now that you have a "languages.zip" file, you can load it into Dataverse with the command below.
+
+``curl http://localhost:8080/api/admin/datasetfield/loadpropertyfiles -X POST --upload-file /tmp/languages/languages.zip -H "Content-Type: application/zip"``
+
+Click on the languages using the drop down in the header to try them out.
+
+How to Help Translate Dataverse Into Your Language
+++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Please join the `dataverse-internationalization-wg`_ mailing list and contribute to https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs to help translate Dataverse into various languages!
+
+.. _dataverse-internationalization-wg: https://groups.google.com/forum/#!forum/dataverse-internationalization-wg
+
 .. _Web-Analytics-Code:
 
 Web Analytics Code
@@ -569,17 +647,30 @@ Once you have created the analytics file, run this curl command to add it to you
 
 ``curl -X PUT -d '/var/www/dataverse/branding/analytics-code.html' http://localhost:8080/api/admin/settings/:WebAnalyticsCode``
 
+Tracking Button Clicks
+++++++++++++++++++++++
 
-DuraCloud/Chronopolis Integration
----------------------------------
+The basic analytics configuration above tracks page navigation. However, it does not capture potentially interesting events, such as those from users clicking buttons on pages, that do not result in a new page opening. In Dataverse, these events include file downloads, requesting access to restricted data, exporting metadata, social media sharing, requesting citation text, launching external tools or WorldMap, contacting authors, and launching computations. 
 
-It's completely optional to integrate your installation of Dataverse with DuraCloud/Chronopolis but the details are listed here to keep the :doc:`/admin/integrations` section of the Admin Guide shorter.
+Both Google and Matomo provide the optional capability to track such events and Dataverse has added CSS style classes (btn-compute, btn-contact, btn-download, btn-explore, btn-export, btn-preview, btn-request, btn-share, anddownloadCitation) to it's HTML to facilitate it.
 
-Dataverse can be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ bags to the `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_
+For Google Analytics, the example script at :download:`analytics-code.html </_static/installation/files/var/www/dataverse/branding/analytics-code.html>` will track both page hits and events within Dataverse. You would use this file in the same way as the shorter example above, putting it somewhere outside your deployment directory, replacing ``YOUR ACCOUNT CODE`` with your actual code and setting :WebAnalyticsCode to reference it.
 
-This integration is occurs through customization of an internal Dataverse archiver workflow that can be configured as a PostPublication workflow to submit the bag to Chronopolis' Duracloud interface using your organization's credentials. An admin API call exists that can manually submit previously published Datasets, and prior versions, to a configured archive such as Chronopolis. The workflow leverages new functionality in Dataverse to create a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse web interface.
+Once this script is running, you can look in the Google Analytics console (Realtime/Events or Behavior/Events) and view events by type and/or the Dataset or File the event involves.
 
-At present, the DPNSubmitToArchiveCommand is the only implementation extending the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
+BagIt Export
+------------
+
+Dataverse may be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ bags to `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_ or alternately to any folder on the local filesystem.
+
+Dataverse offers an internal archive workflow which may be configured as a PostPublication workflow via an admin API call to manually submit previously published Datasets and prior versions to a configured archive such as Chronopolis. The workflow creates a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse web interface.
+
+At present, the DPNSubmitToArchiveCommand and LocalSubmitToArchiveCommand are the only implementations extending the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
+
+.. _Duracloud Configuration:
+
+Duracloud Configuration
++++++++++++++++++++++++
 
 Also note that while the current Chronopolis implementation generates the bag and submits it to the archive's DuraCloud interface, the step to make a 'snapshot' of the space containing the Bag (and verify it's successful submission) are actions a curator must take in the DuraCloud interface.
 
@@ -607,7 +698,27 @@ Archivers may require glassfish settings as well. For the Chronopolis archiver, 
     
 ``./asadmin create-jvm-options '-Dduracloud.password=YOUR_PASSWORD_HERE'``
 
-**API Call**
+.. _Local Path Configuration:
+
+Local Path Configuration
+++++++++++++++++++++++++
+
+ArchiverClassName - the fully qualified class to be used for archiving. For example\:
+
+``curl -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.LocalSubmitToArchiveCommand" http://localhost:8080/api/admin/settings/:ArchiverClassName``
+
+\:BagItLocalPath - the path to where you want to store BagIt. For example\:
+
+``curl -X PUT -d /home/path/to/storage http://localhost:8080/api/admin/settings/:BagItLocalPath``
+
+\:ArchiverSettings - the archiver class can access required settings including existing Dataverse settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. For example\: 
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath”``
+
+:BagItLocalPath is the file path that you've set in :ArchiverSettings.
+
+API Call
+++++++++
 
 Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the API call to manually submit a DatasetVersion for processing:
 
@@ -623,7 +734,8 @@ The submitDataVersionToArchive API (and the workflow discussed below) attempt to
 
 In the Chronopolis case, since the transfer from the DuraCloud front-end to archival storage in Chronopolis can take significant time, it is currently up to the admin/curator to submit a 'snap-shot' of the space within DuraCloud and to monitor its successful transfer. Once transfer is complete the space should be deleted, at which point the Dataverse API call can be used to submit a Bag for other versions of the same Dataset. (The space is reused, so that archival copies of different Dataset versions correspond to different snapshots of the same DuraCloud space.).
 
-**PostPublication Workflow**
+PostPublication Workflow
+++++++++++++++++++++++++
 
 To automate the submission of archival copies to an archive as part of publication, one can setup a Dataverse Workflow using the "archiver" workflow step - see the :doc:`/developers/workflows` guide.
 . The archiver step uses the configuration information discussed above including the :ArchiverClassName setting. The workflow step definition should include the set of properties defined in \:ArchiverSettings in the workflow definition.
@@ -887,13 +999,13 @@ This JVM option is only relevant if you plan to run multiple Glassfish servers f
 dataverse.lang.directory
 ++++++++++++++++++++++++
 
-This JVM option is used to configure the path where all the language specific property files are to be stored.  If this option is set then the english property file must be present in the path along with any other language property file. You can download language property files from https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs
+This JVM option is used to configure the path where all the language specific property files are to be stored.  If this option is set then the English property file must be present in the path along with any other language property file. You can download language property files from https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs
 
 ``./asadmin create-jvm-options '-Ddataverse.lang.directory=PATH_LOCATION_HERE'``
 
 If this value is not set, by default, a Dataverse installation will read the English language property files from the Java Application.
 
-See also the ``:Languages`` setting below.
+See also :ref:`i18n`.
 
 dataverse.files.hide-schema-dot-org-download-urls
 +++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1623,15 +1735,15 @@ Sets the path where the raw Make Data Count logs are stored before being process
 
 ``curl -X PUT -d '/usr/local/glassfish4/glassfish/domains/domain1/logs' http://localhost:8080/api/admin/settings/:MDCLogPath``
 
+.. _:Languages:
+
 :Languages
 ++++++++++
 
 Sets which languages should be available. If there is more than one, a dropdown is displayed
-in the header. This should be formated as a JSON array as shown below.
+in the header.
 
-``curl http://localhost:8080/api/admin/settings/:Languages -X PUT -d '[{  "locale":"en", "title":"English"},  {  "locale":"fr", "title":"Français"}]'``
-
-See also the ``dataverse.lang.directory`` JVM option above.
+See :ref:`i18n` for a curl example and related settings.
 
 :InheritParentRoleAssignments
 +++++++++++++++++++++++++++++

@@ -47,6 +47,6 @@ Rather than using a production installation of Dataverse, API users are welcome 
 Support
 -------
 
-If you are using the APIs for an installation of Dataverse hosted by your institution, you may want to reach out to the team that supports it. At the top of the Dataverse installation's home page, there should be a form you can fill out by clicking the "Support" link.
+If you are using the APIs for an installation of Dataverse hosted by your institution, you may want to reach out to the team that supports it. In the header at the top of the site, there should be a form you can fill out by clicking the "Support" link.
 
 If you are having trouble with http://demo.dataverse.org or have questions about the APIs, please feel free to reach out to the Dataverse community via https://groups.google.com/forum/#!forum/dataverse-community .

@@ -316,7 +316,7 @@ public class ExportService {
         try {
             dataAccess = DataAccess.getStorageIO(dataset);
         } catch (IOException ioex) {
-            throw new IOException("IO Exception thrown exporting as " + "export_" + formatName + ".cached");
+            throw new IOException("IO Exception thrown exporting as " + "export_" + formatName + ".cached", ioex);
         }
 
         InputStream cachedExportInputStream = null;
@@ -325,7 +325,7 @@ public class ExportService {
             cachedExportInputStream = dataAccess.getAuxFileAsInputStream("export_" + formatName + ".cached");
             return cachedExportInputStream;
         } catch (IOException ioex) {
-            throw new IOException("IO Exception thrown exporting as " + "export_" + formatName + ".cached");
+            throw new IOException("IO Exception thrown exporting as " + "export_" + formatName + ".cached", ioex);
         }
 
     }

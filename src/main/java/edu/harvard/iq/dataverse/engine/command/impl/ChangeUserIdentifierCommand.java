@@ -49,7 +49,7 @@ public class ChangeUserIdentifierCommand extends AbstractVoidCommand {
     public void executeImpl(CommandContext ctxt) throws CommandException {  
         
         AuthenticatedUser authenticatedUserTestNewIdentifier = ctxt.authentication().getAuthenticatedUser(newIdentifier);
-        if (authenticatedUserTestNewIdentifier != null) {
+        if (authenticatedUserTestNewIdentifier != null && !authenticatedUserTestNewIdentifier.equals(au)) {
             String logMsg = " User " + newIdentifier + " already exists. Cannot use this as new identifier";
             throw new IllegalCommandException("Validation of submitted data failed. Details: " + logMsg, this);
         }
@@ -58,8 +58,17 @@ public class ChangeUserIdentifierCommand extends AbstractVoidCommand {
         BuiltinUser bu = ctxt.builtinUsers().findByUserName(oldIdentifier);
         au.setUserIdentifier(newIdentifier);
         
+        /*
+        5/3/2019
+        Related to 3575 and subsequent issues - we may decide to remove username from built in user as redundent
+        If so the code below will have to change, be careful around authenticated user lookup, could decide to leave as null if 
+        AU lookup provider is built in.
+        */
+        
         if (bu != null) {
             bu.setUserName(newIdentifier);
+            AuthenticatedUserLookup aul = au.getAuthenticatedUserLookup();
+            aul.setPersistentUserId(newIdentifier);
             //Validate the BuiltinUser change. Username validations are there.
             //If we have our validation errors pass up to commands, this could be removed
             ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -77,9 +86,6 @@ public class ChangeUserIdentifierCommand extends AbstractVoidCommand {
         }
         
         ctxt.actionLog().changeUserIdentifierInHistory("@" + oldIdentifier, "@" + newIdentifier);
-        
-        AuthenticatedUserLookup aul = au.getAuthenticatedUserLookup();
-        aul.setPersistentUserId(newIdentifier);
         
         for(RoleAssignment ra : raList) {
             ra.setAssigneeIdentifier("@" + newIdentifier);

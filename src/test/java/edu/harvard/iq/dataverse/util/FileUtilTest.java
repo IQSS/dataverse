@@ -17,6 +17,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -217,15 +219,18 @@ public class FileUtilTest {
         @Test
         public void testgetFileDownloadUrl() {
             Long fileId = 42l;
-            assertEquals("/api/access/datafile/42", FileUtil.getFileDownloadUrlPath(null, fileId, false));
-            assertEquals("/api/access/datafile/42", FileUtil.getFileDownloadUrlPath("", fileId, false));
-            assertEquals("/api/access/datafile/bundle/42", FileUtil.getFileDownloadUrlPath("bundle", fileId, false));
-            assertEquals("/api/access/datafile/42?format=original", FileUtil.getFileDownloadUrlPath("original", fileId, false));
-            assertEquals("/api/access/datafile/42?format=RData", FileUtil.getFileDownloadUrlPath("RData", fileId, false));
-            assertEquals("/api/access/datafile/42/metadata", FileUtil.getFileDownloadUrlPath("var", fileId, false));
-            assertEquals("/api/access/datafile/42?format=tab", FileUtil.getFileDownloadUrlPath("tab", fileId, false));
-            assertEquals("/api/access/datafile/42?format=tab&gbrecs=true", FileUtil.getFileDownloadUrlPath("tab", fileId, true));
-            assertEquals("/api/access/datafile/42?gbrecs=true", FileUtil.getFileDownloadUrlPath(null, fileId, true));
+            Long fileMetadataId = 2L;
+            assertEquals("/api/access/datafile/42", FileUtil.getFileDownloadUrlPath(null, fileId, false, null));
+            assertEquals("/api/access/datafile/42", FileUtil.getFileDownloadUrlPath("", fileId, false, null));
+            assertEquals("/api/access/datafile/bundle/42", FileUtil.getFileDownloadUrlPath("bundle", fileId, false, null));
+            assertEquals("/api/access/datafile/bundle/42?fileMetadataId=2", FileUtil.getFileDownloadUrlPath("bundle", fileId, false, fileMetadataId));
+            assertEquals("/api/access/datafile/42?format=original", FileUtil.getFileDownloadUrlPath("original", fileId, false, null));
+            assertEquals("/api/access/datafile/42?format=RData", FileUtil.getFileDownloadUrlPath("RData", fileId, false, null));
+            assertEquals("/api/access/datafile/42/metadata", FileUtil.getFileDownloadUrlPath("var", fileId, false, null));
+            assertEquals("/api/access/datafile/42/metadata?fileMetadataId=2", FileUtil.getFileDownloadUrlPath("var", fileId, false, fileMetadataId));
+            assertEquals("/api/access/datafile/42?format=tab", FileUtil.getFileDownloadUrlPath("tab", fileId, false, null));
+            assertEquals("/api/access/datafile/42?format=tab&gbrecs=true", FileUtil.getFileDownloadUrlPath("tab", fileId, true, null));
+            assertEquals("/api/access/datafile/42?gbrecs=true", FileUtil.getFileDownloadUrlPath(null, fileId, true, null));
         }
 
         @Test
@@ -263,12 +268,15 @@ public class FileUtilTest {
         @Test
         public void testDetermineFileType() {
             File file = new File("src/main/webapp/resources/images/cc0.png");
-            try {
-                assertEquals("image/png", FileUtil.determineFileType(file, "cc0.png"));
-            } catch (IOException ex) {
-                Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
+            if (file.exists()) {
+                try {
+                    assertEquals("image/png", FileUtil.determineFileType(file, "cc0.png"));
+                } catch (IOException ex) {
+                    Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                fail("File does not exist: " + file.toPath().toString());
             }
-
         }
 
         // isThumbnailSuppported() has been moved from DataFileService to FileUtil:

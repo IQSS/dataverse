@@ -124,9 +124,7 @@ PostgreSQL
 Installing PostgreSQL
 =======================
 
-Version 9.3 is required. Previous versions have not been tested.
-
-Version 9.6 is strongly recommended::
+Version 9.6 is strongly recommended because it is the version developers and QA test with::
 
 	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
 	# yum makecache fast
@@ -226,28 +224,31 @@ On operating systems which use systemd such as RHEL or CentOS 7, you may then ad
 
         # sudo prlimit --pid pid --nofile=65000:65000
 
-Solr launches asynchronously and attempts to use the ``lsof`` binary to watch for its own availability. Installation of this package isn't required but will prevent a warning in the log at startup.
+Solr launches asynchronously and attempts to use the ``lsof`` binary to watch for its own availability. Installation of this package isn't required but will prevent a warning in the log at startup::
 
-Finally, you may start Solr and create the core that will be used to manage search information::
+	# yum install lsof
 
-        cd /usr/local/solr/solr-7.3.1
-        bin/solr start
-        bin/solr create_core -c collection1 -d server/solr/collection1/conf/
-	
+Finally, you need to tell Solr to create the core "collection1" on startup:
+
+        echo "name=collection1" > /usr/local/solr/solr-7.3.1/server/solr/collection1/core.properties
 
 Solr Init Script
 ================
 
-For systems running systemd, as root, download :download:`solr.service<../_static/installation/files/etc/systemd/solr.service>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
+Please choose the right option for your underlying Linux operating system.
+It will not be necessary to execute both!
 
-        cp /tmp/solr.service /usr/lib/systemd/system
+For systems running systemd (like CentOS/RedHat since 7, Debian since 9, Ubuntu since 15.04), as root, download :download:`solr.service<../_static/installation/files/etc/systemd/solr.service>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
+
+        cp /tmp/solr.service /etc/systemd/system
+        systemctl daemon-reload
         systemctl start solr.service
         systemctl enable solr.service
 
-For systems using init.d, download this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
+For systems using init.d (like CentOS 6), download this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
 
         cp /tmp/solr /etc/init.d
-        service solr start
+        service start solr
         chkconfig solr on
 
 Securing Solr
@@ -261,7 +262,12 @@ jq
 Installing jq
 =============
 
-``jq`` is a command line tool for parsing JSON output that is used by the Dataverse installation script. https://stedolan.github.io/jq explains various ways of installing it, but a relatively straightforward method is described below. Please note that you must download the 64- or 32-bit version based on your architecture. In the example below, the 64-bit version is installed. We confirm it's executable and in our ``$PATH`` by checking the version (1.4 or higher should be fine):: 
+``jq`` is a command line tool for parsing JSON output that is used by the Dataverse installation script. It is available in the EPEL repository::
+
+	# yum install epel-release
+	# yum install jq
+
+or you may install it manually::
 
         # cd /usr/bin
         # wget http://stedolan.github.io/jq/download/linux64/jq
@@ -372,11 +378,12 @@ for the daemon (:fixedwidthplain:`/etc/init.d/rserve`), so that it
 gets started automatically when the system boots.  This is an
 :fixedwidthplain:`init.d`-style startup file. If this is a
 RedHat/CentOS 7 system, you may want to use the
-:fixedwidthplain:`systemctl`-style file
-:fixedwidthplain:`rserve.service` instead. (Copy it into the
-:fixedwidthplain:`/usr/lib/systemd/system/` directory)
+:download:`rserve.service<../../../../scripts/r/rserve/rserve.service>`
+systemd unit file instead. Copy it into the /usr/lib/systemd/system/ directory, then::
 
-
+	# systemctl daemon-reload
+	# systemctl enable rserve
+	# systemctl start rserve
 
 Note that the setup will also set the Rserve password to
 ":fixedwidthplain:`rserve`".  Rserve daemon runs under a

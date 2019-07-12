@@ -98,6 +98,14 @@ public class SearchServiceBean {
         }
     }
 
+     public SolrClient getSolrServer() {
+        return solrServer;
+    }
+
+    public void setSolrServer(SolrClient solrServer) {
+        this.solrServer = solrServer;
+    }
+
     /**
      * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
      * access to Private Data for the correct user

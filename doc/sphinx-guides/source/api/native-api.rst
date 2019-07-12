@@ -21,9 +21,11 @@ Create a Dataverse
 ~~~~~~~~~~~~~~~~~~
 
 Generates a new dataverse under ``$id``. Expects a JSON content describing the dataverse, as in the example below.
-If ``$id`` is omitted, a root dataverse is created. ``$id`` can either be a dataverse id (long) or a dataverse alias (more robust). ::
+If ``$id`` is omitted, a root dataverse is created. ``$id`` can either be a dataverse id (long) or a dataverse alias (more robust). In the example below, "root" is the id, which means that the dataverse will be created as a child of the root dataverse::
 
-    POST http://$SERVER/api/dataverses/$id?key=$apiKey
+``export id=root`
+
+``curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/dataverses/$id --upload-file dataverse-complete.json``
 
 Download the :download:`JSON example <../_static/api/dataverse-complete.json>` file and modified to create dataverses to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The controlled vocabulary for ``dataverseType`` is
 
@@ -62,7 +64,19 @@ Show Contents of a Dataverse
 
 |CORS| Lists all the DvObjects under dataverse ``id``. ::
 
-    GET http://$SERVER/api/dataverses/$id/contents
+``curl -H "X-Dataverse-key:$API_TOKEN" http://$SERVER_URL/api/dataverses/$id/contents``
+
+
+Report the data (file) size of a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Shows the combined size in bytes of all the files uploaded into the dataverse ``id``. ::
+
+``curl -H "X-Dataverse-key:$API_TOKEN" http://$SERVER_URL/api/dataverses/$id/storagesize``
+
+Both published and unpublished files will be counted, in the dataverse specified, and in all its sub-dataverses, recursively. 
+By default, only the archival files are counted - i.e., the files uploaded by users (plus the tab-delimited versions generated for tabular data files on ingest). If the optional argument ``includeCached=true`` is specified, the API will also add the sizes of all the extra files generated and cached by Dataverse - the resized thumbnail versions for image files, the metadata exports for published datasets, etc. 
+
 
 List Roles Defined in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -291,7 +305,7 @@ Export Metadata of a Dataset in Various Formats
 
     GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
 
-.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , ``OAI_ORE`` , ``Datacite`` and ``dataverse_json``.
+.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , ``OAI_ORE`` , ``Datacite``, ``oai_datacite`` and ``dataverse_json``.
 
 Schema.org JSON-LD
 ^^^^^^^^^^^^^^^^^^
@@ -444,6 +458,8 @@ A more detailed "add" example using curl::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"true"}' "https://example.dataverse.edu/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
 
+Please note that it's possible to "trick" Dataverse into giving a file a content type (MIME type) of your choosing. For example, you can make a text file be treated like a video file with ``-F 'file=@README.txt;type=video/mpeg4'``, for example. If Dataverse does not properly detect a file type, specifying the content type via API like this a potential workaround.
+
 Example python code to add a file. This may be run by changing these parameters in the sample code:
 
 * ``dataverse_server`` - e.g. https://demo.dataverse.org
@@ -570,7 +586,7 @@ Optionally, you can check if there's a lock of a specific type on the dataset::
 
     curl "$SERVER_URL/api/datasets/{database_id}/locks?type={lock_type}
 
-Currently implemented lock types are ``Ingest, Workflow, InReview, DcmUpload and pidRegister``. 
+Currently implemented lock types are ``Ingest, Workflow, InReview, DcmUpload, pidRegister, and EditInProgress``. 
 
 The API will output the list of locks, for example:: 
 
@@ -738,6 +754,25 @@ Note that this requires "superuser" credentials::
 
 Note: at present, the API cannot be used on a file that's already successfully ingested as tabular.
 
+.. _redetect-file-type:
+
+Redetect File Type
+~~~~~~~~~~~~~~~~~~
+
+Dataverse uses a variety of methods for determining file types (MIME types or content types) and these methods (listed below) are updated periodically. If you have files that have an unknown file type, you can have Dataverse attempt to redetect the file type.
+
+When using the curl command below, you can pass ``dryRun=true`` if you don't want any changes to be saved to the database. Change this to ``dryRun=false`` (or omit it) to save the change. In the example below, the file is identified by database id "42".
+
+``export FILE_ID=42``
+
+``curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/files/$FILE_ID/redetect?dryRun=true``
+
+Currently the following methods are used to detect file types:
+
+- The file type detected by the browser (or sent via API).
+- JHOVE: http://jhove.openpreservation.org
+- As a last resort the file extension (e.g. ".ipybn") is used, defined in a file called ``MimeTypeDetectionByFileExtension.properties``.
+
 Replacing Files
 ~~~~~~~~~~~~~~~
 
@@ -776,6 +811,19 @@ Example::
     curl -H "X-Dataverse-key:{apiKey}" -X POST -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"restrict":false}' 'http://localhost:8080/api/files/264/metadata'
 
 Also note that dataFileTags are not versioned and changes to these will update the published version of the file.
+
+.. _EditingVariableMetadata:
+
+Editing Variable Level Metadata
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates variable level metadata using ddi xml ``$file``, where ``$id`` is file id::
+
+    PUT https://$SERVER/api/edit/$id --upload-file $file
+
+Example: ``curl -H "X-Dataverse-key:$API_TOKEN" -X PUT http://localhost:8080/api/edit/95 --upload-file dct.xml``
+
+You can download :download:`dct.xml <../../../../src/test/resources/xml/dct.xml>` from the example above to see what the XML looks like.
 
 Provenance
 ~~~~~~~~~~
@@ -1325,6 +1373,43 @@ Recalculate the UNF value of a dataset version, if it's missing, by supplying th
 
   POST http://$SERVER/api/admin/datasets/integrity/{datasetVersionId}/fixmissingunf
 
+.. _dataset-validation-api:
+
+Dataset Validation
+~~~~~~~~~~~~~~~~~~
+
+Validate the dataset and its components (DatasetVersion, FileMetadatas, etc.) for constraint violations::
+
+  curl $SERVER_URL/api/admin/validate/dataset/{datasetId}
+
+if validation fails, will report the specific database entity and the offending value. For example::
+   
+   {"status":"OK","data":{"entityClassDatabaseTableRowId":"[DatasetVersion id:73]","field":"archiveNote","invalidValue":"random text, not a url"}} 
+
+
+Validate all the datasets in the Dataverse, report any constraint violations found::
+
+  curl $SERVER_URL/api/admin/validate/datasets
+
+This API streams its output in real time, i.e. it will start producing the output immediately and will be reporting on the progress as it validates one dataset at a time. For example:: 
+
+     {"datasets": [
+     		  {"datasetId":27,"status":"valid"},
+		  {"datasetId":29,"status":"valid"},
+		  {"datasetId":31,"status":"valid"},
+		  {"datasetId":33,"status":"valid"},
+		  {"datasetId":35,"status":"valid"},
+		  {"datasetId":41,"status":"invalid","entityClassDatabaseTableRowId":"[DatasetVersion id:73]","field":"archiveNote","invalidValue":"random text, not a url"}, 
+		  {"datasetId":57,"status":"valid"}
+		  ]
+      }
+
+Note that if you are attempting to validate a very large number of datasets in your Dataverse, this API may time out - subject to the timeout limit set in your Glassfish configuration. If this is a production Dataverse instance serving large amounts of data, you most likely have that timeout set to some high value already. But if you need to increase it, it can be done with the asadmin command. For example::
+ 
+     asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=3600
+
+
+
 Workflows
 ~~~~~~~~~
 
@@ -1400,3 +1485,5 @@ Recursively applies the role assignments of the specified dataverse, for the rol
   GET http://$SERVER/api/admin/dataverse/{dataverse alias}/addRoleAssignmentsToChildren
   
 Note: setting ``:InheritParentRoleAssignments`` will automatically trigger inheritance of the parent dataverse's role assignments for a newly created dataverse. Hence this API call is intended as a way to update existing child dataverses or to update children after a change in role assignments has been made on a parent dataverse.
+
+

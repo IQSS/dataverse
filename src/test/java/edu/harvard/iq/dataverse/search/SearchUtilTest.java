@@ -9,33 +9,15 @@ import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import org.apache.solr.common.SolrInputDocument;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SearchUtilTest {
 
-    public SearchUtilTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-        SearchUtil searchUtil = new SearchUtil();
-    }
-
-    @After
-    public void tearDown() {
+    @BeforeAll
+    static void setup() {
+        new SearchUtil();
     }
 
     @Test
@@ -69,29 +51,38 @@ public class SearchUtilTest {
     }
 
     @Test
-    public void testGetSortBy() throws Exception {
+    void testGetSortBy_throwsOnInvalidInput() {
+        assertThrows(Exception.class, () -> {
+            SearchUtil.getSortBy(null, "unsortable");
+        });
+    }
 
+    @Test
+    void testGetSortBy_unspecifiedFieldAndOrder() throws Exception {
         SortBy sortByUnspecified = SearchUtil.getSortBy(null, null);
         assertEquals(SearchFields.RELEVANCE, sortByUnspecified.getField());
         assertEquals(SortBy.DESCENDING, sortByUnspecified.getOrder());
+    }
 
+    @Test
+    void testGetSortBy_sortByName() throws Exception {
         SortBy sortByName = SearchUtil.getSortBy("name", null);
         assertEquals(SearchFields.NAME_SORT, sortByName.getField());
         assertEquals(SortBy.ASCENDING, sortByName.getOrder());
+    }
 
+    @Test
+    void testGetSortBy_sortByDate() throws Exception {
         SortBy sortByDate = SearchUtil.getSortBy("date", null);
         assertEquals(SearchFields.RELEASE_OR_CREATE_DATE, sortByDate.getField());
         assertEquals(SortBy.DESCENDING, sortByDate.getOrder());
+    }
 
+    @Test
+    void testGetSortBy_sortByAuthorName() throws Exception {
         SortBy sortByAuthorName = SearchUtil.getSortBy(DatasetFieldConstant.authorName, null);
         assertEquals(DatasetFieldConstant.authorName, sortByAuthorName.getField());
         assertEquals(SortBy.ASCENDING, sortByAuthorName.getOrder());
-
-        try {
-            SortBy sortByExceptionExpected = SearchUtil.getSortBy(null, "unsortable");
-        } catch (Exception ex) {
-            assertEquals(Exception.class, ex.getClass());
-        }
     }
 
     @Test

@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteMapLayerMetadataCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftFileMetadataIfAvailableCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RedetectFileTypeCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
@@ -38,6 +39,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,6 +65,7 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import java.util.List;
+import javax.ws.rs.QueryParam;
 
 @Path("files")
 public class Files extends AbstractApiBean {
@@ -575,7 +578,24 @@ public class Files extends AbstractApiBean {
         return ok("Datafile " + id + " queued for ingest");
 
     }
-            
+
+    @Path("{id}/redetect")
+    @POST
+    public Response redetectDatafile(@PathParam("id") String id, @QueryParam("dryRun") boolean dryRun) {
+        try {
+            DataFile dataFileIn = findDataFileOrDie(id);
+            String originalContentType = dataFileIn.getContentType();
+            DataFile dataFileOut = execCommand(new RedetectFileTypeCommand(createDataverseRequest(findUserOrDie()), dataFileIn, dryRun));
+            NullSafeJsonBuilder result = NullSafeJsonBuilder.jsonObjectBuilder()
+                    .add("dryRun", dryRun)
+                    .add("oldContentType", originalContentType)
+                    .add("newContentType", dataFileOut.getContentType());
+            return ok(result);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
     /**
      * Attempting to run metadata export, for all the formats for which we have
      * metadata Exporters.
