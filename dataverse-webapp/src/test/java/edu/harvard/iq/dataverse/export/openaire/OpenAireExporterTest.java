@@ -3,28 +3,24 @@ package edu.harvard.iq.dataverse.export.openaire;
 import com.jayway.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.OpenAireExporter;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import static junit.framework.Assert.assertEquals;
-
 import junit.framework.Assert;
 import org.junit.Test;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import static junit.framework.Assert.assertEquals;
 
 public class OpenAireExporterTest {
 
@@ -64,8 +60,11 @@ public class OpenAireExporterTest {
     @Test
     public void testExportDataset() throws Exception {
         System.out.println("exportDataset");
-        File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-spruce1.json");
-        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
+
+        byte[] file = Files.readAllBytes(Paths.get(getClass().getClassLoader()
+                .getResource("json/export/openaire/dataset-spruce1.json").toURI()));
+        String datasetVersionAsJson = new String(file);
+
         JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
         JsonObject jsonObject = jsonReader.readObject();
         DatasetVersion nullVersion = null;
@@ -86,9 +85,11 @@ public class OpenAireExporterTest {
     @Test
     public void testValidateExportDataset() throws Exception {
         System.out.println("validateExportDataset");
-        File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
+        byte[] file = Files.readAllBytes(Paths.get(getClass().getClassLoader()
+                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()));
+        String datasetVersionAsJson = new String(file);
         JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
+
         JsonObject jsonObject = jsonReader.readObject();
         DatasetVersion nullVersion = null;
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

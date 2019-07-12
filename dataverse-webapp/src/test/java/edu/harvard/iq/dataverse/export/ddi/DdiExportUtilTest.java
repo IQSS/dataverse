@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.export.ddi;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import org.junit.Test;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
@@ -16,12 +15,15 @@ public class DdiExportUtilTest {
 
     @Test
     public void testJson2DdiNoFiles() throws Exception {
-        File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.json");
-        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
-        File ddiFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml");
-        String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFile.getAbsolutePath()))));
+        String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files
+                .readAllBytes(Paths.get(getClass().getClassLoader()
+                    .getResource("xml/export/ddi/dataset-finch1.xml").toURI()))));
         logger.info(datasetAsDdi);
+        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(getClass().getClassLoader()
+                .getResource("json/export/ddi/dataset-finch1.json").toURI())));
+
         String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
+
         logger.info(result);
         assertEquals(datasetAsDdi, result);
     }
@@ -34,12 +36,16 @@ public class DdiExportUtilTest {
          * but datasets created in the GUI sometimes don't have a description
          * field at all.
          */
-        File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-spruce1.json");
-        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
-        File ddiFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-spruce1.xml");
-        String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFile.getAbsolutePath()))));
+
+
+        String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files
+                .readAllBytes(Paths.get(getClass().getClassLoader()
+                        .getResource("xml/export/ddi/dataset-spruce1.xml").toURI()))));
         logger.info(datasetAsDdi);
+        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(getClass().getClassLoader()
+                .getResource("json/export/ddi/dataset-spruce1.json").toURI())));
         String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
+
         logger.info(result);
         boolean filesMinimallySupported = false;
         // TODO: 
