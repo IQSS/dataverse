@@ -24,7 +24,7 @@ Other Changes (Sphinx)
 
 The documentation for Dataverse was written using Sphinx (http://sphinx-doc.org/). 
 If you are interested in suggesting changes or updates we recommend that you create 
-the html files using Sphinx locally and the submit a pull request through GitHub. Here are the instructions on how to proceed:
+the html files using Sphinx locally and then submit a pull request through GitHub. Here are the instructions on how to proceed:
 
 
 Installing Sphinx
@@ -53,7 +53,11 @@ Using Sphinx
 
 First, you will need to make a fork of the dataverse repository in GitHub. Then, you will need to make a clone of your fork so you can manipulate the files outside GitHub.
 
-To edit the existing documentation go to ~/dataverse/doc/sphinx-guides/source directory inside your clone. There, you will find the .rst files that correspond to the guides in the dataverse page (http://guides.dataverse.org/en/latest/user/index.html). Now, using your preferred text editor, open and edit these files, or create new .rst files and edit the others accordingly. 
+To edit the existing documentation:
+
+- Create a branch (refer to http://guides.dataverse.org/en/latest/developers/version-control.html > *Create a New Branch off the develop Branch*) to record the changes you are about to perform.
+- Go to ~/dataverse/doc/sphinx-guides/source directory inside your clone. There, you will find the .rst files that correspond to the guides in the dataverse page (http://guides.dataverse.org/en/latest/).
+- Using your preferred text editor, open and edit the necessary files, or create new ones.
 
 Once you are done, open a terminal and change directories to ~/dataverse/doc/sphinx-guides . Then, run the following commands:
 
@@ -64,7 +68,7 @@ Once you are done, open a terminal and change directories to ~/dataverse/doc/sph
 After sphinx is done processing the files you should notice that the html folder in ~/dataverse/doc/sphinx-guides/build directory has been updated.
 You can click on the files in the html folder to preview the changes.
 
-Now you can make a commit with the changes to your own fork in GitHub and submit a pull request to the dataverse repository.
+Now you can make a commit with the changes to your own fork in GitHub and submit a pull request to the original (upstream) dataverse repository.
 
 Table of Contents
 -----------------
