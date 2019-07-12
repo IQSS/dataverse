@@ -2173,7 +2173,7 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedDataverseForLinking = sdvfl;
     }
 
-    private List<FileMetadata> selectedRestrictedFiles; // = new ArrayList<>();
+    private List<FileMetadata> selectedRestrictedFiles = new ArrayList<>();
 
     public List<FileMetadata> getSelectedRestrictedFiles() {
         return selectedRestrictedFiles;
@@ -3852,70 +3852,11 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
 
-    public boolean isFileAccessRequestMultiButtonEnabled() {
-        if (!isSessionUserAuthenticated()) {
-            return false;
-        }
-        if (this.selectedRestrictedFiles == null || this.selectedRestrictedFiles.isEmpty()) {
-            return false;
-        }
-        for (FileMetadata fmd : this.selectedRestrictedFiles) {
-            if (!this.fileDownloadHelper.canDownloadFile(fmd)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private Boolean downloadButtonAllEnabled = null;
-
-    public boolean isDownloadAllButtonEnabled() {
-
-        if (downloadButtonAllEnabled == null) {
-            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-                if (!this.fileDownloadHelper.canDownloadFile(fmd)) {
-                    downloadButtonAllEnabled = false;
-                    break;
-                }
-            }
-            downloadButtonAllEnabled = true;
-        }
-        return downloadButtonAllEnabled;
-    }
-
-    public boolean isDownloadSelectedButtonEnabled() {
-
-        if (this.selectedFiles == null || this.selectedFiles.isEmpty()) {
-            return false;
-        }
-        for (FileMetadata fmd : this.selectedFiles) {
-            if (this.fileDownloadHelper.canDownloadFile(fmd)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public boolean isFileAccessRequestMultiSignUpButtonRequired() {
         if (isSessionUserAuthenticated()) {
             return false;
         }
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-            if (!this.fileDownloadHelper.canDownloadFile(fmd)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean isFileAccessRequestMultiSignUpButtonEnabled() {
-        if (isSessionUserAuthenticated()) {
-            return false;
-        }
-        if (this.selectedRestrictedFiles == null || this.selectedRestrictedFiles.isEmpty()) {
-            return false;
-        }
-        for (FileMetadata fmd : this.selectedRestrictedFiles) {
             if (!this.fileDownloadHelper.canDownloadFile(fmd)) {
                 return true;
             }
@@ -3938,17 +3879,16 @@ public class DatasetPage implements java.io.Serializable {
             requestContext.execute("PF('selectFilesForRequestAccess').show()");
             return "";
         } else {
+            boolean anyFileAccessPopupRequired = false;
+            
             fileDownloadHelper.clearRequestAccessFiles();
             for (FileMetadata fmd : selectedFiles) {
-                fileDownloadHelper.addMultipleFilesForRequestAccess(fmd.getDataFile());
-            }
-            boolean anyFileAccessPopupRequired = false;
-            for (FileMetadata fmd : selectedFiles) {
                 if (isRequestAccessPopupRequired(fmd)) {
+                    fileDownloadHelper.addMultipleFilesForRequestAccess(fmd.getDataFile());
                     anyFileAccessPopupRequired = true;
-                    break;
                 }
             }
+            
             if (anyFileAccessPopupRequired) {
                 RequestContext requestContext = RequestContext.getCurrentInstance();
                 requestContext.execute("PF('requestAccessPopup').show()");

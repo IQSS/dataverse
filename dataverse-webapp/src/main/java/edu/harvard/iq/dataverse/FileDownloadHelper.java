@@ -8,8 +8,12 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
+import edu.harvard.iq.dataverse.license.dto.RestrictedTermsOfUseDTO;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import io.vavr.Tuple;
+
 import org.primefaces.context.RequestContext;
 
 import javax.ejb.EJB;
@@ -334,10 +338,6 @@ public class FileDownloadHelper implements java.io.Serializable {
         return filesForRequestAccess;
     }
 
-    public void setFilesForRequestAccess(List<DataFile> filesForRequestAccess) {
-        this.filesForRequestAccess = filesForRequestAccess;
-    }
-
     public void addFileForRequestAccess(DataFile dataFile) {
         this.filesForRequestAccess.clear();
         this.filesForRequestAccess.add(dataFile);
@@ -349,7 +349,28 @@ public class FileDownloadHelper implements java.io.Serializable {
 
     public void addMultipleFilesForRequestAccess(DataFile dataFile) {
         this.filesForRequestAccess.add(dataFile);
+    }
 
+    /**
+     * Returns restricted files grouped by distinct terms of uses
+     * that user requested to access.
+     * Terms of use are showed to the user in dialog
+     * window so he can decide whether it accepts terms
+     * associated with requested files.
+     */
+    public Map<RestrictedTermsOfUseDTO, List<DataFile>> getFilesForRequestAccessByTermsOfUse() {
+        Map<RestrictedTermsOfUseDTO, List<DataFile>> distinctTermsOfUse = new HashMap<RestrictedTermsOfUseDTO, List<DataFile>>();
+        
+        for (DataFile file: filesForRequestAccess) {
+            FileTermsOfUse fileTermsOfUse = file.getFileMetadata().getTermsOfUse();
+            RestrictedTermsOfUseDTO restrictedTermsOfUse = new RestrictedTermsOfUseDTO(
+                    fileTermsOfUse.getRestrictType(), fileTermsOfUse.getRestrictCustomText());
+            
+            distinctTermsOfUse.putIfAbsent(restrictedTermsOfUse, new ArrayList<>());
+            distinctTermsOfUse.get(restrictedTermsOfUse).add(file);
+        }
+        
+        return distinctTermsOfUse;
     }
 
     private String selectedFileId = null;

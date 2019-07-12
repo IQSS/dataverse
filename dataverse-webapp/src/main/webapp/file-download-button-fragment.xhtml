@@ -306,8 +306,9 @@
                                                                           and !(fileDownloadHelper.canDownloadFile(fileMetadata))
                                                                             and requestAccessPopupRequired}"
                    process="@this"
-                   actionListener="#{fileDownloadHelper.addFileForRequestAccess(fileMetadata.dataFile)}"
-                   onclick="PF('requestAccessPopup').show()"
+                   action="#{fileDownloadHelper.addFileForRequestAccess(fileMetadata.dataFile)}"
+                   update="@widgetVar(requestAccessPopup)"
+                   oncomplete="PF('requestAccessPopup').show()"
                    id="requestAccessPopupButton"
                    disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
         <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}

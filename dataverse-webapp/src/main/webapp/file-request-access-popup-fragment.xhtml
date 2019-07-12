@@ -11,34 +11,26 @@
 
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <p class="help-block">
-            #{bundle['file.requestAccessTermsDialog.tip']}
+            <h:outputText value="#{bundle['file.dataFilesTab.terms.list.description']}" />
         </p>
         
-        <div class="form-horizontal">
-            <div class="form-group" jsf:rendered="#{workingVersion.termsOfUseAndAccess.license != 'CC0' and !empty workingVersion.termsOfUseAndAccess.termsOfUse}">
-                <label class="col-sm-3 control-label" for="guestbook_tou">
-                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
-                </label>
-                <div class="col-sm-6">
-                    <div class="panel panel-default">
-                        <div class="panel-body read-terms">
-                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfUse)}" escape="false" />
-                        </div>
-                    </div>
+        <div>
+            <ui:repeat value="#{fileDownloadHelper.filesForRequestAccessByTermsOfUse.entrySet().toArray()}" var="restrictedTermsOfUse">
+                <div style="background-color: #eee; border-color: #777; padding: 5px; margin-bottom: 15px; margin-top: 5px;">
+                    <p>
+                        <h:outputText value="#{bundle['file.dataFilesTab.terms.list.filePrefix']}" />
+                        <ui:repeat value="#{restrictedTermsOfUse.value}" var="dataFile" varStatus="status">
+                            <strong>#{dataFile.fileMetadata.label}</strong><h:outputText value="#{status.last ? '' : ', '}" />
+                        </ui:repeat>
+                    </p>
+                    <p>
+                        <h:outputText value="#{bundle['file.termsOfAccess.restricted.'.concat(restrictedTermsOfUse.key.restrictType)]}"
+                            rendered="#{not (restrictedTermsOfUse.key.restrictType eq restrictTypeEnum.CUSTOM)}" />
+                        <h:outputText value="#{restrictedTermsOfUse.key.restrictCustomText}"
+                            rendered="#{restrictedTermsOfUse.key.restrictType eq restrictTypeEnum.CUSTOM}" />
+                    </p>
                 </div>
-            </div>
-            <div class="form-group" jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.termsOfAccess}">
-                <label class="col-sm-3 control-label" for="guestbook_toa">
-                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                </label>
-                <div class="col-sm-6">
-                    <div class="panel panel-default">
-                        <div class="panel-body read-terms">
-                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfAccess)}" escape="false" />
-                        </div>
-                    </div>
-                </div>
-            </div>
+            </ui:repeat>
         </div>
         <div class="button-block">
             <p:commandLink type="button" styleClass="btn btn-default"  
