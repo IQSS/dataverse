@@ -432,7 +432,7 @@
 
                                         <!-- Make Data Count citations (DOIs only, not Handles) -->
                                         <div class="metrics-citations-mdc" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath') and settingsServiceBean.get(':Protocol') == 'doi'}">
-                                            <!-- TODO: Make this a pop up to show URLs of citations (e.g. https://doi.org/10.7910/dvn/hqzoob) -->
+                                            <!-- TODO: Make this a pop up to show URLs of citations (e.g. https://doi.org/10.1007/s12520-017-0578-2) -->
                                             <h:outputFormat value="{0} #{bundle['metrics.citations']}">
                                                 <f:param value="#{fn:length(datasetExternalCitationsService.getDatasetExternalCitationsByDataset(DatasetPage.dataset))}"/>
                                             </h:outputFormat>
