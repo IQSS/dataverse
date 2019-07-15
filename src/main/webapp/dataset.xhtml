@@ -204,9 +204,10 @@
                                 <!-- END: Publish/Submit for Review/Return to Author Button Group -->
                                 
                                 <p:commandLink rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned and DatasetPage.dataset.released}"
-                                               styleClass="btn btn-default btn-access"                                              
+                                               styleClass="btn btn-default btn-access"   
+                                               action="#{DatasetPage.setShowLinkingPopup(true)}"
                                                oncomplete="PF('linkDatasetForm').show();bind_bsui_components();"
-                                               update="linkDatasetForm">
+                                               update="@form">
                                     <span class="glyphicon glyphicon-link"/> #{bundle['link']}
                                 </p:commandLink>
                                 
@@ -1255,7 +1256,7 @@
                             </ui:include>
                         </div>
                     </p:dialog>
-                    <p:dialog id="linkDatasetForm" styleClass="largePopUp" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true">
+                    <p:dialog id="linkDatasetForm" styleClass="largePopUp" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true" rendered="#{DatasetPage.showLinkingPopup}">
                         <p:focus for="dataverseLinkName"/>
                         <div class="form-horizontal">
                             <p class="help-block">
