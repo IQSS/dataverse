@@ -3,6 +3,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
@@ -396,33 +397,45 @@
                                     <div id="metrics-label" class="highlightBold">
                                         Dataset #{bundle['metrics.title']}
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                      data-toggle="tooltip" data-placement="auto top" data-original-title="METRICS LABEL DESC HERE"></span>
+                                                      data-toggle="tooltip" data-placement="auto top" data-original-title="METRICS LABEL DESC HERE - Classic download counts"
+                                                      jsf:rendered="#{empty settingsServiceBean.get(':MDCLogPath')}"></span>
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                      data-toggle="tooltip" data-placement="auto top" data-original-title="METRICS LABEL DESC HERE - Make Data Count metrics"
+                                                      jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath')}"></span>
                                     </div>
                                     <div id="metrics-content" class="" style="border:1px solid #EEE; border-top-width:0;">
-                                        <div class="metrics-downloads margin-bottom-half" style="padding-bottom:.5em; border-bottom:1px solid #EEE" jsf:rendered="#{true}">
+
+                                        <!-- Classic downloads -->
+                                        <div class="metrics-downloads margin-bottom-half" style="padding-bottom:.5em; border-bottom:1px solid #EEE" jsf:rendered="#{empty settingsServiceBean.get(':MDCLogPath')}">
                                             <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
-                                                <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getDownloadsTotal()}"/>
-                                                <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}" rendered="#{false}"/>
+                                                <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
                                             </h:outputFormat>
                                         </div>
-                                        
-                                        <div class="metrics-views-mdc margin-bottom-half" style="padding-bottom:.5em; border-bottom:1px solid #EEE" jsf:rendered="#{true}">
-                                            <h:outputLink value="https://makedatacount.org/" target="_blank">
-                                                <h:outputFormat value="{0} #{bundle['metrics.views']}">
-                                                    <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getViewsTotal()}"/>
-                                                    <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}" rendered="#{false}"/>
-                                                </h:outputFormat>
-                                            </h:outputLink>
+
+                                        <!-- Make Data Count views -->
+                                        <div class="metrics-views-mdc margin-bottom-half" style="padding-bottom:.5em; border-bottom:1px solid #EEE" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath')}">
+                                            <h:outputFormat value="{0} #{bundle['metrics.views']}">
+                                                <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getViewsTotal()}"/>
+                                            </h:outputFormat>
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                           data-toggle="tooltip" data-placement="auto top" data-original-title="METRICS LABEL DESC HERE"></span>
                                         </div>
 
-                                        <div class="metrics-citations-mdc" jsf:rendered="#{true}">
-                                            <h:outputLink value="https://makedatacount.org/" target="_blank">
-                                                <h:outputFormat value="{0} #{bundle['metrics.citations']}">
-                                                    <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
-                                                </h:outputFormat>
-                                            </h:outputLink>
+                                        <!-- Make Data Count downloads -->
+                                        <div class="metrics-downloads-mdc margin-bottom-half" style="padding-bottom:.5em; border-bottom:1px solid #EEE" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath')}">
+                                            <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
+                                                <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getDownloadsTotal()}"/>
+                                            </h:outputFormat>
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                          data-toggle="tooltip" data-placement="auto top" data-original-title="METRICS LABEL DESC HERE"></span>
+                                        </div>
+
+                                        <!-- Make Data Count citations (DOIs only, not Handles) -->
+                                        <div class="metrics-citations-mdc" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath') and settingsServiceBean.get(':Protocol') == 'doi'}">
+                                            <!-- TODO: Make this a pop up to show URLs of citations (e.g. https://doi.org/10.7910/dvn/hqzoob) -->
+                                            <h:outputFormat value="{0} #{bundle['metrics.citations']}">
+                                                <f:param value="#{fn:length(datasetExternalCitationsService.getDatasetExternalCitationsByDataset(DatasetPage.dataset))}"/>
+                                            </h:outputFormat>
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                           data-toggle="tooltip" data-placement="auto top" data-original-title="METRICS LABEL DESC HERE"></span>
                                         </div>
