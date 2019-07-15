@@ -25,7 +25,7 @@ If you find a typo or a small error in the documentation you can fix it using Gi
 - Under the **Write** tab, delete the long welcome message and write a few words about what you fixed.
 - Click **Create Pull Request**.
 
-That's it! Thank you for your contribution! Your pull request will be added manually to the main Dataverse project board at https://github.com/orgs/IQSS/projects/2 and will go through code review and QA before it is merged into the "develop" branch. Along the way, developers might suggest changes or make them on your behalf. One your pull request has been merged you will be listed as a contributor at https://github.com/IQSS/dataverse/graphs/contributors
+That's it! Thank you for your contribution! Your pull request will be added manually to the main Dataverse project board at https://github.com/orgs/IQSS/projects/2 and will go through code review and QA before it is merged into the "develop" branch. Along the way, developers might suggest changes or make them on your behalf. Once your pull request has been merged you will be listed as a contributor at https://github.com/IQSS/dataverse/graphs/contributors
 
 Please see https://github.com/IQSS/dataverse/pull/5857 for an example of a quick fix that was merged (the "Files changed" tab shows how a typo was fixed).
 
