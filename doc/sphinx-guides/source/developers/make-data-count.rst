@@ -19,7 +19,11 @@ Dev Environment Setup for Make Data Count
 Generate Fake Metrics Only
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The quickest way to put populate tables with some data is to run the ``MakeDataCountApiIT`` integration test. For more on running integration tests see the :doc:`testing` section.
+The quickest way to put populate tables with some data is to run the ``MakeDataCountApiIT`` integration test. For more on running integration tests see the :doc:`testing` section. This will populate views and downloads.
+
+To insert a citation you could insert a row like below, changing "72" in the example below with the dataset id for your dataset.
+
+``INSERT INTO datasetexternalcitations (id, citedbyurl, dataset_id) VALUES (1, 'https://doi.org/10.1007/s12520-017-0578-2', 72);``
 
 Full Setup
 ~~~~~~~~~~
