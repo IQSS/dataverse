@@ -77,7 +77,7 @@
                     <!-- View editMode -->
                     <p:fragment id="topDatasetBlockFragment">
                     <div id="topDatasetBlock" class="row" jsf:rendered="#{empty DatasetPage.editMode}">
-                        <div style="border:0px solid purple;" id="actionButtonBlock" class="button-block clearfix" jsf:rendered="#{!widgetWrapper.widgetView}">
+                        <div id="actionButtonBlock" class="button-block clearfix" jsf:rendered="#{!widgetWrapper.widgetView}">
                             <div class="btn-group pull-right" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
                                                                               and !DatasetPage.dataset.deaccessioned
                                                                               and DatasetPage.showComputeButton()}">
@@ -333,24 +333,10 @@
                                 </div>
                             </p:dialog>
                             <!-- END: Contact/Share Button Group -->
-
-                            
-                            
-                            
-                            <!-- <div class="col-xs-3" jsf:rendered="# {true}">
-                                NO MAS METRICS
-                            </div> -->
-                            
-                            
-                            
                         </div>
                         
-                        
-                        
-                        <div id="datasetVersionBlock" class="col-sm-12" style="border:0px solid red;">
-                            
-                            
-                            <div id="title-block" class="row margin-bottom-half" style="background-color:lightsalmon;background:none;" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
+                        <div id="datasetVersionBlock" class="col-sm-12">
+                            <div id="title-block" class="row margin-bottom-half" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
                                 <div class="col-xs-1 vcenter title-preview-icon-block">
                                     <img src="#{DatasetPage.thumbnailString}" jsf:rendered="#{!empty DatasetPage.thumbnailString}"/>
                                     <span class="icon-dataset" jsf:rendered="#{empty DatasetPage.thumbnailString}"/>
@@ -372,17 +358,14 @@
                                 </div>
                             </div>
                             
-                            
-                            <div class="row"  style="background-color:lightpink;background:none;">
-                                
-                                
-                                <!-- CITATION BLOCK   ****REMOVED ROW CLASS****-->
+                            <div class="row">
+                                <!-- CITATION BLOCK -->
                                 <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
                                     <ui:include src="dataset-citation.xhtml">
                                         <ui:param name="datasetPage" value="true"/>
                                     </ui:include>
                                 </ui:fragment>
-                                <!-- END: CITATION BLOCK   ****REMOVED ROW CLASS****-->
+                                <!-- END: CITATION BLOCK -->
                                 <div id="deaccession-reason-block" class="bg-danger" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
                                     <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
                                     <p>#{DatasetPage.workingVersion.versionNote}</p>
@@ -391,61 +374,51 @@
                                     </ui:fragment>
                                 </div>
                                 
-                                
                                 <!-- Metrics -->
-                                <div style="margin-bottom:20px;background-color:lightgreen;background:none;" id="metrics-block" class="col-sm-3" jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">
-                                    <div id="metrics-label" class="highlightBold">
-                                        Dataset #{bundle['metrics.title']}
-                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                      data-toggle="tooltip" data-placement="auto top" data-original-title="METRICS LABEL DESC HERE - Classic download counts"
-                                                      jsf:rendered="#{empty settingsServiceBean.get(':MDCLogPath')}"></span>
-                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                      data-toggle="tooltip" data-placement="auto top" data-original-title="METRICS LABEL DESC HERE - Make Data Count metrics"
-                                                      jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath')}"></span>
+                                <div id="metrics-block" class="col-sm-3" jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">
+                                    <div id="metrics-heading">
+                                        #{bundle['metrics.title.dataset']}
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
+                                                data-original-title="#{empty settingsServiceBean.get(':MDCLogPath') ? bundle['metrics.title.tip.default'] : bundle['metrics.title.tip.makedatacount']}"></span>
                                     </div>
-                                    <div id="metrics-content" class="" style="border:1px solid #EEE; border-top-width:0;">
-
+                                    <div id="metrics-content">
                                         <!-- Classic downloads -->
-                                        <div class="metrics-downloads margin-bottom-half" style="padding-bottom:.5em; border-bottom:1px solid #EEE" jsf:rendered="#{empty settingsServiceBean.get(':MDCLogPath')}">
+                                        <div class="metrics-count-block" jsf:rendered="#{empty settingsServiceBean.get(':MDCLogPath')}">
                                             <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
                                                 <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
                                             </h:outputFormat>
                                         </div>
-
                                         <!-- Make Data Count views -->
-                                        <div class="metrics-views-mdc margin-bottom-half" style="padding-bottom:.5em; border-bottom:1px solid #EEE" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath')}">
+                                        <div class="metrics-count-block" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath')}">
                                             <h:outputFormat value="{0} #{bundle['metrics.views']}">
                                                 <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getViewsTotal()}"/>
                                             </h:outputFormat>
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                          data-toggle="tooltip" data-placement="auto top" data-original-title="METRICS LABEL DESC HERE"></span>
+                                                    data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.views.tip']}"></span>
                                         </div>
-
                                         <!-- Make Data Count downloads -->
-                                        <div class="metrics-downloads-mdc margin-bottom-half" style="padding-bottom:.5em; border-bottom:1px solid #EEE" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath')}">
+                                        <div class="metrics-count-block" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath')}">
                                             <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
                                                 <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getDownloadsTotal()}"/>
                                             </h:outputFormat>
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                          data-toggle="tooltip" data-placement="auto top" data-original-title="METRICS LABEL DESC HERE"></span>
+                                                    data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.downloads.tip']}"></span>
                                         </div>
-
                                         <!-- Make Data Count citations (DOIs only, not Handles) -->
-                                        <div class="metrics-citations-mdc" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath') and settingsServiceBean.get(':Protocol') == 'doi'}">
+                                        <div class="metrics-count-block" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath') and settingsServiceBean.get(':Protocol') == 'doi'}">
+                                            
                                             <!-- TODO: Make this a pop up to show URLs of citations (e.g. https://doi.org/10.1007/s12520-017-0578-2) -->
+                                            
                                             <h:outputFormat value="{0} #{bundle['metrics.citations']}">
                                                 <f:param value="#{fn:length(datasetExternalCitationsService.getDatasetExternalCitationsByDataset(DatasetPage.dataset))}"/>
                                             </h:outputFormat>
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                          data-toggle="tooltip" data-placement="auto top" data-original-title="METRICS LABEL DESC HERE"></span>
+                                                    data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.citations.tip']}"></span>
                                         </div>
                                     </div>
                                 </div>
                                 <!-- END: Metrics -->
-                                
-                                
                             </div>
-                            
                             
                             <!-- BEGIN: DATASET SUMMARY -->
                             <div id="dataset-summary-metadata" class="row" style="background-color:lightgoldenrodyellow;background:none;"
@@ -455,8 +428,6 @@
                                                  or !empty DatasetPage.datasetVersionUI.subject.value
                                                  or !empty DatasetPage.datasetVersionUI.relPublicationCitation
                                                  or !empty DatasetPage.datasetVersionUI.notes.value  ) and !empty DatasetPage.datasetSummaryFields }">
-                                
-                                
                                 <div class="col-sm-12 metadata-container">
                                     <ui:repeat value="#{DatasetPage.datasetSummaryFields}" var="dsf">
                                         

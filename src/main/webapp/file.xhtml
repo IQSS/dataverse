@@ -29,12 +29,7 @@
                 </f:metadata>
                 <h:form id="fileForm">
                     <div id="topDatasetBlock" class="row">
-                        <div id="actionButtonBlock" class="col-xs-12" style="border:0px solid purple;">
-                            
-                            
-                            <!-- NO MAS METRICS -->
-                            
-                            
+                        <div id="actionButtonBlock" class="col-xs-12">
                             <div class="button-block pull-right">
                                 <!-- Email/Share Button Group -->
                                 <div class="btn-group" id="datasetButtonBar" role="group" jsf:rendered="#{!widgetWrapper.widgetView}">
@@ -78,7 +73,6 @@
                                         </ui:include>		
                                     </ui:fragment>
                                     <!-- END: Map Data/Set Up Button Block -->
-                                    
                                     
                                     <!-- Edit Button Group -->
                                     <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
@@ -181,16 +175,10 @@
                         </div>
                     </div>
                     <!-- END topDatasetBlock -->
-                    <div id="fileImageTitle" class="row" style="border:0px solid green;">
-                        
-                        
-                        <!-- NO MAS PREVIEW -->
-                        
-                        
-                        <div class="col-xs-12" style="border:0px solid orange;">
+                    <div id="fileImageTitle" class="row">
+                        <div class="col-xs-12">
                             <div class="row">
-                            
-                                <div id="file-title-block" class="col-xs-12 margin-bottom-half" style="border:0px solid pink;">
+                                <div id="file-title-block" class="col-xs-12 margin-bottom-half">
                                     <!-- Restricted File Icon -->
                                     <span class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{FilePage.fileMetadata.restricted and !(fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}" />
                                     <span class="icon-unlock text-success" jsf:rendered="#{FilePage.fileMetadata.restricted  and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }" />
@@ -210,16 +198,10 @@
                                                       value="#{bundle['file.DatasetVersion']} #{FilePage.fileMetadata.datasetVersion.versionState}"/>
                                     </div>
                                 </div>
-
                                 
-                                
-                                
-                                <div class="col-xs-12" style="border:0px solid teal;">
-                                    
+                                <div class="col-xs-12">
                                     <div class="row">
-                                        <div class="col-sm-9" style="border:0px solid silver;">
-
-
+                                        <div class="col-sm-9">
                                             <div class="row">
                                                 <div class="col-xs-12">
                                                     <h:outputFormat styleClass="h5" value="#{bundle['file.citation.datafile']}" escape="false" />
@@ -327,43 +309,37 @@
                                                     </div>
                                                 </div>
                                             </div>
-
-
                                         </div>
-                                        <div class="col-sm-3" style="border:0px solid gold;">
+                                        <div class="col-sm-3">
                                             <!-- Metrics -->
                                             <div id="metrics-block" jsf:rendered="#{!(widgetWrapper.widgetView or FilePage.fileMetadata.dataFile.filePackage or FilePage.fileMetadata.datasetVersion.deaccessioned)}">
-                                                <div id="metrics-label" class="highlightBold">
-                                                    File #{bundle['metrics.title']} 
-                                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                                      data-toggle="tooltip" data-placement="auto top" data-original-title="METRICS LABEL DESC HERE"></span>
+                                                <div id="metrics-heading">
+                                                    #{bundle['metrics.title.file']} 
+                                                    <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
+                                                            data-original-title="#{empty settingsServiceBean.get(':MDCLogPath') ? bundle['metrics.title.tip.default'] : bundle['metrics.title.tip.makedatacount']}"></span>
                                                 </div>
-                                                <div id="metrics-content" class="" style="border:1px solid #EEE; border-top-width:0;">
-                                                    
-                                                    <div class="metrics-downloads margin-bottom-half" style="padding-bottom:.5em; border-bottom:1px solid #EEE" jsf:rendered="#{true}">
+                                                <div id="metrics-content">
+                                                    <!-- Classic downloads -->
+                                                    <div class="metrics-count-block" jsf:rendered="#{empty settingsServiceBean.get(':MDCLogPath')}">
                                                         <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
                                                             <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/>
                                                         </h:outputFormat>
                                                     </div>
-                                                    
-                                                    <div class="metrics-downloads-mdc margin-bottom-half" style="padding-bottom:.5em; border-bottom:1px solid #EEE" jsf:rendered="#{true}">
-                                                        <h:outputLink value="https://makedatacount.org/" target="_blank">
-                                                            <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
-                                                                <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/>
-                                                            </h:outputFormat>
-                                                        </h:outputLink>
+                                                    <!-- Make Data Count downloads -->
+                                                    <div class="metrics-count-block" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath')}">
+                                                        <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
+                                                            <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/>
+                                                        </h:outputFormat>
                                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                                      data-toggle="tooltip" data-placement="auto top" data-original-title="METRICS LABEL DESC HERE"></span>
+                                                                data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.downloads.tip']}"></span>
                                                     </div>
-                                                    
-                                                    <div class="metrics-citations-mdc" jsf:rendered="#{true}">
-                                                        <h:outputLink value="https://makedatacount.org/" target="_blank">
-                                                            <h:outputFormat value="{0} #{bundle['metrics.citations']}">
-                                                                <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/>
-                                                            </h:outputFormat>
-                                                        </h:outputLink>
+                                                    <!-- Make Data Count citations (DOIs only, not Handles) -->
+                                                    <div class="metrics-count-block" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath') and settingsServiceBean.get(':Protocol') == 'doi'}">
+                                                        <h:outputFormat value="{0} #{bundle['metrics.citations']}">
+                                                            <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/>
+                                                        </h:outputFormat>
                                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                                      data-toggle="tooltip" data-placement="auto top" data-original-title="METRICS LABEL DESC HERE"></span>
+                                                                data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.citations.tip']}"></span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -371,48 +347,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                
-                                
-                                
-                                <ui:remove>
-                                <!-- DUPLICATE CONTENT, FIND HOME FOR TAGS 
-                                
-                                
-                                <div id="fileMetadataBlock" class="col-xs-12">
-                                    <div class="text-muted">
-                                        <h:outputText id="fileTypeOutputRegular" value="#{FilePage.fileMetadata.dataFile.friendlyType}" rendered="#{!(FilePage.fileMetadata.dataFile.tabularData)}"/>
-                                        <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{FilePage.fileMetadata.dataFile.tabularData}"/>
-                                        <h:outputText id="fileSize" value=" - #{FilePage.fileMetadata.dataFile.friendlySize}" />
-                                        <h:outputText id="fileCreatePublishDate" value=" - #{bundle['file.lastupdated.label']}: #{FilePage.fileMetadata.fileDateToDisplay}" rendered="#{!(empty FilePage.fileMetadata.id)}"/>
-                                        <div class="checksum-block" jsf:rendered="#{!FilePage.file.tabularData}">
-                                            <h:outputText id="file-checksum" value="#{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}: #{FilePage.file.checksumValue}"
-                                                          rendered="#{!(empty FilePage.file.checksumValue)}"/>
-                                        </div>
-                                        <div id="unf-block" class="text-muted" jsf:rendered="#{FilePage.file.tabularData}">
-                                            <h:outputText id="fileNumVars" value="#{FilePage.file.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, " rendered="#{FilePage.file.tabularData}"/>
-                                            <h:outputText id="fileNumObs" value="#{FilePage.file.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']} #{!empty FilePage.file.unf ? ' - ' : ''}" rendered="#{FilePage.file.tabularData}"/>
-                                            <h:outputText id="fileUNF" value="#{FilePage.file.unf}" rendered="#{!empty FilePage.file.unf}"/>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="fileDescriptionBlock" class="col-xs-12" jsf:rendered="#{!empty FilePage.fileMetadata.description}">
-                                     #{FilePage.fileMetadata.description}
-                                </div>
-                                <div id="fileCategoriesBlock" class="col-xs-12" jsf:rendered="#{!(empty FilePage.fileMetadata.categoriesByName) or !(empty FilePage.fileMetadata.dataFile.tags)}">
-                                    <ui:repeat value="#{FilePage.fileMetadata.categoriesByName}" var="tag" rendered="#{!(empty FilePage.fileMetadata.categoriesByName)}">
-                                        <h:outputText value="#{tag}" styleClass="label label-default"/>
-                                    </ui:repeat>
-                                    <ui:repeat value="#{FilePage.fileMetadata.dataFile.tags}" var="tag">
-                                        <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
-                                    </ui:repeat>
-                                </div>
-                                
-                                
-                                DUPLICATE CONTENT, FIND HOME FOR TAGS -->
-                                </ui:remove>
-                                
-                                
-                        
                             </div>
                         </div>
                     </div>

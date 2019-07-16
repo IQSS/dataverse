@@ -568,21 +568,10 @@ div.ui-tabs-panels .ui-tabs.ui-tabs-top .ui-tabs-nav.ui-widget-header {border-bo
 div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:inline-block; margin-bottom:4px;}
 
 /* -------- METRICS -------- */
-#metrics-block.col-xs-3 {border:1px solid #eee;padding:0;}
-#metrics-label {color:#333;background:#eee;padding:8px 10px;}
-#metrics-label a {color:#333;display:block;}
-#metrics-label a:hover {text-decoration:none;}
-#metrics-label span.metrics-label-text {}
-#metrics-content {color:#333;background:#fff;padding:8px 10px;}
-/* --
-#metrics-tabs a {background:#428bca;display:block;width:38px;line-height:13px;}
-#metrics-tabs a:hover {text-decoration:none;}
-
-#metrics-block .metrics-views {background:#428bca;}
-#metrics-block .metrics-downloads {background:#5cb85c;}
-#metrics-block .metrics-citations {background:#c55b28;}
-#metrics-block .metrics-shares {background:#f0ad4e;}
--- */
+#metrics-block {margin-bottom:20px;}
+#metrics-heading {font-weight:bold;color:#333;background:#eee;padding:8px 10px;}
+#metrics-content {border:1px solid #EEE;border-top-width:0;padding:8px 10px;}
+#metrics-block .metrics-count-block:not(:last-child) {margin-bottom:.5em;padding-bottom:.5em;border-bottom:1px solid #EEE}
 
 /* -------- SHARRRE -------- */
 #sharrre-block a {display:block; float:left; padding:6px 12px; margin-right:1em; background:#6f5499;}
