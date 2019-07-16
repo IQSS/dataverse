@@ -664,7 +664,8 @@
             <a class="btn btn-default" href="/loginpage.xhtml#{navigationWrapper.redirectPage}" title="#{bundle['dataverse.results.dialog.addDataGuest.login.title']}">#{bundle['login']}</a>
         </div>
     </p:dialog>
-    <script type="text/javascript">
+    <script>
+        //<![CDATA[
         $(document).ready(function () {
             // Calls the p:remoteCommand postLoad.
             // Posted at end of fragment to work correctly with Account information
@@ -677,5 +678,6 @@
                 $('.row-offcanvas').toggleClass('active', 200);
             });
         });
+        //]]>
     </script>
 </ui:composition>

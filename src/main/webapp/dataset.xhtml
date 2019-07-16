@@ -536,7 +536,8 @@
                             <!-- see the comment in the javascript below that explains what this button is for -->
                             <p:commandButton id="refreshButton" process="@this" widgetVar="refreshButton" update=":datasetForm:topDatasetBlockFragment,:datasetForm:tabView:filesTable" style="display:none"/>
                             
-                            <script type="text/javascript">
+                            <script>
+                                //<![CDATA[
                                 $(this).ready(function () {
                                     refreshIfStillLocked();
                                 });
@@ -579,6 +580,7 @@
                                         refreshAllLocksCommand();
                                     }, 10000);
                                 }
+                                //]]>
                             </script>
                         </p:fragment>
 
@@ -1547,7 +1549,8 @@
                     <p:remoteCommand name="returnToAuthorCommand" action="#{DatasetPage.sendBackToContributor}"/>                  
                     <!-- END: Publish/Submit for Review Dialogs -->
                 </h:form>
-                <script type="text/javascript">
+                <script>
+                    //<![CDATA[
                     $(document).ready(function () {
                         popoverHTML('#{bundle.htmlAllowedTitle}');
                     });
@@ -1625,6 +1628,7 @@
                     function updateHiddenReason(textArea) {
                         $('input[id$="hiddenReasonInput"]').val(textArea.value);
                     }
+                    //]]>
                 </script>
             </ui:define>
         </ui:composition>

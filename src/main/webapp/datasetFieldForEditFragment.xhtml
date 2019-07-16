@@ -41,11 +41,13 @@
                class="btn btn-default" value="#{bundle['dataset.AddReplication']}"
                onclick="replicationFor();return false;"/>
 
-        <script type="text/javascript">
+        <script>
+            //<![CDATA[
             function replicationFor() {
                 $(".datasetfield-title")[0].value = "#{bundle['dataset.replicationDataFor']} " + $(".datasetfield-title")[0].value;
                 $('#replicationDataButton').prop('disabled', true);
             }
+            //]]>
         </script>
     </ui:fragment>
 </div>

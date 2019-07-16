@@ -107,13 +107,15 @@
         <!-- end: workspace column -->
     </div><!-- end row -->
     <script src="#{resource['js/nunjucks.js']}?version=#{systemConfig.getVersion()}"></script>
-    <script> 
+    <script>
+        //<![CDATA[
         <ui:remove>This variable is needed by mydata.js to make the ajax call</ui:remove>
         var RETRIEVE_DATA_API_PATH = '#{MyDataPage.retrieveDataFullAPIPath}';
+        //]]>
     </script>
     <script src="#{resource['js/mydata.js']}?version=#{systemConfig.getVersion()}"></script>
     <script>
-        
+        //<![CDATA[
         // bundle text variables
         var mydataresult = '#{bundle['mydata.result']}';
         var mydataresults = '#{bundle['mydata.results']}';
@@ -132,6 +134,7 @@
             init_mydata_page(); // source: mydata.js
             
         });
+        //]]>
     </script>
 </div><!-- end panel body -->
 </div><!-- end panel -->
