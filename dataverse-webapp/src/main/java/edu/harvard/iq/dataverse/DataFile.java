@@ -6,7 +6,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.Expose;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -20,29 +19,11 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.Pattern;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -588,20 +569,6 @@ public class DataFile extends DvObject implements Comparable {
 
     public void setAsThumbnailForDataset(Dataset dataset) {
         thumbnailForDataset = dataset;
-    }
-
-    /**
-     * URL to use with the WorldMapRelatedData API
-     * Used within dataset.xhtml
-     *
-     * @param dataverseUserID
-     * @return URL for "Map It" functionality
-     */
-    public String getMapItURL(Long dataverseUserID) {
-        if (dataverseUserID == null) {
-            return null;
-        }
-        return WorldMapRelatedData.getMapItURL(this.getId(), dataverseUserID);
     }
 
     /*

@@ -118,22 +118,6 @@ public class WorldMapRelatedData extends AbstractApiBean {
     @Inject
     DataverseSession session;
 
-    /**
-     * Create URL for API call to WorldMapRelatedData.mapDataFile(...)
-     *
-     * @param dataFileID
-     * @param dataverseUserID
-     * @return
-     */
-    public static String getMapItURL(Long dataFileID, Long dataverseUserID) {
-        if ((dataverseUserID == null) || (dataFileID == null)) {
-            return null;
-        }
-        //test, see if it gets created
-        return WorldMapRelatedData.MAP_IT_API_PATH + dataFileID + "/" + dataverseUserID;
-    }
-
-
     // test call to track down problems
     // http://127.0.0.1:8080/api/worldmap/t/
     @GET
