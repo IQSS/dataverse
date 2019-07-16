@@ -115,8 +115,7 @@
                                         </button>
                                         <ul class="dropdown-menu pull-right text-left" role="menu">
                                             <ui:fragment rendered="#{settingsWrapper.provCollectionEnabled}">
-                                            <!--  Should be FilePage.isLockedFromEdits() ? -->
-                                                <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
+                                                <li class="#{FilePage.lockedFromEdits  ? 'disabled' : ''}">
                                                     <p:commandLink id="fileProvenanceButton"
                                                                update="editProvenancePopup"
                                                                oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
@@ -381,8 +380,7 @@
                                 <ui:include src="file-data-access-fragment.xhtml">
                                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                                     <ui:param name="datasetVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
-                                    <!--  Should be FilePage.fileDownloadService ? -->
-                                    <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
+                                    <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                                 </ui:include>
                             </p:tab>
                             <p:tab id="metadataMapTab" class="padding-none" title="#{bundle['file.dataFilesTab.metadata.header']}"

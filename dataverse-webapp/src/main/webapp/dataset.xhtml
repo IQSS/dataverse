@@ -71,6 +71,8 @@
                     <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetPage.dataset)}"/>
                     <f:viewAction action="#{EditDatafilesPage.initCreateMode(DatasetPage.editMode, DatasetPage.workingVersion, DatasetPage.newFiles, DatasetPage.selectedFiles)}"/>
+                    <f:viewAction action="#{datasetVersionsTab.init(DatasetPage.dataset)}"/>
+                    <f:viewAction action="#{datasetDeaccessionDialog.init(DatasetPage.dataset)}"/>
                 </f:metadata>
                 <h:form id="datasetForm">
                     <!-- Header / Button Panel -->
@@ -290,10 +292,7 @@
                                         <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.existReleasedVersion and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                             <li class="divider"></li>
                                             <li>
-                                                <p:commandLink id="deaccessionDatasetLink" 
-                                                               action="#{DatasetPage.clickDeaccessionDataset}"
-                                                               oncomplete="PF('deaccessionBlock').show();bind_bsui_components();"
-                                                               update="deaccessionBlock">
+                                                <p:commandLink id="deaccessionDatasetLink" onclick="showDeaccessionDialog(); return false;">
                                                     <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deaccession']}" />
                                                 </p:commandLink>
                                             </li>
@@ -644,9 +643,9 @@
 
                         </ui:fragment>
 
-                        <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
+                        <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}" dynamic="true"
                                    rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE')}">
-                            <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
+<!--                             <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" /> -->
                             <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{(!DatasetPage.workingVersion.deaccessioned or 
                                                               (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))  and
                                                               (empty DatasetPage.editMode)}">
@@ -703,7 +702,10 @@
                             </p:tab>
                             <!-- 4.2.1: see above -->
                             <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}" rendered="#{empty DatasetPage.editMode}">
-                                <ui:include src="dataset-versions.xhtml"></ui:include>
+                                <ui:include src="dataset-versions.xhtml">
+<!--                                     <ui:param name="dataset" value="#{DatasetPage.dataset}" /> -->
+<!--                                     <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}" /> -->
+                                </ui:include>
                             </p:tab>
                         </p:tabView>
                     </div>
@@ -833,231 +835,6 @@
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.compute.computeBatchRestricted']}</p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.close}" onclick="PF('computeInvalid').hide();" type="button" />
-                        </div>
-                    </p:dialog>
-                    <p:outputPanel autoUpdate="true">
-                        <p:dialog rendered="#{DatasetPage.renderDeaccessionPopup}" id="deaccessionBlock" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionBlock" modal="true" visible="#{facesContext.validationFailed}">
-                            <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.tip']}</p>
-                            <div class="form-group" jsf:rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
-
-                                <label for="selectVersionChk">#{bundle['file.deaccessionDialog.reason.question1']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>                           
-                                <p:selectManyCheckbox id="selectVersionChk" value="#{DatasetPage.selectedDeaccessionVersions}" converter="datasetVersionConverter"
-                                                      layout="pageDirection" required="#{param['DO_DEACCESSION_VALIDATION']}" requiredMessage="#{bundle['file.deaccessionDialog.dialog.selectVersion.error']}" widgetVar="selectVersionChk">
-                                    <f:selectItems value="#{DatasetPage.releasedVersionTabList}" var="versionTab" itemLabel="#{bundle['file.deaccessionDialog.version']} #{versionTab.versionNumber}.#{versionTab.minorVersionNumber}, #{versionTab.versionDate}"  itemValue="#{versionTab}" />
-                                </p:selectManyCheckbox>
-                                <p:message for="selectVersionChk"/>
-                            </div>
-                            <div class="form-group">
-                                <label for="reasonOptions">#{bundle['file.deaccessionDialog.reason.question2']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
-                                <p:selectOneMenu  widgetVar="reasonOptions" id="reasonOptions" styleClass="form-control" value="#{DatasetPage.deaccessionReasonRadio}" required="#{param['DO_DEACCESSION_VALIDATION']}" 
-                                                  binding="#{reasonRadio}" requiredMessage="#{bundle['file.deaccessionDialog.dialog.reason.error']}">
-                                    <f:selectItem itemLabel="#{bundle.select}" itemValue="0" noSelectionOption="true" />
-                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.identifiable']}" itemValue="1" />
-                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.beRetracted']}" itemValue="2" />
-                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.beTransferred']}" itemValue="3" />
-                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.IRB']}" itemValue="4" />
-                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.legalIssue']}" itemValue="5" />
-                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.notValid']}" itemValue="6" />
-                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.other']}" itemValue="7" />                               
-                                </p:selectOneMenu>
-                                <p:message for="reasonOptions"/>
-                            </div>
-                            <div class="form-group">
-                                <label for="reasonForDeaccession">
-                                #{bundle['file.deaccessionDialog.enterInfo']}
-                                </label>
-                                <p:inputTextarea id="reasonForDeaccession" styleClass="form-control"  autoResize="false" rows="2" cols="40"                                           
-                                                 value="#{DatasetPage.deaccessionReasonText}" widgetVar="reasonForDeaccession" validator="#{DatasetPage.validateDeaccessionReason}"                                              
-                                                 > 
-                                    <f:attribute name="reasonRadio" value="#{reasonRadio}" />
-                                </p:inputTextarea>
-                                <p:message for="reasonForDeaccession"/>
-                            </div>
-                            <div class="form-group">
-                                <label for="forwardURLForDeaccession">
-                                #{bundle['file.deaccessionDialog.leaveURL']}
-                                </label>
-                                <p:inputText id="forwardURLForDeaccession" styleClass="form-control" value="#{DatasetPage.deaccessionForwardURLFor}" widgetVar="forwardURLForDeaccession"
-                                             validator="#{DatasetPage.validateForwardURL}"/>
-                                <p:message for="forwardURLForDeaccession"/>
-                                <p:watermark for="forwardURLForDeaccession" value="#{bundle['file.deaccessionDialog.leaveURL.watermark']}" id="watermark" />
-                            </div>
-                            <div class="button-block">
-                                <p:commandLink styleClass="btn btn-default" value="#{bundle.deaccession}"  
-                                               oncomplete="if (args &amp;&amp; !args.validationFailed) PF('deaccessionConfirmation').show();">
-                                    <f:param name="DO_DEACCESSION_VALIDATION" value="true"/>
-                                </p:commandLink>
-                                <p:commandLink type="button" styleClass="btn btn-default" immediate ="true" value="#{bundle.cancel}" action="#{DatasetPage.setRenderDeaccessionPopup(false)}" onclick="PF('deaccessionBlock').hide();PF('blockDatasetForm').hide();"/>
-                            </div>
-                        </p:dialog>
-                    </p:outputPanel>
-                    <p:dialog id="deaccessionConfirmation" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionConfirmation" modal="true">
-                        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.deaccession.tip']}</p>
-                        <div class="button-block">
-                            <h:commandButton styleClass="btn btn-default" value="#{bundle.yes}" onclick="PF('deaccessionConfirmation').hide();
-                                    PF('deaccessionBlock').hide()" action="#{DatasetPage.deaccessionVersions}" />
-                            <button type="button" class="btn btn-default" value="No" onclick="PF('deaccessionConfirmation').hide()">#{bundle.no}</button>
-                        </div>
-                    </p:dialog>
-                    <p:dialog id="deaccessionAllConfirmation" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionAllConfirmation" modal="true">
-                        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.deaccessionDataset.tip']}</p>
-                        <div class="button-block">
-                            <h:commandButton styleClass="btn btn-default" value="Yes" onclick="PF('deaccessionAllConfirmation').hide();
-                                    PF('deaccessionBlock').hide();
-                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.deaccessionVersions}" />
-                            <button type="button" class="btn btn-default" value="No" onclick="PF('deaccessionAllConfirmation').hide();
-                                    PF('blockDatasetForm').hide();">#{bundle.no}</button>
-                        </div>
-                    </p:dialog>
-                    <p:confirmDialog id="selectDeaccessionVersion" message="#{bundle['file.deaccessionDialog.dialog.selectVersion.tip']}" header="#{bundle['file.deaccessionDialog.dialog.selectVersion.header']}" widgetVar="selectDeaccessionVersion"> </p:confirmDialog>
-                    <p:confirmDialog id="selectDeaccessionReason" message="#{bundle['file.deaccessionDialog.dialog.reason.tip']}" header="#{bundle['file.deaccessionDialog.dialog.reason.header']}" widgetVar="selectDeaccessionReason"> </p:confirmDialog>
-                    <p:confirmDialog id="enterForwardUrl" message="#{bundle['file.deaccessionDialog.dialog.url.tip']}" header="#{bundle['file.deaccessionDialog.dialog.url.header']}" widgetVar="enterForwardUrl"> </p:confirmDialog>
-                    <p:confirmDialog id="enterOtherReason" message="#{bundle['file.deaccessionDialog.dialog.textForReason.tip']}" header="#{bundle['file.deaccessionDialog.dialog.textForReason.header']}" widgetVar="enterOtherReason"> </p:confirmDialog>
-                    <p:confirmDialog id="reasonTooManyCharacters" message="#{bundle['file.deaccessionDialog.dialog.limitChar.tip']}" header="#{bundle['file.deaccessionDialog.dialog.limitChar.header']}" widgetVar="reasonTooManyCharacters"> </p:confirmDialog>
-                    <p:inputText id="hiddenReasonInput" style="display:none" widgetVar="hiddenReasonInput"/>
-                    <p:dialog id="compareTwo" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="compareTwo" modal="true">
-                        <p class="help-block"><span class="glyphicon glyphicon-exclamation-sign text-danger"/> <span class="text-danger">#{bundle['file.viewDiffDialog.dialog.warning']}</span></p>
-                        <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" onclick="PF('compareTwo').hide();PF('blockDatasetForm').hide();" type="button" />
-                        </div>
-                    </p:dialog>
-                    <p:dialog id="detailsBlocks" styleClass="largePopUp" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="detailsBlocks" modal="true">
-                        <div id="version-title" class="margin-bottom-half">#{DatasetPage.datasetVersionDifference.newVersion.title}</div>
-                        <div id="version-details-block" class=" clearfix margin-bottom-half">
-                            <div class="pull-left">
-                                &#160;
-                            </div>
-                            <div class="pull-left">
-                                #{bundle['file.viewDiffDialog.version']}: #{DatasetPage.datasetVersionDifference.originalVersion.semanticVersion}<br/>
-                                #{bundle['file.viewDiffDialog.lastUpdated']}: #{DatasetPage.datasetVersionDifference.originalVersion.localeLastUpdateTime}
-                            </div>
-                            <div class="pull-left">
-                                #{bundle['file.viewDiffDialog.version']}: #{DatasetPage.datasetVersionDifference.newVersion.semanticVersion}<br/>
-                                #{bundle['file.viewDiffDialog.lastUpdated']}: #{DatasetPage.datasetVersionDifference.newVersion.localeLastUpdateTime}
-                            </div>
-                        </div>
-                        <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.detailDataByBlock)}">
-                            <ui:repeat value="#{DatasetPage.datasetVersionDifference.detailDataByBlock}" var="block">
-                                <div class="panel panel-default">
-                                    <div class="panel-heading text-info">
-                                        <h:outputText
-                                                value="#{block.get(0)[0].datasetFieldType.metadataBlock.displayName}"/>
-                                    </div>
-                                    <p:dataTable id="byBlockInner" styleClass="dvnDifferanceTable" var="dsfArray" value="#{block}">
-                                        <p:column styleClass="versionValue">
-                                            <h:outputText value="#{dsfArray[0].datasetFieldType.localeTitle}" />
-                                        </p:column>
-                                        <p:column styleClass="versionDetails">
-                                            <h:outputText rendered="#{dsfArray[0].datasetFieldType.primitive and !(dsfArray[0].isEmpty())}" value="#{dsfArray[0].displayValue}" />
-                                            <h:outputText rendered="#{!dsfArray[0].datasetFieldType.primitive and !(dsfArray[0].isEmpty())}" value="#{dsfArray[0].compoundDisplayValue}" />
-                                        </p:column>
-                                        <p:column styleClass="versionDetails" >
-                                            <h:outputText rendered="#{dsfArray[1].datasetFieldType.primitive and !(dsfArray[1].isEmpty())}" value="#{dsfArray[1].displayValue}" />
-                                            <h:outputText rendered="#{!dsfArray[1].datasetFieldType.primitive and !(dsfArray[1].isEmpty())}" value="#{dsfArray[1].compoundDisplayValue}" />
-                                        </p:column>
-                                    </p:dataTable>
-                                </div>
-                            </ui:repeat>
-                        </ui:fragment>
-                        <div class="panel panel-default" jsf:rendered="#{!empty(DatasetPage.datasetVersionDifference.fileNote)}">
-                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
-                            <div class="panel-heading text-info">
-                                <h:outputText id="outputTextAddedRemoved" value="#{bundle['file.viewDiffDialog.files.header']}"/>
-                            </div>
-                            </ui:fragment>
-                            <p:dataTable id="diffFilesDataTable" styleClass="dvnDifferanceTable"  value="#{DatasetPage.datasetVersionDifference.datasetFilesDiffList}" var="fileDiff"
-                                         rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
-                                <p:column styleClass="versionValue">
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileID']} #{fileDiff.fileId}"/>
-                                    <br></br>
-                                    <h:outputText value="#{fileDiff.fileChecksumType} #{fileDiff.fileChecksumValue}"/>
-                                </p:column>
-                                <p:column styleClass="versionDetails" rendered="#{! fileDiff.file1Empty}">
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileName']}: #{fileDiff.fileName1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName1 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileType']}: #{fileDiff.fileType1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileType1 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileDiff.fileSize1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize1 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileDiff.fileCat1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat1 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileDiff.fileDesc1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc1 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileDiff.fileProvFree1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileProvFree1 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileDiff.fileRest1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileRest1 != null}"/>
-                                </p:column>
-                                <p:column styleClass="versionDetails" rendered="#{fileDiff.file1Empty}">
-                                    &#160;
-                                </p:column>
-                                <p:column styleClass="versionDetails" rendered="#{! fileDiff.file2Empty}">
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileName']}: #{fileDiff.fileName2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName2 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileType']}: #{fileDiff.fileType2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileType2 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileDiff.fileSize2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize2 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileDiff.fileCat2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat2 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileDiff.fileDesc2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc2 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileDiff.fileProvFree2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileProvFree2 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileDiff.fileRest2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileRest2 != null}"/>
-                                </p:column>
-                                <p:column styleClass="versionDetails" rendered="#{fileDiff.file2Empty}">
-                                    &#160;
-                                </p:column>
-                            </p:dataTable>
-                            <ui:remove>
-                            <!-- To:DO REMOVED SECOND FILES TABLE HEADER, UI CLEAN UP NEEDED IN FILE VERSIONS BRANCH -->
-                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesReplacementList)}">
-                            <div class="panel-heading text-info" >
-                                <h:outputText id="outputTextReplaced" value="#{bundle['file.viewDiffDialog.files.header']}"/>
-                            </div>
-                            </ui:fragment>
-                            </ui:remove>
-                            <p:dataTable id="replacemetFilesDataTable" style="border-top:1px solid #ddd;" styleClass="dvnDifferanceTable" value="#{DatasetPage.datasetVersionDifference.datasetFilesReplacementList}" var="fileReplace"
-                                         rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesReplacementList)}">
-                                <p:column styleClass="versionValue">
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileReplaced']}"/>
-                                </p:column>
-                                <p:column styleClass="versionDetails" rendered="#{! fileReplace.fdi.file1Empty}">
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileID']}: #{fileReplace.file1Id}" styleClass="diffDetailBlock" rendered="#{fileReplace.file1Id != null}"/>
-                                    <h:outputText value="#{fileReplace.file1ChecksumType}: #{fileReplace.file1ChecksumValue}" styleClass="diffDetailBlock" rendered="#{fileReplace.file1Id != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileName']}: #{fileReplace.fdi.fileName1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileName1 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileType']}: #{fileReplace.fdi.fileType1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileType1 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileReplace.fdi.fileSize1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileSize1 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileReplace.fdi.fileCat1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileCat1 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileReplace.fdi.fileDesc1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileDesc1 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileReplace.fdi.fileProvFree1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileProvFree1 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileReplace.fdi.fileRest1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileRest1 != null}"/>
-                                </p:column>
-                                <p:column styleClass="versionDetails" rendered="#{fileReplace.fdi.file1Empty}">
-                                    &#160;
-                                </p:column>
-                                <p:column styleClass="versionDetails" rendered="#{! fileReplace.fdi.file2Empty}">
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileID']}: #{fileReplace.file2Id}" styleClass="diffDetailBlock" rendered="#{fileReplace.file2Id != null}"/>
-                                    <h:outputText value="#{fileReplace.file2ChecksumType}: #{fileReplace.file2ChecksumValue}" styleClass="diffDetailBlock" rendered="#{fileReplace.file2Id != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileName']}: #{fileReplace.fdi.fileName2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileName2 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileType']}: #{fileReplace.fdi.fileType2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileType2 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileReplace.fdi.fileSize2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileSize2 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileReplace.fdi.fileCat2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileCat2 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileReplace.fdi.fileDesc2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileDesc2 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileReplace.fdi.fileProvFree2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileProvFree2 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileReplace.fdi.fileRest2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileRest2 != null}"/>
-                                </p:column>
-                                <p:column styleClass="versionDetails" rendered="#{fileReplace.fdi.file2Empty}">
-                                    &#160;
-                                </p:column>
-                            </p:dataTable>
-                        </div>
-                        <div class="panel panel-default" jsf:rendered="#{!empty(DatasetPage.datasetVersionDifference.changedTermsAccess)}">
-                            <div class="panel-heading text-info" >
-                                <h:outputText id="outputTextTOU" value="#{bundle['dataset.versionDifferences.termsOfUseAccess']}"/>
-                            </div>
-                            <p:dataTable id="changedTermsAccessTable" styleClass="dvnDifferanceTable" var="diffArray" value="#{DatasetPage.datasetVersionDifference.changedTermsAccess}">
-                                <p:column styleClass="versionValue">
-                                    <h:outputText value="#{diffArray[0]}" />
-                                </p:column>
-                                <p:column styleClass="versionDetails">
-                                    <h:outputText value="#{diffArray[1]}" />
-                                </p:column>
-                                <p:column styleClass="versionDetails" >
-                                    <h:outputText value="#{diffArray[2]}"/>
-                                </p:column>
-                            </p:dataTable>
-                        </div>
-                        <div class="button-block margin-bottom">
-                            <p:commandButton value="#{bundle.done}" onclick="PF('detailsBlocks').hide();PF('blockDatasetForm').hide();" type="button" />
                         </div>
                     </p:dialog>
                     
@@ -1525,6 +1302,10 @@
                      <!-- END: Publish/Submit for Review Dialogs -->
                 </h:form>
                 
+
+                <ui:include src="dataset-deaccession-dialog.xhtml" />
+                
+                
                 <script type="text/javascript">
                     $(document).ready(function () {
                         popoverHTML('#{bundle.htmlAllowedTitle}');
@@ -1538,20 +1319,6 @@
                             PF('sendBackToContributor').hide();
                             returnToAuthorCommand();
                         }                           
-                    }
-                    function openDialog() {
-                        PF('details').show();
-                    }
-                    function openCompareTwo() {
-                        PF('compareTwo').show();
-                    }
-                    function testCheckBoxes() {
-                        var count = PF('versionsTable').getSelectedRowsCount();
-                        if (count !== 2) {
-                            PF('compareTwo').show();
-                        } else {
-                            $('button[id$="compareVersions"]').trigger('click');
-                        }
                     }
                     function testFilesSelectedForTags() {
                         var count = PF('filesTable').getSelectedRowsCount();
@@ -1603,9 +1370,6 @@
                     }
                     function checkNewlyRestricted() {
                         $('button[id$="datasetSave"]').trigger('click');
-                    }
-                    function updateHiddenReason(textArea) {
-                        $('input[id$="hiddenReasonInput"]').val(textArea.value);
                     }
                 </script>
             </ui:define>

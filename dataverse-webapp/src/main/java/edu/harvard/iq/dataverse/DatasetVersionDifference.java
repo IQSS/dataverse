@@ -1,14 +1,20 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.StringUtil;
-import org.apache.commons.lang.StringUtils;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.collections4.SetUtils;
+import org.apache.commons.lang.StringUtils;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import io.vavr.Tuple2;
+import io.vavr.Tuple4;
 
 /**
  * @author skraffmiller
@@ -17,102 +23,76 @@ public final class DatasetVersionDifference {
 
     private DatasetVersion newVersion;
     private DatasetVersion originalVersion;
-    private List<List<DatasetField[]>> detailDataByBlock = new ArrayList<>();
-    private List<datasetFileDifferenceItem> datasetFilesDiffList;
-    private List<datasetReplaceFileItem> datasetFilesReplacementList;
+    
+    private List<List<Tuple2<DatasetField,DatasetField>>> detailDataByBlock = new ArrayList<>();
+    
     private List<FileMetadata> addedFiles = new ArrayList<>();
     private List<FileMetadata> removedFiles = new ArrayList<>();
-    private List<FileMetadata> changedFileMetadata = new ArrayList<>();
-    private List<FileMetadata[]> replacedFiles = new ArrayList<>();
-    private List<String[]> changedTermsAccess = new ArrayList<>();
-    private List<Object[]> summaryDataForNote = new ArrayList<>();
-    private List<Object[]> blockDataForNote = new ArrayList<>();
-    String noFileDifferencesFoundLabel = "";
-
-    private List<DifferenceSummaryGroup> differenceSummaryGroups = new ArrayList<>();
-
-    public List<DifferenceSummaryGroup> getDifferenceSummaryGroups() {
-        return differenceSummaryGroups;
-    }
-
-    public void setDifferenceSummaryGroups(List<DifferenceSummaryGroup> differenceSummaryGroups) {
-        this.differenceSummaryGroups = differenceSummaryGroups;
-    }
-
+    private List<Tuple2<FileMetadata, FileMetadata>> changedFileMetadata = new ArrayList<>();
+    private List<Tuple2<FileMetadata, FileMetadata>> replacedFiles = new ArrayList<>();
+    
+    
+    private List<DatasetFileDifferenceItem> datasetFilesDiffList;
+    private List<DatasetReplaceFileItem> datasetFilesReplacementList;
+    
+    
+    private List<Tuple4<DatasetFieldType, Integer, Integer, Integer>> summaryDataForNote = new ArrayList<>();
+    private List<Tuple4<MetadataBlock, Integer, Integer, Integer>> blockDataForNote = new ArrayList<>();
+    private String fileNote = StringUtils.EMPTY;
+    
+    
+    // -------------------- CONSTRUCTORS --------------------
+    
     public DatasetVersionDifference(DatasetVersion newVersion, DatasetVersion originalVersion) {
-        setOriginalVersion(originalVersion);
-        setNewVersion(newVersion);
+        this.originalVersion = originalVersion;
+        this.newVersion = newVersion;
         //Compare Data
-        for (DatasetField dsfo : originalVersion.getDatasetFields()) {
-            boolean deleted = true;
-            for (DatasetField dsfn : newVersion.getDatasetFields()) {
-                if (dsfo.getDatasetFieldType().equals(dsfn.getDatasetFieldType())) {
-                    deleted = false;
-                    if (dsfo.getDatasetFieldType().isPrimitive()) {
-                        if (!dsfo.getDatasetFieldType().getFieldType().equals("email")) {
-                            compareValues(dsfo, dsfn, false);
-                        }
-                    } else {
-                        compareValues(dsfo, dsfn, true);
-                    }
-                    break; //if found go to next dataset field
-                }
-            }
-            if (deleted && !dsfo.isEmpty()) {
-                if (dsfo.getDatasetFieldType().isPrimitive()) {
-                    if (dsfo.getDatasetFieldType().isControlledVocabulary()) {
-                        updateBlockSummary(dsfo, 0, dsfo.getControlledVocabularyValues().size(), 0);
-                    } else {
-                        updateBlockSummary(dsfo, 0, dsfo.getDatasetFieldValues().size(), 0);
-                    }
-                } else {
-                    updateBlockSummary(dsfo, 0, dsfo.getDatasetFieldCompoundValues().size(), 0);
-                }
-                addToSummary(dsfo, null);
+        
+        // metadata field difference
+        
+        Set<DatasetFieldType> originalDatasetFieldTypes = extractDatasetFieldTypes(originalVersion);
+        Set<DatasetFieldType> newDatasetFieldTypes = extractDatasetFieldTypes(newVersion);
+        
+        for (DatasetFieldType inBothVersionsFieldType: SetUtils.intersection(originalDatasetFieldTypes, newDatasetFieldTypes)) {
+            DatasetField originalDatasetField = extractFieldWithType(originalVersion.getDatasetFields(), inBothVersionsFieldType);
+            DatasetField newDatasetField = extractFieldWithType(newVersion.getDatasetFields(), inBothVersionsFieldType);
+            
+            updateSameFieldTypeSummary(originalDatasetField, newDatasetField);
+        }
+        for (DatasetFieldType removedFieldType: SetUtils.difference(originalDatasetFieldTypes, newDatasetFieldTypes)) {
+            DatasetField originalDatasetField = extractFieldWithType(originalVersion.getDatasetFields(), removedFieldType);
+            if (!originalDatasetField.isEmpty()) {
+                int valuesCount = extractFieldValuesCount(originalDatasetField);
+                updateBlockSummary(originalDatasetField.getDatasetFieldType().getMetadataBlock(), 0, valuesCount, 0);
+                addToSummary(originalDatasetField, null);
             }
         }
-        for (DatasetField dsfn : newVersion.getDatasetFields()) {
-            boolean added = true;
-            for (DatasetField dsfo : originalVersion.getDatasetFields()) {
-                if (dsfo.getDatasetFieldType().equals(dsfn.getDatasetFieldType())) {
-                    added = false;
-                    break;
-                }
-            }
-
-            if (added && !dsfn.isEmpty()) {
-                if (dsfn.getDatasetFieldType().isPrimitive()) {
-                    if (dsfn.getDatasetFieldType().isControlledVocabulary()) {
-                        updateBlockSummary(dsfn, dsfn.getControlledVocabularyValues().size(), 0, 0);
-                    } else {
-                        updateBlockSummary(dsfn, dsfn.getDatasetFieldValues().size(), 0, 0);
-                    }
-                } else {
-                    updateBlockSummary(dsfn, dsfn.getDatasetFieldCompoundValues().size(), 0, 0);
-                }
-                addToSummary(null, dsfn);
+        for (DatasetFieldType addedFieldType: SetUtils.difference(newDatasetFieldTypes, originalDatasetFieldTypes)) {
+            DatasetField newDatasetField = extractFieldWithType(newVersion.getDatasetFields(), addedFieldType);
+            if (!newDatasetField.isEmpty()) {
+                int valuesCount = extractFieldValuesCount(newDatasetField);
+                updateBlockSummary(newDatasetField.getDatasetFieldType().getMetadataBlock(), valuesCount, 0, 0);
+                addToSummary(null, newDatasetField);
             }
         }
-
-
-        // TODO: ? 
-        // It looks like we are going through the filemetadatas in both versions, 
-        // *sequentially* (i.e. at the cost of O(N*M)), to select the lists of 
-        // changed, deleted and added files between the 2 versions... But why 
-        // are we doing it, if we are doing virtually the same thing inside 
-        // the initDatasetFilesDifferenceList(), below - but in a more efficient 
-        // way (sorting both lists, then goint through them in parallel, at the 
-        // cost of (N+M) max.? 
-        // -- 4.6 Nov. 2016
-
+        
+        //Sort within blocks by datasetfieldtype dispaly order then....
+        //sort via metadatablock order - citation first...
+        for (List<Tuple2<DatasetField, DatasetField>> blockList : detailDataByBlock) {
+            Collections.sort(blockList, Comparator.comparing(x -> x._1().getDatasetFieldType().getDisplayOrder()));
+        }
+        Collections.sort(detailDataByBlock, Comparator.comparing(x -> x.get(0)._1().getDatasetFieldType().getMetadataBlock().getId()));
+        
+        
+        // files difference
+        
         for (FileMetadata fmdo : originalVersion.getFileMetadatas()) {
             boolean deleted = true;
             for (FileMetadata fmdn : newVersion.getFileMetadatas()) {
                 if (fmdo.getDataFile().equals(fmdn.getDataFile())) {
                     deleted = false;
                     if (!areFilesMetadataEqual(fmdo, fmdn)) {
-                        changedFileMetadata.add(fmdo);
-                        changedFileMetadata.add(fmdn);
+                        changedFileMetadata.add(new Tuple2<FileMetadata, FileMetadata>(fmdo, fmdn));
                     }
                     break;
                 }
@@ -133,315 +113,265 @@ public final class DatasetVersionDifference {
                 addedFiles.add(fmdn);
             }
         }
-        getReplacedFiles();
+        findReplacedFilesAmongAddedAndRemoved();
         initDatasetFilesDifferencesList();
+        
+        fileNote = buildFileNote();
+    }
+    
+    // -------------------- GETTERS --------------------
 
-        //Sort within blocks by datasetfieldtype dispaly order then....
-        //sort via metadatablock order - citation first...
-        for (List<DatasetField[]> blockList : detailDataByBlock) {
-            Collections.sort(blockList, (DatasetField[] l1, DatasetField[] l2) -> {
-                DatasetField dsfa = l1[0];  //(DatasetField[]) l1.get(0);
-                DatasetField dsfb = l2[0];
-                int a = dsfa.getDatasetFieldType().getDisplayOrder();
-                int b = dsfb.getDatasetFieldType().getDisplayOrder();
-                return Integer.valueOf(a).compareTo(b);
-            });
-        }
-        Collections.sort(detailDataByBlock, (List l1, List l2) -> {
-            DatasetField[] dsfa = (DatasetField[]) l1.get(0);
-            DatasetField[] dsfb = (DatasetField[]) l2.get(0);
-            int a = dsfa[0].getDatasetFieldType().getMetadataBlock().getId().intValue();
-            int b = dsfb[0].getDatasetFieldType().getMetadataBlock().getId().intValue();
-            return Integer.valueOf(a).compareTo(b);
-        });
-        getTermsDifferences();
+    public DatasetVersion getNewVersion() {
+        return newVersion;
     }
 
-    private void getReplacedFiles() {
+    public DatasetVersion getOriginalVersion() {
+        return originalVersion;
+    }
+
+    /**
+     * Returns dataset fields that have been changed
+     * between two dataset versions (includes added and
+     * removed fields).
+     * Changes are grouped by metadata blocks.
+     * First element in tuple points to old dataset field and
+     * Second element points to new dataset field.
+     */
+    public List<List<Tuple2<DatasetField, DatasetField>>> getDetailDataByBlock() {
+        return detailDataByBlock;
+    }
+
+    /**
+     * Returns file metadata of files that have
+     * been added (exist only in old version)
+     */
+    public List<FileMetadata> getAddedFiles() {
+        return addedFiles;
+    }
+
+    /**
+     * Returns file metadata of files that have
+     * been removed (exist only in new version)
+     */
+    public List<FileMetadata> getRemovedFiles() {
+        return removedFiles;
+    }
+    
+    /**
+     * Returns files metadata that have been changed
+     * between two dataset versions.
+     * First element in tuple points to old file metadata and
+     * second element points to new file metadata.
+     */
+    public List<Tuple2<FileMetadata, FileMetadata>> getChangedFileMetadata() {
+        return changedFileMetadata;
+    }
+    
+    /**
+     * Returns differences between files that have
+     * changed between two dataset versions (includes added
+     * and removed files).
+     */
+    public List<DatasetFileDifferenceItem> getDatasetFilesDiffList() {
+        return datasetFilesDiffList;
+    }
+    
+    /**
+     * Returns differences in files that have been
+     * replaced between two dataset versions.
+     */
+    public List<DatasetReplaceFileItem> getDatasetFilesReplacementList() {
+        return datasetFilesReplacementList;
+    }
+
+    /**
+     * Returns statistical summary of dataset fields that changed
+     * between two versions.
+     * Every item in returned list contains tuple with number of
+     * changes on field with type equal to first element in tuple.
+     * <p>
+     * For example if tuple is:
+     * <code>([DatasetFieldType[author]], 3, 5, 1)</code>
+     * that means that 3 authors were added; 5 was removed and in 1 author some metadata was changed.
+     * <p>
+     * Note that only fields with {@link DatasetFieldType#isDisplayOnCreate()} flag
+     * are included in returned summary.
+     */
+    public List<Tuple4<DatasetFieldType, Integer, Integer, Integer>> getSummaryDataForNote() {
+        return summaryDataForNote;
+    }
+
+    /**
+     * Returns statistical summary of dataset fields that changed
+     * between two versions.
+     * Every item in returned list contains tuple with number
+     * of changes in all fields within metadata block equal to
+     * first element in tuple.
+     * <p>
+     * For example if tuple is:
+     * <code>([MetadataBlock[citation]], 3, 5, 1)</code>
+     * that means that 3 field values were added to fields within
+     * citation block; 5 was removed and 1 field was changed.
+     * <p>
+     * Note that only fields without {@link DatasetFieldType#isDisplayOnCreate()} flag
+     * are included in returned summary.
+     */
+    public List<Tuple4<MetadataBlock, Integer, Integer, Integer>> getBlockDataForNote() {
+        return blockDataForNote;
+    }
+    
+    /**
+     * Returns statistical summary of dataset files that changed
+     * between two versions in form of formatted and localized string.
+     */
+    public String getFileNote() {
+        return fileNote;
+    }
+    
+    // -------------------- LOGIC --------------------
+
+    public String getEditSummaryForLog() {
+
+        String retVal = "";
+
+        retVal = System.lineSeparator() + this.newVersion.getTitle() + " (" + this.originalVersion.getDataset().getIdentifier() + ") was updated " + new Date();
+
+        String valueString = "";
+        String groupString = "";
+
+        //Metadata differences displayed by Metdata block
+        if (!this.detailDataByBlock.isEmpty()) {
+            for (List<Tuple2<DatasetField, DatasetField>> blocks : detailDataByBlock) {
+                groupString = System.lineSeparator() + " Metadata Block";
+                
+                String blockDisplay = " " + blocks.get(0)._1().getDatasetFieldType().getMetadataBlock().getName() + ": " + System.lineSeparator();
+                groupString += blockDisplay;
+                for (Tuple2<DatasetField, DatasetField> dsfArray : blocks) {
+                    valueString = " Field: ";
+                    String title = dsfArray._1().getDatasetFieldType().getName();
+                    valueString += title;
+                    String oldValue = " Changed From: ";
+
+                    if (!dsfArray._1().isEmpty()) {
+                        if (dsfArray._1().getDatasetFieldType().isPrimitive()) {
+                            oldValue += dsfArray._1().getRawValue();
+                        } else {
+                            oldValue += dsfArray._1().getCompoundRawValue();
+                        }
+                    }
+                    valueString += oldValue;
+
+                    String newValue = " To: ";
+                    if (!dsfArray._2().isEmpty()) {
+                        if (dsfArray._2().getDatasetFieldType().isPrimitive()) {
+                            newValue += dsfArray._2().getRawValue();
+                        } else {
+                            newValue += dsfArray._2().getCompoundRawValue();
+                        }
+
+                    }
+                    valueString += newValue;
+                    groupString += valueString + System.lineSeparator();
+                }
+                retVal += groupString + System.lineSeparator();
+            }
+        }
+
+        // File Differences
+        String fileDiff = System.lineSeparator() + "Files: " + System.lineSeparator();
+        if (!this.getDatasetFilesDiffList().isEmpty()) {
+
+            String itemDiff;
+
+            for (DatasetFileDifferenceItem item : this.getDatasetFilesDiffList()) {
+                itemDiff = "File ID: " + item.fileId;
+
+                itemDiff += buildValuesDiffString("Name", item.fileName1, item.fileName2);
+                itemDiff += buildValuesDiffString("Type", item.fileType1, item.fileType2);
+                itemDiff += buildValuesDiffString("Size", item.fileSize1, item.fileSize2);
+                itemDiff += buildValuesDiffString("Tag(s)", item.fileCat1, item.fileCat2);
+                itemDiff += buildValuesDiffString("Description", item.fileDesc1, item.fileDesc1);
+                itemDiff += buildValuesDiffString("Provenance Description", item.fileProvFree1, item.fileProvFree2);
+
+                fileDiff += itemDiff;
+            }
+
+            retVal += fileDiff;
+        }
+
+        String fileReplaced = System.lineSeparator() + "File(s) Replaced: " + System.lineSeparator();
+        if (!this.getDatasetFilesReplacementList().isEmpty()) {
+            String itemDiff;
+            for (DatasetReplaceFileItem item : this.getDatasetFilesReplacementList()) {
+                itemDiff = "";
+                itemDiff += buildValuesDiffString("Name", item.fdi.fileName1, item.fdi.fileName2);
+                itemDiff += buildValuesDiffString("Type", item.fdi.fileType1, item.fdi.fileType2);
+                itemDiff += buildValuesDiffString("Size", item.fdi.fileSize1, item.fdi.fileSize2);
+                itemDiff += buildValuesDiffString("Tag(s)", item.fdi.fileCat1, item.fdi.fileCat2);
+                itemDiff += buildValuesDiffString("Description", item.fdi.fileDesc1, item.fdi.fileDesc2);
+                itemDiff += buildValuesDiffString("Provenance Description", item.fdi.fileProvFree1, item.fdi.fileProvFree2);
+                fileReplaced += itemDiff;
+            }
+            retVal += fileReplaced;
+        }
+
+        return retVal;
+    }
+    
+    // -------------------- PRIVATE --------------------
+    
+    private Set<DatasetFieldType> extractDatasetFieldTypes(DatasetVersion datasetVersion) {
+        Set<DatasetFieldType> datasetFieldTypes = new HashSet<DatasetFieldType>();
+        for (DatasetField dsfo : datasetVersion.getDatasetFields()) {
+            datasetFieldTypes.add(dsfo.getDatasetFieldType());
+        }
+        return datasetFieldTypes;
+    }
+    
+    private DatasetField extractFieldWithType(List<DatasetField> datasetFields, DatasetFieldType datasetFieldType) {
+        for (DatasetField dsf : datasetFields) {
+            if (dsf.getDatasetFieldType().equals(datasetFieldType)) {
+                return dsf;
+            }
+        }
+        return null;
+    }
+    
+    private int extractFieldValuesCount(DatasetField datasetField) {
+        if (datasetField.getDatasetFieldType().isPrimitive()) {
+            if (datasetField.getDatasetFieldType().isControlledVocabulary()) {
+                return datasetField.getControlledVocabularyValues().size();
+            } else {
+                return datasetField.getDatasetFieldValues().size();
+            }
+        }
+        return datasetField.getDatasetFieldCompoundValues().size();
+    }
+    
+
+    private void findReplacedFilesAmongAddedAndRemoved() {
         if (addedFiles.isEmpty() || removedFiles.isEmpty()) {
             return;
         }
-        List<FileMetadata> addedToReplaced = new ArrayList<>();
-        List<FileMetadata> removedToReplaced = new ArrayList<>();
         for (FileMetadata added : addedFiles) {
             DataFile addedDF = added.getDataFile();
             Long replacedId = addedDF.getPreviousDataFileId();
-            if (added.getDataFile().getPreviousDataFileId() != null) {
-            }
             for (FileMetadata removed : removedFiles) {
                 DataFile test = removed.getDataFile();
                 if (test.getId().equals(replacedId)) {
-                    addedToReplaced.add(added);
-                    removedToReplaced.add(removed);
-                    FileMetadata[] replacedArray = new FileMetadata[2];
-                    replacedArray[0] = removed;
-                    replacedArray[1] = added;
-                    replacedFiles.add(replacedArray);
+                    replacedFiles.add(new Tuple2<FileMetadata, FileMetadata>(removed, added));
                 }
             }
         }
-        if (addedToReplaced.isEmpty()) {
-        } else {
-            addedToReplaced.stream().forEach((delete) -> {
-                addedFiles.remove(delete);
-            });
-            removedToReplaced.stream().forEach((delete) -> {
-                removedFiles.remove(delete);
-            });
-        }
-    }
-
-    private void getTermsDifferences() {
-
-        changedTermsAccess = new ArrayList<>();
-        if (newVersion.getTermsOfUseAndAccess() != null && originalVersion.getTermsOfUseAndAccess() != null) {
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getTermsOfUse()).equals(StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getTermsOfUse()))) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.header");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getTermsOfUse()), StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getTermsOfUse()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getConfidentialityDeclaration()).equals(StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getConfidentialityDeclaration()))) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getConfidentialityDeclaration()),
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getConfidentialityDeclaration()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getSpecialPermissions()).equals(StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getSpecialPermissions()))) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getSpecialPermissions()),
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getSpecialPermissions()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getRestrictions()).equals(StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getRestrictions()))) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getRestrictions()),
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getRestrictions()));
-
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getCitationRequirements()).equals(StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getCitationRequirements()))) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getCitationRequirements()),
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getCitationRequirements()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getDepositorRequirements()).equals(StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getDepositorRequirements()))) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getDepositorRequirements()),
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getDepositorRequirements()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getConditions()).equals(StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getConditions()))) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getConditions()),
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getConditions()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getDisclaimer()).equals(StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getDisclaimer()))) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getDisclaimer()), StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getDisclaimer()));
-            }
-
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getTermsOfAccess()).equals(StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getTermsOfAccess()))) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getTermsOfAccess()),
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getTermsOfAccess()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getDataAccessPlace()).equals(StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getDataAccessPlace()))) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getDataAccessPlace()),
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getDataAccessPlace()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getOriginalArchive()).equals(StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getOriginalArchive()))) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getOriginalArchive()),
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getOriginalArchive()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getAvailabilityStatus()).equals(StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getAvailabilityStatus()))) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getAvailabilityStatus()),
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getAvailabilityStatus()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getContactForAccess()).equals(StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getContactForAccess()))) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getContactForAccess()),
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getContactForAccess()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getSizeOfCollection()).equals(StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getSizeOfCollection()))) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getSizeOfCollection()),
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getSizeOfCollection()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getStudyCompletion()).equals(StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getStudyCompletion()))) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getStudyCompletion()),
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getStudyCompletion()));
-            }
-        }
-
-        if (newVersion.getTermsOfUseAndAccess() != null && originalVersion.getTermsOfUseAndAccess() == null) {
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getTermsOfUse()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.header");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, "", StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getTermsOfUse()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getConfidentialityDeclaration()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, "",
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getConfidentialityDeclaration()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getSpecialPermissions()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, "",
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getSpecialPermissions()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getRestrictions()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, "",
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getRestrictions()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getCitationRequirements()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, "",
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getCitationRequirements()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getDepositorRequirements()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, "",
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getDepositorRequirements()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getConditions()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, "",
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getConditions()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getDisclaimer()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, "", StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getDisclaimer()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getTermsOfAccess()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, "",
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getTermsOfAccess()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getDataAccessPlace()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, "",
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getDataAccessPlace()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getOriginalArchive()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, "",
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getOriginalArchive()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getAvailabilityStatus()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, "",
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getAvailabilityStatus()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getContactForAccess()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, "",
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getContactForAccess()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getSizeOfCollection()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, "",
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getSizeOfCollection()));
-            }
-            if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getStudyCompletion()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, "",
-                                                           StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getStudyCompletion()));
-            }
-        }
-
-        if (newVersion.getTermsOfUseAndAccess() == null && originalVersion.getTermsOfUseAndAccess() != null) {
-            if (!StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getTermsOfUse()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.header");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getTermsOfUse()), "");
-            }
-            if (!StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getConfidentialityDeclaration()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel,
-                                                           StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getConfidentialityDeclaration()), "");
-            }
-            if (!StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getSpecialPermissions()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel,
-                                                           StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getSpecialPermissions()), "");
-            }
-            if (!StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getRestrictions()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel,
-                                                           StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getRestrictions()), "");
-            }
-            if (!StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getCitationRequirements()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel,
-                                                           StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getCitationRequirements()), "");
-            }
-            if (!StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getDepositorRequirements()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel,
-                                                           StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getDepositorRequirements()), "");
-            }
-            if (!StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getConditions()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel,
-                                                           StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getConditions()), "");
-            }
-            if (!StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getDisclaimer()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getDisclaimer()), "");
-            }
-            if (!StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getTermsOfAccess()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel,
-                                                           StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getTermsOfAccess()), "");
-            }
-            if (!StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getDataAccessPlace()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel,
-                                                           StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getDataAccessPlace()), "");
-            }
-            if (!StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getOriginalArchive()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel,
-                                                           StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getOriginalArchive()), "");
-            }
-            if (!StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getAvailabilityStatus()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel,
-                                                           StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getAvailabilityStatus()), "");
-            }
-            if (!StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getContactForAccess()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel,
-                                                           StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getContactForAccess()), "");
-            }
-            if (!StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getSizeOfCollection()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel,
-                                                           StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getSizeOfCollection()), "");
-            }
-            if (!StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getStudyCompletion()).isEmpty()) {
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion");
-                changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel,
-                                                           StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getStudyCompletion()), "");
-            }
-        }
-    }
-
-    private List<String[]> addToTermsChangedList(List<String[]> listIn, String label, String origVal, String newVal) {
-        String[] diffArray;
-        diffArray = new String[3];
-        diffArray[0] = label;
-        diffArray[1] = origVal;
-        diffArray[2] = newVal;
-        listIn.add(diffArray);
-        return listIn;
+        replacedFiles.stream().forEach(replaced -> {
+            removedFiles.remove(replaced._1());
+            addedFiles.remove(replaced._2());
+        });
     }
 
 
-    private void addToList(List<DatasetField[]> listIn, DatasetField dsfo, DatasetField dsfn) {
-        DatasetField[] dsfArray;
-        dsfArray = new DatasetField[2];
-        dsfArray[0] = dsfo;
-        dsfArray[1] = dsfn;
-        listIn.add(dsfArray);
+    private void addToList(List<Tuple2<DatasetField, DatasetField>> listIn, DatasetField dsfo, DatasetField dsfn) {
+        listIn.add(new Tuple2<>(dsfo, dsfn));
     }
 
     private void addToSummary(DatasetField dsfo, DatasetField dsfn) {
@@ -454,50 +384,42 @@ public final class DatasetVersionDifference {
             dsfn.setDatasetFieldType(dsfo.getDatasetFieldType());
         }
         boolean addedToAll = false;
-        for (List<DatasetField[]> blockList : detailDataByBlock) {
-            DatasetField[] dsft = blockList.get(0);
-            if (dsft[0].getDatasetFieldType().getMetadataBlock().equals(dsfo.getDatasetFieldType().getMetadataBlock())) {
+        for (List<Tuple2<DatasetField, DatasetField>> blockList : detailDataByBlock) {
+            Tuple2<DatasetField, DatasetField> dsft = blockList.get(0);
+            if (dsft._1().getDatasetFieldType().getMetadataBlock().equals(dsfo.getDatasetFieldType().getMetadataBlock())) {
                 addToList(blockList, dsfo, dsfn);
                 addedToAll = true;
             }
         }
         if (!addedToAll) {
-            List<DatasetField[]> newList = new ArrayList<>();
+            List<Tuple2<DatasetField, DatasetField>> newList = new ArrayList<>();
             addToList(newList, dsfo, dsfn);
             detailDataByBlock.add(newList);
         }
     }
 
-    private void updateBlockSummary(DatasetField dsf, int added, int deleted, int changed) {
-
-        boolean addedToAll = false;
-        for (Object[] blockList : blockDataForNote) {
-            DatasetField dsft = (DatasetField) blockList[0];
-            if (dsft.getDatasetFieldType().getMetadataBlock().equals(dsf.getDatasetFieldType().getMetadataBlock())) {
-                blockList[1] = (Integer) blockList[1] + added;
-                blockList[2] = (Integer) blockList[2] + deleted;
-                blockList[3] = (Integer) blockList[3] + changed;
-                addedToAll = true;
+    private void updateBlockSummary(MetadataBlock metadataBlock, int added, int deleted, int changed) {
+        int indexToUpdate = -1;
+        
+        for (int i=0; i<blockDataForNote.size(); ++i) {
+            MetadataBlock metadataBlockFromBlockData = blockDataForNote.get(i)._1();
+            if (metadataBlockFromBlockData.equals(metadataBlock)) {
+                indexToUpdate = i;
+                break;
             }
         }
-        if (!addedToAll) {
-            Object[] newArray = new Object[4];
-            newArray[0] = dsf;
-            newArray[1] = added;
-            newArray[2] = deleted;
-            newArray[3] = changed;
-            blockDataForNote.add(newArray);
+        
+        if (indexToUpdate != -1) {
+            Tuple4<MetadataBlock, Integer, Integer, Integer> blockList = blockDataForNote.remove(indexToUpdate);
+            blockDataForNote.add(new Tuple4<>(blockList._1(), blockList._2() + added, blockList._3() + deleted, blockList._4() + changed));
+            return;
         }
+        blockDataForNote.add(new Tuple4<>(metadataBlock, added, deleted, changed));
 
     }
 
-    private void addToNoteSummary(DatasetField dsfo, int added, int deleted, int changed) {
-        Object[] noteArray = new Object[4];
-        noteArray[0] = dsfo;
-        noteArray[1] = added;
-        noteArray[2] = deleted;
-        noteArray[3] = changed;
-        summaryDataForNote.add(noteArray);
+    private void addToNoteSummary(DatasetFieldType dsft, int added, int deleted, int changed) {
+        summaryDataForNote.add(new Tuple4<>(dsft, added, deleted, changed));
     }
 
     private boolean areFilesMetadataEqual(FileMetadata fmdo, FileMetadata fmdn) {
@@ -521,512 +443,151 @@ public final class DatasetVersionDifference {
         return true;
     }
 
-    private void compareValues(DatasetField originalField, DatasetField newField, boolean compound) {
-        String originalValue = "";
-        String newValue = "";
-        int countOriginal = 0;
-        int countNew = 0;
+    private List<String> extractValuesToCompare(DatasetField datasetField) {
+        
+        if (datasetField.getDatasetFieldType().isPrimitive()) {
+            return datasetField.getValues();
+        }
+        
+        List<String> values = new ArrayList<String>();
+        
+        for (DatasetFieldCompoundValue datasetFieldCompoundValueOriginal : datasetField.getDatasetFieldCompoundValues()) {
+            String originalValue = "";
+            for (DatasetField dsfo : datasetFieldCompoundValueOriginal.getChildDatasetFields()) {
+                if (!dsfo.getDisplayValue().isEmpty()) {
+                    originalValue += dsfo.getDisplayValue() + ", ";
+                }
+            }
+            values.add(originalValue);
+        }
+        return values;
+    }
+    
+    private void updateSameFieldTypeSummary(DatasetField originalField, DatasetField newField) {
         int totalAdded = 0;
         int totalDeleted = 0;
         int totalChanged = 0;
-        int loopIndex = 0;
 
-        if (compound) {
-            for (DatasetFieldCompoundValue datasetFieldCompoundValueOriginal : originalField.getDatasetFieldCompoundValues()) {
-                if (newField.getDatasetFieldCompoundValues().size() >= loopIndex + 1) {
-                    for (DatasetField dsfo : datasetFieldCompoundValueOriginal.getChildDatasetFields()) {
-                        if (!dsfo.getDisplayValue().isEmpty()) {
-                            originalValue += dsfo.getDisplayValue() + ", ";
-                        }
-                    }
-                    for (DatasetField dsfn : newField.getDatasetFieldCompoundValues().get(loopIndex).getChildDatasetFields()) {
-                        if (!dsfn.getDisplayValue().isEmpty()) {
-                            newValue += dsfn.getDisplayValue() + ", ";
-                        }
-                    }
-                    if (originalValue.isEmpty() && !newValue.isEmpty()) {
-                        totalAdded++;
-                    } else if (!newValue.isEmpty() && !originalValue.trim().equals(newValue.trim())) {
-                        totalChanged++;
-                    }
-                }
-                loopIndex++;
-            }
-            countNew = newField.getDatasetFieldCompoundValues().size();
-            countOriginal = originalField.getDatasetFieldCompoundValues().size();
-        } else {
-            int index = 0;
-            for (String valString : originalField.getValues()) {
-                if (valString != null && !valString.isEmpty()) {
-                    countOriginal++;
-                }
-            }
-            for (String valString : newField.getValues()) {
-                if (valString != null && !valString.isEmpty()) {
-                    countNew++;
-                }
-            }
-            String nString = "";
-            originalValue = originalField.getDisplayValue();
-            newValue = newField.getDisplayValue();
-            for (String oString : originalField.getValues()) {
-                if (newField.getValues().size() >= (index + 1)) {
-                    nString = newField.getValues().get(index);
-                }
-                if (nString != null && oString != null && !oString.trim().equals(nString.trim())) {
-                    totalChanged++;
-                }
-            }
-            if (originalValue.equalsIgnoreCase(newValue)) {
-                totalChanged = 0;
+        List<String> originalValues = extractValuesToCompare(originalField);
+        List<String> newValues = extractValuesToCompare(newField);
+        
+        for (int i=0; i<originalValues.size(); ++i) {
+            String originalValue = originalValues.get(i);
+            String newValue = (i < newValues.size()) ? newValues.get(i) : StringUtils.EMPTY;
+            
+            if (originalValue.isEmpty() && !newValue.isEmpty()) {
+                ++totalAdded;
+            } else if (!originalValue.isEmpty() && newValue.isEmpty()) {
+                ++totalDeleted;
+            } else if (!StringUtils.equals(newValue.trim(), originalValue.trim())) {
+                ++totalChanged;
             }
         }
-
-        if (countNew > countOriginal) {
-            totalAdded = countNew - countOriginal;
+        if (newValues.size() > originalValues.size()) {
+            totalAdded += (newValues.size() - originalValues.size());
         }
-
-        if (countOriginal > countNew) {
-            totalDeleted = countOriginal - countNew;
-        }
+        
         if ((totalAdded + totalDeleted + totalChanged) > 0) {
             if (originalField.getDatasetFieldType().isDisplayOnCreate()) {
-                addToNoteSummary(originalField, totalAdded, totalDeleted, totalChanged);
-                addToSummary(originalField, newField);
+                addToNoteSummary(originalField.getDatasetFieldType(), totalAdded, totalDeleted, totalChanged);
             } else {
-                updateBlockSummary(originalField, totalAdded, totalDeleted, totalChanged);
-                addToSummary(originalField, newField);
+                updateBlockSummary(originalField.getDatasetFieldType().getMetadataBlock(), totalAdded, totalDeleted, totalChanged);
             }
+            addToSummary(originalField, newField);
         }
     }
 
-    public String getFileNote() {
-        String retString = "";
+    private String buildFileNote() {
+        
+        List<String> fileChangeStrings = new ArrayList<>();
 
         if (addedFiles.size() > 0) {
-            retString = BundleUtil.getStringFromBundle("dataset.version.file.added", Arrays.asList(addedFiles.size() + ""));
+            String addedString = BundleUtil.getStringFromBundle("dataset.version.file.added", Arrays.asList(addedFiles.size() + ""));
+            fileChangeStrings.add(addedString);
         }
 
         if (removedFiles.size() > 0) {
-            if (retString.isEmpty()) {
-                retString = BundleUtil.getStringFromBundle("dataset.version.file.removed", Arrays.asList(removedFiles.size() + ""));
-            } else {
-                retString += BundleUtil.getStringFromBundle("dataset.version.file.removed2", Arrays.asList(removedFiles.size() + ""));
-            }
+            String removedString = BundleUtil.getStringFromBundle("dataset.version.file.removed", Arrays.asList(removedFiles.size() + ""));
+            fileChangeStrings.add(removedString);
         }
 
         if (replacedFiles.size() > 0) {
-            if (retString.isEmpty()) {
-                retString = BundleUtil.getStringFromBundle("dataset.version.file.replaced", Arrays.asList(replacedFiles.size() + ""));
-            } else {
-                retString += BundleUtil.getStringFromBundle("dataset.version.file.replaced2", Arrays.asList(replacedFiles.size() + ""));
-            }
+            String replacedString = BundleUtil.getStringFromBundle("dataset.version.file.replaced", Arrays.asList(replacedFiles.size() + ""));
+            fileChangeStrings.add(replacedString);
         }
-
 
         if (changedFileMetadata.size() > 0) {
-            if (retString.isEmpty()) {
-                retString = BundleUtil.getStringFromBundle("dataset.version.file.changed", Arrays.asList(changedFileMetadata.size() / 2 + ""));
-            } else {
-                retString += BundleUtil.getStringFromBundle("dataset.version.file.changed2", Arrays.asList(changedFileMetadata.size() / 2 + ""));
-            }
+            String changedFileMetadataString = BundleUtil.getStringFromBundle("dataset.version.file.changed", Arrays.asList(changedFileMetadata.size() + ""));
+            fileChangeStrings.add(changedFileMetadataString);
         }
 
-        if (!retString.isEmpty()) {
-            retString += ")";
+        if (fileChangeStrings.isEmpty()) {
+            return StringUtils.EMPTY;
         }
-
-        return retString;
+        return BundleUtil.getStringFromBundle("dataset.version.file.label") + " (" + StringUtils.join(fileChangeStrings, ';') + ")";
     }
 
-    public List<datasetReplaceFileItem> getDatasetFilesReplacementList() {
-        return datasetFilesReplacementList;
+    
+    private DatasetReplaceFileItem buildDatasetReplaceFileItem(FileMetadata replacedFile, FileMetadata newFile) {
+        DatasetFileDifferenceItem fdi = new DatasetFileDifferenceItem();
+        fillFileMetadataDifference(fdi, replacedFile, newFile);
+        
+        DatasetReplaceFileItem fdr = new DatasetReplaceFileItem();
+        fdr.setFdi(fdi);
+        fdr.setFile1Id(replacedFile.getDataFile().getId().toString());
+        if (newFile.getDataFile().getId() != null) {
+            fdr.setFile2Id(newFile.getDataFile().getId().toString());
+        }
+        fdr.setFile1ChecksumType(replacedFile.getDataFile().getChecksumType());
+        fdr.setFile2ChecksumType(newFile.getDataFile().getChecksumType());
+        fdr.setFile1ChecksumValue(replacedFile.getDataFile().getChecksumValue());
+        fdr.setFile2ChecksumValue(newFile.getDataFile().getChecksumValue());
+        return fdr;
     }
-
-    public void setDatasetFilesReplacementList(List<datasetReplaceFileItem> datasetFilesReplacementList) {
-        this.datasetFilesReplacementList = datasetFilesReplacementList;
+    
+    private DatasetFileDifferenceItem buildDatasetFileDifferenceItem(FileMetadata fm1, FileMetadata fm2) {
+        DatasetFileDifferenceItem fdi = new DatasetFileDifferenceItem();
+        fillFileMetadataDifference(fdi, fm1, fm2);
+        
+        DataFile dataFileForDifference = fm1 != null ? fm1.getDataFile() : fm2.getDataFile();
+        
+        fdi.setFileId(dataFileForDifference.getId().toString());
+        fdi.setFileChecksumType(dataFileForDifference.getChecksumType());
+        fdi.setFileChecksumValue(dataFileForDifference.getChecksumValue());
+        
+        return fdi;
     }
-
-    public List<List<DatasetField[]>> getDetailDataByBlock() {
-        return detailDataByBlock;
-    }
-
-    public void setDetailDataByBlock(List<List<DatasetField[]>> detailDataByBlock) {
-        this.detailDataByBlock = detailDataByBlock;
-    }
-
-    public List<FileMetadata> getAddedFiles() {
-        return addedFiles;
-    }
-
-    public void setAddedFiles(List<FileMetadata> addedFiles) {
-        this.addedFiles = addedFiles;
-    }
-
-    public List<FileMetadata> getRemovedFiles() {
-        return removedFiles;
-    }
-
-    public void setRemovedFiles(List<FileMetadata> removedFiles) {
-        this.removedFiles = removedFiles;
-    }
-
-    public DatasetVersion getNewVersion() {
-        return newVersion;
-    }
-
-    public void setNewVersion(DatasetVersion newVersion) {
-        this.newVersion = newVersion;
-    }
-
-    public DatasetVersion getOriginalVersion() {
-        return originalVersion;
-    }
-
-    public void setOriginalVersion(DatasetVersion originalVersion) {
-        this.originalVersion = originalVersion;
-    }
-
-    public List<FileMetadata> getChangedFileMetadata() {
-        return changedFileMetadata;
-    }
-
-    public void setChangedFileMetadata(List<FileMetadata> changedFileMetadata) {
-        this.changedFileMetadata = changedFileMetadata;
-    }
-
-    public List<Object[]> getSummaryDataForNote() {
-        return summaryDataForNote;
-    }
-
-    public List<Object[]> getBlockDataForNote() {
-        return blockDataForNote;
-    }
-
-    public void setSummaryDataForNote(List<Object[]> summaryDataForNote) {
-        this.summaryDataForNote = summaryDataForNote;
-    }
-
-    public void setBlockDataForNote(List<Object[]> blockDataForNote) {
-        this.blockDataForNote = blockDataForNote;
-    }
-
-
-    public List<String[]> getChangedTermsAccess() {
-        return changedTermsAccess;
-    }
-
-    public void setChangedTermsAccess(List<String[]> changedTermsAccess) {
-        this.changedTermsAccess = changedTermsAccess;
-    }
-
+    
     private void initDatasetFilesDifferencesList() {
         datasetFilesDiffList = new ArrayList<>();
         datasetFilesReplacementList = new ArrayList<>();
 
+        
+        replacedFiles.stream()
+            .map((replacedPair) -> buildDatasetReplaceFileItem(replacedPair._1(), replacedPair._2()))
+            .forEach(datasetFilesReplacementList::add);
+        
+        for (FileMetadata addedFile: addedFiles) {
+            datasetFilesDiffList.add(buildDatasetFileDifferenceItem(null, addedFile));
+        }
+        for (FileMetadata removedFile: removedFiles) {
+            datasetFilesDiffList.add(buildDatasetFileDifferenceItem(removedFile, null));
+        }
+        for (Tuple2<FileMetadata, FileMetadata> changedPair: changedFileMetadata) {
+            FileMetadata originalMetadata = changedPair._1();
+            FileMetadata newMetadata = changedPair._2();
+            datasetFilesDiffList.add(buildDatasetFileDifferenceItem(originalMetadata, newMetadata));
+        }
+    }
+    
 
-        // Study Files themselves are version-less;
-        // In other words, 2 different versions can have different sets of
-        // study files, but the files themselves don't have versions.
-        // So in order to find the differences between the 2 sets of study
-        // files in 2 versions we can just go through the lists of the
-        // files and compare the ids. If both versions have the file with
-        // the same file id, it is the same file.
-        // UPDATE: in addition to the above, even when the 2 versions share the
-        // same study file, the file metadatas ARE version-specific, so some of
-        // the fields there (filename, etc.) may be different. If this is the
-        // case, we want to display these differences as well.
+    private void fillFileMetadataDifference(DatasetFileDifferenceItem fdi, FileMetadata fm1, FileMetadata fm2) {
 
-        if (originalVersion.getFileMetadatas().isEmpty() && newVersion.getFileMetadatas().isEmpty()) {
-            noFileDifferencesFoundLabel = "No data files in either version of the study";
+        if (fm1 == null && fm2 == null) {
             return;
         }
-
-
-        int i = 0;
-        int j = 0;
-
-        FileMetadata fm1;
-        FileMetadata fm2;
-
-        // We also have to be careful sorting this FileMetadatas. If we sort the 
-        // lists as they are still attached to their respective versions, we may end
-        // up messing up the page, which was rendered based on the specific order 
-        // of these in the working version! 
-        // So the right way of doing this is to create defensive copies of the
-        // lists; extra memory, but safer. 
-        // -- L.A. Nov. 2016
-
-        List<FileMetadata> fileMetadatasNew = new ArrayList<>(newVersion.getFileMetadatas());
-        List<FileMetadata> fileMetadatasOriginal = new ArrayList<>(originalVersion.getFileMetadatas());
-
-        if (!replacedFiles.isEmpty()) {
-
-
-            replacedFiles.stream().map((replacedPair) -> {
-                FileMetadata replacedFile = replacedPair[0];
-                FileMetadata newFile = replacedPair[1];
-                fileMetadatasNew.remove(newFile);
-                fileMetadatasOriginal.remove(replacedFile);
-                datasetFileDifferenceItem fdi = selectFileMetadataDiffs(replacedFile, newFile);
-                datasetReplaceFileItem fdr = new datasetReplaceFileItem();
-                String diffLabel = BundleUtil.getStringFromBundle("file.dataFilesTab.versions.replaced");
-                fdr.setLeftColumn(diffLabel);
-                fdr.setFdi(fdi);
-                fdr.setFile1Id(replacedFile.getDataFile().getId().toString());
-                if (newFile.getDataFile().getId() != null) {
-                    fdr.setFile2Id(newFile.getDataFile().getId().toString());
-                }
-                fdr.setFile1ChecksumType(replacedFile.getDataFile().getChecksumType());
-                fdr.setFile2ChecksumType(newFile.getDataFile().getChecksumType());
-                fdr.setFile1ChecksumValue(replacedFile.getDataFile().getChecksumValue());
-                fdr.setFile2ChecksumValue(newFile.getDataFile().getChecksumValue());
-                return fdr;
-            }).forEach((fdr) -> {
-                datasetFilesReplacementList.add(fdr);
-            });
-
-        }
-
-
-        Collections.sort(fileMetadatasOriginal, (FileMetadata l1, FileMetadata l2) -> {
-            FileMetadata fm3 = l1; //(DatasetField[]) l1.get(0);
-            FileMetadata fm4 = l2;
-            int a = fm3.getDataFile().getId().intValue();
-            int b = fm4.getDataFile().getId().intValue();
-            return Integer.valueOf(a).compareTo(b);
-        });
-
-        // Here's a potential problem: this new version may have been created
-        // specifically because new files are being added to the dataset. 
-        // In which case there may be files associated with this new version 
-        // with no database ids - since they haven't been saved yet. 
-        // So if we try to sort the files in the version the way we did above, 
-        // by ID, it may fail with a null pointer. 
-        // To solve this, we should simply check if the file has the id; and if not, 
-        // sort it higher than any file with an id - because it is a most recently
-        // added file. Since we are only doing this for the purposes of generating
-        // version differences, this should be OK. 
-        //   -- L.A. Aug. 2014
-
-
-        Collections.sort(fileMetadatasNew, (FileMetadata l1, FileMetadata l2) -> {
-            FileMetadata fm3 = l1; //(DatasetField[]) l1.get(0);
-            FileMetadata fm4 = l2;
-            Long a = fm3.getDataFile().getId();
-            Long b = fm4.getDataFile().getId();
-            if (a == null && b == null) {
-                return 0;
-            } else if (a == null) {
-                return 1;
-            } else if (b == null) {
-                return -1;
-            }
-            return a.compareTo(b);
-        });
-
-        while (i < fileMetadatasOriginal.size()
-                && j < fileMetadatasNew.size()) {
-            fm1 = fileMetadatasOriginal.get(i);
-            fm2 = fileMetadatasNew.get(j);
-
-            if (fm2.getDataFile().getId() != null && fm1.getDataFile().getId().compareTo(fm2.getDataFile().getId()) == 0) {
-                // The 2 versions share the same study file;
-                // Check if the metadata information is identical in the 2 versions
-                // of the metadata:
-                if (fileMetadataIsDifferent(fm1, fm2)) {
-                    datasetFileDifferenceItem fdi = selectFileMetadataDiffs(fm1, fm2);
-                    fdi.setFileId(fm1.getDataFile().getId().toString());
-                    fdi.setFileChecksumType(fm1.getDataFile().getChecksumType());
-                    fdi.setFileChecksumValue(fm1.getDataFile().getChecksumValue());
-                    datasetFilesDiffList.add(fdi);
-                }
-                i++;
-                j++;
-            } else if (fm2.getDataFile().getId() != null && fm1.getDataFile().getId().compareTo(fm2.getDataFile().getId()) > 0) {
-                datasetFileDifferenceItem fdi = selectFileMetadataDiffs(null, fm2);
-                fdi.setFileId(fm2.getDataFile().getId().toString());
-                fdi.setFileChecksumType(fm2.getDataFile().getChecksumType());
-                fdi.setFileChecksumValue(fm2.getDataFile().getChecksumValue());
-                datasetFilesDiffList.add(fdi);
-
-                j++;
-            } else if (fm2.getDataFile().getId() == null || fm1.getDataFile().getId().compareTo(fm2.getDataFile().getId()) < 0) {
-                datasetFileDifferenceItem fdi = selectFileMetadataDiffs(fm1, null);
-                fdi.setFileId(fm1.getDataFile().getId().toString());
-                fdi.setFileChecksumType(fm1.getDataFile().getChecksumType());
-                fdi.setFileChecksumValue(fm1.getDataFile().getChecksumValue());
-                datasetFilesDiffList.add(fdi);
-
-                i++;
-            }
-        }
-
-        // We've reached the end of at least one file list.
-        // Whatever files are left on either of the 2 lists are automatically "different"
-        // between the 2 versions.
-        while (i < fileMetadatasOriginal.size()) {
-            fm1 = fileMetadatasOriginal.get(i);
-            datasetFileDifferenceItem fdi = selectFileMetadataDiffs(fm1, null);
-            fdi.setFileId(fm1.getDataFile().getId().toString());
-            fdi.setFileChecksumType(fm1.getDataFile().getChecksumType());
-            fdi.setFileChecksumValue(fm1.getDataFile().getChecksumValue());
-            datasetFilesDiffList.add(fdi);
-
-            i++;
-        }
-
-        while (j < fileMetadatasNew.size()) {
-            fm2 = fileMetadatasNew.get(j);
-            datasetFileDifferenceItem fdi = selectFileMetadataDiffs(null, fm2);
-            if (fm2.getDataFile().getId() != null) {
-                fdi.setFileId(fm2.getDataFile().getId().toString());
-            } else {
-                fdi.setFileId("[UNASSIGNED]");
-            }
-            if (fm2.getDataFile().getChecksumValue() != null) {
-                fdi.setFileChecksumType(fm2.getDataFile().getChecksumType());
-                fdi.setFileChecksumValue(fm2.getDataFile().getChecksumValue());
-            } else {
-                /**
-                 * @todo What should we do here? checksumValue is set to
-                 * "nullable = false" so it should never be non-null. Let's set
-                 * it to "null" and see if this code path is ever reached. If
-                 * not, the null check above can probably be safely removed.
-                 */
-                fdi.setFileChecksumType(null);
-                fdi.setFileChecksumValue("[UNASSIGNED]");
-            }
-            datasetFilesDiffList.add(fdi);
-
-            j++;
-        }
-
-
-        if (datasetFilesDiffList.isEmpty()) {
-            noFileDifferencesFoundLabel = "These study versions have identical sets of data files";
-        }
-    }
-
-    private boolean fileMetadataIsDifferent(FileMetadata fm1, FileMetadata fm2) {
-        if (fm1 == null) {
-            return fm2 != null;
-        }
+        
         if (fm2 == null) {
-            return true;
-        }
-
-        // Both are non-null metadata objects.
-        // We simply go through the 5 metadata fields, if any one of them
-        // is different between the 2 versions, we declare the objects
-        // different.
-        String value1;
-        String value2;
-
-        // filename:
-        value1 = fm1.getLabel();
-        value2 = fm2.getLabel();
-
-        if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
-            value1 = "";
-        }
-        if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
-            value2 = "";
-        }
-
-        if (!value1.equals(value2)) {
-            return true;
-        }
-
-        // file type:
-        value1 = fm1.getDataFile().getFriendlyType();
-        value2 = fm2.getDataFile().getFriendlyType();
-
-        if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
-            value1 = "";
-        }
-        if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
-            value2 = "";
-        }
-
-        if (!value1.equals(value2)) {
-            return true;
-        }
-
-        // file size:
-        /*
-         value1 = FileUtil.byteCountToDisplaySize(new File(fm1.getStudyFile().getFileSystemLocation()).length());
-         value2 = FileUtil.byteCountToDisplaySize(new File(fm2.getStudyFile().getFileSystemLocation()).length());
-
-         if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
-         value1 = "";
-         }
-         if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
-         value2 = "";
-         }
-
-         if(!value1.equals(value2)) {
-         return true;
-         }
-         */
-        // file category:
-        value1 = fm1.getCategoriesByName().toString();
-        value2 = fm2.getCategoriesByName().toString();
-
-        if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
-            value1 = "";
-        }
-        if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
-            value2 = "";
-        }
-
-        if (!value1.equals(value2)) {
-            return true;
-        }
-
-        // file description:
-        value1 = fm1.getDescription();
-        value2 = fm2.getDescription();
-
-        if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
-            value1 = "";
-        }
-        if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
-            value2 = "";
-        }
-
-        if (!value1.equals(value2)) {
-            return true;
-        }
-
-        // Provenance Freeform Text
-        value1 = fm1.getProvFreeForm();
-        value2 = fm2.getProvFreeForm();
-
-        if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
-            value1 = "";
-        }
-        if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
-            value2 = "";
-        }
-
-        if (!value1.equals(value2)) {
-            return true;
-        }
-
-        return !value1.equals(value2);
-    }
-
-    private datasetFileDifferenceItem selectFileMetadataDiffs(FileMetadata fm1, FileMetadata fm2) {
-        datasetFileDifferenceItem fdi = new datasetFileDifferenceItem();
-
-        if (fm2 == null) {
-            if (fm1 == null) {
-                // this should never happen; but if it does,
-                // we return an empty diff object.
-
-                return fdi;
-            }
             fdi.setFileName1(fm1.getLabel());
             fdi.setFileType1(fm1.getDataFile().getFriendlyType());
             //fdi.setFileSize1(FileUtil. (new File(fm1.getDataFile().getFileSystemLocation()).length()));
@@ -1066,12 +627,8 @@ public final class DatasetVersionDifference {
             value1 = fm1.getLabel();
             value2 = fm2.getLabel();
 
-            if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
-                value1 = "";
-            }
-            if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
-                value2 = "";
-            }
+            value1 = StringUtils.trimToEmpty(value1);
+            value2 = StringUtils.trimToEmpty(value2);
 
             if (!value1.equals(value2)) {
 
@@ -1086,12 +643,9 @@ public final class DatasetVersionDifference {
             // file category:
             value1 = fm1.getCategoriesByName().toString();
             value2 = fm2.getCategoriesByName().toString();
-            if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
-                value1 = "";
-            }
-            if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
-                value2 = "";
-            }
+            
+            value1 = StringUtils.trimToEmpty(value1);
+            value2 = StringUtils.trimToEmpty(value2);
 
             if (!value1.equals(value2)) {
                 fdi.setFileCat1(value1);
@@ -1102,12 +656,8 @@ public final class DatasetVersionDifference {
             value1 = fm1.getDescription();
             value2 = fm2.getDescription();
 
-            if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
-                value1 = "";
-            }
-            if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
-                value2 = "";
-            }
+            value1 = StringUtils.trimToEmpty(value1);
+            value2 = StringUtils.trimToEmpty(value2);
 
             if (!value1.equals(value2)) {
 
@@ -1119,12 +669,8 @@ public final class DatasetVersionDifference {
             value1 = fm1.getProvFreeForm();
             value2 = fm2.getProvFreeForm();
 
-            if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
-                value1 = "";
-            }
-            if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
-                value2 = "";
-            }
+            value1 = StringUtils.trimToEmpty(value1);
+            value2 = StringUtils.trimToEmpty(value2);
 
             if (!value1.equals(value2)) {
 
@@ -1132,208 +678,20 @@ public final class DatasetVersionDifference {
                 fdi.setFileProvFree2(value2);
             }
         }
-        return fdi;
     }
-
-    public String getEditSummaryForLog() {
-
-        String retVal = "";
-
-        retVal = System.lineSeparator() + this.newVersion.getTitle() + " (" + this.originalVersion.getDataset().getIdentifier() + ") was updated " + new Date();
-
-        String valueString = "";
-        String groupString = "";
-
-        //Metadata differences displayed by Metdata block
-        if (!this.detailDataByBlock.isEmpty()) {
-            for (List<DatasetField[]> blocks : detailDataByBlock) {
-                groupString = System.lineSeparator() + " " + BundleUtil.getStringFromBundle("dataset.versionDifferences.metadataBlock");
-                String blockDisplay = " " + blocks.get(0)[0].getDatasetFieldType().getMetadataBlock().getLocaleDisplayName() + ": " + System.lineSeparator();
-                groupString += blockDisplay;
-                for (DatasetField[] dsfArray : blocks) {
-                    valueString = " " + BundleUtil.getStringFromBundle("dataset.versionDifferences.field") + ": ";
-                    String title = dsfArray[0].getDatasetFieldType().getTitle();
-                    valueString += title;
-                    String oldValue = " " + BundleUtil.getStringFromBundle("dataset.versionDifferences.changed") + " " + BundleUtil.getStringFromBundle("dataset.versionDifferences.from") + ": ";
-
-                    if (!dsfArray[0].isEmpty()) {
-                        if (dsfArray[0].getDatasetFieldType().isPrimitive()) {
-                            oldValue += dsfArray[0].getRawValue();
-                        } else {
-                            oldValue += dsfArray[0].getCompoundRawValue();
-                        }
-                    }
-                    valueString += oldValue;
-
-                    String newValue = " " + BundleUtil.getStringFromBundle("dataset.versionDifferences.to") + ": ";
-                    if (!dsfArray[1].isEmpty()) {
-                        if (dsfArray[1].getDatasetFieldType().isPrimitive()) {
-                            newValue += dsfArray[1].getRawValue();
-                        } else {
-                            newValue += dsfArray[1].getCompoundRawValue();
-                        }
-
-                    }
-                    valueString += newValue;
-                    groupString += valueString + System.lineSeparator();
-                }
-                retVal += groupString + System.lineSeparator();
-            }
+    
+    private String buildValuesDiffString(String valueType, String val1, String val2) {
+        if (val1 == null && val2 == null) {
+            return StringUtils.EMPTY;
         }
-
-        // File Differences
-        String fileDiff = System.lineSeparator() + BundleUtil.getStringFromBundle("file.viewDiffDialog.files.header") + ": " + System.lineSeparator();
-        if (!this.getDatasetFilesDiffList().isEmpty()) {
-
-            String itemDiff;
-
-            for (datasetFileDifferenceItem item : this.getDatasetFilesDiffList()) {
-                itemDiff = BundleUtil.getStringFromBundle("file.viewDiffDialog.fileID") + ": " + item.fileId;
-
-                if (item.fileName1 != null || item.fileName2 != null) {
-                    itemDiff = System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.fileName") + ": ";
-                    itemDiff += item.fileName1 != null ? item.fileName1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                    itemDiff += " : ";
-                    itemDiff += item.fileName2 != null ? item.fileName2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-                }
-
-                if (item.fileType1 != null || item.fileType2 != null) {
-                    itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.fileType") + ": ";
-                    itemDiff += item.fileType1 != null ? item.fileType1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                    itemDiff += " : ";
-                    itemDiff += item.fileType2 != null ? item.fileType2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-                }
-
-                if (item.fileSize1 != null || item.fileSize2 != null) {
-                    itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.fileSize") + ": ";
-                    itemDiff += item.fileSize1 != null ? item.fileSize1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                    itemDiff += " : ";
-                    itemDiff += item.fileSize2 != null ? item.fileSize2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-                }
-
-                if (item.fileCat1 != null || item.fileCat2 != null) {
-                    itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.category") + ": ";
-                    itemDiff += item.fileCat1 != null ? item.fileCat1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                    itemDiff += " : ";
-                    itemDiff += item.fileCat2 != null ? item.fileCat2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-                }
-
-                if (item.fileDesc1 != null || item.fileDesc2 != null) {
-                    itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.description") + ": ";
-                    itemDiff += item.fileDesc1 != null ? item.fileDesc1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                    itemDiff += " : ";
-                    itemDiff += item.fileDesc2 != null ? item.fileDesc2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-                }
-
-                if (item.fileProvFree1 != null || item.fileProvFree2 != null) {
-                    itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.provDescription") + ": ";
-                    itemDiff += item.fileProvFree1 != null ? item.fileProvFree1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                    itemDiff += " : ";
-                    itemDiff += item.fileProvFree2 != null ? item.fileProvFree2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-                }
-
-                if (item.fileRest1 != null || item.fileRest2 != null) {
-                    itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.restricted") + ": ";
-                    itemDiff += item.fileRest1 != null ? item.fileRest1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                    itemDiff += " : ";
-                    itemDiff += item.fileRest2 != null ? item.fileRest2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-
-                }
-
-                fileDiff += itemDiff;
-            }
-
-            retVal += fileDiff;
-        }
-
-        String fileReplaced = System.lineSeparator() + BundleUtil.getStringFromBundle("file.viewDiffDialog.filesReplaced") + ": " + System.lineSeparator();
-        if (!this.getDatasetFilesReplacementList().isEmpty()) {
-            String itemDiff;
-            for (datasetReplaceFileItem item : this.getDatasetFilesReplacementList()) {
-                itemDiff = "";
-                itemDiff = System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.fileName") + ": ";
-                itemDiff += item.fdi.fileName1 != null ? item.fdi.fileName1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                itemDiff += " : ";
-                itemDiff += item.fdi.fileName2 != null ? item.fdi.fileName2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.fileType") + ": ";
-                itemDiff += item.fdi.fileType1 != null ? item.fdi.fileType1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                itemDiff += " : ";
-                itemDiff += item.fdi.fileType2 != null ? item.fdi.fileType2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-                itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.fileSize") + ": ";
-                itemDiff += item.fdi.fileSize1 != null ? item.fdi.fileSize1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                itemDiff += " : ";
-                itemDiff += item.fdi.fileSize2 != null ? item.fdi.fileSize2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-                itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.category") + ": ";
-                itemDiff += item.fdi.fileCat1 != null ? item.fdi.fileCat1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                itemDiff += " : ";
-                itemDiff += item.fdi.fileCat2 != null ? item.fdi.fileCat2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-                itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.description") + ": ";
-                itemDiff += item.fdi.fileDesc1 != null ? item.fdi.fileDesc1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                itemDiff += " : ";
-                itemDiff += item.fdi.fileDesc2 != null ? item.fdi.fileDesc2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-                itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.provDescription") + ": ";
-                itemDiff += item.fdi.fileProvFree1 != null ? item.fdi.fileProvFree1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                itemDiff += " : ";
-                itemDiff += item.fdi.fileProvFree2 != null ? item.fdi.fileProvFree2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-                itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.restricted") + ": ";
-                itemDiff += item.fdi.fileRest1 != null ? item.fdi.fileRest1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                itemDiff += " : ";
-                itemDiff += item.fdi.fileRest2 != null ? item.fdi.fileRest2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-                fileReplaced += itemDiff;
-            }
-            retVal += fileReplaced;
-        }
-
-        String termsOfUseDiff = System.lineSeparator() + "Terms of Use and Access Changes: " + System.lineSeparator();
-
-        if (!this.changedTermsAccess.isEmpty()) {
-            for (String[] blocks : changedTermsAccess) {
-                String itemDiff = System.lineSeparator() + blocks[0] + " " + BundleUtil.getStringFromBundle("dataset.versionDifferences.changed") + " " + BundleUtil.getStringFromBundle("dataset.versionDifferences.from") + ": ";
-                itemDiff += blocks[1];
-                itemDiff += " " + BundleUtil.getStringFromBundle("dataset.versionDifferences.to") + ": " + blocks[2];
-                termsOfUseDiff += itemDiff;
-            }
-            retVal += termsOfUseDiff;
-        }
-
-
-        return retVal;
+        
+        return System.lineSeparator() + " " + valueType + ": " +
+            StringUtils.defaultString(val1, "N/A") + " : " + StringUtils.defaultString(val2, "N/A ");
     }
-
-
-    public class DifferenceSummaryGroup {
-
-        private String displayName;
-        private String type;
-        private List<DifferenceSummaryItem> differenceSummaryItems;
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public void setDisplayName(String displayName) {
-            this.displayName = displayName;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public List<DifferenceSummaryItem> getDifferenceSummaryItems() {
-            return differenceSummaryItems;
-        }
-
-        public void setDifferenceSummaryItems(List<DifferenceSummaryItem> differenceSummaryItems) {
-            this.differenceSummaryItems = differenceSummaryItems;
-        }
-
-
-    }
-
+    
+    
+    // -------------------- INNER CLASSES --------------------
+    
     public class DifferenceSummaryItem {
         private String displayName;
         private int changed;
@@ -1393,22 +751,14 @@ public final class DatasetVersionDifference {
 
     }
 
-    public class datasetReplaceFileItem {
+    public class DatasetReplaceFileItem {
 
-        public datasetFileDifferenceItem getFdi() {
+        public DatasetFileDifferenceItem getFdi() {
             return fdi;
         }
 
-        public void setFdi(datasetFileDifferenceItem fdi) {
+        public void setFdi(DatasetFileDifferenceItem fdi) {
             this.fdi = fdi;
-        }
-
-        public String getLeftColumn() {
-            return leftColumn;
-        }
-
-        public void setLeftColumn(String leftColumn) {
-            this.leftColumn = leftColumn;
         }
 
         public String getFile1Id() {
@@ -1459,8 +809,7 @@ public final class DatasetVersionDifference {
             this.file2ChecksumValue = file2ChecksumValue;
         }
 
-        private datasetFileDifferenceItem fdi;
-        private String leftColumn;
+        private DatasetFileDifferenceItem fdi;
         private String file1Id;
         private String file2Id;
         private DataFile.ChecksumType file1ChecksumType;
@@ -1469,9 +818,9 @@ public final class DatasetVersionDifference {
         private String file2ChecksumValue;
     }
 
-    public class datasetFileDifferenceItem {
+    public class DatasetFileDifferenceItem {
 
-        public datasetFileDifferenceItem() {
+        public DatasetFileDifferenceItem() {
         }
 
         private String fileId;
@@ -1484,7 +833,6 @@ public final class DatasetVersionDifference {
         private String fileCat1;
         private String fileDesc1;
         private String fileProvFree1;
-        private String fileRest1;
 
         private String fileName2;
         private String fileType2;
@@ -1492,7 +840,6 @@ public final class DatasetVersionDifference {
         private String fileCat2;
         private String fileDesc2;
         private String fileProvFree2;
-        private String fileRest2;
 
         public String getFileProvFree1() {
             return fileProvFree1;
@@ -1508,24 +855,6 @@ public final class DatasetVersionDifference {
 
         public void setFileProvFree2(String fileProvFree2) {
             this.fileProvFree2 = fileProvFree2;
-        }
-
-        public String getFileRest1() {
-            String localeFileRest1 = BundleUtil.getStringFromBundle(fileRest1.toLowerCase().replace(" ", "_"));
-            return localeFileRest1;
-        }
-
-        public void setFileRest1(String fileRest1) {
-            this.fileRest1 = fileRest1;
-        }
-
-        public String getFileRest2() {
-            String localeFileRest2 = BundleUtil.getStringFromBundle(fileRest2.toLowerCase().replace(" ", "_"));
-            return localeFileRest2;
-        }
-
-        public void setFileRest2(String fileRest2) {
-            this.fileRest2 = fileRest2;
         }
 
         private boolean file1Empty = false;
@@ -1652,20 +981,5 @@ public final class DatasetVersionDifference {
         }
 
     }
-
-    public List<datasetFileDifferenceItem> getDatasetFilesDiffList() {
-        return datasetFilesDiffList;
-    }
-
-    public void setDatasetFilesDiffList(List<datasetFileDifferenceItem> datasetFilesDiffList) {
-        this.datasetFilesDiffList = datasetFilesDiffList;
-    }
-
-    public String getNoFileDifferencesFoundLabel() {
-        return noFileDifferencesFoundLabel;
-    }
-
-    public void setNoFileDifferencesFoundLabel(String noFileDifferencesFoundLabel) {
-        this.noFileDifferencesFoundLabel = noFileDifferencesFoundLabel;
-    }
+    
 }

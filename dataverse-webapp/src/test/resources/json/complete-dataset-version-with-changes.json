@@ -1,0 +1,92 @@
+{
+  "id": 3,
+  "versionState": "DRAFT",
+  "distributionDate": "Distribution Date",
+  "productionDate": "Production Date",
+  "lastUpdateTime": "2015-02-22T03:58:27Z",
+  "createTime": "2015-01-14T03:48:30Z",
+  "metadataBlocks": {
+    "citation": {
+      "displayName": "Citation Metadata",
+      "fields": [
+        {
+          "typeName": "title",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "Sample-published-dataset (updated2)"
+        },
+        {
+          "typeName": "author",
+          "multiple": true,
+          "typeClass": "compound",
+          "value": [
+            {
+              "authorName": {
+                "typeName": "authorName",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "Kew, Susie (changed)"
+              },
+              "authorAffiliation": {
+                "typeName": "authorAffiliation",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "Creedence Clearwater Revival"
+              }
+            },
+            {
+              "authorName": {
+                "typeName": "authorName",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "Doe, Joe"
+              }
+            }
+          ]
+        },
+        {
+          "typeName": "dsDescription",
+          "multiple": true,
+          "typeClass": "compound",
+          "value": [
+            {
+              "dsDescriptionValue": {
+                "typeName": "dsDescriptionValue",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "This is a public dataset"
+              },
+              "dsDescriptionDate": {
+                "typeName": "dsDescriptionDate",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "2015-01-14"
+              }
+            }
+          ]
+        },
+        {
+          "typeName": "subject",
+          "multiple": true,
+          "typeClass": "controlledVocabulary",
+          "value": [
+            "Agricultural Sciences",
+            "Arts and Humanities"
+          ]
+        },
+        {
+          "typeName": "depositor",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "Admin Dataverse"
+        },
+        {
+          "typeName": "dateOfDeposit",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "2015-01-14"
+        }
+      ]
+    }
+  }
+}

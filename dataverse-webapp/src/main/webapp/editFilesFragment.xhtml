@@ -885,17 +885,6 @@
     </p:dialog>
     <script type="text/javascript" src="/resources/js/dropins.js" id="dropboxjs" data-app-key="#{EditDatafilesPage.dropBoxKey}"/>
     <script type="text/javascript">
-        function openDialog() {
-            PF('details').show();
-        }
-        function testCheckBoxes() {
-            var count = PF('versionsTable').getSelectedRowsCount();
-            if (count !== 2) {
-                PF('compareTwo').show();
-            } else {
-                $('button[id$="compareVersions"]').trigger('click');
-            }
-        }
         function deleteFinished() {
             $('button[id$="updateEditDataFilesButtonsForDelete"]').trigger('click');
             $('button[id$="allDeletesFinished"]').trigger('click');

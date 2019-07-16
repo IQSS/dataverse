@@ -8,141 +8,273 @@
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
 
-    <!--@elvariable id="versionTab" type="edu.harvard.iq.dataverse.DatasetVersion"-->
+    <ui:fragment rendered="#{widgetWrapper.widgetView}">
+        <p class="help-block">
+            <h:outputFormat value="#{bundle['file.dataFilesTab.versions.widget.viewMoreInfo']}" escape="false">
+                <f:param value="#{datasetVersionsTab.dataset.globalIdString}"/>
+                <f:param value="#{datasetVersionsTab.dataset.displayName}"/>
+                <f:param value="#{installationConfig.installationName}"/>
+            </h:outputFormat>
+        </p>
+    </ui:fragment>
 
-<ui:fragment rendered="#{widgetWrapper.widgetView}">
-    <p class="help-block">
-        <h:outputFormat value="#{bundle['file.dataFilesTab.versions.widget.viewMoreInfo']}" escape="false">
-            <f:param value="#{DatasetPage.dataset.globalIdString}"/>
-            <f:param value="#{DatasetPage.dataset.displayName}"/>
-            <f:param value="#{dataverseServiceBean.findRootDataverse().displayName}"/>
-        </h:outputFormat>
-    </p>
-</ui:fragment>
+    <ui:fragment rendered="#{!widgetWrapper.widgetView}">
+    <!-- VERSIONS -->
+       <script type="text/javascript">
+           /* Version tab: Retrieve data after page load */
+            $(document).ready(function () {
+                var preload_message = "#{bundle['file.dataFilesTab.versions.loading']}";
+                PF('versionsTable').getJQ().find('tr.ui-datatable-empty-message td').text(preload_message);
+                postLoadVersionTabList();
+           });
+       </script>
+       <!-- Retrieve version differences after the page load -->
+       <p:remoteCommand  name="postLoadVersionTabList"
+               process="@this"
+               update="versionsContent"
+               actionListener="#{datasetVersionsTab.postLoadSetVersionTabList()}" />
+        
+        
+        <h:panelGroup id="versionsContent">
+        
+        <div class="text-right margin-bottom">
+            <p:commandLink type="button" styleClass="btn btn-default" onclick="testCheckBoxes();"
+                             rendered="#{datasetVersionsTab.comparableVersionsCount > 2}">
+                <span class="glyphicon glyphicon-transfer"/> #{bundle['file.dataFilesTab.versions.viewDiffBtn']}
+            </p:commandLink>
+            <p:commandButton value="#{bundle['file.dataFilesTab.button.direct']}" id="compareVersions"
+                             style="display:none"
+                             update="detailsBlocks"
+                             oncomplete="PF('detailsBlocks').show();post_differences();"
+                             actionListener="#{datasetVersionsTab.updateVersionDiffForModalFromSelected()}">
+            </p:commandButton>
+        </div>
+    
+        <p:dataTable id="versionsTable" value="#{datasetVersionsTab.versionsSummary}" var="versionSummary" widgetVar="versionsTable"
+                     rowKey="#{versionSummary.version}" selection="#{datasetVersionsTab.selectedVersions}"
+                     disabledSelection="#{!versionSummary.canBeCompared}" >
+            <!-- start: checkbox column -->
+            <p:column selectionMode="multiple" class="col-select-width text-center" rendered="#{datasetVersionsTab.comparableVersionsCount > 2}"/><!-- end: checkbox column -->
+    
+            <!-- start: version number column -->
+            <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.dataset']}" class="col-sm-1 text-center">
+                <ui:fragment rendered="#{versionSummary.showLink}">
+                    <a id="versionLink" href="/dataset.xhtml?persistentId=#{datasetVersionsTab.dataset.globalIdString}&#38;version=#{versionSummary.version.friendlyVersionNumber}" class="ui-commandlink ui-widget">
+                        <h:outputText value="#{versionSummary.version.friendlyVersionNumber}" />
+                    </a>
+                </ui:fragment>
+                <ui:fragment rendered="#{not (versionSummary.showLink)}">
+                    <h:outputText value="#{versionSummary.version.friendlyVersionNumber}" />
+                </ui:fragment>
+            </p:column><!-- end: version number column -->
+            
+            <!-- start: description column -->
+            <p:column id="summaryColumn" headerText="#{bundle['file.dataFilesTab.versions.headers.summary']}">
+                <ui:fragment rendered="#{versionSummary.differenceFromPreviousVersion != null}">
+                    <ui:fragment rendered="#{!empty(versionSummary.differenceFromPreviousVersion.summaryDataForNote)}">
+                        <h:outputText styleClass="highlightBold" value="#{bundle['file.dataFilesTab.versions.citationMetadata']} " />
+                        <ui:repeat value="#{versionSummary.differenceFromPreviousVersion.summaryDataForNote}" var="summaryNote">
+                            <h:outputText value=" #{summaryNote._1().displayName} (" />
+                            <h:outputText rendered="#{(summaryNote._2()) > 0 and summaryNote._1().allowMultiples}" value="#{summaryNote._2()} #{bundle['file.dataFilesTab.versions.added']}" />
+                            <h:outputText rendered="#{(summaryNote._2()) > 0 and !(summaryNote._1().allowMultiples)}"  value="#{bundle['file.dataFilesTab.versions.added']}" />
+                            <h:outputText rendered="#{(summaryNote._2()) > 0 and (summaryNote._3() + summaryNote._4()) > 0}" value=", " />
+                            <h:outputText rendered="#{(summaryNote._3()) > 0 and summaryNote._1().allowMultiples}" value="#{summaryNote._3()} #{bundle['file.dataFilesTab.versions.removed']}" />
+                            <h:outputText rendered="#{(summaryNote._3()) > 0 and !(summaryNote._1().allowMultiples)}" value="#{bundle['file.dataFilesTab.versions.removed']}" />
+                            <h:outputText rendered="#{(summaryNote._3()) > 0 and (summaryNote._4()) > 0}" value=", " />
+                            <h:outputText rendered="#{(summaryNote._4()) > 0 and summaryNote._1().allowMultiples}" value="#{summaryNote._4()} #{bundle['file.dataFilesTab.versions.changed']}" />
+                            <h:outputText rendered="#{(summaryNote._4()) > 0 and !(summaryNote._1().allowMultiples)}" value="#{bundle['file.dataFilesTab.versions.changed']}" />
+                            <h:outputText value="); " />
+                        </ui:repeat>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{!empty(versionSummary.differenceFromPreviousVersion.blockDataForNote)}">
+                        <ui:repeat value="#{versionSummary.differenceFromPreviousVersion.blockDataForNote}" var="blockNote">
+                            <h:outputText styleClass="highlightBold" rendered="#{blockNote._1().isCitationMetaBlock()}" value="#{bundle['file.dataFilesTab.versions.additionalCitationMetadata']} " />
+                            <h:outputText styleClass="highlightBold" rendered="#{!(blockNote._1().isCitationMetaBlock())}" value=" #{blockNote._1().localeDisplayName}: " />
+                            <h:outputText value=" (" />
+                            <h:outputText rendered="#{blockNote._2() > 0}" value="#{blockNote._2()} #{bundle['file.dataFilesTab.versions.added']}" />
+                            <h:outputText rendered="#{(blockNote._2()) > 0 and (blockNote._3() + blockNote._4()) > 0}" value=", " />
+                            <h:outputText rendered="#{(blockNote._3()) > 0}" value="#{blockNote._3()} #{bundle['file.dataFilesTab.versions.removed']}" />
+                            <h:outputText rendered="#{(blockNote._3()) > 0 and (blockNote._4()) > 0}" value=", " />
+                            <h:outputText rendered="#{(blockNote._4()) > 0}" value="#{blockNote._4()} #{bundle['file.dataFilesTab.versions.changed']}" />
+                            <h:outputText value="); " />
+                        </ui:repeat>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{!empty(versionSummary.differenceFromPreviousVersion.fileNote)}">
+                        <h:outputText styleClass="highlightBold" value="#{versionSummary.differenceFromPreviousVersion.fileNote}; " />
+                    </ui:fragment>
+                </ui:fragment>
+                <ui:fragment rendered="#{versionSummary.differenceFromPreviousVersion == null}">
+                    <ui:fragment rendered="#{versionSummary.version.draft}">
+                        #{bundle['file.dataFilesTab.versions.description.draft']}
+                    </ui:fragment>
+                    <ui:fragment rendered="#{versionSummary.version.released and versionSummary.version.priorVersionState == 'DEACCESSIONED'}">
+                        #{bundle['file.dataFilesTab.versions.description.deaccessioned']}
+                    </ui:fragment>
+                    <ui:fragment rendered="#{versionSummary.version.released and versionSummary.version.priorVersionState == null}">
+                        #{bundle['file.dataFilesTab.versions.description.firstPublished']}
+                    </ui:fragment>
+                    <ui:fragment rendered="#{versionSummary.version.deaccessioned}">
+                        #{bundle['file.dataFilesTab.versions.description.deaccessionedReason']} #{versionSummary.version.versionNote}
+                        <ui:fragment rendered="#{!empty versionSummary.version.archiveNote}">
+                            #{bundle['file.dataFilesTab.versions.description.beAccessedAt']}
+                            <a href="#{versionSummary.version.archiveNote}" target="_blank">#{versionSummary.version.archiveNote}</a>
+                        </ui:fragment>
+                    </ui:fragment>
+                </ui:fragment>
+                
+                <p:commandLink rendered="#{(!empty(versionSummary.differenceFromPreviousVersion))}"
+                               actionListener="#{datasetVersionsTab.updateVersionDiffForDialog(versionSummary.differenceFromPreviousVersion)}"
+                               oncomplete="PF('detailsBlocks').show();post_differences();"
+                               update="@form"
+                               value="#{bundle['file.dataFilesTab.versions.viewDetails.btn']}"></p:commandLink>
+            </p:column><!-- end: description column -->
+    
+            <!-- contributor column -->
+            <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.contributors']}" class="col-sm-3">
+                <ui:fragment rendered="#{!empty(versionSummary.contributorNames)}">
+                    <h:outputText value="#{versionSummary.contributorNames}" />
+                </ui:fragment>
+            </p:column><!-- end: contributor column -->
+    
+            <!-- date column -->
+            <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.published']}" class="col-sm-2">
+                <ui:fragment>
+                    <h:outputText id="versionDate" value="#{versionSummary.version.versionDate}" />
+                </ui:fragment>
+            </p:column><!-- end: date column -->
+        </p:dataTable>
+        </h:panelGroup>
+    <!-- / VERSIONS -->
+    </ui:fragment>
 
-<ui:fragment rendered="#{!widgetWrapper.widgetView}">
-<!-- VERSIONS -->
-   <script type="text/javascript">
-       /* Version tab: Retrieve data after page load */
-        $(document).ready(function () {
-            preload_message = "(Loading versions...)";
-            $('#datasetForm\\:tabView\\:versionsTable_data tr.ui-datatable-empty-message td').text(preload_message);
-            postLoadVersionTabList();
-       });
-   </script>
-   <!-- Retrieve version differences after the page load -->
-   <p:remoteCommand  name="postLoadVersionTabList"
-           process="@this"
-           update=":#{p:resolveClientId('datasetForm:tabView:versionsTable', view)}"
-           actionListener="#{DatasetPage.postLoadSetVersionTabList()}" />
-    <div class="text-right margin-bottom">
-        <p:commandLink type="button" styleClass="btn btn-default" onclick="testCheckBoxes();"
-                         rendered="#{DatasetPage.compareVersionsCount > 2}">
-            <span class="glyphicon glyphicon-transfer"/> #{bundle['file.dataFilesTab.versions.viewDiffBtn']}
-        </p:commandLink>
-        <p:commandButton value="#{bundle['file.dataFilesTab.button.direct']}" id="compareVersions"
-                         style="display:none"
-                         update=":datasetForm"
-                         oncomplete="PF('detailsBlocks').show();post_differences();"
-                         actionListener="#{DatasetPage.compareVersionDifferences()}">
-        </p:commandButton>
-    </div>
+    <p:dialog id="detailsBlocks" styleClass="largePopUp" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="detailsBlocks" modal="true">
+        <div id="version-title" class="margin-bottom-half">#{datasetVersionsTab.versionsDifferenceForDialog.newVersion.title}</div>
+        <div id="version-details-block" class=" clearfix margin-bottom-half">
+            <div class="pull-left">
+                &#160;
+            </div>
+            <div class="pull-left">
+                #{bundle['file.viewDiffDialog.version']}: #{datasetVersionsTab.versionsDifferenceForDialog.originalVersion.semanticVersion}<br/>
+                #{bundle['file.viewDiffDialog.lastUpdated']}: #{datasetVersionsTab.versionsDifferenceForDialog.originalVersion.localeLastUpdateTime}
+            </div>
+            <div class="pull-left">
+                #{bundle['file.viewDiffDialog.version']}: #{datasetVersionsTab.versionsDifferenceForDialog.newVersion.semanticVersion}<br/>
+                #{bundle['file.viewDiffDialog.lastUpdated']}: #{datasetVersionsTab.versionsDifferenceForDialog.newVersion.localeLastUpdateTime}
+            </div>
+        </div>
+        <ui:fragment rendered="#{!empty(datasetVersionsTab.versionsDifferenceForDialog.detailDataByBlock)}">
+            <ui:repeat value="#{datasetVersionsTab.versionsDifferenceForDialog.detailDataByBlock}" var="block">
+                <div class="panel panel-default">
+                    <div class="panel-heading text-info">
+                        <h:outputText
+                                value="#{block.get(0)._1().datasetFieldType.metadataBlock.displayName}"/>
+                    </div>
+                    <p:dataTable id="byBlockInner" styleClass="dvnDifferanceTable" var="dsfArray" value="#{block}">
+                        <p:column styleClass="versionValue">
+                            <h:outputText value="#{dsfArray._1().datasetFieldType.localeTitle}" />
+                        </p:column>
+                        <p:column styleClass="versionDetails">
+                            <h:outputText rendered="#{dsfArray._1().datasetFieldType.primitive and !(dsfArray._1().isEmpty())}" value="#{dsfArray._1().displayValue}" />
+                            <h:outputText rendered="#{!dsfArray._1().datasetFieldType.primitive and !(dsfArray._1().isEmpty())}" value="#{dsfArray._1().compoundDisplayValue}" />
+                        </p:column>
+                        <p:column styleClass="versionDetails" >
+                            <h:outputText rendered="#{dsfArray._2().datasetFieldType.primitive and !(dsfArray._2().isEmpty())}" value="#{dsfArray._2().displayValue}" />
+                            <h:outputText rendered="#{!dsfArray._2().datasetFieldType.primitive and !(dsfArray._2().isEmpty())}" value="#{dsfArray._2().compoundDisplayValue}" />
+                        </p:column>
+                    </p:dataTable>
+                </div>
+            </ui:repeat>
+        </ui:fragment>
+        <div class="panel panel-default" jsf:rendered="#{!empty(datasetVersionsTab.versionsDifferenceForDialog.datasetFilesDiffList)}">
+            <ui:fragment rendered="#{!empty(datasetVersionsTab.versionsDifferenceForDialog.datasetFilesDiffList)}">
+            <div class="panel-heading text-info">
+                <h:outputText id="outputTextAddedRemoved" value="#{bundle['file.viewDiffDialog.files.header']}"/>
+            </div>
+            </ui:fragment>
+            <p:dataTable id="diffFilesDataTable" styleClass="dvnDifferanceTable"  value="#{datasetVersionsTab.versionsDifferenceForDialog.datasetFilesDiffList}" var="fileDiff"
+                         rendered="#{!empty(datasetVersionsTab.versionsDifferenceForDialog.datasetFilesDiffList)}">
+                <p:column styleClass="versionValue">
+                    <h:outputText value="#{bundle['file.viewDiffDialog.fileID']} #{fileDiff.fileId}"/>
+                    <br></br>
+                    <h:outputText value="#{fileDiff.fileChecksumType} #{fileDiff.fileChecksumValue}"/>
+                </p:column>
+                <p:column styleClass="versionDetails" rendered="#{! fileDiff.file1Empty}">
+                    <h:outputText value="#{bundle['file.viewDiffDialog.fileName']}: #{fileDiff.fileName1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName1 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.fileType']}: #{fileDiff.fileType1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileType1 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileDiff.fileSize1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize1 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileDiff.fileCat1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat1 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileDiff.fileDesc1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc1 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileDiff.fileProvFree1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileProvFree1 != null}"/>
+                </p:column>
+                <p:column styleClass="versionDetails" rendered="#{fileDiff.file1Empty}">
+                    &#160;
+                </p:column>
+                <p:column styleClass="versionDetails" rendered="#{! fileDiff.file2Empty}">
+                    <h:outputText value="#{bundle['file.viewDiffDialog.fileName']}: #{fileDiff.fileName2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName2 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.fileType']}: #{fileDiff.fileType2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileType2 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileDiff.fileSize2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize2 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileDiff.fileCat2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat2 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileDiff.fileDesc2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc2 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileDiff.fileProvFree2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileProvFree2 != null}"/>
+                </p:column>
+                <p:column styleClass="versionDetails" rendered="#{fileDiff.file2Empty}">
+                    &#160;
+                </p:column>
+            </p:dataTable>
+            <p:dataTable id="replacemetFilesDataTable" style="border-top:1px solid #ddd;" styleClass="dvnDifferanceTable" value="#{datasetVersionsTab.versionsDifferenceForDialog.datasetFilesReplacementList}" var="fileReplace"
+                         rendered="#{!empty(datasetVersionsTab.versionsDifferenceForDialog.datasetFilesReplacementList)}">
+                <p:column styleClass="versionValue">
+                    <h:outputText value="#{bundle['file.viewDiffDialog.fileReplaced']}"/>
+                </p:column>
+                <p:column styleClass="versionDetails" rendered="#{! fileReplace.fdi.file1Empty}">
+                    <h:outputText value="#{bundle['file.viewDiffDialog.fileID']}: #{fileReplace.file1Id}" styleClass="diffDetailBlock" rendered="#{fileReplace.file1Id != null}"/>
+                    <h:outputText value="#{fileReplace.file1ChecksumType}: #{fileReplace.file1ChecksumValue}" styleClass="diffDetailBlock" rendered="#{fileReplace.file1Id != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.fileName']}: #{fileReplace.fdi.fileName1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileName1 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.fileType']}: #{fileReplace.fdi.fileType1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileType1 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileReplace.fdi.fileSize1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileSize1 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileReplace.fdi.fileCat1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileCat1 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileReplace.fdi.fileDesc1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileDesc1 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileReplace.fdi.fileProvFree1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileProvFree1 != null}"/>
+                </p:column>
+                <p:column styleClass="versionDetails" rendered="#{fileReplace.fdi.file1Empty}">
+                    &#160;
+                </p:column>
+                <p:column styleClass="versionDetails" rendered="#{! fileReplace.fdi.file2Empty}">
+                    <h:outputText value="#{bundle['file.viewDiffDialog.fileID']}: #{fileReplace.file2Id}" styleClass="diffDetailBlock" rendered="#{fileReplace.file2Id != null}"/>
+                    <h:outputText value="#{fileReplace.file2ChecksumType}: #{fileReplace.file2ChecksumValue}" styleClass="diffDetailBlock" rendered="#{fileReplace.file2Id != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.fileName']}: #{fileReplace.fdi.fileName2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileName2 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.fileType']}: #{fileReplace.fdi.fileType2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileType2 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileReplace.fdi.fileSize2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileSize2 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileReplace.fdi.fileCat2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileCat2 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileReplace.fdi.fileDesc2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileDesc2 != null}"/>
+                    <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileReplace.fdi.fileProvFree2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileProvFree2 != null}"/>
+                </p:column>
+                <p:column styleClass="versionDetails" rendered="#{fileReplace.fdi.file2Empty}">
+                    &#160;
+                </p:column>
+            </p:dataTable>
+        </div>
+        <div class="button-block margin-bottom">
+            <p:commandButton value="#{bundle.done}" onclick="PF('detailsBlocks').hide();" type="button" />
+        </div>
+    </p:dialog>
 
-    <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabListForPostLoad}" var="versionTab" widgetVar="versionsTable"
-                 rowIndexVar="rowNum" selection="#{DatasetPage.selectedVersions}" disabledSelection="#{versionTab.deaccessioned}" rowKey="#{versionTab}">
-        <!-- start: checkbox column -->
-        <p:column selectionMode="multiple" class="col-select-width text-center" rendered="#{DatasetPage.compareVersionsCount > 2}"/><!-- end: checkbox column -->
+    <p:dialog id="needTwoVersionsToCompare" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="needTwoVersionsToCompare" modal="true">
+        <p class="help-block"><span class="glyphicon glyphicon-exclamation-sign text-danger"/> <span class="text-danger">#{bundle['file.viewDiffDialog.dialog.warning']}</span></p>
+        <div class="button-block">
+            <p:commandButton value="#{bundle.close}" onclick="PF('needTwoVersionsToCompare').hide();" type="button" />
+        </div>
+    </p:dialog>
 
-        <!-- start: version number column -->
-        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.dataset']}" class="col-sm-1 text-center">
-            <ui:fragment rendered="#{versionTab.released 
-                                     or ((versionTab.deaccessioned or versionTab.draft) and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
-                <ui:fragment rendered="#{!(versionTab.released or versionTab.deaccessioned)}">
-                    <a id="versionLink" href="/dataset.xhtml?persistentId=#{versionTab.dataset.globalIdString}&#38;version=#{versionTab.versionState}" class="ui-commandlink ui-widget">
-                        <h:outputText rendered="#{!(versionTab.released or versionTab.deaccessioned)}" value="#{versionTab.versionState}" /></a>
-                </ui:fragment>
-                <ui:fragment rendered="#{(versionTab.released or versionTab.deaccessioned)}">
-                    <a id="versionLink" href="/dataset.xhtml?persistentId=#{versionTab.dataset.globalIdString}&#38;version=#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" class="ui-commandlink ui-widget">
-                        <h:outputText rendered="#{versionTab.released or versionTab.deaccessioned}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" /></a>
-                </ui:fragment>
-            </ui:fragment>
-            <ui:fragment rendered="#{versionTab.deaccessioned and !permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset')}">
-                <h:outputText rendered="#{versionTab.released or versionTab.deaccessioned}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" />
-            </ui:fragment>
-        </p:column><!-- end: version number column -->
-        <!-- start: description column -->
-        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.summary']}">
-            <ui:fragment rendered="#{versionTab.defaultVersionDifference != null}">
-                <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.summaryDataForNote)}">
-                    <h:outputText styleClass="highlightBold" value="#{bundle['file.dataFilesTab.versions.citationMetadata']} " />
-                    <ui:repeat value="#{versionTab.defaultVersionDifference.summaryDataForNote}" var="summaryNote">
-                        <h:outputText value=" #{summaryNote[0].datasetFieldType.displayName} (" />
-                        <h:outputText rendered="#{(summaryNote[1]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}" value="#{summaryNote[1]} #{bundle['file.dataFilesTab.versions.added']}" />
-                        <h:outputText rendered="#{(summaryNote[1]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="#{bundle['file.dataFilesTab.versions.added']}" />
-                        <h:outputText rendered="#{(summaryNote[1]) > 0 and (summaryNote[2] + summaryNote[3]) > 0}" value=", " />
-                        <h:outputText rendered="#{(summaryNote[2]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}" value="#{summaryNote[2]} #{bundle['file.dataFilesTab.versions.removed']}" />
-                        <h:outputText rendered="#{(summaryNote[2]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}" value="#{bundle['file.dataFilesTab.versions.removed']}" />
-                        <h:outputText rendered="#{(summaryNote[2]) > 0 and (summaryNote[3]) > 0}" value=", " />
-                        <h:outputText rendered="#{(summaryNote[3]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}" value="#{summaryNote[3]} #{bundle['file.dataFilesTab.versions.changed']}" />
-                        <h:outputText rendered="#{(summaryNote[3]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}" value="#{bundle['file.dataFilesTab.versions.changed']}" />
-                        <h:outputText value="); " />
-                    </ui:repeat>
-                </ui:fragment>
-                <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.blockDataForNote)}">
-                    <ui:repeat value="#{versionTab.defaultVersionDifference.blockDataForNote}" var="blockNote">
-                        <h:outputText styleClass="highlightBold" rendered="#{blockNote[0].datasetFieldType.metadataBlock.isCitationMetaBlock()}" value="#{bundle['file.dataFilesTab.versions.additionalCitationMetadata']} " />
-                        <h:outputText styleClass="highlightBold" rendered="#{!(blockNote[0].datasetFieldType.metadataBlock.isCitationMetaBlock())}" value=" #{blockNote[0].datasetFieldType.metadataBlock.localeDisplayName}: " />
-                        <h:outputText value=" (" />
-                        <h:outputText rendered="#{blockNote[1] > 0}" value="#{blockNote[1]} #{bundle['file.dataFilesTab.versions.added']}" />
-                        <h:outputText rendered="#{(blockNote[1]) > 0 and (blockNote[2] + blockNote[3]) > 0}" value=", " />
-                        <h:outputText rendered="#{(blockNote[2]) > 0}" value="#{blockNote[2]} #{bundle['file.dataFilesTab.versions.removed']}" />
-                        <h:outputText rendered="#{(blockNote[2]) > 0 and (blockNote[3]) > 0}" value=", " />
-                        <h:outputText rendered="#{(blockNote[3]) > 0}" value="#{blockNote[3]} #{bundle['file.dataFilesTab.versions.changed']}" />
-                        <h:outputText value="); " />
-                    </ui:repeat>
-                </ui:fragment>
-                <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.fileNote)}">
-                    <h:outputText styleClass="highlightBold" value="#{versionTab.defaultVersionDifference.fileNote}; " />
-                </ui:fragment>
-                <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.changedTermsAccess)}">
-                    <h:outputText styleClass="highlightBold" value="#{bundle['dataset.versionDifferences.termsOfUseAccessChanged']} " />
-                </ui:fragment>
-            </ui:fragment>
-            <ui:fragment rendered="#{versionTab.defaultVersionDifference == null}">
-                <ui:fragment rendered="#{versionTab.draft}">
-                    #{bundle['file.dataFilesTab.versions.description.draft']}
-                </ui:fragment>
-                <ui:fragment rendered="#{versionTab.released and versionTab.priorVersionState == 'DEACCESSIONED'}">
-                    #{bundle['file.dataFilesTab.versions.description.deaccessioned']}
-                </ui:fragment>
-                <ui:fragment rendered="#{versionTab.released and versionTab.priorVersionState == null}">
-                    #{bundle['file.dataFilesTab.versions.description.firstPublished']}
-                </ui:fragment>
-                <ui:fragment rendered="#{versionTab.deaccessioned}">
-                    #{bundle['file.dataFilesTab.versions.description.deaccessionedReason']} #{versionTab.versionNote} <ui:fragment rendered="#{!empty versionTab.archiveNote}">#{bundle['file.dataFilesTab.versions.description.beAccessedAt']} <a href="#{versionTab.archiveNote}" target="_blank">#{versionTab.archiveNote}</a></ui:fragment>
-                </ui:fragment>
-            </ui:fragment>
-            <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabListForPostLoad.size() > (rowNum + 1)}"
-                           actionListener="#{DatasetPage.updateVersionDifferences(versionTab, null)}"
-                           oncomplete="PF('detailsBlocks').show();post_differences();"
-                           update=":datasetForm"
-                           value="#{bundle['file.dataFilesTab.versions.viewDetails.btn']}"></p:commandLink>
-        </p:column><!-- end: description column -->
+    <script>
+    function testCheckBoxes() {
+        var count = PF('versionsTable').getSelectedRowsCount();
+        if (count !== 2) {
+            PF('needTwoVersionsToCompare').show();
+        } else {
+            $('button[id$="compareVersions"]').trigger('click');
+        }
+    }
+    </script>
 
-        <!-- contributor column -->
-        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.contributors']}" class="col-sm-3">
-            <ui:fragment rendered="#{!empty(versionTab.contributorNames)}">
-                <h:outputText value="#{versionTab.contributorNames}" />
-            </ui:fragment>
-        </p:column><!-- end: contributor column -->
-
-        <!-- date column -->
-        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.published']}" class="col-sm-2">
-            <ui:fragment><!-- rendered="#{ !empty(versionTab) and !empty(versionTab.versionDate) }"-->
-                <h:outputText id="versionDate" value="#{versionTab.versionDate}" />
-            </ui:fragment>
-        </p:column><!-- end: date column -->
-    </p:dataTable>
-<!-- / VERSIONS -->
-</ui:fragment>
 </ui:composition>

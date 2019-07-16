@@ -168,9 +168,6 @@ public class DatasetVersion implements Serializable {
     private String deaccessionLink;
 
     @Transient
-    private String contributorNames;
-
-    @Transient
     private String jsonLd;
 
     @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -359,40 +356,9 @@ public class DatasetVersion implements Serializable {
         return ret;
     }
 
-    public String getContributorNames() {
-        return contributorNames;
-    }
-
-    public void setContributorNames(String contributorNames) {
-        this.contributorNames = contributorNames;
-    }
-
 
     public String getVersionNote() {
         return versionNote;
-    }
-
-    public DatasetVersionDifference getDefaultVersionDifference() {
-        // if version is deaccessioned ignore it for differences purposes
-        int index = 0;
-        int size = this.getDataset().getVersions().size();
-        if (this.isDeaccessioned()) {
-            return null;
-        }
-        for (DatasetVersion dsv : this.getDataset().getVersions()) {
-            if (this.equals(dsv)) {
-                if ((index + 1) <= (size - 1)) {
-                    for (DatasetVersion dvTest : this.getDataset().getVersions().subList(index + 1, size)) {
-                        if (!dvTest.isDeaccessioned()) {
-                            DatasetVersionDifference dvd = new DatasetVersionDifference(this, dvTest);
-                            return dvd;
-                        }
-                    }
-                }
-            }
-            index++;
-        }
-        return null;
     }
 
 
