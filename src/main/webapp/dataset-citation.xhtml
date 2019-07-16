@@ -7,7 +7,7 @@
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
     
-    <div style="background-color:lightseagreen;background:none;" class="#{widgetWrapper.widgetView ? 'col-sm-12' : 'col-sm-9'} citation-block">
+    <div class="#{widgetWrapper.widgetView ? 'col-sm-12' : 'col-sm-9'} citation-block">
         <div class="col-sm-12 #{DatasetPage.workingVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
             <div class="row ">
                 <div class="col-sm-12 citation">
@@ -21,7 +21,7 @@
                     <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}" 
                           data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
                 </div>
-                <div class="col-sm-6 citation-download" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
+                <div class="col-sm-6 citation-download vcenter" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                     <div class="dropdown">
                         <button type="button" class="btn btn-default dropdown-toggle downloadCitation" data-toggle="dropdown">
                             <span class="glyphicon glyphicon-list"/> #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
@@ -45,7 +45,7 @@
                         </ul>
                     </div>
                 </div>
-                <div class="col-sm-6 text-right small text-muted citation-standards" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
+                <div class="col-sm-6 text-right small text-muted citation-standards vcenter" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                     <h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/>
                 </div>
             </div>

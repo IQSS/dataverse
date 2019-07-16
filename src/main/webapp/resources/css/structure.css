@@ -598,6 +598,7 @@ div.alert-info.bg-citation, div.alert-danger.bg-danger {padding-top:4px; padding
 .citation-select {/*-- display:inline-block; --*/}
 .citation, .citation-download, .citation-standards {padding:.5em;}
 .citation span.glyphicon-question-sign {margin-left:.5em; margin-bottom:2px; vertical-align: middle;}
+.citation-block .vcenter {display: inline-block; vertical-align: middle; float: none;}
 .waiver-CC0-inline {display:inline-block; margin-left:1em;}
 
 div.panel-body div.form-group:last-child, div.panel-body div.form-group:last-child label {margin-bottom:0 !important;}
