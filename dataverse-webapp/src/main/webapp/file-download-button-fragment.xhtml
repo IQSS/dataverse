@@ -7,6 +7,11 @@
         xmlns:jsf="http://xmlns.jcp.org/jsf"
 >
 
+    <!--@elvariable id="fileMetadata" type="edu.harvard.iq.dataverse.FileMetadata"-->
+    <!--@elvariable id="fileDownloadService" type="edu.harvard.iq.dataverse.FileDownloadServiceBean"-->
+    <!--@elvariable id="guestbookResponse" type="edu.harvard.iq.dataverse.GuestbookResponse"-->
+    <!--@elvariable id="guestbookResponseService" type="edu.harvard.iq.dataverse.GuestbookResponseServiceBean"-->
+
     <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem and canUpdateDataset}">
         <!-- Ingest Problem - this is the infamous "red triangle" error. As of 4.2, we only want to show it to the owner of the dataset: -->
         <span class="ingest-warning" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" data-html="true" data-title="&lt;span class='text-danger h5'&gt;#{bundle['file.ingestFailed.header']}&lt;/span&gt;" data-content="&lt;span class='text-danger'&gt;#{bundle['file.ingestFailed.message']} #{fileMetadata.dataFile.ingestReportMessage}&lt;/span&gt;">
@@ -101,11 +106,15 @@
     </div>
     
     <!-- Compute Button *File pg only*: -->
-    <h:outputLink value="#{FilePage.computeUrl}" type="button" class="btn btn-default btn-compute" target="_blank" rendered="#{isFilePg and FilePage.showComputeButton() and fileDownloadHelper.canDownloadFile(fileMetadata)}"> 
+    <h:outputLink value="#{FilePage.computeUrl}" type="button" class="btn btn-default btn-compute" target="_blank"
+                  rendered="#{isFilePg and FilePage.showComputeButton() and fileDownloadHelper.canDownloadFile(fileMetadata)}">
         <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
     </h:outputLink>
     <!-- Compute Button *Dataset pg only*: -->
-    <h:outputLink value="#{DatasetPage.getComputeUrl(fileMetadata)}" type="button" class="btn btn-default btn-compute" target="_blank" rendered="#{!isFilePg and DatasetPage.showComputeButton(fileMetadata) and fileDownloadHelper.canDownloadFile(fileMetadata)}"> 
+    <h:outputLink value="#{DatasetPage.getComputeUrl(fileMetadata)}" type="button"
+                  class="btn btn-default btn-compute" target="_blank"
+                  rendered="#{!isFilePg and DatasetPage.showComputeButton(fileMetadata)
+                                        and fileDownloadHelper.canDownloadFile(fileMetadata)}">
         <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
     </h:outputLink>
     

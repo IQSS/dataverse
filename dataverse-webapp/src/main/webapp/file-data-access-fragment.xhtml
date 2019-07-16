@@ -11,6 +11,8 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
+    <!--@elvariable id="datasetVersion" type="edu.harvard.iq.dataverse.DatasetVersion"-->
+
     <div jsf:rendered="#{datasetVersion.draft}">
         <h:outputFormat value=" #{bundle['file.dataFilesTab.dataAccess.info.draft']}" escape="false">
             <f:param value="#{settingsWrapper.guidesBaseUrl}"/>

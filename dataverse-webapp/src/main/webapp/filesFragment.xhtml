@@ -10,12 +10,15 @@
     xmlns:cc="http://java.sun.com/jsf/composite"
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+
+    <!--@elvariable id="fileMetadata" type="edu.harvard.iq.dataverse.FileMetadata"-->
+
     <o:importFunctions type="java.lang.Math" />
     <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.RestrictType" var="restrictTypeEnum"/>
     <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
     <p:remoteCommand name="refreshPaginator" action="#{DatasetPage.refreshPaginator()}" process="@this" update="@form" />
     <!-- Files Table -->
-    <p:dataTable id="filesTable" 
+    <p:dataTable id="filesTable"
                  rows="10" paginator="#{DatasetPage.workingVersion.fileMetadatas.size() gt 10}" paginatorPosition="bottom"
                  paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} #{bundle['file.dynamicCounter.filesPerPage']} {RowsPerPageDropdown}"
                  rowsPerPageTemplate="10,25,50"

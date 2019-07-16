@@ -7,6 +7,9 @@
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+
+    <!--@elvariable id="provEntityFileData" type="edu.harvard.iq.dataverse.provenance.ProvEntityFileData"-->
+
     <script type="text/javascript" language="javascript" src="#{resource['js/fileupload.js']}"></script>
     <p:dialog id="editProvenancePopup" styleClass="smallPopUp" header="#{bundle['file.editProvenanceDialog']}" widgetVar="editProvenancePopup" modal="true" >
         <p:fragment id="assignMessages">
@@ -80,7 +83,7 @@
                         <p class="help-block" jsf:rendered="#{!provPopupFragmentBean.provJsonAlreadyPublishedRendering()}" >
                             #{bundle['file.editProvenanceDialog.bundleEntity.tip']}
                         </p>
-                        <p:autoComplete id="provJsonNameDropdown" 
+                        <p:autoComplete id="provJsonNameDropdown"
                             required="#{provPopupFragmentBean.jsonUploadedState}"
                             requiredMessage="#{bundle['file.editProvenanceDialog.bundleEntity.requiredValidation']}"
                             dropdown="true" scrollHeight="180" style="width:100%;"

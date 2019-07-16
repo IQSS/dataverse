@@ -86,7 +86,9 @@
                                 <ui:param name="datasetPage" value="false"/>
                                 <ui:param name="templatePage" value="true"/>
                                 <ui:param name="editMode" value="#{!empty TemplatePage.editMode ? 'METADATA' : ''}"/>
-                                <ui:param name="metadataBlocks" value="#{!empty TemplatePage.editMode ? TemplatePage.template.metadataBlocksForEdit.entrySet().toArray() : TemplatePage.template.metadataBlocksForView.entrySet().toArray()}"/>   
+                                <ui:param name="metadataBlocks" value="#{!empty TemplatePage.editMode ?
+                                    TemplatePage.template.metadataBlocksForEdit.entrySet().toArray() :
+                                    TemplatePage.template.metadataBlocksForView.entrySet().toArray()}"/>
                             </ui:include>  
                         </ui:fragment>
 

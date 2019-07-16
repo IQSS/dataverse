@@ -45,7 +45,7 @@
     </ui:repeat>
     </tr>
 </ui:repeat>
-<!-- end: Iterate through a list of lists -->   
+<!-- end: Iterate through a list of lists -->
     </table>
                         
              <h4>roles with dataverse permissions</h4>
@@ -66,7 +66,7 @@
 
              </p><ui:remove> 
             <ui:repeat value="#{RolePermissionHelperPage.rolePermissionHelper.rolesWithDataversePermissions}" var="info">
-   <li> 
+   <li>
         <h:inputText value="#{info.getKey()}" />
         <h:inputText value="#{info.getValue()}" />
    </li> 

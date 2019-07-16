@@ -211,7 +211,8 @@
                                     </h:outputFormat>
                                 </p>
                             </p:outputPanel>
-                            
+
+                            <!--@elvariable id="roleAssignment" type="edu.harvard.iq.dataverse.RoleAssignment"-->
                             <p:dataTable id="assignedRoles" var="roleAssignment" value="#{manageFilePermissionsPage.roleAssignments}"
                                          selection="#{manageFilePermissionsPage.selectedRoleAssignmentRows}" rowKey="#{roleAssignment.id}" 
                                          sortBy="#{!empty manageFilePermissionsPage.selectedFile ? roleAssignment.assigneeDisplayInfo.title : roleAssignment.definitionPoint.displayName}"

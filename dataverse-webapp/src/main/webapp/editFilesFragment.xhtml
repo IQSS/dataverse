@@ -12,6 +12,8 @@
     xmlns:dv="http://dataverse.org/facelets"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
+    <!--@elvariable id="fileMetadata" type="edu.harvard.iq.dataverse.FileMetadata"-->
+
     <script type="text/javascript" language="javascript" src="#{resource['js/fileupload.js']}"></script>
 
     <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
@@ -312,7 +314,7 @@
                 <!-- TODO: ADDED filesCounts id to commandButtons above in Line 291-292, is there a better way to do this other than listing out 5-6 elements to update? -->
                 
                 <!-- Files Table -->
-                <p:dataTable id="filesTable" 
+                <p:dataTable id="filesTable"
                              value="#{EditDatafilesPage.fileMetadatas}"
                              rendered="#{!empty EditDatafilesPage.fileMetadatas or !EditDatafilesPage.showFileUploadFragment()}"
                              rowIndexVar="rowNum" 

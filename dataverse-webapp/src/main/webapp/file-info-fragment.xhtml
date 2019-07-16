@@ -10,13 +10,15 @@
     xmlns:cc="http://java.sun.com/jsf/composite"
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+
+    <!--@elvariable id="fileMetadata" type="edu.harvard.iq.dataverse.FileMetadata"-->
     
     <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
     
     <p:outputPanel>
         <div id="fileInfoInclude-filesTable" class="col-sm-12 row">
             <div class="pull-left col-file-thumb">
-                <div class="thumbnail-block text-center">  
+                <div class="thumbnail-block text-center">
                     <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{!EditDatafilesPage.isThumbnailAvailable(fileMetadata)}"/>
                     <span class="file-thumbnail-preview-img" jsf:rendered="#{EditDatafilesPage.isThumbnailAvailable(fileMetadata)}"
                           data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">

@@ -1,14 +1,17 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:h="http://java.sun.com/jsf/html"
-     xmlns:f="http://java.sun.com/jsf/core"
-     xmlns:ui="http://java.sun.com/jsf/facelets"
-     xmlns:c="http://java.sun.com/jsp/jstl/core"
-     xmlns:p="http://primefaces.org/ui"
-     xmlns:o="http://omnifaces.org/ui"
-     xmlns:jsf="http://xmlns.jcp.org/jsf">
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
     <c:set var="page" value="/dataverse/#{SearchIncludeFragment.dataverse.alias}"/>
+
+    <!--@elvariable id="friendlyNames" type="java.util.List<java.lang.String>"-->
+    <!--@elvariable id="dataverseRedirectPage" type="java.lang.String"-->
 
     <!-- Search Form + Add Data Button -->
     <div class="row panelSearchForm" jsf:rendered="#{!SearchIncludeFragment.solrIsDown}">

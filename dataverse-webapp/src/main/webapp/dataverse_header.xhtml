@@ -9,6 +9,8 @@
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
+    <!--@elvariable id="dataverse" type="edu.harvard.iq.dataverse.Dataverse"-->
+
     <o:resourceInclude path="/CustomizationFilesServlet?customFileType=header" rendered="#{!widgetWrapper.widgetView}"/>
     
     <div id="dataverse-header-block">
@@ -189,6 +191,7 @@
             </div>
         </nav>
         <ui:include src="text-messagesAndBanners.xhtml">
+
             <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
         </ui:include>
         <!-- Noscript Error -->
