@@ -406,14 +406,32 @@
                                         </div>
                                         <!-- Make Data Count citations (DOIs only, not Handles) -->
                                         <div class="metrics-count-block" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath') and settingsServiceBean.get(':Protocol') == 'doi'}">
+                                            <p:commandLink title="DATASET CITATIONS LINK TITLE HERE"
+                                                            oncomplete="PF('citationsDialog').show();">
+                                                <h:outputFormat value="{0} #{bundle['metrics.citations']}">
+                                                    <f:param value="#{fn:length(datasetExternalCitationsService.getDatasetExternalCitationsByDataset(DatasetPage.dataset))}"/>
+                                                </h:outputFormat>
+                                            </p:commandLink>
                                             
-                                            <!-- TODO: Make this a pop up to show URLs of citations (e.g. https://doi.org/10.1007/s12520-017-0578-2) -->
-                                            
-                                            <h:outputFormat value="{0} #{bundle['metrics.citations']}">
-                                                <f:param value="#{fn:length(datasetExternalCitationsService.getDatasetExternalCitationsByDataset(DatasetPage.dataset))}"/>
-                                            </h:outputFormat>
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                     data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.citations.tip']}"></span>
+                                        
+                                            <p:dialog id="citationsDialog" styleClass="smallPopup" header="#{bundle['metrics.citations.dialog.header']}" widgetVar="citationsDialog" modal="true">
+                                                <p class="help-block">#{bundle['metrics.citations.dialog.help']}</p>
+                                                
+                                                <div id="citations-list-block">
+                                                    <ul>
+                                                        <!-- TO DO: ui:repeat around this <li> to make it a dynamic list -->
+                                                        <li><a href="https://doi.org/10.1007/s12520-017-0578-2" target="_blank">https://doi.org/10.1007/s12520-017-0578-2</a></li>
+                                                    </ul>
+                                                </div>
+
+                                                <div class="button-block">
+                                                    <button class="btn btn-default" onclick="PF('citationsDialog').hide()" type="button">
+                                                        #{bundle.close}
+                                                    </button>
+                                                </div>
+                                            </p:dialog>
                                         </div>
                                     </div>
                                 </div>
