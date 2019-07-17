@@ -473,6 +473,10 @@ public class DatasetField implements Serializable {
         this.include = include;
     }
 
+    /**
+     * Returns true if datasetField should be shown
+     * on edit metadata form (when creating/editing dataset or template).
+     */
     public boolean isInclude() {
         return this.include;
     }

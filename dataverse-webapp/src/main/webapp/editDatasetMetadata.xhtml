@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:o="http://omnifaces.org/ui"
+      xmlns:dv="http://dataverse.org/facelets"
+>
+    <h:head>
+    </h:head>
+    <h:body>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="#{editDatasetMetadataPage.workingVersion.title} - #{editDatasetMetadataPage.dataset.owner.name}"/>
+            <ui:param name="dataverse" value="#{editDatasetMetadataPage.dataset.owner}"/>
+            <ui:param name="dataset" value="#{editDatasetMetadataPage.dataset}"/>
+            <ui:define name="body">
+                <f:metadata>
+                    <f:viewParam name="datasetId" value="#{editDatasetMetadataPage.datasetId}"/>
+                    <f:viewParam name="persistentId" value="#{editDatasetMetadataPage.persistentId}"/>
+                    <f:viewAction action="#{editDatasetMetadataPage.init}" rendered="true"/>
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(editDatasetMetadataPage.dataset)}"/>
+                </f:metadata>
+                
+                <h:form id="editMetadataForm">
+                
+                    <!-- Top dataset info -->
+                    <ui:fragment>
+                        <div class="form-group row">
+                            <label for="select_HostDataverse" class="col-sm-2 control-label">
+                                #{bundle.hostDataverse}
+                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.host.title']}"></span>
+                            </label>
+                            <div class="col-sm-10">
+                                <h:outputText styleClass="highlightBold" value="#{editDatasetMetadataPage.dataset.owner.name}"/>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-12">
+                                <span class="glyphicon glyphicon-asterisk text-danger"/> <h:outputText value="#{bundle['dataset.asterisk.tip']}"/>
+                            </div>
+                        </div>
+                    </ui:fragment>
+                    
+                    <!-- Top action buttons -->
+                    <div class="button-block form-top">
+                        <p:commandButton id="saveTop" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blocklockEditMetadataForm').show();" />
+                        <p:commandButton id="cancelTop" value="#{bundle.cancel}" action="#{editDatasetMetadataPage.cancel}">
+                        </p:commandButton>
+                    </div>
+                    
+                    
+                    <!-- Main edit metadata content -->
+                    <ui:include src="editMetadata.xhtml">
+                        <ui:param name="showAllBlocks" value="#{true}"/>
+                        <ui:param name="showAllFields" value="#{true}"/>
+                        <ui:param name="expandAllBlocks" value="#{false}"/>
+                        <ui:param name="showAddReplicationForTitleButton" value="#{false}" />
+                        
+                        <ui:param name="metadataBlocks" value="#{editDatasetMetadataPage.metadataBlocksForEdit.entrySet().toArray()}"/>
+                    </ui:include>
+                    
+                    <!-- Bottom action buttons -->
+                    <div class="button-block">
+                        <p:commandButton tabindex="1000" id="save" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();PF('lockEditMetadataForm').show();" />
+                        <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{editDatasetMetadataPage.cancel}" />
+                        <p:commandButton value="Direct" id="datasetSave"
+                                         style="display:none"
+                                         update=":editMetadataForm,:messagePanel"
+                                         oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
+                                         action="#{editDatasetMetadataPage.save}" />
+                    </div>
+
+                    <p:blockUI block="editMetadataForm" widgetVar="lockEditMetadataForm"/>
+                    
+                </h:form>
+                
+                <script type="text/javascript">
+                function checkNewlyRestricted() {
+                    $('button[id$="datasetSave"]').trigger('click');
+                }
+                </script>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

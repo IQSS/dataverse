@@ -226,10 +226,9 @@
                                             </h:outputLink>
                                         </li>
                                         <li>
-                                            <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:bind_bsui_components();">
-                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                            <h:outputLink value="/editDatasetMetadata.xhtml?datasetId=#{DatasetPage.dataset.id}">
                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.metadata']}" />
-                                            </p:commandLink>
+                                            </h:outputLink>
                                         </li>
                                         <li>
                                             <p:commandLink id="editTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:bind_bsui_components();">
@@ -501,8 +500,8 @@
                     </p:fragment>
                     <!-- END View editMode -->
 
-                    <!-- Create/Edit editMode -->
-                    <ui:fragment rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
+                    <!-- Create editMode -->
+                    <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
                         <div class="form-group">
                             <label for="select_HostDataverse" class="col-sm-2 control-label">
                                 #{bundle.hostDataverse}
@@ -519,7 +518,7 @@
                                 </ui:remove>
                             </div>
                         </div>
-                        <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataverseTemplates and DatasetPage.editMode == 'CREATE'}">
+                        <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataverseTemplates}">
                             <label for="select_DatasetTemplate" class="col-sm-2 control-label">
                                 #{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate']}
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
@@ -551,23 +550,17 @@
                         </div>
                     </ui:fragment>
                     <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
-                        <ui:include src="metadataFragment.xhtml">
-                            <ui:param name="datasetPage" value="true"/>
-                            <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? DatasetPage.editMode : ''}"/>
-                            <ui:param name="metadataBlocks" value="#{!empty DatasetPage.editMode ? DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray(): DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
-                            <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDateFormattedYYYYMMDD}"/>
-                            <ui:param name="globalId" value="#{DatasetPage.dataset.globalIdString}"/>
+                        <ui:include src="editMetadata.xhtml">
+                            <ui:param name="showAllBlocks" value="#{false}"/>
+                            <ui:param name="showAllFields" value="#{false}"/>
+                            <ui:param name="expandAllBlocks" value="#{true}"/>
+                            <ui:param name="showAddReplicationForTitleButton" value="#{true}" />
+                            
+                            <ui:param name="metadataBlocks" value="#{DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray()}"/>
                         </ui:include>
                     </ui:fragment>
-                    <!-- END Create/Edit editMode -->
+                    <!-- END Create editMode -->
 
-                    <!-- Edit editMode -->
-                    <div class="button-block form-top" jsf:rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE'}">
-                        <p:commandButton id="saveTop" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockDatasetForm').show();" />
-                        <p:commandButton id="cancelTop" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();">
-                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
-                        </p:commandButton>
-                    </div>
                     <!-- END Header / Button Panel -->
                     <!-- View/Tabs infoMode -->
                     <!-- Tabs -->
@@ -643,9 +636,9 @@
 
                         </ui:fragment>
 
-                        <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}" dynamic="true"
-                                   rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE')}">
-<!--                             <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" /> -->
+                        <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
+                                   rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'LICENSE')}">
+                            
                             <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{(!DatasetPage.workingVersion.deaccessioned or 
                                                               (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))  and
                                                               (empty DatasetPage.editMode)}">
@@ -658,15 +651,16 @@
                             <!-- a lot of these however, are repeated queries on AuthenticatedUser and RoleAssignment; once these are optimized, the tabs will become very cheap. -->
                             <p:tab id="metadataMapTab" title="#{bundle['file.dataFilesTab.metadata.header']}"
                                         rendered="#{(!DatasetPage.workingVersion.deaccessioned or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset())) 
-                                             and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
+                                             and (empty DatasetPage.editMode)}">
 
-                                <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{empty DatasetPage.editMode}">
-                                    <p:commandLink type="button" styleClass="btn btn-default btn-access" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:messagePanel" oncomplete="javascript:bind_bsui_components();" 
-                                                   disabled="#{DatasetPage.locked}" rendered="#{!widgetWrapper.widgetView and (DatasetPage.sessionUserAuthenticated and empty DatasetPage.editMode and !widgetWrapper.widgetView
-                                                               and DatasetPage.canUpdateDataset() and !DatasetPage.dataset.deaccessioned)}">
-                                        <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                <div class="button-block tab-header margin-bottom text-right">
+                                    <p:link styleClass="btn btn-default btn-access" disabled="#{DatasetPage.locked}"
+                                                    outcome="editDatasetMetadata"
+                                                    rendered="#{!widgetWrapper.widgetView and DatasetPage.sessionUserAuthenticated
+                                                               and DatasetPage.canUpdateDataset() and !DatasetPage.dataset.deaccessioned}">
+                                        <f:param name="datasetId" value="#{DatasetPage.dataset.id}" />
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
-                                    </p:commandLink>                                   
+                                    </p:link>
                                     <div class="btn-group" jsf:rendered="#{DatasetPage.dataset.released and !DatasetPage.dataset.deaccessioned}" >
                                         <button class="btn btn-default btn-export dropdown-toggle" type="button" styleClass="btn btn-default" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-export"/> #{bundle['dataset.exportBtn']} <span class="caret"/></button>
@@ -681,13 +675,11 @@
                                         </ul>
                                     </div>
                                 </div>
-                                <ui:include src="metadataFragment.xhtml">
-                                    <ui:param name="datasetPage" value="true"/>
-                                    <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? DatasetPage.editMode : ''}"/>
-                                    <ui:param name="metadataBlocks" value="#{!empty DatasetPage.editMode ? DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray(): DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
-                                    <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDate != null ? DatasetPage.dataset.publicationDateFormattedYYYYMMDD : ''}"/>
+                                <ui:include src="viewMetadata.xhtml">
+                                    <ui:param name="metadataBlocks" value="#{DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
                                     <ui:param name="globalId" value="#{DatasetPage.dataset.globalIdString}"/>
                                     <ui:param name="altPID" value="#{DatasetPage.dataset.alternativePersistentIdentifier}"/>
+                                    <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDate != null ? DatasetPage.dataset.publicationDateFormattedYYYYMMDD : ''}"/>
                                 </ui:include>
                             </p:tab>
 
@@ -720,7 +712,6 @@
                     <div class="button-block" jsf:rendered="#{!empty DatasetPage.editMode}">
                         <p:commandButton tabindex="1000" id="save" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockDatasetForm').show();" />
                         <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:bind_bsui_components();">
-                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
                         <p:button id="cancelCreate" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" rendered="#{DatasetPage.editMode == 'CREATE'}" />
                         <p:commandButton value="Direct" id="datasetSave"

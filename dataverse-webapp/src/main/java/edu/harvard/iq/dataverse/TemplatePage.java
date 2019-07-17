@@ -120,22 +120,20 @@ public class TemplatePage implements java.io.Serializable {
         if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
             return permissionsWrapper.notAuthorized();
         }
-        if (templateId != null) { // edit or view existing for a template  
-
+        if (templateId != null) { // edit existing template
+            editMode = TemplatePage.EditMode.METADATA;
             template = templateService.find(templateId);
             template.setDataverse(dataverse);
             template.setMetadataValueBlocks();
 
-            if (template.getTermsOfUseAndAccess() != null) {
-
-            } else {
+            if (template.getTermsOfUseAndAccess() == null) {
                 TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
                 terms.setTemplate(template);
                 terms.setLicense(TermsOfUseAndAccess.License.CC0);
                 template.setTermsOfUseAndAccess(terms);
             }
 
-            updateDatasetFieldInputLevels();
+            updateDatasetFieldsIncludeFlag();
         } else if (ownerId != null) {
             // create mode for a new template
 
@@ -145,18 +143,16 @@ public class TemplatePage implements java.io.Serializable {
             terms.setTemplate(template);
             terms.setLicense(TermsOfUseAndAccess.License.CC0);
             template.setTermsOfUseAndAccess(terms);
-            updateDatasetFieldInputLevels();
+            updateDatasetFieldsIncludeFlag();
         } else {
             throw new RuntimeException("On Template page without id or ownerid."); // improve error handling
         }
         return null;
     }
 
-    private void updateDatasetFieldInputLevels() {
-        Long dvIdForInputLevel = ownerId;
-        if (!dataverseService.find(ownerId).isMetadataBlockRoot()) {
-            dvIdForInputLevel = dataverseService.find(ownerId).getMetadataRootId();
-        }
+    private void updateDatasetFieldsIncludeFlag() {
+        Dataverse owner = dataverseService.find(ownerId);
+        Long dvIdForInputLevel = owner.getMetadataRootId();
 
         for (DatasetField dsf : template.getFlatDatasetFields()) {
             DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(dvIdForInputLevel, dsf.getDatasetFieldType().getId());
@@ -168,13 +164,8 @@ public class TemplatePage implements java.io.Serializable {
         }
     }
 
-    public void edit(TemplatePage.EditMode editMode) {
-        this.editMode = editMode;
-    }
-
     public String save() {
 
-        boolean create = false;
         Command<Void> cmd;
         try {
             if (editMode == EditMode.CREATE) {
@@ -182,10 +173,12 @@ public class TemplatePage implements java.io.Serializable {
                 template.setUsageCount(0L);
                 dataverse.getTemplates().add(template);
                 commandEngine.submit(new CreateTemplateCommand(template, dvRequestService.getDataverseRequest(), dataverse));
-                create = true;
+                
+                JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("template.create"));
             } else {
                 cmd = new UpdateDataverseTemplateCommand(dataverse, template, dvRequestService.getDataverseRequest());
                 commandEngine.submit(cmd);
+                JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("template.save"));
             }
 
         } catch (EJBException | CommandException ex) {
@@ -194,16 +187,9 @@ public class TemplatePage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("template.save.fail"));
             return StringUtils.EMPTY;
         }
-
-        editMode = null;
-        String msg = (create) ? BundleUtil.getStringFromBundle("template.create") : BundleUtil.getStringFromBundle("template.save");
-        JsfHelper.addFlashMessage(msg);
+        
 
         return "/manage-templates.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";
-    }
-
-    public void cancel() {
-        editMode = null;
     }
 
 }

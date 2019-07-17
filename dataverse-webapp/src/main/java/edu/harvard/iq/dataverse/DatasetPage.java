@@ -109,6 +109,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
@@ -123,12 +124,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public enum EditMode {
 
-        CREATE, INFO, FILE, METADATA, LICENSE
-    }
-
-    public enum DisplayMode {
-
-        INIT, SAVE
+        CREATE, INFO, FILE, LICENSE
     }
 
 
@@ -1092,86 +1088,36 @@ public class DatasetPage implements java.io.Serializable {
         resetVersionUI();
     }
 
-    /*
-    // Original
-    private void updateDatasetFieldInputLevels() {
-        Long dvIdForInputLevel = ownerId;
-
-        if (!dataverseService.find(ownerId).isMetadataBlockRoot()) {
-            dvIdForInputLevel = dataverseService.find(ownerId).getMetadataRootId();
-        }
-        for (DatasetField dsf : workingVersion.getFlatDatasetFields()) {
-            DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(dvIdForInputLevel, dsf.getDatasetFieldType().getId());
-            if (dsfIl != null) {
-                dsf.setInclude(dsfIl.isInclude());
-            } else {
-                dsf.setInclude(true);
-            }
-        }
-    }*/
-
     /***
      *
      * Note: Updated to retrieve DataverseFieldTypeInputLevel objects in single query
      *
      */
     private void updateDatasetFieldInputLevels() {
-        Long dvIdForInputLevel = ownerId;
-
         // OPTIMIZATION (?): replaced "dataverseService.find(ownerId)" with
         // simply dataset.getOwner()... saves us a few lookups.
         // TODO: could there possibly be any reason we want to look this
         // dataverse up by the id here?? -- L.A. 4.2.1
-        if (!dataset.getOwner().isMetadataBlockRoot()) {
-            dvIdForInputLevel = dataset.getOwner().getMetadataRootId();
+        Long dvIdForInputLevel = dataset.getOwner().getMetadataRootId();
+        
+        List<DatasetField> datasetFields = workingVersion.getFlatDatasetFields();
+        List<Long> datasetFieldTypeIds = new ArrayList<>();
+        
+        for (DatasetField dsf: datasetFields) {
+            datasetFieldTypeIds.add(dsf.getDatasetFieldType().getId());
         }
         
-        /* ---------------------------------------------------------
-            Map to hold DatasetFields  
-            Format:  {  DatasetFieldType.id : DatasetField }
-         --------------------------------------------------------- */
-        // Initialize Map
-        Map<Long, DatasetField> mapDatasetFields = new HashMap<>();
-
-        // Populate Map
-        for (DatasetField dsf : workingVersion.getFlatDatasetFields()) {
-            if (dsf.getDatasetFieldType().getId() != null) {
-                mapDatasetFields.put(dsf.getDatasetFieldType().getId(), dsf);
-            }
-        }      
+        List<Long> fieldTypeIdsToHide = dataverseFieldTypeInputLevelService
+                .findByDataverseIdAndDatasetFieldTypeIdList(dvIdForInputLevel, datasetFieldTypeIds).stream()
+                .filter(inputLevel -> !inputLevel.isInclude())
+                .map(inputLevel -> inputLevel.getDatasetFieldType().getId())
+                .collect(Collectors.toList());
         
-        /* ---------------------------------------------------------
-            Retrieve List of DataverseFieldTypeInputLevel objects
-            Use the DatasetFieldType id's which are the Map's keys
-         --------------------------------------------------------- */
-        List<Long> idList = new ArrayList<>(mapDatasetFields.keySet());
-        List<DataverseFieldTypeInputLevel> dsFieldTypeInputLevels = dataverseFieldTypeInputLevelService.findByDataverseIdAndDatasetFieldTypeIdList(dvIdForInputLevel, idList);
         
-        /* ---------------------------------------------------------
-            Iterate through List of DataverseFieldTypeInputLevel objects
-            Call "setInclude" on its related DatasetField object
-         --------------------------------------------------------- */
-        for (DataverseFieldTypeInputLevel oneDSFieldTypeInputLevel : dsFieldTypeInputLevels) {
-
-            if (oneDSFieldTypeInputLevel != null) {
-                // Is the DatasetField in the hash?    hash format: {  DatasetFieldType.id : DatasetField }
-                DatasetField dsf = mapDatasetFields.get(oneDSFieldTypeInputLevel.getDatasetFieldType().getId());
-                if (dsf != null) {
-                    // Yes, call "setInclude"
-                    dsf.setInclude(oneDSFieldTypeInputLevel.isInclude());
-                    // remove from hash                
-                    mapDatasetFields.remove(oneDSFieldTypeInputLevel.getDatasetFieldType().getId());
-                }
-            }
-        }  // end: updateDatasetFieldInputLevels
-        
-        /* ---------------------------------------------------------
-            Iterate through any DatasetField objects remaining in the hash
-            Call "setInclude(true) on each one
-         --------------------------------------------------------- */
-        for (DatasetField dsf : mapDatasetFields.values()) {
-            if (dsf != null) {
-                dsf.setInclude(true);
+        for (DatasetField dsf: datasetFields) {
+            dsf.setInclude(true);
+            if (fieldTypeIdsToHide.contains(dsf.getDatasetFieldType().getId())) {
+                dsf.setInclude(false);
             }
         }
     }
@@ -1675,11 +1621,6 @@ public class DatasetPage implements java.io.Serializable {
         } else if (editMode == EditMode.FILE) {
             // JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.editFiles"));
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
-        } else if (editMode.equals(EditMode.METADATA)) {
-            datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, true);
-            updateDatasetFieldInputLevels();
-            JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.editMetadata.label"), BundleUtil.getStringFromBundle("dataset.message.editMetadata.message"));
-            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
         } else if (editMode.equals(EditMode.LICENSE)) {
             JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.editTerms.label"), BundleUtil.getStringFromBundle("dataset.message.editTerms.message"));
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset License and Terms", " - Update your dataset's license and terms of use."));
@@ -2469,9 +2410,6 @@ public class DatasetPage implements java.io.Serializable {
                     JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess"));
                 }
             }
-            if (editMode.equals(EditMode.METADATA)) {
-                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.metadataSuccess"));
-            }
             if (editMode.equals(EditMode.LICENSE)) {
                 JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.termsSuccess"));
             }
@@ -2524,9 +2462,6 @@ public class DatasetPage implements java.io.Serializable {
 
             if (editMode.equals(EditMode.CREATE)) {
                 JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.createFailure"));
-            }
-            if (editMode.equals(EditMode.METADATA)) {
-                JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.metadataFailure"));
             }
             if (editMode.equals(EditMode.LICENSE)) {
                 JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.termsFailure"));

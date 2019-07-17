@@ -121,7 +121,7 @@
                                         </button>
                                         <ul class="dropdown-menu">
                                             <li>
-                                                <h:outputLink value="/template.xhtml?id=#{template.id}&#38;ownerId=#{manageTemplatesPage.dataverse.id}&#38;editMode=METADATA">
+                                                <h:outputLink value="/template.xhtml?id=#{template.id}&#38;ownerId=#{manageTemplatesPage.dataverse.id}">
                                                     <h:outputText value="#{bundle['dataset.manageTemplates.tab.action.btn.edit.metadata']}" />
                                                 </h:outputLink>
                                             </li>
@@ -173,8 +173,7 @@
                                 </div>
                             </div>
                         </div>
-                        <ui:include src="metadataFragment.xhtml">
-                            <ui:param name="managePage" value="true"/>
+                        <ui:include src="viewMetadata.xhtml">
                             <ui:param name="metadataBlocks" value="#{TemplatePage.template.metadataBlocksForView.entrySet().toArray()}"/>
                         </ui:include>
                         <div class="button-block">

@@ -8,109 +8,22 @@
                 xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <!--@elvariable id="metadataBlocks" type="java.util.List<edu.harvard.iq.dataverse.MetadataBlock>"-->
-
-    <!-- View Mode -->
-    <div class="panel-group" jsf:rendered="${empty editMode  or managePage}">
-        <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
-        <ui:repeat value="#{metadataBlocks}"
-                   var="metadataBlockVal" varStatus="block">
-            <div class="panel panel-default">
-                <div data-toggle="collapse" data-target="#panelCollapse#{block.index}" class="panel-heading text-info">
-                    #{metadataBlockVal.key.localeDisplayName} &#160;<span class="glyphicon #{block.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
-                </div>
-                <div id="panelCollapse#{block.index}" class="collapse #{block.first?'in':''}">
-                    <div class="panel-body metadata-panel-body">
-                        <ui:fragment rendered="#{block.index == '0' and datasetPage}">
-                            <div class="form-group">
-                                <label for="metadata_persistentId" class="col-sm-3 control-label">
-                                    #{bundle['dataset.metadata.persistentId']}
-                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.metadata.persistentId.tip']}"></span>
-                                </label>
-                                <div class="col-sm-9">
-                                    #{globalId}
-                                </div>
-                            </div>
-                            <ui:fragment rendered="#{!empty altPID}">
-                            <div class="form-group">
-                                <label for="metadata_persistentId" class="col-sm-3 control-label">
-                                    #{bundle['dataset.metadata.alternativePersistentId']}
-                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.metadata.alternativePersistentId.tip']}"></span>
-                                </label>
-                                <div class="col-sm-9">
-                                    #{altPID}
-                                </div>
-                            </div>
-                            </ui:fragment>
-                            <div class="form-group" jsf:rendered="#{!empty publicationDate}">
-                                <label for="metadata_publicationDate" class="col-sm-3 control-label">
-                                    #{bundle['dataset.metadata.publicationDate']}
-                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.metadata.publicationDate.tip']}"></span>
-                                </label>
-                                <div class="col-sm-9">
-                                    #{publicationDate}
-                                </div>
-                            </div>
-                        </ui:fragment>
-                        <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
-                            <div class="form-group">
-                                <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
-                                    #{dsf.datasetFieldType.localeTitle}
-                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
-                                </label>
-                                <!-- Primitive datasetFields -->
-                                <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.primitive}">   
-                                    <h:outputText value="#{dsf.displayValue}" rendered="#{!dsf.datasetFieldType.allowMultiples}"
-                                                  escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
-                                    <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples}">
-                                        <h:outputText value="#{loop.first?'':'; '}#{ value }"
-                                                      escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
-                                    </ui:repeat>
-                                </div>
-                                <!-- Compound datasetFields -->
-                                <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.compound}">
-                                    <ui:fragment rendered="#{dsf.datasetFieldType.name == 'datasetContact'}">
-                                        <p class="help-block">
-                                            <h:outputText value="#{bundle['dataset.contact.tip']}"/>
-                                        </p>
-                                    </ui:fragment>
-                                    <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue">
-                                        <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">                                           
-                                            <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first}"/>
-                                            <h:outputText value="#{cvPart.value}"
-                                                          escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"/>
-                                        </ui:repeat>
-                                        <br/>
-                                    </ui:repeat>
-                                </div>
-                            </div>
-                        </ui:repeat>
-                    </div>
-                </div>
-            </div>
-        </ui:repeat>
-    </div>
     <!-- Edit Mode -->
-    <ui:fragment rendered="${(!empty editMode)}">
+    <ui:fragment>
         <p:fragment id="editMetadataFragement" >
         <o:importFunctions type="java.util.Collections" />
         <div class="panel-group">
             <ui:repeat value="#{metadataBlocks}" var="metadataBlockVal" varStatus="block">
-                <div class="panel panel-default" jsf:rendered="#{(editMode == 'METADATA' or metadataBlockVal.key.displayOnCreate or !metadataBlockVal.key.isEmpty()
-                                                                 or metadataBlockVal.key.isHasRequired())
-                                                                 or (!datasetPage)}">
+                <div class="panel panel-default" jsf:rendered="#{(showAllBlocks or metadataBlockVal.key.displayOnCreate or !metadataBlockVal.key.isEmpty()
+                                                                 or metadataBlockVal.key.isHasRequired())}">
                     <div data-toggle="collapse" data-target="#panelCollapse#{block.index}" class="panel-heading text-info">
-                        #{metadataBlockVal.key.localeDisplayName} <span class="glyphicon #{block.first || editMode == 'CREATE'  ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}"/>
+                        #{metadataBlockVal.key.localeDisplayName} <span class="glyphicon #{block.first || expandAllBlocks  ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}"/>
                     </div>
-                    <div id="panelCollapse#{block.index}" class="collapse #{block.first || editMode == 'CREATE' ? 'in' : ''}">
+                    <div id="panelCollapse#{block.index}" class="collapse #{block.first || expandAllBlocks ? 'in' : ''}">
                         <div class="panel-body">
                             <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
-                                <ui:fragment rendered="#{((editMode == 'METADATA'
-                                                         or dsf.datasetFieldType.displayOnCreate or !dsf.isEmpty() or dsf.required or dsf.datasetFieldType.hasRequiredChildren) and dsf.include)
-                                                         or (!datasetPage and dsf.include)}">
+                                <ui:fragment rendered="#{((showAllFields
+                                                         or dsf.datasetFieldType.displayOnCreate or !dsf.isEmpty() or dsf.required or dsf.datasetFieldType.hasRequiredChildren) and dsf.include)}">
                                     <div class="form-group">
                                         <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
                                             #{dsf.datasetFieldType.localeTitle}
@@ -133,6 +46,7 @@
                                                                     <ui:include src="datasetFieldForEditFragment.xhtml">
                                                                         <ui:param name="dsfv" value="#{dsfv}"/>
                                                                         <ui:param name="dsfvIndex" value="#{valCount.index}"/>
+                                                                        <ui:param name="showAddReplicationForTitleButton" value="#{showAddReplicationForTitleButton}" />
                                                                     </ui:include>
                                                                 </div>
                                                                 <!-- Add / Remove buttons -->
@@ -203,6 +117,7 @@
                                                                     <ui:include src="datasetFieldForEditFragment.xhtml">
                                                                         <ui:param name="dsfv" value="#{subdsf.singleValue}"/>
                                                                         <ui:param name="dsfvIndex" value="0"/>
+                                                                        <ui:param name="showAddReplicationForTitleButton" value="#{showAddReplicationForTitleButton}" />
                                                                     </ui:include>
                                                                 </ui:fragment>
                                                                 <!-- MOVED SELECT ONE TO dataFieldForEdit -->
@@ -244,7 +159,6 @@
                                                     </div>
                                                 </ui:repeat>
                                             </div>
-                                            <!--/p:autoUpdate-->    
                                         </p:fragment>
                                     </div>
                                 </ui:fragment>

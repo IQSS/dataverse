@@ -29,8 +29,6 @@ public class DatasetVersionUI implements Serializable {
 
     @EJB
     DataverseServiceBean dataverseService;
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
 
     public DatasetVersionUI() {
     }
@@ -364,30 +362,15 @@ public class DatasetVersionUI implements Serializable {
             }
         }
 
-        //sort via display order on dataset field
-        Collections.sort(retList, new Comparator<DatasetField>() {
-            public int compare(DatasetField d1, DatasetField d2) {
-                int a = d1.getDatasetFieldType().getDisplayOrder();
-                int b = d2.getDatasetFieldType().getDisplayOrder();
-                return Integer.valueOf(a).compareTo(Integer.valueOf(b));
-            }
-        });
-
         return sortDatasetFields(retList);
     }
 
     private List<DatasetField> sortDatasetFields(List<DatasetField> dsfList) {
-        Collections.sort(dsfList, new Comparator<DatasetField>() {
-            public int compare(DatasetField d1, DatasetField d2) {
-                int a = d1.getDatasetFieldType().getDisplayOrder();
-                int b = d2.getDatasetFieldType().getDisplayOrder();
-                return Integer.valueOf(a).compareTo(Integer.valueOf(b));
-            }
-        });
+        Collections.sort(dsfList, Comparator.comparing(df -> df.getDatasetFieldType().getDisplayOrder()));
         return dsfList;
     }
 
-    public void setMetadataValueBlocks(DatasetVersion datasetVersion) {
+    private void setMetadataValueBlocks(DatasetVersion datasetVersion) {
         //TODO: A lot of clean up on the logic of this method
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();

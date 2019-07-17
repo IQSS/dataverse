@@ -125,7 +125,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
             saveDataverse("");
             String msg = BundleUtil.getStringFromBundle("template.clone");//"The template has been copied";
             JsfHelper.addFlashMessage(msg);
-            return "/template.xhtml?id=" + created.getId() + "&ownerId=" + dataverse.getId() + "&editMode=METADATA&faces-redirect=true";
+            return "/template.xhtml?id=" + created.getId() + "&ownerId=" + dataverse.getId() + "&faces-redirect=true";
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("template.clone.error"));//"Template could not be copied. " 
         }

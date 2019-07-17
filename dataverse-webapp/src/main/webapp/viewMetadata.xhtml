@@ -1,0 +1,92 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf">
+    
+    <!--@elvariable id="metadataBlocks" type="java.util.List<edu.harvard.iq.dataverse.MetadataBlock>"-->
+    <!-- View Mode -->
+    <div class="panel-group">
+        <ui:repeat value="#{metadataBlocks}"
+                   var="metadataBlockVal" varStatus="block">
+            <div class="panel panel-default">
+                <div data-toggle="collapse" data-target="#panelCollapse#{block.index}" class="panel-heading text-info">
+                    #{metadataBlockVal.key.localeDisplayName} &#160;<span class="glyphicon #{block.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
+                </div>
+                <div id="panelCollapse#{block.index}" class="collapse #{block.first?'in':''}">
+                    <div class="panel-body metadata-panel-body">
+                        <ui:fragment rendered="#{block.first}">
+                            <div class="form-group" jsf:rendered="#{!empty globalId}">
+                                <label for="metadata_persistentId" class="col-sm-3 control-label">
+                                    #{bundle['dataset.metadata.persistentId']}
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.metadata.persistentId.tip']}"></span>
+                                </label>
+                                <div class="col-sm-9">
+                                    #{globalId}
+                                </div>
+                            </div>
+                            <div class="form-group" jsf:rendered="#{!empty altPID}">
+                                <label for="metadata_persistentId" class="col-sm-3 control-label">
+                                    #{bundle['dataset.metadata.alternativePersistentId']}
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.metadata.alternativePersistentId.tip']}"></span>
+                                </label>
+                                <div class="col-sm-9">
+                                    #{altPID}
+                                </div>
+                            </div>
+                            <div class="form-group" jsf:rendered="#{!empty publicationDate}">
+                                <label for="metadata_publicationDate" class="col-sm-3 control-label">
+                                    #{bundle['dataset.metadata.publicationDate']}
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.metadata.publicationDate.tip']}"></span>
+                                </label>
+                                <div class="col-sm-9">
+                                    #{publicationDate}
+                                </div>
+                            </div>
+                        </ui:fragment>
+                        <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
+                            <div class="form-group">
+                                <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
+                                    #{dsf.datasetFieldType.localeTitle}
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
+                                </label>
+                                <!-- Primitive datasetFields -->
+                                <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.primitive}">   
+                                    <h:outputText value="#{dsf.displayValue}" rendered="#{!dsf.datasetFieldType.allowMultiples}"
+                                                  escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
+                                    <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples}">
+                                        <h:outputText value="#{loop.first?'':'; '}#{ value }"
+                                                      escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
+                                    </ui:repeat>
+                                </div>
+                                <!-- Compound datasetFields -->
+                                <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.compound}">
+                                    <ui:fragment rendered="#{dsf.datasetFieldType.name == 'datasetContact'}">
+                                        <p class="help-block">
+                                            <h:outputText value="#{bundle['dataset.contact.tip']}"/>
+                                        </p>
+                                    </ui:fragment>
+                                    <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue">
+                                        <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">                                           
+                                            <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first}"/>
+                                            <h:outputText value="#{cvPart.value}"
+                                                          escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"/>
+                                        </ui:repeat>
+                                        <br/>
+                                    </ui:repeat>
+                                </div>
+                            </div>
+                        </ui:repeat>
+                    </div>
+                </div>
+            </div>
+        </ui:repeat>
+    </div>
+</ui:composition>

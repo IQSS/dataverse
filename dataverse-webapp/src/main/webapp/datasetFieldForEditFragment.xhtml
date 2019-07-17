@@ -10,7 +10,7 @@
     <span id="pre-input-#{dsf.datasetFieldType.name}" class="pre-input-tag"/>
 
     <p:inputText value="#{dsfv.valueForEdit}" id="inputText" tabindex="#{block.index+1}"
-                 styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
+                 styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and showAddReplicationForTitleButton  ? 'datasetfield-title' : ''}"
                  rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary
                              and (dsfv.datasetField.datasetFieldType.fieldType == 'TEXT'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'INT'
@@ -37,7 +37,7 @@
     </div>
 
     <!-- This button / script is for replication data for the title field and is client side only -->
-    <ui:fragment rendered="#{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE' }">
+    <ui:fragment rendered="#{dsfv.datasetField.datasetFieldType.name == 'title' and showAddReplicationForTitleButton }">
         <input type="button" id="replicationDataButton" tabindex="#{block.index+1}"
                class="btn btn-default" value="#{bundle['dataset.AddReplication']}"
                onclick="replicationFor();return false;"/>

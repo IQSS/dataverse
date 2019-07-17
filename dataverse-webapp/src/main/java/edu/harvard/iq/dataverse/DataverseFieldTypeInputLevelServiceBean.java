@@ -12,6 +12,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+
+import com.google.common.base.Preconditions;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -55,11 +59,11 @@ public class DataverseFieldTypeInputLevelServiceBean {
      */
     public List<DataverseFieldTypeInputLevel> findByDataverseIdAndDatasetFieldTypeIdList(Long dataverseId, List<Long> datasetFieldIdList) {
         msg("---- findByDataverseIdAndDatasetFieldTypeIdList ----");
-        if (datasetFieldIdList == null || datasetFieldIdList.isEmpty()) {
-            return null;
-        }
-        if (dataverseId == null) {
-            return null;
+        Preconditions.checkNotNull(dataverseId);
+        Preconditions.checkNotNull(datasetFieldIdList);
+        
+        if (datasetFieldIdList.isEmpty()) {
+            new ArrayList<>();
         }
 
         try {
@@ -71,7 +75,7 @@ public class DataverseFieldTypeInputLevelServiceBean {
             msg("Number of results: " + res.size());
             return res;*/
         } catch (NoResultException nre) {
-            return null;
+            return new ArrayList<>();
         }
     }
     //
