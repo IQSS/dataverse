@@ -421,8 +421,9 @@
                                                 
                                                 <div id="citations-list-block">
                                                     <ul>
-                                                        <!-- TO DO: ui:repeat around this <li> to make it a dynamic list -->
-                                                        <li><a href="https://doi.org/10.1007/s12520-017-0578-2" target="_blank">https://doi.org/10.1007/s12520-017-0578-2</a></li>
+                                                        <ui:repeat value="#{datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}" var="citation">
+                                                            <li><a href="#{citation.citedByUrl}" target="_blank">#{citation.citedByUrl}</a></li>
+                                                        </ui:repeat>
                                                     </ul>
                                                 </div>
 
