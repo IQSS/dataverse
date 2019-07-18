@@ -409,7 +409,7 @@
                                             <p:commandLink title="DATASET CITATIONS LINK TITLE HERE"
                                                             oncomplete="PF('citationsDialog').show();">
                                                 <h:outputFormat value="{0} #{bundle['metrics.citations']}">
-                                                    <f:param value="#{fn:length(datasetExternalCitationsService.getDatasetExternalCitationsByDataset(DatasetPage.dataset))}"/>
+                                                    <f:param value="#{fn:length(datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset))}"/>
                                                 </h:outputFormat>
                                             </p:commandLink>
                                             
