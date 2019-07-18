@@ -64,7 +64,7 @@ public class SolrClientService {
         return solrClient;
     }
 
-    public void setSolrCleitn(SolrClient solrClient) {
+    public void setSolrClient(SolrClient solrClient) {
         this.solrClient = solrClient;
     }
     
