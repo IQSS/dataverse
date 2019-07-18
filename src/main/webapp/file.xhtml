@@ -317,9 +317,9 @@
                                             <!-- Metrics -->
                                             <div id="metrics-block" jsf:rendered="#{!(widgetWrapper.widgetView or FilePage.fileMetadata.dataFile.filePackage or FilePage.fileMetadata.datasetVersion.deaccessioned)}">
                                                 <div id="metrics-heading">
-                                                    #{bundle['metrics.title.file']} 
+                                                    #{bundle['metrics.file.title']}
                                                     <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
-                                                            data-original-title="#{empty settingsServiceBean.get(':MDCLogPath') ? bundle['metrics.title.tip.default'] : bundle['metrics.title.tip.makedatacount']}"></span>
+                                                            data-original-title="#{empty settingsServiceBean.get(':MDCLogPath') ? bundle['metrics.file.tip.default'] : bundle['metrics.file.tip.makedatacount']}"></span>
                                                 </div>
                                                 <div id="metrics-content">
                                                     <!-- Classic downloads -->
@@ -327,6 +327,8 @@
                                                         <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
                                                             <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/>
                                                         </h:outputFormat>
+                                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                              data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.file.downloads.tip']}"></span>
                                                     </div>
                                                     <!-- Make Data Count downloads -->
                                                     <div class="metrics-count-block" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath')}">
@@ -334,7 +336,7 @@
                                                             <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/>
                                                         </h:outputFormat>
                                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                                data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.downloads.tip']}"></span>
+                                                                data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.file.downloads.tip']}"></span>
                                                     </div>
                                                 </div>
                                             </div>

@@ -377,9 +377,9 @@
                                 <!-- Metrics -->
                                 <div id="metrics-block" class="col-sm-3" jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">
                                     <div id="metrics-heading">
-                                        #{bundle['metrics.title.dataset']}
+                                        #{bundle['metrics.dataset.title']}
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
-                                                data-original-title="#{empty settingsServiceBean.get(':MDCLogPath') ? bundle['metrics.title.tip.default'] : bundle['metrics.title.tip.makedatacount']}"></span>
+                                                data-original-title="#{empty settingsServiceBean.get(':MDCLogPath') ? bundle['metrics.dataset.tip.default'] : bundle['metrics.dataset.tip.makedatacount']}"></span>
                                     </div>
                                     <div id="metrics-content">
                                         <!-- Classic downloads -->
@@ -387,6 +387,8 @@
                                             <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
                                                 <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
                                             </h:outputFormat>
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                    data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.default.tip']}"></span>
                                         </div>
                                         <!-- Make Data Count views -->
                                         <div class="metrics-count-block" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath')}">
@@ -394,7 +396,7 @@
                                                 <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getViewsTotal()}"/>
                                             </h:outputFormat>
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                    data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.views.tip']}"></span>
+                                                    data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.views.tip']}"></span>
                                         </div>
                                         <!-- Make Data Count downloads -->
                                         <div class="metrics-count-block" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath')}">
@@ -402,7 +404,7 @@
                                                 <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getDownloadsTotal()}"/>
                                             </h:outputFormat>
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                    data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.downloads.tip']}"></span>
+                                                    data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.makedatacount.tip']}"></span>
                                         </div>
                                         <!-- Make Data Count citations (DOIs only, not Handles) -->
                                         <div class="metrics-count-block" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath') and settingsServiceBean.get(':Protocol') == 'doi'}">
@@ -414,7 +416,7 @@
                                             </p:commandLink>
                                             
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                    data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.citations.tip']}"></span>
+                                                    data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.citations.tip']}"></span>
                                         
                                             <p:dialog id="citationsDialog" styleClass="smallPopup" header="#{bundle['metrics.citations.dialog.header']}" widgetVar="citationsDialog" modal="true">
                                                 <p class="help-block">#{bundle['metrics.citations.dialog.help']}</p>
