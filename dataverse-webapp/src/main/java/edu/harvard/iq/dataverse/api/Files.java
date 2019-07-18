@@ -21,7 +21,6 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteMapLayerMetadataCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
@@ -42,7 +41,6 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
@@ -179,13 +177,9 @@ public class Files extends AbstractApiBean {
         DataverseRequest dvRequest2 = createDataverseRequest(authUser);
         AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
                                                                       this.ingestService,
-                                                                      this.datasetService,
                                                                       this.fileService,
                                                                       this.permissionSvc,
-                                                                      this.commandEngine,
-                                                                      this.settingsService,
-                                                                      this.termsOfUseFactory,
-                                                                      this.termsOfUseFormMapper);
+                                                                      this.commandEngine);
 
         //-------------------
         // (5) Run "runReplaceFileByDatasetId"

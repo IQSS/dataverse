@@ -5,10 +5,10 @@
  */
 package edu.harvard.iq.dataverse.datasetutility;
 
+import com.google.common.base.Preconditions;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -21,17 +21,11 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.license.TermsOfUseFactory;
-import edu.harvard.iq.dataverse.license.TermsOfUseFormMapper;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.ocpsoft.common.util.Strings;
-
-import com.google.common.base.Preconditions;
 
 import javax.ejb.EJBException;
 import javax.json.JsonObjectBuilder;
@@ -106,13 +100,9 @@ public class AddReplaceFileHelper {
     // All the needed EJBs, passed to the constructor
     // -----------------------------------
     private IngestServiceBean ingestService;
-    private DatasetServiceBean datasetService;
     private DataFileServiceBean fileService;
     private PermissionServiceBean permissionService;
     private EjbDataverseEngine commandEngine;
-    private SettingsServiceBean settingsService;
-    private TermsOfUseFactory termsOfUseFactory;
-    private TermsOfUseFormMapper termsOfUseFormMapper;
 
     // -----------------------------------
     // Instance variables directly added
@@ -190,13 +180,9 @@ public class AddReplaceFileHelper {
      */
     public AddReplaceFileHelper(DataverseRequest dvRequest,
                                 IngestServiceBean ingestService,
-                                DatasetServiceBean datasetService,
                                 DataFileServiceBean fileService,
                                 PermissionServiceBean permissionService,
-                                EjbDataverseEngine commandEngine,
-                                SettingsServiceBean settingsService,
-                                TermsOfUseFactory termsOfUseFactory,
-                                TermsOfUseFormMapper termsOfUseFormMapper) {
+                                EjbDataverseEngine commandEngine) {
 
         // ---------------------------------
         // make sure DataverseRequest isn't null and has a user
@@ -208,13 +194,9 @@ public class AddReplaceFileHelper {
         // make sure services aren't null
         // ---------------------------------
         this.ingestService = Objects.requireNonNull(ingestService, "ingestService cannot be null");
-        this.datasetService = Objects.requireNonNull(datasetService, "datasetService cannot be null");
         this.fileService = Objects.requireNonNull(fileService, "fileService cannot be null");
         this.permissionService = Objects.requireNonNull(permissionService, "permissionService cannot be null");
         this.commandEngine = Objects.requireNonNull(commandEngine, "commandEngine cannot be null");
-        this.settingsService = Objects.requireNonNull(settingsService, "settingsService cannot be null");
-        this.termsOfUseFactory = Objects.requireNonNull(termsOfUseFactory, "TermsOfUseFactory cannot be null");
-        this.termsOfUseFormMapper = Objects.requireNonNull(termsOfUseFormMapper, "TermsOfUseFormMapper cannot be null");
 
         // ---------------------------------
 
@@ -968,13 +950,10 @@ public class AddReplaceFileHelper {
         workingVersion = dataset.getEditVersion();
         clone = workingVersion.cloneDatasetVersion();
         try {
-            initialFileList = FileUtil.createDataFiles(workingVersion,
-                                                       this.newFileInputStream,
-                                                       this.newFileName,
-                                                       this.newFileContentType,
-                                                       this.settingsService,
-                                                       this.termsOfUseFactory,
-                                                       this.termsOfUseFormMapper);
+            initialFileList = fileService.createDataFiles(workingVersion,
+                                                          this.newFileInputStream,
+                                                          this.newFileName,
+                                                          this.newFileContentType);
 
         } catch (IOException ex) {
             if (!Strings.isNullOrEmpty(ex.getMessage())) {

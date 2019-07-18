@@ -528,13 +528,9 @@ public class EditDatafilesPage implements java.io.Serializable {
             //DataverseRequest dvRequest2 = createDataverseRequest(authUser);
             AddReplaceFileHelper addReplaceFileHelper = new AddReplaceFileHelper(dvRequestService.getDataverseRequest(),
                                                                                  ingestService,
-                                                                                 datasetService,
                                                                                  datafileService,
                                                                                  permissionService,
-                                                                                 commandEngine,
-                                                                                 settingsService,
-                                                                                 termsOfUseFactory,
-                                                                                 termsOfUseFormMapper);
+                                                                                 commandEngine);
 
             fileReplacePageHelper = new FileReplacePageHelper(addReplaceFileHelper,
                                                               dataset,
@@ -1579,8 +1575,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // for example, multiple files can be extracted from an uncompressed
                 // zip file.
                 //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
-                datafiles = FileUtil.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream",
-                        settingsService, termsOfUseFactory, termsOfUseFormMapper);
+                datafiles = datafileService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
 
             } catch (IOException ex) {
                 logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
@@ -1937,8 +1932,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // Note: A single uploaded file may produce multiple datafiles - 
             // for example, multiple files can be extracted from an uncompressed
             // zip file. 
-            dFileList = FileUtil.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType(),
-                    settingsService, termsOfUseFactory, termsOfUseFormMapper);
+            dFileList = datafileService.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType());
 
         } catch (IOException ioex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
