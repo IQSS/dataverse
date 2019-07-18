@@ -124,6 +124,7 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
+import edu.harvard.iq.dataverse.search.SolrClientService;
 import java.util.Comparator;
 import java.util.TimeZone;
 import javax.servlet.http.HttpServletRequest;
@@ -212,6 +213,8 @@ public class DatasetPage implements java.io.Serializable {
     PrivateUrlServiceBean privateUrlService;
     @EJB
     ExternalToolServiceBean externalToolService;
+    @EJB
+    SolrClientService solrClientService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -725,7 +728,7 @@ public class DatasetPage implements java.io.Serializable {
         QueryResponse queryResponse = null;
         
         try {
-            queryResponse = getSolrServer().query(solrQuery);
+            queryResponse = solrClientService.getSolrClient().query(solrQuery);
         } catch (Exception ex) {
             logger.fine("Solr exception: " + ex.getLocalizedMessage());
             // solr maybe down/some error may have occurred... 
@@ -840,7 +843,7 @@ public class DatasetPage implements java.io.Serializable {
         Set<Long> resultIds = new HashSet<>();
         
         try {
-            queryResponse = getSolrServer().query(solrQuery);
+            queryResponse = solrClientService.getSolrClient().query(solrQuery);
         } catch (HttpSolrClient.RemoteSolrException ex) {
             logger.fine("Remote Solr Exception: " + ex.getLocalizedMessage());
             String msg = ex.getLocalizedMessage(); 
@@ -858,7 +861,7 @@ public class DatasetPage implements java.io.Serializable {
             logger.fine("Solr query (trying again): " + solrQuery);
 
             try {
-                queryResponse = getSolrServer().query(solrQuery);
+                queryResponse = solrClientService.getSolrClient().query(solrQuery);
             } catch (Exception ex) {
                 logger.warning("Caught a Solr exception (again!): " + ex.getLocalizedMessage());
                 return resultIds;
@@ -5131,13 +5134,7 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
     }
-    
-    private SolrClient solrServer = null;
-    
-    private SolrClient getSolrServer () {
-        return searchService.getSolrServer();       
-    }
-    
+
     private static Date getFileDateToCompare(FileMetadata fileMetadata) {
         DataFile datafile = fileMetadata.getDataFile();
 
