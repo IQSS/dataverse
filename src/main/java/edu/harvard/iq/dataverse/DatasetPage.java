@@ -4828,6 +4828,25 @@ public class DatasetPage implements java.io.Serializable {
         privateUrlWasJustCreated = false;
     }
 
+    public boolean isShowLinkingPopup() {
+        return showLinkingPopup;
+    }
+
+    public void setShowLinkingPopup(boolean showLinkingPopup) {
+        this.showLinkingPopup = showLinkingPopup;
+    }    
+    
+    private boolean showLinkingPopup = false;
+    
+    //
+    
+    /*
+        public void setSelectedGroup(ExplicitGroup selectedGroup) {
+        setShowDeletePopup(true);
+        this.selectedGroup = selectedGroup;
+    }
+    */
+
     public void createPrivateUrl() {
         try {
             PrivateUrl createdPrivateUrl = commandEngine.submit(new CreatePrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
