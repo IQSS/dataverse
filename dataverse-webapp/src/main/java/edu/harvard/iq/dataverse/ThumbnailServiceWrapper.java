@@ -8,7 +8,6 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -101,7 +100,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
         }
 
         Long imageFileId = result.getEntity().getId();
-        DataFile dataFile = (DataFile)result.getEntity();
+        DataFile dataFile = (DataFile) result.getEntity();
 
         if (imageFileId != null) {
             if (this.dvobjectThumbnailsMap.containsKey(imageFileId)) {
@@ -180,10 +179,10 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
 
         Long versionId = result.getDatasetVersionId();
 
-        return getDatasetCardImageAsBase64Url(dataset, versionId, result.isPublishedState());
+        return getDatasetCardImageAsBase64Url(dataset, versionId, result.isPublishedState(), new DataAccess());
     }
 
-    public String getDatasetCardImageAsBase64Url(Dataset dataset, Long versionId, boolean autoselect) {
+    public String getDatasetCardImageAsBase64Url(Dataset dataset, Long versionId, boolean autoselect, DataAccess dataAccess) {
         Long datasetId = dataset.getId();
         if (datasetId != null) {
             if (this.dvobjectThumbnailsMap.containsKey(datasetId)) {
@@ -206,12 +205,12 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
         }
 
         String cardImageUrl = null;
-        StorageIO<Dataset> dataAccess = null;
 
+        StorageIO<Dataset> storageIO = null;
         try {
-            dataAccess = DataAccess.getStorageIO(dataset);
-        } catch (IOException ioex) {
-            // ignore
+            storageIO = dataAccess.getStorageIO(dataset);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         InputStream in = null;
@@ -219,7 +218,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
         // an auxilary file on the dataset level: 
         // (don't bother checking if it exists; just try to open the input stream)
         try {
-            in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+            in = storageIO.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
         } catch (Exception ioex) {
             //ignore
         }

@@ -154,7 +154,7 @@ public class IngestServiceBean {
     // DataFileCategory objects, if any were already assigned to the files). 
     // It must be called before we attempt to permanently save the files in 
     // the database by calling the Save command on the dataset and/or version. 
-    public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version, List<DataFile> newFiles) {
+    public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version, List<DataFile> newFiles, DataAccess dataAccess) {
         List<DataFile> ret = new ArrayList<>();
 
         if (newFiles != null && newFiles.size() > 0) {
@@ -180,7 +180,7 @@ public class IngestServiceBean {
 
                 boolean unattached = false;
                 boolean savedSuccess = false;
-                StorageIO<DataFile> dataAccess = null;
+                StorageIO<DataFile> storageIO = null;
 
                 try {
                     logger.fine("Attempting to create a new storageIO object for " + storageId);
@@ -188,7 +188,7 @@ public class IngestServiceBean {
                         unattached = true;
                         dataFile.setOwner(dataset);
                     }
-                    dataAccess = DataAccess.createNewStorageIO(dataFile, storageId);
+                    storageIO = dataAccess.createNewStorageIO(dataFile, storageId);
 
                     logger.fine("Successfully created a new storageIO object.");
                     /* 
@@ -221,11 +221,11 @@ public class IngestServiceBean {
                         
                             Files.copy(tempLocationPath, storageIO.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
                      */
-                    dataAccess.savePath(tempLocationPath);
+                    storageIO.savePath(tempLocationPath);
 
                     // Set filesize in bytes
                     // 
-                    dataFile.setFilesize(dataAccess.getSize());
+                    dataFile.setFilesize(storageIO.getSize());
                     savedSuccess = true;
                     logger.fine("Success: permanently saved file " + dataFile.getFileMetadata().getLabel());
 
@@ -260,7 +260,7 @@ public class IngestServiceBean {
                                 int i = generated.toString().lastIndexOf("thumb");
                                 if (i > 1) {
                                     String extensionTag = generated.toString().substring(i);
-                                    dataAccess.savePathAsAux(generated, extensionTag);
+                                    storageIO.savePathAsAux(generated, extensionTag);
                                     logger.fine("Saved generated thumbnail as aux object. \"preview available\" status: " + dataFile.isPreviewImageAvailable());
                                 } else {
                                     logger.warning("Generated thumbnail file name does not match the expected pattern: " + generated.toString());
@@ -762,7 +762,7 @@ public class IngestServiceBean {
         StorageIO<DataFile> storageIO = null;
 
         try {
-            storageIO = dataFile.getStorageIO();
+            storageIO = dataFile.getStorageIO(new DataAccess());
             storageIO.open();
 
             if (storageIO.isLocalFile()) {
@@ -946,7 +946,7 @@ public class IngestServiceBean {
                 try {
                     /* Start of save as backup */
 
-                    StorageIO<DataFile> dataAccess = dataFile.getStorageIO();
+                    StorageIO<DataFile> dataAccess = dataFile.getStorageIO(new DataAccess());
                     dataAccess.open();
 
                     // and we want to save the original of the ingested file: 
@@ -993,7 +993,7 @@ public class IngestServiceBean {
 
     private BufferedInputStream openFile(DataFile dataFile) throws IOException {
         BufferedInputStream inputStream;
-        StorageIO<DataFile> storageIO = dataFile.getStorageIO();
+        StorageIO<DataFile> storageIO = dataFile.getStorageIO(new DataAccess());
         storageIO.open();
         if (storageIO.isLocalFile()) {
             inputStream = new BufferedInputStream(storageIO.getInputStream());
@@ -1693,7 +1693,7 @@ public class IngestServiceBean {
                 boolean tempFileRequired = false;
 
                 try {
-                    storageIO = dataFile.getStorageIO();
+                    storageIO = dataFile.getStorageIO(new DataAccess());
                     storageIO.open();
 
 
@@ -1784,7 +1784,7 @@ public class IngestServiceBean {
                 StorageIO<DataFile> storageIO;
 
                 try {
-                    storageIO = dataFile.getStorageIO();
+                    storageIO = dataFile.getStorageIO(new DataAccess());
                     storageIO.open();
                     savedOriginalFileSize = storageIO.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
 

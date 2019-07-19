@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
@@ -760,7 +761,7 @@ public class Dataset extends DvObjectContainer {
      * @return A thumbnail of the dataset (may be {@code null}).
      */
     public DatasetThumbnail getDatasetThumbnail(DatasetVersion datasetVersion) {
-        return DatasetUtil.getThumbnail(this, datasetVersion);
+        return DatasetUtil.getThumbnail(this, datasetVersion, new DataAccess());
     }
 
 }

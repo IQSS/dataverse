@@ -8,7 +8,6 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.DataAccessRequest;
 import edu.harvard.iq.dataverse.dataaccess.DataConverter;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.InputStreamIO;
@@ -71,11 +70,9 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
 
         if (di.getDownloadInfo() != null && di.getDownloadInfo().getDataFile() != null) {
-            DataAccessRequest daReq = new DataAccessRequest();
-
 
             DataFile dataFile = di.getDownloadInfo().getDataFile();
-            StorageIO<DataFile> storageIO = DataAccess.getStorageIO(dataFile, daReq);
+            StorageIO<DataFile> storageIO = dataFile.getStorageIO(new DataAccess());
 
             if (storageIO != null) {
                 try {

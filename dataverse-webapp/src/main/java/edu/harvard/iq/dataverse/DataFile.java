@@ -489,8 +489,8 @@ public class DataFile extends DvObject implements Comparable {
         return BundleUtil.getStringFromBundle("file.originalChecksumType", Arrays.asList(this.checksumType.toString()));
     }
 
-    public StorageIO<DataFile> getStorageIO() throws IOException {
-        StorageIO<DataFile> storageIO = DataAccess.getStorageIO(this);
+    public StorageIO<DataFile> getStorageIO(DataAccess dataAccess) throws IOException {
+        StorageIO<DataFile> storageIO = dataAccess.getStorageIO(this);
 
         if (storageIO == null) {
             throw new IOException("Failed to create storageIO for datafile.");

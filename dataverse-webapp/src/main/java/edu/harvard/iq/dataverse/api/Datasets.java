@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -1144,7 +1145,7 @@ public class Datasets extends AbstractApiBean {
             }
             JsonArrayBuilder data = Json.createArrayBuilder();
             boolean considerDatasetLogoAsCandidate = true;
-            for (DatasetThumbnail datasetThumbnail : DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate)) {
+            for (DatasetThumbnail datasetThumbnail : DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate, new DataAccess())) {
                 JsonObjectBuilder candidate = Json.createObjectBuilder();
                 String base64image = datasetThumbnail.getBase64image();
                 if (base64image != null) {

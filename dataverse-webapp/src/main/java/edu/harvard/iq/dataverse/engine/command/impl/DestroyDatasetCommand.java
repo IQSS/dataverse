@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -78,7 +79,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         }
 
         //also, lets delete the uploaded thumbnails!
-        deleteDatasetLogo(doomed);
+        deleteDatasetLogo(doomed, new DataAccess());
 
 
         // ASSIGNMENTS

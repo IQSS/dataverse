@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -35,7 +36,7 @@ public class GetProvJsonCommand extends AbstractCommand<JsonObject> {
         final String provJsonExtension = "prov-json.json";
 
         try {
-            StorageIO<DataFile> dataAccess = dataFile.getStorageIO();
+            StorageIO<DataFile> dataAccess = dataFile.getStorageIO(new DataAccess());
             InputStream inputStream = dataAccess.getAuxFileAsInputStream(provJsonExtension);
             JsonObject jsonObject = null;
             if (null != inputStream) {

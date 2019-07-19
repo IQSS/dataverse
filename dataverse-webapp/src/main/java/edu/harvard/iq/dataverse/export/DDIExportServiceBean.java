@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataConverter;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
@@ -466,7 +467,7 @@ public class DDIExportServiceBean {
     private void calculateFrequencies(DataFile df, List<DataVariable> vars) {
         try {
             DataConverter dc = new DataConverter();
-            File tabFile = DataConverter.downloadFromStorageIO(df.getStorageIO());
+            File tabFile = DataConverter.downloadFromStorageIO(df.getStorageIO(new DataAccess()));
 
             IngestServiceBean.produceFrequencies(tabFile, vars);
 

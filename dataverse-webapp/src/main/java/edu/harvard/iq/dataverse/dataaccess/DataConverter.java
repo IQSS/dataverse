@@ -230,7 +230,7 @@ public class DataConverter {
                 }
 
                 try {
-                    StorageIO<DataFile> storageIO = file.getStorageIO();
+                    StorageIO<DataFile> storageIO = file.getStorageIO(new DataAccess());
                     long size = storageIO.getAuxObjectSize("orig");
                     File origFile = downloadFromByteChannel((ReadableByteChannel) storageIO.openAuxChannel("orig"), size);
                     resultInfo = dfs.directConvert(origFile, origFormat, pid);

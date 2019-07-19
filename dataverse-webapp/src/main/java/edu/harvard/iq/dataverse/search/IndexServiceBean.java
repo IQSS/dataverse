@@ -21,7 +21,6 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.DataAccessRequest;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
@@ -933,8 +932,7 @@ public class IndexServiceBean {
                             InputStream instream = null;
                             ContentHandler textHandler = null;
                             try {
-                                accessObject = DataAccess.getStorageIO(fileMetadata.getDataFile(),
-                                                                       new DataAccessRequest());
+                                accessObject = fileMetadata.getDataFile().getStorageIO(new DataAccess());
                                 if (accessObject != null) {
                                     accessObject.open();
                                     // If the size is >max, we don't use the stream. However, for S3, the stream is

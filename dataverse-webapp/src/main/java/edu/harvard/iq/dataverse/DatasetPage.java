@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
@@ -329,7 +330,7 @@ public class DatasetPage implements java.io.Serializable {
 
             thumbnailString = datasetThumbnail.getBase64image();
         } else {
-            thumbnailString = thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(dataset, workingVersion.getId(), !workingVersion.isDraft());
+            thumbnailString = thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(dataset, workingVersion.getId(), !workingVersion.isDraft(), new DataAccess());
             if (thumbnailString == null) {
                 thumbnailString = "";
                 return null;
@@ -546,7 +547,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public SwiftAccessIO getSwiftObject() {
         try {
-            StorageIO<DataFile> storageIO = getInitialDataFile() == null ? null : getInitialDataFile().getStorageIO();
+            StorageIO<DataFile> storageIO = getInitialDataFile() == null ? null : getInitialDataFile().getStorageIO(new DataAccess());
             if (storageIO != null && storageIO instanceof SwiftAccessIO) {
                 return (SwiftAccessIO) storageIO;
             } else {
@@ -671,7 +672,7 @@ public class DatasetPage implements java.io.Serializable {
     public String getComputeUrl(FileMetadata metadata) {
         SwiftAccessIO swiftObject = null;
         try {
-            StorageIO<DataFile> storageIO = metadata.getDataFile().getStorageIO();
+            StorageIO<DataFile> storageIO = metadata.getDataFile().getStorageIO(new DataAccess());
             if (storageIO != null && storageIO instanceof SwiftAccessIO) {
                 swiftObject = (SwiftAccessIO) storageIO;
                 swiftObject.open();
@@ -2385,7 +2386,7 @@ public class DatasetPage implements java.io.Serializable {
                         newFile.getFileMetadata().setTermsOfUse(termsOfUse);
                     }
 
-                    List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getEditVersion(), newFiles);
+                    List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getEditVersion(), newFiles, new DataAccess());
                     newFiles.clear();
 
                     // and another update command: 

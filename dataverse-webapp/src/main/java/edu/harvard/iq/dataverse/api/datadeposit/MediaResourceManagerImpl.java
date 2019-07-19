@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -195,7 +196,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                                     // longer exists in the database, before proceeding to 
                                     // delete the physical file)
                                     try {
-                                        dataFileService.finalizeFileDelete(fileIdLong, deleteStorageLocation);
+                                        dataFileService.finalizeFileDelete(fileIdLong, deleteStorageLocation, new DataAccess());
                                     } catch (IOException ioex) {
                                         logger.warning("Failed to delete the physical file associated with the deleted datafile id="
                                                                + fileIdLong + ", storage location: " + deleteStorageLocation);
@@ -337,7 +338,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + violation.getMessage() + " The invalid value was \"" + violation.getInvalidValue() + "\".");
                 } else {
 
-                    ingestService.saveAndAddFilesToDataset(editVersion, dataFiles);
+                    ingestService.saveAndAddFilesToDataset(editVersion, dataFiles, new DataAccess());
 
                 }
             } else {

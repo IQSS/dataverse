@@ -1246,13 +1246,13 @@ public class DataFileServiceBean implements java.io.Serializable {
         return u;
     }
 
-    public void finalizeFileDelete(Long dataFileId, String storageLocation) throws IOException {
+    public void finalizeFileDelete(Long dataFileId, String storageLocation, DataAccess dataAccess) throws IOException {
         // Verify that the DataFile no longer exists: 
         if (find(dataFileId) != null) {
             throw new IOException("Attempted to permanently delete a physical file still associated with an existing DvObject "
                                           + "(id: " + dataFileId + ", location: " + storageLocation);
         }
-        StorageIO directStorageAccess = DataAccess.getDirectStorageIO(storageLocation);
+        StorageIO directStorageAccess = dataAccess.getDirectStorageIO(storageLocation);
         directStorageAccess.delete();
     }
 
@@ -1261,7 +1261,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             String storageLocation = storageLocations.get(dataFileId);
 
             try {
-                finalizeFileDelete(dataFileId, storageLocation);
+                finalizeFileDelete(dataFileId, storageLocation, new DataAccess());
             } catch (IOException ioex) {
                 logger.warning("Failed to delete the physical file associated with the deleted datafile id="
                                        + dataFileId + ", storage location: " + storageLocation);
@@ -1331,7 +1331,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
     public String getPhysicalFileToDelete(DataFile dataFile) {
         try {
-            StorageIO<DataFile> storageIO = dataFile.getStorageIO();
+            StorageIO<DataFile> storageIO = dataFile.getStorageIO(new DataAccess());
             return storageIO.getStorageLocation();
 
         } catch (IOException ioex) {

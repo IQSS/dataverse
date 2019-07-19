@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
@@ -1016,7 +1017,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
 
             // Try to save the NEW files permanently: 
-            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles);
+            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, new DataAccess());
 
             // reset the working list of fileMetadatas, as to only include the ones
             // that have been added to the version successfully: 
@@ -1234,7 +1235,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                                 // longer exists in the database, before proceeding to 
                                 // delete the physical file)
                                 try {
-                                    datafileService.finalizeFileDelete(dataFileId, deleteStorageLocation);
+                                    datafileService.finalizeFileDelete(dataFileId, deleteStorageLocation, new DataAccess());
                                 } catch (IOException ioex) {
                                     logger.warning("Failed to delete the physical file associated with the deleted datafile id="
                                                            + dataFileId + ", storage location: " + deleteStorageLocation);

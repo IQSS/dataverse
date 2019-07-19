@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
-
 public class DatasetUtil {
 
     private static final Logger logger = Logger.getLogger(DatasetUtil.class.getCanonicalName());
@@ -41,7 +39,9 @@ public class DatasetUtil {
     public static String datasetLogoThumbnail = "dataset_logo";
     public static String thumb48addedByImageThumbConverter = ".thumb48";
 
-    public static List<DatasetThumbnail> getThumbnailCandidates(Dataset dataset, boolean considerDatasetLogoAsCandidate) {
+    public static List<DatasetThumbnail> getThumbnailCandidates(Dataset dataset,
+                                                                boolean considerDatasetLogoAsCandidate,
+                                                                DataAccess dataAccess) {
         List<DatasetThumbnail> thumbnails = new ArrayList<>();
         if (dataset == null) {
             return thumbnails;
@@ -53,16 +53,16 @@ public class DatasetUtil {
 //                File file = path.toFile();
 //                try {
 //                    byte[] bytes = Files.readAllBytes(file.toPath());
-            StorageIO<Dataset> dataAccess = null;
+            StorageIO<Dataset> storageIO = null;
 
             try {
-                dataAccess = DataAccess.getStorageIO(dataset);
+                storageIO = dataAccess.getStorageIO(dataset);
             } catch (IOException ioex) {
             }
 
             InputStream in = null;
             try {
-                in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+                in = storageIO.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
             } catch (Exception ioex) {
             }
 
@@ -107,25 +107,25 @@ public class DatasetUtil {
      * @param datasetVersion
      * @return
      */
-    public static DatasetThumbnail getThumbnail(Dataset dataset, DatasetVersion datasetVersion) {
+    public static DatasetThumbnail getThumbnail(Dataset dataset, DatasetVersion datasetVersion, DataAccess dataAccess) {
         if (dataset == null) {
             return null;
         }
 
-        StorageIO<Dataset> dataAccess = null;
+        StorageIO<Dataset> storageIO = null;
 
         try {
-            dataAccess = DataAccess.getStorageIO(dataset);
+            storageIO = dataAccess.getStorageIO(dataset);
         } catch (IOException ioex) {
             logger.warning("getThumbnail(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
         }
 
         InputStream in = null;
         try {
-            if (dataAccess == null) {
+            if (storageIO == null) {
                 logger.warning("getThumbnail(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier());
-            } else if (dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
-                in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+            } else if (storageIO.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
+                in = storageIO.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
             }
         } catch (IOException ex) {
             logger.fine("Dataset-level thumbnail file does not exist, or failed to open; will try to find an image file that can be used as the thumbnail.");
@@ -181,15 +181,15 @@ public class DatasetUtil {
         if (dataset == null) {
             return null;
         }
-        return getThumbnail(dataset, null);
+        return getThumbnail(dataset, null, new DataAccess());
     }
 
-    public static boolean deleteDatasetLogo(Dataset dataset) {
+    public static boolean deleteDatasetLogo(Dataset dataset, DataAccess dataAccess) {
         if (dataset == null) {
             return false;
         }
         try {
-            StorageIO<Dataset> storageIO = getStorageIO(dataset);
+            StorageIO<Dataset> storageIO = dataAccess.getStorageIO(dataset);
 
             if (storageIO == null) {
                 logger.warning("Null storageIO in deleteDatasetLogo()");
@@ -260,7 +260,7 @@ public class DatasetUtil {
         return null;
     }
 
-    public static Dataset persistDatasetLogoToStorageAndCreateThumbnail(Dataset dataset, InputStream inputStream) {
+    public static Dataset persistDatasetLogoToStorageAndCreateThumbnail(Dataset dataset, InputStream inputStream, DataAccess dataAccess) {
         if (dataset == null) {
             return null;
         }
@@ -271,10 +271,10 @@ public class DatasetUtil {
             logger.severe(ex.getMessage());
         }
 
-        StorageIO<Dataset> dataAccess = null;
+        StorageIO<Dataset> storageIO = null;
 
         try {
-            dataAccess = DataAccess.createNewStorageIO(dataset, "placeholder");
+            storageIO = dataAccess.createNewStorageIO(dataset, "placeholder");
         } catch (IOException ioex) {
             //TODO: Add a suitable waing message
             logger.warning("Failed to save the file, storage id " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
@@ -283,7 +283,7 @@ public class DatasetUtil {
         //File originalFile = new File(datasetDirectory.toString(), datasetLogoFilenameFinal);
         try {
             //this goes through Swift API/local storage/s3 to write the dataset thumbnail into a container
-            dataAccess.savePathAsAux(tmpFile.toPath(), datasetLogoFilenameFinal);
+            storageIO.savePathAsAux(tmpFile.toPath(), datasetLogoFilenameFinal);
         } catch (IOException ex) {
             logger.severe("Failed to move original file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
         }
@@ -333,7 +333,7 @@ public class DatasetUtil {
         logger.fine("tmpFileLocation=" + tmpFileForResize.toPath().toString());
         //now we must save the updated thumbnail 
         try {
-            dataAccess.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+            storageIO.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail + thumb48addedByImageThumbConverter);
         } catch (IOException ex) {
             logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
         }
@@ -376,16 +376,16 @@ public class DatasetUtil {
      * file that is uploaded. Rather, we delete it after first creating at least
      * one thumbnail from it.
      */
-    public static boolean isDatasetLogoPresent(Dataset dataset) {
+    public static boolean isDatasetLogoPresent(Dataset dataset, DataAccess dataAccess) {
         if (dataset == null) {
             return false;
         }
 
-        StorageIO<Dataset> dataAccess = null;
+        StorageIO<Dataset> storageIO = null;
 
         try {
-            dataAccess = DataAccess.getStorageIO(dataset);
-            return dataAccess.isAuxObjectCached(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+            storageIO = dataAccess.getStorageIO(dataset);
+            return storageIO.isAuxObjectCached(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
         } catch (IOException ioex) {
         }
         return false;

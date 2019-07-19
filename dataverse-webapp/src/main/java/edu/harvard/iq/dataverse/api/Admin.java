@@ -36,6 +36,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailInitResponse;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -1046,7 +1047,7 @@ public class Admin extends AbstractApiBean {
         JsonObjectBuilder data = Json.createObjectBuilder();
         DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
         data.add("isUseGenericThumbnail", dataset.isUseGenericThumbnail());
-        data.add("datasetLogoPresent", DatasetUtil.isDatasetLogoPresent(dataset));
+        data.add("datasetLogoPresent", DatasetUtil.isDatasetLogoPresent(dataset, new DataAccess()));
         if (datasetThumbnail != null) {
             data.add("datasetThumbnailBase64image", datasetThumbnail.getBase64image());
             DataFile dataFile = datasetThumbnail.getDataFile();
@@ -1238,7 +1239,7 @@ public class Admin extends AbstractApiBean {
                         logger.fine(rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", "
                                             + df.getIdentifier());
                         // verify hash and calc new one to replace it
-                        StorageIO<DataFile> storage = df.getStorageIO();
+                        StorageIO<DataFile> storage = df.getStorageIO(new DataAccess());
                         storage.open(DataAccessOption.READ_ACCESS);
                         if (!df.isTabularData()) {
                             in = storage.getInputStream();

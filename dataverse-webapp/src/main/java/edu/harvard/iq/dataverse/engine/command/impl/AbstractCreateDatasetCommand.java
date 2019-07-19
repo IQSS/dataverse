@@ -32,7 +32,9 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
 
     private static final Logger logger = Logger.getLogger(AbstractCreateDatasetCommand.class.getCanonicalName());
 
-    final protected boolean registrationRequired;
+    private final boolean registrationRequired;
+
+    private DataAccess dataAccess = new DataAccess();
 
     public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         this(theDataset, aRequest, false);
@@ -99,7 +101,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         }
         if (theDataset.getStorageIdentifier() == null) {
             try {
-                DataAccess.createNewStorageIO(theDataset, "placeholder");
+                dataAccess.createNewStorageIO(theDataset, "placeholder");
             } catch (IOException ioex) {
                 // if setting the storage identifier through createNewStorageIO fails, dataset creation
                 // does not have to fail. we just set the storage id to a default -SF
@@ -149,6 +151,10 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             logger.fine("Done with rsync request.");
         }*/
         return theDataset;
+    }
+
+    public void setDataAccess(DataAccess dataAccess) {
+        this.dataAccess = dataAccess;
     }
 
     @Override

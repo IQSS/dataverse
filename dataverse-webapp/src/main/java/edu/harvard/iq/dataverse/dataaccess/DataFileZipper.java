@@ -98,8 +98,7 @@ public class DataFileZipper {
 
         boolean createManifest = fileManifest != null;
 
-        DataAccessRequest daReq = new DataAccessRequest();
-        StorageIO<DataFile> accessObject = DataAccess.getStorageIO(dataFile, daReq);
+        StorageIO<DataFile> accessObject = dataFile.getStorageIO(new DataAccess());
 
         if (accessObject != null) {
             Boolean gotOriginal = false;

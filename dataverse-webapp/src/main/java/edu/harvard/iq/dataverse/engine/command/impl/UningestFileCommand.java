@@ -66,7 +66,7 @@ public class UningestFileCommand extends AbstractVoidCommand {
         // Try to open the main storageIO for the file; look up the AUX file for 
         // the saved original and check its size:
         try {
-            dataAccess = DataAccess.getStorageIO(uningest);
+            dataAccess = uningest.getStorageIO(new DataAccess());
             dataAccess.open();
             storedOriginalFileSize = dataAccess.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
         } catch (IOException ioex) {

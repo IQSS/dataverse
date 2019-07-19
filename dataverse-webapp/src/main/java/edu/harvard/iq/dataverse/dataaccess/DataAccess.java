@@ -30,22 +30,49 @@ import java.io.IOException;
 
 public class DataAccess {
 
-    public DataAccess() {
+    private static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id");
 
+    // -------------------- LOGIC --------------------
+
+    /**
+     * The getStorageIO() methods initialize StorageIO objects for
+     * datafiles that are already saved using one of the supported Dataverse DataAccess IO drivers.
+     */
+    public <T extends DvObject> StorageIO<T> getStorageIO(T dvObject) throws IOException {
+        return getStorageIO(dvObject, new DataAccessRequest());
     }
 
+    /**
+     * Experimental extension of the StorageIO system allowing direct access to
+     * stored physical files that may not be associated with any DvObjects
+     */
+    public StorageIO getDirectStorageIO(String storageLocation) throws IOException {
+        if (storageLocation.startsWith("file://")) {
+            return new FileAccessIO(storageLocation.substring(7));
+        } else if (storageLocation.startsWith("swift://")) {
+            return new SwiftAccessIO<>(storageLocation.substring(8));
+        } else if (storageLocation.startsWith("s3://")) {
+            return new S3AccessIO<>(storageLocation.substring(5));
+        }
 
-    public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id");
-
-    // The getStorageIO() methods initialize StorageIO objects for
-    // datafiles that are already saved using one of the supported Dataverse
-    // DataAccess IO drivers.
-    public static <T extends DvObject> StorageIO<T> getStorageIO(T dvObject) throws IOException {
-        return getStorageIO(dvObject, null);
+        throw new IOException("getDirectStorageIO: Unsupported storage method.");
     }
 
-    //passing DVObject instead of a datafile to accomodate for use of datafiles as well as datasets
-    public static <T extends DvObject> StorageIO<T> getStorageIO(T dvObject, DataAccessRequest req) throws IOException {
+    /**
+     * createDataAccessObject() methods create a *new*, empty DataAccess objects,
+     * for saving new, not yet saved datafiles.
+     */
+    public <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag) throws IOException {
+
+        return createNewStorageIO(dvObject, storageTag, DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    /**
+     * passing DVObject instead of a datafile to accomodate for use of datafiles as well as datasets
+     */
+    private <T extends DvObject> StorageIO<T> getStorageIO(T dvObject, DataAccessRequest req) throws IOException {
 
         if (dvObject == null
                 || dvObject.getStorageIdentifier() == null
@@ -64,39 +91,10 @@ public class DataAccess {
             throw new IOException("DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
         }
 
-        // TODO: 
-        // This code will need to be extended with a system of looking up 
-        // available storage plugins by the storage tag embedded in the 
-        // "storage identifier". 
-        // -- L.A. 4.0.2
-
-
         throw new IOException("getDataAccessObject: Unsupported storage method.");
     }
 
-    // Experimental extension of the StorageIO system allowing direct access to 
-    // stored physical files that may not be associated with any DvObjects
-
-    public static StorageIO getDirectStorageIO(String storageLocation) throws IOException {
-        if (storageLocation.startsWith("file://")) {
-            return new FileAccessIO(storageLocation.substring(7));
-        } else if (storageLocation.startsWith("swift://")) {
-            return new SwiftAccessIO<>(storageLocation.substring(8));
-        } else if (storageLocation.startsWith("s3://")) {
-            return new S3AccessIO<>(storageLocation.substring(5));
-        }
-
-        throw new IOException("getDirectStorageIO: Unsupported storage method.");
-    }
-
-    // createDataAccessObject() methods create a *new*, empty DataAccess objects,
-    // for saving new, not yet saved datafiles.
-    public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag) throws IOException {
-
-        return createNewStorageIO(dvObject, storageTag, DEFAULT_STORAGE_DRIVER_IDENTIFIER);
-    }
-
-    public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag, String driverIdentifier) throws IOException {
+    private <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag, String driverIdentifier) throws IOException {
         if (dvObject == null
                 || storageTag == null
                 || storageTag.isEmpty()) {

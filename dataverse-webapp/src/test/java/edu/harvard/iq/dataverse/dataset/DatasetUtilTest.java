@@ -1,15 +1,15 @@
 package edu.harvard.iq.dataverse.dataset;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.license.FileTermsOfUse.RestrictType;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import org.junit.Test;
-
-import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ public class DatasetUtilTest {
      */
     @Test
     public void testGetThumbnailCandidates() {
-        assertEquals(new ArrayList<>(), DatasetUtil.getThumbnailCandidates(null, false));
+        assertEquals(new ArrayList<>(), DatasetUtil.getThumbnailCandidates(null, false, new DataAccess()));
 
         Dataset dataset = MocksFactory.makeDataset();
         DataFile dataFile = MocksFactory.makeDataFile();
@@ -37,20 +37,20 @@ public class DatasetUtilTest {
         List<FileMetadata> fmds = new ArrayList<>();
         fmds.add(MocksFactory.addFileMetadata(dataFile));
         version.setFileMetadatas(fmds);
-        assertEquals(new ArrayList<>(), DatasetUtil.getThumbnailCandidates(dataset, false));
+        assertEquals(new ArrayList<>(), DatasetUtil.getThumbnailCandidates(dataset, false, new DataAccess()));
     }
 
     @Test
     public void testGetThumbnailNullDataset() {
         assertNull(DatasetUtil.getThumbnail(null));
-        assertNull(DatasetUtil.getThumbnail(null, null));
+        assertNull(DatasetUtil.getThumbnail(null, null, new DataAccess()));
 
         Dataset dataset = MocksFactory.makeDataset();
         dataset.setStorageIdentifier("file://");
         dataset.setUseGenericThumbnail(true);
 
         assertNull(DatasetUtil.getThumbnail(dataset));
-        assertNull(DatasetUtil.getThumbnail(dataset, new DatasetVersion()));
+        assertNull(DatasetUtil.getThumbnail(dataset, new DatasetVersion(), new DataAccess()));
     }
 
     @Test
@@ -77,8 +77,8 @@ public class DatasetUtilTest {
      */
     @Test
     public void testDeleteDatasetLogo() {
-        assertEquals(false, DatasetUtil.deleteDatasetLogo(null));
-        assertEquals(false, DatasetUtil.deleteDatasetLogo(new Dataset()));
+        assertEquals(false, DatasetUtil.deleteDatasetLogo(null, new DataAccess()));
+        assertEquals(false, DatasetUtil.deleteDatasetLogo(new Dataset(), new DataAccess()));
     }
 
     /**
@@ -95,7 +95,7 @@ public class DatasetUtilTest {
      */
     @Test
     public void testPersistDatasetLogoToStorageAndCreateThumbnail() {
-        assertNull(DatasetUtil.persistDatasetLogoToStorageAndCreateThumbnail(null, null));
+        assertNull(DatasetUtil.persistDatasetLogoToStorageAndCreateThumbnail(null, null, new DataAccess()));
         //Todo: a test for this that test main logic
     }
 
@@ -113,7 +113,7 @@ public class DatasetUtilTest {
     @Test
     public void testIsDatasetLogoPresent() {
         Dataset dataset = MocksFactory.makeDataset();
-        assertEquals(false, DatasetUtil.isDatasetLogoPresent(dataset));
+        assertEquals(false, DatasetUtil.isDatasetLogoPresent(dataset, new DataAccess()));
     }
 
 }

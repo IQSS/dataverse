@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -47,7 +48,7 @@ public class PersistProvJsonCommand extends AbstractCommand<DataFile> {
         // "prov-json.json" looks a little redundand but the standard is called PROV-JSON and it's nice to see .json on disk.
         final String provJsonExtension = "prov-json.json";
         try {
-            StorageIO<DataFile> storageIO = dataFile.getStorageIO();
+            StorageIO<DataFile> storageIO = dataFile.getStorageIO(new DataAccess());
             InputStream inputStream = new ByteArrayInputStream(jsonInput.getBytes(StandardCharsets.UTF_8.name()));
             storageIO.saveInputStreamAsAux(inputStream, provJsonExtension);
         } catch (IOException ex) {

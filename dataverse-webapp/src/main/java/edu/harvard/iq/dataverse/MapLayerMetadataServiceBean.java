@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
@@ -178,7 +179,7 @@ public class MapLayerMetadataServiceBean {
 
 
         try {
-            StorageIO<DataFile> storageIO = dataFile.getStorageIO();
+            StorageIO<DataFile> storageIO = dataFile.getStorageIO(new DataAccess());
 
             if (storageIO == null) {
                 logger.warning("Null storageIO in deleteOlderMapThumbnails()");
@@ -287,7 +288,7 @@ public class MapLayerMetadataServiceBean {
 
         StorageIO<DataFile> dataAccess = null;
         try {
-            dataAccess = mapLayerMetadata.getDataFile().getStorageIO();
+            dataAccess = mapLayerMetadata.getDataFile().getStorageIO(new DataAccess());
         } catch (IOException ioEx) {
             dataAccess = null;
         }
