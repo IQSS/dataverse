@@ -569,8 +569,16 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 
 /* -------- METRICS -------- */
 #metrics-block {margin-bottom:20px;}
+
+/* -- OLD LAYOUT -- */
+#metrics-block.col-xs-3 {border:1px solid #eee;padding:0;}
+#metrics-label {color:#333;background:#eee;padding:8px 10px;}
+#metrics-label a {color:#333;display:block;}
+#metrics-label a:hover {text-decoration:none;}
+#metrics-content {color:#333;background:#fff;padding:8px 10px;}
+
 #metrics-heading {font-weight:bold;color:#333;background:#eee;padding:8px 10px;}
-#metrics-content {border:1px solid #EEE;border-top-width:0;padding:8px 10px;}
+#metrics-body {border:1px solid #EEE;border-top-width:0;padding:8px 10px;}
 #metrics-block .metrics-count-block:not(:last-child) {margin-bottom:.5em;padding-bottom:.5em;border-bottom:1px solid #EEE}
 
 /* -------- SHARRRE -------- */
