@@ -241,5 +241,24 @@ public class SettingsWrapper implements java.io.Serializable {
             // do we want to know? - probably not
         }
     }
+
+    public boolean isMakeDataCountEnabled(){
+        String logPath = systemConfig.getMDCLogPath();
+        if (logPath == null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean isDoiInstallation() {
+        String protocol = getValueForKey(SettingsServiceBean.Key.Protocol);
+        if ("doi".equals(protocol)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }
 
