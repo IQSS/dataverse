@@ -472,7 +472,9 @@ public class DataverseUserPage implements java.io.Serializable {
 
                 case REQUESTFILEACCESS:
                     DataFile file = fileService.find(userNotification.getObjectId());
-                    userNotification.setTheObject(file.getOwner());
+                    if (file != null) {
+                        userNotification.setTheObject(file.getOwner());
+                    }
                     break;
                 case GRANTFILEACCESS:
                 case REJECTFILEACCESS:
