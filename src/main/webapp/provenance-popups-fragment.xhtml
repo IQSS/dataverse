@@ -7,7 +7,7 @@
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-    <script type="text/javascript" language="javascript" src="#{resource['js/fileupload.js']}"></script>
+    <script src="#{resource['js/fileupload.js']}"></script>
     <p:dialog id="editProvenancePopup" styleClass="smallPopUp" header="#{bundle['file.editProvenanceDialog']}" widgetVar="editProvenancePopup" modal="true" >
         <p:fragment id="assignMessages">
             <div class="popupMessagePanel">
@@ -107,7 +107,7 @@
                                 <h:outputText value="#{provEntityFileData.entityName}" />
                             </p:column>
                         </p:autoComplete>
-                        <script type="text/javascript">
+                        <script>
                             handle_dropdown_popup_scroll();
                         </script>
                         <p:message for="provJsonNameDropdown" display="text"/>
