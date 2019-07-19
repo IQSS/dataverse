@@ -1,19 +1,11 @@
 package edu.harvard.iq.dataverse.export;
 
-import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import org.apache.commons.lang.StringUtils;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import javax.ws.rs.core.MediaType;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
-import java.util.logging.Logger;
 
 /**
  * Schema.org JSON-LD is used by Google Dataset Search and other services to
@@ -69,34 +61,27 @@ import java.util.logging.Logger;
  * https://www.icpsr.umich.edu/icpsrweb/ICPSR/studies/23980/export , and
  * https://doi.pangaea.de/10.1594/PANGAEA.884619
  */
-@AutoService(Exporter.class)
+
 public class SchemaDotOrgExporter implements Exporter {
 
-    private static final Logger logger = Logger.getLogger(SchemaDotOrgExporter.class.getCanonicalName());
+    private String dataverseSiteUrlStatic;
 
-    public static final String NAME = "schema.org";
+    // -------------------- CONSTRUCTORS --------------------
+
+    public SchemaDotOrgExporter(String dataverseSiteUrlStatic) {
+        this.dataverseSiteUrlStatic = dataverseSiteUrlStatic;
+    }
+
+    // -------------------- LOGIC --------------------
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
-        String jsonLdAsString = version.getJsonLd();
-        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonLdAsString))) {
-            JsonObject jsonLdJsonObject = jsonReader.readObject();
-            try {
-                outputStream.write(jsonLdJsonObject.toString().getBytes(StandardCharsets.UTF_8));
-            } catch (IOException ex) {
-                logger.info("IOException calling outputStream.write: " + ex);
-            }
-            try {
-                outputStream.flush();
-            } catch (IOException ex) {
-                logger.info("IOException calling outputStream.flush: " + ex);
-            }
-        }
+    public String exportDataset(DatasetVersion version) {
+        return version.getJsonLd(dataverseSiteUrlStatic);
     }
 
     @Override
     public String getProviderName() {
-        return NAME;
+        return ExporterType.SCHEMADOTORG.toString();
     }
 
     @Override
@@ -121,18 +106,18 @@ public class SchemaDotOrgExporter implements Exporter {
     }
 
     @Override
-    public String getXMLNameSpace() throws ExportException {
-        throw new ExportException(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.");
+    public String getXMLNameSpace() {
+        return StringUtils.EMPTY;
     }
 
     @Override
-    public String getXMLSchemaLocation() throws ExportException {
-        throw new ExportException(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.");
+    public String getXMLSchemaLocation() {
+        return StringUtils.EMPTY;
     }
 
     @Override
-    public String getXMLSchemaVersion() throws ExportException {
-        throw new ExportException(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.");
+    public String getXMLSchemaVersion() {
+        return StringUtils.EMPTY;
     }
 
     @Override

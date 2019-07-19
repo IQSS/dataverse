@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
 import com.lyncode.xoai.model.oaipmh.GetRecord;
+import edu.harvard.iq.dataverse.export.ExportService;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -31,7 +32,7 @@ public class XgetRecord extends GetRecord {
         super(record);
     }
 
-    public void writeToStream(OutputStream outputStream, boolean excludeEmailFromExport) throws IOException {
+    public void writeToStream(OutputStream outputStream, ExportService exportService) throws IOException {
 
         if (this.getRecord() == null) {
             throw new IOException("XgetRecord: null Record");
@@ -41,7 +42,7 @@ public class XgetRecord extends GetRecord {
         outputStream.write(RECORD_START_ELEMENT.getBytes());
         outputStream.flush();
 
-        xrecord.writeToStream(outputStream, excludeEmailFromExport);
+        xrecord.writeToStream(outputStream, exportService);
 
         outputStream.write(RECORD_CLOSE_ELEMENT.getBytes());
         outputStream.flush();

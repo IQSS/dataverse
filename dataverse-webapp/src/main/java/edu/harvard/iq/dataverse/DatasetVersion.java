@@ -1586,7 +1586,7 @@ public class DatasetVersion implements Serializable {
      * We call the export format "Schema.org JSON-LD" and extensive Javadoc can
      * be found in {@link SchemaDotOrgExporter}.
      */
-    public String getJsonLd() {
+    public String getJsonLd(String dataverseSiteUrl) {
         // We show published datasets only for "datePublished" field below.
         if (!this.isPublished()) {
             return "";
@@ -1776,7 +1776,7 @@ public class DatasetVersion implements Serializable {
         job.add("includedInDataCatalog", Json.createObjectBuilder()
                 .add("@type", "DataCatalog")
                 .add("name", this.getRootDataverseNameforCitation())
-                .add("url", SystemConfig.getDataverseSiteUrlStatic())
+                .add("url", dataverseSiteUrl)
         );
 
         String installationBrandName = BrandingUtil.getInstallationBrandName(getRootDataverseNameforCitation());
@@ -1818,7 +1818,6 @@ public class DatasetVersion implements Serializable {
         List<FileMetadata> fileMetadatasSorted = getFileMetadatasSorted();
         if (fileMetadatasSorted != null && !fileMetadatasSorted.isEmpty()) {
             JsonArrayBuilder fileArray = Json.createArrayBuilder();
-            String dataverseSiteUrl = SystemConfig.getDataverseSiteUrlStatic();
             for (FileMetadata fileMetadata : fileMetadatasSorted) {
                 JsonObjectBuilder fileObject = NullSafeJsonBuilder.jsonObjectBuilder();
                 String filePidUrlAsString = null;

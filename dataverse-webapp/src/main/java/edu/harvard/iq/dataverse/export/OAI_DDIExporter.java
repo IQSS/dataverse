@@ -1,28 +1,43 @@
 package edu.harvard.iq.dataverse.export;
 
-import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
-import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 
 /**
- * @author skraffmi
+ * This exporter is for the OAI ("short") flavor of the DDI -
+ * that is, without the variable/data information. The ddi export
+ * utility does not need the version entity to produce that.
  */
-@AutoService(Exporter.class)
+
 public class OAI_DDIExporter implements Exporter {
-    // TODO: move these to the export utility:
+
     private static String DEFAULT_XML_NAMESPACE = "ddi:codebook:2_5";
     private static String DEFAULT_XML_SCHEMALOCATION = "http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd";
     private static String DEFAULT_XML_VERSION = "2.5";
 
+    private boolean excludeEmailFromExport;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public OAI_DDIExporter(boolean excludeEmailFromExport) {
+        this.excludeEmailFromExport = excludeEmailFromExport;
+    }
+
+    // -------------------- LOGIC --------------------
+
     @Override
     public String getProviderName() {
-        return "oai_ddi";
+        return ExporterType.OAIDDI.toString();
     }
 
     @Override
@@ -31,13 +46,14 @@ public class OAI_DDIExporter implements Exporter {
     }
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
-        try {
-            // This exporter is for the OAI ("short") flavor of the DDI - 
-            // that is, without the variable/data information. The ddi export 
-            // utility does not need the version entity to produce that. 
-            DdiExportUtil.datasetJson2ddi(json, outputStream);
-        } catch (XMLStreamException xse) {
+    public String exportDataset(DatasetVersion version) throws ExportException {
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            JsonObject datasetAsJson = JsonPrinter.jsonAsDatasetDto(version, excludeEmailFromExport)
+                    .build();
+
+            DdiExportUtil.datasetJson2ddi(datasetAsJson, byteArrayOutputStream);
+            return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
+        } catch (XMLStreamException | IOException xse) {
             throw new ExportException("Caught XMLStreamException performing DDI export");
         }
     }
@@ -58,17 +74,17 @@ public class OAI_DDIExporter implements Exporter {
     }
 
     @Override
-    public String getXMLNameSpace() throws ExportException {
+    public String getXMLNameSpace() {
         return OAI_DDIExporter.DEFAULT_XML_NAMESPACE;
     }
 
     @Override
-    public String getXMLSchemaLocation() throws ExportException {
+    public String getXMLSchemaLocation() {
         return OAI_DDIExporter.DEFAULT_XML_SCHEMALOCATION;
     }
 
     @Override
-    public String getXMLSchemaVersion() throws ExportException {
+    public String getXMLSchemaVersion() {
         return OAI_DDIExporter.DEFAULT_XML_VERSION;
     }
 

@@ -4,12 +4,13 @@ import com.lyncode.xoai.model.oaipmh.Header;
 import com.lyncode.xoai.model.oaipmh.Record;
 import com.lyncode.xoai.xml.XmlWriter;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.export.ExportException;
+import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.export.ExporterType;
+import io.vavr.control.Either;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -63,7 +64,7 @@ public class Xrecord extends Record {
         return this;
     }
 
-    public void writeToStream(OutputStream outputStream, boolean excludeEmailFromExport) throws IOException {
+    public void writeToStream(OutputStream outputStream, ExportService exportService) throws IOException {
         outputStream.flush();
 
         String headerString = itemHeaderToString(this.header);
@@ -82,17 +83,15 @@ public class Xrecord extends Record {
                 outputStream.flush();
 
                 if (dataset != null && formatName != null) {
-                    InputStream inputStream = null;
-                    try {
-                        inputStream = ExportService.getInstance().getExport(dataset, formatName);
-                    } catch (ExportException ex) {
-                        inputStream = null;
+                    Either<DataverseError, String> exportedDataset =
+                            exportService.exportDatasetVersionAsString(dataset.getReleasedVersion(),
+                                                                       ExporterType.valueOf(formatName));
+
+                    if (exportedDataset.isLeft()) {
+                        throw new RuntimeException(exportedDataset.getLeft().getErrorMsg());
                     }
 
-                    if (inputStream == null) {
-                        throw new IOException("Xrecord: failed to open metadata stream.");
-                    }
-                    writeMetadataStream(inputStream, outputStream);
+                    outputStream.write(exportedDataset.get().getBytes());
                 }
                 outputStream.write(METADATA_END_ELEMENT.getBytes());
             } else {
@@ -128,18 +127,6 @@ public class Xrecord extends Record {
         } catch (Exception ex) {
             return null;
         }
-    }
-
-    private void writeMetadataStream(InputStream inputStream, OutputStream outputStream) throws IOException {
-        int bufsize;
-        byte[] buffer = new byte[4 * 8192];
-
-        while ((bufsize = inputStream.read(buffer)) != -1) {
-            outputStream.write(buffer, 0, bufsize);
-            outputStream.flush();
-        }
-
-        inputStream.close();
     }
 
     private String customMetadataExtensionRef(String identifier) {

@@ -5,6 +5,7 @@ import com.lyncode.xoai.model.oaipmh.ListRecords;
 import com.lyncode.xoai.model.oaipmh.Record;
 import com.lyncode.xoai.model.oaipmh.ResumptionToken;
 import com.lyncode.xoai.xml.XmlWriter;
+import edu.harvard.iq.dataverse.export.ExportService;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.ByteArrayOutputStream;
@@ -31,13 +32,13 @@ public class XlistRecords extends ListRecords {
     private static final String COMPLETE_LIST_SIZE_ATTRIBUTE = "completeListSize";
     private static final String CURSOR_ATTRIBUTE = "cursor";
 
-    public void writeToStream(OutputStream outputStream, boolean excludeEmailFromExport) throws IOException {
+    public void writeToStream(OutputStream outputStream, ExportService exportService) throws IOException {
         if (!this.records.isEmpty()) {
             for (Record record : this.records) {
                 outputStream.write(RECORD_START_ELEMENT.getBytes());
                 outputStream.flush();
 
-                ((Xrecord) record).writeToStream(outputStream, excludeEmailFromExport);
+                ((Xrecord) record).writeToStream(outputStream, exportService);
 
                 outputStream.write(RECORD_CLOSE_ELEMENT.getBytes());
                 outputStream.flush();

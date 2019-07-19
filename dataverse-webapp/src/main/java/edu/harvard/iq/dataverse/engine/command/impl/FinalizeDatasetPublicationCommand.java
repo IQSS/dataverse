@@ -16,8 +16,6 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.export.ExportException;
-import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -118,7 +116,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             theDataset.getLatestVersion().setVersionState(RELEASED);
         }
 
-        exportMetadata(ctxt.settings());
         boolean doNormalSolrDocCleanUp = true;
         ctxt.index().indexDataset(theDataset, doNormalSolrDocCleanUp);
         ctxt.solrIndex().indexPermissionsForOneDvObject(theDataset);
@@ -148,25 +145,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
 
         return readyDataset;
-    }
-
-    /**
-     * Attempting to run metadata export, for all the formats for which we have
-     * metadata Exporters.
-     */
-    private void exportMetadata(SettingsServiceBean settingsServiceBean) {
-
-        try {
-            ExportService instance = ExportService.getInstance(settingsServiceBean);
-            instance.exportAllFormats(getDataset());
-
-        } catch (ExportException ex) {
-            // Something went wrong!
-            // Just like with indexing, a failure to export is not a fatal
-            // condition. We'll just log the error as a warning and keep
-            // going:
-            logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", ex.getMessage());
-        }
     }
 
     /**

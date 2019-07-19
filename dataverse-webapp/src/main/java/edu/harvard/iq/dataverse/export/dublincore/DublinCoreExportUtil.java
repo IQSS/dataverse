@@ -53,11 +53,8 @@ public class DublinCoreExportUtil {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson.toString(), DatasetDTO.class);
-        //try {
+
         dto2dublincore(datasetDto, outputStream, dcFlavor);
-        //} catch (XMLStreamException ex) {
-        //    Logger.getLogger(DdiExportUtil.class.getName()).log(Level.SEVERE, null, ex);
-        //}
     }
 
     private static void dto2dublincore(DatasetDTO datasetDto, OutputStream outputStream, String dcFlavor) throws XMLStreamException {

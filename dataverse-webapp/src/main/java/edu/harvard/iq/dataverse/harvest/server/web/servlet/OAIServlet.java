@@ -23,8 +23,8 @@ import com.lyncode.xoai.xml.XSISchema;
 import com.lyncode.xoai.xml.XmlWriter;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.export.ExporterType;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -49,6 +50,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import static com.lyncode.xoai.model.oaipmh.OAIPMH.NAMESPACE_URI;
@@ -75,6 +77,8 @@ public class OAIServlet extends HttpServlet {
 
     @EJB
     SystemConfig systemConfig;
+    @Inject
+    private ExportService exportService;
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.web.servlet.OAIServlet");
     protected HashMap attributesMap = new HashMap();
@@ -124,32 +128,22 @@ public class OAIServlet extends HttpServlet {
     }
 
     private void addSupportedMetadataFormats(Context context) {
-        for (String[] provider : ExportService.getInstance(settingsService).getExportersLabels()) {
-            String formatName = provider[1];
-            Exporter exporter;
-            try {
-                exporter = ExportService.getInstance(settingsService).getExporter(formatName);
-            } catch (ExportException ex) {
-                exporter = null;
-            }
 
-            if (exporter != null && exporter.isXMLFormat() && exporter.isHarvestable()) {
-                MetadataFormat metadataFormat;
+        Map<ExporterType, Exporter> exporters = exportService.getAllExporters();
 
-                try {
+        for (Exporter exporter : exporters.values()) {
 
-                    metadataFormat = MetadataFormat.metadataFormat(formatName);
+            if (exporter.isXMLFormat() && exporter.isHarvestable()) {
+                MetadataFormat metadataFormat = MetadataFormat.metadataFormat(exporter.getProviderName());
+
+                if (!exporter.getXMLNameSpace().isEmpty() || !exporter.getXMLSchemaLocation().isEmpty()) {
                     metadataFormat.withNamespace(exporter.getXMLNameSpace());
                     metadataFormat.withSchemaLocation(exporter.getXMLSchemaLocation());
-                } catch (ExportException ex) {
-                    metadataFormat = null;
-                }
-                if (metadataFormat != null) {
                     context.withMetadataFormat(metadataFormat);
                 }
             }
+
         }
-        //return context;
     }
 
     private Context addDataverseJsonMetadataFormat(Context context) {
@@ -243,11 +237,9 @@ public class OAIServlet extends HttpServlet {
             response.setContentType("text/xml;charset=UTF-8");
 
             if (isGetRecord(request) && !handle.hasErrors()) {
-                writeGetRecord(response, handle,
-                        settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport));
+                writeGetRecord(response, handle);
             } else if (isListRecords(request) && !handle.hasErrors()) {
-                writeListRecords(response, handle,
-                        settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport));
+                writeListRecords(response, handle);
             } else {
                 XmlWriter xmlWriter = new XmlWriter(response.getOutputStream());
                 xmlWriter.write(handle);
@@ -276,7 +268,7 @@ public class OAIServlet extends HttpServlet {
 
     // Custom methods for the potentially expensive GetRecord and ListRecords requests:
 
-    private void writeListRecords(HttpServletResponse response, OAIPMH handle, boolean excludeEmailFromExport)
+    private void writeListRecords(HttpServletResponse response, OAIPMH handle)
             throws IOException {
         OutputStream outputStream = response.getOutputStream();
 
@@ -296,7 +288,7 @@ public class OAIServlet extends HttpServlet {
 
         outputStream.flush();
 
-        ((XlistRecords) verb).writeToStream(outputStream, excludeEmailFromExport);
+        ((XlistRecords) verb).writeToStream(outputStream, exportService);
 
         outputStream.write(("</" + verb.getType().displayName() + ">").getBytes());
         outputStream.write(("</" + OAI_PMH + ">\n").getBytes());
@@ -306,7 +298,7 @@ public class OAIServlet extends HttpServlet {
 
     }
 
-    private void writeGetRecord(HttpServletResponse response, OAIPMH handle, boolean excludeEmailFromExport)
+    private void writeGetRecord(HttpServletResponse response, OAIPMH handle)
             throws IOException, XmlWriteException, XMLStreamException {
         OutputStream outputStream = response.getOutputStream();
 
@@ -326,7 +318,7 @@ public class OAIServlet extends HttpServlet {
 
         outputStream.flush();
 
-        ((XgetRecord) verb).writeToStream(outputStream, excludeEmailFromExport);
+        ((XgetRecord) verb).writeToStream(outputStream, exportService);
 
         outputStream.write(("</" + verb.getType().displayName() + ">").getBytes());
         outputStream.write(("</" + OAI_PMH + ">\n").getBytes());

@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
@@ -28,6 +29,7 @@ import java.nio.charset.Charset;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -116,19 +118,17 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         // transfer
                         messageDigest = MessageDigest.getInstance("MD5");
                         try (PipedInputStream in = new PipedInputStream(); DigestInputStream digestInputStream2 = new DigestInputStream(in, messageDigest)) {
-                            new Thread(new Runnable() {
-                                public void run() {
-                                    try (PipedOutputStream out = new PipedOutputStream(in)) {
-                                        // Generate bag
-                                        BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
-                                        bagger.setAuthenticationKey(token.getTokenString());
-                                        bagger.generateBag(out);
-                                    } catch (Exception e) {
-                                        logger.severe("Error creating bag: " + e.getMessage());
-                                        // TODO Auto-generated catch block
-                                        e.printStackTrace();
-                                        throw new RuntimeException("Error creating bag: " + e.getMessage());
-                                    }
+                            new Thread(() -> {
+                                try (PipedOutputStream out = new PipedOutputStream(in)) {
+                                    // Generate bag
+                                    BagGenerator bagger = new BagGenerator(new OREMap(dv, false, SystemConfig.getDataverseSiteUrlStatic(), LocalDate.now()), dataciteXml);
+                                    bagger.setAuthenticationKey(token.getTokenString());
+                                    bagger.generateBag(out);
+                                } catch (Exception e) {
+                                    logger.severe("Error creating bag: " + e.getMessage());
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                    throw new RuntimeException("Error creating bag: " + e.getMessage());
                                 }
                             }).start();
 

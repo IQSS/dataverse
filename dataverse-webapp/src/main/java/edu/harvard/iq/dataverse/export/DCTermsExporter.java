@@ -1,25 +1,36 @@
 package edu.harvard.iq.dataverse.export;
 
-import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.dublincore.DublinCoreExportUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
-import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author Leonid Andreev
  */
-@AutoService(Exporter.class)
+
 public class DCTermsExporter implements Exporter {
 
+    private boolean excludeEmailFromExport;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    DCTermsExporter(boolean excludeEmailFromExport) {
+        this.excludeEmailFromExport = excludeEmailFromExport;
+    }
+
+    // -------------------- LOGIC --------------------
 
     @Override
     public String getProviderName() {
-        return "dcterms";
+        return ExporterType.DCTERMS.toString();
     }
 
     @Override
@@ -28,10 +39,14 @@ public class DCTermsExporter implements Exporter {
     }
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
-        try {
-            DublinCoreExportUtil.datasetJson2dublincore(json, outputStream, DublinCoreExportUtil.DC_FLAVOR_DCTERMS);
-        } catch (XMLStreamException xse) {
+    public String exportDataset(DatasetVersion version) throws ExportException {
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            JsonObject datasetAsJson = JsonPrinter.jsonAsDatasetDto(version, excludeEmailFromExport)
+                    .build();
+
+            DublinCoreExportUtil.datasetJson2dublincore(datasetAsJson, byteArrayOutputStream, DublinCoreExportUtil.DC_FLAVOR_DCTERMS);
+            return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
+        } catch (XMLStreamException | IOException xse) {
             throw new ExportException("Caught XMLStreamException performing DCTERMS export");
         }
     }
@@ -52,17 +67,17 @@ public class DCTermsExporter implements Exporter {
     }
 
     @Override
-    public String getXMLNameSpace() throws ExportException {
+    public String getXMLNameSpace() {
         return DublinCoreExportUtil.DCTERMS_XML_NAMESPACE;
     }
 
     @Override
-    public String getXMLSchemaLocation() throws ExportException {
+    public String getXMLSchemaLocation() {
         return DublinCoreExportUtil.DCTERMS_XML_SCHEMALOCATION;
     }
 
     @Override
-    public String getXMLSchemaVersion() throws ExportException {
+    public String getXMLSchemaVersion() {
         return DublinCoreExportUtil.DEFAULT_XML_VERSION;
     }
 

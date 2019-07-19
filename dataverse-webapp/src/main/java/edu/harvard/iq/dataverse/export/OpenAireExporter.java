@@ -1,26 +1,32 @@
 package edu.harvard.iq.dataverse.export;
 
-import java.io.OutputStream;
-
-import javax.json.JsonObject;
-import javax.xml.stream.XMLStreamException;
-
-import com.google.auto.service.AutoService;
-
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.openaire.OpenAireExportUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
-@AutoService(Exporter.class)
+import javax.json.JsonObject;
+import javax.xml.stream.XMLStreamException;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 public class OpenAireExporter implements Exporter {
 
-    public OpenAireExporter() {
+    private boolean excludeEmailFromExport;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public OpenAireExporter(boolean excludeEmailFromExport) {
+        this.excludeEmailFromExport = excludeEmailFromExport;
     }
+
+    // -------------------- LOGIC --------------------
 
     @Override
     public String getProviderName() {
-        return "oai_datacite";
+        return ExporterType.OPENAIRE.toString();
     }
 
     @Override
@@ -29,11 +35,14 @@ public class OpenAireExporter implements Exporter {
     }
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
-            throws ExportException {
-        try {
-            OpenAireExportUtil.datasetJson2openaire(json, outputStream);
-        } catch (XMLStreamException xse) {
+    public String exportDataset(DatasetVersion version) throws ExportException {
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            JsonObject datasetAsJson = JsonPrinter.jsonAsDatasetDto(version, excludeEmailFromExport)
+                    .build();
+
+            OpenAireExportUtil.datasetJson2openaire(datasetAsJson, byteArrayOutputStream);
+            return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
+        } catch (XMLStreamException | IOException xse) {
             throw new ExportException("Caught XMLStreamException performing DataCite OpenAIRE export", xse);
         }
     }
@@ -54,17 +63,17 @@ public class OpenAireExporter implements Exporter {
     }
 
     @Override
-    public String getXMLNameSpace() throws ExportException {
+    public String getXMLNameSpace() {
         return OpenAireExportUtil.RESOURCE_NAMESPACE;
     }
 
     @Override
-    public String getXMLSchemaLocation() throws ExportException {
+    public String getXMLSchemaLocation() {
         return OpenAireExportUtil.RESOURCE_SCHEMA_LOCATION;
     }
 
     @Override
-    public String getXMLSchemaVersion() throws ExportException {
+    public String getXMLSchemaVersion() {
         return OpenAireExportUtil.SCHEMA_VERSION;
     }
 

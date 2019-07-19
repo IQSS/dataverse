@@ -73,8 +73,10 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLComman
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDvObjectPIDMetadataCommand;
+import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.export.ExporterType;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.license.TermsOfUseFactory;
 import edu.harvard.iq.dataverse.license.TermsOfUseFormMapper;
@@ -86,6 +88,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import io.vavr.control.Either;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -121,6 +124,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
@@ -187,6 +191,9 @@ public class Datasets extends AbstractApiBean {
     @Inject
     private TermsOfUseFormMapper termsOfUseFormMapper;
 
+    @Inject
+    private ExportService exportService;
+
     /**
      * Used to consolidate the way we parse and handle dataset versions.
      *
@@ -227,25 +234,29 @@ public class Datasets extends AbstractApiBean {
     @Produces({"application/xml", "application/json"})
     public Response exportDataset(@QueryParam("persistentId") String persistentId, @QueryParam("exporter") String exporter) {
 
-        try {
-            Dataset dataset = datasetService.findByGlobalId(persistentId);
-            if (dataset == null) {
-                return error(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
-            }
+        Optional<ExporterType> exporterConstant = ExporterType.fromString(exporter);
 
-            ExportService instance = ExportService.getInstance(settingsSvc);
-
-            InputStream is = instance.getExport(dataset, exporter);
-
-            String mediaType = instance.getMediaType(exporter);
-
-            return allowCors(Response.ok()
-                                     .entity(is)
-                                     .type(mediaType).
-                            build());
-        } catch (Exception wr) {
-            return error(Response.Status.FORBIDDEN, "Export Failed");
+        if (!exporterConstant.isPresent()) {
+            return error(Response.Status.BAD_REQUEST, exporter + " is not a valid exporter");
         }
+
+        Dataset dataset = datasetService.findByGlobalId(persistentId);
+        if (dataset == null) {
+            return error(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
+        }
+
+        Either<DataverseError, String> exportedDataset = exportService.exportDatasetVersionAsString(dataset.getReleasedVersion(),
+                                                                                                    exporterConstant.get());
+
+        if (exportedDataset.isLeft()) {
+            return error(Response.Status.FORBIDDEN, exportedDataset.getLeft().getErrorMsg());
+        }
+
+        String mediaType = exportService.getMediaType(exporterConstant.get());
+        return allowCors(Response.ok()
+                                 .entity(exportedDataset.get())
+                                 .type(mediaType).
+                        build());
     }
 
     @DELETE

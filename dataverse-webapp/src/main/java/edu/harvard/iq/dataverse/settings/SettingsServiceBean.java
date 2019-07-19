@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
 import edu.harvard.iq.dataverse.persistence.Setting;
 import edu.harvard.iq.dataverse.persistence.SettingDao;
+import edu.harvard.iq.dataverse.qualifiers.ProductionBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 
@@ -25,6 +26,7 @@ import java.util.logging.Logger;
  * @see FileBasedSettingsFetcher
  */
 @Stateless
+@ProductionBean
 public class SettingsServiceBean {
 
     /**

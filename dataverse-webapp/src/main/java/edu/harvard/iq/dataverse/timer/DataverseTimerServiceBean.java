@@ -174,8 +174,6 @@ public class DataverseTimerServiceBean implements Serializable {
                 ExportTimerInfo info = (ExportTimerInfo) timer.getInfo();
                 logger.info("Timer Service: Running a scheduled export job.");
 
-                // try to export all unexported datasets:
-                datasetService.exportAll();
                 // and update all oai sets:
                 oaiSetService.exportAllSets();
             } catch (Throwable e) {

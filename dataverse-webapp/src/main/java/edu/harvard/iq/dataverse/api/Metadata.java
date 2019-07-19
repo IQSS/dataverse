@@ -10,11 +10,9 @@ import edu.harvard.iq.dataverse.harvest.server.OAISet;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 
 import javax.ejb.EJB;
-import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import java.util.logging.Logger;
 
@@ -31,32 +29,6 @@ public class Metadata extends AbstractApiBean {
 
     @EJB
     DatasetServiceBean datasetService;
-
-    // The following 2 commands start export all jobs in the background, 
-    // asynchronously. 
-    // (These API calls should probably not be here;
-    // May be under "/admin" somewhere?)
-    // exportAll will attempt to go through all the published, local 
-    // datasets *that haven't been exported yet* - which is determined by
-    // checking the lastexporttime value of the dataset; if it's null, or < the last 
-    // publication date = "unexported" - and export them. 
-    @GET
-    @Path("/exportAll")
-    @Produces("application/json")
-    public Response exportAll() {
-        datasetService.exportAllAsync();
-        return this.accepted();
-    }
-
-    // reExportAll will FORCE A FULL REEXPORT on every published, local 
-    // dataset, regardless of the lastexporttime value.
-    @GET
-    @Path("/reExportAll")
-    @Produces("application/json")
-    public Response reExportAll() {
-        datasetService.reExportAllAsync();
-        return this.accepted();
-    }
 
     /**
      * initial attempt at triggering indexing/creation/population of a OAI set without going throught

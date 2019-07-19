@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resource xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd"
+          xmlns="http://datacite.org/schema/kernel-4"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <identifier identifierType="DOI">10.5072/FK2/05NAR1</identifier>
+    <creators><creator><creatorName>Admin, Dataverse</creatorName><affiliation>Dataverse.org</affiliation></creator></creators>
+    <titles>
+        <title>Export test</title>
+    </titles>
+    <publisher>Root</publisher>
+    <publicationYear>2019</publicationYear>
+    <resourceType resourceTypeGeneral="Dataset"/>
+    
+    <descriptions>
+        <description descriptionType="Abstract">EXPORT</description>
+    </descriptions>
+    <contributors><contributor contributorType="ContactPerson"><contributorName>Admin, Dataverse</contributorName><affiliation>Dataverse.org</affiliation></contributor></contributors>
+</resource>

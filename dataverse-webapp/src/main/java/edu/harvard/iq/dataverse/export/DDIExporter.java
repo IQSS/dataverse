@@ -1,36 +1,46 @@
 package edu.harvard.iq.dataverse.export;
 
-import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import javax.json.JsonObject;
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
+ * This exporter is for the "full" DDI, that includes the file-level,
+ * <data> and <var> metadata.
+ *
  * @author Leonid Andreev
  * (based on the original DDIExporter by
  * @author skraffmi
  * - renamed OAI_DDIExporter)
  */
-@AutoService(Exporter.class)
+
 public class DDIExporter implements Exporter {
-    // TODO: 
-    // move these into the ddi export utility
+
     private static String DEFAULT_XML_NAMESPACE = "ddi:codebook:2_5";
     private static String DEFAULT_XML_SCHEMALOCATION = "http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd";
     private static String DEFAULT_XML_VERSION = "2.5";
 
-    // This exporter is for the "full" DDI, that includes the file-level, 
-    // <data> and <var> metadata.
+    private boolean excludeEmailFromExport;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    DDIExporter(boolean excludeEmailFromExport) {
+        this.excludeEmailFromExport = excludeEmailFromExport;
+    }
+
+    // -------------------- LOGIC --------------------
+
     @Override
     public String getProviderName() {
-        return "ddi";
+        return ExporterType.DDI.toString();
     }
 
     @Override
@@ -39,13 +49,14 @@ public class DDIExporter implements Exporter {
     }
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
-        try {
-            XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
-            xmlw.writeStartDocument();
-            xmlw.flush();
-            DdiExportUtil.datasetJson2ddi(json, version, outputStream);
-        } catch (XMLStreamException xse) {
+    public String exportDataset(DatasetVersion version) throws ExportException {
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            JsonObject datasetAsJson = JsonPrinter.jsonAsDatasetDto(version, excludeEmailFromExport)
+                    .build();
+
+            DdiExportUtil.datasetJson2ddi(datasetAsJson, version, byteArrayOutputStream);
+            return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
+        } catch (XMLStreamException | IOException xse) {
             throw new ExportException("Caught XMLStreamException performing DDI export");
         }
     }
@@ -70,17 +81,17 @@ public class DDIExporter implements Exporter {
     }
 
     @Override
-    public String getXMLNameSpace() throws ExportException {
+    public String getXMLNameSpace() {
         return DDIExporter.DEFAULT_XML_NAMESPACE;
     }
 
     @Override
-    public String getXMLSchemaLocation() throws ExportException {
+    public String getXMLSchemaLocation() {
         return DDIExporter.DEFAULT_XML_SCHEMALOCATION;
     }
 
     @Override
-    public String getXMLSchemaVersion() throws ExportException {
+    public String getXMLSchemaVersion() {
         return DDIExporter.DEFAULT_XML_VERSION;
     }
 

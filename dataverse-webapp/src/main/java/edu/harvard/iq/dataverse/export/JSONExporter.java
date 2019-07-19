@@ -1,25 +1,31 @@
 package edu.harvard.iq.dataverse.export;
 
-import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import org.apache.commons.lang.StringUtils;
 
-import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.core.MediaType;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 
 
-/**
- * @author skraffmi
- */
-@AutoService(Exporter.class)
+
 public class JSONExporter implements Exporter {
+
+    private boolean excludeEmailFromExport;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public JSONExporter(boolean excludeEmailFromExport) {
+        this.excludeEmailFromExport = excludeEmailFromExport;
+    }
+
+    // -------------------- LOGIC --------------------
 
     @Override
     public String getProviderName() {
-        return "dataverse_json";
+        return ExporterType.JSON.toString();
     }
 
     @Override
@@ -28,10 +34,14 @@ public class JSONExporter implements Exporter {
     }
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
+    public String exportDataset(DatasetVersion version) throws ExportException {
         try {
-            outputStream.write(json.toString().getBytes(StandardCharsets.UTF_8));
-            outputStream.flush();
+            JsonObjectBuilder jsonObjectBuilder = JsonPrinter.jsonAsDatasetDto(version, excludeEmailFromExport);
+
+            return jsonObjectBuilder
+                    .build()
+                    .toString();
+
         } catch (Exception e) {
             throw new ExportException("Unknown exception caught during JSON export.");
         }
@@ -53,18 +63,18 @@ public class JSONExporter implements Exporter {
     }
 
     @Override
-    public String getXMLNameSpace() throws ExportException {
-        throw new ExportException("JSONExporter: not an XML format.");
+    public String getXMLNameSpace() {
+        return StringUtils.EMPTY;
     }
 
     @Override
-    public String getXMLSchemaLocation() throws ExportException {
-        throw new ExportException("JSONExporter: not an XML format.");
+    public String getXMLSchemaLocation() {
+        return StringUtils.EMPTY;
     }
 
     @Override
-    public String getXMLSchemaVersion() throws ExportException {
-        throw new ExportException("JSONExporter: not an XML format.");
+    public String getXMLSchemaVersion() {
+        return StringUtils.EMPTY;
     }
 
     @Override
