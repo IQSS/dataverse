@@ -489,8 +489,9 @@ public class SystemConfig {
     }
     
     public String getApplicationTermsOfUse() {
+        String language = BundleUtil.getCurrentLocale().getLanguage();
         String saneDefaultForAppTermsOfUse = BundleUtil.getStringFromBundle("system.app.terms");
-        String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
+        String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, language, saneDefaultForAppTermsOfUse);
         return appTermsOfUse;
     }
 

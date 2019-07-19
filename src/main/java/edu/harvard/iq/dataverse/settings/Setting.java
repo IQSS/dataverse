@@ -16,13 +16,22 @@ import javax.persistence.NamedQuery;
     @NamedQuery( name="Setting.deleteByName",
                 query="DELETE FROM Setting s WHERE s.name=:name"),
     @NamedQuery( name="Setting.findAll",
-                query="SELECT s FROM Setting s")
+                query="SELECT s FROM Setting s"),
+    @NamedQuery( name="Setting.deleteByNameAndLang",
+                query="DELETE FROM Setting s WHERE s.name=:name AND s.lang=:lang"),
+    @NamedQuery( name="Setting.findByNameAndLang",
+                query = "SELECT s FROM Setting s WHERE s.name=:name AND s.lang=:lang" ),
+
 })
 @Entity
 public class Setting implements Serializable {
     
     @Id
     private String name;
+
+    @Id
+    @Column(columnDefinition = "TEXT")
+    private String lang;
 
     @Column(columnDefinition = "TEXT")
     private String content;
@@ -31,8 +40,15 @@ public class Setting implements Serializable {
     }
 
     public Setting(String name, String content) {
+       this.name = name;
+       this.content = content;
+       this.lang = "en";
+    }
+
+    public Setting(String name, String lang, String content) {
         this.name = name;
         this.content = content;
+        this.lang = lang;
     }
 
     public String getName() {
@@ -49,6 +65,14 @@ public class Setting implements Serializable {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public String getLang() {
+        return lang;
+    }
+
+    public void setLang(String lang) {
+        this.lang = lang;
     }
 
     @Override
