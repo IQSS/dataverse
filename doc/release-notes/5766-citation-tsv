@@ -1,4 +1,4 @@
 Update citation metadata block
 curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @citation.tsv -H "C
 
-Run ReExportall to update the citation metadata block to remove an errant tab: http://guides.dataverse.org/en/4.10/admin/metadataexport.html?highlight=export#batch-exports-through-the-api
+Run ReExportall to update the citation metadata block to remove an errant tab: http://guides.dataverse.org/en/4.16/admin/metadataexport.html?highlight=export#batch-exports-through-the-api
