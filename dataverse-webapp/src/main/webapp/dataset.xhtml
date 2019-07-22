@@ -166,7 +166,8 @@
                                     <p:commandLink type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('publishParent').show()"
                                                    rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                                and DatasetPage.canPublishDataverse()
-                                                               and (DatasetPage.dataset.owner.owner == null or (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released))
+                                                               and (DatasetPage.dataset.owner.owner == null
+                                                                    or (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released))
                                                                and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
@@ -231,10 +232,9 @@
                                             </h:outputLink>
                                         </li>
                                         <li>
-                                            <p:commandLink id="editTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:bind_bsui_components();">
-                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                <h:outputText value="#{bundle['dataset.editBtn.itemLabel.terms']}" />
-                                            </p:commandLink>
+                                            <h:outputLink value="/selectGuestbook.xhtml?datasetId=#{DatasetPage.dataset.id}">
+                                                <h:outputText value="#{bundle['dataset.editBtn.itemLabel.selectGuestbook']}" />
+                                            </h:outputLink>
                                         </li>
                                         <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(DatasetPage.dataset)}">
                                             <li class="#{settingsWrapper.publicInstall ? '' : 'dropdown-submenu pull-left'}">
@@ -637,11 +637,10 @@
                         </ui:fragment>
 
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
-                                   rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'LICENSE')}">
+                                   rendered="#{empty DatasetPage.editMode}">
                             
-                            <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{(!DatasetPage.workingVersion.deaccessioned or 
-                                                              (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))  and
-                                                              (empty DatasetPage.editMode)}">
+                            <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned or
+                                                              (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset())}">
                                 <ui:include src="filesFragment.xhtml">
                                     <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
                                 </ui:include>
@@ -685,18 +684,16 @@
 
                             <!-- 4.2.1: see comment above -->
                             <p:tab id="termsTab" title="#{bundle['file.dataFilesTab.terms.list.guestbook']}"
-                                   rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'LICENSE')}">
+                                   rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                                 <ui:include src="dataset-license-terms.xhtml">
-                                    <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? 'LICENSE': ''}"/>
+                                    <ui:param name="editMode" value=""/>
                                     <ui:param name="termsOfUseAndAccess" value="#{DatasetPage.workingVersion.termsOfUseAndAccess}"/>
-                                    <ui:param name="datasetPage" value="true"/>
+                                    <ui:param name="datasetPage" value="true" />
                                 </ui:include>
                             </p:tab>
                             <!-- 4.2.1: see above -->
-                            <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}" rendered="#{empty DatasetPage.editMode}">
+                            <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}">
                                 <ui:include src="dataset-versions.xhtml">
-<!--                                     <ui:param name="dataset" value="#{DatasetPage.dataset}" /> -->
-<!--                                     <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}" /> -->
                                 </ui:include>
                             </p:tab>
                         </p:tabView>

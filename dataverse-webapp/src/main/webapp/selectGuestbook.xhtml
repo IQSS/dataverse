@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:o="http://omnifaces.org/ui"
+      xmlns:dv="http://dataverse.org/facelets"
+>
+<f:view locale="#{dataverseSession.localeCode}"/>
+
+<!--@elvariable id="dataset" type="edu.harvard.iq.dataverse.Dataset"-->
+
+<h:head>
+</h:head>
+<h:body>
+    <ui:composition template="/dataverse_template.xhtml">
+        <ui:param name="pageTitle" value="#{selectGuestbookPage.workingVersion.title} - #{selectGuestbookPage.dataset.owner.name}"/>
+        <ui:param name="dataset" value="#{selectGuestbookPage.dataset}"/>
+        <ui:param name="showMessagePanel" value="#{true}"/>
+        <ui:define name="body">
+            <f:metadata>
+                <f:viewParam name="datasetId" value="#{selectGuestbookPage.datasetId}"/>
+                <f:viewParam name="persistentId" value="#{selectGuestbookPage.persistentId}"/>
+                <f:viewAction action="#{selectGuestbookPage.init}" rendered="true"/>
+                <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(selectGuestbookPage.dataset)}"/>
+            </f:metadata>
+            <h:form id="selectGuestbookForm">
+                <!-- Edit editMode -->
+                <div class="button-block form-top">
+                    <p:commandButton id="saveTop" value="#{bundle.saveChanges}"
+                                     onclick="checkNewlyRestricted();PF('lockSelectGuestbookForm').show();"  />
+                    <p:commandButton id="cancelTop" value="#{bundle.cancel}"
+                                     action="#{selectGuestbookPage.cancel}" />
+                </div>
+                <!-- END Header / Button Panel -->
+
+                <!-- Tabs -->
+                <div class="panel-group">
+                    <div class="panel panel-default" jsf:rendered="#{!settingsWrapper.rsyncOnly}">
+                        <div id="panelCollapseGuestbook" class="collapse in">
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label for="metadata_Guestbook" class="col-sm-3 control-label">
+                                        #{bundle['file.dataFilesTab.terms.list.guestbook']}
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                              data-toggle="tooltip" data-placement="auto right"
+                                              data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.title']}"></span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <!-- Preview Guestbook from selectGuestbook page -->
+                                        <ui:fragment rendered="true">
+                                            <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.select.tip']}</p>
+
+                                            <ui:fragment rendered="#{empty selectGuestbookPage.availableGuestbooks}">
+                                                <p class="help-block">
+                                                    <h:outputFormat value="#{bundle['file.dataFilesTab.terms.list.guestbook.noAvailable.tip']}">
+                                                        <f:param value="#{selectGuestbookPage.dataset.owner.name}"/>
+                                                    </h:outputFormat>
+                                                </p>
+                                            </ui:fragment>
+
+                                            <ui:fragment rendered="#{!empty selectGuestbookPage.availableGuestbooks}">
+                                                <p:commandButton value="#{bundle['file.dataFilesTab.terms.list.guestbook.clearBtn']}"
+                                                                 rendered="#{!empty selectGuestbookPage.dataset.guestbook}"
+                                                                 update="guestbookTable" process="@this" actionListener="#{selectGuestbookPage.reset}"/>
+                                                <p:dataTable id="guestbookTable" styleClass="headerless-table margin-top"
+                                                             value="#{selectGuestbookPage.availableGuestbooks}"
+                                                             var="guestbook"
+                                                             widgetVar="guestbookTable"
+                                                             rowIndexVar="rowNum" selection="#{selectGuestbookPage.dataset.guestbook}"
+                                                             rowKey="#{guestbook}">
+                                                    <p:column  selectionMode="single" class="col-select-width text-center" rendered="true"  />
+                                                    <p:column>
+                                                        <p class="form-control-static pull-left">
+                                                            <h:outputText value="#{guestbook.name}" />
+                                                        </p>
+                                                        <p:commandLink type="button" styleClass="btn btn-default pull-right"
+                                                                       value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
+                                                                       action="#{selectGuestbookPage.viewSelectedGuestbook(guestbook)}"
+                                                                       update=":selectGuestbookForm"
+                                                                       oncomplete="PF('viewGuestbook').show();bind_bsui_components();"/>
+                                                    </p:column>
+                                                </p:dataTable>
+                                            </ui:fragment>
+                                        </ui:fragment>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- / TERMS -->
+
+                <!-- Preview Guestbook -->
+                <p:dialog id="previewGuestbook" styleClass="largePopUp"
+                          header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}"
+                          widgetVar="viewGuestbook" modal="true">
+                    <ui:include src="preview-guestbook.xhtml">
+                        <ui:param name="guestbook" value="#{selectGuestbookPage.selectedGuestbook}" />
+                    </ui:include>
+                    <div class="button-block">
+                        <button type="button" onclick="PF('viewGuestbook').hide()" class="btn btn-default" value="#{bundle.close}">
+                            #{bundle.close}
+                        </button>
+                    </div>
+                </p:dialog>
+                <!-- END View/Tabs infoMode -->
+
+                <!-- Bottom action buttons -->
+                <div class="button-block">
+                    <p:commandButton tabindex="1000" id="save"
+                                     value="#{bundle.saveChanges}"
+                                     onclick="checkNewlyRestricted();PF('lockSelectGuestbookForm').show();" />
+                    <p:commandButton tabindex="1000" id="cancel"
+                                     value="#{bundle.cancel}"
+                                     action="#{selectGuestbookPage.cancel}" />
+                    <p:commandButton value="Direct" id="datasetSave"
+                                     style="display:none"
+                                     update=":selectGuestbookForm,:messagePanel"
+                                     oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
+                                     action="#{selectGuestbookPage.save}" />
+                </div>
+
+                <p:blockUI block="selectGuestbookForm" widgetVar="lockSelectGuestbookForm"/>
+            </h:form>
+            <script type="text/javascript">
+                function checkNewlyRestricted() {
+                    $('button[id$="datasetSave"]').trigger('click');
+                }
+            </script>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>
+

@@ -1625,9 +1625,6 @@ public class DatasetPage implements java.io.Serializable {
         } else if (editMode == EditMode.FILE) {
             // JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.editFiles"));
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
-        } else if (editMode.equals(EditMode.LICENSE)) {
-            JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.editTerms.label"), BundleUtil.getStringFromBundle("dataset.message.editTerms.message"));
-            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset License and Terms", " - Update your dataset's license and terms of use."));
         }
         this.readOnly = false;
     }
@@ -2414,9 +2411,6 @@ public class DatasetPage implements java.io.Serializable {
                     JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess"));
                 }
             }
-            if (editMode.equals(EditMode.LICENSE)) {
-                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.termsSuccess"));
-            }
             if (editMode.equals(EditMode.FILE)) {
                 JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.filesSuccess"));
             }
@@ -2466,9 +2460,6 @@ public class DatasetPage implements java.io.Serializable {
 
             if (editMode.equals(EditMode.CREATE)) {
                 JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.createFailure"));
-            }
-            if (editMode.equals(EditMode.LICENSE)) {
-                JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.termsFailure"));
             }
             if (editMode.equals(EditMode.FILE)) {
                 JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.filesFailure"));

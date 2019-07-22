@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:o="http://omnifaces.org/ui"
+      xmlns:dv="http://dataverse.org/facelets"
+>
+    <!--@elvariable id="guestbook" type="edu.harvard.iq.dataverse.Guestbook"-->
+
+<div class="form-horizontal">
+    <p class="help-block">
+        #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}
+    </p>
+    <div class="form-group">
+        <label class="col-sm-3 control-label">
+            #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}
+        </label>
+        <div class="col-sm-8">
+            <p class="form-control-static">
+                #{guestbook.name}
+            </p>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-3 control-label">
+            #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData']}
+            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData.title']}"></span>
+        </label>
+        <div class="col-sm-8">
+            <p class="form-control-static">
+                <h:outputText value="#{bundle['dataset.manageGuestbooks.guestbook.accountInformation']}"/>
+                <ul>
+                    <ui:repeat value="#{guestbook.requiredAccountInformation}" var="ai">
+                        <li>
+                            <h:outputText value="#{ai} #{bundle['dataset.manageGuestbooks.guestbook.required']}"/>
+                        </li>
+                    </ui:repeat>
+                    <ui:repeat value="#{guestbook.optionalAccountInformation}" var="ai">
+                        <li>
+                            <h:outputText value="#{ai} #{bundle['dataset.manageGuestbooks.guestbook.optional']}"/>
+                        </li>
+                    </ui:repeat>
+                </ul>
+            </p>
+
+            <ui:fragment rendered="#{!empty guestbook.requiredQuestionsList or !empty guestbook.optionalQuestionsList}">
+                <p class="form-control-static">
+                    <h:outputText value="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions']}"/>
+                    <ul>
+                        <ui:repeat value="#{guestbook.requiredQuestionsList}" var="q">
+                            <li>
+                                <h:outputText value="#{q} #{bundle['dataset.manageGuestbooks.guestbook.required']}"/>
+                            </li>
+                        </ui:repeat>
+                        <ui:repeat value="#{guestbook.optionalQuestionsList}" var="q">
+                            <li>
+                                <h:outputText value="#{q} #{bundle['dataset.manageGuestbooks.guestbook.optional']}"/>
+                            </li>
+                        </ui:repeat>
+                    </ul>
+                </p>
+            </ui:fragment>
+        </div>
+    </div>
+</div>
+
+</html>
