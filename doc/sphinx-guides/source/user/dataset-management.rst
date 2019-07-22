@@ -481,7 +481,7 @@ Dataset Metrics and Make Data Count
 
 All installations of Dataverse count file downloads. These file download counts are aggregated and reported at the Dataset level as well as at the file level.
 
-Some installations of Dataverse also have support for expanded metrics at the dataset level for views, file downloads, and citations using Make Data Count standards. `Make Data Count`_ is a project to collect and standardize metrics on data use, especially views, downloads, and citations.  
+Some installations of Dataverse also have support for expanded metrics at the dataset level for views, file downloads, and citations using Make Data Count standards. `Make Data Count`_ is a project to collect and standardize metrics on data use, especially views, downloads, and citations. Citations for datasets are retrieved from `Crossref`_ via DataCite using Make Data Count standards.
 
 For the specific API calls for Make Data Count, see :ref:`Dataset Metrics <dataset-metrics-api>` in the :doc:`/api/native-api` section of the API Guide.
 
@@ -533,3 +533,5 @@ If you deaccession the most recently published version of the dataset but not al
    :class: img-responsive
    
 .. _Make Data Count: https://makedatacount.org
+.. _Crossref: https://crossref.org
+
