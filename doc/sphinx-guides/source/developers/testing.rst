@@ -215,6 +215,19 @@ Locust
 
 Load and performance testing is conducted on an as-needed basis but we're open to automating it. As of this writing Locust ( https://locust.io ) scripts at https://github.com/IQSS/dataverse-helper-scripts/tree/master/src/stress_tests have been used.
 
+JMeter
+~~~~~~
+
+We are starting to experiment with JMeter: https://jmeter.apache.org
+
+Tests can be found in ``src/test/jmeter``.
+
+To edit tests you can use the JMeter GUI which can be launched with ``mvn jmeter:gui``.
+
+Tests can be run from the GUI or with ``mvn verify``.
+
+Test results are written to ``target/jmeter/results``.
+
 download-files.sh script
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
