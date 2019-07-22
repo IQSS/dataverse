@@ -407,9 +407,8 @@
                                                     data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.makedatacount.tip']}"></span>
                                         </div>
                                         <!-- Make Data Count citations (DOIs only, not Handles) -->
-                                        <div class="metrics-count-block" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath') and settingsServiceBean.get(':Protocol') == 'doi'}">
-                                            <p:commandLink title="DATASET CITATIONS LINK TITLE HERE"
-                                                            oncomplete="PF('citationsDialog').show();">
+                                        <div class="metrics-count-block" jsf:rendered="#{true}">
+                                            <p:commandLink oncomplete="PF('citationsDialog').show();">
                                                 <h:outputFormat value="{0} #{bundle['metrics.citations']}">
                                                     <f:param value="#{fn:length(datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset))}"/>
                                                 </h:outputFormat>
@@ -419,7 +418,12 @@
                                                     data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.citations.tip']}"></span>
                                         
                                             <p:dialog id="citationsDialog" styleClass="smallPopup" header="#{bundle['metrics.citations.dialog.header']}" widgetVar="citationsDialog" modal="true">
-                                                <p class="help-block">#{bundle['metrics.citations.dialog.help']}</p>
+                                                <p class="help-block">
+                                                    <h:outputFormat value="#{bundle['metrics.citations.dialog.help']}" escape="false">
+                                                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                                        <f:param value="#{systemConfig.guidesVersion}"/>
+                                                    </h:outputFormat>
+                                                </p>
                                                 
                                                 <div id="citations-list-block">
                                                     <ul>
