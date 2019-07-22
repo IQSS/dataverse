@@ -380,11 +380,11 @@
                                     <div id="metrics-heading">
                                         #{bundle['metrics.dataset.title']}
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
-                                                data-original-title="#{empty settingsServiceBean.get(':MDCLogPath') ? bundle['metrics.dataset.tip.default'] : bundle['metrics.dataset.tip.makedatacount']}"></span>
+                                                data-original-title="#{settingsWrapper.makeDataCountEnabled ? bundle['metrics.dataset.tip.makedatacount'] : bundle['metrics.dataset.tip.default']}"></span>
                                     </div>
                                     <div id="metrics-body">
                                         <!-- Classic downloads -->
-                                        <div class="metrics-count-block" jsf:rendered="#{empty settingsServiceBean.get(':MDCLogPath')}">
+                                        <div class="metrics-count-block" jsf:rendered="#{!settingsWrapper.makeDataCountEnabled}">
                                             <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
                                                 <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
                                             </h:outputFormat>
@@ -392,7 +392,7 @@
                                                     data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.default.tip']}"></span>
                                         </div>
                                         <!-- Make Data Count views -->
-                                        <div class="metrics-count-block" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath')}">
+                                        <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountEnabled}">
                                             <h:outputFormat value="{0} #{bundle['metrics.views']}">
                                                 <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getViewsTotal()}"/>
                                             </h:outputFormat>
@@ -400,7 +400,7 @@
                                                     data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.views.tip']}"></span>
                                         </div>
                                         <!-- Make Data Count downloads -->
-                                        <div class="metrics-count-block" jsf:rendered="#{not empty settingsServiceBean.get(':MDCLogPath')}">
+                                        <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountEnabled}">
                                             <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
                                                 <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getDownloadsTotal()}"/>
                                             </h:outputFormat>
@@ -408,7 +408,7 @@
                                                     data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.makedatacount.tip']}"></span>
                                         </div>
                                         <!-- Make Data Count citations (DOIs only, not Handles) -->
-                                        <div class="metrics-count-block" jsf:rendered="#{true}">
+                                        <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountEnabled and settingsWrapper.doiInstallation}">
                                             <p:commandLink oncomplete="PF('citationsDialog').show();">
                                                 <h:outputFormat value="{0} #{bundle['metrics.citations']}">
                                                     <f:param value="#{fn:length(datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset))}"/>
