@@ -108,7 +108,9 @@ public class IndexServiceBean {
     DataverseLinkingServiceBean dvLinkingService;
     @EJB
     SettingsServiceBean settingsService;
-    
+    @EJB
+    SolrClientService solrClientService;
+
     public static final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
     public static final String solrDocIdentifierDataset = "dataset_";
@@ -255,7 +257,7 @@ public class IndexServiceBean {
         String status;
         try {
             if (dataverse.getId() != null) {
-                solrServer.add(docs);
+                solrClientService.getSolrClient().add(docs);
             } else {
                 logger.info("WARNING: indexing of a dataverse with no id attempted");
             }
@@ -265,7 +267,7 @@ public class IndexServiceBean {
             return new AsyncResult<>(status);
         }
         try {
-            solrServer.commit();
+            solrClientService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
             status = ex.toString();
             logger.info(status);
@@ -1165,8 +1167,12 @@ public class IndexServiceBean {
         }
 
         try {
-            solrServer.add(docs);
-            solrServer.commit();
+            solrClientService.getSolrClient().add(docs);
+        } catch (SolrServerException | IOException ex) {
+            return ex.toString();
+        }
+        try {
+            solrClientService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
             if (ex.getCause() instanceof SolrServerException) {
                 throw new SolrServerException(ex);
@@ -1306,12 +1312,12 @@ public class IndexServiceBean {
         logger.fine("deleting Solr document for dataverse " + doomed.getId());
         UpdateResponse updateResponse;
         try {
-            updateResponse = solrServer.deleteById(solrDocIdentifierDataverse + doomed.getId());
+            updateResponse = solrClientService.getSolrClient().deleteById(solrDocIdentifierDataverse + doomed.getId());
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
         try {
-            solrServer.commit();
+            solrClientService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
@@ -1331,12 +1337,12 @@ public class IndexServiceBean {
         logger.fine("deleting Solr document: " + doomed);
         UpdateResponse updateResponse;
         try {
-            updateResponse = solrServer.deleteById(doomed);
+            updateResponse = solrClientService.getSolrClient().deleteById(doomed);
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
         try {
-            solrServer.commit();
+            solrClientService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
@@ -1540,7 +1546,7 @@ public class IndexServiceBean {
         List<Long> dvObjectInSolrOnly = new ArrayList<>();
         QueryResponse queryResponse = null;
         try {
-            queryResponse = solrServer.query(solrQuery);
+            queryResponse = solrClientService.getSolrClient().query(solrQuery);
         } catch (SolrServerException | IOException ex) {
             throw new SearchException("Error searching Solr for " + type, ex);
         }
@@ -1574,7 +1580,7 @@ public class IndexServiceBean {
         List<String> dvObjectInSolrOnly = new ArrayList<>();
         QueryResponse queryResponse = null;
         try {
-            queryResponse = solrServer.query(solrQuery);
+            queryResponse = solrClientService.getSolrClient().query(solrQuery);
         } catch (SolrServerException | IOException ex) {
             throw new SearchException("Error searching Solr for dataset parent id " + parentDatasetId, ex);
         }
