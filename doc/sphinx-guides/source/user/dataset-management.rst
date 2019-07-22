@@ -476,12 +476,14 @@ Once you have more than one version (this can simply be version 1 and a draft), 
 
 .. _dataset-metrics-user:
 
-Dataset Metrics
+Dataset Metrics and Make Data Count
 ===============
 
-All installations of Dataverse track file downloads using the Guestbook feature described above and in the :ref:`Dataset Guestbooks <dataset-guestbooks>` section of the Dataverse Management page.
+All installations of Dataverse count file downloads. These file download counts are aggregated and reported at the Dataset level as well as at the file level.
 
-Some installations of Dataverse also have support for metrics at the dataset level for views, file downloads, and citations using Make Data Count standards. For more details on this feature, see the :doc:`/admin/make-data-count` section of the Admin Guide. For the specific API calls, see :ref:`Dataset Metrics <dataset-metrics-api>` in the :doc:`/api/native-api` section of the API Guide.
+Some installations of Dataverse also have support for expanded metrics at the dataset level for views, file downloads, and citations using Make Data Count standards. `Make Data Count`_ is a project to collect and standardize metrics on data use, especially views, downloads, and citations.  
+
+For the specific API calls for Make Data Count, see :ref:`Dataset Metrics <dataset-metrics-api>` in the :doc:`/api/native-api` section of the API Guide.
 
 .. _cloud-storage:
 
@@ -529,3 +531,5 @@ If you deaccession the most recently published version of the dataset but not al
    :class: img-responsive
 .. |image-file-tree-view| image:: ./img/file-tree-view.png
    :class: img-responsive
+   
+.. _Make Data Count: https://makedatacount.org
