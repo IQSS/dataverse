@@ -206,7 +206,12 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             }
         } finally {
             // We're done making changes - remove the lock...
+            //Failures above may occur before savedDataset is set, in which case we need to remove the lock on theDataset instead
+            if(savedDataset!=null) {
             ctxt.datasets().removeDatasetLocks(savedDataset, DatasetLock.Reason.EditInProgress);
+            } else {
+                ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.EditInProgress);
+            }
         }
         return savedDataset; 
     }
