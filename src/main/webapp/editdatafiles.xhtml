@@ -66,51 +66,47 @@
                     </ui:fragment>  
                     
                     <!-- Create/Save Dataset Button Panel -->
-                    <ui:fragment  id="editDataFilesButtons">
-                        <div  class="button-block">
-                            <p:outputPanel id="filesButtons" >
+                    <ui:fragment id="editDataFilesButtons">
+                        <div class="button-block">
+                            <p:outputPanel id="filesButtons">
                                 <div jsf:rendered="#{!(empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment()))}">
-                                    <p:commandButton tabindex="1000" id="savebutton" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();"   >
-                                    </p:commandButton> 
-                                    <p:commandButton tabindex="1000" id="cancelbutton" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();"/>
+                                    <button id="savebutton" class="btn btn-default" onclick="checkNewlyRestricted();" type='button'>
+                                        #{bundle.saveChanges}
+                                    </button>
+                                    <p:commandButton styleClass="btn btn-link" id="cancelbutton" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="bind_bsui_components();"/>
                                 </div>
                                 <div jsf:rendered="#{empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment())}">
-                                    <p:commandButton tabindex="1000" id="doneFilesButtonnop" value="#{bundle.done}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();">
-                                    </p:commandButton>
-
+                                    <p:commandButton styleClass="btn btn-default" id="doneFilesButtonnop" value="#{bundle.done}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="bind_bsui_components();"/>
                                 </div>
                                 <p:commandButton value="Direct" id="datasetSave"
                                                  style="display:none"
                                                  update=":datasetForm,:messagePanel"
                                                  onclick="PF('blockFileForm').show();"
                                                  oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
-                                                 action="#{EditDatafilesPage.save}" />
-                            </p:outputPanel> 
+                                                 action="#{EditDatafilesPage.save}"/>
+                            </p:outputPanel>
                         </div>
                     </ui:fragment>
-
                     <!-- END: Create/Save Dataset Button Panel -->
-
                 </h:form>
                 
                 <p:blockUI block="datasetForm" widgetVar="blockFileForm"/>
 
-                <script type="text/javascript">
-                    
+                <script>
+                    //<![CDATA[
                     function clickSave(){
                         $('button[id$="datasetSave"]').trigger('click');
                     }
-
-    function checkNewlyRestricted() {
-        if ($('input[id$="showAccessPopup"]').val() === 'true') {
-            PF('editFileAccessPopup').show();
-        }
-        else {
-            $('button[id$="datasetSave"]').trigger('click');
-        }
-    }
+                    function checkNewlyRestricted() {
+                        if ($('input[id$="showAccessPopup"]').val() === 'true') {
+                            PF('editFileAccessPopup').show();
+                        }
+                        else {
+                            $('button[id$="datasetSave"]').trigger('click');
+                        }
+                    }
+                    //]]>
                 </script>
-
             </ui:define>
         </ui:composition>
     </h:body>

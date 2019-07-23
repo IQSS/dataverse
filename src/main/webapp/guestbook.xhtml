@@ -27,6 +27,7 @@
                 </f:metadata>
 
                 <h:form id="guestbookForm">
+                    <p:focus context="guestbookForm"/>
                     <!-- Header / Button Panel -->
                     <ui:fragment rendered="#{empty GuestbookPage.editMode}">
                         <!-- View mode -->
@@ -184,16 +185,14 @@
                             </div>
                         </div>
                     </div>
-
                     <!-- Create/Save Dataset Button Panel -->
                     <div class="button-block" jsf:rendered="#{!empty GuestbookPage.editMode}">
-                        <h:commandButton type="submit" action="#{GuestbookPage.save()}" class="btn btn-default"
+                        <h:commandButton type="submit" action="#{GuestbookPage.save()}" styleClass="btn btn-default"
                                          value="#{GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : bundle.saveChanges}">
                             <f:param name="SKIP_VALIDATION" value="true"/>
                         </h:commandButton>
-                        <h:button class="btn btn-default" value="#{bundle.cancel}" outcome="/manage-guestbooks.xhtml?dataverseId=#{GuestbookPage.dataverse.id}" />
+                        <h:button class="btn btn-link" value="#{bundle.cancel}" outcome="/manage-guestbooks.xhtml?dataverseId=#{GuestbookPage.dataverse.id}"/>
                     </div>
-
                 </h:form>
             </ui:define>
         </ui:composition>

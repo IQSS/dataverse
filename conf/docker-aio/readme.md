@@ -34,7 +34,7 @@ Also usable for normal development and system evaluation; not intended for produ
 - Installation (integration test): `docker exec dv /opt/dv/setupIT.bash` 
   (Note that it's possible to customize the installation by editing `conf/docker-aio/default.config` and running `docker exec dv /opt/dv/install.bash` but for the purposes of integration testing, the `setupIT.bash` script above works fine.)
 
-- update `dataverse.siteUrl` (appears only necessary for `DatasetsIT.testPrivateUrl`): `docker exec -it dv /usr/local/glassfish4/bin/asadmin create-jvm-options "-Ddataverse.siteUrl=http\://localhost\:8084"` (or use the provided `seturl.bash`)
+- update `dataverse.siteUrl` (appears only necessary for `DatasetsIT.testPrivateUrl`): `docker exec dv /usr/local/glassfish4/bin/asadmin create-jvm-options "-Ddataverse.siteUrl=http\://localhost\:8084"` (or use the provided `seturl.bash`)
 
 #### Run integration tests: 
 

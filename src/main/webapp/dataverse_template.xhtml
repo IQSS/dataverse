@@ -78,25 +78,16 @@
                 <!-- DO NOTHING -->
             </f:facet>
         </p:ajaxStatus>
-        <ui:include src="contactFormFragment.xhtml">
-        </ui:include>
-        <p:dialog id="statusInfo" styleClass="smallPopUp" header="#{settingsWrapper.get(':StatusMessageHeader')}" widgetVar="statusInfo" modal="true">
-            <p><h:outputText value="#{settingsWrapper.get(':StatusMessageText')}" escape="false"/></p>
-            <div class="button-block">
-                <button type="button" onclick="PF('statusInfo').hide()" class="btn btn-default" value="#{bundle.close}">
-                    #{bundle.close}
-                </button>
-            </div>
-        </p:dialog>
-        <script type="text/javascript" defer="defer" src="#{resource['bs/js/bootstrap.min.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/ie-compat.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>  
-        <script type="text/javascript" defer="defer" src="#{resource['js/clipboard.min.js']}?version=#{systemConfig.getVersion()}"></script>          
+        <ui:include src="contactFormFragment.xhtml"></ui:include>
+        <script defer="defer" src="#{resource['bs/js/bootstrap.min.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script defer="defer" src="#{resource['js/ie-compat.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script defer="defer" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script defer="defer" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>  
+        <script defer="defer" src="#{resource['js/clipboard.min.js']}?version=#{systemConfig.getVersion()}"></script>          
         <ui:fragment rendered="#{systemConfig.isShibPassiveLoginEnabled()}">
-            <script type="text/javascript" language="javascript" src="#{resource['js/shib/isPassive.js']}"></script>
+            <script defer="defer" src="#{resource['js/shib/isPassive.js']}"></script>
         </ui:fragment>
         <script>
             //<![CDATA[
@@ -117,8 +108,6 @@
                 // Rebind bootstrap UI components
                 bind_bsui_components();
             });
-
-            
             //]]>
         </script>
     </h:body>

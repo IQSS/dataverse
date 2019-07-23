@@ -69,7 +69,7 @@
                                                 <h:inputText rendered="#{not fc.credential.secret}" value="#{fc.value}" id="credValue" styleClass="form-control"/>
                                                 <p:message rendered="#{not fc.credential.secret}" for="credValue" display="text"/>
 						<h:inputSecret rendered="#{fc.credential.secret}" value="#{fc.value}" id="sCredValue" styleClass="form-control" autocomplete="off"/><!-- browsers will in general not respect autocomplete="foo", but scanners will still flag it as a potential problem -->
-                                                <p:message rendered="#{not fc.credential.secret}" for="sCredValue" display="text"/>
+                                                <p:message rendered="#{fc.credential.secret}" for="sCredValue" display="text"/>
                                             </div>
                                         </div>
                                     </ui:repeat>
@@ -92,7 +92,7 @@
                                     
                                     <div class="form-group">
                                         <div class="col-sm-offset-4 col-sm-9 button-block">
-                                            <p:commandButton id="login" styleClass="btn btn-default" value="#{bundle.login}" update="@all" action="#{LoginPage.login}"/>
+                                            <p:commandButton id="login" styleClass="btn btn-default" value="#{bundle.login}" update="@form,:messagePanel" action="#{LoginPage.login}"/>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -133,16 +133,13 @@
                                     </div>
                                 </div>
 
-                                <script type="text/javascript">
+                                <script>
                                     shibRedirectPage = '';
                                 </script>
 
-                                <script src="/resources/js/shib/idpselect_config.js" type="text/javascript" language="javascript"></script>
-
-                                <script src="/resources/js/shib/idpselect.js" type="text/javascript" language="javascript"></script>
-
-                                <script src="/resources/js/shib/idpselect_style.js" type="text/javascript" language="javascript"></script>
-
+                                <script src="/resources/js/shib/idpselect_config.js"></script>
+                                <script src="/resources/js/shib/idpselect.js"></script>
+                                <script src="/resources/js/shib/idpselect_style.js"></script>
                             </div>
 
                             <!--ONLY RENDER BUTTON FOR OAUTH PROVIDERS (ORCID, Google, GitHub)-->

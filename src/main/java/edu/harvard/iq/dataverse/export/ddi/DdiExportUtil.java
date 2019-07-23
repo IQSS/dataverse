@@ -18,6 +18,9 @@ import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.datavariable.VariableRange;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
+import edu.harvard.iq.dataverse.datavariable.VarGroup;
+import edu.harvard.iq.dataverse.datavariable.CategoryMetadata;
+
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.LEVEL_FILE;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_TAG;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_UNF;
@@ -1240,7 +1243,7 @@ public class DdiExportUtil {
     // plus, the structure of file-level metadata is currently being re-designed, 
     // so we probably should not invest any time into it right now). -- L.A. 4.5
     
-    private static void createDataDscr(XMLStreamWriter xmlw, DatasetVersion datasetVersion) throws XMLStreamException {
+    public static void createDataDscr(XMLStreamWriter xmlw, DatasetVersion datasetVersion) throws XMLStreamException {
 
         if (datasetVersion.getFileMetadatas() == null || datasetVersion.getFileMetadatas().isEmpty()) {
             return;
@@ -1258,6 +1261,9 @@ public class DdiExportUtil {
                     xmlw.writeStartElement("dataDscr");
                     tabularData = true;
                 }
+                for (VarGroup varGrp : fileMetadata.getVarGroups()) {
+                    createVarGroupDDI(xmlw, varGrp);
+                }
 
                 List<DataVariable> vars = dataFile.getDataTable().getDataVariables();
 
@@ -1271,11 +1277,40 @@ public class DdiExportUtil {
             xmlw.writeEndElement(); // dataDscr
         }
     }
+    private static void createVarGroupDDI(XMLStreamWriter xmlw, VarGroup varGrp) throws XMLStreamException {
+        xmlw.writeStartElement("varGrp");
+        writeAttribute(xmlw, "ID", "VG" + varGrp.getId().toString());
+        String vars = "";
+        Set<DataVariable> varsInGroup = varGrp.getVarsInGroup();
+        for (DataVariable var : varsInGroup) {
+            vars = vars + " v" + var.getId();
+        }
+        vars = vars.trim();
+        writeAttribute(xmlw, "var", vars );
+
+
+        if (!StringUtilisEmpty(varGrp.getLabel())) {
+            xmlw.writeStartElement("labl");
+            xmlw.writeCharacters(varGrp.getLabel());
+            xmlw.writeEndElement(); // group label (labl)
+        }
+
+        xmlw.writeEndElement(); //varGrp
+    }
     
     private static void createVarDDI(XMLStreamWriter xmlw, DataVariable dv, FileMetadata fileMetadata) throws XMLStreamException {
         xmlw.writeStartElement("var");
         writeAttribute(xmlw, "ID", "v" + dv.getId().toString());
         writeAttribute(xmlw, "name", dv.getName());
+
+        VariableMetadata vm = null;
+        for (VariableMetadata vmIter : dv.getVariableMetadatas()) {
+            FileMetadata fm = vmIter.getFileMetadata();
+            if (fm != null && fm.equals(fileMetadata) ){
+                vm = vmIter;
+                break;
+            }
+        }
 
         if (dv.getNumberOfDecimalPoints() != null) {
             writeAttribute(xmlw, "dcml", dv.getNumberOfDecimalPoints().toString());
@@ -1289,6 +1324,15 @@ public class DdiExportUtil {
             String interval = dv.getIntervalLabel();
             if (interval != null) {
                 writeAttribute(xmlw, "intrvl", interval);
+            }
+        }
+
+        if (vm != null) {
+            if (vm.isIsweightvar()) {
+                writeAttribute(xmlw, "wgt", "wgt");
+            }
+            if (vm.isWeighted() && vm.getWeightvariable() != null) {
+                writeAttribute(xmlw, "wgt-var", "v"+vm.getWeightvariable().getId().toString());
             }
         }
 
@@ -1307,10 +1351,15 @@ public class DdiExportUtil {
         writeAttribute(xmlw, "fileid", "f" + dv.getDataTable().getDataFile().getId().toString());
 
         // labl
-        if (!StringUtilisEmpty(dv.getLabel())) {
+        if ((vm == null || StringUtilisEmpty(vm.getLabel())) && !StringUtilisEmpty(dv.getLabel())) {
             xmlw.writeStartElement("labl");
             writeAttribute(xmlw, "level", "variable");
             xmlw.writeCharacters(dv.getLabel());
+            xmlw.writeEndElement(); //labl
+        } else if (vm != null && !StringUtilisEmpty(vm.getLabel())) {
+            xmlw.writeStartElement("labl");
+            writeAttribute(xmlw, "level", "variable");
+            xmlw.writeCharacters(vm.getLabel());
             xmlw.writeEndElement(); //labl
         }
 
@@ -1348,15 +1397,6 @@ public class DdiExportUtil {
         }
 
         //universe
-        VariableMetadata vm = null;
-        for (VariableMetadata vmIter : dv.getVariableMetadatas()) {
-            FileMetadata fm = vmIter.getFileMetadata();
-            if (fm != null && fm.equals(fileMetadata) ){
-                vm = vmIter;
-                break;
-            }
-        }
-
         if (vm != null) {
             if (!StringUtilisEmpty(vm.getUniverse())) {
                 xmlw.writeStartElement("universe");
@@ -1410,8 +1450,23 @@ public class DdiExportUtil {
                 xmlw.writeEndElement(); //catStat
             }
 
+            //catStat weighted freq
+            if (vm != null && vm.isWeighted()) {
+                for (CategoryMetadata cm : vm.getCategoriesMetadata()) {
+                    if (cm.getCategory().getValue().equals(cat.getValue())) {
+                        xmlw.writeStartElement("catStat");
+                        writeAttribute(xmlw, "wgtd", "wgtd");
+                        writeAttribute(xmlw, "type", "freq");
+                        xmlw.writeCharacters(cm.getWfreq().toString());
+                        xmlw.writeEndElement(); //catStat
+                        break;
+                    }
+                }
+            }
+
             xmlw.writeEndElement(); //catgry
         }
+
 
         // varFormat
         xmlw.writeEmptyElement("varFormat");
@@ -1434,6 +1489,36 @@ public class DdiExportUtil {
             writeAttribute(xmlw, "type", "Dataverse:UNF");
             xmlw.writeCharacters(dv.getUnf());
             xmlw.writeEndElement(); //notes
+        }
+
+        if (vm != null) {
+            if (!StringUtilisEmpty(vm.getNotes())) {
+                xmlw.writeStartElement("notes");
+                xmlw.writeCData(vm.getNotes());
+                xmlw.writeEndElement(); //notes CDATA
+            }
+        }
+
+        if (vm != null) {
+            if (!StringUtilisEmpty(vm.getLiteralquestion()) || !StringUtilisEmpty(vm.getInterviewinstruction()) || !StringUtilisEmpty(vm.getPostquestion())) {
+                xmlw.writeStartElement("qstn");
+                if (!StringUtilisEmpty(vm.getLiteralquestion())) {
+                    xmlw.writeStartElement("qstnLit");
+                    xmlw.writeCharacters(vm.getLiteralquestion());
+                    xmlw.writeEndElement(); // qstnLit
+                }
+                if (!StringUtilisEmpty(vm.getInterviewinstruction())) {
+                    xmlw.writeStartElement("ivuInstr");
+                    xmlw.writeCharacters(vm.getInterviewinstruction());
+                    xmlw.writeEndElement(); //ivuInstr
+                }
+                if (!StringUtilisEmpty(vm.getPostquestion())) {
+                    xmlw.writeStartElement("postQTxt");
+                    xmlw.writeCharacters(vm.getPostquestion());
+                    xmlw.writeEndElement(); //ivuInstr
+                }
+                xmlw.writeEndElement(); //qstn
+            }
         }
 
         xmlw.writeEndElement(); //var
