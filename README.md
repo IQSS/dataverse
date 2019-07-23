@@ -17,8 +17,6 @@ Dataverse is a trademark of President and Fellows of Harvard College and is regi
 
 [![Dataverse Project logo](src/main/webapp/resources/images/dataverseproject_logo.jpg?raw=true "Dataverse Project")](http://dataverse.org)
 
-[![Waffle.io - Columns and their card count](https://badge.waffle.io/IQSS/dataverse.svg?columns=all)](https://waffle.io/IQSS/dataverse)
-
 [![Coverage Status](https://coveralls.io/repos/github/CeON/dataverse/badge.svg?branch=develop)](https://coveralls.io/github/CeON/dataverse?branch=develop)
 
 [dataverse.org]: https://dataverse.org
