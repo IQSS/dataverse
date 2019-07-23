@@ -69,7 +69,7 @@ public class ExportServiceTest {
 
     @BeforeEach
     void prepareData() {
-        when(settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)).thenReturn(true);
+        when(settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)).thenReturn(false);
         when(systemConfig.getDataverseSiteUrl()).thenReturn("https://localhost");
         mockDatasetFields();
 
@@ -121,6 +121,25 @@ public class ExportServiceTest {
 
         //then
         Assert.assertEquals(readFileToString("exportdata/ddi.xml"), exportedDataset.get());
+
+        System.out.println(exportedDataset.get());
+    }
+
+    @Test
+    @DisplayName("export DatasetVersion as string for ddi without email")
+    public void exportDatasetVersionAsString_forDdiWithoutEmail() throws IOException, JsonParseException {
+        //given
+        enableExcludingEmails();
+
+        DatasetVersion datasetVersion = parseDatasetVersionFromClasspath("json/testDataset.json");
+        prepareDataForExport(datasetVersion);
+
+        //when
+        Either<DataverseError, String> exportedDataset =
+                exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.DDI);
+
+        //then
+        Assert.assertEquals(readFileToString("exportdata/ddiWithoutEmail.xml"), exportedDataset.get());
     }
 
     @Test
@@ -219,6 +238,15 @@ public class ExportServiceTest {
     }
 
     // -------------------- PRIVATE --------------------
+
+    private void enableExcludingEmails() {
+        when(settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)).thenReturn(true);
+        when(systemConfig.getDataverseSiteUrl()).thenReturn("https://localhost");
+
+        exportService = new ExportService(settingsService, systemConfig);
+        exportService.setCurrentDate(LocalDate.of(2019, 7, 11));
+        exportService.loadAllExporters();
+    }
 
     private DatasetVersion parseDatasetVersionFromClasspath(String classpath) throws IOException, JsonParseException {
 
@@ -390,7 +418,7 @@ public class ExportServiceTest {
                 contactChild.setTitle("E-mail");
 
                 DatasetField dsContactEmail = new DatasetField();
-                dsContactEmail.setDatasetFieldType(new DatasetFieldType(DatasetFieldConstant.datasetContactEmail, FieldType.TEXT, true));
+                dsContactEmail.setDatasetFieldType(new DatasetFieldType(DatasetFieldConstant.datasetContactEmail, FieldType.EMAIL, true));
 
                 contactChild.setDatasetFields(Lists.newArrayList(dsContactEmail));
 
@@ -417,7 +445,7 @@ public class ExportServiceTest {
 
         DatasetFieldType datasetContactNameFieldType = MocksFactory.makeDatasetFieldType("datasetContactName", FieldType.TEXT, false, citationMetadataBlock);
         DatasetFieldType datasetContactAffiliationFieldType = MocksFactory.makeDatasetFieldType("datasetContactAffiliation", FieldType.TEXT, false, citationMetadataBlock);
-        DatasetFieldType datasetContactEmailFieldType = MocksFactory.makeDatasetFieldType("datasetContactEmail", FieldType.TEXT, false, citationMetadataBlock);
+        DatasetFieldType datasetContactEmailFieldType = MocksFactory.makeDatasetFieldType("datasetContactEmail", FieldType.EMAIL, false, citationMetadataBlock);
         DatasetFieldType datasetContactFieldType = MocksFactory.makeComplexDatasetFieldType("datasetContact", true, citationMetadataBlock,
                                                                                             datasetContactNameFieldType, datasetContactAffiliationFieldType, datasetContactEmailFieldType);
         datasetContactFieldType.setDisplayOrder(12);

@@ -22,10 +22,6 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Objects;
 
-import static edu.harvard.iq.dataverse.util.BundleUtil.getStringFromBundle;
-import static java.lang.String.format;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-
 /**
  * @author skraffmiller
  */

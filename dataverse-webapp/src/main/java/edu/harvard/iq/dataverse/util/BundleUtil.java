@@ -1,9 +1,8 @@
 package edu.harvard.iq.dataverse.util;
 
+import com.google.common.collect.Sets;
 import edu.harvard.iq.dataverse.metadata.DefaultMetadataBlocks;
 import org.apache.commons.lang.StringUtils;
-
-import com.google.common.collect.Sets;
 
 import javax.faces.context.FacesContext;
 import java.net.MalformedURLException;
@@ -28,9 +27,14 @@ public class BundleUtil {
     private static final Set<String> INTERNAL_BUNDLE_NAMES = Sets.newHashSet(
             DEFAULT_BUNDLE_FILE, "BuiltInRoles", "MimeTypeDisplay", "MimeTypeFacets", "ValidationMessages");
 
+    // -------------------- LOGIC --------------------
 
     public static String getStringFromBundle(String key) {
-        return getStringFromPropertyFile(key, DEFAULT_BUNDLE_FILE);
+        return getStringFromPropertyFile(key, DEFAULT_BUNDLE_FILE, getCurrentLocale());
+    }
+
+    public static String getStringFromBundle(String key, Locale locale) {
+        return getStringFromPropertyFile(key, DEFAULT_BUNDLE_FILE, locale);
     }
 
     public static String getStringFromBundle(String key, List<String> arguments) {
@@ -51,15 +55,26 @@ public class BundleUtil {
      * If it is default bundle or default metadata block #{@link DefaultMetadataBlocks#METADATA_BLOCK_NAMES}
      * method tries to get the name from default bundles otherwise it returns empty string.
      */
+    public static String getStringFromPropertyFile(String bundleKey, String bundleName, Locale locale) throws MissingResourceException {
+        Optional<String> displayNameFromExternalBundle = Optional.empty();
+
+        if ((!DefaultMetadataBlocks.METADATA_BLOCK_NAMES.contains(bundleName) && !INTERNAL_BUNDLE_NAMES.contains(bundleName))
+                && System.getProperty("dataverse.lang.directory") != null) {
+            displayNameFromExternalBundle = getStringFromExternalBundle(bundleKey, bundleName, locale);
+        }
+
+        return displayNameFromExternalBundle.orElseGet(() -> getStringFromInternalBundle(bundleKey, bundleName, locale));
+    }
+
     public static String getStringFromPropertyFile(String bundleKey, String bundleName) throws MissingResourceException {
         Optional<String> displayNameFromExternalBundle = Optional.empty();
 
         if ((!DefaultMetadataBlocks.METADATA_BLOCK_NAMES.contains(bundleName) && !INTERNAL_BUNDLE_NAMES.contains(bundleName))
                 && System.getProperty("dataverse.lang.directory") != null) {
-            displayNameFromExternalBundle = getStringFromExternalBundle(bundleKey, bundleName);
+            displayNameFromExternalBundle = getStringFromExternalBundle(bundleKey, bundleName, getCurrentLocale());
         }
 
-        return displayNameFromExternalBundle.orElseGet(() -> getStringFromInternalBundle(bundleKey, bundleName));
+        return displayNameFromExternalBundle.orElseGet(() -> getStringFromInternalBundle(bundleKey, bundleName, getCurrentLocale()));
     }
 
     public static Locale getCurrentLocale() {
@@ -77,8 +92,8 @@ public class BundleUtil {
 
     // -------------------- PRIVATE --------------------
 
-    private static String getStringFromInternalBundle(String bundleKey, String bundleName) {
-        ResourceBundle bundle = ResourceBundle.getBundle(bundleName, getCurrentLocale());
+    private static String getStringFromInternalBundle(String bundleKey, String bundleName, Locale locale) {
+        ResourceBundle bundle = ResourceBundle.getBundle(bundleName, locale);
         try {
             return bundle.getString(bundleKey);
         } catch (Exception ex) {
@@ -87,13 +102,13 @@ public class BundleUtil {
         }
     }
 
-    private static Optional<String> getStringFromExternalBundle(String bundleKey, String bundleName) {
+    private static Optional<String> getStringFromExternalBundle(String bundleKey, String bundleName, Locale locale) {
         try {
             URL customBundlesDir = Paths.get(System.getProperty("dataverse.lang.directory")).toUri().toURL();
             URLClassLoader externalBundleDirURL = new URLClassLoader(new URL[]{customBundlesDir});
 
             ResourceBundle resourceBundle =
-                    ResourceBundle.getBundle(bundleName, getCurrentLocale(), externalBundleDirURL);
+                    ResourceBundle.getBundle(bundleName, locale, externalBundleDirURL);
 
             return Optional.of(resourceBundle.getString(bundleKey));
         } catch (MalformedURLException ex) {

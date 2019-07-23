@@ -8,14 +8,12 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.FieldType;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
-import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -27,8 +25,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class DDIExporterTest {
 
@@ -127,45 +123,6 @@ public class DDIExporterTest {
         System.out.println("citation: " + citation);
         int currentYear = Year.now().getValue();
         assertEquals("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", DRAFT VERSION", citation);
-    }
-
-    @Test
-    public void testExportDatasetContactEmailPresent() throws Exception {
-        byte[] file = Files.readAllBytes(Paths.get(getClass().getClassLoader()
-                .getResource("json/export/ddi/datasetContactEmailPresent.json").toURI()));
-        String datasetVersionAsJson = new String(file);
-        JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
-
-        JsonObject json = jsonReader.readObject();
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, null);
-        DatasetVersion version = jsonParser.parseDatasetVersion(json.getJsonObject("datasetVersion"));
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        DDIExporter instance = new DDIExporter(true);
-        String exportDataset = instance.exportDataset(version);
-
-        System.out.println(XmlPrinter.prettyPrintXml(byteArrayOutputStream.toString()));
-        assertTrue(exportDataset.contains("finch@mailinator.com"));
-
-    }
-
-    @Test
-    public void testExportDatasetContactEmailAbsent() throws Exception {
-        byte[] file = Files.readAllBytes(Paths.get(getClass().getClassLoader()
-                .getResource("json/export/ddi/datasetContactEmailAbsent.json").toURI()));
-        String datasetVersionAsJson = new String(file);
-        JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
-
-
-        JsonObject json = jsonReader.readObject();
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, null);
-        DatasetVersion version = jsonParser.parseDatasetVersion(json.getJsonObject("datasetVersion"));
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        DDIExporter instance = new DDIExporter(true);
-        instance.exportDataset(version);
-
-        System.out.println(XmlPrinter.prettyPrintXml(byteArrayOutputStream.toString()));
-        assertFalse(byteArrayOutputStream.toString().contains("finch@mailinator.com"));
-
     }
 
     static class MockDatasetFieldSvc extends DatasetFieldServiceBean {

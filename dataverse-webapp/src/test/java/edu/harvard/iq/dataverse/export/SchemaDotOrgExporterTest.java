@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Set;
 
 import static edu.harvard.iq.dataverse.util.SystemConfig.FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS;
-import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -49,7 +48,7 @@ public class SchemaDotOrgExporterTest {
     DDIExporterTest.MockDatasetFieldSvc datasetFieldTypeSvc = null;
 
     public SchemaDotOrgExporterTest() {
-        schemaDotOrgExporter = new SchemaDotOrgExporter("localhost");
+        schemaDotOrgExporter = new SchemaDotOrgExporter("https://librascholar.org");
     }
 
     @BeforeClass
@@ -257,7 +256,6 @@ public class SchemaDotOrgExporterTest {
         Dataverse dataverse = new Dataverse();
         dataverse.setName("LibraScholar");
         dataset.setOwner(dataverse);
-        System.setProperty(SITE_URL, "https://librascholar.org");
         boolean hideFileUrls = false;
         if (hideFileUrls) {
             System.setProperty(FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS, "true");
@@ -354,8 +352,7 @@ public class SchemaDotOrgExporterTest {
      */
     @Test
     public void testGetProviderName() {
-        System.out.println("getProviderName");
-        assertEquals("schema.org", schemaDotOrgExporter.getProviderName());
+        assertEquals(ExporterType.SCHEMADOTORG.toString(), schemaDotOrgExporter.getProviderName());
     }
 
     /**

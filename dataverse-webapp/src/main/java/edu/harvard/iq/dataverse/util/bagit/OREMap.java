@@ -12,6 +12,8 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.export.ExporterType;
 import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
@@ -25,10 +27,11 @@ import javax.json.JsonValue;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.ResourceBundle;
 import java.util.TreeMap;
 
 public class OREMap {
@@ -129,6 +132,7 @@ public class OREMap {
                 aggBuilder.add(fieldName.getLabel(), (valArray.size() != 1) ? valArray : valArray.get(0));
             }
         }
+
         // Add metadata related to the Dataset/DatasetVersion
         aggBuilder.add("@id", id)
                 .add("@type",
@@ -137,7 +141,8 @@ public class OREMap {
                 .add(JsonLDTerm.schemaOrg("version").getLabel(), version.getFriendlyVersionNumber())
                 .add(JsonLDTerm.schemaOrg("datePublished").getLabel(), dataset.getPublicationDateFormattedYYYYMMDD())
                 .add(JsonLDTerm.schemaOrg("name").getLabel(), version.getTitle())
-                .add(JsonLDTerm.schemaOrg("dateModified").getLabel(), version.getLastUpdateTime().toString());
+                .add(JsonLDTerm.schemaOrg("dateModified").getLabel(),
+                     DateUtil.retrieveISOFormatter(ZoneId.of("UTC")).format(version.getLastUpdateTime().toInstant()));
 
         TermsOfUseAndAccess terms = version.getTermsOfUseAndAccess();
         if (terms.getLicense() == TermsOfUseAndAccess.License.CC0) {
@@ -251,7 +256,7 @@ public class OREMap {
         JsonObject oremap = Json.createObjectBuilder()
                 .add(JsonLDTerm.dcTerms("modified").getLabel(), modifiedDate.toString())
                 .add(JsonLDTerm.dcTerms("creator").getLabel(),
-                     ResourceBundle.getBundle("Bundle").getString("institution.name"))
+                     BundleUtil.getStringFromBundle("institution.name", Locale.ENGLISH))
                 .add("@type", JsonLDTerm.ore("ResourceMap").getLabel())
                 // Define an id for the map itself (separate from the @id of the dataset being
                 // described

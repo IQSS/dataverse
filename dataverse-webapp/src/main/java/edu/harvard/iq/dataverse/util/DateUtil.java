@@ -6,8 +6,9 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
 
@@ -61,15 +62,6 @@ public class DateUtil {
         }
     }
 
-    public static LocalDateTime convertToLocalDateTime(Date date) {
-        if (date == null) {
-            return null;
-        }
-        return Instant.ofEpochMilli(date.getTime())
-                .atZone(DataverseClock.zoneId)
-                .toLocalDateTime();
-    }
-
     public static Date convertToDate(LocalDateTime date) {
         if (date == null) {
             return null;
@@ -80,5 +72,11 @@ public class DateUtil {
     public static String formatDate(Date date, SimpleDateFormat format) {
 
         return date == null ? StringUtils.EMPTY : format.format(date);
+    }
+
+    public static DateTimeFormatter retrieveISOFormatter(ZoneId zoneId) {
+
+        return DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")
+                .withZone(zoneId);
     }
 }

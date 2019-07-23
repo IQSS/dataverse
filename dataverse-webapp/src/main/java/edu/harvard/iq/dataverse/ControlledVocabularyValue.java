@@ -122,7 +122,8 @@ public class ControlledVocabularyValue implements Serializable {
         String key = strValue.toLowerCase().replace(" ", "_");
         key = StringUtils.stripAccents(key);
         try {
-            return BundleUtil.getStringFromPropertyFile("controlledvocabulary." + this.datasetFieldType.getName() + "." + key, getDatasetFieldType().getMetadataBlock().getName());
+            return BundleUtil.getStringFromPropertyFile("controlledvocabulary." + this.datasetFieldType.getName() + "." + key,
+                                                        getDatasetFieldType().getMetadataBlock().getName());
         } catch (MissingResourceException | NullPointerException e) {
             return getStrValue();
         }

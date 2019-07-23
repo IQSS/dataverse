@@ -529,7 +529,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             return title;
         } else {
             try {
-                return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".title", getMetadataBlock().getName());
+                return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".title",
+                                                            getMetadataBlock().getName());
             } catch (MissingResourceException e) {
                 return title;
             }
@@ -541,7 +542,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             return description;
         } else {
             try {
-                return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".description", getMetadataBlock().getName());
+                return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".description",
+                                                            getMetadataBlock().getName());
             } catch (MissingResourceException e) {
                 return description;
             }
@@ -553,7 +555,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             return watermark;
         } else {
             try {
-                return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".watermark", getMetadataBlock().getName());
+                return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".watermark",
+                                                            getMetadataBlock().getName());
             } catch (MissingResourceException e) {
                 return watermark;
             }
