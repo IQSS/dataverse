@@ -637,6 +637,8 @@
                         </ui:fragment>
 
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
+                                   rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'LICENSE')}"
+                                   dynamic="true">
                                    rendered="#{empty DatasetPage.editMode}">
                             
                             <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned or

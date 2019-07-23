@@ -33,10 +33,10 @@
                process="@this"
                update="versionsContent"
                actionListener="#{datasetVersionsTab.postLoadSetVersionTabList()}" />
-        
-        
+
+
         <h:panelGroup id="versionsContent">
-        
+
         <div class="text-right margin-bottom">
             <p:commandLink type="button" styleClass="btn btn-default" onclick="testCheckBoxes();"
                              rendered="#{datasetVersionsTab.comparableVersionsCount > 2}">
@@ -49,13 +49,13 @@
                              actionListener="#{datasetVersionsTab.updateVersionDiffForModalFromSelected()}">
             </p:commandButton>
         </div>
-    
+
         <p:dataTable id="versionsTable" value="#{datasetVersionsTab.versionsSummary}" var="versionSummary" widgetVar="versionsTable"
                      rowKey="#{versionSummary.version}" selection="#{datasetVersionsTab.selectedVersions}"
                      disabledSelection="#{!versionSummary.canBeCompared}" >
             <!-- start: checkbox column -->
             <p:column selectionMode="multiple" class="col-select-width text-center" rendered="#{datasetVersionsTab.comparableVersionsCount > 2}"/><!-- end: checkbox column -->
-    
+
             <!-- start: version number column -->
             <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.dataset']}" class="col-sm-1 text-center">
                 <ui:fragment rendered="#{versionSummary.showLink}">
@@ -67,7 +67,7 @@
                     <h:outputText value="#{versionSummary.version.friendlyVersionNumber}" />
                 </ui:fragment>
             </p:column><!-- end: version number column -->
-            
+
             <!-- start: description column -->
             <p:column id="summaryColumn" headerText="#{bundle['file.dataFilesTab.versions.headers.summary']}">
                 <ui:fragment rendered="#{versionSummary.differenceFromPreviousVersion != null}">
@@ -103,7 +103,7 @@
                         <h:outputText styleClass="highlightBold" value="#{versionSummary.differenceFromPreviousVersion.fileNote}; " />
                     </ui:fragment>
                 </ui:fragment>
-                <ui:fragment rendered="#{versionSummary.differenceFromPreviousVersion == null}">
+                <ui:fragment rendered="#{versionSummary.differenceFromPreviousVersion == null or versionSummary.differenceFromPreviousVersion.isEmpty()}">
                     <ui:fragment rendered="#{versionSummary.version.draft}">
                         #{bundle['file.dataFilesTab.versions.description.draft']}
                     </ui:fragment>
@@ -120,9 +120,13 @@
                             <a href="#{versionSummary.version.archiveNote}" target="_blank">#{versionSummary.version.archiveNote}</a>
                         </ui:fragment>
                     </ui:fragment>
+                    <ui:fragment rendered="#{versionSummary.differenceFromPreviousVersion.isEmpty()}">
+                        #{bundle['file.dataFilesTab.versions.description.noDiffWithPrev']}
+                    </ui:fragment>
                 </ui:fragment>
-                
-                <p:commandLink rendered="#{(!empty(versionSummary.differenceFromPreviousVersion))}"
+
+                <p:commandLink rendered="#{(!empty(versionSummary.differenceFromPreviousVersion)
+                                    and versionSummary.differenceFromPreviousVersion.isNotEmpty())}"
                                actionListener="#{datasetVersionsTab.updateVersionDiffForDialog(versionSummary.differenceFromPreviousVersion)}"
                                oncomplete="PF('detailsBlocks').show();post_differences();"
                                update="@form"
@@ -148,20 +152,21 @@
     </ui:fragment>
 
     <p:dialog id="detailsBlocks" styleClass="largePopUp" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="detailsBlocks" modal="true">
-        <div id="version-title" class="margin-bottom-half">#{datasetVersionsTab.versionsDifferenceForDialog.newVersion.title}</div>
-        <div id="version-details-block" class=" clearfix margin-bottom-half">
-            <div class="pull-left">
-                &#160;
+        <ui:fragment rendered="#{datasetVersionsTab.versionsDifferenceForDialog.isNotEmpty()}">
+            <div id="version-title" class="margin-bottom-half">#{datasetVersionsTab.versionsDifferenceForDialog.newVersion.title}</div>
+            <div id="version-details-block" class=" clearfix margin-bottom-half">
+                <div class="pull-left">
+                    &#160;
+                </div>
+                <div class="pull-left">
+                    #{bundle['file.viewDiffDialog.version']}: #{datasetVersionsTab.versionsDifferenceForDialog.originalVersion.semanticVersion}<br/>
+                    #{bundle['file.viewDiffDialog.lastUpdated']}: #{datasetVersionsTab.versionsDifferenceForDialog.originalVersion.localeLastUpdateTime}
+                </div>
+                <div class="pull-left">
+                    #{bundle['file.viewDiffDialog.version']}: #{datasetVersionsTab.versionsDifferenceForDialog.newVersion.semanticVersion}<br/>
+                    #{bundle['file.viewDiffDialog.lastUpdated']}: #{datasetVersionsTab.versionsDifferenceForDialog.newVersion.localeLastUpdateTime}
+                </div>
             </div>
-            <div class="pull-left">
-                #{bundle['file.viewDiffDialog.version']}: #{datasetVersionsTab.versionsDifferenceForDialog.originalVersion.semanticVersion}<br/>
-                #{bundle['file.viewDiffDialog.lastUpdated']}: #{datasetVersionsTab.versionsDifferenceForDialog.originalVersion.localeLastUpdateTime}
-            </div>
-            <div class="pull-left">
-                #{bundle['file.viewDiffDialog.version']}: #{datasetVersionsTab.versionsDifferenceForDialog.newVersion.semanticVersion}<br/>
-                #{bundle['file.viewDiffDialog.lastUpdated']}: #{datasetVersionsTab.versionsDifferenceForDialog.newVersion.localeLastUpdateTime}
-            </div>
-        </div>
         <ui:fragment rendered="#{!empty(datasetVersionsTab.versionsDifferenceForDialog.detailDataByBlock)}">
             <ui:repeat value="#{datasetVersionsTab.versionsDifferenceForDialog.detailDataByBlock}" var="block">
                 <div class="panel panel-default">
@@ -254,6 +259,15 @@
                 </p:column>
             </p:dataTable>
         </div>
+        </ui:fragment>
+        <ui:fragment rendered="#{datasetVersionsTab.versionsDifferenceForDialog.isEmpty()}">
+            <p class="help-block">
+                <h:outputFormat value="#{bundle['file.viewDiffDialog.dialog.noDiff']}">
+                    <f:param value="#{datasetVersionsTab.versionsDifferenceForDialog.originalVersion.semanticVersion}"/>
+                    <f:param value="#{datasetVersionsTab.versionsDifferenceForDialog.newVersion.semanticVersion}" />
+                </h:outputFormat>
+            </p>
+        </ui:fragment>
         <div class="button-block margin-bottom">
             <p:commandButton value="#{bundle.done}" onclick="PF('detailsBlocks').hide();" type="button" />
         </div>

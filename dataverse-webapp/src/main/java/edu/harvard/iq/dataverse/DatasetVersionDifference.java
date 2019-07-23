@@ -1,5 +1,11 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import io.vavr.Tuple2;
+import io.vavr.Tuple4;
+import org.apache.commons.collections4.SetUtils;
+import org.apache.commons.lang.StringUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,13 +14,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.commons.collections4.SetUtils;
-import org.apache.commons.lang.StringUtils;
-
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import io.vavr.Tuple2;
-import io.vavr.Tuple4;
 
 /**
  * @author skraffmiller
@@ -34,12 +33,10 @@ public final class DatasetVersionDifference {
     
     private List<DatasetFileDifferenceItem> datasetFilesDiffList;
     private List<DatasetReplaceFileItem> datasetFilesReplacementList;
-    
-    
+
     private List<Tuple4<DatasetFieldType, Integer, Integer, Integer>> summaryDataForNote = new ArrayList<>();
     private List<Tuple4<MetadataBlock, Integer, Integer, Integer>> blockDataForNote = new ArrayList<>();
     private String fileNote = StringUtils.EMPTY;
-    
     
     // -------------------- CONSTRUCTORS --------------------
     
@@ -317,7 +314,15 @@ public final class DatasetVersionDifference {
 
         return retVal;
     }
-    
+
+    public boolean isEmpty() {
+        return (detailDataByBlock.size() + addedFiles.size() + removedFiles.size() + replacedFiles.size() + changedFileMetadata.size()) == 0;
+    }
+
+    public boolean isNotEmpty() {
+        return !isEmpty();
+    }
+
     // -------------------- PRIVATE --------------------
     
     private Set<DatasetFieldType> extractDatasetFieldTypes(DatasetVersion datasetVersion) {

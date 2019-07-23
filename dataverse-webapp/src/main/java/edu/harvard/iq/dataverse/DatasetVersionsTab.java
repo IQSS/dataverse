@@ -1,16 +1,14 @@
 package edu.harvard.iq.dataverse;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import org.primefaces.context.RequestContext;
 
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
-
-import org.primefaces.context.RequestContext;
-
-import edu.harvard.iq.dataverse.authorization.Permission;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @ViewScoped
 @Named("datasetVersionsTab")
