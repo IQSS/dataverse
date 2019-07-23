@@ -46,6 +46,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
+import edu.harvard.iq.dataverse.files.extension.FileExtension;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.persistence.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -1246,7 +1247,7 @@ public class Admin extends AbstractApiBean {
                         } else {
                             // if this is a tabular file, read the preserved original "auxiliary file"
                             // instead:
-                            in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                            in = storage.getAuxFileAsInputStream(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
                         }
                         if (in == null) {
                             logger.warning("Cannot retrieve file.");
@@ -1261,7 +1262,7 @@ public class Admin extends AbstractApiBean {
                             } else {
                                 // if this is a tabular file, read the preserved original "auxiliary file"
                                 // instead:
-                                in2 = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                                in2 = storage.getAuxFileAsInputStream(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
                             }
                             if (in2 == null) {
                                 logger.warning("Cannot retrieve file to calculate new checksum.");

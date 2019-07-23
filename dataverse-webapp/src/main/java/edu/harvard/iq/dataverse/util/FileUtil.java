@@ -28,6 +28,9 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.files.mime.ApplicationMimeType;
+import edu.harvard.iq.dataverse.files.mime.ImageMimeType;
+import edu.harvard.iq.dataverse.files.mime.TextMimeType;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
 import edu.harvard.iq.dataverse.license.FileTermsOfUse;
@@ -99,40 +102,6 @@ public class FileUtil implements java.io.Serializable {
     }
 
     private static MimetypesFileTypeMap MIME_TYPE_MAP = new MimetypesFileTypeMap();
-
-    public static final String MIME_TYPE_STATA = "application/x-stata";
-    public static final String MIME_TYPE_STATA13 = "application/x-stata-13";
-    public static final String MIME_TYPE_STATA14 = "application/x-stata-14";
-    public static final String MIME_TYPE_STATA15 = "application/x-stata-15";
-    public static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
-
-    public static final String MIME_TYPE_CSV = "text/csv";
-    public static final String MIME_TYPE_CSV_ALT = "text/comma-separated-values";
-    public static final String MIME_TYPE_TSV = "text/tsv";
-    public static final String MIME_TYPE_TSV_ALT = "text/tab-separated-values";
-    public static final String MIME_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-
-    public static final String MIME_TYPE_SPSS_SAV = "application/x-spss-sav";
-    public static final String MIME_TYPE_SPSS_POR = "application/x-spss-por";
-
-
-    public static final String MIME_TYPE_FITS = "application/fits";
-
-    public static final String MIME_TYPE_ZIP = "application/zip";
-
-    public static final String MIME_TYPE_FITSIMAGE = "image/fits";
-    // SHAPE file type: 
-    // this is the only supported file type in the GEO DATA class:
-
-    public static final String MIME_TYPE_GEO_SHAPE = "application/zipped-shapefile";
-
-    public static final String MIME_TYPE_UNDETERMINED_DEFAULT = "application/octet-stream";
-    public static final String MIME_TYPE_UNDETERMINED_BINARY = "application/binary";
-
-    public static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
-
-    public static final String MIME_TYPE_INGESTED_FILE = "text/tab-separated-values";
-
 
     /**
      * This string can be prepended to a Base64-encoded representation of a PNG
@@ -579,23 +548,14 @@ public class FileUtil implements java.io.Serializable {
             return false;
         }
 
-        switch (mimeType) {
-            case MIME_TYPE_STATA:
-            case MIME_TYPE_STATA13:
-            case MIME_TYPE_STATA14:
-            case MIME_TYPE_STATA15:
-            case MIME_TYPE_RDATA:
-            case MIME_TYPE_CSV:
-            case MIME_TYPE_CSV_ALT:
-            case MIME_TYPE_TSV:
-            case MIME_TYPE_TSV_ALT:
-            case MIME_TYPE_XLSX:
-            case MIME_TYPE_SPSS_SAV:
-            case MIME_TYPE_SPSS_POR:
-                return true;
-            default:
-                return false;
-        }
+        boolean isMimeAmongIngestableAppTypes = ApplicationMimeType.retrieveIngestableMimes().stream()
+                .anyMatch(appMime -> appMime.getMimeValue().equals(mimeType));
+
+        boolean isMimeAmongIngestableTextTypes = TextMimeType.retrieveIngestableMimes().stream()
+                .anyMatch(appMime -> appMime.getMimeValue().equals(mimeType));
+
+
+        return isMimeAmongIngestableAppTypes || isMimeAmongIngestableTextTypes;
     }
 
     public static String getFilesTempDirectory() {
@@ -881,7 +841,7 @@ public class FileUtil implements java.io.Serializable {
         // mime type for FITS is "application/fits", and problematic: then
         // the file is identified as an image, and the page will attempt to 
         // generate a preview - which of course is going to fail...
-        if (MIME_TYPE_FITSIMAGE.equalsIgnoreCase(contentType)) {
+        if (ImageMimeType.FITSIMAGE.getMimeValue().equalsIgnoreCase(contentType)) {
             return false;
         }
         // besides most image/* types, we can generate thumbnails for
@@ -891,7 +851,7 @@ public class FileUtil implements java.io.Serializable {
                 (contentType.startsWith("image/") ||
                         contentType.equalsIgnoreCase("application/pdf") ||
                         (file.isTabularData() && file.hasGeospatialTag()) ||
-                        contentType.equalsIgnoreCase(MIME_TYPE_GEO_SHAPE)));
+                        contentType.equalsIgnoreCase(ApplicationMimeType.GEO_SHAPE.getMimeValue())));
     }
     
     

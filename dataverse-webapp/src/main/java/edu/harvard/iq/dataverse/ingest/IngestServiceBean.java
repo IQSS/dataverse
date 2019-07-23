@@ -43,6 +43,9 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+import edu.harvard.iq.dataverse.files.extension.FileExtension;
+import edu.harvard.iq.dataverse.files.mime.ApplicationMimeType;
+import edu.harvard.iq.dataverse.files.mime.TextMimeType;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataIngest;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.impl.plugins.fits.FITSFileMetadataExtractor;
@@ -863,11 +866,11 @@ public class IngestServiceBean {
 
                 // and change the mime type to "Tabular Data" on the final datafile, 
                 // and replace (or add) the extension ".tab" to the filename: 
-                dataFile.setContentType(FileUtil.MIME_TYPE_INGESTED_FILE);
+                dataFile.setContentType(TextMimeType.TSV_ALT.getMimeValue());
                 IngestUtil.modifyExistingFilename(dataFile.getOwner().getLatestVersion(), dataFile.getFileMetadata(), FileUtil.replaceExtension(fileName, "tab"));
 
-                if (FileUtil.MIME_TYPE_CSV_ALT.equals(dataFile.getContentType())) {
-                    tabDataIngest.getDataTable().setOriginalFileFormat(FileUtil.MIME_TYPE_CSV);
+                if (TextMimeType.CSV_ALT.getMimeValue().equals(dataFile.getContentType())) {
+                    tabDataIngest.getDataTable().setOriginalFileFormat(TextMimeType.CSV.getMimeValue());
                 } else {
                     tabDataIngest.getDataTable().setOriginalFileFormat(originalContentType);
                 }
@@ -951,8 +954,8 @@ public class IngestServiceBean {
 
                     // and we want to save the original of the ingested file: 
                     try {
-                        dataAccess.backupAsAux(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-                        logger.fine("Saved the ingested original as a backup aux file " + FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                        dataAccess.backupAsAux(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
+                        logger.fine("Saved the ingested original as a backup aux file " + FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
                     } catch (IOException iox) {
                         logger.warning("Failed to save the ingested original! " + iox.getMessage());
                     }
@@ -1056,29 +1059,29 @@ public class IngestServiceBean {
 
         TabularDataFileReader ingestPlugin = null;
 
-        if (mimeType.equals(FileUtil.MIME_TYPE_STATA)) {
+        if (mimeType.equals(ApplicationMimeType.STATA.getMimeValue())) {
             ingestPlugin = new DTAFileReader(new DTAFileReaderSpi());
-        } else if (mimeType.equals(FileUtil.MIME_TYPE_STATA13)) {
+        } else if (mimeType.equals(ApplicationMimeType.STATA13.getMimeValue())) {
             ingestPlugin = new NewDTAFileReader(new DTAFileReaderSpi(), 117);
-        } else if (mimeType.equals(FileUtil.MIME_TYPE_STATA14)) {
+        } else if (mimeType.equals(ApplicationMimeType.STATA14.getMimeValue())) {
             ingestPlugin = new NewDTAFileReader(new DTAFileReaderSpi(), 118);
-        } else if (mimeType.equals(FileUtil.MIME_TYPE_STATA15)) {
+        } else if (mimeType.equals(ApplicationMimeType.STATA15.getMimeValue())) {
             ingestPlugin = new NewDTAFileReader(new DTAFileReaderSpi(), 119);
-        } else if (mimeType.equals(FileUtil.MIME_TYPE_RDATA)) {
+        } else if (mimeType.equals(ApplicationMimeType.RDATA.getMimeValue())) {
             ingestPlugin = new RDATAFileReader(new RDATAFileReaderSpi(),
                                                settingsService.getValueForKey(SettingsServiceBean.Key.RserveHost),
                                                settingsService.getValueForKey(SettingsServiceBean.Key.RserveUser),
                                                settingsService.getValueForKey(SettingsServiceBean.Key.RservePassword),
                                                settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.RservePort));
-        } else if (mimeType.equals(FileUtil.MIME_TYPE_CSV) || mimeType.equals(FileUtil.MIME_TYPE_CSV_ALT)) {
+        } else if (mimeType.equals(TextMimeType.CSV.getMimeValue()) || mimeType.equals(TextMimeType.CSV_ALT.getMimeValue())) {
             ingestPlugin = new CSVFileReader(new CSVFileReaderSpi(), ',');
-        } else if (mimeType.equals(FileUtil.MIME_TYPE_TSV) || mimeType.equals(FileUtil.MIME_TYPE_TSV_ALT)) {
+        } else if (mimeType.equals(TextMimeType.TSV.getMimeValue()) || mimeType.equals(TextMimeType.TSV_ALT.getMimeValue())) {
             ingestPlugin = new CSVFileReader(new CSVFileReaderSpi(), '\t');
-        } else if (mimeType.equals(FileUtil.MIME_TYPE_XLSX)) {
+        } else if (mimeType.equals(ApplicationMimeType.XLSX.getMimeValue())) {
             ingestPlugin = new XLSXFileReader(new XLSXFileReaderSpi());
-        } else if (mimeType.equals(FileUtil.MIME_TYPE_SPSS_SAV)) {
+        } else if (mimeType.equals(ApplicationMimeType.SPSS_SAV.getMimeValue())) {
             ingestPlugin = new SAVFileReader(new SAVFileReaderSpi());
-        } else if (mimeType.equals(FileUtil.MIME_TYPE_SPSS_POR)) {
+        } else if (mimeType.equals(ApplicationMimeType.SPSS_POR.getMimeValue())) {
             ingestPlugin = new PORFileReader(new PORFileReaderSpi());
         }
 
@@ -1092,7 +1095,7 @@ public class IngestServiceBean {
          * for now - just a hardcoded list of mime types:
          *  -- L.A. 4.0 beta
          */
-        return dataFile.getContentType() != null && dataFile.getContentType().equals(FileUtil.MIME_TYPE_FITS);
+        return dataFile.getContentType() != null && dataFile.getContentType().equals(ApplicationMimeType.FITS.getMimeValue());
     }
 
     /*
@@ -1672,7 +1675,7 @@ public class IngestServiceBean {
         if (dataFile != null && dataFile.isTabularData()) {
             String originalFormat = dataFile.getDataTable().getOriginalFileFormat();
             Long datatableId = dataFile.getDataTable().getId();
-            if (StringUtil.isEmpty(originalFormat) || originalFormat.equals(FileUtil.MIME_TYPE_INGESTED_FILE)) {
+            if (StringUtil.isEmpty(originalFormat) || originalFormat.equals(TextMimeType.TSV_ALT.getMimeValue())) {
 
                 // We need to determine the mime type of the saved original
                 // and save it in the database. 
@@ -1699,7 +1702,7 @@ public class IngestServiceBean {
 
                     if (storageIO.isLocalFile()) {
                         try {
-                            savedOriginalFile = storageIO.getAuxObjectAsPath(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION).toFile();
+                            savedOriginalFile = storageIO.getAuxObjectAsPath(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension()).toFile();
                         } catch (IOException ioex) {
                             // do nothing, just make sure savedOriginalFile is still null:
                             savedOriginalFile = null;
@@ -1709,10 +1712,10 @@ public class IngestServiceBean {
                     if (savedOriginalFile == null) {
                         tempFileRequired = true;
 
-                        ReadableByteChannel savedOriginalChannel = (ReadableByteChannel) storageIO.openAuxChannel(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                        ReadableByteChannel savedOriginalChannel = (ReadableByteChannel) storageIO.openAuxChannel(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
                         savedOriginalFile = File.createTempFile("tempSavedOriginal", ".tmp");
                         FileChannel tempSavedOriginalChannel = new FileOutputStream(savedOriginalFile).getChannel();
-                        tempSavedOriginalChannel.transferFrom(savedOriginalChannel, 0, storageIO.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION));
+                        tempSavedOriginalChannel.transferFrom(savedOriginalChannel, 0, storageIO.getAuxObjectSize(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension()));
 
                     }
                 } catch (Exception ex) {
@@ -1749,11 +1752,11 @@ public class IngestServiceBean {
                 // so if the FileUtil is telling us it's a "plain text" file at this point,
                 // it really means it must be a CSV file. 
                 if (fileTypeDetermined.startsWith("text/plain")) {
-                    fileTypeDetermined = FileUtil.MIME_TYPE_CSV;
+                    fileTypeDetermined = TextMimeType.CSV.getMimeValue();
                 }
                 // and, finally, if it is still "application/octet-stream", it must be Excel:
-                if (FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT.equals(fileTypeDetermined)) {
-                    fileTypeDetermined = FileUtil.MIME_TYPE_XLSX;
+                if (ApplicationMimeType.UNDETERMINED_DEFAULT.getMimeValue().equals(fileTypeDetermined)) {
+                    fileTypeDetermined = ApplicationMimeType.XLSX.getMimeValue();
                 }
                 logger.info("Original file type determined: " + fileTypeDetermined + " (file id=" + fileId + ", datatable id=" + datatableId + "; file path: " + savedOriginalFile.getAbsolutePath() + ")");
 
@@ -1786,7 +1789,7 @@ public class IngestServiceBean {
                 try {
                     storageIO = dataFile.getStorageIO(new DataAccess());
                     storageIO.open();
-                    savedOriginalFileSize = storageIO.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                    savedOriginalFileSize = storageIO.getAuxObjectSize(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
 
                 } catch (Exception ex) {
                     logger.warning("Exception " + ex.getClass() + " caught trying to look up the size of the saved original; (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ex.getMessage());

@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.ingest;
 
+import edu.harvard.iq.dataverse.files.mime.ApplicationMimeType;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata.RDATAFileReader;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.FileUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,7 +34,7 @@ public class IngestServiceBeanTest {
         Mockito.when(settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.RservePort)).thenReturn(RSERVE_PORT);
 
         RDATAFileReader rdataFileReader =
-                (RDATAFileReader) ingestServiceBean.getTabDataReaderByMimeType(FileUtil.MIME_TYPE_RDATA);
+                (RDATAFileReader) ingestServiceBean.getTabDataReaderByMimeType(ApplicationMimeType.RDATA.getMimeValue());
 
         //then
         Assert.assertEquals(RSERVE_HOST, rdataFileReader.getRserveHost());

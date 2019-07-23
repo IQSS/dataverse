@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.export.ExporterType;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import edu.harvard.iq.dataverse.files.mime.TextMimeType;
 import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.license.LicenseIcon;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -205,7 +206,7 @@ public class FilePage implements java.io.Serializable {
             String contentType = file.getContentType();
             //For tabular data, indicate successful ingest by returning a contentType for the derived .tab file
             if (file.isTabularData()) {
-                contentType = DataFileServiceBean.MIME_TYPE_TSV_ALT;
+                contentType = TextMimeType.TSV_ALT.getMimeValue();
             }
             configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE, contentType);
             exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE, contentType);

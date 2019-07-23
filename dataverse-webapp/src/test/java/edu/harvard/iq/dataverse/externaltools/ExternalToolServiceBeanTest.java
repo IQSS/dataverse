@@ -1,12 +1,12 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.files.mime.TextMimeType;
 import org.junit.Test;
 
 import javax.json.Json;
@@ -40,7 +40,7 @@ public class ExternalToolServiceBeanTest {
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
         ExternalTool.Type type = ExternalTool.Type.EXPLORE;
-        ExternalTool externalTool = new ExternalTool("displayName", "description", type, "http://foo.com", "{}", DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        ExternalTool externalTool = new ExternalTool("displayName", "description", type, "http://foo.com", "{}", TextMimeType.TSV_ALT.getMimeValue());
         ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, apiToken);
         List<ExternalTool> externalTools = new ArrayList<>();
         externalTools.add(externalTool);
@@ -65,7 +65,7 @@ public class ExternalToolServiceBeanTest {
                                      .build())
                         .build())
                 .build());
-        job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        job.add(ExternalTool.CONTENT_TYPE, TextMimeType.TSV_ALT.getMimeValue());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
         ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
@@ -102,7 +102,7 @@ public class ExternalToolServiceBeanTest {
                                      .build())
                         .build())
                 .build());
-        job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        job.add(ExternalTool.CONTENT_TYPE, TextMimeType.TSV_ALT.getMimeValue());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
         Exception expectedException = null;
@@ -159,7 +159,7 @@ public class ExternalToolServiceBeanTest {
                                      .build())
                         .build())
                 .build());
-        job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        job.add(ExternalTool.CONTENT_TYPE, TextMimeType.TSV_ALT.getMimeValue());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
         Exception expectedException = null;
@@ -178,7 +178,7 @@ public class ExternalToolServiceBeanTest {
         job.add("description", "This tool is awesome.");
         job.add("toolUrl", "http://awesometool.com");
         job.add("toolParameters", Json.createObjectBuilder().build());
-        job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        job.add(ExternalTool.CONTENT_TYPE, TextMimeType.TSV_ALT.getMimeValue());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
         Exception expectedException = null;
@@ -197,7 +197,7 @@ public class ExternalToolServiceBeanTest {
         job.add("displayName", "AwesomeTool");
         job.add("toolUrl", "http://awesometool.com");
         job.add("toolParameters", Json.createObjectBuilder().build());
-        job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        job.add(ExternalTool.CONTENT_TYPE, TextMimeType.TSV_ALT.getMimeValue());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
         Exception expectedException = null;
@@ -217,7 +217,7 @@ public class ExternalToolServiceBeanTest {
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
         job.add("toolParameters", Json.createObjectBuilder().build());
-        job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        job.add(ExternalTool.CONTENT_TYPE, TextMimeType.TSV_ALT.getMimeValue());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
         Exception expectedException = null;
@@ -238,7 +238,7 @@ public class ExternalToolServiceBeanTest {
         job.add("type", "noSuchType");
         job.add("toolUrl", "http://awesometool.com");
         job.add("toolParameters", Json.createObjectBuilder().build());
-        job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        job.add(ExternalTool.CONTENT_TYPE, TextMimeType.TSV_ALT.getMimeValue());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
         Exception expectedException = null;
@@ -278,7 +278,7 @@ public class ExternalToolServiceBeanTest {
             System.out.println(ex.getMessage());
         }
         assertNotNull(externalTool);
-        assertEquals(externalTool.getContentType(), DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        assertEquals(externalTool.getContentType(), TextMimeType.TSV_ALT.getMimeValue());
     }
 
 }

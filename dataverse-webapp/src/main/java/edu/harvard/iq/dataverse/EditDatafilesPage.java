@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.files.mime.ApplicationMimeType;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
@@ -1558,7 +1559,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // Is this a FileReplaceOperation?  If so, then diverge!
             // -----------------------------------------------------------
             if (this.isFileReplaceOperation()) {
-                this.handleReplaceFileUpload(event, dropBoxStream, fileName, FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT, null, event);
+                this.handleReplaceFileUpload(event, dropBoxStream, fileName, ApplicationMimeType.UNDETERMINED_DEFAULT.getMimeValue(), null, event);
                 this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
                 return;
             }

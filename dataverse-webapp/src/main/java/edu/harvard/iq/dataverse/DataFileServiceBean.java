@@ -4,6 +4,10 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
+import edu.harvard.iq.dataverse.files.mime.ApplicationMimeType;
+import edu.harvard.iq.dataverse.files.mime.ImageMimeType;
+import edu.harvard.iq.dataverse.files.mime.MimePrefix;
+import edu.harvard.iq.dataverse.files.mime.TextMimeType;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.license.FileTermsOfUse;
@@ -89,78 +93,6 @@ public class DataFileServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
-    // File type "classes" tags:
-
-    private static final String FILE_CLASS_AUDIO = "audio";
-    private static final String FILE_CLASS_CODE = "code";
-    private static final String FILE_CLASS_DOCUMENT = "document";
-    private static final String FILE_CLASS_ASTRO = "astro";
-    private static final String FILE_CLASS_IMAGE = "image";
-    private static final String FILE_CLASS_NETWORK = "network";
-    private static final String FILE_CLASS_GEO = "geodata";
-    private static final String FILE_CLASS_TABULAR = "tabular";
-    private static final String FILE_CLASS_VIDEO = "video";
-    private static final String FILE_CLASS_PACKAGE = "package";
-    private static final String FILE_CLASS_OTHER = "other";
-
-    // Assorted useful mime types:
-
-    // 3rd-party and/or proprietary tabular data formasts that we know
-    // how to ingest: 
-
-    private static final String MIME_TYPE_STATA = "application/x-stata";
-    private static final String MIME_TYPE_STATA13 = "application/x-stata-13";
-    private static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
-    private static final String MIME_TYPE_CSV = "text/csv";
-    private static final String MIME_TYPE_CSV_ALT = "text/comma-separated-values";
-    private static final String MIME_TYPE_TSV = "text/tsv";
-    public static final String MIME_TYPE_TSV_ALT = "text/tab-separated-values";
-    private static final String MIME_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-    private static final String MIME_TYPE_SPSS_SAV = "application/x-spss-sav";
-    private static final String MIME_TYPE_SPSS_POR = "application/x-spss-por";
-
-    // Tabular data formats we don't know how to ingets, but still recognize
-    // as "tabular data":
-    // TODO: - add more to this list? -- L.A. 4.0 beta13
-
-    private static final String MIME_TYPE_FIXED_FIELD = "text/x-fixed-field";
-    private static final String MIME_TYPE_SAS_TRANSPORT = "application/x-sas-transport";
-    private static final String MIME_TYPE_SAS_SYSTEM = "application/x-sas-system";
-
-    // The following are the "control card/syntax" formats that we recognize 
-    // as "code":
-
-    private static final String MIME_TYPE_R_SYNTAX = "application/x-r-syntax";
-    private static final String MIME_TYPE_STATA_SYNTAX = "text/x-stata-syntax";
-    private static final String MIME_TYPE_SPSS_CCARD = "text/x-spss-syntax";
-    private static final String MIME_TYPE_SAS_SYNTAX = "text/x-sas-syntax";
-
-    // The types recognized as "documents":
-    // TODO: there has to be more! -- L.A. 4.0 beta13
-
-    private static final String MIME_TYPE_PLAIN_TEXT = "text/plain";
-    private static final String MIME_TYPE_DOCUMENT_PDF = "application/pdf";
-    private static final String MIME_TYPE_DOCUMENT_MSWORD = "application/msword";
-    private static final String MIME_TYPE_DOCUMENT_MSEXCEL = "application/vnd.ms-excel";
-    private static final String MIME_TYPE_DOCUMENT_MSWORD_OPENXML = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-
-    // Supported Astrophysics formats: 
-    // (only FITS at this point)
-
-    private static final String MIME_TYPE_FITS = "application/fits";
-
-    // Network Data files: 
-    // (only GRAPHML at this point): 
-
-    private static final String MIME_TYPE_NETWORK_GRAPHML = "text/xml-graphml";
-
-    // SHAPE file type: 
-    // this is the only supported file type in the GEO DATA class:
-
-    private static final String MIME_TYPE_ZIP = "application/zip";
-
-    private static final String MIME_TYPE_UNDETERMINED_DEFAULT = "application/octet-stream";
-    private static final String MIME_TYPE_UNDETERMINED_BINARY = "application/binary";
 
     /**
      * Per https://en.wikipedia.org/wiki/Media_type#Vendor_tree just "dataverse"
@@ -511,7 +443,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // If content type indicates it's tabular data, spend 2 extra queries 
         // looking up the data table and tabular tags objects:
 
-        if (MIME_TYPE_TSV.equalsIgnoreCase(contentType)) {
+        if (TextMimeType.TSV.getMimeValue().equalsIgnoreCase(contentType)) {
             Object[] dtResult;
             try {
                 dtResult = (Object[]) em.createNativeQuery("SELECT ID, UNF, CASEQUANTITY, VARQUANTITY, ORIGINALFILEFORMAT, ORIGINALFILESIZE FROM dataTable WHERE DATAFILE_ID = " + id).getSingleResult();
@@ -730,11 +662,11 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
 
     public boolean isSpssPorFile(DataFile file) {
-        return (file != null) && MIME_TYPE_SPSS_POR.equalsIgnoreCase(file.getContentType());
+        return (file != null) && ApplicationMimeType.SPSS_POR.getMimeValue().equalsIgnoreCase(file.getContentType());
     }
 
     public boolean isSpssSavFile(DataFile file) {
-        return (file != null) && MIME_TYPE_SPSS_SAV.equalsIgnoreCase(file.getContentType());
+        return (file != null) && ApplicationMimeType.SPSS_SAV.getMimeValue().equalsIgnoreCase(file.getContentType());
     }
     
     /*
@@ -791,63 +723,48 @@ public class DataFileServiceBean implements java.io.Serializable {
         return false;
     }
 
-
-    /*
-     * Methods for identifying "classes" (groupings) of files by type:
-     */
-
-    public String getFileClassById(Long fileId) {
-        DataFile file = find(fileId);
-
-        if (file == null) {
-            return null;
-        }
-
-        return getFileClass(file);
-    }
-
     public String getFileClass(DataFile file) {
         if (isFileClassImage(file)) {
-            return FILE_CLASS_IMAGE;
+            return MimePrefix.IMAGE.getPrefixValue();
         }
 
         if (isFileClassVideo(file)) {
-            return FILE_CLASS_VIDEO;
+            return MimePrefix.VIDEO.getPrefixValue();
         }
 
         if (isFileClassAudio(file)) {
-            return FILE_CLASS_AUDIO;
+            return MimePrefix.AUDIO.getPrefixValue();
         }
 
         if (isFileClassCode(file)) {
-            return FILE_CLASS_CODE;
+            return MimePrefix.CODE.getPrefixValue();
         }
 
         if (isFileClassDocument(file)) {
-            return FILE_CLASS_DOCUMENT;
+            return MimePrefix.DOCUMENT.getPrefixValue();
         }
 
         if (isFileClassAstro(file)) {
-            return FILE_CLASS_ASTRO;
+            return MimePrefix.ASTRO.getPrefixValue();
         }
 
         if (isFileClassNetwork(file)) {
-            return FILE_CLASS_NETWORK;
+            return MimePrefix.NETWORK.getPrefixValue();
         }
 
         if (isFileClassGeo(file)) {
-            return FILE_CLASS_GEO;
+            return MimePrefix.GEO.getPrefixValue();
         }
 
         if (isFileClassTabularData(file)) {
-            return FILE_CLASS_TABULAR;
+            return MimePrefix.TABULAR.getPrefixValue();
         }
 
         if (isFileClassPackage(file)) {
-            return FILE_CLASS_PACKAGE;
+            return MimePrefix.PACKAGE.getPrefixValue();
         }
 
-        return FILE_CLASS_OTHER;
+        return MimePrefix.OTHER.getPrefixValue();
     }
 
 
@@ -864,7 +781,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // the file is identified as an image, and the page will attempt to 
         // generate a preview - which of course is going to fail...
 
-        if (FileUtil.MIME_TYPE_FITSIMAGE.equalsIgnoreCase(contentType)) {
+        if (ImageMimeType.FITSIMAGE.getMimeValue().equalsIgnoreCase(contentType)) {
             return false;
         }
         // besides most image/* types, we can generate thumbnails for 
@@ -897,10 +814,10 @@ public class DataFileServiceBean implements java.io.Serializable {
         // The following are the "control card/syntax" formats that we recognize 
         // as "code":
 
-        return (MIME_TYPE_R_SYNTAX.equalsIgnoreCase(contentType)
-                || MIME_TYPE_STATA_SYNTAX.equalsIgnoreCase(contentType)
-                || MIME_TYPE_SAS_SYNTAX.equalsIgnoreCase(contentType)
-                || MIME_TYPE_SPSS_CCARD.equalsIgnoreCase(contentType));
+        return (ApplicationMimeType.R_SYNTAX.getMimeValue().equalsIgnoreCase(contentType)
+                || TextMimeType.STATA_SYNTAX.getMimeValue().equalsIgnoreCase(contentType)
+                || TextMimeType.SAS_SYNTAX.getMimeValue().equalsIgnoreCase(contentType)
+                || TextMimeType.SPSS_CCARD.getMimeValue().equalsIgnoreCase(contentType));
 
     }
 
@@ -917,11 +834,11 @@ public class DataFileServiceBean implements java.io.Serializable {
             contentType = contentType.substring(0, scIndex);
         }
 
-        return (MIME_TYPE_PLAIN_TEXT.equalsIgnoreCase(contentType)
-                || MIME_TYPE_DOCUMENT_PDF.equalsIgnoreCase(contentType)
-                || MIME_TYPE_DOCUMENT_MSWORD.equalsIgnoreCase(contentType)
-                || MIME_TYPE_DOCUMENT_MSEXCEL.equalsIgnoreCase(contentType)
-                || MIME_TYPE_DOCUMENT_MSWORD_OPENXML.equalsIgnoreCase(contentType));
+        return (TextMimeType.PLAIN_TEXT.getMimeValue().equalsIgnoreCase(contentType)
+                || ApplicationMimeType.DOCUMENT_PDF.getMimeValue().equalsIgnoreCase(contentType)
+                || ApplicationMimeType.DOCUMENT_MSWORD.getMimeValue().equalsIgnoreCase(contentType)
+                || ApplicationMimeType.DOCUMENT_MSEXCEL.getMimeValue().equalsIgnoreCase(contentType)
+                || ApplicationMimeType.DOCUMENT_MSWORD_OPENXML.getMimeValue().equalsIgnoreCase(contentType));
 
     }
 
@@ -935,7 +852,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // The only known/supported "Astro" file type is FITS,
         // so far:
 
-        return (MIME_TYPE_FITS.equalsIgnoreCase(contentType) || FileUtil.MIME_TYPE_FITSIMAGE.equalsIgnoreCase(contentType));
+        return (ApplicationMimeType.FITS.getMimeValue().equalsIgnoreCase(contentType) || ImageMimeType.FITSIMAGE.getMimeValue().equalsIgnoreCase(contentType));
 
     }
 
@@ -949,7 +866,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // The only known/supported Network Data type is GRAPHML,
         // so far:
 
-        return MIME_TYPE_NETWORK_GRAPHML.equalsIgnoreCase(contentType);
+        return TextMimeType.NETWORK_GRAPHML.getMimeValue().equalsIgnoreCase(contentType);
 
     }
     
@@ -975,7 +892,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // The only known/supported Geo Data type is SHAPE,
         // so far:
 
-        return FileUtil.MIME_TYPE_GEO_SHAPE.equalsIgnoreCase(contentType);
+        return ApplicationMimeType.GEO_SHAPE.getMimeValue().equalsIgnoreCase(contentType);
     }
 
     public boolean isFileClassTabularData(DataFile file) {
@@ -1002,10 +919,10 @@ public class DataFileServiceBean implements java.io.Serializable {
         // And these are the formats we DON'T know how to ingest, 
         // but nevertheless recognize as "tabular data":
 
-        return (MIME_TYPE_TSV.equalsIgnoreCase(contentType)
-                || MIME_TYPE_FIXED_FIELD.equalsIgnoreCase(contentType)
-                || MIME_TYPE_SAS_TRANSPORT.equalsIgnoreCase(contentType)
-                || MIME_TYPE_SAS_SYSTEM.equalsIgnoreCase(contentType));
+        return (TextMimeType.TSV.getMimeValue().equalsIgnoreCase(contentType)
+                || TextMimeType.FIXED_FIELD.getMimeValue().equalsIgnoreCase(contentType)
+                || ApplicationMimeType.SAS_TRANSPORT.getMimeValue().equalsIgnoreCase(contentType)
+                || ApplicationMimeType.SAS_SYSTEM.getMimeValue().equalsIgnoreCase(contentType));
 
     }
 
@@ -1115,7 +1032,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }  // end: isReplacementFile
 
     public List<Long> selectFilesWithMissingOriginalTypes() {
-        Query query = em.createNativeQuery("SELECT f.id FROM datafile f, datatable t where t.datafile_id = f.id AND (t.originalfileformat='" + MIME_TYPE_TSV + "' OR t.originalfileformat IS NULL) ORDER BY f.id");
+        Query query = em.createNativeQuery("SELECT f.id FROM datafile f, datatable t where t.datafile_id = f.id AND (t.originalfileformat='" + TextMimeType.TSV.getMimeValue() + "' OR t.originalfileformat IS NULL) ORDER BY f.id");
 
         try {
             return query.getResultList();
@@ -1428,16 +1345,16 @@ public class DataFileServiceBean implements java.io.Serializable {
 
                 if (suppliedContentType == null
                         || suppliedContentType.equals("")
-                        || suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_DEFAULT)
-                        || suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_BINARY)
+                        || suppliedContentType.equalsIgnoreCase(ApplicationMimeType.UNDETERMINED_DEFAULT.getMimeValue())
+                        || suppliedContentType.equalsIgnoreCase(ApplicationMimeType.UNDETERMINED_BINARY.getMimeValue())
                         || (canIngestAsTabular(suppliedContentType)
-                        && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV)
-                        && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV_ALT)
-                        && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_XLSX))
+                        && !suppliedContentType.equalsIgnoreCase(TextMimeType.CSV.getMimeValue())
+                        && !suppliedContentType.equalsIgnoreCase(TextMimeType.CSV_ALT.getMimeValue())
+                        && !suppliedContentType.equalsIgnoreCase(ApplicationMimeType.XLSX.getMimeValue()))
                         || canIngestAsTabular(recognizedType)
                         || recognizedType.equals("application/fits-gzipped")
                         || recognizedType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)
-                        || recognizedType.equals(MIME_TYPE_ZIP)) {
+                        || recognizedType.equals(ApplicationMimeType.ZIP.getMimeValue())) {
                     finalType = recognizedType;
                 }
             }
@@ -1448,7 +1365,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         if (finalType == null) {
             finalType = (suppliedContentType == null || suppliedContentType.equals(""))
-                    ? MIME_TYPE_UNDETERMINED_DEFAULT
+                    ? ApplicationMimeType.UNDETERMINED_DEFAULT.getMimeValue()
                     : suppliedContentType;
         }
 
@@ -1472,7 +1389,7 @@ public class DataFileServiceBean implements java.io.Serializable {
                 uncompressedIn = new GZIPInputStream(new FileInputStream(tempFile.toFile()));
                 File unZippedTempFile = saveInputStreamInTempFile(uncompressedIn, fileSizeLimit);
                 DataFile.ChecksumType checksumType = DataFile.ChecksumType.fromString(settingsService.getValueForKey(SettingsServiceBean.Key.FileFixityChecksumAlgorithm));
-                datafile = createSingleDataFile(version, unZippedTempFile, finalFileName, MIME_TYPE_UNDETERMINED_DEFAULT, checksumType);
+                datafile = createSingleDataFile(version, unZippedTempFile, finalFileName, ApplicationMimeType.UNDETERMINED_DEFAULT.getMimeValue(), checksumType);
             } catch (IOException | FileExceedsMaxSizeException ioex) {
                 datafile = null;
             } finally {
@@ -1586,7 +1503,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
                                 File unZippedTempFile = saveInputStreamInTempFile(unZippedIn, fileSizeLimit);
                                 DataFile.ChecksumType checksumType = DataFile.ChecksumType.fromString(settingsService.getValueForKey(SettingsServiceBean.Key.FileFixityChecksumAlgorithm));
-                                DataFile datafile = createSingleDataFile(version, unZippedTempFile, shortName, MIME_TYPE_UNDETERMINED_DEFAULT, checksumType, false);
+                                DataFile datafile = createSingleDataFile(version, unZippedTempFile, shortName, ApplicationMimeType.UNDETERMINED_DEFAULT.getMimeValue(), checksumType, false);
 
                                 if (!fileEntryName.equals(shortName)) {
                                     // If the filename looks like a hierarchical folder name (i.e., contains slashes and backslashes),
@@ -1899,7 +1816,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
 
         if ((contentType == null) || (contentType.equals(""))) {
-            contentType = MIME_TYPE_UNDETERMINED_DEFAULT;
+            contentType = ApplicationMimeType.UNDETERMINED_DEFAULT.getMimeValue();
         }
         return contentType;
 

@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Type;
+import edu.harvard.iq.dataverse.files.mime.TextMimeType;
 
 import javax.ejb.Stateless;
 import javax.json.Json;
@@ -108,7 +108,7 @@ public class ExternalToolServiceBean {
     public static List<ExternalTool> findExternalToolsByFile(List<ExternalTool> allExternalTools, DataFile file) {
         List<ExternalTool> externalTools = new ArrayList<>();
         //Map tabular data to it's mimetype (the isTabularData() check assures that this code works the same as before, but it may need to change if tabular data is split into subtypes with differing mimetypes)
-        final String contentType = file.isTabularData() ? DataFileServiceBean.MIME_TYPE_TSV_ALT : file.getContentType();
+        final String contentType = file.isTabularData() ? TextMimeType.TSV_ALT.getMimeValue() : file.getContentType();
         allExternalTools.forEach((externalTool) -> {
             //Match tool and file type 
             if (contentType.equals(externalTool.getContentType())) {
@@ -132,7 +132,7 @@ public class ExternalToolServiceBean {
         String contentType = getOptionalTopLevelField(jsonObject, CONTENT_TYPE);
         //Legacy support - assume tool manifests without any mimetype are for tabular data
         if (contentType == null) {
-            contentType = DataFileServiceBean.MIME_TYPE_TSV_ALT;
+            contentType = TextMimeType.TSV_ALT.getMimeValue();
         }
 
         // Allow IllegalArgumentException to bubble up from ExternalTool.Type.fromString

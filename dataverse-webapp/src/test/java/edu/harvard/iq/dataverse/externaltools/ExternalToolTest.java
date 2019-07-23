@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.externaltools;
 
-import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.files.mime.TextMimeType;
 import org.junit.Test;
 
 import javax.json.JsonObject;
@@ -17,7 +17,7 @@ public class ExternalToolTest {
         ExternalTool.Type type = ExternalTool.Type.EXPLORE;
         String toolUrl = "http://example.com";
         String toolParameters = "{}";
-        ExternalTool externalTool = new ExternalTool(displayName, description, type, toolUrl, toolParameters, DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        ExternalTool externalTool = new ExternalTool(displayName, description, type, toolUrl, toolParameters, TextMimeType.TSV_ALT.getMimeValue());
         externalTool.setId(42l);
         JsonObject jsonObject = externalTool.toJson().build();
         System.out.println("result: " + jsonObject);
@@ -26,7 +26,7 @@ public class ExternalToolTest {
         assertEquals("explore", jsonObject.getString(ExternalTool.TYPE));
         assertEquals("http://example.com", jsonObject.getString(ExternalTool.TOOL_URL));
         assertEquals("{}", jsonObject.getString(ExternalTool.TOOL_PARAMETERS));
-        assertEquals(DataFileServiceBean.MIME_TYPE_TSV_ALT, jsonObject.getString(ExternalTool.CONTENT_TYPE));
+        assertEquals(TextMimeType.TSV_ALT.getMimeValue(), jsonObject.getString(ExternalTool.CONTENT_TYPE));
     }
 
 }
