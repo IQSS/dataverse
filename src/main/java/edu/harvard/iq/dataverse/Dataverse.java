@@ -111,23 +111,23 @@ public class Dataverse extends DvObjectContainer {
 
         public String getFriendlyCategoryName(){
        switch (this.dataverseType) {
-            case RESEARCHERS:
-                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.researchers");
-            case RESEARCH_PROJECTS:
-                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.researchProjects");
-            case JOURNALS:
-                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.journals");           
-            case ORGANIZATIONS_INSTITUTIONS:
-                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.organizationsAndInsitutions");           
-            case TEACHING_COURSES:
-                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.teachingCourses");
-            case LABORATORY:
-               return BundleUtil.getStringFromBundle("dataverse.type.selectTab.laboratory");
-            case RESEARCH_GROUP:
-               return BundleUtil.getStringFromBundle("dataverse.type.selectTab.researchGroup");
-            case DEPARTMENT:
-                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.department");
-            case UNCATEGORIZED:
+           case RESEARCHERS:
+               return BundleUtil.getStringFromBundle("dataverse.type.selectTab.researchers", null , "en");
+           case RESEARCH_PROJECTS:
+               return BundleUtil.getStringFromBundle("dataverse.type.selectTab.researchProjects",null, "en");
+           case JOURNALS:
+               return BundleUtil.getStringFromBundle("dataverse.type.selectTab.journals", null, "en");
+           case ORGANIZATIONS_INSTITUTIONS:
+               return BundleUtil.getStringFromBundle("dataverse.type.selectTab.organizationsAndInsitutions",null, "en");
+           case TEACHING_COURSES:
+               return BundleUtil.getStringFromBundle("dataverse.type.selectTab.teachingCourses",null, "en");
+           case LABORATORY:
+               return BundleUtil.getStringFromBundle("dataverse.type.selectTab.laboratory",null, "en");
+           case RESEARCH_GROUP:
+               return BundleUtil.getStringFromBundle("dataverse.type.selectTab.researchGroup",null, "en");
+           case DEPARTMENT:
+               return BundleUtil.getStringFromBundle("dataverse.type.selectTab.department",null, "en");
+           case UNCATEGORIZED:
                 return uncategorizedString;
             default:
                 return "";

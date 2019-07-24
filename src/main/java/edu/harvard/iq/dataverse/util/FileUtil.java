@@ -283,7 +283,7 @@ public class FileUtil implements java.io.Serializable  {
             }
 
             try {
-                return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeFacets"  );
+                return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeFacets" ,"en" );
             } catch (MissingResourceException e) {
                 // if there's no defined "facet-friendly" form of this mime type
                 // we'll truncate the available type by "/", e.g., all the 
@@ -305,7 +305,7 @@ public class FileUtil implements java.io.Serializable  {
             }
         } else {
             try {
-                return BundleUtil.getStringFromPropertyFile("application/octet-stream","MimeTypeFacets"  );
+                return BundleUtil.getStringFromPropertyFile("application/octet-stream","MimeTypeFacets"  , "en");
             } catch (MissingResourceException ex) {
                 logger.warning("Could not find \"" + fileType + "\" in bundle file: ");
                 logger.log(Level.CONFIG, ex.getMessage(), ex);
