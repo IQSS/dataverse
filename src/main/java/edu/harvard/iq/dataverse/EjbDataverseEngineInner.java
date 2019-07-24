@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -17,6 +13,12 @@ import javax.inject.Named;
 /**
  *
  * @author skraffmi
+ * Inner class that does the actual execute action on a command
+ * Transaction attribute is required so that failures here cause a rollback
+ * the outer engine has a transaction attribute of "SUPPORTED" 
+ * so that if there are failure in the onComplete method of the command
+ * the transaction will not be rolled back
+ * 
  */
 @Stateless
 @Named

@@ -250,6 +250,8 @@ public class EjbDataverseEngine {
                     getContext().beginCommandSequence();
                 }
                 getContext().addCommand(aCommand);
+                //This list of commands is hel by the outermost commands context
+                //to be run on completeCommand method
                 Stack<Command> previouslyCalled = getContext().getCommandsCalled();
                 R r = innerEngine.submit(aCommand, getContext());   
                 if (getContext().getCommandsCalled().empty() && !previouslyCalled.empty()){
@@ -327,8 +329,6 @@ public class EjbDataverseEngine {
            commandLoop.onSuccess(ctxt, r);
         }
         
-        called.clear();
-
     }
     
 

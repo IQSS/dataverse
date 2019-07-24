@@ -227,11 +227,8 @@ public class Index extends AbstractApiBean {
                     
                     try {
                         Future<String> indexDataverseFuture = indexService.indexDataverse(dataverse);
-                    } catch (IOException | SolrServerException e) {
-                        String failureLogText = "Dataverse indexing failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + dataverse.getId().toString();
-                        failureLogText += "\r\n" + e.getLocalizedMessage();
-                        LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataverse);
-                        return error(Status.BAD_REQUEST, failureLogText);
+                    } catch (IOException | SolrServerException e) {                                                
+                        return error(Status.BAD_REQUEST, writeFailureToLog(e.getLocalizedMessage(), dataverse));
                     }
                     return ok("starting reindex of dataverse " + id);
                 } else {
@@ -245,10 +242,8 @@ public class Index extends AbstractApiBean {
                     try {
                         Future<String> indexDatasetFuture = indexService.indexDataset(dataset, doNormalSolrDocCleanUp);
                     } catch (IOException | SolrServerException e) {
-                        String failureLogText = "Dataset indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
-                        failureLogText += "\r\n" + e.getLocalizedMessage();
-                        LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
-                        return error(Status.BAD_REQUEST, failureLogText);
+                        //
+                        return error(Status.BAD_REQUEST, writeFailureToLog(e.getLocalizedMessage(), dataset));
                     }
 
                     return ok("starting reindex of dataset " + id);
@@ -270,10 +265,7 @@ public class Index extends AbstractApiBean {
                 try {
                     Future<String> indexDatasetFuture = indexService.indexDataset(datasetThatOwnsTheFile, doNormalSolrDocCleanUp);
                 } catch (IOException | SolrServerException e) {
-                    String failureLogText = "Post lock removal indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + datasetThatOwnsTheFile.getId().toString();
-                    failureLogText += "\r\n" + e.getLocalizedMessage();
-                    LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, datasetThatOwnsTheFile);
-
+                    writeFailureToLog(e.getLocalizedMessage(), datasetThatOwnsTheFile);
                 }
                 
                 return ok("started reindexing " + type + "/" + id);
@@ -328,7 +320,7 @@ public class Index extends AbstractApiBean {
             try {
                 Future<String> indexDatasetFuture = indexService.indexDataset(dataset, doNormalSolrDocCleanUp);
             } catch (IOException | SolrServerException e) {
-                LoggingUtil.writeOnSuccessFailureLog(null, "Index Dataset failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString(),  dataset);
+                writeFailureToLog(e.getLocalizedMessage(), dataset);               
             }
             JsonObjectBuilder data = Json.createObjectBuilder();
             data.add("message", "Reindexed dataset " + persistentId);
@@ -767,6 +759,23 @@ public class Index extends AbstractApiBean {
             data.add(fileMetadata.getLabel());
         }
         return ok(data);
+    }
+    
+    private String writeFailureToLog(String localizedMessage, DvObject dvo) {
+        String retVal = "";
+        String logString = "";
+        if(dvo.isInstanceofDataverse()){
+            retVal = "Dataverse Indexing failed. " ;
+           logString +=  retVal + " You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + dvo.getId().toString(); 
+        }
+        
+        if(dvo.isInstanceofDataset()){
+            retVal += " Dataset Indexing failed. ";
+            logString +=  retVal + " You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dvo.getId().toString(); 
+        }
+        retVal += " \r\n " + localizedMessage;
+        LoggingUtil.writeOnSuccessFailureLog(null, logString, dvo);
+        return retVal;
     }
 
 }
