@@ -85,7 +85,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
 
             if (FileUtil.isPackageFile(doomed)) {
                 try {
-                    String datasetDirectory = doomed.getOwner().getFileSystemDirectory().toString();
+                    String datasetDirectory = doomed.getOwner().getFileSystemDirectory(ctxt.systemConfig().getFilesDirectory()).toString();
                     Path datasetDirectoryPath = Paths.get(datasetDirectory, doomed.getStorageIdentifier());
 
                     Files.walkFileTree(datasetDirectoryPath, new SimpleFileVisitor<Path>() {

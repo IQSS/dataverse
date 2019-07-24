@@ -232,6 +232,14 @@ public class SystemConfig {
         return filesDirectory;
     }
 
+    public static String getFilesDirectoryStatic() {
+        String filesDirectory = System.getProperty(SystemConfig.FILES_DIRECTORY);
+        if(StringUtils.isEmpty(filesDirectory)) {
+            filesDirectory = "/tmp/files";
+        }
+        return filesDirectory;
+    }
+
     public static String getDataverseSiteUrlStatic() {
         String hostUrl = System.getProperty(SITE_URL);
         if (hostUrl != null && !"".equals(hostUrl)) {

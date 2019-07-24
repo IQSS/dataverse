@@ -33,7 +33,7 @@ import static org.junit.Assert.fail;
  * @author oscardssmith
  */
 public class StorageIOTest {
-    StorageIO<Dataset> instance = new FileAccessIO<>();
+    StorageIO<Dataset> instance = new FileAccessIO<>("/tmp/files/tmp/dataset/Dataset");
 
     @Test
     public void testGetChannel() throws IOException {
@@ -81,8 +81,8 @@ public class StorageIOTest {
         } catch (ClassCastException ex) {
             assertEquals(ex.getMessage(), "edu.harvard.iq.dataverse.Dataset cannot be cast to edu.harvard.iq.dataverse.Dataverse");
         }
-        assertEquals(new DataFile(), new FileAccessIO<>(new DataFile()).getDataFile());
-        assertEquals(new Dataverse(), new FileAccessIO<>(new Dataverse()).getDataverse());
+        assertEquals(new DataFile(), new FileAccessIO<>(new DataFile(), null).getDataFile());
+        assertEquals(new Dataverse(), new FileAccessIO<>(new Dataverse(), null).getDataverse());
     }
 
     @Test

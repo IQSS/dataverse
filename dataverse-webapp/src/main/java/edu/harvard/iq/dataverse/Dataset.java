@@ -468,13 +468,8 @@ public class Dataset extends DvObjectContainer {
         }
     }
 
-    public Path getFileSystemDirectory() {
+    public Path getFileSystemDirectory(String filesRootDirectory) {
         Path studyDir = null;
-
-        String filesRootDirectory = System.getProperty("dataverse.files.directory");
-        if (filesRootDirectory == null || filesRootDirectory.equals("")) {
-            filesRootDirectory = "/tmp/files";
-        }
 
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
             for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {

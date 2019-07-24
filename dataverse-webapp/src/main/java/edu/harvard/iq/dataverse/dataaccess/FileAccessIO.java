@@ -50,29 +50,31 @@ import java.util.List;
 
 public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
-    public FileAccessIO() {
-        this((T) null);
+    public FileAccessIO(String filesDirectory) {
+        this((T) null, filesDirectory);
     }
 
-    public FileAccessIO(T dvObject) {
-        this(dvObject, null);
-
+    public FileAccessIO(T dvObject, String filesDirectory) {
+        this(dvObject, null, filesDirectory);
     }
 
-    public FileAccessIO(T dvObject, DataAccessRequest req) {
+    public FileAccessIO(T dvObject, DataAccessRequest req, String filesDirectory) {
 
         super(dvObject, req);
 
         this.setIsLocalFile(true);
+        filesRootDirectory = filesDirectory;
     }
 
     // "Direct" File Access IO, opened on a physical file not associated with
     // a specific DvObject
-    public FileAccessIO(String storageLocation) {
+    public FileAccessIO(String storageLocation, String filesDirectory) {
         physicalPath = Paths.get(storageLocation);
+        filesRootDirectory = filesDirectory;
     }
 
     private Path physicalPath = null;
+    private String filesRootDirectory;
 
     @Override
     public void open(DataAccessOption... options) throws IOException {
@@ -123,8 +125,9 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
                 }
             } else if (isWriteAccess) {
                 // Creates a new directory as needed for a dataset.
-                if (dataFile.getOwner().getFileSystemDirectory() != null && !Files.exists(dataFile.getOwner().getFileSystemDirectory())) {
-                    Files.createDirectories(dataFile.getOwner().getFileSystemDirectory());
+                if (dataFile.getOwner().getFileSystemDirectory(filesRootDirectory) != null
+                        && !Files.exists(dataFile.getOwner().getFileSystemDirectory(filesRootDirectory))) {
+                    Files.createDirectories(dataFile.getOwner().getFileSystemDirectory(filesRootDirectory));
                 }
                 FileOutputStream fout = openLocalFileAsOutputStream();
 
@@ -159,8 +162,9 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 //                this.setInputStream(fin);  
             } else if (isWriteAccess) {
                 //this checks whether a directory for a dataset exists 
-                if (dataset.getFileSystemDirectory() != null && !Files.exists(dataset.getFileSystemDirectory())) {
-                    Files.createDirectories(dataset.getFileSystemDirectory());
+                if (dataset.getFileSystemDirectory(filesRootDirectory) != null
+                        && !Files.exists(dataset.getFileSystemDirectory(filesRootDirectory))) {
+                    Files.createDirectories(dataset.getFileSystemDirectory(filesRootDirectory));
                 }
                 dataset.setStorageIdentifier("file://" + dataset.getAuthority() + "/" + dataset.getIdentifier());
             }
@@ -534,9 +538,9 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         Path datasetDirectoryPath = null;
 
         if (dvObject instanceof Dataset) {
-            datasetDirectoryPath = this.getDataset().getFileSystemDirectory();
+            datasetDirectoryPath = this.getDataset().getFileSystemDirectory(filesRootDirectory);
         } else if (dvObject instanceof DataFile) {
-            datasetDirectoryPath = this.getDataFile().getOwner().getFileSystemDirectory();
+            datasetDirectoryPath = this.getDataFile().getOwner().getFileSystemDirectory(filesRootDirectory);
         } else if (dvObject instanceof Dataverse) {
             throw new IOException("FileAccessIO: Dataverses are not a supported dvObject");
         }
@@ -574,7 +578,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
             baseName = this.getDataFile().getStorageIdentifier();
 
-            datasetDirectoryPath = this.getDataFile().getOwner().getFileSystemDirectory();
+            datasetDirectoryPath = this.getDataFile().getOwner().getFileSystemDirectory(filesRootDirectory.toString());
         }
 
         if (datasetDirectoryPath == null) {

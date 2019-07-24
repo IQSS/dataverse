@@ -59,9 +59,9 @@ public class FileAccessIOTest {
         dataFile.setOwner(dataset);
         dataFile.setStorageIdentifier("DataFile");
 
-        datasetAccess = new FileAccessIO<>(dataset);
-        dataFileAccess = new FileAccessIO<>(dataFile);
-        dataverseAccess = new FileAccessIO<>(dataverse);
+        datasetAccess = new FileAccessIO<>(dataset, "/tmp/files");
+        dataFileAccess = new FileAccessIO<>(dataFile, "/tmp/files");
+        dataverseAccess = new FileAccessIO<>(dataverse, "/tmp/files");
 
         File file = new File("/tmp/files/tmp/dataset/Dataset");
         file.getParentFile().mkdirs();

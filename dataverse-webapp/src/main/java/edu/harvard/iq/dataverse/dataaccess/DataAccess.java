@@ -21,6 +21,7 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.io.IOException;
 
@@ -48,7 +49,7 @@ public class DataAccess {
      */
     public StorageIO getDirectStorageIO(String storageLocation) throws IOException {
         if (storageLocation.startsWith("file://")) {
-            return new FileAccessIO(storageLocation.substring(7));
+            return new FileAccessIO(storageLocation.substring(7), SystemConfig.getFilesDirectoryStatic());
         } else if (storageLocation.startsWith("swift://")) {
             return new SwiftAccessIO<>(storageLocation.substring(8));
         } else if (storageLocation.startsWith("s3://")) {
@@ -82,7 +83,7 @@ public class DataAccess {
 
         if (dvObject.getStorageIdentifier().startsWith("file://")
                 || (!dvObject.getStorageIdentifier().matches("^[a-z][a-z0-9]*://.*"))) {
-            return new FileAccessIO<>(dvObject, req);
+            return new FileAccessIO<>(dvObject, req, SystemConfig.getFilesDirectoryStatic());
         } else if (dvObject.getStorageIdentifier().startsWith("swift://")) {
             return new SwiftAccessIO<>(dvObject, req);
         } else if (dvObject.getStorageIdentifier().startsWith("s3://")) {
@@ -110,7 +111,7 @@ public class DataAccess {
         }
 
         if (driverIdentifier.equals("file")) {
-            storageIO = new FileAccessIO<>(dvObject, null);
+            storageIO = new FileAccessIO<>(dvObject, null, SystemConfig.getFilesDirectoryStatic());
         } else if (driverIdentifier.equals("swift")) {
             storageIO = new SwiftAccessIO<>(dvObject, null);
         } else if (driverIdentifier.equals("s3")) {
