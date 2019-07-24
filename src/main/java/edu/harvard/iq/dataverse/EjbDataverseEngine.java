@@ -250,8 +250,8 @@ public class EjbDataverseEngine {
                     getContext().beginCommandSequence();
                 }
                 getContext().addCommand(aCommand);
-                //This list of commands is hel by the outermost commands context
-                //to be run on completeCommand method
+                //This list of commands is held by the outermost command's context
+                //to be run on completeCommand method when the outermost command is completed
                 Stack<Command> previouslyCalled = getContext().getCommandsCalled();
                 R r = innerEngine.submit(aCommand, getContext());   
                 if (getContext().getCommandsCalled().empty() && !previouslyCalled.empty()){
