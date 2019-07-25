@@ -129,7 +129,13 @@ public class BundleUtil {
 
 
     public static String getStringFromDefaultBundle(String key) {
-        return getStringFromBundleNoMissingCheck(key, null, getResourceBundle(defaultBundleFile , getDefaultLocale() ));
+        try {
+            return getStringFromBundleNoMissingCheck(key, null, getResourceBundle(defaultBundleFile , getDefaultLocale() ));
+        } catch (MissingResourceException ex) {
+            logger.warning("Could not find key \"" + key + "\" in bundle file: ");
+            logger.log(Level.CONFIG, ex.getMessage(), ex);
+            return null;
+        }
     }
 
     public static String getStringFromDefaultPropertyFile(String key, String propertyFileName  ) throws MissingResourceException {
