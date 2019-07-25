@@ -130,6 +130,41 @@
                                     </ui:fragment>
                                 </ul>
                             </div>
+                            
+                            
+                            
+                            <div class="btn-group pull-right" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
+                                                                              and !DatasetPage.dataset.deaccessioned}">
+                                <!-- Explore Button Group -->
+                                <ui:fragment rendered="#{false and exploreTools.size()==1}">
+                                    <button type="button" class="btn btn-default btn-explore" onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
+                                        <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
+                                    </button>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{true}">
+                                    
+                                    <!-- NEEDS exploreTools.size()>1 render logic -->
+                                    
+                                    <button type="button" class="btn btn-default btn-explore dropdown-toggle" data-toggle="dropdown">
+                                        <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span class="caret"></span>
+                                    </button>
+                                </ui:fragment>
+                                
+                                <ul class="dropdown-menu pull-left text-left" role="menu">
+                                    <!-- Explore tool links -->
+                                    
+                                    <!-- NEEDS ui:repeat var="tool" value="# {exploreTools}" logic -->
+                                    
+                                    <li>
+                                        <h:commandLink action="#">
+                                            <h:outputText value="Tool name"/>
+                                        </h:commandLink>
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            
+                            
                             <div class="btn-group pull-right" role="group">
                                 <!-- Edit/Publish Button Group -->
                                 <!-- Publish/Submit for Review/Return to Author Button Group -->
