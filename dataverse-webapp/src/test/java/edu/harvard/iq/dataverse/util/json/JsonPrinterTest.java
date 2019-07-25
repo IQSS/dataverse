@@ -20,7 +20,6 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -258,20 +257,6 @@ public class JsonPrinterTest {
         retVal.setDatasetFieldType(datasetFieldTypeSvc.findByName(datasetFieldTypeName));
         retVal.setDatasetFieldValues(Collections.singletonList(new DatasetFieldValue(retVal, value)));
         return retVal;
-    }
-
-    private static class MockSettingsSvc extends SettingsServiceBean {
-
-        @Override
-        public boolean isTrueForKey(SettingsServiceBean.Key key) {
-            switch (key) {
-                case ExcludeEmailFromExport:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
     }
 
 }

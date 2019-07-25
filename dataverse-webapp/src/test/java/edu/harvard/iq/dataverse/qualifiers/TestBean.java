@@ -11,13 +11,12 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Indicates if bean that you wanna inject is bean that is used in production environment.
+ * Indicates if bean that you wanna inject is bean that is used only in test environment.
  * <p>
- * Should be only used if there is a problem with ambiguous dependency,
- * which means that someone extended production bean in test environment.
+ * Should be used if you need to extend some bean so there won't be any problems with ambiguous dependency's.
  */
 @Qualifier
 @Retention(RUNTIME)
 @Target({TYPE, METHOD, PARAMETER, FIELD})
-public @interface ProductionBean {
+public @interface TestBean {
 }

@@ -27,6 +27,10 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -62,10 +66,14 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author michael
  */
+@RunWith(MockitoJUnitRunner.class)
 public class JsonParserTest {
 
+
+    @Mock
+    private SettingsServiceBean settingsService;
+
     MockDatasetFieldSvc datasetFieldTypeSvc = null;
-    MockSettingsSvc settingsSvc = null;
     DatasetFieldType keywordType;
     DatasetFieldType descriptionType;
     DatasetFieldType subjectType;
@@ -116,8 +124,10 @@ public class JsonParserTest {
             t.setParentDatasetFieldType(compoundSingleType);
         }
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
-        settingsSvc = new MockSettingsSvc();
-        sut = new JsonParser(datasetFieldTypeSvc, null, settingsSvc);
+
+        Mockito.when(settingsService.getValueForKey(SettingsServiceBean.Key.Authority)).thenReturn("10.5072");
+        Mockito.when(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol)).thenReturn("doi");
+        sut = new JsonParser(datasetFieldTypeSvc, null, settingsService);
     }
 
     @Test
@@ -653,20 +663,6 @@ public class JsonParserTest {
         throw new IllegalArgumentException("Unknown dataset field type '" + ex.getDatasetFieldType() + "'");
     }
 
-    private static class MockSettingsSvc extends SettingsServiceBean {
-        @Override
-        public String getValueForKey(Key key /*, String defaultValue */) {
-            switch (key) {
-                case Authority:
-                    return "10.5072";
-                case Protocol:
-                    return "doi";
-                default:
-                    break;
-            }
-            return null;
-        }
-    }
 
     static class MockDatasetFieldSvc extends DatasetFieldServiceBean {
 

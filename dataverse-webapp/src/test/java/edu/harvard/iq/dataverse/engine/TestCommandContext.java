@@ -51,7 +51,7 @@ import javax.persistence.EntityManager;
  */
 public class TestCommandContext implements CommandContext {
 
-    TestSettingsServiceBean settings = new TestSettingsServiceBean();
+    private TestSettingsServiceBean settings = new TestSettingsServiceBean();
 
     @Override
     public DatasetServiceBean datasets() {

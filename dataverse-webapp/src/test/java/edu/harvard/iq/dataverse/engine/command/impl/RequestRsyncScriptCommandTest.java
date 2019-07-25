@@ -14,12 +14,20 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.servlet.http.HttpServletRequest;
 
 import static org.junit.Assert.assertEquals;
 
+@RunWith(MockitoJUnitRunner.class)
 public class RequestRsyncScriptCommandTest {
+
+    @Mock
+    private SettingsServiceBean settingsService;
 
     private TestDataverseEngine testEngine;
     Dataset dataset;
@@ -37,6 +45,8 @@ public class RequestRsyncScriptCommandTest {
 
     @Before
     public void setUp() {
+        Mockito.when(settingsService.getValueForKey(SettingsServiceBean.Key.DataCaptureModuleUrl)).thenReturn("http://localhost:8888");
+
         testEngine = new TestDataverseEngine(new TestCommandContext() {
 
             @Override
@@ -62,7 +72,7 @@ public class RequestRsyncScriptCommandTest {
 
             @Override
             public SettingsServiceBean settings() {
-                return new MockSettingsSvc();
+                return settingsService;
             }
         });
     }
@@ -79,18 +89,5 @@ public class RequestRsyncScriptCommandTest {
         DataverseRequest dataverseRequest = new DataverseRequest(MocksFactory.makeAuthenticatedUser("First", "Last"), aHttpServletRequest);
         ScriptRequestResponse scriptRequestResponse = testEngine.submit(new RequestRsyncScriptCommand(dataverseRequest, dataset));
         assertEquals("theScript", scriptRequestResponse.getScript());
-    }
-
-    private static class MockSettingsSvc extends SettingsServiceBean {
-
-        @Override
-        public String getValueForKey(SettingsServiceBean.Key key) {
-            switch (key) {
-                case DataCaptureModuleUrl:
-                    return "http://localhost:8888";
-                default:
-                    return null;
-            }
-        }
     }
 }

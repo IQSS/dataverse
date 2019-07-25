@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.export;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
-import edu.harvard.iq.dataverse.qualifiers.ProductionBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Either;
@@ -42,7 +41,7 @@ public class ExportService {
     }
 
     @Inject
-    public ExportService(@ProductionBean SettingsServiceBean settingsService,
+    public ExportService(SettingsServiceBean settingsService,
                          SystemConfig systemConfig) {
         this.settingsService = settingsService;
         this.systemConfig = systemConfig;

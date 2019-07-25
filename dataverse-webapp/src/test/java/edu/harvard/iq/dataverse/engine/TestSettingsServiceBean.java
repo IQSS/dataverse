@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine;
 
 import edu.harvard.iq.dataverse.persistence.Setting;
+import edu.harvard.iq.dataverse.qualifiers.TestBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.apache.commons.lang.StringUtils;
 
@@ -12,6 +13,7 @@ import java.util.Map;
  *
  * @author michael
  */
+@TestBean
 public class TestSettingsServiceBean extends SettingsServiceBean {
 
     private final Map<String, String> settings = new HashMap<>();
