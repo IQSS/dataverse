@@ -46,6 +46,20 @@ Feature branches are used for both developing features and fixing bugs. They are
 
 "3728-doc-apipolicy-fix" is an example of a fine name for your feature branch. It tells us that you are addressing https://github.com/IQSS/dataverse/issues/3728 and the "slug" is short, descriptive, and starts with the issue number.
 
+Syncing important branches
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When you want to maintain your fork as a base for more than a one-shot pull request (see below) or as a base for
+your production deployment, you might be interested in syncing the `master` and `develop` branch on
+GitHub on a regular basis.
+
+You can always go for manual `git remote` and `git merge` combos.
+
+Automation for the lazy: easily done by installing `wei/pull GitHub application <https://github.com/apps/pull>`_
+in your forked project repository. We provide a custom configuration for the app to sync both branches, you only need
+to install the application.
+
+
 How to Make a Pull Request
 --------------------------
 

@@ -1,0 +1,8 @@
+version: "1"
+rules:
+  - base: master
+    upstream: IQSS:master
+    mergeMethod: hardreset
+  - base: develop
+    upstream: IQSS:develop
+    mergeMethod: hardreset
