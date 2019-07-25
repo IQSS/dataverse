@@ -106,17 +106,9 @@ public class Dataverse extends DvObjectContainer {
         this.dataverseType = dataverseType;
     }
 
-    @Transient
-    private final String uncategorizedString = "Uncategorized";
-
     public String getFriendlyCategoryName(){
         String key = getFriendlyCategoryKey();
-
-        if (key.equals(uncategorizedString)) {
-            return key;
-        } else {
-            return BundleUtil.getStringFromBundle(key);
-        }
+        return BundleUtil.getStringFromBundle(key);
     }
 
     public String getFriendlyCategoryKey(){
@@ -138,7 +130,7 @@ public class Dataverse extends DvObjectContainer {
             case DEPARTMENT:
                 return  ("dataverse.type.selectTab.department" );
             case UNCATEGORIZED:
-                return uncategorizedString;
+                return ("dataverse.type.selectTab.uncategorized");
             default:
                 return "";
         }
@@ -147,7 +139,7 @@ public class Dataverse extends DvObjectContainer {
 
     public String getIndexableCategoryName() {
         String key = getFriendlyCategoryKey();
-        if (key.equals(uncategorizedString)) {
+        if (key.equals("dataverse.type.selectTab.uncategorized")) {
             return null;
         } else {
             return BundleUtil.getStringFromDefaultBundle(key);
