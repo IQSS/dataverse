@@ -40,15 +40,6 @@ public class BundleUtil {
         }
     }
 
-    public static String getStringFromBundle(String key, List<String> arguments, String lang) {
-        try {
-            return getStringFromBundleNoMissingCheck(key, arguments, getResourceBundle(defaultBundleFile , lang ));
-        } catch (MissingResourceException ex) {
-            logger.warning("Could not find key \"" + key + "\" in bundle file: ");
-            logger.log(Level.CONFIG, ex.getMessage(), ex);
-            return null;
-        }
-    }
 
     /**
      * This call was added to allow bypassing the exception catch, for filetype indexing needs the exception to bubble up
@@ -72,34 +63,25 @@ public class BundleUtil {
         }
     }
 
-    public static String getStringFromPropertyFile(String key, String propertyFileName, String lang ) throws MissingResourceException {
-        ResourceBundle bundle = getResourceBundle(propertyFileName, lang);
+    public static String getStringFromPropertyFile(String key, String propertyFileName  ) throws MissingResourceException {
+        ResourceBundle bundle = getResourceBundle(propertyFileName);
         if (bundle == null) {
             return null;
         }
         return getStringFromBundleNoMissingCheck(key, null, bundle);
     }
 
-    public static String getStringFromPropertyFile(String key, String propertyFileName  ) throws MissingResourceException {
-        return getStringFromPropertyFile( key,  propertyFileName, null );
-    }
-
     public static ResourceBundle getResourceBundle(String propertyFileName ) {
         return getResourceBundle(propertyFileName, null);
     }
 
-    public static ResourceBundle getResourceBundle(String propertyFileName, String lang) {
+    public static ResourceBundle getResourceBundle(String propertyFileName, Locale currentLocale) {
         ResourceBundle bundle;
 
         String filesRootDirectory = System.getProperty("dataverse.lang.directory");
 
-        Locale currentLocale = null ;
-
-        if(lang == null) {
+        if(currentLocale == null) {
             currentLocale = getCurrentLocale();
-        }
-        else {
-            currentLocale = new Locale(lang);
         }
 
         if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
@@ -146,4 +128,30 @@ public class BundleUtil {
     }
 
 
+    public static String getStringFromDefaultBundle(String key) {
+        return getStringFromBundleNoMissingCheck(key, null, getResourceBundle(defaultBundleFile , getDefaultLocale() ));
+    }
+
+    public static String getStringFromDefaultPropertyFile(String key, String propertyFileName  ) throws MissingResourceException {
+        ResourceBundle bundle = getResourceBundle(propertyFileName, getDefaultLocale());
+        if (bundle == null) {
+            return null;
+        }
+        return getStringFromBundleNoMissingCheck(key, null, bundle);
+    }
+
+    private static Locale getDefaultLocale() {
+        String localeEnvVar = System.getenv().get("LANG");
+        if (localeEnvVar != null) {
+            if (localeEnvVar.indexOf('.') > 0) {
+                localeEnvVar = localeEnvVar.substring(0, localeEnvVar.indexOf('.'));
+            }
+            if (!"en_US".equals(localeEnvVar)) {
+                logger.fine("BundleUtil: LOCALE code from the environmental variable is "+localeEnvVar);
+                return new Locale(localeEnvVar);
+            }
+        }
+
+        return new Locale("en");
+    }
 }

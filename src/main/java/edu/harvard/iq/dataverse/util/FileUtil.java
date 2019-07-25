@@ -273,43 +273,81 @@ public class FileUtil implements java.io.Serializable  {
 
         return fileType;
     }
-    
-    public static String getFacetFileType(DataFile dataFile) {
-        String fileType = dataFile.getContentType();
-        
-        if (!StringUtil.isEmpty(fileType)) {
-            if (fileType.contains(";")) {
-                fileType = fileType.substring(0, fileType.indexOf(";"));
-            }
 
-            try {
-                return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeFacets" ,"en" );
-            } catch (MissingResourceException e) {
-                // if there's no defined "facet-friendly" form of this mime type
-                // we'll truncate the available type by "/", e.g., all the 
-                // unknown image/* types will become "image". 
-                // Since many other, quite different types would then all become 
-                // "application" - we will use the facet "Other" for all the 
-                // application/* types not specifically defined in the properties file.
-                //
-                // UPDATE, MH 4.9.2
-                // Since production is displaying both "tabulardata" and "Tabular Data"
-                // we are going to try to add capitalization here to this function
-                // in order to capitalize all the unknown types that are not called
-                // out in MimeTypeFacets.properties
+    public static String getIndexableFacetFileType(DataFile dataFile) {
+        String fileType = getFileType(dataFile);
+        try {
+            return BundleUtil.getStringFromDefaultPropertyFile(fileType,"MimeTypeFacets"  );
+        } catch (MissingResourceException ex) {
+            // if there's no defined "facet-friendly" form of this mime type
+            // we'll truncate the available type by "/", e.g., all the
+            // unknown image/* types will become "image".
+            // Since many other, quite different types would then all become
+            // "application" - we will use the facet "Other" for all the
+            // application/* types not specifically defined in the properties file.
+            //
+            // UPDATE, MH 4.9.2
+            // Since production is displaying both "tabulardata" and "Tabular Data"
+            // we are going to try to add capitalization here to this function
+            // in order to capitalize all the unknown types that are not called
+            // out in MimeTypeFacets.properties
+
+            if (!StringUtil.isEmpty(fileType)) {
                 String typeClass = fileType.split("/")[0];
                 if ("application".equalsIgnoreCase(typeClass)) {
                     return FILE_FACET_CLASS_OTHER;
                 }
+
+                return Character.toUpperCase(typeClass.charAt(0)) + typeClass.substring(1);
+            } else {
+                return null;
+            }
+        }
+    }
+
+    public static String getFileType(DataFile dataFile) {
+        String fileType = dataFile.getContentType();
+
+        if (!StringUtil.isEmpty(fileType)) {
+            if (fileType.contains(";")) {
+                fileType = fileType.substring(0, fileType.indexOf(";"));
+            }
+            return fileType;
+        } else {
+            return "application/octet-stream";
+        }
+
+    }
+
+    public static String getFacetFileType(DataFile dataFile) {
+        String fileType = getFileType(dataFile);
+        try {
+            return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeFacets"  );
+        } catch (MissingResourceException ex) {
+            // if there's no defined "facet-friendly" form of this mime type
+            // we'll truncate the available type by "/", e.g., all the
+            // unknown image/* types will become "image".
+            // Since many other, quite different types would then all become
+            // "application" - we will use the facet "Other" for all the
+            // application/* types not specifically defined in the properties file.
+            //
+            // UPDATE, MH 4.9.2
+            // Since production is displaying both "tabulardata" and "Tabular Data"
+            // we are going to try to add capitalization here to this function
+            // in order to capitalize all the unknown types that are not called
+            // out in MimeTypeFacets.properties
+
+            if (!StringUtil.isEmpty(fileType)) {
+                String typeClass = fileType.split("/")[0];
+                if ("application".equalsIgnoreCase(typeClass)) {
+                    return FILE_FACET_CLASS_OTHER;
+                }
+
                 return Character.toUpperCase(typeClass.charAt(0)) + typeClass.substring(1);
             }
-        } else {
-            try {
-                return BundleUtil.getStringFromPropertyFile("application/octet-stream","MimeTypeFacets"  , "en");
-            } catch (MissingResourceException ex) {
-                logger.warning("Could not find \"" + fileType + "\" in bundle file: ");
-                logger.log(Level.CONFIG, ex.getMessage(), ex);
-                return null;
+            else
+            {
+                return  null;
             }
         }
     }
