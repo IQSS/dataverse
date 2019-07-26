@@ -1,0 +1,64 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+    <!-- Guestbook -->
+        <div class="panel panel-default" jsf:rendered="#{!settingsWrapper.rsyncOnly}">
+            <div class="panel-body">
+                <label for="metadata_Guestbook" class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.guestbook']}
+                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.title']}"></span>
+                </label>
+                <div class="col-sm-9">
+                    <ui:fragment rendered="#{empty DatasetGuestbookTab.guestbook}">
+                        <ui:fragment rendered="#{!DatasetGuestbookTab.canIssueUpdateDatasetCommand}">
+                            <p>#{bundle['file.dataFilesTab.terms.list.guestbook.noSelected.tip']}</p>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{DatasetGuestbookTab.canIssueUpdateDatasetCommand}">
+                            <ui:fragment rendered="#{DatasetGuestbookTab.dataverseGuestbooksCount gt 0}">
+                                <p>#{bundle['file.dataFilesTab.terms.list.guestbook.noSelected.tip']}</p>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{DatasetGuestbookTab.dataverseGuestbooksCount eq 0}">
+                                <p>
+                                    <h:outputFormat value="#{bundle['file.dataFilesTab.terms.list.guestbook.noSelected.admin.tip']}">
+                                        <f:param value="#{DatasetGuestbookTab.ownerName}"/>
+                                    </h:outputFormat>
+                                </p>
+                            </ui:fragment>
+                        </ui:fragment>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{!empty DatasetGuestbookTab.guestbook}">
+                        <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.inUse.tip']}</p>
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <p class="form-control-static pull-left">#{DatasetGuestbookTab.guestbook.name}</p>
+                                <p:commandLink type="button" styleClass="btn btn-default pull-right"
+                                               value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
+                                               update="@form" oncomplete="PF('viewGuestbook').show();bind_bsui_components();"/>
+                            </div>
+                        </div>
+                    </ui:fragment>
+                </div>
+            </div>
+        </div>
+    <!-- Guestbook -->
+
+    <!-- Preview Guestbook -->
+    <p:dialog id="previewGuestbook" styleClass="largePopUp"
+              header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}"
+              widgetVar="viewGuestbook" modal="true">
+        <ui:include src="preview-guestbook.xhtml">
+            <ui:param name="guestbook" value="#{DatasetGuestbookTab.guestbook}" />
+        </ui:include>
+        <div class="button-block">
+            <button type="button" onclick="PF('viewGuestbook').hide()" class="btn btn-default" value="#{bundle.close}">
+                #{bundle.close}
+            </button>
+        </div>
+    </p:dialog>
+    <!-- / Preview Guestbook -->
+</ui:composition>

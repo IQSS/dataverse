@@ -126,7 +126,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public enum EditMode {
 
-        CREATE, INFO, FILE, LICENSE
+        CREATE, INFO, FILE
     }
 
 
@@ -267,7 +267,6 @@ public class DatasetPage implements java.io.Serializable {
     Map<Long, List<ExternalTool>> exploreToolsByFileId = new HashMap<>();
 
     private Boolean sameTermsOfUseForAllFiles;
-
 
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -880,7 +879,7 @@ public class DatasetPage implements java.io.Serializable {
     private final Map<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();
 
     private GuestbookResponse guestbookResponse;
-    private Guestbook selectedGuestbook;
+
 
     public GuestbookResponse getGuestbookResponse() {
         return guestbookResponse;
@@ -888,18 +887,6 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setGuestbookResponse(GuestbookResponse guestbookResponse) {
         this.guestbookResponse = guestbookResponse;
-    }
-
-    public Guestbook getSelectedGuestbook() {
-        return selectedGuestbook;
-    }
-
-    public void setSelectedGuestbook(Guestbook selectedGuestbook) {
-        this.selectedGuestbook = selectedGuestbook;
-    }
-
-    public void viewSelectedGuestbook(Guestbook selectedGuestbook) {
-        this.selectedGuestbook = selectedGuestbook;
     }
 
     public void reset() {

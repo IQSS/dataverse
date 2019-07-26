@@ -69,6 +69,7 @@
                     <f:viewParam name="fileSortOrder" value="#{DatasetPage.fileSortOrder}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
+                    <f:viewAction action="#{DatasetGuestbookTab.init(DatasetPage.dataset)}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetPage.dataset)}"/>
                     <f:viewAction action="#{EditDatafilesPage.initCreateMode(DatasetPage.editMode, DatasetPage.workingVersion, DatasetPage.newFiles, DatasetPage.selectedFiles)}"/>
                     <f:viewAction action="#{datasetVersionsTab.init(DatasetPage.dataset)}"/>
@@ -687,11 +688,7 @@
                             <!-- 4.2.1: see comment above -->
                             <p:tab id="termsTab" title="#{bundle['file.dataFilesTab.terms.list.guestbook']}"
                                    rendered="#{!DatasetPage.workingVersion.deaccessioned}">
-                                <ui:include src="dataset-license-terms.xhtml">
-                                    <ui:param name="editMode" value=""/>
-                                    <ui:param name="termsOfUseAndAccess" value="#{DatasetPage.workingVersion.termsOfUseAndAccess}"/>
-                                    <ui:param name="datasetPage" value="true" />
-                                </ui:include>
+                                <ui:include src="view-dataset-guestbook.xhtml" />
                             </p:tab>
                             <!-- 4.2.1: see above -->
                             <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}">
