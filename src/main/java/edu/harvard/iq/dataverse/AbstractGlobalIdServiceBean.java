@@ -77,7 +77,20 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         metadata.put("datacite.publisher", producerString);
         metadata.put("datacite.publicationyear", generateYear(dvObjectIn));
         return metadata;
-    }  
+    } 
+    
+    protected HashMap<String, String> addMetadataForDestroyedDataset(DvObject dvObjectIn) {
+        HashMap<String, String> metadata = new HashMap<>();
+        String authorString = ":unav";
+        String producerString = ":unav";
+        String titleString = "This item has been removed from publication";
+
+        metadata.put("datacite.creator", authorString);
+        metadata.put("datacite.title", titleString);
+        metadata.put("datacite.publisher", producerString);
+        metadata.put("datacite.publicationyear", "9999");
+        return metadata;
+    } 
 
     protected String getTargetUrl(DvObject dvObjectIn) {
         logger.log(Level.FINE,"getTargetUrl");

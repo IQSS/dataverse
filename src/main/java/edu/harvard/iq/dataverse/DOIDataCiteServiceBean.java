@@ -176,10 +176,10 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         }
 
         String idStatus = doiMetadata.get("_status");
-
         if ( idStatus != null ) {
             switch ( idStatus ) {
                 case "reserved":
+                case "draft":    
                     logger.log(Level.INFO, "Delete status is reserved..");
                     try {
                         doiDataCiteRegisterService.deleteIdentifier(identifier);
@@ -189,15 +189,15 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
                     break;
                        
                 case "public":
+                case "findable":
                     //if public then it has been released set to unavailable and reset target to n2t url
-                    updateIdentifierStatus(dvObject, "unavailable");
+                    HashMap<String, String> metadata = addMetadataForDestroyedDataset(dvObject);
+                    metadata.put("_status", "registered");
+                    metadata.put("_target", getTargetUrl(dvObject));                   
+                    doiDataCiteRegisterService.modifyIdentifier(identifier, metadata, dvObject);
+                    doiDataCiteRegisterService.deactivateIdentifier(identifier, metadata, dvObject);
                     break;
             }
-            return;
-        }
-        if (idStatus != null && idStatus.equals("public")) {
-            //if public then it has been released set to unavailable and reset target to n2t url
-            doiDataCiteRegisterService.deactivateIdentifier(identifier, doiMetadata, dvObject);
         }
     }
 
