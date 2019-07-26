@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
+import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -16,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -110,6 +112,16 @@ public class DataverseSession implements Serializable {
 
     public StaticPermissionQuery on(Dataverse d) {
         return permissionsService.userOn(user, d);
+    }
+
+    public String getLocaleLanguageShortName() {
+        Set<Map.Entry<String,String>> languages = settingsWrapper.getConfiguredLocales().entrySet();
+        for(Map.Entry<String,String> lang : languages) {
+            if(this.getLocaleTitle().equals(lang.getValue())) {
+                return lang.getKey();
+            }
+        }
+        return StringUtils.EMPTY;
     }
 
     // -------------------- PRIVATE --------------------
