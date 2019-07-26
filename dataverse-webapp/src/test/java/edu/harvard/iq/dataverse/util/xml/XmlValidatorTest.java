@@ -36,7 +36,7 @@ public class XmlValidatorTest {
         // well-formed XML
         Exception ex1 = null;
         try {
-            assertTrue(XmlValidator.validateXmlWellFormed("src/test/java/edu/harvard/iq/dataverse/util/xml/sendToDataCite.xml"));
+            assertTrue(XmlValidator.validateXmlWellFormed(getClass().getClassLoader().getResource("xml/util/sendToDataCite.xml").toURI().toString()));
         } catch (Exception ex) {
             ex1 = ex;
         }
@@ -45,7 +45,7 @@ public class XmlValidatorTest {
         // not well-formed XML
         Exception ex2 = null;
         try {
-            XmlValidator.validateXmlWellFormed("src/test/java/edu/harvard/iq/dataverse/util/xml/not-well-formed.xml");
+            XmlValidator.validateXmlWellFormed(getClass().getClassLoader().getResource("xml/util/not-well-formed.xml").toURI().toString());
         } catch (Exception ex) {
             ex2 = ex;
         }
