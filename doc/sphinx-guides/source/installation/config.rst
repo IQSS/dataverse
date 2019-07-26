@@ -634,11 +634,13 @@ Create your own ``analytics-code.html`` file using the analytics code snippet pr
     <!-- Global Site Tag (gtag.js) - Google Analytics -->
     <script async="async" src="https://www.googletagmanager.com/gtag/js?id=YOUR-ACCOUNT-CODE"></script>
     <script>
+        //<![CDATA[
 	window.dataLayer = window.dataLayer || [];
 	function gtag(){dataLayer.push(arguments);}
 	gtag('js', new Date());
 
 	gtag('config', 'YOUR-ACCOUNT-CODE');
+        //]]>
     </script>
 
 **IMPORTANT:** Note the "async" attribute in the first script line above. In the documentation provided by Google, its value is left blank (as in ``<script async src="...">``). It must be set as in the example above (``<script async="async" src="...">``), otherwise it may cause problems with some browsers.

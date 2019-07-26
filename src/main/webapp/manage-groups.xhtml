@@ -77,7 +77,7 @@
                                         </p:commandLink>
                                         <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                        action="#{manageGroupsPage.setSelectedGroup(explicitGroup)}"
-                                                       update="@all"
+                                                       update="@form"
                                                        oncomplete="PF('deleteConfirmation').show()"
                                                        title="#{bundle['dataverse.manageGroups.tab.action.btn.delete']}">
                                             <span class="glyphicon glyphicon-trash"></span>
@@ -134,7 +134,7 @@
                                         <p:ajax process="@this" event="itemSelect" />
                                         <p:ajax process="@this" event="itemUnselect" />
                                     </p:autoComplete>
-                                    <script type="text/javascript">
+                                    <script>
                                         handle_dropdown_popup_scroll();
                                     </script>
                                     <!-- <p:message for="roleAssigneeName" display="text"/> -->

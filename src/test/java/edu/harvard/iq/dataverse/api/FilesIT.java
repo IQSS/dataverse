@@ -1345,6 +1345,47 @@ public class FilesIT {
         assertEquals(magicControlString, JsonPath.from(dvStorageSizeResponse.body().asString()).getString("data.message"));
     }
     
+    @Test
+    public void testValidateDDI_issue6027() throws InterruptedException {
+        msgt("testValidateDDI_issue6027");
+        String apiToken = createUserGetToken();
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+
+        msg("Add tabular file");
+        String pathToFile = "scripts/search/data/tabular/stata13-auto-withstrls.dta";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+
+        addResponse.prettyPrint();
+
+        addResponse.then().assertThat()
+                .body("data.files[0].dataFile.contentType", equalTo("application/x-stata-13"))
+                .body("data.files[0].label", equalTo("stata13-auto-withstrls.dta"))
+                .statusCode(OK.getStatusCode());
+
+        Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        assertNotNull(origFileId);    // If checkOut fails, display message
+
+        // -------------------------
+        // Publish dataverse and dataset
+        // -------------------------
+        msg("Publish dataverse and dataset");
+        Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataversetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // give file time to ingest
+        sleep(10000);
+
+        Response ddi = UtilIT.getFileMetadata(origFileId.toString(), "ddi", apiToken);
+        ddi.prettyPrint();
+        ddi.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.fileDscr.fileTxt.fileName", equalTo("stata13-auto-withstrls.tab"))
+                .body("codeBook.dataDscr.var[0].@name", equalTo("make"));
+
+    }
+    
     private void msg(String m){
         System.out.println(m);
     }

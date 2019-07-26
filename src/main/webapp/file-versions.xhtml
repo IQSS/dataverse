@@ -20,13 +20,14 @@
 
 <ui:fragment rendered="#{!widgetWrapper.widgetView}">
     <!-- VERSIONS -->
-    <script type="text/javascript">
-        /* Version tab: Retrieve data after page load */
+    <script>
+        //<![CDATA[
+        // Version tab: Retrieve data after page load
         $(document).ready(function () {
             preload_message = "#{bundle['file.dataFilesTab.versions.preloadmessage']}";
             $('#fileForm\\:tabView\\:versionsTable_data tr.ui-datatable-empty-message td').text(preload_message);
-            
         });
+        //]]>
     </script>
     <ui:remove>
         <!--
