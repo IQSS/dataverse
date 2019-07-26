@@ -23,6 +23,7 @@ public class ExternalTool implements Serializable {
     public static final String DISPLAY_NAME = "displayName";
     public static final String DESCRIPTION = "description";
     public static final String TYPE = "type";
+    public static final String SCOPE = "scope";
     public static final String TOOL_URL = "toolUrl";
     public static final String TOOL_PARAMETERS = "toolParameters";
     public static final String CONTENT_TYPE = "contentType";
@@ -51,6 +52,13 @@ public class ExternalTool implements Serializable {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Type type;
+
+    /**
+     * Whether the tool operates at the dataset or file level.
+     */
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Scope scope;
 
     @Column(nullable = false)
     private String toolUrl;
@@ -83,10 +91,11 @@ public class ExternalTool implements Serializable {
     public ExternalTool() {
     }
 
-    public ExternalTool(String displayName, String description, Type type, String toolUrl, String toolParameters, String contentType) {
+    public ExternalTool(String displayName, String description, Type type, Scope scope, String toolUrl, String toolParameters, String contentType) {
         this.displayName = displayName;
         this.description = description;
         this.type = type;
+        this.scope = scope;
         this.toolUrl = toolUrl;
         this.toolParameters = toolParameters;
         this.contentType = contentType;
@@ -112,6 +121,34 @@ public class ExternalTool implements Serializable {
                 }
             }
             throw new IllegalArgumentException("Type must be one of these values: " + Arrays.asList(Type.values()) + ".");
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
+    }
+
+    public enum Scope {
+
+        DATASET("dataset"),
+        FILE("file");
+
+        private final String text;
+
+        private Scope(final String text) {
+            this.text = text;
+        }
+
+        public static Scope fromString(String text) {
+            if (text != null) {
+                for (Scope scope : Scope.values()) {
+                    if (text.equals(scope.text)) {
+                        return scope;
+                    }
+                }
+            }
+            throw new IllegalArgumentException("Scope must be one of these values: " + Arrays.asList(Scope.values()) + ".");
         }
 
         @Override
@@ -146,6 +183,10 @@ public class ExternalTool implements Serializable {
 
     public Type getType() {
         return type;
+    }
+
+    public Scope getScope() {
+        return scope;
     }
 
     public String getToolUrl() {
@@ -193,7 +234,10 @@ public class ExternalTool implements Serializable {
         FILE_ID("fileId"),
         SITE_URL("siteUrl"),
         API_TOKEN("apiToken"),
+        // datasetId is the database id
         DATASET_ID("datasetId"),
+        // datasetPid is the DOI or Handle
+        DATASET_PID("datasetPid"),
         DATASET_VERSION("datasetVersion"),
         FILE_METADATA_ID("fileMetadataId");
 

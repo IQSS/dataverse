@@ -4,12 +4,14 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Type;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool.Scope;
 
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DESCRIPTION;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DISPLAY_NAME;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_PARAMETERS;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_URL;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TYPE;
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.SCOPE;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.CONTENT_TYPE;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -74,7 +76,21 @@ public class ExternalToolServiceBean {
         return externalTools;
     }
 
-
+    /**
+     * @param scope - dataset or file
+     * @return A list of tools or an empty list.
+     */
+    public List<ExternalTool> findByScopeAndType(Scope scope, Type type) {
+        List<ExternalTool> externalTools = new ArrayList<>();
+        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.scope = :scope AND o.type = :type", ExternalTool.class);
+        typedQuery.setParameter("scope", scope);
+        typedQuery.setParameter("type", type);
+        List<ExternalTool> toolsFromQuery = typedQuery.getResultList();
+        if (toolsFromQuery != null) {
+            externalTools = toolsFromQuery;
+        }
+        return externalTools;
+    }
 
     public ExternalTool findById(long id) {
         TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.id = :id", ExternalTool.class);
@@ -131,6 +147,7 @@ public class ExternalToolServiceBean {
         String displayName = getRequiredTopLevelField(jsonObject, DISPLAY_NAME);
         String description = getRequiredTopLevelField(jsonObject, DESCRIPTION);
         String typeUserInput = getRequiredTopLevelField(jsonObject, TYPE);
+        String scopeUserInput = getRequiredTopLevelField(jsonObject, SCOPE);
         String contentType = getOptionalTopLevelField(jsonObject, CONTENT_TYPE);
         //Legacy support - assume tool manifests without any mimetype are for tabular data
         if(contentType==null) {
@@ -139,26 +156,29 @@ public class ExternalToolServiceBean {
         
         // Allow IllegalArgumentException to bubble up from ExternalTool.Type.fromString
         ExternalTool.Type type = ExternalTool.Type.fromString(typeUserInput);
+        ExternalTool.Scope scope = ExternalTool.Scope.fromString(scopeUserInput);
         String toolUrl = getRequiredTopLevelField(jsonObject, TOOL_URL);
         JsonObject toolParametersObj = jsonObject.getJsonObject(TOOL_PARAMETERS);
         JsonArray queryParams = toolParametersObj.getJsonArray("queryParameters");
         boolean allRequiredReservedWordsFound = false;
-        for (JsonObject queryParam : queryParams.getValuesAs(JsonObject.class)) {
-            Set<String> keyValuePair = queryParam.keySet();
-            for (String key : keyValuePair) {
-                String value = queryParam.getString(key);
-                ReservedWord reservedWord = ReservedWord.fromString(value);
-                if (reservedWord.equals(ReservedWord.FILE_ID)) {
-                    allRequiredReservedWordsFound = true;
+        if (scope.equals(Scope.FILE)) {
+            for (JsonObject queryParam : queryParams.getValuesAs(JsonObject.class)) {
+                Set<String> keyValuePair = queryParam.keySet();
+                for (String key : keyValuePair) {
+                    String value = queryParam.getString(key);
+                    ReservedWord reservedWord = ReservedWord.fromString(value);
+                    if (reservedWord.equals(ReservedWord.FILE_ID)) {
+                        allRequiredReservedWordsFound = true;
+                    }
                 }
             }
-        }
-        if (!allRequiredReservedWordsFound) {
-            // Some day there might be more reserved words than just {fileId}.
-            throw new IllegalArgumentException("Required reserved word not found: " + ReservedWord.FILE_ID.toString());
+            if (!allRequiredReservedWordsFound) {
+                // Some day there might be more reserved words than just {fileId}.
+                throw new IllegalArgumentException("Required reserved word not found: " + ReservedWord.FILE_ID.toString());
+            }
         }
         String toolParameters = toolParametersObj.toString();
-        return new ExternalTool(displayName, description, type, toolUrl, toolParameters, contentType);
+        return new ExternalTool(displayName, description, type, scope, toolUrl, toolParameters, contentType);
     }
 
     private static String getRequiredTopLevelField(JsonObject jsonObject, String key) {

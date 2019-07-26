@@ -2,6 +2,7 @@
   "displayName": "Awesome Tool",
   "description": "The most awesome tool.",
   "type": "explore",
+  "scope": "file",
   "contentType": "text/tab-separated-values",
   "toolUrl": "https://awesometool.com",
   "toolParameters": {

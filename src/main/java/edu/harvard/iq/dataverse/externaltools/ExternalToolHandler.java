@@ -33,6 +33,8 @@ public class ExternalToolHandler {
     private ApiToken apiToken;
 
     /**
+     * File level tool
+     *
      * @param externalTool The database entity.
      * @param dataFile Required.
      * @param apiToken The apiToken can be null because "explore" tools can be
@@ -49,6 +51,27 @@ public class ExternalToolHandler {
         this.apiToken = apiToken;
         dataset = getDataFile().getFileMetadata().getDatasetVersion().getDataset();
         this.fileMetadata = fileMetadata;
+    }
+
+    /**
+     * Dataset level tool
+     *
+     * @param externalTool The database entity.
+     * @param dataset Required.
+     * @param apiToken The apiToken can be null because "explore" tools can be
+     * used anonymously.
+     */
+    public ExternalToolHandler(ExternalTool externalTool, Dataset dataset, ApiToken apiToken) {
+        this.externalTool = externalTool;
+        if (dataset == null) {
+            String error = "A Dataset is required.";
+            logger.warning("Error in ExternalToolHandler constructor: " + error);
+            throw new IllegalArgumentException(error);
+        }
+        this.dataset = dataset;
+        this.apiToken = apiToken;
+        this.dataFile = null;
+        this.fileMetadata = null;
     }
 
     public DataFile getDataFile() {
@@ -89,7 +112,7 @@ public class ExternalToolHandler {
         ReservedWord reservedWord = ReservedWord.fromString(value);
         switch (reservedWord) {
             case FILE_ID:
-                // getDataFile is never null because of the constructor
+                // getDataFile is never null for file tools because of the constructor
                 return key + "=" + getDataFile().getId();
             case SITE_URL:
                 return key + "=" + SystemConfig.getDataverseSiteUrlStatic();
@@ -103,6 +126,8 @@ public class ExternalToolHandler {
                 break;
             case DATASET_ID:
                 return key + "=" + dataset.getId();
+            case DATASET_PID:
+                return key + "=" + dataset.getGlobalId().asString();
             case DATASET_VERSION:
                 String version = null;
                 if (getApiToken() != null) {

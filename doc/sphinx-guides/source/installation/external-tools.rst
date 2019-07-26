@@ -9,7 +9,7 @@ External tools can provide additional features that are not part of Dataverse it
 Inventory of External Tools
 ---------------------------
 
-Support for external tools is just getting off the ground but the following tools have been successfully integrated with Dataverse:
+The following tools have been successfully integrated with Dataverse:
 
 - TwoRavens: a system of interlocking statistical tools for data exploration, analysis, and meta-analysis: http://2ra.vn. See the :doc:`/user/data-exploration/tworavens` section of the User Guide for more information on TwoRavens from the user perspective and the :doc:`r-rapache-tworavens` section of the Installation Guide. 
 
@@ -35,14 +35,17 @@ External tools must be expressed in an external tool manifest file, a specific J
 
 ``type`` is required and must be ``explore`` or ``configure`` to make the tool appear under a button called "Explore" or "Configure", respectively. 
 
-External tools can operate on any file, including tabular files that have been created by successful ingestion. (For more on ingest, see the :doc:`/user/tabulardataingest/ingestprocess` of the User Guide.) The optional ``contentType`` entry specifies the mimetype a tool works on. (Not providing this parameter makes the tool work on ingested tabular files and is equivalent to specifying the ``contentType`` as "text/tab-separated-values".)  
+``scope`` is required and must be ``file`` or ``dataset`` to make the tool appear at the file level or dataset level.
+
+File level tools can operate on any file, including tabular files that have been created by successful ingestion. (For more on ingest, see the :doc:`/user/tabulardataingest/ingestprocess` of the User Guide.) The optional ``contentType`` entry specifies the mimetype a tool works on. (Not providing this parameter makes the tool work on ingested tabular files and is equivalent to specifying the ``contentType`` as "text/tab-separated-values".)  
 
 In the example above, a mix of required and optional reserved words appear that can be used to insert dynamic values into tools. The supported values are:
 
-- ``{fileId}`` (required) - The Dataverse database ID of a file the external tool has been launched on.
-- ``{siteUrl}`` (optional) - The URL of the Dataverse installation that hosts the file with the fileId above.
+- ``{fileId}`` (required for file tools) - The Dataverse database ID of a file from which the external tool has been launched.
+- ``{siteUrl}`` (optional) - The URL of the Dataverse installation from which the tool was launched.
 - ``{apiToken}`` (optional) - The Dataverse API token of the user launching the external tool, if available.
-- ``{datasetId}`` (optional) - The ID of the dataset containing the file.
+- ``{datasetId}`` (optional) - The ID of the dataset.
+- ``{datasetPid}`` (optional) - The Persistent ID (DOI or Handle) of the dataset.
 - ``{datasetVersion}`` (optional) - The friendly version number ( or \:draft ) of the dataset version the tool is being launched from.
 
 Making an External Tool Available in Dataverse

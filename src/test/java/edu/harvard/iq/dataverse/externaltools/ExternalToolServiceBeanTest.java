@@ -39,7 +39,8 @@ public class ExternalToolServiceBeanTest {
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
         ExternalTool.Type type = ExternalTool.Type.EXPLORE;
-        ExternalTool externalTool = new ExternalTool("displayName", "description", type, "http://foo.com", "{}", DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        ExternalTool.Scope scope = ExternalTool.Scope.FILE;
+        ExternalTool externalTool = new ExternalTool("displayName", "description", type, scope, "http://foo.com", "{}", DataFileServiceBean.MIME_TYPE_TSV_ALT);
         ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd);
         List<ExternalTool> externalTools = new ArrayList<>();
         externalTools.add(externalTool);
@@ -53,6 +54,7 @@ public class ExternalToolServiceBeanTest {
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
+        job.add("scope", "file");
         job.add("toolUrl", "http://awesometool.com");
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
@@ -97,6 +99,7 @@ public class ExternalToolServiceBeanTest {
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
+        job.add("scope", "file");
         job.add("toolUrl", "http://awesometool.com");
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
@@ -148,6 +151,7 @@ public class ExternalToolServiceBeanTest {
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
+        job.add("scope", "file");
         job.add("toolUrl", "http://awesometool.com");
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
@@ -219,6 +223,7 @@ public class ExternalToolServiceBeanTest {
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
+        job.add("scope", "file");
         job.add("toolParameters", Json.createObjectBuilder().build());
         job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
         String tool = job.build().toString();
@@ -239,6 +244,7 @@ public class ExternalToolServiceBeanTest {
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
         job.add("type", "noSuchType");
+        job.add("scope", "file");
         job.add("toolUrl", "http://awesometool.com");
         job.add("toolParameters", Json.createObjectBuilder().build());
         job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
@@ -261,6 +267,7 @@ public class ExternalToolServiceBeanTest {
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
+        job.add("scope", "file");
         job.add("toolUrl", "http://awesometool.com");
         
         job.add("toolParameters", Json.createObjectBuilder().add("queryParameters", Json.createArrayBuilder()
