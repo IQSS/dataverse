@@ -1,12 +1,14 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import java.io.IOException;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.OK;
+import static junit.framework.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -111,6 +113,36 @@ public class ExternalToolsIT {
         addExternalTool.then().assertThat()
                 .body("message", CoreMatchers.equalTo("Unknown reserved word: mode1"))
                 .statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void testAddDatasetExploreTool() throws IOException {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("displayName", "AwesomeTool");
+        job.add("description", "This tool is awesome.");
+        job.add("type", "explore");
+        job.add("scope", "dataset");
+        job.add("toolUrl", "http://awesometool.com");
+        job.add("toolParameters", Json.createObjectBuilder()
+                .add("queryParameters", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("dataset", "{datasetPid}")
+                                .build())
+                        .build())
+                .build());
+        Response addExternalTool = UtilIT.addExternalTool(job.build());
+        addExternalTool.prettyPrint();
+        addExternalTool.then().assertThat()
+                .body("data.displayName", CoreMatchers.equalTo("AwesomeTool"))
+                .statusCode(OK.getStatusCode());
+
+        long id = JsonPath.from(addExternalTool.getBody().asString()).getLong("data.id");
+
+        Response getTool = UtilIT.getExternalTool(id);
+        getTool.prettyPrint();
+        getTool.then().assertThat()
+                .body("data.scope", CoreMatchers.equalTo("dataset"))
+                .statusCode(OK.getStatusCode());
     }
 
 }

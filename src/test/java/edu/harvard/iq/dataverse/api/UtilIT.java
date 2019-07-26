@@ -1738,6 +1738,11 @@ public class UtilIT {
                 .get("/api/admin/externalTools");
     }
 
+    static Response getExternalTool(long id) {
+        return given()
+                .get("/api/admin/externalTools/" + id);
+    }
+
     static Response getExternalToolsByFileId(long fileId) {
         return given()
                 .get("/api/admin/externalTools/file/" + fileId);

@@ -62,6 +62,15 @@ To list all the external tools that are available in Dataverse:
 
 ``curl http://localhost:8080/api/admin/externalTools``
 
+Showing an External Tool in Dataverse
+-------------------------------------
+
+To show one of the external tools that are available in Dataverse, pass its database id:
+
+``export TOOL_ID=1``
+
+``curl http://localhost:8080/api/admin/externalTools/$TOOL_ID``
+
 Removing an External Tool Available in Dataverse
 ------------------------------------------------
 

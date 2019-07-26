@@ -219,6 +219,7 @@ public class ExternalTool implements Serializable {
         jab.add(DISPLAY_NAME, getDisplayName());
         jab.add(DESCRIPTION, getDescription());
         jab.add(TYPE, getType().text);
+        jab.add(SCOPE, getScope().text);
         jab.add(TOOL_URL, getToolUrl());
         jab.add(TOOL_PARAMETERS, getToolParameters());
         jab.add(CONTENT_TYPE, getContentType());

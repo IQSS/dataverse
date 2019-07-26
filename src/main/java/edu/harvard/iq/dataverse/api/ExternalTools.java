@@ -28,6 +28,17 @@ public class ExternalTools extends AbstractApiBean {
         return ok(jab);
     }
 
+    @GET
+    @Path("{id}")
+    public Response getExternalTool(@PathParam("id") long externalToolIdFromUser) {
+        ExternalTool externalTool = externalToolService.findById(externalToolIdFromUser);
+        if (externalTool != null) {
+            return ok(externalTool.toJson());
+        } else {
+            return error(BAD_REQUEST, "Could not find external tool with id of " + externalToolIdFromUser);
+        }
+    }
+
     @POST
     public Response addExternalTool(String manifest) {
         try {
