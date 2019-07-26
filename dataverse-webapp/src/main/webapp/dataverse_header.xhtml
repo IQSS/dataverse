@@ -86,12 +86,10 @@
                         </ui:fragment>
 
                         <li class="dropdown" jsf:rendered="#{settingsWrapper.localesConfigured}">
-                            <p:link href="#" class="dropdown-toggle" data-toggle="dropdown" title="#{bundle.language}">
-                                #{dataverseSession.localeTitle}
-                                    <p:graphicImage value="#{resource['images/flags/'.concat(dataverseSession.getLocaleLanguageShortName()).concat('.svg')]}"
-                                        height="20px" width="20px" />
-                                <b class="caret"></b>
-                            </p:link>
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="#{bundle.language}">
+                                <img alt="Current language flag" src="#{resource['images/flags/'.concat(dataverseSession.getLocaleLanguageShortName()).concat('.svg')]}" height="20px" width="20px" />
+                                #{dataverseSession.localeTitle}<b class="caret"></b>
+                            </a>
                             <ul class="dropdown-menu">
                                 <h:form class="form-inline">
                                     <ui:repeat value="#{settingsWrapper.configuredLocales.entrySet().toArray()}" var="language">
