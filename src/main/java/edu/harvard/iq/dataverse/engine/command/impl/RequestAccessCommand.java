@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -44,20 +45,22 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
 
     @Override
     public DataFile execute(CommandContext ctxt) throws CommandException {
-        
-       if(!file.getOwner().isFileAccessRequest()){
+
+        if (!file.getOwner().isFileAccessRequest()) {
             throw new CommandException(BundleUtil.getStringFromBundle("file.requestAccess.notAllowed"), this);
-       }
+        }
         
-        
+        //if user already has permission to download file or the file is public throw command exception
+        if (ctxt.permissions().requestOn(this.getRequest(), file).has(Permission.DownloadFile) || !file.isRestricted()) {
+            throw new CommandException(BundleUtil.getStringFromBundle("file.requestAccess.notAllowed.alreadyHasDownloadPermisssion"), this);
+        }
+
         file.getFileAccessRequesters().add(requester);
-        if(sendNotification){
-           ctxt.fileDownload().sendRequestFileAccessNotification(this.file.getOwner(), this.file.getId(), requester);
+        if (sendNotification) {
+            ctxt.fileDownload().sendRequestFileAccessNotification(this.file.getOwner(), this.file.getId(), requester);
         }
         return ctxt.files().save(file);
     }
-
-
 
 }
 
