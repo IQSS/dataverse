@@ -373,7 +373,7 @@ public class FileDownloadHelper implements java.io.Serializable {
      *  (1) Does the file have MapLayerMetadata?
      *  (2) Are the proper settings in place
      * 
-     * @param fm fileMetadata
+     * @param  fileMetadata
      * @return boolean
      */
    public boolean canDownloadFile(FileMetadata fileMetadata){
@@ -481,6 +481,15 @@ public class FileDownloadHelper implements java.io.Serializable {
     
     
      private void processRequestAccess(DataFile file, Boolean sendNotification) {
+         
+         //Need to get the actual file here in order to hand the fileMetdata
+         // to the canDownloadFile test.
+         DataFile forRequest = datafileService.find(file.getId());
+         if (canDownloadFile(forRequest.getFileMetadata())) {
+             //if user can already download then get no need to request
+             return;
+         }
+
          if (fileDownloadService.requestAccess(file.getId())) {
              // update the local file object so that the page properly updates
              file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
