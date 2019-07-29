@@ -241,10 +241,12 @@ public class DatasetServiceBean implements java.io.Serializable {
         for (DatasetVersion version : dataset.getVersions()) {
             for (FileMetadata fileMetadata : version.getFileMetadatas()) {
                 // todo: make this optional!
-                if (fileMetadata.getDataFile().isTabularData()) {
-                    DataTable dataTable = fileMetadata.getDataFile().getDataTable();
-                    for (DataVariable dataVariable : dataTable.getDataVariables()) {
-                        
+                if (includeVariables) {
+                    if (fileMetadata.getDataFile().isTabularData()) {
+                        DataTable dataTable = fileMetadata.getDataFile().getDataTable();
+                        for (DataVariable dataVariable : dataTable.getDataVariables()) {
+
+                        }
                     }
                 }
             }
