@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -239,6 +240,13 @@ public class DatasetServiceBean implements java.io.Serializable {
         Dataset dataset = find(id);
         for (DatasetVersion version : dataset.getVersions()) {
             for (FileMetadata fileMetadata : version.getFileMetadatas()) {
+                // todo: make this optional!
+                if (fileMetadata.getDataFile().isTabularData()) {
+                    DataTable dataTable = fileMetadata.getDataFile().getDataTable();
+                    for (DataVariable dataVariable : dataTable.getDataVariables()) {
+                        
+                    }
+                }
             }
         }
     }
