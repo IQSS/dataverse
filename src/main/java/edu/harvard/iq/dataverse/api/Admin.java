@@ -888,7 +888,7 @@ public class Admin extends AbstractApiBean {
 
                     
                     try {
-                        datasetService.instantiateDatasetInNewTransaction(datasetId);
+                        datasetService.instantiateDatasetInNewTransaction(datasetId, true);
                         success = true;
                     } catch (Exception ex) {
                         Throwable cause = ex;
@@ -958,7 +958,7 @@ public class Admin extends AbstractApiBean {
 
         String msg = "unknown";
         try {
-            datasetService.instantiateDatasetInNewTransaction(dbId);
+            datasetService.instantiateDatasetInNewTransaction(dbId, true);
             msg = "valid";
         } catch (Exception ex) {
             Throwable cause = ex;
@@ -969,11 +969,14 @@ public class Admin extends AbstractApiBean {
                             .getConstraintViolations()) {
                         String databaseRow = constraintViolation.getLeafBean().toString();
                         String field = constraintViolation.getPropertyPath().toString();
-                        String invalidValue = constraintViolation.getInvalidValue().toString();
+                        String invalidValue = null; 
+                        if (constraintViolation.getInvalidValue() != null) {
+                            invalidValue = constraintViolation.getInvalidValue().toString();
+                        }
                         JsonObjectBuilder violation = Json.createObjectBuilder();
                         violation.add("entityClassDatabaseTableRowId", databaseRow);
                         violation.add("field", field);
-                        violation.add("invalidValue", invalidValue);
+                        violation.add("invalidValue", invalidValue == null ? "NULL" : invalidValue);
                         return ok(violation);
                     }
                 }

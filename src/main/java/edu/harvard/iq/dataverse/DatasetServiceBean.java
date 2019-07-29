@@ -236,7 +236,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      */
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void instantiateDatasetInNewTransaction(Long id) {
+    public void instantiateDatasetInNewTransaction(Long id, boolean includeVariables) {
         Dataset dataset = find(id);
         for (DatasetVersion version : dataset.getVersions()) {
             for (FileMetadata fileMetadata : version.getFileMetadatas()) {
