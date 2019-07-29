@@ -54,12 +54,6 @@ public class SystemConfig {
      */
     public static final String FILES_DIRECTORY = "dataverse.files.directory";
 
-    /**
-     * Some installations may not want download URLs to their files to be
-     * available in Schema.org JSON-LD output.
-     */
-    public static final String FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS = "dataverse.files.hide-schema-dot-org-download-urls";
-
     private static String appVersionString = null;
     private static String buildNumberString = null;
 

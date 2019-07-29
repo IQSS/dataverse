@@ -12,6 +12,7 @@ import org.apache.commons.lang.StringUtils;
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateful;
 import javax.inject.Inject;
+import javax.xml.validation.Schema;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,7 +62,8 @@ public class ExportService {
 
         exporters.put(ExporterType.OAIORE, new OAI_OREExporter(isEmailExcludedFromExport, systemConfig.getDataverseSiteUrl(), currentDate));
 
-        exporters.put(ExporterType.SCHEMADOTORG, new SchemaDotOrgExporter(systemConfig.getDataverseSiteUrl()));
+        exporters.put(ExporterType.SCHEMADOTORG, new SchemaDotOrgExporter(systemConfig.getDataverseSiteUrl(),
+                settingsService.getValueForKey(SettingsServiceBean.Key.HideSchemaDotOrgDownloadUrls)));
 
         exporters.put(ExporterType.OPENAIRE, new OpenAireExporter(isEmailExcludedFromExport));
 
@@ -82,7 +84,8 @@ public class ExportService {
 
         if (loadedExporter.isPresent()) {
 
-            String exportedDataset = Try.of(() -> loadedExporter.get().exportDataset(datasetVersion))
+            String exportedDataset = Try.of(() -> loadedExporter.get()
+                    .exportDataset(datasetVersion))
                     .onFailure(Throwable::printStackTrace)
                     .getOrElse(StringUtils.EMPTY);
 

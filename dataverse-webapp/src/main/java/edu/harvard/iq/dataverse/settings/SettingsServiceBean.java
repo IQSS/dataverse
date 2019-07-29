@@ -466,7 +466,13 @@ public class SettingsServiceBean {
         RservePort,
         RserveUser,
         RservePassword,
-        RserveTempDir;
+        RserveTempDir,
+
+        /**
+         * Some installations may not want download URLs to their files to be
+         * available in Schema.org JSON-LD output.
+         */
+        HideSchemaDotOrgDownloadUrls;
 
         @Override
         public String toString() {

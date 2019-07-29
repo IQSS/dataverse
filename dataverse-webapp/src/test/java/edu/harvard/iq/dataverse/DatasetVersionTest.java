@@ -113,7 +113,7 @@ public class DatasetVersionTest {
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
         assertEquals("", datasetVersion.getPublicationDateAsString());
         // Only published datasets return any JSON.
-        assertEquals("", datasetVersion.getJsonLd("localhost"));
+        assertEquals("", datasetVersion.getJsonLd("localhost", "true"));
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         datasetVersion.setVersionNumber(1L);
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
@@ -126,7 +126,7 @@ public class DatasetVersionTest {
         TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
         terms.setLicense(TermsOfUseAndAccess.License.CC0);
         datasetVersion.setTermsOfUseAndAccess(terms);
-        String jsonLd = datasetVersion.getJsonLd("localhost");
+        String jsonLd = datasetVersion.getJsonLd("localhost", "true");
         System.out.println("jsonLd: " + JsonUtil.prettyPrint(jsonLd));
         JsonReader jsonReader = Json.createReader(new StringReader(jsonLd));
         JsonObject obj = jsonReader.readObject();
@@ -167,7 +167,7 @@ public class DatasetVersionTest {
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
         assertEquals("", datasetVersion.getPublicationDateAsString());
         // Only published datasets return any JSON.
-        assertEquals("", datasetVersion.getJsonLd("localhost"));
+        assertEquals("", datasetVersion.getJsonLd("localhost", "true"));
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         datasetVersion.setVersionNumber(1L);
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
@@ -183,7 +183,7 @@ public class DatasetVersionTest {
         terms.setTermsOfUse("Call me maybe");
         datasetVersion.setTermsOfUseAndAccess(terms);
 
-        String jsonLd = datasetVersion.getJsonLd("localhost");
+        String jsonLd = datasetVersion.getJsonLd("localhost", "true");
         System.out.println("jsonLd: " + JsonUtil.prettyPrint(jsonLd));
         JsonReader jsonReader = Json.createReader(new StringReader(jsonLd));
         JsonObject obj = jsonReader.readObject();

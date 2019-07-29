@@ -65,18 +65,20 @@ import javax.ws.rs.core.MediaType;
 public class SchemaDotOrgExporter implements Exporter {
 
     private String dataverseSiteUrlStatic;
+    private String hideSchemaDotOrgDownloadUrls;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public SchemaDotOrgExporter(String dataverseSiteUrlStatic) {
+    public SchemaDotOrgExporter(String dataverseSiteUrlStatic, String HideSchemaDotOrgDownloadUrls) {
         this.dataverseSiteUrlStatic = dataverseSiteUrlStatic;
+        this.hideSchemaDotOrgDownloadUrls = HideSchemaDotOrgDownloadUrls;
     }
 
     // -------------------- LOGIC --------------------
 
     @Override
-    public String exportDataset(DatasetVersion version) {
-        return version.getJsonLd(dataverseSiteUrlStatic);
+    public String exportDataset(DatasetVersion version) throws ExportException {
+        return version.getJsonLd(dataverseSiteUrlStatic, hideSchemaDotOrgDownloadUrls);
     }
 
     @Override
