@@ -1547,7 +1547,7 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get(url);
     }
-    
+
     static Response grantRoleOnDataset(String definitionPoint, String role, String roleAssignee, String apiToken) {
         logger.info("Granting role on dataset \"" + definitionPoint + "\": " + role);
         return given()
@@ -2144,7 +2144,6 @@ public class UtilIT {
         return response;
 
     }
-
     
     /**
      * Determine the "payload" storage size of a dataverse
