@@ -612,12 +612,13 @@ public class SearchServiceBean {
                 String localefriendlyName = null;
                 if (facetFieldCount.getCount() > 0) {
                    if(metadataBlockName.length() > 0 ) {
-                        localefriendlyName = getLocaleTitle(datasetFieldName,facetFieldCount.getName(), metadataBlockName);
+                       localefriendlyName = getLocaleTitle(datasetFieldName,facetFieldCount.getName(), metadataBlockName);
                     } else {
-                        localefriendlyName = BundleUtil.getStringFromBundle(facetFieldCount.getName());
-                        if(localefriendlyName == null){
-                            localefriendlyName = facetFieldCount.getName();
-                        }
+                       try {
+                           localefriendlyName = BundleUtil.getStringFromPropertyFile(facetFieldCount.getName(), "Bundle");
+                       } catch (Exception e) {
+                           localefriendlyName = facetFieldCount.getName();
+                       }
                    }
                     FacetLabel facetLabel = new FacetLabel(localefriendlyName, facetFieldCount.getCount());
                     // quote field facets
