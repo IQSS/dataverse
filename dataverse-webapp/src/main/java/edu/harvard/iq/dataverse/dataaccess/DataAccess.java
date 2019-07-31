@@ -50,8 +50,6 @@ public class DataAccess {
     public StorageIO getDirectStorageIO(String storageLocation) throws IOException {
         if (storageLocation.startsWith("file://")) {
             return new FileAccessIO(storageLocation.substring(7), SystemConfig.getFilesDirectoryStatic());
-        } else if (storageLocation.startsWith("swift://")) {
-            return new SwiftAccessIO<>(storageLocation.substring(8));
         } else if (storageLocation.startsWith("s3://")) {
             return new S3AccessIO<>(storageLocation.substring(5));
         }
@@ -84,8 +82,6 @@ public class DataAccess {
         if (dvObject.getStorageIdentifier().startsWith("file://")
                 || (!dvObject.getStorageIdentifier().matches("^[a-z][a-z0-9]*://.*"))) {
             return new FileAccessIO<>(dvObject, req, SystemConfig.getFilesDirectoryStatic());
-        } else if (dvObject.getStorageIdentifier().startsWith("swift://")) {
-            return new SwiftAccessIO<>(dvObject, req);
         } else if (dvObject.getStorageIdentifier().startsWith("s3://")) {
             return new S3AccessIO<>(dvObject, req);
         } else if (dvObject.getStorageIdentifier().startsWith("tmp://")) {
@@ -112,8 +108,6 @@ public class DataAccess {
 
         if (driverIdentifier.equals("file")) {
             storageIO = new FileAccessIO<>(dvObject, null, SystemConfig.getFilesDirectoryStatic());
-        } else if (driverIdentifier.equals("swift")) {
-            storageIO = new SwiftAccessIO<>(dvObject, null);
         } else if (driverIdentifier.equals("s3")) {
             storageIO = new S3AccessIO<>(dvObject, null);
         } else {

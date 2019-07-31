@@ -9,8 +9,6 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersion
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -661,58 +659,6 @@ public class FilePage implements java.io.Serializable {
         this.selectedTabIndex = selectedTabIndex;
     }
 
-    public boolean isSwiftStorage() {
-        Boolean swiftBool = false;
-        if (file.getStorageIdentifier().startsWith("swift://")) {
-            swiftBool = true;
-        }
-        return swiftBool;
-    }
-
-    public boolean showComputeButton() {
-        return isSwiftStorage() && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null);
-
-    }
-
-    public SwiftAccessIO getSwiftObject() {
-        try {
-            StorageIO<DataFile> storageIO = getFile().getStorageIO(new DataAccess());
-            if (storageIO != null && storageIO instanceof SwiftAccessIO) {
-                return (SwiftAccessIO) storageIO;
-            } else {
-                logger.fine("FilePage: Failed to cast storageIO as SwiftAccessIO");
-            }
-        } catch (IOException e) {
-            logger.fine("FilePage: Failed to get storageIO");
-        }
-        return null;
-    }
-
-
-    public String getSwiftContainerName() {
-        SwiftAccessIO swiftObject = getSwiftObject();
-        try {
-            swiftObject.open();
-            return swiftObject.getSwiftContainerName();
-        } catch (IOException e) {
-            logger.info("FilePage: Failed to open swift object");
-        }
-        return "";
-    }
-
-    public String getComputeUrl() throws IOException {
-        SwiftAccessIO swiftObject = getSwiftObject();
-        if (swiftObject != null) {
-            swiftObject.open();
-            //generate a temp url for a file
-            if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall)) {
-                return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getFile().getOwner().getGlobalIdString() + "=" + swiftObject.getSwiftFileName();
-            }
-            return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getFile().getOwner().getGlobalIdString() + "=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
-        }
-        return "";
-    }
-
     private List<DataFile> allRelatedFiles() {
         List<DataFile> dataFiles = new ArrayList<>();
         DataFile dataFileToTest = fileMetadata.getDataFile();
@@ -825,32 +771,6 @@ public class FilePage implements java.io.Serializable {
     }
 
     public String getPublicDownloadUrl() {
-        try {
-            StorageIO<DataFile> storageIO = getFile().getStorageIO(new DataAccess());
-            if (storageIO instanceof SwiftAccessIO) {
-                String fileDownloadUrl = null;
-                try {
-                    SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) storageIO;
-                    swiftIO.open();
-                    //if its a public install, lets just give users the permanent URL!
-                    if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall)) {
-                        fileDownloadUrl = swiftIO.getRemoteUrl();
-                    } else {
-                        //TODO: if a user has access to this file, they should be given the swift url
-                        // perhaps even we could use this as the "private url"
-                        fileDownloadUrl = swiftIO.getTemporarySwiftUrl();
-                    }
-                    logger.info("Swift url: " + fileDownloadUrl);
-                    return fileDownloadUrl;
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), persistentId, fileId);
     }
 

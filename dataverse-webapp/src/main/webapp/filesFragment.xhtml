@@ -37,46 +37,6 @@
         <p:ajax event="rowDblselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this"/>
 
         <f:facet name="header">
-            <div class="row form-inline" jsf:id="cloudStorageBlock" jsf:rendered="#{DatasetPage.showComputeButton()}">
-                <!-- Cloud Storage Access -->
-                <div class="form-group col-xs-12 text-left">
-                    <div class="col-xs-12">
-                        <p class="help-block">
-                            <h:outputFormat value="#{bundle['file.cloudStorageAccess.help']}" escape="false">
-                                <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
-                                <f:param value="#{settingsWrapper.guidesVersion}"/>
-                                <f:param value="#{DatasetPage.cloudEnvironmentName}"/>
-                            </h:outputFormat>
-                        </p>
-                    </div>
-                    <label class="col-sm-3 control-label">
-                        #{bundle['file.cloudStorageAccess']}
-                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                              data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['file.cloudStorageAccess.tip']}"></span>
-                    </label>
-                    <div class="col-md-4 col-sm-5 col-xs-6 input-group">
-                        <div id="copy-input" class="form-control">#{DatasetPage.swiftContainerName}</div>
-                        <span class="input-group-btn">
-                            <button class="btn btn-default btn-copy" type="button" id="copy-button" data-clipboard-action="copy" data-clipboard-target="#copy-input">
-                              <span class="glyphicon glyphicon-copy"></span> #{bundle['file.copy']}
-                            </button>
-                        </span>
-                        <script>
-                            $(document).ready(function () {
-                                // clipboard.js > cloud storage copy btn
-                                var clipboard = new Clipboard('button.btn-copy');
-
-                                clipboard.on('success', function(e) {
-                                    console.log(e);
-                                });
-                                clipboard.on('error', function(e) {
-                                    console.log(e);
-                                });
-                            });
-                        </script>
-                    </div>
-                </div>
-            </div>
             <div jsf:id="filesHeaderBlock" class="row" jsf:rendered="#{DatasetPage.workingVersion.fileMetadatas.size() gt 1}">
                 <div class="col-xs-6">
                     <!-- dataset file search -->

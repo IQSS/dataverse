@@ -105,19 +105,6 @@
         </ul>
     </div>
     
-    <!-- Compute Button *File pg only*: -->
-    <h:outputLink value="#{FilePage.computeUrl}" type="button" class="btn btn-default btn-compute" target="_blank"
-                  rendered="#{isFilePg and FilePage.showComputeButton() and fileDownloadHelper.canDownloadFile(fileMetadata)}">
-        <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
-    </h:outputLink>
-    <!-- Compute Button *Dataset pg only*: -->
-    <h:outputLink value="#{DatasetPage.getComputeUrl(fileMetadata)}" type="button"
-                  class="btn btn-default btn-compute" target="_blank"
-                  rendered="#{!isFilePg and DatasetPage.showComputeButton(fileMetadata)
-                                        and fileDownloadHelper.canDownloadFile(fileMetadata)}">
-        <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
-    </h:outputLink>
-    
     <p:commandLink rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
                               and fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}"
                    type="button" styleClass="btn btn-default btn-download" process="@this"

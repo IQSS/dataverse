@@ -172,7 +172,6 @@
                                         <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
                                         <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
                                         <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
-                                        <ui:param name="isFilePg" value="true"/>
                                         <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                                         <ui:param name="exploreTools" value="#{FilePage.exploreTools}"/>
                                     </ui:include>
@@ -624,12 +623,6 @@
                         </ui:fragment>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.close}" onclick="PF('fileAlreadyReplacedPrevious').hide();"/>
-                        </div>
-                    </p:dialog>
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.compute.computeBtn']}" widgetVar="computeAccessDeniedPopup" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.compute.fileAccessDenied']}</p>
-                        <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" onclick="PF('computeAccessDeniedPopup').hide();" type="button" />
                         </div>
                     </p:dialog>
                 </h:form>

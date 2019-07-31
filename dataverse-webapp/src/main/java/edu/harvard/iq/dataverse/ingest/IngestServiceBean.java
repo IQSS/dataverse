@@ -1687,7 +1687,7 @@ public class IngestServiceBean {
                 // The FileUtil method that determines the type takes java.io.File 
                 // as an argument. So for StorageIO drivers that provide local 
                 // file access, we'll just go directly to the stored file. For 
-                // swift and similar implementations, we'll read the saved aux 
+                // s3 and similar implementations, we'll read the saved aux 
                 // channel and save it as a local temp file. 
 
                 StorageIO<DataFile> storageIO;

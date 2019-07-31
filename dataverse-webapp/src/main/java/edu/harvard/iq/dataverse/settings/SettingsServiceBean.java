@@ -45,16 +45,6 @@ public class SettingsServiceBean {
          */
         PublicInstall,
         /**
-         * Sets the name of your cloud computing environment.
-         * For example, "Massachusetts Open Cloud"
-         */
-        CloudEnvironmentName,
-        /**
-         * Defines the base for a computing environment URL.
-         * The container name will be appended to this on the "Compute" button
-         */
-        ComputeBaseUrl,
-        /**
          * Enables the provenance collection popup.
          * Allows users to store their provenance json and description
          */
