@@ -1,0 +1,41 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+>
+
+    <div class="button-block tab-header margin-bottom text-right">
+        <p:link id="editMetadataButton" styleClass="btn btn-default btn-access"
+                disabled="#{DatasetMetadataTab.datasetLocked}"
+                outcome="editDatasetMetadata"
+                rendered="#{!widgetWrapper.widgetView and DatasetMetadataTab.canUpdateDataset() and !DatasetMetadataTab.dataset.deaccessioned}">
+            <f:param name="datasetId" value="#{DatasetMetadataTab.dataset.id}"/>
+            <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
+        </p:link>
+        <div class="btn-group"
+             jsf:rendered="#{DatasetMetadataTab.dataset.released and !DatasetMetadataTab.dataset.deaccessioned}">
+            <button class="btn btn-default btn-export dropdown-toggle" type="button" styleClass="btn btn-default"
+                    data-toggle="dropdown">
+                <span class="glyphicon glyphicon-export"/> #{bundle['dataset.exportBtn']} <span class="caret"/>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                <ui:repeat var="exporter" value="#{DatasetMetadataTab.getExportersDisplayNameAndURL()}">
+                    <li>
+                        <h:outputLink value="#{exporter._2()}" target="_blank">
+                            <h:outputText value="#{exporter._1()}"/>
+                        </h:outputLink>
+                    </li>
+                </ui:repeat>
+            </ul>
+        </div>
+    </div>
+    <ui:include src="viewMetadata.xhtml">
+        <ui:param name="metadataBlocks"
+                  value="#{DatasetMetadataTab.metadataBlocks.entrySet().toArray()}"/>
+        <ui:param name="globalId" value="#{DatasetMetadataTab.dataset.globalIdString}"/>
+        <ui:param name="altPID" value="#{DatasetMetadataTab.dataset.alternativePersistentIdentifier}"/>
+        <ui:param name="publicationDate" value="#{DatasetMetadataTab.dataset.publicationDateFormattedYYYYMMDD}"/>
+    </ui:include>
+</ui:composition>

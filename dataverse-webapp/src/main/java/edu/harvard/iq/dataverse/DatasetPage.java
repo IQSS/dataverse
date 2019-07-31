@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.dataset.tab.DatasetMetadataTab;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -37,7 +38,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.ExporterType;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
@@ -200,6 +200,8 @@ public class DatasetPage implements java.io.Serializable {
     ProvPopupFragmentBean provPopupFragmentBean;
     @Inject
     private ExportService exportService;
+    @Inject
+    private DatasetMetadataTab metadataTab;
 
     private Dataset dataset = new Dataset();
     private EditMode editMode;
@@ -1639,6 +1641,7 @@ public class DatasetPage implements java.io.Serializable {
 
         displayCitation = dataset.getCitation(true, workingVersion);
         stateChanged = false;
+        metadataTab.updateDatasetLockState(isLocked());
     }
 
     public String deleteDataset() {
@@ -2259,51 +2262,17 @@ public class DatasetPage implements java.io.Serializable {
         return new HttpClient();
     }
 
-    public void refreshLock() {
-        //RequestContext requestContext = RequestContext.getCurrentInstance();
-        logger.fine("checking lock");
-        if (isStillLocked()) {
-            logger.fine("(still locked)");
-        } else {
-            // OK, the dataset is no longer locked. 
-            // let's tell the page to refresh:
-            logger.fine("no longer locked!");
-            stateChanged = true;
-            lockedFromEditsVar = null;
-            lockedFromDownloadVar = null;
-            //requestContext.execute("refreshPage();");
-        }
-    }
-
-    public void refreshIngestLock() {
-        //RequestContext requestContext = RequestContext.getCurrentInstance();
-        logger.fine("checking ingest lock");
-        if (isStillLockedForIngest()) {
-            logger.fine("(still locked)");
-        } else {
-            // OK, the dataset is no longer locked. 
-            // let's tell the page to refresh:
-            logger.fine("no longer locked!");
-            stateChanged = true;
-            lockedFromEditsVar = null;
-            lockedFromDownloadVar = null;
-            //requestContext.execute("refreshPage();");
-        }
-    }
-
     public void refreshAllLocks() {
-        //RequestContext requestContext = RequestContext.getCurrentInstance();
+
         logger.fine("checking all locks");
         if (isStillLockedForAnyReason()) {
             logger.fine("(still locked)");
         } else {
-            // OK, the dataset is no longer locked. 
-            // let's tell the page to refresh:
+
             logger.fine("no longer locked!");
             stateChanged = true;
             lockedFromEditsVar = null;
             lockedFromDownloadVar = null;
-            //requestContext.execute("refreshPage();");
         }
     }
 
@@ -2567,28 +2536,6 @@ public class DatasetPage implements java.io.Serializable {
 
         return dataURL;
     }
-
-    public List<String[]> getExporters() {
-        List<String[]> retList = new ArrayList<>();
-
-        Map<ExporterType, Exporter> exporters = exportService.getAllExporters();
-
-        for (Exporter exporter : exporters.values()) {
-
-            if (exporter.isAvailableToUsers()) {
-                String myHostURL = getDataverseSiteUrl();
-
-                String[] temp = new String[2];
-                temp[0] = exporter.getDisplayName();
-                temp[1] = myHostURL + "/api/datasets/export?exporter=" + exporter.getProviderName() + "&persistentId=" + dataset.getGlobalIdString();
-                retList.add(temp);
-            }
-
-        }
-        return retList;
-    }
-
-
     private FileMetadata fileMetadataSelected = null;
 
     public void setFileMetadataSelected(FileMetadata fm) {
