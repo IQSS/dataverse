@@ -20,7 +20,7 @@
                 <f:metadata>
                     <f:viewParam name="datasetId" value="#{editDatasetMetadataPage.datasetId}"/>
                     <f:viewParam name="persistentId" value="#{editDatasetMetadataPage.persistentId}"/>
-                    <f:viewAction action="#{editDatasetMetadataPage.init}" rendered="true"/>
+                    <f:viewAction action="#{editDatasetMetadataPage.init}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(editDatasetMetadataPage.dataset)}"/>
                 </f:metadata>
                 
@@ -47,7 +47,7 @@
                     
                     <!-- Top action buttons -->
                     <div class="button-block form-top">
-                        <p:commandButton id="saveTop" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blocklockEditMetadataForm').show();" />
+                        <p:commandButton id="saveTop" value="#{bundle.saveChanges}" onclick="PF('datasetSaveButton').getJQ().click();" />
                         <p:commandButton id="cancelTop" value="#{bundle.cancel}" action="#{editDatasetMetadataPage.cancel}">
                         </p:commandButton>
                     </div>
@@ -65,11 +65,13 @@
                     
                     <!-- Bottom action buttons -->
                     <div class="button-block">
-                        <p:commandButton tabindex="1000" id="save" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();PF('lockEditMetadataForm').show();" />
+                        <p:commandButton tabindex="1000" id="save" value="#{bundle.saveChanges}" onclick="PF('datasetSaveButton').getJQ().click();" />
                         <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{editDatasetMetadataPage.cancel}" />
                         <p:commandButton value="Direct" id="datasetSave"
+                                         widgetVar="datasetSaveButton"
                                          style="display:none"
                                          update=":editMetadataForm,:messagePanel"
+                                         onclick="PF('lockEditMetadataForm').show();"
                                          oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
                                          action="#{editDatasetMetadataPage.save}" />
                     </div>
@@ -78,11 +80,6 @@
                     
                 </h:form>
                 
-                <script type="text/javascript">
-                function checkNewlyRestricted() {
-                    $('button[id$="datasetSave"]').trigger('click');
-                }
-                </script>
             </ui:define>
         </ui:composition>
     </h:body>
