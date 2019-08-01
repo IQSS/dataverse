@@ -51,7 +51,7 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
         }
         
         //if user already has permission to download file or the file is public throw command exception
-        if (ctxt.permissions().requestOn(this.getRequest(), file).has(Permission.DownloadFile) || !file.isRestricted()) {
+        if (!file.isRestricted() || ctxt.permissions().requestOn(this.getRequest(), file).has(Permission.DownloadFile)) {
             throw new CommandException(BundleUtil.getStringFromBundle("file.requestAccess.notAllowed.alreadyHasDownloadPermisssion"), this);
         }
 
