@@ -407,25 +407,23 @@
                                     </div>
                                     <div id="panelCollapseFMD" class="collapse in">
                                         <div class="panel-body">
-                                            
-                                            
-                                            
                                             <div class="form-group">
                                                 <label for="preview-square" class="col-sm-3 control-label">
-                                                    Preview
+                                                    #{bundle['file.metadata.preview']}
                                                 </label>
                                                 <div id="file-preview-icon-block" class="col-sm-9">
                                                     <div id="border-block" style="border:0;">
                                                         <div id="preview-square">
                                                             <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(FilePage.fileMetadata.dataFile)} text-muted" jsf:rendered="#{!FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
-                                                            <p:graphicImage styleClass="img-responsive" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" rendered="#{FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
+                                                            <p:graphicImage styleClass="img-responsive" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" 
+                                                                            alt="#{bundle['file.metadata.preview.alt']} #{FilePage.fileMetadata.label}" rendered="#{FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div id="fileCategoriesBlock" class="form-group" jsf:rendered="#{!(empty FilePage.fileMetadata.categoriesByName) or !(empty FilePage.fileMetadata.dataFile.tags)}">
                                                 <label for="file-tags" class="col-sm-3 control-label">
-                                                    File Tags
+                                                    #{bundle['file.metadata.filetags']}
                                                 </label>
                                                 <div id="file-tags" class="col-sm-9">
                                                     <ui:repeat value="#{FilePage.fileMetadata.categoriesByName}" var="tag" rendered="#{!(empty FilePage.fileMetadata.categoriesByName)}">
@@ -436,9 +434,6 @@
                                                     </ui:repeat>
                                                 </div>
                                             </div>
-                                            
-                                            
-                                            
                                             <div class="form-group" jsf:rendered="#{FilePage.file.identifier != null}">
                                                 <label for="metadata_persistentId" class="col-sm-3 control-label">
                                                     #{bundle['file.metadata.persistentId']}
