@@ -80,7 +80,7 @@ public class SiteMapUtilTest {
         if (oldSitemapFile.exists()) {
             oldSitemapFile.delete();
         }
-        SiteMapUtil.updateSiteMap(dataverses, datasets);
+        SiteMapUtil.updateSiteMap(dataverses, datasets, "https://localhost:8080");
 
         Exception wellFormedXmlException = null;
         try {

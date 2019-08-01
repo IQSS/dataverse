@@ -87,7 +87,7 @@ public class ExternalToolHandlerTest {
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
         ExternalToolHandler externalToolHandler3 = new ExternalToolHandler(externalTool, dataFile, apiToken);
-        String result3 = externalToolHandler3.getQueryParametersForUrl();
+        String result3 = externalToolHandler3.getQueryParametersForUrl("https://localhost:8080");
         System.out.println("result3: " + result3);
         assertEquals("?key1=42&key2=7196b5ce-f200-4286-8809-03ffdbc255d7", result3);
 
@@ -103,7 +103,7 @@ public class ExternalToolHandlerTest {
                                                )
                                                .build().toString());
         ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, nullApiToken);
-        String result4 = externalToolHandler4.getQueryParametersForUrl();
+        String result4 = externalToolHandler4.getQueryParametersForUrl( "https://localhost:8080");
         System.out.println("result4: " + result4);
         assertEquals("?key1=42", result4);
 
@@ -121,7 +121,7 @@ public class ExternalToolHandlerTest {
         Exception expectedException = null;
         try {
             ExternalToolHandler externalToolHandler5 = new ExternalToolHandler(externalTool, dataFile, nullApiToken);
-            String result5 = externalToolHandler5.getQueryParametersForUrl();
+            String result5 = externalToolHandler5.getQueryParametersForUrl( "https://localhost:8080");
             System.out.println("result5: " + result5);
         } catch (Exception ex) {
             System.out.println("Exception caught: " + ex);

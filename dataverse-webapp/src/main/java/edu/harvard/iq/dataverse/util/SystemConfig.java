@@ -12,6 +12,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.MissingResourceException;
@@ -32,22 +34,6 @@ public class SystemConfig {
     SettingsServiceBean settingsService;
 
     public static final String DATAVERSE_PATH = "/dataverse/";
-
-    /**
-     * A JVM option for the advertised fully qualified domain name (hostname) of
-     * the Dataverse installation, such as "dataverse.example.com", which may
-     * differ from the hostname that the server knows itself as.
-     * <p>
-     * The equivalent in DVN 3.x was "dvn.inetAddress".
-     */
-    public static final String FQDN = "dataverse.fqdn";
-
-    /**
-     * A JVM option for specifying the "official" URL of the site.
-     * Unlike the FQDN option above, this would be a complete URL,
-     * with the protocol, port number etc.
-     */
-    public static final String SITE_URL = "dataverse.siteUrl";
 
     /**
      * A JVM option for where files are stored on the file system.
@@ -189,33 +175,8 @@ public class SystemConfig {
         return settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.MinutesUntilPasswordResetTokenExpires);
     }
 
-    /**
-     * The "official", designated URL of the site;
-     * can be defined as a complete URL; or derived from the
-     * "official" hostname. If none of these options is set,
-     * defaults to the InetAddress.getLocalHOst() and https;
-     * These are legacy JVM options. Will be eventualy replaced
-     * by the Settings Service configuration.
-     */
     public String getDataverseSiteUrl() {
-        String hostUrl = System.getProperty(SITE_URL);
-        if (hostUrl != null && !"".equals(hostUrl)) {
-            return hostUrl;
-        }
-        String hostName = getFqdn();
-        if (hostName == null) {
-            try {
-                hostName = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                return null;
-            }
-        }
-        hostUrl = "https://" + hostName;
-        return hostUrl;
-    }
-
-    public String getFqdn() {
-        return System.getProperty(SystemConfig.FQDN);
+        return settingsService.getValueForKey(SettingsServiceBean.Key.SiteUrl);
     }
 
     public String getFilesDirectory() {
@@ -233,38 +194,16 @@ public class SystemConfig {
         }
         return filesDirectory;
     }
-
-    public static String getDataverseSiteUrlStatic() {
-        String hostUrl = System.getProperty(SITE_URL);
-        if (hostUrl != null && !"".equals(hostUrl)) {
-            return hostUrl;
-        }
-        String hostName = System.getProperty(FQDN);
-        if (hostName == null) {
-            try {
-                hostName = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                return null;
-            }
-        }
-        hostUrl = "https://" + hostName;
-        return hostUrl;
-    }
-
     /**
      * The "official" server's fully-qualified domain name:
      */
     public String getDataverseServer() {
-        // still reliese on a JVM option: 
-        String fqdn = System.getProperty(FQDN);
-        if (fqdn == null) {
-            try {
-                fqdn = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                return null;
-            }
+        try {
+            return new URL(settingsService.getValueForKey(SettingsServiceBean.Key.SiteUrl)).getHost();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return "localhost";
         }
-        return fqdn;
     }
 
     public String getGuidesBaseUrl() {

@@ -6,9 +6,11 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -46,6 +48,9 @@ public class PasswordResetServiceBean {
 
     @Inject
     private SystemConfig systemConfig;
+
+    @Inject
+    private SettingsServiceBean settingsService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -104,22 +109,16 @@ public class PasswordResetServiceBean {
 
     private String createResetUrl(PasswordResetData passwordResetData) {
         // default to localhost
-        String finalHostname = "localhost";
-        String configuredHostname = systemConfig.getFqdn();
-        if (configuredHostname != null) {
-            if (configuredHostname.equals("localhost")) {
-                // must be a dev environment
-                finalHostname = "localhost:8181";
-            } else {
-                finalHostname = configuredHostname;
-            }
+        String finalHostname;
+        String configuredHostname = systemConfig.getDataverseServer();
+
+        if (configuredHostname.equals("localhost")) {
+            // must be a dev environment
+            finalHostname = "localhost:8181";
         } else {
-            try {
-                finalHostname = InetAddress.getLocalHost().getHostName();
-            } catch (UnknownHostException ex) {
-                // just use the dev address
-            }
+            finalHostname = configuredHostname;
         }
+
         return "https://" + finalHostname + "/passwordreset.xhtml?token=" + passwordResetData.getToken();
     }
 

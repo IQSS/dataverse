@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.StringUtils;
 import org.swordapp.server.SwordError;
@@ -18,6 +19,9 @@ public class UrlManagerServiceBean {
     private static final Logger logger = Logger.getLogger(UrlManagerServiceBean.class.getCanonicalName());
 
     private UrlManager urlManager = new UrlManager();
+
+    @Inject
+    private SettingsServiceBean settingsService;
 
     @Inject
     private SystemConfig systemConfig;
@@ -158,47 +162,7 @@ public class UrlManagerServiceBean {
         return warning;
     }
 
-    public String getHostnamePlusBaseUrlPath(String url) throws SwordError {
-        String optionalPort = "";
-        URI u;
-        try {
-            u = new URI(url);
-        } catch (URISyntaxException ex) {
-            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "unable to part URL");
-        }
-        int port = u.getPort();
-        if (port != -1) {
-            // https often runs on port 8181 in dev
-            optionalPort = ":" + port;
-        }
-        String requestedHostname = u.getHost();
-        String hostName = systemConfig.getFqdn();
-        if (hostName == null) {
-            hostName = "localhost";
-        }
-        /**
-         * @todo should this be configurable? In dev it's convenient to override
-         * the JVM option and force traffic to localhost.
-         */
-        if (requestedHostname.equals("localhost")) {
-            hostName = "localhost";
-        }
-        /**
-         * @todo Any problem with returning the current API version rather than
-         * the version that was operated on? Both should work. If SWORD API
-         * users are operating on the URLs returned (as they should) returning
-         * the current version will avoid deprecation warnings on the Dataverse
-         * side.
-         *
-         * @todo Prevent "https://localhost:8080" from being returned. It should
-         * either be "http://localhost:8080" or "https://localhost:8181". Use
-         * SystemConfig.getDataverseSiteUrl instead of SystemConfig.FQDN above.
-         * It's worse for security to not have https hard coded here but if
-         * users have configured dataverse.siteUrl to be http rather than https
-         * we assume they are doing this on purpose (despite our warnings in the
-         * Installation Guide), perhaps because they are only kicking the tires
-         * on Dataverse.
-         */
-        return "https://" + hostName + optionalPort + SwordConfigurationConstants.BASE_URL_PATH_CURRENT;
+    public String getHostnamePlusBaseUrlPath() {
+        return systemConfig.getDataverseSiteUrl() + SwordConfigurationConstants.BASE_URL_PATH_CURRENT;
     }
 }

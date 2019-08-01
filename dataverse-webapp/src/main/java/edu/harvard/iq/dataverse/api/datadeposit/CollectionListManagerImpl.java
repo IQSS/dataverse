@@ -69,7 +69,7 @@ public class CollectionListManagerImpl implements CollectionListManager {
                 Abdera abdera = new Abdera();
                 Feed feed = abdera.newFeed();
                 feed.setTitle(dv.getName());
-                String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath(iri.toString());
+                String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath();
                 List<Dataset> datasets = datasetService.findByOwnerId(dv.getId());
                 for (Dataset dataset : datasets) {
                     /**

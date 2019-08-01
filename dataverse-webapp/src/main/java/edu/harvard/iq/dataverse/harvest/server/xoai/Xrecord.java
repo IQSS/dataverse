@@ -16,8 +16,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import static com.lyncode.xoai.xml.XmlWriter.defaultContext;
-import static edu.harvard.iq.dataverse.util.SystemConfig.FQDN;
-import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 
 /**
  * @author Leonid Andreev
@@ -64,7 +62,8 @@ public class Xrecord extends Record {
         return this;
     }
 
-    public void writeToStream(OutputStream outputStream, ExportService exportService) throws IOException {
+    public void writeToStream(OutputStream outputStream, ExportService exportService, String dataverseUrl)
+            throws IOException {
         outputStream.flush();
 
         String headerString = itemHeaderToString(this.header);
@@ -95,7 +94,7 @@ public class Xrecord extends Record {
                 }
                 outputStream.write(METADATA_END_ELEMENT.getBytes());
             } else {
-                outputStream.write(customMetadataExtensionRef(this.dataset.getGlobalIdString()).getBytes());
+                outputStream.write(customMetadataExtensionRef(this.dataset.getGlobalIdString(), dataverseUrl).getBytes());
             }
         }
         outputStream.flush();
@@ -129,10 +128,10 @@ public class Xrecord extends Record {
         }
     }
 
-    private String customMetadataExtensionRef(String identifier) {
+    private String customMetadataExtensionRef(String identifier, String dataverseUrl) {
         String ret = "<" + METADATA_FIELD
                 + " directApiCall=\""
-                + getDataverseSiteUrl()
+                + dataverseUrl
                 + DATAVERSE_EXTENDED_METADATA_API
                 + "?exporter="
                 + DATAVERSE_EXTENDED_METADATA_FORMAT
@@ -146,22 +145,5 @@ public class Xrecord extends Record {
 
     private boolean isExtendedDataverseMetadataMode(String formatName) {
         return DATAVERSE_EXTENDED_METADATA_FORMAT.equals(formatName);
-    }
-
-    private String getDataverseSiteUrl() {
-        String hostUrl = System.getProperty(SITE_URL);
-        if (hostUrl != null && !"".equals(hostUrl)) {
-            return hostUrl;
-        }
-        String hostName = System.getProperty(FQDN);
-        if (hostName == null) {
-            try {
-                hostName = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                return null;
-            }
-        }
-        hostUrl = "https://" + hostName;
-        return hostUrl;
     }
 }

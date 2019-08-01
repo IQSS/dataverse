@@ -95,7 +95,7 @@ public class ContainerManagerImpl implements ContainerManager {
                     }
                     Dataverse dvThatOwnsDataset = dataset.getOwner();
                     ReceiptGenerator receiptGenerator = new ReceiptGenerator();
-                    String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath(uri);
+                    String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath();
                     DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
                     if (depositReceipt != null) {
                         return depositReceipt;
@@ -165,7 +165,7 @@ public class ContainerManagerImpl implements ContainerManager {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem updating dataset: " + ex);
                     }
                     ReceiptGenerator receiptGenerator = new ReceiptGenerator();
-                    String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath(uri);
+                    String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath();
                     DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
                     return depositReceipt;
                 } else {
@@ -381,7 +381,7 @@ public class ContainerManagerImpl implements ContainerManager {
                                     throw SwordUtil.throwRegularSwordErrorWithoutStackTrace(msg);
                                 }
                                 ReceiptGenerator receiptGenerator = new ReceiptGenerator();
-                                String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath(uri);
+                                String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath();
                                 DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
                                 return depositReceipt;
                             } else {
@@ -411,7 +411,7 @@ public class ContainerManagerImpl implements ContainerManager {
                         try {
                             engineSvc.submit(publishDataverseCommand);
                             ReceiptGenerator receiptGenerator = new ReceiptGenerator();
-                            String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath(uri);
+                            String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath();
                             DepositReceipt depositReceipt = receiptGenerator.createDataverseReceipt(baseUrl, dvToRelease);
                             return depositReceipt;
                         } catch (CommandException ex) {

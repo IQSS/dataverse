@@ -10,6 +10,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -462,7 +464,15 @@ public class SettingsServiceBean {
          * Some installations may not want download URLs to their files to be
          * available in Schema.org JSON-LD output.
          */
-        HideSchemaDotOrgDownloadUrls;
+        HideSchemaDotOrgDownloadUrls,
+
+        /**
+         * A JVM option for specifying the "official" URL of the site.
+         * Unlike the FQDN option above, this would be a complete URL,
+         * with the protocol, port number etc.
+         */
+        SiteUrl
+        ;
 
         @Override
         public String toString() {
@@ -503,7 +513,6 @@ public class SettingsServiceBean {
     public String getValueForKey(Key key) {
         return get(key.toString());
     }
-
 
     /**
      * Attempt to convert the value to an integer

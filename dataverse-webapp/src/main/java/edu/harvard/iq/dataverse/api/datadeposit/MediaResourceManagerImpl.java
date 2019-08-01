@@ -380,7 +380,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             ingestService.startIngestJobsForDataset(dataset, user);
 
             ReceiptGenerator receiptGenerator = new ReceiptGenerator();
-            String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath(uri);
+            String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath();
             DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
             return depositReceipt;
         } else {

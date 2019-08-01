@@ -70,7 +70,7 @@ public class StatementManagerImpl implements StatementManager {
             if (!permissionService.isUserAllowedOn(user, new GetDraftDatasetVersionCommand(dvReq, dataset), dataset)) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to view dataset with global ID " + globalId);
             }
-            String feedUri = urlManagerServiceBean.getHostnamePlusBaseUrlPath(editUri) + "/edit/study/" + dataset.getGlobalIdString();
+            String feedUri = urlManagerServiceBean.getHostnamePlusBaseUrlPath() + "/edit/study/" + dataset.getGlobalIdString();
             String author = dataset.getLatestVersion().getAuthorsStr();
             String title = dataset.getLatestVersion().getTitle();
             // in the statement, the element is called "updated"
@@ -115,7 +115,7 @@ public class StatementManagerImpl implements StatementManager {
                 // Replace spaces to avoid IRISyntaxException
                 String fileNameFinal = fileMetadata.getLabel().replace(' ', '_');
                 // TODO: Consider where we would show the persistent identifiers for files via SWORD.
-                String fileUrlString = urlManagerServiceBean.getHostnamePlusBaseUrlPath(editUri) + "/edit-media/file/" + dataFile.getId() + "/" + fileNameFinal;
+                String fileUrlString = urlManagerServiceBean.getHostnamePlusBaseUrlPath() + "/edit-media/file/" + dataFile.getId() + "/" + fileNameFinal;
                 IRI fileUrl;
                 try {
                     fileUrl = new IRI(fileUrlString);

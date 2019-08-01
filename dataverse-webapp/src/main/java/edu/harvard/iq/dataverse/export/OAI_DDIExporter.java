@@ -26,11 +26,13 @@ public class OAI_DDIExporter implements Exporter {
     private static String DEFAULT_XML_VERSION = "2.5";
 
     private boolean excludeEmailFromExport;
+    private String dataverseUrl;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public OAI_DDIExporter(boolean excludeEmailFromExport) {
+    public OAI_DDIExporter(boolean excludeEmailFromExport, String dataverseUrl) {
         this.excludeEmailFromExport = excludeEmailFromExport;
+        this.dataverseUrl = dataverseUrl;
     }
 
     // -------------------- LOGIC --------------------
@@ -51,7 +53,7 @@ public class OAI_DDIExporter implements Exporter {
             JsonObject datasetAsJson = JsonPrinter.jsonAsDatasetDto(version, excludeEmailFromExport)
                     .build();
 
-            DdiExportUtil.datasetJson2ddi(datasetAsJson, byteArrayOutputStream);
+            DdiExportUtil.datasetJson2ddi(datasetAsJson, byteArrayOutputStream, dataverseUrl);
             return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
         } catch (XMLStreamException | IOException xse) {
             throw new ExportException("Caught XMLStreamException performing DDI export");

@@ -18,10 +18,14 @@ import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.datavariable.VariableRange;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
+import org.apache.cxf.common.util.StringUtils;
 
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -46,25 +50,20 @@ import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_UNF;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_TYPE_TAG;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_TYPE_UNF;
-import static edu.harvard.iq.dataverse.util.SystemConfig.FQDN;
-import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 
 public class DdiExportUtil {
 
     private static final Logger logger = Logger.getLogger(DdiExportUtil.class.getCanonicalName());
 
-    @EJB
-    VariableServiceBean variableService;
-
     public static final String NOTE_TYPE_CONTENTTYPE = "DATAVERSE:CONTENTTYPE";
     public static final String NOTE_SUBJECT_CONTENTTYPE = "Content/MIME Type";
 
-    public static String datasetDtoAsJson2ddi(String datasetDtoAsJson) {
+    public static String datasetDtoAsJson2ddi(String datasetDtoAsJson, String dataverseUrl) {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson));
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson, DatasetDTO.class);
         try {
-            return dto2ddi(datasetDto);
+            return dto2ddi(datasetDto, dataverseUrl);
         } catch (XMLStreamException ex) {
             Logger.getLogger(DdiExportUtil.class.getName()).log(Level.SEVERE, null, ex);
             return null;
@@ -72,21 +71,24 @@ public class DdiExportUtil {
     }
 
     // "short" ddi, without the "<fileDscr>"  and "<dataDscr>/<var>" sections:
-    public static void datasetJson2ddi(JsonObject datasetDtoAsJson, OutputStream outputStream) throws XMLStreamException {
+    public static void datasetJson2ddi(JsonObject datasetDtoAsJson, OutputStream outputStream, String dataverseUrl)
+            throws XMLStreamException {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson.toString(), DatasetDTO.class);
-        dtoddi(datasetDto, outputStream);
+        dtoddi(datasetDto, outputStream, dataverseUrl);
     }
 
-    private static String dto2ddi(DatasetDTO datasetDto) throws XMLStreamException {
+    private static String dto2ddi(DatasetDTO datasetDto, String dataverseUrl)
+            throws XMLStreamException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        dtoddi(datasetDto, outputStream);
+        dtoddi(datasetDto, outputStream, dataverseUrl);
         String xml = outputStream.toString();
         return XmlPrinter.prettyPrintXml(xml);
     }
 
-    private static void dtoddi(DatasetDTO datasetDto, OutputStream outputStream) throws XMLStreamException {
+    private static void dtoddi(DatasetDTO datasetDto, OutputStream outputStream, String dataverseUrl)
+            throws XMLStreamException {
         XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
         xmlw.writeStartElement("codeBook");
         xmlw.writeDefaultNamespace("ddi:codebook:2_5");
@@ -94,14 +96,15 @@ public class DdiExportUtil {
         xmlw.writeAttribute("xsi:schemaLocation", "ddi:codebook:2_5 http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd");
         writeAttribute(xmlw, "version", "2.5");
         createStdyDscr(xmlw, datasetDto);
-        createOtherMats(xmlw, datasetDto.getDatasetVersion().getFiles());
+        createOtherMats(xmlw, datasetDto.getDatasetVersion().getFiles(), dataverseUrl);
         xmlw.writeEndElement(); // codeBook
         xmlw.flush();
     }
 
 
     // "full" ddi, with the the "<fileDscr>"  and "<dataDscr>/<var>" sections: 
-    public static void datasetJson2ddi(JsonObject datasetDtoAsJson, DatasetVersion version, OutputStream outputStream) throws XMLStreamException {
+    public static void datasetJson2ddi(JsonObject datasetDtoAsJson, DatasetVersion version, OutputStream outputStream, String dataverseUrl)
+            throws XMLStreamException {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson.toString(), DatasetDTO.class);
@@ -113,9 +116,9 @@ public class DdiExportUtil {
         xmlw.writeAttribute("xsi:schemaLocation", "ddi:codebook:2_5 http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd");
         writeAttribute(xmlw, "version", "2.5");
         createStdyDscr(xmlw, datasetDto);
-        createFileDscr(xmlw, version);
+        createFileDscr(xmlw, version, dataverseUrl);
         createDataDscr(xmlw, version);
-        createOtherMatsFromFileMetadatas(xmlw, version.getFileMetadatas());
+        createOtherMatsFromFileMetadatas(xmlw, version.getFileMetadatas(), dataverseUrl);
         xmlw.writeEndElement(); // codeBook
         xmlw.flush();
     }
@@ -1039,9 +1042,8 @@ public class DdiExportUtil {
     // see if there's more information that we could encode in this otherMat. 
     // contentType? Unfs and such? (in the "short" DDI that is being used for 
     // harvesting *all* files are encoded as otherMats; even tabular ones.
-    private static void createOtherMats(XMLStreamWriter xmlw, List<FileDTO> fileDtos) throws XMLStreamException {
-        // The preferred URL for this dataverse, for cooking up the file access API links:
-        String dataverseUrl = getDataverseSiteUrl();
+    private static void createOtherMats(XMLStreamWriter xmlw, List<FileDTO> fileDtos, String dataverseUrl)
+            throws XMLStreamException {
 
         for (FileDTO fileDTo : fileDtos) {
             // We'll continue using the scheme we've used before, in DVN2-3: non-tabular files are put into otherMat,
@@ -1086,9 +1088,8 @@ public class DdiExportUtil {
     // otherMat, or a fileDscr section. 
     // -- L.A. 4.5 
 
-    private static void createOtherMatsFromFileMetadatas(XMLStreamWriter xmlw, List<FileMetadata> fileMetadatas) throws XMLStreamException {
-        // The preferred URL for this dataverse, for cooking up the file access API links:
-        String dataverseUrl = getDataverseSiteUrl();
+    private static void createOtherMatsFromFileMetadatas(XMLStreamWriter xmlw, List<FileMetadata> fileMetadatas, String dataverseUrl)
+            throws XMLStreamException {
 
         for (FileMetadata fileMetadata : fileMetadatas) {
             // We'll continue using the scheme we've used before, in DVN2-3: non-tabular files are put into otherMat,
@@ -1199,34 +1200,6 @@ public class DdiExportUtil {
     private static void saveJsonToDisk(String datasetVersionAsJson) throws IOException {
         Files.write(Paths.get("/tmp/out.json"), datasetVersionAsJson.getBytes());
     }
-
-    /**
-     * The "official", designated URL of the site;
-     * can be defined as a complete URL; or derived from the
-     * "official" hostname. If none of these options is set,
-     * defaults to the InetAddress.getLocalHOst() and https;
-     */
-    private static String getDataverseSiteUrl() {
-        String hostUrl = System.getProperty(SITE_URL);
-        if (hostUrl != null && !"".equals(hostUrl)) {
-            return hostUrl;
-        }
-        String hostName = System.getProperty(FQDN);
-        if (hostName == null) {
-            try {
-                hostName = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                hostName = null;
-            }
-        }
-
-        if (hostName != null) {
-            return "https://" + hostName;
-        }
-
-        return "http://localhost:8080";
-    }
-
 
     // Methods specific to the tabular data ("<dataDscr>") section. 
     // Note that these do NOT operate on DTO objects, but instead directly 
@@ -1440,8 +1413,7 @@ public class DdiExportUtil {
 
     }
 
-    private static void createFileDscr(XMLStreamWriter xmlw, DatasetVersion datasetVersion) throws XMLStreamException {
-        String dataverseUrl = getDataverseSiteUrl();
+    private static void createFileDscr(XMLStreamWriter xmlw, DatasetVersion datasetVersion, String dataverseUrl) throws XMLStreamException {
         for (FileMetadata fileMetadata : datasetVersion.getFileMetadatas()) {
             DataFile dataFile = fileMetadata.getDataFile();
 

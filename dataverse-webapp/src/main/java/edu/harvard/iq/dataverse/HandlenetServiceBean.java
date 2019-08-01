@@ -249,23 +249,6 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
         return targetUrl;
     }
 
-    public String getSiteUrl() {
-        String hostUrl = System.getProperty("dataverse.siteUrl");
-        if (hostUrl != null && !"".equals(hostUrl)) {
-            return hostUrl;
-        }
-        String hostName = systemConfig.getFqdn();
-        if (hostName == null) {
-            try {
-                hostName = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                return null;
-            }
-        }
-        hostUrl = "https://" + hostName;
-        return hostUrl;
-    }
-
     private byte[] readKey(final String file) {
         logger.log(Level.FINE, "readKey");
         byte[] key = null;

@@ -22,7 +22,7 @@ public class DdiExportUtilTest {
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(getClass().getClassLoader()
                 .getResource("json/export/ddi/dataset-finch1.json").toURI())));
 
-        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
+        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson, "https://localhost:8080");
 
         logger.info(result);
         assertEquals(datasetAsDdi, result);
@@ -44,7 +44,7 @@ public class DdiExportUtilTest {
         logger.info(datasetAsDdi);
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(getClass().getClassLoader()
                 .getResource("json/export/ddi/dataset-spruce1.json").toURI())));
-        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
+        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson, "https://localhost:8080");
 
         logger.info(result);
         boolean filesMinimallySupported = false;

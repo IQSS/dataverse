@@ -32,13 +32,13 @@ public class XlistRecords extends ListRecords {
     private static final String COMPLETE_LIST_SIZE_ATTRIBUTE = "completeListSize";
     private static final String CURSOR_ATTRIBUTE = "cursor";
 
-    public void writeToStream(OutputStream outputStream, ExportService exportService) throws IOException {
+    public void writeToStream(OutputStream outputStream, ExportService exportService, String dataverseUrl) throws IOException {
         if (!this.records.isEmpty()) {
             for (Record record : this.records) {
                 outputStream.write(RECORD_START_ELEMENT.getBytes());
                 outputStream.flush();
 
-                ((Xrecord) record).writeToStream(outputStream, exportService);
+                ((Xrecord) record).writeToStream(outputStream, exportService, dataverseUrl);
 
                 outputStream.write(RECORD_CLOSE_ELEMENT.getBytes());
                 outputStream.flush();

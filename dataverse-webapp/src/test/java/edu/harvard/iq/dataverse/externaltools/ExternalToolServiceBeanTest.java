@@ -83,7 +83,7 @@ public class ExternalToolServiceBeanTest {
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken);
-        String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
+        String toolUrl = externalToolHandler.getToolUrlWithQueryParams( "https://localhost:8080");
         System.out.println("result: " + toolUrl);
         assertEquals("http://awesometool.com?fileid=42&key=7196b5ce-f200-4286-8809-03ffdbc255d7", toolUrl);
     }

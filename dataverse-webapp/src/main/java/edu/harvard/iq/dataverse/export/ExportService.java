@@ -52,13 +52,13 @@ public class ExportService {
     void loadAllExporters() {
         boolean isEmailExcludedFromExport = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport);
 
-        exporters.put(ExporterType.DDI, new DDIExporter(isEmailExcludedFromExport));
+        exporters.put(ExporterType.DDI, new DDIExporter(isEmailExcludedFromExport, systemConfig.getDataverseSiteUrl()));
 
         exporters.put(ExporterType.DATACITE, new DataCiteExporter());
 
         exporters.put(ExporterType.DCTERMS, new DCTermsExporter(isEmailExcludedFromExport));
 
-        exporters.put(ExporterType.OAIDDI, new OAI_DDIExporter(isEmailExcludedFromExport));
+        exporters.put(ExporterType.OAIDDI, new OAI_DDIExporter(isEmailExcludedFromExport, systemConfig.getDataverseSiteUrl()));
 
         exporters.put(ExporterType.OAIORE, new OAI_OREExporter(isEmailExcludedFromExport, systemConfig.getDataverseSiteUrl(), currentDate));
 

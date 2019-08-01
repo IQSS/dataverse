@@ -4,8 +4,10 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -57,7 +59,7 @@ public class ExternalToolHandler {
     }
 
     // TODO: rename to handleRequest() to someday handle sending headers as well as query parameters.
-    public String getQueryParametersForUrl() {
+    public String getQueryParametersForUrl(String dataverseUrl) {
         String toolParameters = externalTool.getToolParameters();
         JsonReader jsonReader = Json.createReader(new StringReader(toolParameters));
         JsonObject obj = jsonReader.readObject();
@@ -69,7 +71,7 @@ public class ExternalToolHandler {
         queryParams.getValuesAs(JsonObject.class).forEach((queryParam) -> {
             queryParam.keySet().forEach((key) -> {
                 String value = queryParam.getString(key);
-                String param = getQueryParam(key, value);
+                String param = getQueryParam(key, value, dataverseUrl);
                 if (param != null && !param.isEmpty()) {
                     params.add(param);
                 }
@@ -78,14 +80,14 @@ public class ExternalToolHandler {
         return "?" + String.join("&", params);
     }
 
-    private String getQueryParam(String key, String value) {
+    private String getQueryParam(String key, String value, String dataverseUrl) {
         ReservedWord reservedWord = ReservedWord.fromString(value);
         switch (reservedWord) {
             case FILE_ID:
                 // getDataFile is never null because of the constructor
                 return key + "=" + getDataFile().getId();
             case SITE_URL:
-                return key + "=" + SystemConfig.getDataverseSiteUrlStatic();
+                return key + "=" + dataverseUrl;
             case API_TOKEN:
                 String apiTokenString = null;
                 ApiToken theApiToken = getApiToken();
@@ -114,8 +116,8 @@ public class ExternalToolHandler {
         return null;
     }
 
-    public String getToolUrlWithQueryParams() {
-        return externalTool.getToolUrl() + getQueryParametersForUrl();
+    public String getToolUrlWithQueryParams(String dataverseUrl) {
+        return externalTool.getToolUrl() + getQueryParametersForUrl(dataverseUrl);
     }
 
     public ExternalTool getExternalTool() {

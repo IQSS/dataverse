@@ -165,7 +165,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                     }
                     if (createdDataset != null) {
                         ReceiptGenerator receiptGenerator = new ReceiptGenerator();
-                        String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath(collectionUri);
+                        String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath();
                         DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, createdDataset);
                         return depositReceipt;
                     } else {

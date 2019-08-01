@@ -55,7 +55,7 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
             swordWorkspace.getWrappedWorkspace().setAttributeValue("warning", warning);
         }
         service.setMaxUploadSize(config.getMaxUploadSize());
-        String hostnamePlusBaseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath(sdUri);
+        String hostnamePlusBaseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath();
         if (hostnamePlusBaseUrl == null) {
             ServiceDocument serviceDocument = new ServiceDocument();
             return serviceDocument;

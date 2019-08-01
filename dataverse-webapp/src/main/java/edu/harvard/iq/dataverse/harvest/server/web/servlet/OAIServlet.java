@@ -288,7 +288,7 @@ public class OAIServlet extends HttpServlet {
 
         outputStream.flush();
 
-        ((XlistRecords) verb).writeToStream(outputStream, exportService);
+        ((XlistRecords) verb).writeToStream(outputStream, exportService, systemConfig.getDataverseSiteUrl());
 
         outputStream.write(("</" + verb.getType().displayName() + ">").getBytes());
         outputStream.write(("</" + OAI_PMH + ">\n").getBytes());
@@ -318,7 +318,7 @@ public class OAIServlet extends HttpServlet {
 
         outputStream.flush();
 
-        ((XgetRecord) verb).writeToStream(outputStream, exportService);
+        ((XgetRecord) verb).writeToStream(outputStream, exportService, systemConfig.getDataverseSiteUrl());
 
         outputStream.write(("</" + verb.getType().displayName() + ">").getBytes());
         outputStream.write(("</" + OAI_PMH + ">\n").getBytes());
