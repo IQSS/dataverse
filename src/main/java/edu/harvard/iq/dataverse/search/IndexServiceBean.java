@@ -1168,10 +1168,6 @@ public class IndexServiceBean {
 
         try {
             solrClientService.getSolrClient().add(docs);
-        } catch (SolrServerException | IOException ex) {
-            return ex.toString();
-        }
-        try {
             solrClientService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
             if (ex.getCause() instanceof SolrServerException) {
@@ -1179,7 +1175,6 @@ public class IndexServiceBean {
             } else if (ex.getCause() instanceof IOException) {
                 throw new IOException(ex);
             }
-            // return ex.toString();
         }
 
         Long dsId = dataset.getId();
