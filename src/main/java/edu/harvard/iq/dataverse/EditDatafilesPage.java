@@ -1434,7 +1434,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         //if (newDraftVersion) {
         //    return returnToDraftVersionById();
         //}
-        indexService.indexDataset(dataset, true);
+       // indexService.indexDataset(dataset, true);
+       // indexing is handled by the commands
         logger.fine("Redirecting to the dataset page, from the edit/upload page.");
         return returnToDraftVersion();
     }

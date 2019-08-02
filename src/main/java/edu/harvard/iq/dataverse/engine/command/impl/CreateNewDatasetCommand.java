@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
@@ -117,6 +116,5 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
                 dv.isReleased() ? Collections.singleton(Permission.AddDataset)
                 : new HashSet<>(Arrays.asList(Permission.AddDataset,Permission.ViewUnpublishedDataverse)));
     }
-    
-    
+        
 }
