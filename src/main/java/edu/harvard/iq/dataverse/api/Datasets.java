@@ -103,17 +103,21 @@ import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1305,61 +1309,67 @@ public class Datasets extends AbstractApiBean {
 
     @POST
     @Path("/notifyS3upload")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response registerFileFromS3(@HeaderParam("x-amz-sns-message-type") String messageType,
-            @HeaderParam("x-amz-sns-message-id") String messageId, @FormDataParam("message") String message) {
-        if (!messageType.equals("Notification")) {
-            return Response.status(418).build();
-        }
-        logger.info(message);
-        JSONObject messageBody = new JSONObject(message);
-        String eventType = messageBody.getJSONArray("Records").getJSONObject(0).getString("eventName");
-        String requestId =
-                messageBody.getJSONArray("Records").getJSONObject(0).getJSONObject("responseElements").getString("x"
-                        + "-amz-request-id");
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response registerFileFromS3(@FormParam("Action") String action, @FormParam("Message") String message,
+            @FormParam("TopicArn") String topic, @FormParam("Version") String version) {
+        if (message != null && message.startsWith("Storage")) {
 
-        if(eventType.equals("ObjectCreated:Put")) {
-            String storageId =
-                    messageBody.getJSONArray("Records").getJSONObject(0).getJSONObject("s3").getJSONObject("object").getString("key");
-            logger.info("StorageId: " + storageId);
+            StringBuilder response = new StringBuilder("<PublishResponse xmlns=\"http://vishnus-sns-server/\">");
+            response.append("<PublishResult>" );
+            response.append("<MessageId>" + UUID.randomUUID() + "</MessageId> ");
+            response.append("</PublishResult>");
+            response.append("<ResponseMetadata>");
+            response.append("<RequestId>" + UUID.randomUUID() + "</RequestId>");
+            response.append("</ResponseMetadata> ");
+            response.append("\n" + "    </PublishResponse>\n");
+            response.toString();
 
-            S3BigDataUpload s3BigDataUpload = s3BigDataUploadServiceBean.getS3BigDataUploadByStorageId(storageId);
-            if(s3BigDataUpload != null) {
-                try {
-                    logger.info("DatasetId in DB: " + s3BigDataUpload.getDatasetId());
-                    DataverseRequest dvRequest = createDataverseRequest(s3BigDataUpload.getUser());
-                    AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest, ingestService,
-                            datasetService, fileService, permissionService, commandEngine, systemConfig);
+            return Response.ok(response.toString()).build();
+        } else if (message != null && message.startsWith("{")) {
 
-                    Dataset dataset = datasetService.findByGlobalId(s3BigDataUpload.getDatasetId());
+            JSONObject messageBody = new JSONObject(message);
+            String eventType = messageBody.getJSONArray("Records").getJSONObject(0).getString("eventName");
+            String requestId = messageBody.getJSONArray("Records").getJSONObject(0).getJSONObject("responseElements")
+                    .getString("x" + "-amz-request-id");
 
-                    OptionalFileParams optionalFileParams = new OptionalFileParams(s3BigDataUpload.getJsonData());
+            if (eventType.equals("ObjectCreated:Put")) {
+                String storageId = messageBody.getJSONArray("Records").getJSONObject(0).getJSONObject("s3").getJSONObject("object").getString("key");
 
-                    addFileHelper.runAddFileS3BigData(dataset, s3BigDataUpload.getFileName(),
-                            s3BigDataUpload.getContentType(), optionalFileParams, storageId,
-                            s3BigDataUpload.getChecksumType(), s3BigDataUpload.getChecksum(),
-                            messageBody.getJSONArray("Records").getJSONObject(0).getJSONObject("s3").getJSONObject(
-                                    "object").getInt("size"));
+                S3BigDataUpload s3BigDataUpload = s3BigDataUploadServiceBean.getS3BigDataUploadByStorageId(storageId);
+                if (s3BigDataUpload != null) {
+                    try {
+                        DataverseRequest dvRequest = createDataverseRequest(s3BigDataUpload.getUser());
+                        AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest, ingestService,
+                                datasetService, fileService, permissionService, commandEngine, systemConfig);
 
-                } catch (DataFileTagException e) {
-                    e.printStackTrace();
-                    return error(Response.Status.INTERNAL_SERVER_ERROR, " Error while processing request occured");
+                        Dataset dataset = datasetService.findByGlobalId(s3BigDataUpload.getDatasetId());
+
+                        OptionalFileParams optionalFileParams = new OptionalFileParams(s3BigDataUpload.getJsonData());
+
+                        addFileHelper.runAddFileS3BigData(dataset, s3BigDataUpload.getFileName(), s3BigDataUpload.getContentType(), optionalFileParams, storageId,
+                                s3BigDataUpload.getChecksumType(), s3BigDataUpload.getChecksum(),
+                                messageBody.getJSONArray("Records").getJSONObject(0).getJSONObject("s3").getJSONObject("object").getInt("size"));
+
+                    } catch (DataFileTagException e) {
+                        e.printStackTrace();
+                        return error(Response.Status.INTERNAL_SERVER_ERROR, " Error while processing request occured");
+                    }
                 }
             }
+            StringBuilder response = new StringBuilder("<PublishResponse xmlns=\"http://vishnus-sns-server/\">");
+            response.append("<PublishResult>" );
+            response.append("<MessageId>" + requestId + "</MessageId> ");
+            response.append("</PublishResult>");
+            response.append("<ResponseMetadata>");
+            response.append("<RequestId>" + requestId + "</RequestId>");
+            response.append("</ResponseMetadata> ");
+            response.append("\n" + "    </PublishResponse>\n");
+            response.toString();
+
+            return Response.ok(response.toString()).build();
         }
 
-        StringBuilder response = new StringBuilder("<PublishResponse xmlns=\"http://vishnus-sns-server/\">");
-        response.append("<PublishResult>" );
-        response.append("<MessageId>" + messageId + "</MessageId> ");
-        response.append("</PublishResult>");
-        response.append("<ResponseMetadata>");
-        response.append("<RequestId>" + requestId + "</RequestId>");
-        response.append("</ResponseMetadata> ");
-        response.append("\n" + "    </PublishResponse>\n");
-        response.toString();
-
-
-        return Response.ok(response.toString()).build();
+        return Response.status(Response.Status.BAD_REQUEST).build();
     }
 
     /**
