@@ -17,6 +17,11 @@ import javax.ejb.Stateless;
 public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
 
     private static final Logger logger = Logger.getLogger(DOIDataCiteServiceBean.class.getCanonicalName());
+    
+    private static final String PUBLIC = "public";
+    private static final String FINDABLE = "findable";
+    private static final String RESERVED = "reserved";
+    private static final String DRAFT = "draft";
 
     @EJB
     DOIDataCiteRegisterService doiDataCiteRegisterService;
@@ -168,7 +173,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
     public void deleteIdentifier(DvObject dvObject) throws Exception {
         logger.log(Level.FINE,"deleteIdentifier");
         String identifier = getIdentifier(dvObject);
-        HashMap<String, String> doiMetadata = new HashMap<>();
+        Map<String, String> doiMetadata = new HashMap<>();
         try {
             doiMetadata = doiDataCiteRegisterService.getMetadata(identifier);
         } catch (Exception e) {
@@ -178,8 +183,8 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         String idStatus = doiMetadata.get("_status");
         if ( idStatus != null ) {
             switch ( idStatus ) {
-                case "reserved":
-                case "draft":    
+                case RESERVED:
+                case DRAFT:    
                     logger.log(Level.INFO, "Delete status is reserved..");
                     try {
                         doiDataCiteRegisterService.deleteIdentifier(identifier);
@@ -188,13 +193,12 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
                     }
                     break;
                        
-                case "public":
-                case "findable":
+                case PUBLIC:
+                case FINDABLE:
                     //if public then it has been released set to unavailable and reset target to n2t url
-                    HashMap<String, String> metadata = addMetadataForDestroyedDataset(dvObject);
+                    Map<String, String> metadata = addDOIMetadataForDestroyedDataset(dvObject);
                     metadata.put("_status", "registered");
                     metadata.put("_target", getTargetUrl(dvObject));                   
-                    doiDataCiteRegisterService.modifyIdentifier(identifier, metadata, dvObject);
                     doiDataCiteRegisterService.deactivateIdentifier(identifier, metadata, dvObject);
                     break;
             }
@@ -224,7 +228,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         }
         String identifier = getIdentifier(dvObject);
         Map<String, String> metadata = getUpdateMetadata(dvObject);
-        metadata.put("_status", "public");
+        metadata.put("_status", PUBLIC);
         metadata.put("datacite.publicationyear", generateYear(dvObject));
         metadata.put("_target", getTargetUrl(dvObject));
         try {

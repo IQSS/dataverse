@@ -116,17 +116,13 @@ public class DOIDataCiteRegisterService {
         return retString;
     }
 
-    public String deactivateIdentifier(String identifier, HashMap<String, String> metadata, DvObject dvObject) {
+    public String deactivateIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) {
         String retString = "";
 
-        try {
-            DataCiteRESTfullClient client = getClient();
             String metadataString = getMetadataForDeactivateIdentifier(identifier, metadata, dvObject);
             retString = client.postMetadata(metadataString);
             retString = client.inactiveDataset(identifier.substring(identifier.indexOf(":") + 1));
-        } catch (IOException io) {
 
-        }
         return retString;
     }
     
@@ -147,7 +143,7 @@ public class DOIDataCiteRegisterService {
         if (dvObject.isInstanceofDataset()) {
             String description = dataset.getLatestVersion().getDescriptionPlainText();
             if (description.isEmpty() || description.equals(DatasetField.NA_VALUE)) {
-                description = ":unav";
+                description = AbstractGlobalIdServiceBean.UNAVAILABLE;
             }
             metadataTemplate.setDescription(description);
         }
@@ -156,7 +152,7 @@ public class DOIDataCiteRegisterService {
             //Note: File metadata is not escaped like dataset metadata is, so adding an xml escape here.
             //This could/should be removed if the datafile methods add escaping
             String fileDescription = StringEscapeUtils.escapeXml(df.getDescription());
-            metadataTemplate.setDescription(fileDescription == null ? ":unav" : fileDescription);
+            metadataTemplate.setDescription(fileDescription == null ? AbstractGlobalIdServiceBean.UNAVAILABLE : fileDescription);
             String datasetPid = df.getOwner().getGlobalId().asString();
             metadataTemplate.setDatasetIdentifier(datasetPid);
         } else {
@@ -172,13 +168,13 @@ public class DOIDataCiteRegisterService {
         }
         
         if (title.isEmpty() || title.equals(DatasetField.NA_VALUE)) {
-            title = ":unav";
+            title = AbstractGlobalIdServiceBean.UNAVAILABLE;
         }
         
         metadataTemplate.setTitle(title);
         String producerString = dataset.getLatestVersion().getRootDataverseNameforCitation();
         if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {
-            producerString = ":unav";
+            producerString = AbstractGlobalIdServiceBean.UNAVAILABLE;
         }
         metadataTemplate.setPublisher(producerString);
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
@@ -190,12 +186,11 @@ public class DOIDataCiteRegisterService {
 
     public static String getMetadataForDeactivateIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) {
 
-         System.out.print("Start of getMetadataForDeactivateIdentifier: ");
         DataCiteMetadataTemplate metadataTemplate = new DataCiteMetadataTemplate();
         metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
         metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));
 
-        metadataTemplate.setDescription(":unav");
+        metadataTemplate.setDescription(AbstractGlobalIdServiceBean.UNAVAILABLE);
 
         String title =metadata.get("datacite.title");
         
@@ -204,7 +199,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setAuthors(null);
         
         metadataTemplate.setTitle(title);
-        String producerString = ":unav";
+        String producerString = AbstractGlobalIdServiceBean.UNAVAILABLE;
 
         metadataTemplate.setPublisher(producerString);
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
@@ -472,7 +467,7 @@ class DataCiteMetadataTemplate {
             }
 
         } else {
-            creatorsElement.append("<creator><creatorName>:unav</creatorName></creator>");
+            creatorsElement.append("<creator><creatorName>").append(AbstractGlobalIdServiceBean.UNAVAILABLE).append("</creatorName></creator>");
         }
 
         xmlMetadata = xmlMetadata.replace("${creators}", creatorsElement.toString());
