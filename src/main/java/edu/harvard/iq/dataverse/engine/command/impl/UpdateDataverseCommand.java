@@ -6,14 +6,19 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Dataverse.DataverseType;
 import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevel;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.search.IndexResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 import javax.persistence.TypedQuery;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  * Update an existing dataverse.
@@ -79,19 +84,26 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
                 }
             }
             
-            ctxt.index().indexDataverse(result);
-            
-            //When these values are changed we need to reindex all children datasets
-            //This check is not recursive as all the values just report the immediate parent
-            //
-            //This runs async to not slow down editing --MAD 4.9.4
-            if(!oldDvType.equals(editedDv.getDataverseType()) 
-            || !oldDvName.equals(editedDv.getName())
-            || !oldDvAlias.equals(editedDv.getAlias())) {
-                List<Dataset> datasets = ctxt.datasets().findByOwnerId(editedDv.getId());
-                ctxt.index().asyncIndexDatasetList(datasets, true);
-            }
             
             return result;
 	}
+        
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        Dataverse result = (Dataverse) r;
+
+        List<Dataset> datasets = ctxt.datasets().findByOwnerId(result.getId());
+        try {
+            Future<String> indResponse = ctxt.index().indexDataverse(result);
+            ctxt.index().asyncIndexDatasetList(datasets, true);
+        } catch (IOException | SolrServerException e) {
+            String failureLogText = "Indexing failed for Updated Dataverse. You can kickoff a re-index of this datavese with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + result.getId().toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, result);
+            return false;
+        }
+        return true;
+    }
+
 }
+
