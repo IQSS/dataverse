@@ -22,7 +22,7 @@ public class ShibGroupProvider implements GroupProvider<ShibGroup> {
     }
 
     public static String getShibProviderAlias() {
-        return "shib";
+        return ShibGroup.GROUP_TYPE;
     }
 
     @Override
@@ -94,6 +94,16 @@ public class ShibGroupProvider implements GroupProvider<ShibGroup> {
     public boolean delete(ShibGroup doomed) throws Exception {
         boolean response = shibGroupService.delete(doomed);
         return response;
+    }
+
+    @Override
+    public Class<ShibGroup> providerFor() {
+        return ShibGroup.class;
+    }
+
+    @Override
+    public boolean contains(DataverseRequest aRequest, ShibGroup group) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

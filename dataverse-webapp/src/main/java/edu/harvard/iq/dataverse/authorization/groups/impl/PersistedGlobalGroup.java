@@ -11,6 +11,8 @@ import javax.persistence.Index;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.io.Serializable;
 
 /**
@@ -39,6 +41,16 @@ public abstract class PersistedGlobalGroup implements Group, Serializable {
     private String displayName;
     private String description;
 
+    @Transient
+    private String groupProviderAlias;
+    
+    public PersistedGlobalGroup() {
+    }
+    
+    public PersistedGlobalGroup(String groupProviderAlias) {
+        this.groupProviderAlias = groupProviderAlias;
+    }
+    
     public void setPersistedGroupAlias(String alias) {
         this.persistedGroupAlias = alias;
     }
@@ -57,7 +69,7 @@ public abstract class PersistedGlobalGroup implements Group, Serializable {
 
     @Override
     public String getAlias() {
-        return getGroupProvider().getGroupProviderAlias() + Group.PATH_SEPARATOR + persistedGroupAlias;
+        return groupProviderAlias + Group.PATH_SEPARATOR + persistedGroupAlias;
     }
 
     public void setDisplayName(String name) {
@@ -87,7 +99,6 @@ public abstract class PersistedGlobalGroup implements Group, Serializable {
     public String getIdentifier() {
         return Group.IDENTIFIER_PREFIX + getAlias();
     }
-
 
     @Override
     public String toString() {

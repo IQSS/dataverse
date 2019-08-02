@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.groups;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AllUsers;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
@@ -10,6 +11,7 @@ import edu.harvard.iq.dataverse.mocks.MockRoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -19,6 +21,8 @@ import static edu.harvard.iq.dataverse.util.CollectionLiterals.listOf;
 import static edu.harvard.iq.dataverse.util.CollectionLiterals.setOf;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author michael
@@ -32,14 +36,14 @@ public class GroupServiceBeanTest {
     public void testFlattenGroupsCollection() throws GroupException {
         // Setup
         MockRoleAssigneeServiceBean roleAssigneeSvc = new MockRoleAssigneeServiceBean();
-        ExplicitGroupProvider prv = new ExplicitGroupProvider(null, roleAssigneeSvc);
-        ExplicitGroup gA = new ExplicitGroup(prv);
+        ExplicitGroupProvider prv = new ExplicitGroupProvider(null, roleAssigneeSvc, new ArrayList<>());
+        ExplicitGroup gA = new ExplicitGroup();
         gA.setDisplayName("A");
-        ExplicitGroup gAa = new ExplicitGroup(prv);
+        ExplicitGroup gAa = new ExplicitGroup();
         gAa.setDisplayName("Aa");
-        ExplicitGroup gAb = new ExplicitGroup(prv);
+        ExplicitGroup gAb = new ExplicitGroup();
         gAb.setDisplayName("Ab");
-        ExplicitGroup gAstar = new ExplicitGroup(prv);
+        ExplicitGroup gAstar = new ExplicitGroup();
         gAstar.setDisplayName("A*");
         Dataverse dv = MocksFactory.makeDataverse();
         Stream.of(gA, gAa, gAb, gAstar).forEach(g -> {
@@ -75,17 +79,17 @@ public class GroupServiceBeanTest {
     @Test
     public void testCollectAncestors() throws GroupException {
         // Setup
-        MockRoleAssigneeServiceBean roleAssigneeSvc = new MockRoleAssigneeServiceBean();
-        MockExplicitGroupService explicitGroupSvc = new MockExplicitGroupService();
-        ExplicitGroupProvider prv = new ExplicitGroupProvider(null, roleAssigneeSvc);
+        RoleAssigneeServiceBean roleAssigneeSvc = mock(RoleAssigneeServiceBean.class);
+        
+        MockExplicitGroupService explicitGroupSvc = new MockExplicitGroupService(roleAssigneeSvc);
 
-        ExplicitGroup gA = new ExplicitGroup(prv);
+        ExplicitGroup gA = new ExplicitGroup();
         gA.setDisplayName("A");
-        ExplicitGroup gAa = new ExplicitGroup(prv);
+        ExplicitGroup gAa = new ExplicitGroup();
         gAa.setDisplayName("Aa");
-        ExplicitGroup gAb = new ExplicitGroup(prv);
+        ExplicitGroup gAb = new ExplicitGroup();
         gAb.setDisplayName("Ab");
-        ExplicitGroup gAstar = new ExplicitGroup(prv);
+        ExplicitGroup gAstar = new ExplicitGroup();
         gAstar.setDisplayName("A*");
         Dataverse dv = MocksFactory.makeDataverse();
         Stream.of(gA, gAa, gAb, gAstar).forEach(g -> {
@@ -93,9 +97,14 @@ public class GroupServiceBeanTest {
             g.setOwner(dv);
             g.setGroupAliasInOwner(g.getDisplayName());
             g.updateAlias();
-            roleAssigneeSvc.add(g);
             explicitGroupSvc.registerGroup(g);
         });
+        
+        when(roleAssigneeSvc.getRoleAssignee(gA.getIdentifier())).thenReturn(gA);
+        when(roleAssigneeSvc.getRoleAssignee(gAa.getIdentifier())).thenReturn(gAa);
+        when(roleAssigneeSvc.getRoleAssignee(gAb.getIdentifier())).thenReturn(gAb);
+        when(roleAssigneeSvc.getRoleAssignee(gAstar.getIdentifier())).thenReturn(gAstar);
+        when(roleAssigneeSvc.getRoleAssignee(AuthenticatedUsers.get().getIdentifier())).thenReturn(AuthenticatedUsers.get());
 
         // create some containment hierarchy.
         gA.add(gAa);
@@ -108,6 +117,7 @@ public class GroupServiceBeanTest {
         GroupServiceBean sut = new GroupServiceBean();
         sut.roleAssigneeSvc = roleAssigneeSvc;
         sut.explicitGroupService = explicitGroupSvc;
+        sut.setup();
 
         assertEquals(setOf(gA), sut.collectAncestors(setOf(gA)));
         assertEquals(setOf(gA, gAb), sut.collectAncestors(setOf(gAb)));

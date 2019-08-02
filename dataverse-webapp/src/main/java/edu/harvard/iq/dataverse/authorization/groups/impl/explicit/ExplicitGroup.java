@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupException;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.Column;
@@ -27,7 +26,6 @@ import javax.persistence.NamedQuery;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.validation.constraints.Pattern;
 import java.util.HashSet;
 import java.util.Objects;
@@ -74,6 +72,8 @@ import java.util.TreeSet;
         @Index(columnList = "groupaliasinowner")})
 public class ExplicitGroup implements Group, java.io.Serializable {
 
+    public final static String GROUP_TYPE = "explicit";
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
@@ -128,11 +128,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     @Column(unique = true)
     private String groupAlias;
 
-    @Transient
-    private ExplicitGroupProvider provider;
-
-    public ExplicitGroup(ExplicitGroupProvider prv) {
-        provider = prv;
+    public ExplicitGroup() {
         containedAuthenticatedUsers = new HashSet<>();
         containedExplicitGroups = new HashSet<>();
         containedRoleAssignees = new TreeSet<>();
@@ -143,18 +139,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     }
 
     public Set<ExplicitGroup> getContainedExplicitGroups() {
-        if (getGroupProvider() != null) {
-            for (ExplicitGroup g : containedExplicitGroups) {
-                g.setProvider(getGroupProvider());
-            }
-        }
         return containedExplicitGroups;
-    }
-
-    /**
-     * Constructor for JPA.
-     */
-    protected ExplicitGroup() {
     }
 
     public void add(User u) {
@@ -247,27 +232,6 @@ public class ExplicitGroup implements Group, java.io.Serializable {
         }
     }
 
-    /**
-     * Returns a set of all direct members of the group, including
-     * logical role assignees.
-     *
-     * @return members of the group.
-     */
-    public Set<RoleAssignee> getDirectMembers() {
-        Set<RoleAssignee> res = new HashSet<>();
-
-        res.addAll(getContainedExplicitGroups());
-        res.addAll(containedAuthenticatedUsers);
-        for (String idtf : containedRoleAssignees) {
-            RoleAssignee ra = provider.findRoleAssignee(idtf);
-            if (ra != null) {
-                res.add(ra);
-            }
-        }
-
-        return res;
-    }
-
     @Override
     public String getDescription() {
         return description;
@@ -275,11 +239,6 @@ public class ExplicitGroup implements Group, java.io.Serializable {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    @Override
-    public boolean contains(DataverseRequest req) {
-        return containsDirectly(req) || containsIndirectly(req);
     }
 
     /**
@@ -322,52 +281,6 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     }
 
     /**
-     * @param req
-     * @return {@code true} iff the request is contained in the group or in an included non-explicit group.
-     */
-    protected boolean containsDirectly(DataverseRequest req) {
-        User ra = req.getUser();
-        if (ra instanceof AuthenticatedUser) {
-            AuthenticatedUser au = (AuthenticatedUser) ra;
-            if (containedAuthenticatedUsers.contains(au)) {
-                return true;
-            }
-        }
-
-        if (containedRoleAssignees.contains(ra.getIdentifier())) {
-            return true;
-        }
-
-        for (String craIdtf : containedRoleAssignees) {
-            // Need to retrieve the actual role assingee, and let it's logic decide.
-            RoleAssignee cra = provider.findRoleAssignee(craIdtf);
-            if (cra != null) {
-                if (cra instanceof Group) {
-                    Group cgrp = (Group) cra;
-                    if (cgrp.contains(req)) {
-                        return true;
-                    }
-                } // if cra is a user, we would have returned after the .contains() test.
-            }
-        }
-        // If we get here, the request is not in this group.
-        return false;
-    }
-
-    /**
-     * @param req
-     * @return {@code true} iff the request if contained in an explicit group that's a member of this group.
-     */
-    private boolean containsIndirectly(DataverseRequest req) {
-        for (ExplicitGroup ceg : containedExplicitGroups) {
-            if (ceg.contains(req)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Updates the alias of the group. Call this after setting the owner or the
      * groupAliasInOwner fields. JPA-related activities call this automatically.
      */
@@ -393,17 +306,8 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     }
 
     @Override
-    public ExplicitGroupProvider getGroupProvider() {
-        return provider;
-    }
-
-    void setProvider(ExplicitGroupProvider c) {
-        provider = c;
-    }
-
-    @Override
     public String getIdentifier() {
-        return Group.IDENTIFIER_PREFIX + provider.getGroupProviderAlias()
+        return Group.IDENTIFIER_PREFIX + GROUP_TYPE
                 + Group.PATH_SEPARATOR + getAlias();
     }
 

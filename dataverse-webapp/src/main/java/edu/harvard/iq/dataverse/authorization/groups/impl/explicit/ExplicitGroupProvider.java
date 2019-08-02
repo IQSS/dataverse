@@ -3,11 +3,17 @@ package edu.harvard.iq.dataverse.authorization.groups.impl.explicit;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -16,21 +22,25 @@ import java.util.logging.Logger;
  *
  * @author michael
  */
-public class ExplicitGroupProvider implements GroupProvider {
+public class ExplicitGroupProvider implements GroupProvider<ExplicitGroup> {
 
     private static final Logger logger = Logger.getLogger(ExplicitGroupProvider.class.getName());
 
     private final ExplicitGroupServiceBean explicitGroupSvc;
     private final RoleAssigneeServiceBean roleAssigneeSvc;
+    private final Map<Class<? extends Group>, GroupProvider<? extends Group>> otherGroupProviders; 
 
-    public ExplicitGroupProvider(ExplicitGroupServiceBean anExplicitGroupSvc, RoleAssigneeServiceBean aRoleAssigneeSvc) {
-        explicitGroupSvc = anExplicitGroupSvc;
-        roleAssigneeSvc = aRoleAssigneeSvc;
+    public ExplicitGroupProvider(ExplicitGroupServiceBean anExplicitGroupSvc, RoleAssigneeServiceBean aRoleAssigneeSvc,
+            List<GroupProvider<?>> otherGroupProviders) {
+        this.explicitGroupSvc = anExplicitGroupSvc;
+        this.roleAssigneeSvc = aRoleAssigneeSvc;
+        this.otherGroupProviders = new HashMap<>();
+        otherGroupProviders.forEach(provider -> this.otherGroupProviders.put(provider.providerFor(), provider));
     }
 
     @Override
     public String getGroupProviderAlias() {
-        return "explicit";
+        return ExplicitGroup.GROUP_TYPE;
     }
 
     @Override
@@ -50,27 +60,27 @@ public class ExplicitGroupProvider implements GroupProvider {
      */
     @Override
     public Set<ExplicitGroup> groupsFor(DataverseRequest req, DvObject o) {
-        return updateProvider(explicitGroupSvc.findGroups(req.getUser(), o));
+        return explicitGroupSvc.findGroups(req.getUser(), o);
     }
 
     @Override
     public Set<ExplicitGroup> groupsFor(RoleAssignee ra, DvObject o) {
-        return updateProvider(explicitGroupSvc.findGroups(ra, o));
+        return explicitGroupSvc.findGroups(ra, o);
     }
 
     @Override
     public Set<ExplicitGroup> groupsFor(RoleAssignee ra) {
-        return updateProvider(explicitGroupSvc.findGroups(ra));
+        return explicitGroupSvc.findGroups(ra);
     }
 
     @Override
     public Set<ExplicitGroup> groupsFor(DataverseRequest req) {
-        return updateProvider(explicitGroupSvc.findGroups(req.getUser()));
+        return explicitGroupSvc.findGroups(req.getUser());
     }
 
     @Override
     public ExplicitGroup get(String groupAlias) {
-        return updateProvider(explicitGroupSvc.findByAlias(groupAlias));
+        return explicitGroupSvc.findByAlias(groupAlias);
     }
 
     /**
@@ -84,7 +94,7 @@ public class ExplicitGroupProvider implements GroupProvider {
     }
 
     public ExplicitGroup makeGroup() {
-        return new ExplicitGroup(this);
+        return new ExplicitGroup();
     }
 
     /**
@@ -99,33 +109,79 @@ public class ExplicitGroupProvider implements GroupProvider {
     RoleAssignee findRoleAssignee(String roleAssigneeIdtf) {
         return roleAssigneeSvc.getRoleAssignee(roleAssigneeIdtf);
     }
-
+    
+    
+    @Override
+    public boolean contains(DataverseRequest req, ExplicitGroup explicitGroup) {
+        return containsDirectly(req, explicitGroup) || containsIndirectly(req, explicitGroup);
+    }
+    
+    
     /**
-     * Sets the provider of the passed explicit group to {@code this}.
-     *
-     * @param eg the collection
-     * @return the passed group, updated.
+     * @param req
+     * @return {@code true} iff the request is contained in the group or in an included non-explicit group.
      */
-    ExplicitGroup updateProvider(ExplicitGroup eg) {
-        if (eg == null) {
-            return null;
+    private boolean containsDirectly(DataverseRequest req, ExplicitGroup explicitGroup) {
+        User ra = req.getUser();
+        if (ra instanceof AuthenticatedUser) {
+            AuthenticatedUser au = (AuthenticatedUser) ra;
+            if (explicitGroup.getContainedAuthenticatedUsers().contains(au)) {
+                return true;
+            }
         }
-        eg.setProvider(this);
-        return eg;
+
+        if (explicitGroup.getContainedRoleAssignees().contains(ra.getIdentifier())) {
+            return true;
+        }
+
+        for (String craIdtf : explicitGroup.getContainedRoleAssignees()) {
+            // Need to retrieve the actual role assingee, and let it's logic decide.
+            RoleAssignee cra = findRoleAssignee(craIdtf);
+            if (cra != null) {
+                if (cra instanceof Group) {
+                    Group cgrp = (Group) cra;
+                    if (otherGroupProviderContains(req, cgrp, cgrp.getClass())) {
+                        return true;
+                    }
+                } // if cra is a user, we would have returned after the .contains() test.
+            }
+        }
+        // If we get here, the request is not in this group.
+        return false;
     }
 
     /**
-     * Sets the provider of the explicit groups to {@code this}.
-     *
-     * @param <T> Collection's type
-     * @param egs the collection
-     * @return the collection, with all the groups updated.
+     * @param req
+     * @return {@code true} iff the request if contained in an explicit group that's a member of this group.
      */
-    <T extends Collection<ExplicitGroup>> T updateProvider(T egs) {
-        for (ExplicitGroup eg : egs) {
-            updateProvider(eg);
+    private boolean containsIndirectly(DataverseRequest req, ExplicitGroup explicitGroup) {
+        for (ExplicitGroup ceg : explicitGroup.getContainedExplicitGroups()) {
+            if (this.contains(req, ceg)) {
+                return true;
+            }
         }
-        return egs;
+        return false;
+    }
+    
+    /**
+     * Returns true if {@link DataverseRequest} is part of the given {@link Group}
+     * according to other group providers
+     * <p>
+     * otherGroupProviders is map with values: <code>{<group_class>: <provider_for_group_with_that_class>}</code>
+     * so unchecked casting should be ok
+     */
+    @SuppressWarnings("unchecked")
+    private <T extends Group> boolean otherGroupProviderContains(DataverseRequest req, Group group, Class<T> groupClass) {
+        GroupProvider<T> providerForGroup = (GroupProvider<T>) otherGroupProviders.get(groupClass);
+        if(providerForGroup == null) {
+            throw new RuntimeException("No group provider for group type: " + groupClass.getName());
+        }
+        return providerForGroup.contains(req, (T)group);
+    }
+
+    @Override
+    public Class<ExplicitGroup> providerFor() {
+        return ExplicitGroup.class;
     }
 }
 

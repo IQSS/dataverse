@@ -29,26 +29,16 @@ import java.util.Set;
 @Entity
 public class IpGroup extends PersistedGlobalGroup {
 
+    public final static String GROUP_TYPE = "ip";
+    
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<IPv6Range> ipv6Ranges;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<IPv4Range> ipv4Ranges;
 
-    @Transient
-    private IpGroupProvider provider;
-
     public IpGroup() {
-    }
-
-    public IpGroup(IpGroupProvider provider) {
-        this.provider = provider;
-    }
-
-    @Override
-    public boolean contains(DataverseRequest rq) {
-        IpAddress addr = rq.getSourceAddress();
-        return (addr != null) && containsAddress(addr);
+        super(GROUP_TYPE);
     }
 
     public boolean containsAddress(IpAddress addr) {
@@ -86,15 +76,6 @@ public class IpGroup extends PersistedGlobalGroup {
     @Override
     public boolean isEditable() {
         return true;
-    }
-
-    public void setGroupProvider(IpGroupProvider prv) {
-        provider = prv;
-    }
-
-    @Override
-    public GroupProvider getGroupProvider() {
-        return provider;
     }
 
     /**
@@ -168,20 +149,17 @@ public class IpGroup extends PersistedGlobalGroup {
         if (!Objects.equals(getDisplayName(), other.getDisplayName())) {
             return false;
         }
-        if (!Objects.equals(getPersistedGroupAlias(), other.getPersistedGroupAlias())) {
-            return false;
-        }
         return getRanges().equals(other.getRanges());
     }
 
     @Override
     public int hashCode() {
-        return getPersistedGroupAlias().hashCode();
+        return getId().hashCode();
     }
 
     @Override
     public String toString() {
-        return "[IpGroup alias:" + getPersistedGroupAlias() + " id:" + getId() + " ranges:" + getIpv4Ranges() + "," + getIpv6Ranges() + "]";
+        return "[IpGroup id:" + getId() + " ranges:" + getIpv4Ranges() + "," + getIpv6Ranges() + "]";
     }
 
     private void updateRangeOwnership(Collection<? extends IpAddressRange> ranges) {

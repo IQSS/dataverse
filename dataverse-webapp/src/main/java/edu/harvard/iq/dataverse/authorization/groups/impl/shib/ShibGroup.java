@@ -19,6 +19,8 @@ import java.io.Serializable;
 @Entity
 public class ShibGroup implements Group, Serializable {
 
+    public final static String GROUP_TYPE = "shib";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -105,11 +107,6 @@ public class ShibGroup implements Group, Serializable {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
-    public GroupProvider<ShibGroup> getGroupProvider() {
-        return shibGroupProvider;
-    }
-
     /**
      * i.e. &shib/1
      */
@@ -129,11 +126,6 @@ public class ShibGroup implements Group, Serializable {
         String email = null;
         RoleAssigneeDisplayInfo roleAssigneeDisplayInfo = new RoleAssigneeDisplayInfo(title, email);
         return roleAssigneeDisplayInfo;
-    }
-
-    @Override
-    public boolean contains(DataverseRequest aRequest) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

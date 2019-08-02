@@ -18,6 +18,12 @@ public interface GroupProvider<T extends Group> {
 
 
     /**
+     * Returns class type of group that can be provided with
+     * this provider
+     */
+    Class<T> providerFor();
+    
+    /**
      * The alias of this provider. Has to be unique in the system.
      *
      * @return The alias of the factory.
@@ -57,4 +63,15 @@ public interface GroupProvider<T extends Group> {
     T get(String groupAlias);
 
     Set<T> findGlobalGroups();
+    
+    /**
+     * Tests to see whether {@code aRequest} is a part of {@code this} group. Inclusion
+     * in groups is not just a matter of user, as it can be specified also by, e.g. IP addresses.
+     * The containment may not always be present in the DB - for example,
+     * some groups may determine membership based on request properties, such as IP address.
+     *
+     * @param aRequest The request whose inclusion we test
+     * @return {@code true} iff {@code anAssignee} is in this group; {@code false} otherwise.
+     */
+     boolean contains(DataverseRequest aRequest, T group);
 }

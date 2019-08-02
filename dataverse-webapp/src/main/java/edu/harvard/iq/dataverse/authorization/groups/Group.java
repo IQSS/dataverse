@@ -43,24 +43,6 @@ public interface Group extends RoleAssignee {
      */
     String getDescription();
 
-    /**
-     * Tests to see whether {@code aRequest} is a part of {@code this} group. Inclusion
-     * in groups is not just a matter of user, as it can be specified also by, e.g. IP addresses.
-     * The containment may not always be present in the DB - for example,
-     * some groups may determine membership based on request properties, such as IP address.
-     *
-     * @param aRequest The request whose inclusion we test
-     * @return {@code true} iff {@code anAssignee} is in this group; {@code false} otherwise.
-     */
-    boolean contains(DataverseRequest aRequest);
-
     boolean isEditable();
-
-    /**
-     * References the object that created the group, and may also edit it.
-     *
-     * @return the creator of this group.
-     */
-    GroupProvider getGroupProvider();
 
 }

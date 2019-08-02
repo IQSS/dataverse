@@ -49,7 +49,7 @@ public class CreateExplicitGroupCommand extends AbstractCommand<ExplicitGroup> {
         eg.setOwner(dv);
         eg.updateAlias();
 
-        ExplicitGroup existing = eg.getGroupProvider().get(eg.getAlias());
+        ExplicitGroup existing = ctxt.explicitGroups().getProvider().get(eg.getAlias());
         if (existing != null) {
             throw new GroupAliasExistsException(eg.getGroupAliasInOwner());
         }

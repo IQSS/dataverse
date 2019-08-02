@@ -40,15 +40,12 @@ public class IpGroupsServiceBean {
      * Stores (inserts/updates) the passed IP group.
      *
      * @param grp The group to store.
-     * @return Managed version of the group. The provider might be un-set.
+     * @return Managed version of the group.
      */
     public IpGroup store(IpGroup grp) {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.GlobalGroups, "ipCreate");
-        if (grp.getGroupProvider() != null) {
-            alr.setInfo(grp.getIdentifier());
-        } else {
-            alr.setInfo(grp.getDisplayName());
-        }
+        
+        alr.setInfo(grp.getIdentifier());
         alr.setInfo(alr.getInfo() + "// " + grp.getRanges());
 
         if (grp.getId() == null) {

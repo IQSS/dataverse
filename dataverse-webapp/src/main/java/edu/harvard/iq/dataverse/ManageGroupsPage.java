@@ -187,7 +187,7 @@ public class ManageGroupsPage implements java.io.Serializable {
      */
     public List<RoleAssignee> getExplicitGroupMembers(ExplicitGroup eg) {
         return (eg != null) ?
-                new ArrayList<>(eg.getDirectMembers()) : null;
+                new ArrayList<>(explicitGroupService.getDirectMembers(eg)) : null;
     }
 
     /**
@@ -210,7 +210,7 @@ public class ManageGroupsPage implements java.io.Serializable {
     public String getMembershipString(ExplicitGroup eg) {
         long userCount = 0;
         long groupCount = 0;
-        for (RoleAssignee ra : eg.getDirectMembers()) {
+        for (RoleAssignee ra : explicitGroupService.getDirectMembers(eg)) {
             if (ra instanceof User) {
                 userCount++;
             } else {

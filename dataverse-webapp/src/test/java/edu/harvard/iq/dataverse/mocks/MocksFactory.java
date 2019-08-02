@@ -273,9 +273,9 @@ public class MocksFactory {
         return retVal;
     }
 
-    public static ExplicitGroup makeExplicitGroup(String name, ExplicitGroupProvider prv) {
+    public static ExplicitGroup makeExplicitGroup(String name) {
         long id = nextId();
-        ExplicitGroup eg = new ExplicitGroup(prv);
+        ExplicitGroup eg = new ExplicitGroup();
 
         eg.setId(id);
         eg.setDisplayName(name == null ? "explicitGroup-" + id : name);
@@ -302,8 +302,8 @@ public class MocksFactory {
         return fileMetadata;
     }
 
-    public static ExplicitGroup makeExplicitGroup(ExplicitGroupProvider prv) {
-        return makeExplicitGroup(null, prv);
+    public static ExplicitGroup makeExplicitGroup() {
+        return makeExplicitGroup(null);
     }
 
 }

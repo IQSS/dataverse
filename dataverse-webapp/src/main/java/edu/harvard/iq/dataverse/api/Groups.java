@@ -59,7 +59,6 @@ public class Groups extends AbstractApiBean {
     public Response postIpGroup(JsonObject dto) {
         try {
             IpGroup grp = new JsonParser().parseIpGroup(dto);
-            grp.setGroupProvider(ipGroupPrv);
             grp.setPersistedGroupAlias(
                     ipGroupPrv.findAvailableName(
                             grp.getPersistedGroupAlias() == null ? "ipGroup" : grp.getPersistedGroupAlias()));
@@ -93,7 +92,6 @@ public class Groups extends AbstractApiBean {
                 return badRequest("Group name can contain only letters, digits, and the chars '-' and '_'");
             }
             IpGroup grp = new JsonParser().parseIpGroup(dto);
-            grp.setGroupProvider(ipGroupPrv);
             grp.setPersistedGroupAlias(groupName);
             grp = ipGroupPrv.store(grp);
             return created("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp));

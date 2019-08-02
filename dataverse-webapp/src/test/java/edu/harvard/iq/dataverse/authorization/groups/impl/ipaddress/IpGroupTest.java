@@ -15,6 +15,8 @@ import static org.junit.Assert.assertTrue;
  */
 public class IpGroupTest {
 
+    private IpGroupProvider ipGroupProvider = new IpGroupProvider(null);
+    
     public IpGroupTest() {
     }
 
@@ -35,18 +37,18 @@ public class IpGroupTest {
         sut.add(allIPv4);
         sut.add(allIPv6);
 
-        assertTrue(sut.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.2.3.4"))));
-        assertTrue(sut.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("11::fff"))));
+        assertTrue(ipGroupProvider.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.2.3.4")), sut));
+        assertTrue(ipGroupProvider.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("11::fff")), sut));
 
         sut.remove(allIPv4);
-        assertFalse(sut.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.2.3.4"))));
+        assertFalse(ipGroupProvider.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.2.3.4")), sut));
 
         sut.remove(allIPv6);
-        assertFalse(sut.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("11::fff"))));
+        assertFalse(ipGroupProvider.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("11::fff")), sut));
 
         sut.add(IpAddressRange.make(IpAddress.valueOf("0.0.0.0"), IpAddress.valueOf("168.0.0.0")));
-        assertFalse(sut.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("169.0.0.0"))));
-        assertTrue(sut.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("167.0.0.0"))));
+        assertFalse(ipGroupProvider.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("169.0.0.0")), sut));
+        assertTrue(ipGroupProvider.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("167.0.0.0")), sut));
 
     }
 
