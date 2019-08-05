@@ -6,8 +6,8 @@
 
 package edu.harvard.iq.dataverse.dataaccess;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -21,9 +21,9 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.datavariable.VariableCategory;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.rserve.RJobRequest;
 import edu.harvard.iq.dataverse.rserve.RemoteDataFrameService;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -230,7 +230,7 @@ public class DataConverter {
                 }
 
                 try {
-                    StorageIO<DataFile> storageIO = file.getStorageIO(new DataAccess());
+                    StorageIO<DataFile> storageIO = new DataAccess().getStorageIO(file);
                     long size = storageIO.getAuxObjectSize("orig");
                     File origFile = downloadFromByteChannel((ReadableByteChannel) storageIO.openAuxChannel("orig"), size);
                     resultInfo = dfs.directConvert(origFile, origFormat, pid);

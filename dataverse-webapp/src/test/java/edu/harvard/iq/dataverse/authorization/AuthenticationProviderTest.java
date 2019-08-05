@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse.authorization;
 
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

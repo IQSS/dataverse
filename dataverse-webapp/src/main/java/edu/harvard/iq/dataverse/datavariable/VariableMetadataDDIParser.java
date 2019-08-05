@@ -1,7 +1,12 @@
 package edu.harvard.iq.dataverse.datavariable;
 
 
-import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.CategoryMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VarGroup;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableCategory;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableMetadata;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;

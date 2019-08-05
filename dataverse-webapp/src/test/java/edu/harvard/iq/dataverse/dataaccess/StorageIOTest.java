@@ -1,14 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.dataaccess;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -34,7 +29,7 @@ public class StorageIOTest {
     @Test
     public void testGetChannel() throws IOException {
         assertEquals(null, instance.getChannel());
-        Channel c = new RandomAccessFile("src/main/resources/Bundle_en.properties", "r").getChannel();
+        Channel c = new RandomAccessFile(getClass().getResource("/Bundle_en.properties").getPath(), "r").getChannel();
         instance.setChannel(c);
         assertEquals(c, instance.getChannel());
     }
@@ -69,13 +64,13 @@ public class StorageIOTest {
             instance.getDataFile();
             fail("This should have thrown");
         } catch (ClassCastException ex) {
-            assertEquals(ex.getMessage(), "edu.harvard.iq.dataverse.Dataset cannot be cast to edu.harvard.iq.dataverse.DataFile");
+            assertEquals("edu.harvard.iq.dataverse.persistence.dataset.Dataset cannot be cast to edu.harvard.iq.dataverse.persistence.datafile.DataFile", ex.getMessage());
         }
         try {
             instance.getDataverse();
             fail("This should have thrown");
         } catch (ClassCastException ex) {
-            assertEquals(ex.getMessage(), "edu.harvard.iq.dataverse.Dataset cannot be cast to edu.harvard.iq.dataverse.Dataverse");
+            assertEquals("edu.harvard.iq.dataverse.persistence.dataset.Dataset cannot be cast to edu.harvard.iq.dataverse.persistence.dataverse.Dataverse", ex.getMessage());
         }
         assertEquals(new DataFile(), new FileAccessIO<>(new DataFile(), null).getDataFile());
         assertEquals(new Dataverse(), new FileAccessIO<>(new Dataverse(), null).getDataverse());

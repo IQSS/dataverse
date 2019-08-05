@@ -11,11 +11,11 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
-    <!--@elvariable id="fileMetadata" type="edu.harvard.iq.dataverse.FileMetadata"-->
+    <!--@elvariable id="fileMetadata" type="edu.harvard.iq.dataverse.persistence.datafile.FileMetadata"-->
 
     <o:importFunctions type="java.lang.Math" />
-    <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.RestrictType" var="restrictTypeEnum"/>
-    <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
+    <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType" var="restrictTypeEnum"/>
+    <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
     <p:remoteCommand name="refreshPaginator" action="#{DatasetPage.refreshPaginator()}" process="@this" update="@form" />
     <!-- Files Table -->
     <p:dataTable id="filesTable"

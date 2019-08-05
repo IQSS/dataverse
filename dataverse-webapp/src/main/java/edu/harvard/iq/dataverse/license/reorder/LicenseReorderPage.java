@@ -3,10 +3,10 @@ package edu.harvard.iq.dataverse.license.reorder;
 
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
-import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseDAO;
 import edu.harvard.iq.dataverse.license.dto.LicenseMapper;
 import edu.harvard.iq.dataverse.license.dto.LicenseSimpleDto;
+import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import org.apache.commons.lang.StringUtils;
 
 import javax.faces.view.ViewScoped;

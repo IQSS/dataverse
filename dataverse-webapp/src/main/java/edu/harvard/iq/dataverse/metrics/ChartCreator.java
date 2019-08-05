@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.metrics;
 
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import org.primefaces.model.chart.Axis;
 import org.primefaces.model.chart.AxisType;
 import org.primefaces.model.chart.BarChartModel;

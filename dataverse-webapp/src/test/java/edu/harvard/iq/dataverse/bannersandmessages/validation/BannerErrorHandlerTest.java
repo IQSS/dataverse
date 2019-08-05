@@ -2,8 +2,8 @@ package edu.harvard.iq.dataverse.bannersandmessages.validation;
 
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.BannerLimits;
-import edu.harvard.iq.dataverse.bannersandmessages.banners.DataverseBanner;
-import edu.harvard.iq.dataverse.bannersandmessages.banners.DataverseLocalizedBanner;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseBanner;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseLocalizedBanner;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 
-import static edu.harvard.iq.dataverse.util.DateUtil.convertToDate;
+import static edu.harvard.iq.dataverse.common.DateUtil.convertToDate;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BannerErrorHandlerTest {

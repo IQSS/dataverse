@@ -5,6 +5,8 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
+
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;

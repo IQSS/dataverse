@@ -20,10 +20,10 @@
 
 package edu.harvard.iq.dataverse.dataaccess;
 
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.util.SystemConfig;
-
 import java.io.IOException;
+
+import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 
 /**
  * @author Leonid Andreev

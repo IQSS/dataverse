@@ -1,14 +1,14 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.MocksFactory;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.persistence.user.Permission;
 import org.junit.Test;
 
 import java.text.SimpleDateFormat;
@@ -18,9 +18,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataset;
-import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
-import static edu.harvard.iq.dataverse.mocks.MocksFactory.nextId;
+import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeDataset;
+import static edu.harvard.iq.dataverse.mocks.MockRequestFactory.makeRequest;
+import static edu.harvard.iq.dataverse.persistence.MocksFactory.nextId;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

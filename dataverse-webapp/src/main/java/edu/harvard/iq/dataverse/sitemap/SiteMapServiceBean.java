@@ -1,8 +1,7 @@
 package edu.harvard.iq.dataverse.sitemap;
 
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import javax.ejb.Asynchronous;

@@ -1,7 +1,8 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
-import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
+import edu.harvard.iq.dataverse.persistence.user.OAuth2TokenData;
 
 import java.util.List;
 

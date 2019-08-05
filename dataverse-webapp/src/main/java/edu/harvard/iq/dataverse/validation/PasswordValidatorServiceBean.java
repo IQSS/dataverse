@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.validation;
 
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.passay.CharacterCharacteristicsRule;
 import org.passay.CharacterRule;

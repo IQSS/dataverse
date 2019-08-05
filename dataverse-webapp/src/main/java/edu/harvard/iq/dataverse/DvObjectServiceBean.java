@@ -3,6 +3,10 @@ package edu.harvard.iq.dataverse;
 import org.apache.commons.lang.StringUtils;
 import org.ocpsoft.common.util.Strings;
 
+import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.DvObjectContainer;
+import edu.harvard.iq.dataverse.persistence.GlobalId;
+
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.persistence.EntityManager;

@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.persistence.user.UserNotification;
 import org.junit.Before;
 import org.junit.Test;
 

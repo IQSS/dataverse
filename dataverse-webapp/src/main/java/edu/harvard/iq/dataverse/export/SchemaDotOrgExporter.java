@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.export;
 
-import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import org.apache.commons.lang.StringUtils;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.core.MediaType;
 
@@ -78,7 +78,7 @@ public class SchemaDotOrgExporter implements Exporter {
 
     @Override
     public String exportDataset(DatasetVersion version) throws ExportException {
-        return version.getJsonLd(dataverseSiteUrlStatic, hideSchemaDotOrgDownloadUrls);
+        return JsonLdBuilder.buildJsonLd(version, dataverseSiteUrlStatic, hideSchemaDotOrgDownloadUrls);
     }
 
     @Override

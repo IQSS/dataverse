@@ -1,20 +1,20 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.FieldType;
-import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.WidgetWrapper;
+import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
+import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
+import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.search.dto.CheckboxSearchField;
 import edu.harvard.iq.dataverse.search.dto.NumberSearchField;
 import edu.harvard.iq.dataverse.search.dto.SearchBlock;
 import edu.harvard.iq.dataverse.search.dto.SearchField;
 import edu.harvard.iq.dataverse.search.dto.TextSearchField;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import io.vavr.Tuple;
 import org.apache.commons.lang.StringUtils;
 

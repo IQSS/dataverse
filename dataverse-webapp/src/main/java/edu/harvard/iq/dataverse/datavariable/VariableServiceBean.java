@@ -6,6 +6,9 @@
 
 package edu.harvard.iq.dataverse.datavariable;
 
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableMetadata;
+
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

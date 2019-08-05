@@ -1,15 +1,15 @@
 package edu.harvard.iq.dataverse.dataverse;
 
 import com.google.api.client.util.Lists;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.arquillian.DataverseArquillian;
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.ArquillianDeployment;
 import edu.harvard.iq.dataverse.arquillian.facesmock.FacesContextMocker;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.error.DataverseError;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.dataverse.DataverseContact;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import io.vavr.control.Either;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;

@@ -1,13 +1,15 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import org.primefaces.event.FileUploadEvent;
@@ -70,7 +72,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
         datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate, new DataAccess());
-        datasetThumbnail = dataset.getDatasetThumbnail();
+        datasetThumbnail = DatasetUtil.getThumbnail(dataset);
         if (datasetThumbnail != null) {
             DataFile dataFile = datasetThumbnail.getDataFile();
             if (dataFile != null) {

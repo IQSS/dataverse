@@ -26,7 +26,6 @@ public class ArquillianDeployment {
         JavaArchive javaArchive = ShrinkWrap.create(JavaArchive.class)
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addPackages(true, "edu.harvard.iq.dataverse")
-                .addPackages(true, "db.migration")
                 .addAsResource("test-persistence.xml", "META-INF/persistence.xml")
                 .addAsResource("Bundle_en.properties");
         logger.info(javaArchive.toString(true));

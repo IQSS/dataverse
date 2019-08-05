@@ -2,9 +2,9 @@ package edu.harvard.iq.dataverse.datacapturemodule;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import org.apache.http.HttpResponseFactory;
 import org.apache.http.HttpStatus;
 import org.apache.http.HttpVersion;
@@ -18,7 +18,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import java.io.UnsupportedEncodingException;
 
-import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
+import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeAuthenticatedUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

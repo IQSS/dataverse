@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.arquillian.arquillianexamples;
 
 import edu.harvard.iq.dataverse.arquillian.DataverseArquillian;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
 import org.junit.Test;

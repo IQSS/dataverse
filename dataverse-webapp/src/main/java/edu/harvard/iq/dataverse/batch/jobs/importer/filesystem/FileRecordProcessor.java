@@ -19,11 +19,11 @@
 
 package edu.harvard.iq.dataverse.batch.jobs.importer.filesystem;
 
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 
 import javax.annotation.PostConstruct;
 import javax.batch.api.chunk.ItemProcessor;

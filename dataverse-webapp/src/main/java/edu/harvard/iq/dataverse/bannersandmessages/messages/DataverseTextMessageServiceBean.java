@@ -1,10 +1,11 @@
 package edu.harvard.iq.dataverse.bannersandmessages.messages;
 
 import com.google.common.collect.Lists;
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseMessagesMapper;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseTextMessageDto;
 import edu.harvard.iq.dataverse.bannersandmessages.validation.DataverseTextMessageValidator;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseTextMessage;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;

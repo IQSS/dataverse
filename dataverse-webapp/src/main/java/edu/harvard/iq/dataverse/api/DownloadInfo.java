@@ -20,8 +20,8 @@
 package edu.harvard.iq.dataverse.api;
 
 
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,14 +1,16 @@
 package edu.harvard.iq.dataverse.authorization.groups;
 
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AllUsers;
-import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
-import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupProvider;
 import edu.harvard.iq.dataverse.mocks.MockExplicitGroupService;
 import edu.harvard.iq.dataverse.mocks.MockRoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import edu.harvard.iq.dataverse.persistence.MocksFactory;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.group.AllUsers;
+import edu.harvard.iq.dataverse.persistence.group.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.persistence.group.ExplicitGroup;
+import edu.harvard.iq.dataverse.persistence.group.Group;
+import edu.harvard.iq.dataverse.persistence.group.GroupException;
 import org.junit.Test;
 
 import java.util.ArrayList;

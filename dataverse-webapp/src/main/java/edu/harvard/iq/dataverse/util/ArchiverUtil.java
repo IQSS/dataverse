@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Constructor;

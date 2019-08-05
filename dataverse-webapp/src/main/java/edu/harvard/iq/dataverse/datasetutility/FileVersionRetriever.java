@@ -5,8 +5,8 @@
  */
 package edu.harvard.iq.dataverse.datasetutility;
 
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 
 import java.util.List;
 import java.util.logging.Logger;

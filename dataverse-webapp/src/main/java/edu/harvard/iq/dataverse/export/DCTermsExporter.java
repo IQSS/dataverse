@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.export;
 
-import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.export.dublincore.DublinCoreExportUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import javax.json.JsonObject;

@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.sitemap;
 
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DvObjectContainer;
+import edu.harvard.iq.dataverse.persistence.DvObjectContainer;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.xml.XmlValidator;
 import org.w3c.dom.Document;

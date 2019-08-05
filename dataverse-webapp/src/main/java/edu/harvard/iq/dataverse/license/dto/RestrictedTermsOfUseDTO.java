@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.license.dto;
 
-import java.util.Objects;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType;
 
-import edu.harvard.iq.dataverse.license.FileTermsOfUse.RestrictType;
+import java.util.Objects;
 
 public class RestrictedTermsOfUseDTO {
 

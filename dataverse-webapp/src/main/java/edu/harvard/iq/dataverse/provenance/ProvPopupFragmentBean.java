@@ -1,19 +1,19 @@
 package edu.harvard.iq.dataverse.provenance;
 
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EditDatafilesPage;
-import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.FilePage;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonCommand;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import org.apache.commons.io.IOUtils;
 import org.primefaces.event.FileUploadEvent;

@@ -7,9 +7,9 @@ package edu.harvard.iq.dataverse.util.json;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
+import edu.harvard.iq.dataverse.common.Util;
 import junit.framework.Assert;
 import org.junit.After;
 import org.junit.AfterClass;

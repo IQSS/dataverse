@@ -1,11 +1,12 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.shib;
 
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.ActionLogRecord;
+import edu.harvard.iq.dataverse.persistence.group.ShibGroup;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -62,7 +63,7 @@ public class ShibGroupServiceBean {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.GlobalGroups, "shibCreate");
         alr.setInfo(name + ": " + shibIdp + "/" + shibIdpAttribute);
 
-        ShibGroup institutionalGroup = new ShibGroup(name, shibIdpAttribute, shibIdp, groupService.getShibGroupProvider());
+        ShibGroup institutionalGroup = new ShibGroup(name, shibIdpAttribute, shibIdp);
         em.persist(institutionalGroup);
         em.flush();
         ShibGroup merged = em.merge(institutionalGroup);

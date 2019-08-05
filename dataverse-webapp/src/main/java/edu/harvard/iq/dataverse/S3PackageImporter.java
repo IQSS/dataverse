@@ -17,6 +17,11 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
+import edu.harvard.iq.dataverse.common.files.mime.PackageMimeType;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
@@ -128,7 +133,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
     }
 
     public DataFile createPackageDataFile(Dataset dataset, String folderName, long totalSize) throws IOException {
-        DataFile packageFile = new DataFile(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
+        DataFile packageFile = new DataFile(PackageMimeType.DATAVERSE_PACKAGE.getMimeValue());
         packageFile.setChecksumType(DataFile.ChecksumType.SHA1);
 
         //This is a brittle calculation, changes of the dcm post_upload script will blow this up

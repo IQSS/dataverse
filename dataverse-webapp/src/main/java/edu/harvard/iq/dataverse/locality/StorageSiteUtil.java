@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.locality;
 
+import edu.harvard.iq.dataverse.persistence.StorageSite;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import javax.json.JsonObject;

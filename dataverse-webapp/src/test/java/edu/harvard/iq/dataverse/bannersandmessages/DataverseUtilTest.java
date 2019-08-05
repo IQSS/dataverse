@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.bannersandmessages;
 
-import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

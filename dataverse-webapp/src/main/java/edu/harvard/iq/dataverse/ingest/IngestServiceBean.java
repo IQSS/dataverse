@@ -20,32 +20,17 @@
 
 package edu.harvard.iq.dataverse.ingest;
 
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.common.files.extension.FileExtension;
+import edu.harvard.iq.dataverse.common.files.mime.ApplicationMimeType;
+import edu.harvard.iq.dataverse.common.files.mime.TextMimeType;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
-import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
-import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
-import edu.harvard.iq.dataverse.files.extension.FileExtension;
-import edu.harvard.iq.dataverse.files.mime.ApplicationMimeType;
-import edu.harvard.iq.dataverse.files.mime.TextMimeType;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataIngest;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.impl.plugins.fits.FITSFileMetadataExtractor;
@@ -64,8 +49,24 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReade
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx.XLSXFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx.XLSXFileReaderSpi;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFileCategory;
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.SummaryStatistic;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableCategory;
+import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestRequest;
+import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldCompoundValue;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldValue;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
@@ -765,7 +766,7 @@ public class IngestServiceBean {
         StorageIO<DataFile> storageIO = null;
 
         try {
-            storageIO = dataFile.getStorageIO(new DataAccess());
+            storageIO = new DataAccess().getStorageIO(dataFile);
             storageIO.open();
 
             if (storageIO.isLocalFile()) {
@@ -949,7 +950,7 @@ public class IngestServiceBean {
                 try {
                     /* Start of save as backup */
 
-                    StorageIO<DataFile> dataAccess = dataFile.getStorageIO(new DataAccess());
+                    StorageIO<DataFile> dataAccess = new DataAccess().getStorageIO(dataFile);
                     dataAccess.open();
 
                     // and we want to save the original of the ingested file: 
@@ -996,7 +997,7 @@ public class IngestServiceBean {
 
     private BufferedInputStream openFile(DataFile dataFile) throws IOException {
         BufferedInputStream inputStream;
-        StorageIO<DataFile> storageIO = dataFile.getStorageIO(new DataAccess());
+        StorageIO<DataFile> storageIO = new DataAccess().getStorageIO(dataFile);
         storageIO.open();
         if (storageIO.isLocalFile()) {
             inputStream = new BufferedInputStream(storageIO.getInputStream());
@@ -1696,7 +1697,7 @@ public class IngestServiceBean {
                 boolean tempFileRequired = false;
 
                 try {
-                    storageIO = dataFile.getStorageIO(new DataAccess());
+                    storageIO = new DataAccess().getStorageIO(dataFile);
                     storageIO.open();
 
 
@@ -1787,7 +1788,7 @@ public class IngestServiceBean {
                 StorageIO<DataFile> storageIO;
 
                 try {
-                    storageIO = dataFile.getStorageIO(new DataAccess());
+                    storageIO = new DataAccess().getStorageIO(dataFile);
                     storageIO.open();
                     savedOriginalFileSize = storageIO.getAuxObjectSize(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
 

@@ -1,10 +1,15 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssignmentSet;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.Permission;
+import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
+import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
+import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.search.IndexAsync;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -236,7 +241,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * @param dvo  the object where the roles are defined.
      * @return Set of roles defined for the user in the given dataverse.
      * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser,
-     * edu.harvard.iq.dataverse.Dataverse)
+     * edu.harvard.iq.dataverse.persistence.dataverse.Dataverse)
      */
     //public List<RoleAssignment> directRoleAssignments(@NotNull RoleAssignee roas, @NotNull DvObject dvo) {
     public List<RoleAssignment> directRoleAssignments(RoleAssignee roas, DvObject dvo) {
@@ -256,7 +261,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * @param dvos          the objects where the roles are defined.
      * @return Set of roles defined for the user in the given dataverse.
      * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser,
-     * edu.harvard.iq.dataverse.Dataverse)
+     * edu.harvard.iq.dataverse.persistence.dataverse.Dataverse)
      */
     //public List<RoleAssignment> directRoleAssignments(@NotNull Set<? extends RoleAssignee> roleAssignees, @NotNull Collection<DvObject> dvos) {
     public List<RoleAssignment> directRoleAssignments(Set<? extends RoleAssignee> roleAssignees, Collection<DvObject> dvos) {
@@ -280,7 +285,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * @param dvo the object where the roles are defined.
      * @return Set of roles defined for the user in the given dataverse.
      * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser,
-     * edu.harvard.iq.dataverse.Dataverse)
+     * edu.harvard.iq.dataverse.persistence.dataverse.Dataverse)
      */
     public List<RoleAssignment> directRoleAssignments(DvObject dvo) {
         TypedQuery<RoleAssignment> query = em.createNamedQuery(

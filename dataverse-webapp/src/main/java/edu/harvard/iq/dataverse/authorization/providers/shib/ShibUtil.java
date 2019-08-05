@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import edu.harvard.iq.dataverse.EMailValidator;
+import edu.harvard.iq.dataverse.persistence.config.EMailValidator;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;

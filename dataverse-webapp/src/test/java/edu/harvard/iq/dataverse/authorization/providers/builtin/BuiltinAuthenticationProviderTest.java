@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockAuthenticationServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockBuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockPasswordValidatorServiceBean;
+import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import org.junit.Before;
 import org.junit.Test;

@@ -5,6 +5,8 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
+
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 

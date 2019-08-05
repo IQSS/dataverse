@@ -6,7 +6,7 @@
 
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 
 import javax.ejb.EJB;
 import javax.faces.component.UIComponent;

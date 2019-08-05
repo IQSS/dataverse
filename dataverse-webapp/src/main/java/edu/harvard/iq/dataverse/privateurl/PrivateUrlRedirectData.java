@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.privateurl;
 
-import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
 
 /**
  * PrivateUrlRedirectData is for the person clicking the Private URL link, who

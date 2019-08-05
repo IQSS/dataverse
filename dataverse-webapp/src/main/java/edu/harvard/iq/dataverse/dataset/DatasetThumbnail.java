@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.dataset;
 
-import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 
 public class DatasetThumbnail {
 

@@ -19,14 +19,7 @@
 */
 package edu.harvard.iq.dataverse.rserve;
 
-/**
- * original
- *
- * @author Akio Sone (DVN 2.*)
- * @author Leonid Andreev
- */
-
-import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;

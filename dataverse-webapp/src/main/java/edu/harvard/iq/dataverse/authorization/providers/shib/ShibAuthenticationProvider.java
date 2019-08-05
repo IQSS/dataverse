@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.authorization.providers.shib;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.common.BundleUtil;
 
 public class ShibAuthenticationProvider implements AuthenticationProvider {
 

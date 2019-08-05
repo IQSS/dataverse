@@ -1,10 +1,11 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.explicit;
 
-import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.group.ExplicitGroup;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -141,11 +142,11 @@ public class ExplicitGroupServiceBean {
     /**
      * Finds all the explicit groups {@code ra} is <b>directly</b> a member of.
      * To find all these groups and the groups the contain them (recursively upwards),
-     * consider using {@link #findGroups(edu.harvard.iq.dataverse.authorization.RoleAssignee)}
+     * consider using {@link #findGroups(edu.harvard.iq.dataverse.persistence.user.RoleAssignee)}
      *
      * @param ra the role assignee whose membership list we seek
      * @return set of the explicit groups that contain {@code ra} directly.
-     * @see #findGroups(edu.harvard.iq.dataverse.authorization.RoleAssignee)
+     * @see #findGroups(edu.harvard.iq.dataverse.persistence.user.RoleAssignee)
      */
     public Set<ExplicitGroup> findDirectlyContainingGroups(RoleAssignee ra) {
         if (ra instanceof AuthenticatedUser) {
@@ -190,7 +191,7 @@ public class ExplicitGroupServiceBean {
      */
     public Set<ExplicitGroup> findGroups(RoleAssignee ra, DvObject o) {
         return findGroups(ra).stream()
-                .filter(g -> g.owner.isAncestorOf(o))
+                .filter(g -> g.getOwner().isAncestorOf(o))
                 .collect(Collectors.toSet());
     }
 

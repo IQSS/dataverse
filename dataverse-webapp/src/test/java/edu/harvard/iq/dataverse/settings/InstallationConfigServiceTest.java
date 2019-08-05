@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.settings;
 
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import org.junit.Before;
 import org.junit.Test;

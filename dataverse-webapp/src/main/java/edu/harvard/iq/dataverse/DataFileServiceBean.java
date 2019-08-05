@@ -1,22 +1,30 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.common.files.mime.ApplicationMimeType;
+import edu.harvard.iq.dataverse.common.files.mime.ImageMimeType;
+import edu.harvard.iq.dataverse.common.files.mime.MimePrefix;
+import edu.harvard.iq.dataverse.common.files.mime.PackageMimeType;
+import edu.harvard.iq.dataverse.common.files.mime.TextMimeType;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
-import edu.harvard.iq.dataverse.files.mime.ApplicationMimeType;
-import edu.harvard.iq.dataverse.files.mime.ImageMimeType;
-import edu.harvard.iq.dataverse.files.mime.MimePrefix;
-import edu.harvard.iq.dataverse.files.mime.TextMimeType;
-import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
-import edu.harvard.iq.dataverse.license.FileTermsOfUse;
-import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
+import edu.harvard.iq.dataverse.persistence.GlobalId;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFileTag;
+import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.license.TermsOfUseFactory;
 import edu.harvard.iq.dataverse.license.TermsOfUseFormMapper;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
@@ -61,7 +69,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
+import static edu.harvard.iq.dataverse.common.FileSizeUtil.bytesToHumanReadable;
 import static edu.harvard.iq.dataverse.util.FileUtil.calculateChecksum;
 import static edu.harvard.iq.dataverse.util.FileUtil.canIngestAsTabular;
 import static edu.harvard.iq.dataverse.util.FileUtil.createIngestFailureReport;
@@ -93,17 +101,6 @@ public class DataFileServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
-
-    /**
-     * Per https://en.wikipedia.org/wiki/Media_type#Vendor_tree just "dataverse"
-     * should be fine.
-     *
-     * @todo Consider registering this at http://www.iana.org/form/media-types
-     * or switch to "prs" which "includes media types created experimentally or
-     * as part of products that are not distributed commercially" according to
-     * the page URL above.
-     */
-    public static final String MIME_TYPE_PACKAGE_FILE = "application/vnd.dataverse.file-package";
 
     public DataFile find(Object pk) {
         return em.find(DataFile.class, pk);
@@ -948,7 +945,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         String contentType = file.getContentType();
 
-        return MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(contentType);
+        return PackageMimeType.DATAVERSE_PACKAGE.getMimeValue().equalsIgnoreCase(contentType);
     }
 
     public void populateFileSearchCard(SolrSearchResult solrSearchResult) {
@@ -1248,7 +1245,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
     public String getPhysicalFileToDelete(DataFile dataFile) {
         try {
-            StorageIO<DataFile> storageIO = dataFile.getStorageIO(new DataAccess());
+            StorageIO<DataFile> storageIO = new DataAccess().getStorageIO(dataFile);
             return storageIO.getStorageLocation();
 
         } catch (IOException ioex) {
@@ -1277,6 +1274,9 @@ public class DataFileServiceBean implements java.io.Serializable {
     public List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType) throws IOException {
         List<DataFile> datafiles = new ArrayList<>();
 
+        if (true) {
+            throw new RuntimeException();
+        }
         String warningMessage = null;
 
         // save the file, in the temporary location for now:

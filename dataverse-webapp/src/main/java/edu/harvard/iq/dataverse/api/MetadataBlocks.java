@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

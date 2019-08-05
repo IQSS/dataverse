@@ -1,12 +1,12 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.workflow.Workflow;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
+import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 
 import javax.json.JsonObjectBuilder;
 
-import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import static edu.harvard.iq.dataverse.common.NullSafeJsonBuilder.jsonObjectBuilder;
 
 /**
  * A Json printer that prints minimal data on objects. Useful when embedding

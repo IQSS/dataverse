@@ -19,8 +19,9 @@
 
 package edu.harvard.iq.dataverse.batch.util;
 
-import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import org.apache.commons.io.FileUtils;
+
+import edu.harvard.iq.dataverse.persistence.ActionLogRecord;
 
 import javax.batch.runtime.JobExecution;
 import java.io.File;

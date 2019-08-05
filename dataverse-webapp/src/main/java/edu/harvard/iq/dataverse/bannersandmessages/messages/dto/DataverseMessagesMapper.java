@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.bannersandmessages.messages.dto;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import edu.harvard.iq.dataverse.bannersandmessages.messages.DataverseTextMessage;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseTextMessage;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 
 import javax.ejb.Stateless;

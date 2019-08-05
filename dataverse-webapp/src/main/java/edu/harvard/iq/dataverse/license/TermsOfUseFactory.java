@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.license;
 
-import edu.harvard.iq.dataverse.license.FileTermsOfUse.RestrictType;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
+import edu.harvard.iq.dataverse.persistence.datafile.license.License;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;

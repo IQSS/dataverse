@@ -7,7 +7,7 @@
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf">
 
-    <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
+    <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
     <c:set var="page" value="/dataverse/#{SearchIncludeFragment.dataverse.alias}"/>
 
     <!--@elvariable id="friendlyNames" type="java.util.List<java.lang.String>"-->
@@ -33,7 +33,7 @@
         <div class="col-sm-4 text-right col-manage-action" jsf:rendered="#{!widgetWrapper.widgetView}">
             <div class="button-block pull-right">
                 <!-- ADD DATA -->
-                <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
+                <o:importFunctions type="edu.harvard.iq.dataverse.persistence.group.AuthenticatedUsers" />
                 <ui:fragment rendered="#{!dataverseSession.user.authenticated and (permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
                                          or permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateNewDatasetCommand'))}">
                     <button type="button" class="btn btn-default btn-access" onclick="PF('addData_popup').show()">

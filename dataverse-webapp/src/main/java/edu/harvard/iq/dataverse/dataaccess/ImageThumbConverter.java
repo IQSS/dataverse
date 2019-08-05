@@ -19,7 +19,7 @@
  */
 package edu.harvard.iq.dataverse.dataaccess;
 
-import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import org.apache.commons.io.IOUtils;
 import org.primefaces.util.Base64;
@@ -73,7 +73,7 @@ public class ImageThumbConverter {
 
         try {
 
-            StorageIO<DataFile> storageIO = file.getStorageIO(new DataAccess());
+            StorageIO<DataFile> storageIO = new DataAccess().getStorageIO(file);
             return isThumbnailAvailable(storageIO, size);
         } catch (IOException ioEx) {
             return false;
@@ -438,7 +438,7 @@ public class ImageThumbConverter {
         StorageIO<DataFile> storageIO = null;
 
         try {
-            storageIO = file.getStorageIO(new DataAccess());
+            storageIO = new DataAccess().getStorageIO(file);
         } catch (Exception ioEx) {
             logger.fine("Caught an exception while trying to obtain a thumbnail as Base64 string - could not open StorageIO on the datafile.");
             return null;

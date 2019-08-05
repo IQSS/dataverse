@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.validation;
 
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import org.apache.commons.lang.StringUtils;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;

@@ -8,7 +8,7 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
-import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.AfterClass;

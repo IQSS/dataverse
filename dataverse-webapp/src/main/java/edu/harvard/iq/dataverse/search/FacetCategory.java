@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.search;
 
 import java.util.List;
 
-import static edu.harvard.iq.dataverse.util.BundleUtil.getStringFromBundle;
+import static edu.harvard.iq.dataverse.common.BundleUtil.getStringFromBundle;
 import static java.lang.String.format;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 

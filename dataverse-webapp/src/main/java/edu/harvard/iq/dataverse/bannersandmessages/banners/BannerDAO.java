@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.bannersandmessages.banners;
 
 import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.ImageWithLinkDto;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseBanner;
 import org.primefaces.model.DefaultStreamedContent;
 
 import javax.ejb.Stateless;

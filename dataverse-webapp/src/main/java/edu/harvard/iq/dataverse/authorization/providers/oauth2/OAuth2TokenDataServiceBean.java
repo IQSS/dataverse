@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
+import edu.harvard.iq.dataverse.persistence.user.OAuth2TokenData;
+
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

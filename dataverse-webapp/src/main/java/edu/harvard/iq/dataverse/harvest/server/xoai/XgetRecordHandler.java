@@ -21,7 +21,7 @@ import com.lyncode.xoai.model.oaipmh.Header;
 import com.lyncode.xoai.model.oaipmh.Metadata;
 import com.lyncode.xoai.xml.XSLPipeline;
 import com.lyncode.xoai.xml.XmlWriter;
-import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.ByteArrayInputStream;

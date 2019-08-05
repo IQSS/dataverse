@@ -1,8 +1,9 @@
 package edu.harvard.iq.dataverse.mocks;
 
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetException;
+import edu.harvard.iq.dataverse.persistence.MocksFactory;
+import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 
 import java.util.HashMap;
 import java.util.Map;

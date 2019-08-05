@@ -1,12 +1,13 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import edu.harvard.iq.dataverse.mocks.MockRequestFactory;
+import edu.harvard.iq.dataverse.persistence.MocksFactory;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,7 +47,7 @@ public class UpdatePermissionRootCommandTest {
         DataverseEngine ngn = new TestDataverseEngine(testCommandContext);
         dv.setPermissionRoot(false);
 
-        UpdatePermissionRootCommand sut = new UpdatePermissionRootCommand(false, MocksFactory.makeRequest(), dv);
+        UpdatePermissionRootCommand sut = new UpdatePermissionRootCommand(false, MockRequestFactory.makeRequest(), dv);
         Dataverse result = ngn.submit(sut);
 
         assertFalse(result.isPermissionRoot());
@@ -54,7 +55,7 @@ public class UpdatePermissionRootCommandTest {
 
         dv.setPermissionRoot(true);
 
-        sut = new UpdatePermissionRootCommand(true, MocksFactory.makeRequest(), dv);
+        sut = new UpdatePermissionRootCommand(true, MockRequestFactory.makeRequest(), dv);
         result = ngn.submit(sut);
 
         assertTrue(result.isPermissionRoot());
@@ -67,7 +68,7 @@ public class UpdatePermissionRootCommandTest {
         DataverseEngine ngn = new TestDataverseEngine(testCommandContext);
         dv.setPermissionRoot(false);
 
-        UpdatePermissionRootCommand sut = new UpdatePermissionRootCommand(true, MocksFactory.makeRequest(), dv);
+        UpdatePermissionRootCommand sut = new UpdatePermissionRootCommand(true, MockRequestFactory.makeRequest(), dv);
         Dataverse result = ngn.submit(sut);
 
         assertTrue(result.isPermissionRoot());
@@ -75,7 +76,7 @@ public class UpdatePermissionRootCommandTest {
 
         dv.setPermissionRoot(true);
 
-        sut = new UpdatePermissionRootCommand(false, MocksFactory.makeRequest(), dv);
+        sut = new UpdatePermissionRootCommand(false, MockRequestFactory.makeRequest(), dv);
         result = ngn.submit(sut);
 
         assertFalse(result.isPermissionRoot());

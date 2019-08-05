@@ -5,6 +5,8 @@
  */
 package edu.harvard.iq.dataverse.api.imports;
 
+import edu.harvard.iq.dataverse.persistence.dataset.CustomFieldMap;
+
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

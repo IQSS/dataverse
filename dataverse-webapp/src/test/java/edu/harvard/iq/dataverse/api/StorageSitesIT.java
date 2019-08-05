@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
-import edu.harvard.iq.dataverse.locality.StorageSite;
+import edu.harvard.iq.dataverse.persistence.StorageSite;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.junit.BeforeClass;
 import org.junit.Test;

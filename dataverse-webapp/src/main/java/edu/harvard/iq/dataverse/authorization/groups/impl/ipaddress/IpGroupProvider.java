@@ -1,10 +1,11 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.group.IpAddress;
+import edu.harvard.iq.dataverse.persistence.group.IpGroup;
+import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 
 import java.util.Collections;
 import java.util.HashSet;

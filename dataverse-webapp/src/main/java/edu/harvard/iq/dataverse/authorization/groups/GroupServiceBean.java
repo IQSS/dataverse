@@ -1,11 +1,8 @@
 package edu.harvard.iq.dataverse.authorization.groups;
 
-import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AllUsersGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsersProvider;
-import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
@@ -13,6 +10,10 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServ
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.group.ExplicitGroup;
+import edu.harvard.iq.dataverse.persistence.group.Group;
+import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;

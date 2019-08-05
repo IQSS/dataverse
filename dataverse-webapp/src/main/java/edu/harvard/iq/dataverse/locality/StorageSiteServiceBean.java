@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.locality;
 
+import edu.harvard.iq.dataverse.persistence.StorageSite;
+
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;

@@ -5,6 +5,9 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+
+import edu.harvard.iq.dataverse.persistence.ActionLogRecord;
+
 import java.util.Date;
 
 /**

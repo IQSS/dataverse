@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.common.Util;
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.common.SolrInputDocument;
 

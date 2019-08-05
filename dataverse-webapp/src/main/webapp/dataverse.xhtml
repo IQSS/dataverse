@@ -260,7 +260,7 @@
 
                     <ui:fragment
                             rendered="#{SearchIncludeFragment.filterQueries.size() == 0 and SearchIncludeFragment.mode != SearchIncludeFragment.searchModeString}">
-                        <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker"/>
+                        <o:importFunctions type="edu.harvard.iq.dataverse.common.MarkupChecker"/>
                         <ui:fragment
                                 rendered="#{!empty DataversePage.dataverse.description and !widgetWrapper.widgetView}">
                             <div id="dataverseDesc" style="margin-bottom:1em;">

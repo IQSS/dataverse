@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.branding;
 
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.common.BrandingUtil;
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import org.junit.Test;
 
 import javax.mail.internet.AddressException;

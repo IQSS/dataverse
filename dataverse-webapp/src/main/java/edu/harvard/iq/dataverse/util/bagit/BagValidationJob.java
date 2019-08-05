@@ -15,7 +15,7 @@ package edu.harvard.iq.dataverse.util.bagit;
  * @author qqmyers@hotmail.com
  */
 
-import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;

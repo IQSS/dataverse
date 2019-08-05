@@ -1,11 +1,12 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Address;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
+import edu.harvard.iq.dataverse.persistence.ActionLogRecord;
+import edu.harvard.iq.dataverse.persistence.group.IPv4Address;
+import edu.harvard.iq.dataverse.persistence.group.IPv6Address;
+import edu.harvard.iq.dataverse.persistence.group.IpAddress;
+import edu.harvard.iq.dataverse.persistence.group.IpGroup;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;

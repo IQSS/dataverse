@@ -9,8 +9,8 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.GuestbookResponse;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
+import edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse;
 
 import java.util.List;
 

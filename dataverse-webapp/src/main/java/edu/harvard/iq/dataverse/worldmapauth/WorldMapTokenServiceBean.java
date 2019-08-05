@@ -6,10 +6,12 @@
 
 package edu.harvard.iq.dataverse.worldmapauth;
 
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.Permission;
+import edu.harvard.iq.dataverse.persistence.worldmap.TokenApplicationType;
+import edu.harvard.iq.dataverse.persistence.worldmap.WorldMapToken;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;

@@ -6,8 +6,9 @@
 
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.UserNotification.Type;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.UserNotification;
+import edu.harvard.iq.dataverse.persistence.user.UserNotification.Type;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;

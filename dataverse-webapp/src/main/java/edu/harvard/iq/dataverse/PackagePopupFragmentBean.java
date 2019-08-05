@@ -6,6 +6,8 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 

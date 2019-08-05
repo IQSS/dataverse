@@ -22,25 +22,6 @@ public class ShibUtilTest {
 
     private HttpServletRequest request = mock(HttpServletRequest.class);
 
-    public ShibUtilTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
     /**
      * Test of getDisplayNameFromDiscoFeed method, of class ShibUtil.
      */
@@ -54,7 +35,6 @@ public class ShibUtilTest {
         } catch (IOException ex) {
             Logger.getLogger(ShibUtilTest.class.getName()).log(Level.SEVERE, null, ex);
         }
-        ShibUtil shibUtil = new ShibUtil();
 
         String testShib = ShibUtil.getDisplayNameFromDiscoFeed("https://idp.testshib.org/idp/shibboleth", discoFeedExample);
         assertEquals("TestShib Test IdP", testShib);

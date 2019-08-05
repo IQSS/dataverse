@@ -9,11 +9,11 @@
       lang="#{dataverseSession.localeCode}"
       xml:lang="#{dataverseSession.localeCode}">
 
-<!--@elvariable id="dataverse" type="edu.harvard.iq.dataverse.Dataverse"-->
+<!--@elvariable id="dataverse" type="edu.harvard.iq.dataverse.persistence.dataverse.Dataverse"-->
 
 <f:view locale="#{dataverseSession.localeCode}">
     <h:head>
-	<o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
+	<o:importFunctions type="edu.harvard.iq.dataverse.common.MarkupChecker" />
         <f:facet name="first">
             <o:resourceInclude path="/CustomizationFilesServlet?customFileType=analytics" />
             <title><h:outputText value="#{pageTitle}"/></title>

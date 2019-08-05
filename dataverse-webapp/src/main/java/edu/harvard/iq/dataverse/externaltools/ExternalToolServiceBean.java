@@ -1,9 +1,11 @@
 package edu.harvard.iq.dataverse.externaltools;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
-import edu.harvard.iq.dataverse.externaltools.ExternalTool.Type;
-import edu.harvard.iq.dataverse.files.mime.TextMimeType;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.common.files.mime.TextMimeType;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
+import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.ReservedWord;
+import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.Type;
 
 import javax.ejb.Stateless;
 import javax.json.Json;
@@ -21,12 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.CONTENT_TYPE;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DESCRIPTION;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DISPLAY_NAME;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_PARAMETERS;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_URL;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TYPE;
+import static edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.*;
 
 @Stateless
 public class ExternalToolServiceBean {

@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.repositorystorageabstractionlayer;
 
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.locality.StorageSite;
+import edu.harvard.iq.dataverse.persistence.StorageSite;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import org.junit.Test;
 
 import javax.json.JsonArray;

@@ -5,8 +5,8 @@
  */
 package edu.harvard.iq.dataverse.export.spi;
 
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ExportException;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 
 import javax.ws.rs.core.MediaType;
 

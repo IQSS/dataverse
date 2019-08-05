@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 
 import java.util.HashMap;

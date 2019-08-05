@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.bannersandmessages.messages.dto;
 
 import com.google.common.collect.ImmutableMap;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.bannersandmessages.messages.DataverseLocalizedMessage;
-import edu.harvard.iq.dataverse.bannersandmessages.messages.DataverseTextMessage;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseLocalizedMessage;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseTextMessage;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static edu.harvard.iq.dataverse.util.DateUtil.convertToDate;
+import static edu.harvard.iq.dataverse.common.DateUtil.convertToDate;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

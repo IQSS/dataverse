@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.After;
 import org.junit.AfterClass;

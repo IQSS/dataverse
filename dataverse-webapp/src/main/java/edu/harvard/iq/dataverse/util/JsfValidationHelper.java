@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.validation.ValidationException;
 
 import javax.ejb.EJBException;

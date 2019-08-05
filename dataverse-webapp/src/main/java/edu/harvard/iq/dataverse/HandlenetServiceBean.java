@@ -20,6 +20,9 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.GlobalId;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import net.handle.hdllib.AbstractMessage;
 import net.handle.hdllib.AbstractResponse;

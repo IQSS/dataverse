@@ -5,6 +5,9 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.dataverse.link.DataverseLinkingDataverse;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;

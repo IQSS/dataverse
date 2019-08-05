@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.builtin;
 
-import edu.harvard.iq.dataverse.authorization.groups.Group;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import edu.harvard.iq.dataverse.mocks.MockRequestFactory;
+import edu.harvard.iq.dataverse.persistence.MocksFactory;
+import edu.harvard.iq.dataverse.persistence.group.AllUsers;
+import edu.harvard.iq.dataverse.persistence.group.Group;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.GuestUser;
+import edu.harvard.iq.dataverse.persistence.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,8 +42,8 @@ public class AllUsersGroupProviderTest {
     
     @BeforeEach
     public void before() {
-        guestRequest = MocksFactory.makeRequest(guestUser);
-        authenticatedUserRequest = MocksFactory.makeRequest(authenticatedUser);
+        guestRequest = MockRequestFactory.makeRequest(guestUser);
+        authenticatedUserRequest = MockRequestFactory.makeRequest(authenticatedUser);
     }
     
     

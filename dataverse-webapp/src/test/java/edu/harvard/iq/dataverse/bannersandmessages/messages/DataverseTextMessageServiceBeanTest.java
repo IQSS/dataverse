@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse.bannersandmessages.messages;
 
 import com.google.common.collect.Lists;
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseLocalizedMessageDto;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseMessagesMapper;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseTextMessageDto;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseLocalizedMessage;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseTextMessage;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -14,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
-import static edu.harvard.iq.dataverse.util.DateUtil.convertToDate;
+import static edu.harvard.iq.dataverse.common.DateUtil.convertToDate;
 import static org.junit.Assert.assertSame;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

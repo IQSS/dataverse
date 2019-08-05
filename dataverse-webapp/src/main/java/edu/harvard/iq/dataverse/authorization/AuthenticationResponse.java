@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.authorization;
 
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
+
 /**
  * A result of an authentication attempt. May succeed, fail, or be in error.
  * Client code may use normal constructors, or use one of the static convenience

@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 
 /**
  * The result of an attempt to publish a dataset.

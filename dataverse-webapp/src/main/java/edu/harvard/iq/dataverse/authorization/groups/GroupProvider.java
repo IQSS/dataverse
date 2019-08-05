@@ -1,9 +1,10 @@
 package edu.harvard.iq.dataverse.authorization.groups;
 
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.group.Group;
+import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
+import edu.harvard.iq.dataverse.persistence.user.User;
 
 import java.util.Set;
 
@@ -38,12 +39,12 @@ public interface GroupProvider<T extends Group> {
     /**
      * Looks up the groups this provider has for a role assignee, in the context of a {@link DvObject}.
      * <B>This method should be used for group management. Groups for actual requests should be determined
-     * by calling {@link #groupsFor(edu.harvard.iq.dataverse.engine.command.DataverseRequest, edu.harvard.iq.dataverse.DvObject)}.</B>
+     * by calling {@link #groupsFor(edu.harvard.iq.dataverse.engine.command.DataverseRequest, edu.harvard.iq.dataverse.persistence.DvObject)}.</B>
      *
      * @param ra
      * @param dvo the DvObject which is the context for the groups. May be {@code null}
      * @return The set of groups the role assignee is a member of.
-     * @see #groupsFor(edu.harvard.iq.dataverse.engine.command.DataverseRequest, edu.harvard.iq.dataverse.DvObject)
+     * @see #groupsFor(edu.harvard.iq.dataverse.engine.command.DataverseRequest, edu.harvard.iq.dataverse.persistence.DvObject)
      */
     Set<T> groupsFor(RoleAssignee ra, DvObject dvo);
 

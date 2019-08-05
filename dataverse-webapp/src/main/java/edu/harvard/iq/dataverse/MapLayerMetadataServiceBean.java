@@ -7,13 +7,16 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
-import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.MapLayerMetadata;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.Permission;
+import edu.harvard.iq.dataverse.persistence.user.User;
+import edu.harvard.iq.dataverse.persistence.worldmap.WorldMapToken;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 
 import javax.ejb.EJB;
@@ -179,7 +182,7 @@ public class MapLayerMetadataServiceBean {
 
 
         try {
-            StorageIO<DataFile> storageIO = dataFile.getStorageIO(new DataAccess());
+            StorageIO<DataFile> storageIO = new DataAccess().getStorageIO(dataFile);
 
             if (storageIO == null) {
                 logger.warning("Null storageIO in deleteOlderMapThumbnails()");
@@ -288,7 +291,7 @@ public class MapLayerMetadataServiceBean {
 
         StorageIO<DataFile> dataAccess = null;
         try {
-            dataAccess = mapLayerMetadata.getDataFile().getStorageIO(new DataAccess());
+            dataAccess = new DataAccess().getStorageIO(mapLayerMetadata.getDataFile());
         } catch (IOException ioEx) {
             dataAccess = null;
         }
