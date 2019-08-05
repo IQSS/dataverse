@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.MissingResourceException;
 
@@ -18,7 +19,7 @@ public class RoleTranslationUtil {
             try {
                 String key = "role." + alias.toLowerCase() + ".name";
                 String localeName = BundleUtil.getStringFromPropertyFile(key, "BuiltInRoles");
-                if (localeName == null) {
+                if (StringUtils.isEmpty(localeName)) {
                     return name;
                 } else {
                     return localeName;
@@ -42,7 +43,7 @@ public class RoleTranslationUtil {
             String key = "role." + alias.toLowerCase() + ".description";
             try {
                 String localeDescription = BundleUtil.getStringFromPropertyFile(key, "BuiltInRoles");
-                if (localeDescription == null) {
+                if (StringUtils.isEmpty(localeDescription)) {
                     return description;
                 } else {
                     return localeDescription;
