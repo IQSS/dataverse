@@ -23,6 +23,7 @@ public class BundleUtilTest {
 
     @Test
     public void testGetStringFromBundleWithArguments() {
+        assertEquals(StringUtils.EMPTY, BundleUtil.getStringFromBundle(null, ""));
         assertEquals(StringUtils.EMPTY, BundleUtil.getStringFromBundle(null, Locale.ENGLISH));
         String actual = BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList("http://guides.dataverse.org/en", "4.0"));
         String expected = "You have successfully created your dataverse! To learn more about what you can do with your dataverse, check out the <a href=\"http://guides.dataverse.org/en/4.0/user/dataverse-management.html\" title=\"Dataverse Management - Dataverse User Guide\" target=\"_blank\">User Guide</a>.";

@@ -1,20 +1,19 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.dataset.difference;
 
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
-import io.vavr.Tuple2;
-import io.vavr.Tuple4;
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -30,19 +29,22 @@ public final class DatasetVersionDifference {
     private DatasetVersion newVersion;
     private DatasetVersion originalVersion;
     
-    private List<List<Tuple2<DatasetField,DatasetField>>> detailDataByBlock = new ArrayList<>();
+    private List<List<DatasetFieldDiff>> detailDataByBlock = new ArrayList<>();
     
     private List<FileMetadata> addedFiles = new ArrayList<>();
     private List<FileMetadata> removedFiles = new ArrayList<>();
-    private List<Tuple2<FileMetadata, FileMetadata>> changedFileMetadata = new ArrayList<>();
-    private List<Tuple2<FileMetadata, FileMetadata>> replacedFiles = new ArrayList<>();
+    private List<FileMetadataDiff> changedFileMetadata = new ArrayList<>();
+    private List<TermsOfUseDiff> changedFileTerms = new ArrayList<>();
+    private List<FileMetadataDiff> replacedFiles = new ArrayList<>();
     
     
-    private List<DatasetFileDifferenceItem> datasetFilesDiffList;
-    private List<DatasetReplaceFileItem> datasetFilesReplacementList;
-
-    private List<Tuple4<DatasetFieldType, Integer, Integer, Integer>> summaryDataForNote = new ArrayList<>();
-    private List<Tuple4<MetadataBlock, Integer, Integer, Integer>> blockDataForNote = new ArrayList<>();
+    private List<DatasetFileDifferenceItem> datasetFilesDiffList = new ArrayList<>();
+    private List<DatasetFileTermDifferenceItem> datasetFileTermsDiffList = new ArrayList<>();
+    private List<DatasetReplaceFileItem> datasetFilesReplacementList = new ArrayList<>();
+    
+    
+    private List<DatasetFieldChangeCounts> summaryDataForNote = new ArrayList<>();
+    private List<MetadataBlockChangeCounts> blockDataForNote = new ArrayList<>();
     private String fileNote = StringUtils.EMPTY;
     
     // -------------------- CONSTRUCTORS --------------------
@@ -82,10 +84,10 @@ public final class DatasetVersionDifference {
         
         //Sort within blocks by datasetfieldtype dispaly order then....
         //sort via metadatablock order - citation first...
-        for (List<Tuple2<DatasetField, DatasetField>> blockList : detailDataByBlock) {
-            Collections.sort(blockList, Comparator.comparing(x -> x._1().getDatasetFieldType().getDisplayOrder()));
+        for (List<DatasetFieldDiff> blockList : detailDataByBlock) {
+            Collections.sort(blockList, Comparator.comparing(x -> x.getOldValue().getDatasetFieldType().getDisplayOrder()));
         }
-        Collections.sort(detailDataByBlock, Comparator.comparing(x -> x.get(0)._1().getDatasetFieldType().getMetadataBlock().getId()));
+        Collections.sort(detailDataByBlock, Comparator.comparing(x -> x.get(0).getOldValue().getDatasetFieldType().getMetadataBlock().getId()));
         
         
         // files difference
@@ -96,8 +98,12 @@ public final class DatasetVersionDifference {
                 if (fmdo.getDataFile().equals(fmdn.getDataFile())) {
                     deleted = false;
                     if (!areFilesMetadataEqual(fmdo, fmdn)) {
-                        changedFileMetadata.add(new Tuple2<FileMetadata, FileMetadata>(fmdo, fmdn));
+                        changedFileMetadata.add(new FileMetadataDiff(fmdo, fmdn));
                     }
+                    if (!areFileTermsEqual(fmdo.getTermsOfUse(), fmdn.getTermsOfUse())) {
+                        changedFileTerms.add(new TermsOfUseDiff(fmdo.getTermsOfUse(), fmdn.getTermsOfUse()));
+                    }
+                    
                     break;
                 }
             }
@@ -138,16 +144,14 @@ public final class DatasetVersionDifference {
      * between two dataset versions (includes added and
      * removed fields).
      * Changes are grouped by metadata blocks.
-     * First element in tuple points to old dataset field and
-     * Second element points to new dataset field.
      */
-    public List<List<Tuple2<DatasetField, DatasetField>>> getDetailDataByBlock() {
+    public List<List<DatasetFieldDiff>> getDetailDataByBlock() {
         return detailDataByBlock;
     }
 
     /**
      * Returns file metadata of files that have
-     * been added (exist only in old version)
+     * been added (that exists only in old version)
      */
     public List<FileMetadata> getAddedFiles() {
         return addedFiles;
@@ -155,7 +159,7 @@ public final class DatasetVersionDifference {
 
     /**
      * Returns file metadata of files that have
-     * been removed (exist only in new version)
+     * been removed (that exists only in new version)
      */
     public List<FileMetadata> getRemovedFiles() {
         return removedFiles;
@@ -164,10 +168,8 @@ public final class DatasetVersionDifference {
     /**
      * Returns files metadata that have been changed
      * between two dataset versions.
-     * First element in tuple points to old file metadata and
-     * second element points to new file metadata.
      */
-    public List<Tuple2<FileMetadata, FileMetadata>> getChangedFileMetadata() {
+    public List<FileMetadataDiff> getChangedFileMetadata() {
         return changedFileMetadata;
     }
     
@@ -175,11 +177,22 @@ public final class DatasetVersionDifference {
      * Returns differences between files that have
      * changed between two dataset versions (includes added
      * and removed files).
+     * <p>
+     * Note that change in terms of use of files
+     * is not listed here but in {@link #getDatasetFileTermsDiffList()}
      */
     public List<DatasetFileDifferenceItem> getDatasetFilesDiffList() {
         return datasetFilesDiffList;
     }
     
+    /**
+     * Returns files that have different terms of use
+     * between two dataset versions
+     */
+    public List<DatasetFileTermDifferenceItem> getDatasetFileTermsDiffList() {
+        return datasetFileTermsDiffList;
+    }
+
     /**
      * Returns differences in files that have been
      * replaced between two dataset versions.
@@ -189,38 +202,33 @@ public final class DatasetVersionDifference {
     }
 
     /**
-     * Returns statistical summary of dataset fields that changed
-     * between two versions.
-     * Every item in returned list contains tuple with number of
-     * changes on field with type equal to first element in tuple.
+     * Returns statistical summary of changes between two versions
+     * in dataset fields.
      * <p>
-     * For example if tuple is:
-     * <code>([DatasetFieldType[author]], 3, 5, 1)</code>
+     * For example if element on returned list is:
+     * <code>[[DatasetFieldType[author]], 3, 5, 1]</code>
      * that means that 3 authors were added; 5 was removed and in 1 author some metadata was changed.
      * <p>
      * Note that only fields with {@link DatasetFieldType#isDisplayOnCreate()} flag
      * are included in returned summary.
      */
-    public List<Tuple4<DatasetFieldType, Integer, Integer, Integer>> getSummaryDataForNote() {
+    public List<DatasetFieldChangeCounts> getSummaryDataForNote() {
         return summaryDataForNote;
     }
 
     /**
-     * Returns statistical summary of dataset fields that changed
-     * between two versions.
-     * Every item in returned list contains tuple with number
-     * of changes in all fields within metadata block equal to
-     * first element in tuple.
+     * Returns statistical summary of changes between two versions
+     * in dataset fields inside metadata block.
      * <p>
-     * For example if tuple is:
-     * <code>([MetadataBlock[citation]], 3, 5, 1)</code>
+     * For example if element on returned list is:
+     * <code>[[MetadataBlock[citation]], addedCount=3, removedCount=5, changedCount=1]</code>
      * that means that 3 field values were added to fields within
      * citation block; 5 was removed and 1 field was changed.
      * <p>
      * Note that only fields without {@link DatasetFieldType#isDisplayOnCreate()} flag
      * are included in returned summary.
      */
-    public List<Tuple4<MetadataBlock, Integer, Integer, Integer>> getBlockDataForNote() {
+    public List<MetadataBlockChangeCounts> getBlockDataForNote() {
         return blockDataForNote;
     }
     
@@ -245,32 +253,34 @@ public final class DatasetVersionDifference {
 
         //Metadata differences displayed by Metdata block
         if (!this.detailDataByBlock.isEmpty()) {
-            for (List<Tuple2<DatasetField, DatasetField>> blocks : detailDataByBlock) {
+            for (List<DatasetFieldDiff> blocks : detailDataByBlock) {
                 groupString = System.lineSeparator() + " Metadata Block";
                 
-                String blockDisplay = " " + blocks.get(0)._1().getDatasetFieldType().getMetadataBlock().getName() + ": " + System.lineSeparator();
+                String blockDisplay = " " + blocks.get(0).getOldValue().getDatasetFieldType().getMetadataBlock().getName() + ": " + System.lineSeparator();
                 groupString += blockDisplay;
-                for (Tuple2<DatasetField, DatasetField> dsfArray : blocks) {
+                for (DatasetFieldDiff dsfArray : blocks) {
                     valueString = " Field: ";
-                    String title = dsfArray._1().getDatasetFieldType().getName();
+                    String title = dsfArray.getOldValue().getDatasetFieldType().getName();
                     valueString += title;
                     String oldValue = " Changed From: ";
-
-                    if (!dsfArray._1().isEmpty()) {
-                        if (dsfArray._1().getDatasetFieldType().isPrimitive()) {
-                            oldValue += dsfArray._1().getRawValue();
+                    
+                    DatasetField oldField = dsfArray.getOldValue();
+                    if (!oldField.isEmpty()) {
+                        if (oldField.getDatasetFieldType().isPrimitive()) {
+                            oldValue += oldField.getRawValue();
                         } else {
-                            oldValue += dsfArray._1().getCompoundRawValue();
+                            oldValue += oldField.getCompoundRawValue();
                         }
                     }
                     valueString += oldValue;
 
+                    DatasetField newField = dsfArray.getNewValue();
                     String newValue = " To: ";
-                    if (!dsfArray._2().isEmpty()) {
-                        if (dsfArray._2().getDatasetFieldType().isPrimitive()) {
-                            newValue += dsfArray._2().getRawValue();
+                    if (!newField.isEmpty()) {
+                        if (newField.getDatasetFieldType().isPrimitive()) {
+                            newValue += newField.getRawValue();
                         } else {
-                            newValue += dsfArray._2().getCompoundRawValue();
+                            newValue += newField.getCompoundRawValue();
                         }
 
                     }
@@ -288,14 +298,15 @@ public final class DatasetVersionDifference {
             String itemDiff;
 
             for (DatasetFileDifferenceItem item : this.getDatasetFilesDiffList()) {
-                itemDiff = "File ID: " + item.fileId;
+                FileMetadataDifferenceItem metadataDiff = item.getDifference();
+                itemDiff = "File ID: " + item.getFileSummary().getFileId();
 
-                itemDiff += buildValuesDiffString("Name", item.fileName1, item.fileName2);
-                itemDiff += buildValuesDiffString("Type", item.fileType1, item.fileType2);
-                itemDiff += buildValuesDiffString("Size", item.fileSize1, item.fileSize2);
-                itemDiff += buildValuesDiffString("Tag(s)", item.fileCat1, item.fileCat2);
-                itemDiff += buildValuesDiffString("Description", item.fileDesc1, item.fileDesc1);
-                itemDiff += buildValuesDiffString("Provenance Description", item.fileProvFree1, item.fileProvFree2);
+                itemDiff += buildValuesDiffString("Name", metadataDiff.getFileName1(), metadataDiff.getFileName2());
+                itemDiff += buildValuesDiffString("Type", metadataDiff.getFileType1(), metadataDiff.getFileType2());
+                itemDiff += buildValuesDiffString("Size", metadataDiff.getFileSize1(), metadataDiff.getFileSize2());
+                itemDiff += buildValuesDiffString("Tag(s)", metadataDiff.getFileCat1(), metadataDiff.getFileCat2());
+                itemDiff += buildValuesDiffString("Description", metadataDiff.getFileDesc1(), metadataDiff.getFileDesc1());
+                itemDiff += buildValuesDiffString("Provenance Description", metadataDiff.getFileProvFree1(), metadataDiff.getFileProvFree2());
 
                 fileDiff += itemDiff;
             }
@@ -307,13 +318,14 @@ public final class DatasetVersionDifference {
         if (!this.getDatasetFilesReplacementList().isEmpty()) {
             String itemDiff;
             for (DatasetReplaceFileItem item : this.getDatasetFilesReplacementList()) {
+                FileMetadataDifferenceItem metadataDiff = item.getMetadataDifference();
                 itemDiff = "";
-                itemDiff += buildValuesDiffString("Name", item.fdi.fileName1, item.fdi.fileName2);
-                itemDiff += buildValuesDiffString("Type", item.fdi.fileType1, item.fdi.fileType2);
-                itemDiff += buildValuesDiffString("Size", item.fdi.fileSize1, item.fdi.fileSize2);
-                itemDiff += buildValuesDiffString("Tag(s)", item.fdi.fileCat1, item.fdi.fileCat2);
-                itemDiff += buildValuesDiffString("Description", item.fdi.fileDesc1, item.fdi.fileDesc2);
-                itemDiff += buildValuesDiffString("Provenance Description", item.fdi.fileProvFree1, item.fdi.fileProvFree2);
+                itemDiff += buildValuesDiffString("Name", metadataDiff.getFileName1(), metadataDiff.getFileName2());
+                itemDiff += buildValuesDiffString("Type", metadataDiff.getFileType1(), metadataDiff.getFileType2());
+                itemDiff += buildValuesDiffString("Size", metadataDiff.getFileSize1(), metadataDiff.getFileSize2());
+                itemDiff += buildValuesDiffString("Tag(s)", metadataDiff.getFileCat1(), metadataDiff.getFileCat2());
+                itemDiff += buildValuesDiffString("Description", metadataDiff.getFileDesc1(), metadataDiff.getFileDesc2());
+                itemDiff += buildValuesDiffString("Provenance Description", metadataDiff.getFileProvFree1(), metadataDiff.getFileProvFree2());
                 fileReplaced += itemDiff;
             }
             retVal += fileReplaced;
@@ -323,7 +335,8 @@ public final class DatasetVersionDifference {
     }
 
     public boolean isEmpty() {
-        return (detailDataByBlock.size() + addedFiles.size() + removedFiles.size() + replacedFiles.size() + changedFileMetadata.size()) == 0;
+        return (detailDataByBlock.size() + addedFiles.size() + removedFiles.size() +
+                replacedFiles.size() + changedFileMetadata.size() + changedFileTerms.size()) == 0;
     }
 
     public boolean isNotEmpty() {
@@ -371,20 +384,16 @@ public final class DatasetVersionDifference {
             for (FileMetadata removed : removedFiles) {
                 DataFile test = removed.getDataFile();
                 if (test.getId().equals(replacedId)) {
-                    replacedFiles.add(new Tuple2<FileMetadata, FileMetadata>(removed, added));
+                    replacedFiles.add(new FileMetadataDiff(removed, added));
                 }
             }
         }
         replacedFiles.stream().forEach(replaced -> {
-            removedFiles.remove(replaced._1());
-            addedFiles.remove(replaced._2());
+            removedFiles.remove(replaced.getOldValue());
+            addedFiles.remove(replaced.getNewValue());
         });
     }
 
-
-    private void addToList(List<Tuple2<DatasetField, DatasetField>> listIn, DatasetField dsfo, DatasetField dsfn) {
-        listIn.add(new Tuple2<>(dsfo, dsfn));
-    }
 
     private void addToSummary(DatasetField dsfo, DatasetField dsfn) {
         if (dsfo == null) {
@@ -395,43 +404,48 @@ public final class DatasetVersionDifference {
             dsfn = new DatasetField();
             dsfn.setDatasetFieldType(dsfo.getDatasetFieldType());
         }
-        boolean addedToAll = false;
-        for (List<Tuple2<DatasetField, DatasetField>> blockList : detailDataByBlock) {
-            Tuple2<DatasetField, DatasetField> dsft = blockList.get(0);
-            if (dsft._1().getDatasetFieldType().getMetadataBlock().equals(dsfo.getDatasetFieldType().getMetadataBlock())) {
-                addToList(blockList, dsfo, dsfn);
-                addedToAll = true;
+        MetadataBlock blockToUpdate = dsfo.getDatasetFieldType().getMetadataBlock();
+        List<DatasetFieldDiff> blockListDiffToUpdate = extractOrCreateDiffForBlock(blockToUpdate);
+        
+        blockListDiffToUpdate.add(new DatasetFieldDiff(dsfo, dsfn));
+    }
+
+    private List<DatasetFieldDiff> extractOrCreateDiffForBlock(MetadataBlock blockToUpdate) {
+        for (List<DatasetFieldDiff> blockListDiff : detailDataByBlock) {
+            MetadataBlock block = blockListDiff.get(0).getOldValue().getDatasetFieldType().getMetadataBlock();
+            if (block.equals(blockToUpdate)) {
+                return blockListDiff;
             }
         }
-        if (!addedToAll) {
-            List<Tuple2<DatasetField, DatasetField>> newList = new ArrayList<>();
-            addToList(newList, dsfo, dsfn);
-            detailDataByBlock.add(newList);
-        }
+        List<DatasetFieldDiff> newBlockListDiff = new ArrayList<>();
+        detailDataByBlock.add(newBlockListDiff);
+        return newBlockListDiff;
     }
 
     private void updateBlockSummary(MetadataBlock metadataBlock, int added, int deleted, int changed) {
-        int indexToUpdate = -1;
         
         for (int i=0; i<blockDataForNote.size(); ++i) {
-            MetadataBlock metadataBlockFromBlockData = blockDataForNote.get(i)._1();
+            MetadataBlock metadataBlockFromBlockData = blockDataForNote.get(i).getItem();
             if (metadataBlockFromBlockData.equals(metadataBlock)) {
-                indexToUpdate = i;
-                break;
+                blockDataForNote.get(i).incrementAdded(added);
+                blockDataForNote.get(i).incrementRemoved(deleted);
+                blockDataForNote.get(i).incrementChanged(changed);
+                return;
             }
         }
-        
-        if (indexToUpdate != -1) {
-            Tuple4<MetadataBlock, Integer, Integer, Integer> blockList = blockDataForNote.remove(indexToUpdate);
-            blockDataForNote.add(new Tuple4<>(blockList._1(), blockList._2() + added, blockList._3() + deleted, blockList._4() + changed));
-            return;
-        }
-        blockDataForNote.add(new Tuple4<>(metadataBlock, added, deleted, changed));
-
+        MetadataBlockChangeCounts changeCounts = new MetadataBlockChangeCounts(metadataBlock);
+        changeCounts.incrementAdded(added);
+        changeCounts.incrementRemoved(deleted);
+        changeCounts.incrementChanged(changed);
+        blockDataForNote.add(changeCounts);
     }
 
     private void addToNoteSummary(DatasetFieldType dsft, int added, int deleted, int changed) {
-        summaryDataForNote.add(new Tuple4<>(dsft, added, deleted, changed));
+        DatasetFieldChangeCounts counts = new DatasetFieldChangeCounts(dsft);
+        counts.incrementAdded(added);
+        counts.incrementRemoved(deleted);
+        counts.incrementChanged(changed);
+        summaryDataForNote.add(counts);
     }
 
     private boolean areFilesMetadataEqual(FileMetadata fmdo, FileMetadata fmdn) {
@@ -452,6 +466,20 @@ public final class DatasetVersionDifference {
             return false;
         }
 
+        return true;
+    }
+
+    private boolean areFileTermsEqual(FileTermsOfUse termsOriginal, FileTermsOfUse termsNew) {
+        if (termsOriginal.getTermsOfUseType() != termsNew.getTermsOfUseType()) {
+            return false;
+        }
+        if (termsOriginal.getTermsOfUseType() == TermsOfUseType.LICENSE_BASED) {
+            return termsOriginal.getLicense().getId().equals(termsNew.getLicense().getId());
+        }
+        if (termsOriginal.getTermsOfUseType() == TermsOfUseType.RESTRICTED) {
+            return termsOriginal.getRestrictType() == termsNew.getRestrictType() &&
+                    StringUtils.equals(termsOriginal.getRestrictCustomText(), termsNew.getRestrictCustomText());
+        }
         return true;
     }
 
@@ -514,69 +542,76 @@ public final class DatasetVersionDifference {
         List<String> fileChangeStrings = new ArrayList<>();
 
         if (addedFiles.size() > 0) {
-            String addedString = BundleUtil.getStringFromBundle("dataset.version.file.added", Arrays.asList(addedFiles.size() + ""));
+            String addedString = BundleUtil.getStringFromBundle("dataset.version.file.added", addedFiles.size());
             fileChangeStrings.add(addedString);
         }
 
         if (removedFiles.size() > 0) {
-            String removedString = BundleUtil.getStringFromBundle("dataset.version.file.removed", Arrays.asList(removedFiles.size() + ""));
+            String removedString = BundleUtil.getStringFromBundle("dataset.version.file.removed", removedFiles.size());
             fileChangeStrings.add(removedString);
         }
 
         if (replacedFiles.size() > 0) {
-            String replacedString = BundleUtil.getStringFromBundle("dataset.version.file.replaced", Arrays.asList(replacedFiles.size() + ""));
+            String replacedString = BundleUtil.getStringFromBundle("dataset.version.file.replaced", replacedFiles.size());
             fileChangeStrings.add(replacedString);
         }
 
         if (changedFileMetadata.size() > 0) {
-            String changedFileMetadataString = BundleUtil.getStringFromBundle("dataset.version.file.changed", Arrays.asList(changedFileMetadata.size() + ""));
+            String changedFileMetadataString = BundleUtil.getStringFromBundle("dataset.version.file.changedMetadata", changedFileMetadata.size());
             fileChangeStrings.add(changedFileMetadataString);
+        }
+
+        if (changedFileTerms.size() > 0) {
+            String changedFileTermString = BundleUtil.getStringFromBundle("dataset.version.file.changedTerms", changedFileTerms.size());
+            fileChangeStrings.add(changedFileTermString);
         }
 
         if (fileChangeStrings.isEmpty()) {
             return StringUtils.EMPTY;
         }
-        return BundleUtil.getStringFromBundle("dataset.version.file.label") + " (" + StringUtils.join(fileChangeStrings, ';') + ")";
+        return "(" + StringUtils.join(fileChangeStrings, "; ") + ")";
     }
 
     
     private DatasetReplaceFileItem buildDatasetReplaceFileItem(FileMetadata replacedFile, FileMetadata newFile) {
-        DatasetFileDifferenceItem fdi = new DatasetFileDifferenceItem();
-        fillFileMetadataDifference(fdi, replacedFile, newFile);
+        DataFile replacedDataFile = replacedFile.getDataFile();
+        FileSummary replacedSummary = new FileSummary(
+                replacedDataFile.getId().toString(),
+                replacedDataFile.getChecksumType(),
+                replacedDataFile.getChecksumValue());
+
+        DataFile newDataFile = newFile.getDataFile();
+        FileSummary newSummary = new FileSummary(
+                newDataFile.getId().toString(),
+                newDataFile.getChecksumType(),
+                newDataFile.getChecksumValue());
         
-        DatasetReplaceFileItem fdr = new DatasetReplaceFileItem();
-        fdr.setFdi(fdi);
-        fdr.setFile1Id(replacedFile.getDataFile().getId().toString());
-        if (newFile.getDataFile().getId() != null) {
-            fdr.setFile2Id(newFile.getDataFile().getId().toString());
-        }
-        fdr.setFile1ChecksumType(replacedFile.getDataFile().getChecksumType());
-        fdr.setFile2ChecksumType(newFile.getDataFile().getChecksumType());
-        fdr.setFile1ChecksumValue(replacedFile.getDataFile().getChecksumValue());
-        fdr.setFile2ChecksumValue(newFile.getDataFile().getChecksumValue());
+        FileMetadataDifferenceItem metadataDiff = new FileMetadataDifferenceItem();
+        fillFileMetadataDifference(metadataDiff, replacedFile, newFile);
+        
+        DatasetReplaceFileItem fdr = new DatasetReplaceFileItem(replacedSummary, newSummary, metadataDiff);
         return fdr;
     }
     
     private DatasetFileDifferenceItem buildDatasetFileDifferenceItem(FileMetadata fm1, FileMetadata fm2) {
-        DatasetFileDifferenceItem fdi = new DatasetFileDifferenceItem();
-        fillFileMetadataDifference(fdi, fm1, fm2);
-        
         DataFile dataFileForDifference = fm1 != null ? fm1.getDataFile() : fm2.getDataFile();
+        FileSummary dataFileSummary = new FileSummary(
+                dataFileForDifference.getId().toString(),
+                dataFileForDifference.getChecksumType(),
+                dataFileForDifference.getChecksumValue());
+
+        FileMetadataDifferenceItem metadataDiff = new FileMetadataDifferenceItem();
+        fillFileMetadataDifference(metadataDiff, fm1, fm2);
         
-        fdi.setFileId(dataFileForDifference.getId().toString());
-        fdi.setFileChecksumType(dataFileForDifference.getChecksumType());
-        fdi.setFileChecksumValue(dataFileForDifference.getChecksumValue());
+        DatasetFileDifferenceItem fdi = new DatasetFileDifferenceItem(dataFileSummary, metadataDiff);
         
         return fdi;
     }
     
     private void initDatasetFilesDifferencesList() {
-        datasetFilesDiffList = new ArrayList<>();
-        datasetFilesReplacementList = new ArrayList<>();
-
         
         replacedFiles.stream()
-            .map((replacedPair) -> buildDatasetReplaceFileItem(replacedPair._1(), replacedPair._2()))
+            .map((replacedPair) -> buildDatasetReplaceFileItem(replacedPair.getOldValue(), replacedPair.getNewValue()))
             .forEach(datasetFilesReplacementList::add);
         
         for (FileMetadata addedFile: addedFiles) {
@@ -585,15 +620,25 @@ public final class DatasetVersionDifference {
         for (FileMetadata removedFile: removedFiles) {
             datasetFilesDiffList.add(buildDatasetFileDifferenceItem(removedFile, null));
         }
-        for (Tuple2<FileMetadata, FileMetadata> changedPair: changedFileMetadata) {
-            FileMetadata originalMetadata = changedPair._1();
-            FileMetadata newMetadata = changedPair._2();
+        for (FileMetadataDiff changedPair: changedFileMetadata) {
+            FileMetadata originalMetadata = changedPair.getOldValue();
+            FileMetadata newMetadata = changedPair.getNewValue();
             datasetFilesDiffList.add(buildDatasetFileDifferenceItem(originalMetadata, newMetadata));
+        }
+        
+        for (TermsOfUseDiff changedTermsPair: changedFileTerms) {
+            FileTermsOfUse originalTerms = changedTermsPair.getOldValue();
+            FileTermsOfUse newTerms = changedTermsPair.getNewValue();
+            DataFile dataFile = originalTerms.getFileMetadata().getDataFile();
+            
+            datasetFileTermsDiffList.add(new DatasetFileTermDifferenceItem(
+                    new FileSummary(dataFile.getId().toString(), dataFile.getChecksumType(), dataFile.getChecksumValue()),
+                    originalTerms, newTerms));
         }
     }
     
 
-    private void fillFileMetadataDifference(DatasetFileDifferenceItem fdi, FileMetadata fm1, FileMetadata fm2) {
+    private void fillFileMetadataDifference(FileMetadataDifferenceItem fdi, FileMetadata fm1, FileMetadata fm2) {
 
         if (fm1 == null && fm2 == null) {
             return;
@@ -700,298 +745,5 @@ public final class DatasetVersionDifference {
         return System.lineSeparator() + " " + valueType + ": " +
             StringUtils.defaultString(val1, "N/A") + " : " + StringUtils.defaultString(val2, "N/A ");
     }
-    
-    
-    // -------------------- INNER CLASSES --------------------
-    
-    public class DifferenceSummaryItem {
-        private String displayName;
-        private int changed;
-        private int added;
-        private int deleted;
-        private int replaced;
-        private boolean multiple;
 
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public void setDisplayName(String displayName) {
-            this.displayName = displayName;
-        }
-
-        public int getChanged() {
-            return changed;
-        }
-
-        public void setChanged(int changed) {
-            this.changed = changed;
-        }
-
-        public int getAdded() {
-            return added;
-        }
-
-        public void setAdded(int added) {
-            this.added = added;
-        }
-
-        public int getDeleted() {
-            return deleted;
-        }
-
-        public void setDeleted(int deleted) {
-            this.deleted = deleted;
-        }
-
-        public int getReplaced() {
-            return replaced;
-        }
-
-        public void setReplaced(int replaced) {
-            this.replaced = replaced;
-        }
-
-        public boolean isMultiple() {
-            return multiple;
-        }
-
-        public void setMultiple(boolean multiple) {
-            this.multiple = multiple;
-        }
-
-
-    }
-
-    public class DatasetReplaceFileItem {
-
-        public DatasetFileDifferenceItem getFdi() {
-            return fdi;
-        }
-
-        public void setFdi(DatasetFileDifferenceItem fdi) {
-            this.fdi = fdi;
-        }
-
-        public String getFile1Id() {
-            return file1Id;
-        }
-
-        public void setFile1Id(String file1Id) {
-            this.file1Id = file1Id;
-        }
-
-        public String getFile2Id() {
-            return file2Id;
-        }
-
-        public void setFile2Id(String file2Id) {
-            this.file2Id = file2Id;
-        }
-
-        public DataFile.ChecksumType getFile1ChecksumType() {
-            return file1ChecksumType;
-        }
-
-        public void setFile1ChecksumType(DataFile.ChecksumType file1ChecksumType) {
-            this.file1ChecksumType = file1ChecksumType;
-        }
-
-        public DataFile.ChecksumType getFile2ChecksumType() {
-            return file2ChecksumType;
-        }
-
-        public void setFile2ChecksumType(DataFile.ChecksumType file2ChecksumType) {
-            this.file2ChecksumType = file2ChecksumType;
-        }
-
-        public String getFile1ChecksumValue() {
-            return file1ChecksumValue;
-        }
-
-        public void setFile1ChecksumValue(String file1ChecksumValue) {
-            this.file1ChecksumValue = file1ChecksumValue;
-        }
-
-        public String getFile2ChecksumValue() {
-            return file2ChecksumValue;
-        }
-
-        public void setFile2ChecksumValue(String file2ChecksumValue) {
-            this.file2ChecksumValue = file2ChecksumValue;
-        }
-
-        private DatasetFileDifferenceItem fdi;
-        private String file1Id;
-        private String file2Id;
-        private DataFile.ChecksumType file1ChecksumType;
-        private DataFile.ChecksumType file2ChecksumType;
-        private String file1ChecksumValue;
-        private String file2ChecksumValue;
-    }
-
-    public class DatasetFileDifferenceItem {
-
-        public DatasetFileDifferenceItem() {
-        }
-
-        private String fileId;
-        private DataFile.ChecksumType fileChecksumType;
-        private String fileChecksumValue;
-
-        private String fileName1;
-        private String fileType1;
-        private String fileSize1;
-        private String fileCat1;
-        private String fileDesc1;
-        private String fileProvFree1;
-
-        private String fileName2;
-        private String fileType2;
-        private String fileSize2;
-        private String fileCat2;
-        private String fileDesc2;
-        private String fileProvFree2;
-
-        public String getFileProvFree1() {
-            return fileProvFree1;
-        }
-
-        public void setFileProvFree1(String fileProvFree1) {
-            this.fileProvFree1 = fileProvFree1;
-        }
-
-        public String getFileProvFree2() {
-            return fileProvFree2;
-        }
-
-        public void setFileProvFree2(String fileProvFree2) {
-            this.fileProvFree2 = fileProvFree2;
-        }
-
-        private boolean file1Empty = false;
-        private boolean file2Empty = false;
-
-        public String getFileId() {
-            return fileId;
-        }
-
-        public void setFileId(String fid) {
-            this.fileId = fid;
-        }
-
-        public String getFileName1() {
-            return fileName1;
-        }
-
-        public void setFileName1(String fn) {
-            this.fileName1 = fn;
-        }
-
-        public String getFileType1() {
-            return fileType1;
-        }
-
-        public void setFileType1(String ft) {
-            this.fileType1 = ft;
-        }
-
-        public String getFileSize1() {
-            return fileSize1;
-        }
-
-        public void setFileSize1(String fs) {
-            this.fileSize1 = fs;
-        }
-
-        public String getFileCat1() {
-            return fileCat1;
-        }
-
-        public void setFileCat1(String fc) {
-            this.fileCat1 = fc;
-        }
-
-        public String getFileDesc1() {
-            return fileDesc1;
-        }
-
-        public void setFileDesc1(String fd) {
-            this.fileDesc1 = fd;
-        }
-
-        public String getFileName2() {
-            return fileName2;
-        }
-
-        public void setFileName2(String fn) {
-            this.fileName2 = fn;
-        }
-
-        public String getFileType2() {
-            return fileType2;
-        }
-
-        public void setFileType2(String ft) {
-            this.fileType2 = ft;
-        }
-
-        public String getFileSize2() {
-            return fileSize2;
-        }
-
-        public void setFileSize2(String fs) {
-            this.fileSize2 = fs;
-        }
-
-        public String getFileCat2() {
-            return fileCat2;
-        }
-
-        public void setFileCat2(String fc) {
-            this.fileCat2 = fc;
-        }
-
-        public String getFileDesc2() {
-            return fileDesc2;
-        }
-
-        public void setFileDesc2(String fd) {
-            this.fileDesc2 = fd;
-        }
-
-        public boolean isFile1Empty() {
-            return file1Empty;
-        }
-
-        public boolean isFile2Empty() {
-            return file2Empty;
-        }
-
-        public void setFile1Empty(boolean state) {
-            file1Empty = state;
-        }
-
-        public void setFile2Empty(boolean state) {
-            file2Empty = state;
-        }
-
-        public DataFile.ChecksumType getFileChecksumType() {
-            return fileChecksumType;
-        }
-
-        public void setFileChecksumType(DataFile.ChecksumType fileChecksumType) {
-            this.fileChecksumType = fileChecksumType;
-        }
-
-        public String getFileChecksumValue() {
-            return fileChecksumValue;
-        }
-
-        public void setFileChecksumValue(String fileChecksumValue) {
-            this.fileChecksumValue = fileChecksumValue;
-        }
-
-    }
-    
 }

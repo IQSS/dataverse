@@ -46,6 +46,16 @@ public class BundleUtil {
         return stringFromPropertyFile;
     }
 
+    public static String getStringFromBundle(String key, Object ... arguments) {
+        String stringFromPropertyFile = getStringFromPropertyFile(key, DEFAULT_BUNDLE_FILE);
+
+        if (arguments.length > 0) {
+            return MessageFormat.format(stringFromPropertyFile, arguments);
+        }
+
+        return stringFromPropertyFile;
+    }
+
     /**
      * Gets display name for specified bundle key. If it is external bundle,
      * method tries to access external directory (jvm property - dataverse.lang.directory)

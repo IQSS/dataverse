@@ -709,11 +709,11 @@
 
                     </ui:fragment>
 
-                        <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
+                    <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
                                    dynamic="true"
                                    rendered="#{empty DatasetPage.editMode}">
 
-                            <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned or
+                        <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned or
                                                               (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset())}">
                             <ui:include src="filesFragment.xhtml">
                                 <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
@@ -722,7 +722,7 @@
 
                         <!-- 4.2.1: the 3 tabs below - metadata, terms and versions: these account for ~100 queries total -->
                         <!-- a lot of these however, are repeated queries on AuthenticatedUser and RoleAssignment; once these are optimized, the tabs will become very cheap. -->
-                            <p:tab id="metadataTab" title="#{bundle['file.dataFilesTab.metadata.header']}"
+                        <p:tab id="metadataTab" title="#{bundle['file.dataFilesTab.metadata.header']}"
                                    rendered="#{(!DatasetPage.workingVersion.deaccessioned or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))
                                              and (empty DatasetPage.editMode)}">
                             <ui:include src="metadataTab.xhtml"/>
