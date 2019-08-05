@@ -166,7 +166,7 @@
                                                                 and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                         <button type="button"
                                                 class="btn btn-default btn-access #{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}"
-                                                onclick="PF('inreview').show()">
+                                                onclick="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'return false;' : 'sentToReview();'}">
                                             <span class="glyphicon glyphicon-globe"/> #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
                                         </button>
                                     </ui:fragment>
@@ -1540,6 +1540,11 @@
 
                 function checkNewlyRestricted() {
                     $('button[id$="datasetSave"]').trigger('click');
+                }
+
+                /* using this function to prevent syntax errors on conditionally deciding onclick action */
+                function sentToReview() {
+                    PF('inreview').show();
                 }
             </script>
         </ui:define>
