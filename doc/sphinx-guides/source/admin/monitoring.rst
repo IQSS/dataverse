@@ -108,6 +108,11 @@ Edit Draft Versions Logging
 
 Changes made to draft versions of datasets are logged in a folder called logs/edit-drafts. See https://github.com/IQSS/dataverse/issues/5145 for more information on this logging.
 
+Solr Indexing Failures Logging
+------------------------------
+
+Failures occurring during the indexing of dataverses and datasets are logged in a folder called logs/process-failures. This logging will include instructions for manually re-running the failed processes. It may be advantageous to set up a automatic job to monitor new entries into this log folder so that indexes could be re-run.
+
 EJB Timers
 ----------
 
