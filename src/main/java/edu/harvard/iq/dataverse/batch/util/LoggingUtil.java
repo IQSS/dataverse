@@ -19,7 +19,10 @@
 
 package edu.harvard.iq.dataverse.batch.util;
 
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import static edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordJobListener.SEP;
+import edu.harvard.iq.dataverse.engine.command.Command;
 import org.apache.commons.io.FileUtils;
 
 import javax.batch.runtime.JobExecution;
@@ -37,6 +40,7 @@ import java.util.logging.Logger;
 public class LoggingUtil {
 
     private static final Logger logger = Logger.getLogger(LoggingUtil.class.getName());
+    private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
     public static void saveJsonLog(String jobJson, String logDir, String jobId) {
         try {
@@ -60,6 +64,25 @@ public class LoggingUtil {
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error saving log report: " + fileName + " " + e.getMessage());
         }
+    }
+    
+    public static void writeOnSuccessFailureLog(Command command, String failureNotes, DvObject dvo){
+        String logDir = System.getProperty("com.sun.aas.instanceRoot") + SEP + "logs" + SEP + "process-failures" + SEP;
+        String identifier = dvo.getIdentifier();
+        
+        if (identifier != null) {
+            identifier = identifier.substring(identifier.indexOf("/") + 1);
+        } else {
+            identifier = dvo.getId().toString();
+        }
+        if (command != null){
+            failureNotes =  failureNotes + "\r\n Command: " + command.toString();
+        }
+
+        String logTimestamp = logFormatter.format(new Date());
+        String fileName = "/process-failure" +  "-" + identifier + "-" + logTimestamp + ".txt";
+        LoggingUtil.saveLogFile(failureNotes, logDir, fileName);
+        
     }
      
     public static void saveLogFileAppendWithHeader(String fileContent, String logDir, String fileName, String logHeader) {

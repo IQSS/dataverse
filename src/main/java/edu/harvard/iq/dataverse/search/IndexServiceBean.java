@@ -54,12 +54,15 @@ import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import org.apache.commons.lang.StringUtils;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocument;
@@ -126,13 +129,34 @@ public class IndexServiceBean {
     public static final String HARVESTED = "Harvested";
     private String rootDataverseName;
     private Dataverse rootDataverseCached;
+    private SolrClient solrServer;
 
+    @PostConstruct
+    public void init() {
+        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
+        solrServer = new HttpSolrClient.Builder(urlString).build();
+
+        rootDataverseName = findRootDataverseCached().getName();
+    }
+
+    @PreDestroy
+    public void close() {
+        if (solrServer != null) {
+            try {
+                solrServer.close();
+            } catch (IOException e) {
+                logger.warning("Solr closing error: " + e);
+            }
+            solrServer = null;
+        }
+    }
+    
     @TransactionAttribute(REQUIRES_NEW)
-    public Future<String> indexDataverseInNewTransaction(Dataverse dataverse) {
+    public Future<String> indexDataverseInNewTransaction(Dataverse dataverse) throws SolrServerException, IOException{
         return indexDataverse(dataverse);
     }
 
-    public Future<String> indexDataverse(Dataverse dataverse) {
+    public Future<String> indexDataverse(Dataverse dataverse) throws SolrServerException, IOException {
         logger.fine("indexDataverse called on dataverse id " + dataverse.getId() + "(" + dataverse.getAlias() + ")");
         if (dataverse.getId() == null) {
             String msg = "unable to index dataverse. id was null (alias: " + dataverse.getAlias() + ")";
@@ -258,7 +282,7 @@ public class IndexServiceBean {
     }
 
     @TransactionAttribute(REQUIRES_NEW)
-    public Future<String> indexDatasetInNewTransaction(Long datasetId) { //Dataset dataset) {
+    public Future<String> indexDatasetInNewTransaction(Long datasetId) throws  SolrServerException, IOException{ //Dataset dataset) {
         boolean doNormalSolrDocCleanUp = false;
         Dataset dataset = em.find(Dataset.class, datasetId);
         // return indexDataset(dataset, doNormalSolrDocCleanUp);
@@ -268,18 +292,18 @@ public class IndexServiceBean {
     }
 
     @Asynchronous
-    public Future<String> asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
+    public Future<String> asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
         return indexDataset(dataset, doNormalSolrDocCleanUp);
     }
     
     @Asynchronous
-    public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) {
+    public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
         for(Dataset dataset : datasets) {
             indexDataset(dataset, true);
         }
     }
     
-    public Future<String> indexDvObject(DvObject objectIn){
+    public Future<String> indexDvObject(DvObject objectIn) throws  SolrServerException, IOException {
         
         if (objectIn.isInstanceofDataset() ){
             return (indexDataset((Dataset)objectIn, true));
@@ -290,7 +314,7 @@ public class IndexServiceBean {
         return null;
     }
     
-    public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
+    public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
         logger.fine("indexing dataset " + dataset.getId());
         /**
          * @todo should we use solrDocIdentifierDataset or
@@ -617,7 +641,7 @@ public class IndexServiceBean {
             return new AsyncResult<>(result);
         }
     }
-
+    
     private String deleteDraftFiles(List<String> solrDocIdsForDraftFilesToDelete) {
         String deleteDraftFilesResults = "";
         IndexResponse indexResponse = solrIndexService.deleteMultipleSolrIds(solrDocIdsForDraftFilesToDelete);
@@ -639,11 +663,11 @@ public class IndexServiceBean {
         return indexResponse;
     }
 
-    private String addOrUpdateDataset(IndexableDataset indexableDataset) {
+    private String addOrUpdateDataset(IndexableDataset indexableDataset) throws  SolrServerException, IOException {
         return addOrUpdateDataset(indexableDataset, null);
     }
     
-    private String addOrUpdateDataset(IndexableDataset indexableDataset, Set<Long> datafilesInDraftVersion) {
+    private String addOrUpdateDataset(IndexableDataset indexableDataset, Set<Long> datafilesInDraftVersion) throws  SolrServerException, IOException {
         IndexableDataset.DatasetState state = indexableDataset.getDatasetState();
         Dataset dataset = indexableDataset.getDatasetVersion().getDataset();
         logger.fine("adding or updating Solr document for dataset id " + dataset.getId());
@@ -1144,13 +1168,13 @@ public class IndexServiceBean {
 
         try {
             solrClientService.getSolrClient().add(docs);
-        } catch (SolrServerException | IOException ex) {
-            return ex.toString();
-        }
-        try {
             solrClientService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
-            return ex.toString();
+            if (ex.getCause() instanceof SolrServerException) {
+                throw new SolrServerException(ex);
+            } else if (ex.getCause() instanceof IOException) {
+                throw new IOException(ex);
+            }
         }
 
         Long dsId = dataset.getId();
