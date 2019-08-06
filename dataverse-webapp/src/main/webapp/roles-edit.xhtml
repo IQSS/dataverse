@@ -62,7 +62,8 @@
                         </div>
                     </div>
                 </div>
-                <p:watermark value="#{bundle['dataverse.permissions.roles.watermark.required']}" for="roleName roleAlias" id="requiredWatermark" />
+                <p:watermark value="#{bundle['dataverse.permissions.roles.watermark.required']}" for="roleName" />
+                <p:watermark value="#{bundle['dataverse.permissions.roles.watermark.required']}" for="roleAlias" />
             </p:panel>
             <p:panel id="editRolePermissionPanel" styleClass="panelLayoutBlock form-group" header="#{bundle['dataverse.permissions.roles.roleList.header']}">
                 <p class="help-block">
