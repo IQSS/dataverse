@@ -64,6 +64,9 @@ public class MoveIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.assignee", equalTo("@" + authorUsername))
                 .body("data._roleAlias", equalTo("dsContributor"));
+        
+        UtilIT.publishDataverseViaNativeApi(curatorDataverseAlias1, curatorApiToken).then().assertThat()
+                .statusCode(OK.getStatusCode());
 
         Response createDataset = UtilIT.createRandomDatasetViaNativeApi(curatorDataverseAlias1, authorApiToken);
         createDataset.prettyPrint();
