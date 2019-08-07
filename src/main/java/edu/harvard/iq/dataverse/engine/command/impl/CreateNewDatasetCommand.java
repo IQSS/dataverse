@@ -13,9 +13,11 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -112,9 +114,12 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
-        return Collections.singletonMap("",
-                dv.isReleased() ? Collections.singleton(Permission.AddDataset)
-                : new HashSet<>(Arrays.asList(Permission.AddDataset,Permission.ViewUnpublishedDataverse)));
+        Map<String, Set<Permission>> ret = new HashMap<>();
+        ret.put("", new HashSet<>(Arrays.asList(Permission.AddDataset)));
+        if (!dv.isReleased()) {
+            ret.get("").add(Permission.ViewUnpublishedDataverse);
+        }
+        return ret;
     }
         
 }
