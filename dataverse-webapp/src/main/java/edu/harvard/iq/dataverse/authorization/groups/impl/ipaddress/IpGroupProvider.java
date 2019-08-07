@@ -1,9 +1,11 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.group.IpAddress;
+import edu.harvard.iq.dataverse.persistence.group.IpGroup;
+import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -24,7 +26,7 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
 
     @Override
     public String getGroupProviderAlias() {
-        return "ip";
+        return IpGroup.GROUP_TYPE;
     }
 
     @Override
@@ -50,7 +52,7 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
     @Override
     public Set<IpGroup> groupsFor(DataverseRequest req) {
         if (req.getSourceAddress() != null) {
-            return updateProvider(ipGroupsService.findAllIncludingIp(req.getSourceAddress()));
+            return ipGroupsService.findAllIncludingIp(req.getSourceAddress());
         } else {
             return Collections.emptySet();
         }
@@ -58,34 +60,20 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
 
     @Override
     public IpGroup get(String groupAlias) {
-        return setProvider(ipGroupsService.getByGroupName(groupAlias));
+        return ipGroupsService.getByGroupName(groupAlias);
     }
 
     public IpGroup get(Long id) {
-        return setProvider(ipGroupsService.get(id));
+        return ipGroupsService.get(id);
     }
 
     @Override
     public Set<IpGroup> findGlobalGroups() {
-        return updateProvider(new HashSet<>(ipGroupsService.findAll()));
-    }
-
-    private IpGroup setProvider(IpGroup g) {
-        if (g != null) {
-            g.setGroupProvider(this);
-        }
-        return g;
-    }
-
-    private Set<IpGroup> updateProvider(Set<IpGroup> groups) {
-        groups.forEach(g -> g.setGroupProvider(this));
-        return groups;
+        return new HashSet<>(ipGroupsService.findAll());
     }
 
     public IpGroup store(IpGroup grp) {
-        grp.setGroupProvider(this);
         final IpGroup storedGroup = ipGroupsService.store(grp);
-        storedGroup.setGroupProvider(this); // The storage might un-set the provider, e.g. for when a group is updated.
         return storedGroup;
     }
 
@@ -114,5 +102,16 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
             i++;
         }
         return base + "-" + i;
+    }
+
+    @Override
+    public Class<IpGroup> providerFor() {
+        return IpGroup.class;
+    }
+
+    @Override
+    public boolean contains(DataverseRequest aRequest, IpGroup group) {
+        IpAddress addr = aRequest.getSourceAddress();
+        return (addr != null) && group.containsAddress(addr);
     }
 }

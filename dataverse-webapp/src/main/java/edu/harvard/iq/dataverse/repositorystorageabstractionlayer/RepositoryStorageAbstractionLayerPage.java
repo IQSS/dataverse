@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.repositorystorageabstractionlayer;
 
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.locality.StorageSite;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
+import edu.harvard.iq.dataverse.persistence.StorageSite;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import javax.ejb.EJB;

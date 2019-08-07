@@ -5,8 +5,8 @@
  */
 package edu.harvard.iq.dataverse.datasetutility;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 
 /**
  * Used for showing a list of File Version differences

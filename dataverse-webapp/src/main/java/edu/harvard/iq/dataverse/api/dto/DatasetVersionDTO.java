@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api.dto;
 
-import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion.VersionState;
 
 import java.util.ArrayList;
 import java.util.List;

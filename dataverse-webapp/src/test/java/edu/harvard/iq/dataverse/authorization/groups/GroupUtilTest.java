@@ -1,8 +1,9 @@
 package edu.harvard.iq.dataverse.authorization.groups;
 
-import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AllUsers;
-import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.group.AllUsers;
+import edu.harvard.iq.dataverse.persistence.group.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.persistence.group.Group;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import org.junit.Test;
 
 import java.util.LinkedHashSet;

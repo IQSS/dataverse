@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization.providers;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticationProviderRow;
 
 /**
  * This factory creates {@link AuthenticationProvider}s from {@link AuthenticationProviderRow}s.

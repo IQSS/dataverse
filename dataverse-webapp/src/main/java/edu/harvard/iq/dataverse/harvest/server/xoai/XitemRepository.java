@@ -14,10 +14,10 @@ import com.lyncode.xoai.dataprovider.model.Item;
 import com.lyncode.xoai.dataprovider.model.ItemIdentifier;
 import com.lyncode.xoai.dataprovider.model.Set;
 import com.lyncode.xoai.dataprovider.repository.ItemRepository;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.harvest.server.OAIRecord;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.harvest.OAIRecord;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
 import java.util.ArrayList;

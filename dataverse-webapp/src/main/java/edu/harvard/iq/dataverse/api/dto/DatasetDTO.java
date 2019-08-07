@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api.dto;
 
-import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 
 import java.util.List;
 

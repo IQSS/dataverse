@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.datafile.page;
 
-import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 
 import java.util.List;
 

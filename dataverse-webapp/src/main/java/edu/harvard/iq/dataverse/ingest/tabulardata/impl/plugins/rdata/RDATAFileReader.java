@@ -20,12 +20,12 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata;
 
 
-import edu.harvard.iq.dataverse.DataTable;
-import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
+import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.rserve.RRequest;
 import edu.harvard.iq.dataverse.rserve.RRequestBuilder;
 import org.apache.commons.lang.RandomStringUtils;

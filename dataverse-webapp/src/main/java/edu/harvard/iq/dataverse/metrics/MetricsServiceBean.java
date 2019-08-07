@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.metrics;
 
-import edu.harvard.iq.dataverse.Metric;
+import edu.harvard.iq.dataverse.persistence.cache.Metric;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import javax.ejb.EJB;

@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse.api.errorhandlers;
 
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.common.BundleUtil;
 
 import javax.json.Json;
 import javax.servlet.http.HttpServletRequest;

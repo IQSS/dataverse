@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.common.files.mime.ShapefileMimeType;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -67,8 +68,8 @@ public class ShapefileHandler {
     private static final Logger logger = Logger.getLogger(ShapefileHandler.class.getCanonicalName());
 
     // Reference for these extensions: http://en.wikipedia.org/wiki/Shapefile
-    public final static String SHAPEFILE_FILE_TYPE = "application/zipped-shapefile";
-    public final static String SHAPEFILE_FILE_TYPE_FRIENDLY_NAME = "Shapefile as ZIP Archive";
+    public final static String SHAPEFILE_FILE_TYPE = ShapefileMimeType.SHAPEFILE_FILE_TYPE.getMimeValue();
+    public final static String SHAPEFILE_FILE_TYPE_FRIENDLY_NAME = ShapefileMimeType.SHAPEFILE_FILE_TYPE.getFriendlyName();
     public final static List<String> SHAPEFILE_MANDATORY_EXTENSIONS = Arrays.asList("shp", "shx", "dbf", "prj");
     public final static String SHP_XML_EXTENSION = "shp.xml";
     public final static String BLANK_EXTENSION = "__PLACEHOLDER-FOR-BLANK-EXTENSION__";

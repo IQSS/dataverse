@@ -34,7 +34,7 @@
  * a browser, similar to links shared via Dropbox, Google, etc.
  * <p>
  * When reviewers click a Private URL their browser sessions are set to the
- * "{@link edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser}" that
+ * "{@link edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser}" that
  * has the "Member" role only on the dataset in question and redirected to that
  * dataset, where they will see an indication in blue at the top of the page
  * that they are viewing an unpublished dataset. If the reviewer happens to be

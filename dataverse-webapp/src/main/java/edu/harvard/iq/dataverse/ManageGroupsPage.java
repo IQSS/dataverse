@@ -1,19 +1,20 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import edu.harvard.iq.dataverse.authorization.groups.Group;
-import edu.harvard.iq.dataverse.authorization.groups.GroupException;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataverse.DataversePage;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.group.ExplicitGroup;
+import edu.harvard.iq.dataverse.persistence.group.Group;
+import edu.harvard.iq.dataverse.persistence.group.GroupException;
+import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
+import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import org.apache.commons.lang.StringUtils;
 
@@ -187,7 +188,7 @@ public class ManageGroupsPage implements java.io.Serializable {
      */
     public List<RoleAssignee> getExplicitGroupMembers(ExplicitGroup eg) {
         return (eg != null) ?
-                new ArrayList<>(eg.getDirectMembers()) : null;
+                new ArrayList<>(explicitGroupService.getDirectMembers(eg)) : null;
     }
 
     /**
@@ -210,7 +211,7 @@ public class ManageGroupsPage implements java.io.Serializable {
     public String getMembershipString(ExplicitGroup eg) {
         long userCount = 0;
         long groupCount = 0;
-        for (RoleAssignee ra : eg.getDirectMembers()) {
+        for (RoleAssignee ra : explicitGroupService.getDirectMembers(eg)) {
             if (ra instanceof User) {
                 userCount++;
             } else {

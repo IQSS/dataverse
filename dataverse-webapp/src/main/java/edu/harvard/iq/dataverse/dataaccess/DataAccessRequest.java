@@ -20,9 +20,7 @@
 
 package edu.harvard.iq.dataverse.dataaccess;
 
-// java core imports:
-
-import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 
 import java.util.HashMap;
 import java.util.Map;

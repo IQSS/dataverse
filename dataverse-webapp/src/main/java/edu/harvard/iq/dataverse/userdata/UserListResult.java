@@ -5,8 +5,8 @@
  */
 package edu.harvard.iq.dataverse.userdata;
 
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.mydata.Pager;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;

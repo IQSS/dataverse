@@ -9,13 +9,14 @@
     xmlns:pt="http://java.sun.com/jsf/passthrough"
     xmlns:cc="http://java.sun.com/jsf/composite"
     xmlns:o="http://omnifaces.org/ui"
-    xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+    xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs"
+                    xmlns:dv="http://dataverse.org/facelets">
 
-    <!--@elvariable id="fileMetadata" type="edu.harvard.iq.dataverse.FileMetadata"-->
+    <!--@elvariable id="fileMetadata" type="edu.harvard.iq.dataverse.persistence.datafile.FileMetadata"-->
 
     <o:importFunctions type="java.lang.Math" />
-    <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.RestrictType" var="restrictTypeEnum"/>
-    <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
+    <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType" var="restrictTypeEnum"/>
+    <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
     <p:remoteCommand name="refreshPaginator" action="#{DatasetPage.refreshPaginator()}" process="@this" update="@form" />
     <!-- Files Table -->
     <p:dataTable id="filesTable"
@@ -188,21 +189,7 @@
                 </div>
                 
                 <div>
-                <ui:fragment rendered="#{fileMetadata.termsOfUse.termsOfUseType == termsOfUseTypeEnum.LICENSE_BASED}">
-                    #{bundle['file.license']}: #{fileMetadata.termsOfUse.license.getLocalizedName(dataverseSession.locale)}
-                </ui:fragment>
-                <ui:fragment rendered="#{fileMetadata.termsOfUse.termsOfUseType == termsOfUseTypeEnum.ALL_RIGHTS_RESERVED}">
-                    #{bundle['dataset.files.termsOfAccess']}: #{bundle['file.allRightsReserved']}
-                </ui:fragment>
-                <ui:fragment rendered="#{fileMetadata.termsOfUse.termsOfUseType == termsOfUseTypeEnum.RESTRICTED}">
-                    #{bundle['dataset.files.termsOfAccess']}: #{bundle['file.termsOfAccess.restricted']} - 
-                    <ui:fragment rendered="#{fileMetadata.termsOfUse.restrictType != restrictTypeEnum.CUSTOM}">
-                        #{bundle['file.termsOfAccess.restricted.'.concat(fileMetadata.termsOfUse.restrictType)]}
-                    </ui:fragment>
-                    <ui:fragment rendered="#{fileMetadata.termsOfUse.restrictType == restrictTypeEnum.CUSTOM}">
-                        #{fileMetadata.termsOfUse.restrictCustomText}
-                    </ui:fragment>
-                </ui:fragment>
+                    <dv:displayTermsOfUse termsOfUse="#{fileMetadata.termsOfUse}" />
                 </div>
                 
             </div>

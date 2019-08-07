@@ -1,0 +1,96 @@
+package edu.harvard.iq.dataverse.persistence.user;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import java.io.Serializable;
+
+/**
+ * A somewhat glorified key-value pair, persisted in the database.
+ * The value is the {@link AuthenticatedUser}, the internal user representation pointed by the
+ * IDP, and the key is a pair of the authentication provider's alias and the user's persistent id
+ * within that authentication provider. These objects may be used both for storage (the full constructor)
+ * and retrieval (the idp+id constructor, and then {@link #getLookupKey()}.
+ *
+ * @author pdurbin
+ * @author michael
+ */
+@Table(
+        uniqueConstraints =
+        @UniqueConstraint(columnNames = {"persistentuserid", "authenticationproviderid"})
+)
+@NamedQueries({
+        @NamedQuery(name = "AuthenticatedUserLookup.findByAuthPrvID_PersUserId",
+                query = "SELECT au FROM AuthenticatedUserLookup au "
+                        + "WHERE au.authenticationProviderId=:authPrvId "
+                        + "  AND au.persistentUserId=:persUserId "),
+        @NamedQuery(name = "AuthenticatedUserLookup.findByAuthUser",
+                query = "SELECT au FROM AuthenticatedUserLookup au WHERE au.authenticatedUser=:authUser")
+})
+@Entity
+public class AuthenticatedUserLookup implements Serializable {
+
+    public static final String ORCID_PROVIDER_ID_PRODUCTION = "orcid";
+    public static final String ORCID_PROVIDER_ID_SANDBOX = "orcid-sandbox";
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
+    private String authenticationProviderId;
+    private String persistentUserId;
+
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(unique = true, nullable = false)
+    private AuthenticatedUser authenticatedUser;
+
+    public AuthenticatedUserLookup(String persistentUserIdFromIdp, String idp) {
+        this(persistentUserIdFromIdp, idp, null);
+    }
+
+    public AuthenticatedUserLookup(String persistentUserIdFromIdp, String authPrvId, AuthenticatedUser authenticatedUser) {
+        this.persistentUserId = persistentUserIdFromIdp;
+        this.authenticationProviderId = authPrvId;
+        this.authenticatedUser = authenticatedUser;
+    }
+
+    /**
+     * Constructor for JPA
+     */
+    public AuthenticatedUserLookup() {
+    }
+
+    public AuthenticatedUser getAuthenticatedUser() {
+        return authenticatedUser;
+    }
+
+    public void setAuthenticatedUser(AuthenticatedUser authenticatedUser) {
+        this.authenticatedUser = authenticatedUser;
+    }
+
+    public String getAuthenticationProviderId() {
+        return authenticationProviderId;
+    }
+
+    public void setAuthenticationProviderId(String authenticationProviderId) {
+        this.authenticationProviderId = authenticationProviderId;
+    }
+
+    public String getPersistentUserId() {
+        return persistentUserId;
+    }
+
+    public void setPersistentUserId(String persistentUserId) {
+        this.persistentUserId = persistentUserId;
+    }
+
+
+}

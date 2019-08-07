@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.license;
 
 import edu.harvard.iq.dataverse.arquillian.DataverseArquillian;
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.ArquillianDeployment;
+import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
 import org.junit.Test;

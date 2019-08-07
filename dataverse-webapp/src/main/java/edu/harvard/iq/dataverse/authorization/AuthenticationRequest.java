@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.authorization;
 
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
+import edu.harvard.iq.dataverse.persistence.group.IpAddress;
 
 import java.util.Map;
 import java.util.Set;

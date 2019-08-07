@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse.license;
 
-import edu.harvard.iq.dataverse.license.FileTermsOfUse.RestrictType;
-import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
+import edu.harvard.iq.dataverse.persistence.datafile.license.TermsOfUseForm;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.Stateless;

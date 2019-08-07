@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.locality.StorageSite;
 import edu.harvard.iq.dataverse.locality.StorageSiteUtil;
+import edu.harvard.iq.dataverse.persistence.StorageSite;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;

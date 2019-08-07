@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.license.dto;
 
 import com.google.common.collect.Lists;
-import edu.harvard.iq.dataverse.license.License;
-import edu.harvard.iq.dataverse.license.LicenseIcon;
-import edu.harvard.iq.dataverse.license.LocaleText;
+import edu.harvard.iq.dataverse.persistence.datafile.license.License;
+import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseIcon;
+import edu.harvard.iq.dataverse.persistence.datafile.license.LocaleText;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 

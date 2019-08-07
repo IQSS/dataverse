@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.privateurl;
 
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 
 /**
  * Dataset authors can create and send a Private URL to a reviewer to see the

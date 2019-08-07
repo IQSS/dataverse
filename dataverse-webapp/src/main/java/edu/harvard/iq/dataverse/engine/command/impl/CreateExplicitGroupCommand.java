@@ -1,14 +1,14 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.group.ExplicitGroup;
+import edu.harvard.iq.dataverse.persistence.user.Permission;
 
 /**
  * A command that creates an explicit group in the context of a {@link Dataverse}.
@@ -49,7 +49,7 @@ public class CreateExplicitGroupCommand extends AbstractCommand<ExplicitGroup> {
         eg.setOwner(dv);
         eg.updateAlias();
 
-        ExplicitGroup existing = eg.getGroupProvider().get(eg.getAlias());
+        ExplicitGroup existing = ctxt.explicitGroups().getProvider().get(eg.getAlias());
         if (existing != null) {
             throw new GroupAliasExistsException(eg.getGroupAliasInOwner());
         }

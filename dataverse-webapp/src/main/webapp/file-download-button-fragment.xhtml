@@ -7,9 +7,9 @@
         xmlns:jsf="http://xmlns.jcp.org/jsf"
 >
 
-    <!--@elvariable id="fileMetadata" type="edu.harvard.iq.dataverse.FileMetadata"-->
+    <!--@elvariable id="fileMetadata" type="edu.harvard.iq.dataverse.persistence.datafile.FileMetadata"-->
     <!--@elvariable id="fileDownloadService" type="edu.harvard.iq.dataverse.FileDownloadServiceBean"-->
-    <!--@elvariable id="guestbookResponse" type="edu.harvard.iq.dataverse.GuestbookResponse"-->
+    <!--@elvariable id="guestbookResponse" type="edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse"-->
     <!--@elvariable id="guestbookResponseService" type="edu.harvard.iq.dataverse.GuestbookResponseServiceBean"-->
 
     <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem and canUpdateDataset}">

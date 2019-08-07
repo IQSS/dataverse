@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionUser;
+
 import java.io.Serializable;
 
 /**

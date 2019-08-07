@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse.authorization;
 
-import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.util.BitSet;
+import edu.harvard.iq.dataverse.common.BitSet;
+import edu.harvard.iq.dataverse.persistence.user.Permission;
+import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
+import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 
 import java.util.HashSet;
 import java.util.Iterator;

@@ -3,10 +3,10 @@ package edu.harvard.iq.dataverse.harvest.server.xoai;
 import com.lyncode.xoai.model.oaipmh.Header;
 import com.lyncode.xoai.model.oaipmh.Record;
 import com.lyncode.xoai.xml.XmlWriter;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.ExporterType;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import io.vavr.control.Either;
 
 import java.io.ByteArrayOutputStream;

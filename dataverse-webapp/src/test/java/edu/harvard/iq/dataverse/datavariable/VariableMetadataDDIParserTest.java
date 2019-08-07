@@ -1,5 +1,9 @@
 package edu.harvard.iq.dataverse.datavariable;
 
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.CategoryMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VarGroup;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableMetadata;
 import org.junit.Test;
 
 import javax.xml.stream.XMLInputFactory;

@@ -1,10 +1,8 @@
 package edu.harvard.iq.dataverse.authorization.groups;
 
-import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.BuiltInGroupsProvider;
-import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AllUsersGroupProvider;
+import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsersProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
@@ -12,13 +10,20 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServ
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.group.ExplicitGroup;
+import edu.harvard.iq.dataverse.persistence.group.Group;
+import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -40,8 +45,10 @@ public class GroupServiceBean {
     ShibGroupServiceBean shibGroupService;
     @EJB
     ExplicitGroupServiceBean explicitGroupService;
+    @EJB
+    RoleAssigneeServiceBean roleAssigneeService;
 
-    private final Map<String, GroupProvider> groupProviders = new HashMap<>();
+    private final Map<String, GroupProvider<?>> groupProviders = new HashMap<>();
 
     private IpGroupProvider ipGroupProvider;
     private ShibGroupProvider shibGroupProvider;
@@ -52,10 +59,13 @@ public class GroupServiceBean {
 
     @PostConstruct
     public void setup() {
-        addGroupProvider(BuiltInGroupsProvider.get());
+        addGroupProvider(AllUsersGroupProvider.get());
+        addGroupProvider(AuthenticatedUsersProvider.get());
         addGroupProvider(ipGroupProvider = new IpGroupProvider(ipGroupsService));
         addGroupProvider(shibGroupProvider = new ShibGroupProvider(shibGroupService));
-        addGroupProvider(explicitGroupProvider = explicitGroupService.getProvider());
+        
+        List<GroupProvider<?>> providers = new ArrayList<>(groupProviders.values());
+        addGroupProvider(explicitGroupProvider = new ExplicitGroupProvider(explicitGroupService, roleAssigneeService, providers));
         Logger.getLogger(GroupServiceBean.class.getName()).log(Level.INFO, null, "PostConstruct group service call");
     }
 
@@ -75,6 +85,10 @@ public class GroupServiceBean {
 
     public ShibGroupProvider getShibGroupProvider() {
         return shibGroupProvider;
+    }
+
+    public ExplicitGroupProvider getExplicitGroupProvider() {
+        return explicitGroupProvider;
     }
 
     /**
@@ -192,42 +206,6 @@ public class GroupServiceBean {
         }
 
         return retVal;
-    }
-
-    /**
-     * Given a set of groups and a DV object, return all the groups that are
-     * reachable from the set. Effectively, if the initial set has an {@link ExplicitGroup},
-     * recursively add all the groups it contains.
-     *
-     * @param groups
-     * @param dvo
-     * @return All the groups included in the groups in {@code groups}.
-     */
-    private Set<Group> groupTransitiveClosure(Set<Group> groups, DvObject dvo) {
-        // now, get the explicit group transitive closure.
-        Set<ExplicitGroup> perimeter = new HashSet<>();
-        Set<ExplicitGroup> visited = new HashSet<>();
-
-        groups.stream()
-                .filter((g) -> (g instanceof ExplicitGroup))
-                .forEachOrdered((g) -> perimeter.add((ExplicitGroup) g));
-        visited.addAll(perimeter);
-
-        while (!perimeter.isEmpty()) {
-            ExplicitGroup g = perimeter.iterator().next();
-            perimeter.remove(g);
-            groups.add(g);
-
-            Set<ExplicitGroup> discovered = explicitGroupProvider.groupsFor(g, dvo);
-            discovered.removeAll(visited); // Ideally the conjunction is always empty, as we don't allow cycles.
-            // Still, coding defensively here, in case someone gets too
-            // smart on the SQL console.
-
-            perimeter.addAll(discovered);
-            visited.addAll(discovered);
-        }
-
-        return groups;
     }
 
     public Set<Group> findGlobalGroups() {

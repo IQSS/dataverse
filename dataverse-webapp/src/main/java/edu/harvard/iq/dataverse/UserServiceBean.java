@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.RoleTranslationUtil;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.common.RoleTranslationUtil;
+import edu.harvard.iq.dataverse.common.UserUtil;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import edu.harvard.iq.dataverse.userdata.UserUtil;
 import org.apache.commons.lang.StringUtils;
 import org.ocpsoft.common.util.Strings;
 

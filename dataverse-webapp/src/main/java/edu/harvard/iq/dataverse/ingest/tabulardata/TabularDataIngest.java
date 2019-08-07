@@ -19,7 +19,7 @@
  */
 package edu.harvard.iq.dataverse.ingest.tabulardata;
 
-import edu.harvard.iq.dataverse.DataTable;
+import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 
 import java.io.File;
 

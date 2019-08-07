@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.passwordreset;
 
+import edu.harvard.iq.dataverse.persistence.user.PasswordResetData;
+
 public class PasswordResetExecResponse {
 
     private String tokenQueried;

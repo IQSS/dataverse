@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.confirmemail;
 
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.common.BundleUtil;
 
 import java.sql.Timestamp;
 

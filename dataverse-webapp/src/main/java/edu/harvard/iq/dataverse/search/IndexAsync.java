@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;

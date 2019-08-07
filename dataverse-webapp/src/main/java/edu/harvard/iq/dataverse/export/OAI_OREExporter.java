@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.export;
 
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import org.apache.commons.lang.StringUtils;
 

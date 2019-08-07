@@ -19,7 +19,7 @@
 */
 package edu.harvard.iq.dataverse.dataaccess;
 
-import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -98,7 +98,7 @@ public class DataFileZipper {
 
         boolean createManifest = fileManifest != null;
 
-        StorageIO<DataFile> accessObject = dataFile.getStorageIO(new DataAccess());
+        StorageIO<DataFile> accessObject = new DataAccess().getStorageIO(dataFile);
 
         if (accessObject != null) {
             Boolean gotOriginal = false;

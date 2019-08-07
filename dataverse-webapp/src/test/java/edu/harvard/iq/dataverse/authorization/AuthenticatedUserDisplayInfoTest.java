@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization;
 
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

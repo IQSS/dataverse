@@ -6,7 +6,6 @@
 
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataConverter;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -15,10 +14,11 @@ import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StoredOriginalFile;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
-import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
@@ -72,7 +72,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         if (di.getDownloadInfo() != null && di.getDownloadInfo().getDataFile() != null) {
 
             DataFile dataFile = di.getDownloadInfo().getDataFile();
-            StorageIO<DataFile> storageIO = dataFile.getStorageIO(new DataAccess());
+            StorageIO<DataFile> storageIO = new DataAccess().getStorageIO(dataFile);
 
             if (storageIO != null) {
                 try {

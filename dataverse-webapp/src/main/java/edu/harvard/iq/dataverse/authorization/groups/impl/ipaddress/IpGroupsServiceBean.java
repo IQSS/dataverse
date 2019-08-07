@@ -1,11 +1,12 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Address;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
+import edu.harvard.iq.dataverse.persistence.ActionLogRecord;
+import edu.harvard.iq.dataverse.persistence.group.IPv4Address;
+import edu.harvard.iq.dataverse.persistence.group.IPv6Address;
+import edu.harvard.iq.dataverse.persistence.group.IpAddress;
+import edu.harvard.iq.dataverse.persistence.group.IpGroup;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -40,15 +41,12 @@ public class IpGroupsServiceBean {
      * Stores (inserts/updates) the passed IP group.
      *
      * @param grp The group to store.
-     * @return Managed version of the group. The provider might be un-set.
+     * @return Managed version of the group.
      */
     public IpGroup store(IpGroup grp) {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.GlobalGroups, "ipCreate");
-        if (grp.getGroupProvider() != null) {
-            alr.setInfo(grp.getIdentifier());
-        } else {
-            alr.setInfo(grp.getDisplayName());
-        }
+        
+        alr.setInfo(grp.getIdentifier());
         alr.setInfo(alr.getInfo() + "// " + grp.getRanges());
 
         if (grp.getId() == null) {

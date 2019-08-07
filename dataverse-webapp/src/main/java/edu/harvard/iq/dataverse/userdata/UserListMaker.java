@@ -6,8 +6,8 @@
 package edu.harvard.iq.dataverse.userdata;
 
 import edu.harvard.iq.dataverse.UserServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.mydata.Pager;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 
 import java.util.List;
 import java.util.logging.Logger;

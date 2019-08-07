@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.authorization.exceptions;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFactory;
-import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticationProviderRow;
 
 /**
  * Thrown when trying to instantiate a {@link AuthenticationProvider} from a

@@ -5,22 +5,22 @@
  */
 package edu.harvard.iq.dataverse.export;
 
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DataTable;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataConverter;
-import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
-import edu.harvard.iq.dataverse.datavariable.VariableCategory;
-import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
-import edu.harvard.iq.dataverse.datavariable.VariableRange;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.SummaryStatistic;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableCategory;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableRange;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -32,6 +32,7 @@ import javax.persistence.PersistenceContext;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+
 import java.io.File;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -467,7 +468,7 @@ public class DDIExportServiceBean {
     private void calculateFrequencies(DataFile df, List<DataVariable> vars) {
         try {
             DataConverter dc = new DataConverter();
-            File tabFile = DataConverter.downloadFromStorageIO(df.getStorageIO(new DataAccess()));
+            File tabFile = DataConverter.downloadFromStorageIO(new DataAccess().getStorageIO(df));
 
             IngestServiceBean.produceFrequencies(tabFile, vars);
 

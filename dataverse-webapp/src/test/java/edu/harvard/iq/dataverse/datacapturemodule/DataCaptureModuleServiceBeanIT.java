@@ -4,8 +4,8 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import org.junit.Test;
 
 import javax.json.Json;
@@ -17,7 +17,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 
-import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
+import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeAuthenticatedUser;
 import static java.lang.Thread.sleep;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

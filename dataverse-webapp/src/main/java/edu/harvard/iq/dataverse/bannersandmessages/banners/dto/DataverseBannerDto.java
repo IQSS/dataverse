@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.bannersandmessages.banners.dto;
 
-import edu.harvard.iq.dataverse.util.DateUtil;
+import edu.harvard.iq.dataverse.common.DateUtil;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;

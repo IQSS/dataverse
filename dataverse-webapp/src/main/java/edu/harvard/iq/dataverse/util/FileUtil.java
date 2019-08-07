@@ -22,19 +22,21 @@ package edu.harvard.iq.dataverse.util;
 
 
 import com.google.common.base.Preconditions;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
-import edu.harvard.iq.dataverse.files.mime.ApplicationMimeType;
-import edu.harvard.iq.dataverse.files.mime.ImageMimeType;
-import edu.harvard.iq.dataverse.files.mime.TextMimeType;
-import edu.harvard.iq.dataverse.ingest.IngestReport;
+import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.common.files.mime.ApplicationMimeType;
+import edu.harvard.iq.dataverse.common.files.mime.ImageMimeType;
+import edu.harvard.iq.dataverse.common.files.mime.PackageMimeType;
+import edu.harvard.iq.dataverse.common.files.mime.TextMimeType;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
-import edu.harvard.iq.dataverse.license.FileTermsOfUse;
-import edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile.ChecksumType;
+import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestReport;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
 import io.vavr.control.Try;
 
 import javax.activation.MimetypesFileTypeMap;
@@ -159,26 +161,6 @@ public class FileUtil implements java.io.Serializable {
         }
     }
 
-    public static String getUserFriendlyFileType(DataFile dataFile) {
-        String fileType = dataFile.getContentType();
-
-        if (fileType != null) {
-            if (fileType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
-                return ShapefileHandler.SHAPEFILE_FILE_TYPE_FRIENDLY_NAME;
-            }
-            if (fileType.contains(";")) {
-                fileType = fileType.substring(0, fileType.indexOf(";"));
-            }
-            try {
-                return BundleUtil.getStringFromPropertyFile(fileType, "MimeTypeDisplay");
-            } catch (MissingResourceException e) {
-                return fileType;
-            }
-        }
-
-        return fileType;
-    }
-
     public static String getFacetFileType(DataFile dataFile) {
         String fileType = dataFile.getContentType();
 
@@ -215,27 +197,6 @@ public class FileUtil implements java.io.Serializable {
                 return null;
             }
         }
-    }
-
-    public static String getUserFriendlyOriginalType(DataFile dataFile) {
-        if (!dataFile.isTabularData()) {
-            return null;
-        }
-
-        String fileType = dataFile.getOriginalFileFormat();
-
-        if (fileType != null && !fileType.equals("")) {
-            if (fileType.contains(";")) {
-                fileType = fileType.substring(0, fileType.indexOf(";"));
-            }
-            try {
-                return BundleUtil.getStringFromPropertyFile(fileType, "MimeTypeDisplay");
-            } catch (MissingResourceException e) {
-                return fileType;
-            }
-        }
-
-        return "UNKNOWN";
     }
 
     public static String retestIngestableFileType(File file, String fileType) {
@@ -882,7 +843,7 @@ public class FileUtil implements java.io.Serializable {
     */
 
     public static boolean isPackageFile(DataFile dataFile) {
-        return DataFileServiceBean.MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(dataFile.getContentType());
+        return PackageMimeType.DATAVERSE_PACKAGE.getMimeValue().equalsIgnoreCase(dataFile.getContentType());
     }
 
     public static byte[] getFileFromResources(String path) {

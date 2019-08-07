@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.metrics;
 
-import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 
 import javax.json.Json;
 import javax.json.JsonArray;

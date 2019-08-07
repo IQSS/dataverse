@@ -20,8 +20,8 @@
 
 package edu.harvard.iq.dataverse.dataaccess;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedInputStream;
@@ -97,7 +97,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         setCaseCount(datafile.getDataTable().getCaseQuantity().intValue());
 
 
-        StorageIO<DataFile> dataAccess = datafile.getStorageIO(new DataAccess());
+        StorageIO<DataFile> dataAccess = new DataAccess().getStorageIO(datafile);
         if (!dataAccess.isLocalFile()) {
             throw new IOException("Subsetting is supported on local files only!");
         }
@@ -728,7 +728,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
             throw new IOException("Column " + column + " is out of bounds.");
         }
 
-        StorageIO<DataFile> dataAccess = dataFile.getStorageIO(new DataAccess());
+        StorageIO<DataFile> dataAccess = new DataAccess().getStorageIO(dataFile);
         if (!dataAccess.isLocalFile()) {
             throw new IOException("Subsetting is supported on local files only!");
         }

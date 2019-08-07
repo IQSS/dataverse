@@ -1,10 +1,11 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.shib;
 
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.group.ShibGroup;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -22,7 +23,7 @@ public class ShibGroupProvider implements GroupProvider<ShibGroup> {
     }
 
     public static String getShibProviderAlias() {
-        return "shib";
+        return ShibGroup.GROUP_TYPE;
     }
 
     @Override
@@ -55,9 +56,6 @@ public class ShibGroupProvider implements GroupProvider<ShibGroup> {
         if (ra instanceof AuthenticatedUser) {
             AuthenticatedUser authenticatedUser = (AuthenticatedUser) ra;
             Set<ShibGroup> groupsFor = shibGroupService.findFor(authenticatedUser);
-            for (ShibGroup shibGroup : groupsFor) {
-                shibGroup.setShibGroupProvider(this);
-            }
             return groupsFor;
         } else {
             return Collections.emptySet();
@@ -94,6 +92,16 @@ public class ShibGroupProvider implements GroupProvider<ShibGroup> {
     public boolean delete(ShibGroup doomed) throws Exception {
         boolean response = shibGroupService.delete(doomed);
         return response;
+    }
+
+    @Override
+    public Class<ShibGroup> providerFor() {
+        return ShibGroup.class;
+    }
+
+    @Override
+    public boolean contains(DataverseRequest aRequest, ShibGroup group) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

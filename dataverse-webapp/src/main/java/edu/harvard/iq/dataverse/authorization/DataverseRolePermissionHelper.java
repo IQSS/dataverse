@@ -1,9 +1,10 @@
 package edu.harvard.iq.dataverse.authorization;
 
 import com.google.common.collect.Lists;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;

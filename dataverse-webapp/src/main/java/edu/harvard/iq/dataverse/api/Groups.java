@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
-import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
+import edu.harvard.iq.dataverse.persistence.group.IpGroup;
+import edu.harvard.iq.dataverse.persistence.group.ShibGroup;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 
 import javax.annotation.PostConstruct;
@@ -59,7 +59,6 @@ public class Groups extends AbstractApiBean {
     public Response postIpGroup(JsonObject dto) {
         try {
             IpGroup grp = new JsonParser().parseIpGroup(dto);
-            grp.setGroupProvider(ipGroupPrv);
             grp.setPersistedGroupAlias(
                     ipGroupPrv.findAvailableName(
                             grp.getPersistedGroupAlias() == null ? "ipGroup" : grp.getPersistedGroupAlias()));
@@ -93,7 +92,6 @@ public class Groups extends AbstractApiBean {
                 return badRequest("Group name can contain only letters, digits, and the chars '-' and '_'");
             }
             IpGroup grp = new JsonParser().parseIpGroup(dto);
-            grp.setGroupProvider(ipGroupPrv);
             grp.setPersistedGroupAlias(groupName);
             grp = ipGroupPrv.store(grp);
             return created("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp));
@@ -185,7 +183,7 @@ public class Groups extends AbstractApiBean {
         if (pattern == null) {
             return error(Response.Status.BAD_REQUEST, "required field missing: " + expectedPatternKey);
         }
-        ShibGroup shibGroupToPersist = new ShibGroup(name.getString(), attribute.getString(), pattern.getString(), shibGroupPrv);
+        ShibGroup shibGroupToPersist = new ShibGroup(name.getString(), attribute.getString(), pattern.getString());
         ShibGroup persitedShibGroup = shibGroupPrv.persist(shibGroupToPersist);
         if (persitedShibGroup != null) {
             return ok("Shibboleth group persisted: " + persitedShibGroup);

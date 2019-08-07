@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.settings;
 
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.common.BrandingUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 
 import javax.ejb.EJB;

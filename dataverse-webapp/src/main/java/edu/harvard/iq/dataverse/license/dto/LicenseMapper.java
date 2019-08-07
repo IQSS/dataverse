@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.license.dto;
 
-import edu.harvard.iq.dataverse.license.License;
-import edu.harvard.iq.dataverse.license.LicenseIcon;
-import edu.harvard.iq.dataverse.license.LocaleText;
+import edu.harvard.iq.dataverse.persistence.datafile.license.License;
+import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseIcon;
+import edu.harvard.iq.dataverse.persistence.datafile.license.LocaleText;
 import io.vavr.control.Try;
 import org.apache.commons.io.IOUtils;
 import org.primefaces.model.ByteArrayContent;

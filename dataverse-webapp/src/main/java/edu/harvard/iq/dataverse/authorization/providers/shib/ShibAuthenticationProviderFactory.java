@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.authorization.providers.shib;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFactory;
-import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticationProviderRow;
 
 public class ShibAuthenticationProviderFactory implements AuthenticationProviderFactory {
 

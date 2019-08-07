@@ -5,12 +5,12 @@
  */
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv;
 
-import edu.harvard.iq.dataverse.DataTable;
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
-import edu.harvard.iq.dataverse.datavariable.DataVariable.VariableInterval;
-import edu.harvard.iq.dataverse.datavariable.DataVariable.VariableType;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable.VariableInterval;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable.VariableType;
 import org.apache.commons.io.IOUtils;
 import org.dataverse.unf.UNFUtil;
 import org.dataverse.unf.UnfException;

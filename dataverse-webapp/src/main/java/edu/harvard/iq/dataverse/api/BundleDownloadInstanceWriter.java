@@ -6,11 +6,11 @@
 
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataConverter;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StoredOriginalFile;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 
 import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
@@ -56,7 +56,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
         try {
             if (di.getDownloadInfo() != null && di.getDownloadInfo().getDataFile() != null) {
                 DataFile sf = di.getDownloadInfo().getDataFile();
-                StorageIO<DataFile> accessObject = sf.getStorageIO(new DataAccess());
+                StorageIO<DataFile> accessObject = new DataAccess().getStorageIO(sf);
 
                 accessObject.open();
 

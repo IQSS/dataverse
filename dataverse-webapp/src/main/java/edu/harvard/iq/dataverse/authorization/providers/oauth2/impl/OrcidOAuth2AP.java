@@ -6,13 +6,14 @@ import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
-import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserLookup;
+import edu.harvard.iq.dataverse.persistence.user.OAuth2TokenData;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -55,8 +56,8 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
 
     final static Logger logger = Logger.getLogger(OrcidOAuth2AP.class.getName());
 
-    public static final String PROVIDER_ID_PRODUCTION = "orcid";
-    public static final String PROVIDER_ID_SANDBOX = "orcid-sandbox";
+    public static final String PROVIDER_ID_PRODUCTION = AuthenticatedUserLookup.ORCID_PROVIDER_ID_PRODUCTION;
+    public static final String PROVIDER_ID_SANDBOX = AuthenticatedUserLookup.ORCID_PROVIDER_ID_SANDBOX;
 
     public OrcidOAuth2AP(String clientId, String clientSecret, String userEndpoint) {
         scope = "/read-limited";

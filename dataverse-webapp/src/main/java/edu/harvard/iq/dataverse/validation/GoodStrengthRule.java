@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.validation;
 
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import org.passay.LengthRule;
 import org.passay.PasswordData;
 import org.passay.RuleResult;

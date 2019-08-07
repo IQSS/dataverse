@@ -2,10 +2,10 @@ package edu.harvard.iq.dataverse.bannersandmessages.banners.dto;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.BannerLimits;
-import edu.harvard.iq.dataverse.bannersandmessages.banners.DataverseBanner;
-import edu.harvard.iq.dataverse.bannersandmessages.banners.DataverseLocalizedBanner;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseBanner;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseLocalizedBanner;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,7 +25,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Date;
 
-import static edu.harvard.iq.dataverse.util.DateUtil.convertToDate;
+import static edu.harvard.iq.dataverse.common.DateUtil.convertToDate;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BannerMapperTest {

@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.bannersandmessages.UnsupportedLanguageCleaner;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.BannerMapper;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.DataverseBannerDto;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.DataverseLocalizedBannerDto;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseBanner;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortOrder;
 

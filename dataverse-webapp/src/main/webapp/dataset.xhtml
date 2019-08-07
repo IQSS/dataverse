@@ -9,9 +9,9 @@
       xmlns:dv="http://dataverse.org/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core"
 >
 
-<!--@elvariable id="dataset" type="edu.harvard.iq.dataverse.Dataset"-->
+<!--@elvariable id="dataset" type="edu.harvard.iq.dataverse.persistence.dataset.Dataset"-->
 <!--@elvariable id="privateUrlLink" type="java.lang.String"-->
-<!--@elvariable id="dataverseLk" type="edu.harvard.iq.dataverse.Dataverse"-->
+<!--@elvariable id="dataverseLk" type="edu.harvard.iq.dataverse.persistence.dataverse.Dataverse"-->
 
 <h:head>
 </h:head>
@@ -59,11 +59,11 @@
             <meta property="article:published_time" content="#{DatasetPage.workingVersion.publicationDateAsString}"/>
         </ui:define>
         <ui:define name="body">
-            <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker"/>
+            <o:importFunctions type="edu.harvard.iq.dataverse.common.MarkupChecker"/>
             <f:metadata>
-                <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.RestrictType"
+                <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType"
                                    var="restrictTypeEnum"/>
-                <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType"
+                <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType"
                                    var="termsOfUseTypeEnum"/>
                 <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
                 <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
@@ -166,7 +166,7 @@
                                                                 and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                         <button type="button"
                                                 class="btn btn-default btn-access #{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}"
-                                                onclick="PF('inreview').show()">
+                                                onclick="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'return false;' : 'sentToReview();'}">
                                             <span class="glyphicon glyphicon-globe"/> #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
                                         </button>
                                     </ui:fragment>
@@ -709,11 +709,11 @@
 
                     </ui:fragment>
 
-                        <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
+                    <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
                                    dynamic="true"
                                    rendered="#{empty DatasetPage.editMode}">
 
-                            <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned or
+                        <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned or
                                                               (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset())}">
                             <ui:include src="filesFragment.xhtml">
                                 <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
@@ -722,7 +722,7 @@
 
                         <!-- 4.2.1: the 3 tabs below - metadata, terms and versions: these account for ~100 queries total -->
                         <!-- a lot of these however, are repeated queries on AuthenticatedUser and RoleAssignment; once these are optimized, the tabs will become very cheap. -->
-                            <p:tab id="metadataTab" title="#{bundle['file.dataFilesTab.metadata.header']}"
+                        <p:tab id="metadataTab" title="#{bundle['file.dataFilesTab.metadata.header']}"
                                    rendered="#{(!DatasetPage.workingVersion.deaccessioned or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))
                                              and (empty DatasetPage.editMode)}">
                             <ui:include src="metadataTab.xhtml"/>
@@ -1158,7 +1158,7 @@
 
                 <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}"
                           widgetVar="downloadPopup" modal="true">
-                    <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker"/>
+                    <o:importFunctions type="edu.harvard.iq.dataverse.common.MarkupChecker"/>
                     <ui:include src="file-download-popup-fragment.xhtml">
                         <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
                         <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
@@ -1170,7 +1170,7 @@
                 </p:dialog>
                 <p:dialog id="downloadPackagePopup" styleClass="smallPopUp" header="#{bundle['packageDownload.title']}"
                           widgetVar="downloadPackagePopup" modal="true">
-                    <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker"/>
+                    <o:importFunctions type="edu.harvard.iq.dataverse.common.MarkupChecker"/>
                     <ui:include src="package-download-popup-fragment.xhtml">
                         <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
                         <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
@@ -1183,7 +1183,7 @@
 
                 <p:dialog id="requestAccessPopup" styleClass="largePopUp" header="#{bundle['file.requestAccess']}"
                           widgetVar="requestAccessPopup" modal="true">
-                    <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker"/>
+                    <o:importFunctions type="edu.harvard.iq.dataverse.common.MarkupChecker"/>
                     <ui:include src="file-request-access-popup-fragment.xhtml">
                         <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
                         <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
@@ -1540,6 +1540,11 @@
 
                 function checkNewlyRestricted() {
                     $('button[id$="datasetSave"]').trigger('click');
+                }
+
+                /* using this function to prevent syntax errors on conditionally deciding onclick action */
+                function sentToReview() {
+                    PF('inreview').show();
                 }
             </script>
         </ui:define>

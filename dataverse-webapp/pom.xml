@@ -28,13 +28,17 @@
         </dependency>
 
         <dependency>
+            <groupId>edu.harvard.iq</groupId>
+            <artifactId>dataverse-persistence</artifactId>
+            <version>${project.version}</version>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.dom4j</groupId>
             <artifactId>dom4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.github.scribejava</groupId>
-            <artifactId>scribejava-apis</artifactId>
-            <version>3.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.imgscalr</groupId>
@@ -49,7 +53,6 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.json</artifactId>
-            <version>1.0.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -102,8 +105,6 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.2.4</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -216,7 +217,6 @@
         <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
-            <version>1.6</version>
         </dependency>
         <dependency>
             <groupId>colt</groupId>
@@ -276,7 +276,6 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.11.3</version>
         </dependency>
         <dependency>
             <groupId>com.jayway.restassured</groupId>

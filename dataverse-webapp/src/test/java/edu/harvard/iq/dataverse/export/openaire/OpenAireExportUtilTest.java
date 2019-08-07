@@ -6,10 +6,10 @@
 package edu.harvard.iq.dataverse.export.openaire;
 
 import com.google.gson.Gson;
-import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FileDTO;
+import edu.harvard.iq.dataverse.persistence.GlobalId;
 import org.junit.*;
 
 import javax.xml.stream.XMLOutputFactory;

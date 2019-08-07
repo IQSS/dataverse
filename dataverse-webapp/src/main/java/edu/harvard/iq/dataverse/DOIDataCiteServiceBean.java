@@ -2,6 +2,11 @@ package edu.harvard.iq.dataverse;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+
+import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.GlobalId;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

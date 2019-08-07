@@ -2,8 +2,8 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

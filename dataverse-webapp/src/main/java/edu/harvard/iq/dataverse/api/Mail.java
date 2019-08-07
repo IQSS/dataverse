@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.MailServiceBean;
-import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import edu.harvard.iq.dataverse.persistence.ActionLogRecord;
 
 import javax.ejb.EJB;
 import javax.ws.rs.GET;

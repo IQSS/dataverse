@@ -1,13 +1,13 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.common.DateUtil;
+import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
+import edu.harvard.iq.dataverse.common.Util;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
-import edu.harvard.iq.dataverse.util.DateUtil;
+import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
-import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -20,7 +20,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import static edu.harvard.iq.dataverse.common.NullSafeJsonBuilder.jsonObjectBuilder;
 
 public class SolrSearchResult {
 

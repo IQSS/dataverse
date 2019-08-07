@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.Metric;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
+import edu.harvard.iq.dataverse.persistence.cache.Metric;
 
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;

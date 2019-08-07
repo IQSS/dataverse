@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.FieldType;
+import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 

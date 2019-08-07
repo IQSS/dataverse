@@ -1,15 +1,16 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import org.apache.commons.io.IOUtils;
 
@@ -72,7 +73,7 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                     throw new CommandException("Could not find file based on id supplied: " + dataFileIdSupplied + ".", this);
                 }
                 Dataset ds1 = ctxt.datasets().setDatasetFileAsThumbnail(dataset, datasetFileThumbnailToSwitchTo);
-                DatasetThumbnail datasetThumbnail = ds1.getDatasetThumbnail();
+                DatasetThumbnail datasetThumbnail = DatasetUtil.getThumbnail(ds1);
                 if (datasetThumbnail != null) {
                     DataFile dataFile = datasetThumbnail.getDataFile();
                     if (dataFile != null) {
@@ -109,14 +110,14 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                 Dataset datasetWithNewThumbnail = ctxt.datasets().setNonDatasetFileAsThumbnail(dataset, fileAsStream);
                 IOUtils.closeQuietly(fileAsStream);
                 if (datasetWithNewThumbnail != null) {
-                    return datasetWithNewThumbnail.getDatasetThumbnail();
+                    return DatasetUtil.getThumbnail(datasetWithNewThumbnail);
                 } else {
                     return null;
                 }
 
             case removeThumbnail:
                 Dataset ds2 = ctxt.datasets().removeDatasetThumbnail(dataset);
-                DatasetThumbnail datasetThumbnail2 = ds2.getDatasetThumbnail();
+                DatasetThumbnail datasetThumbnail2 = DatasetUtil.getThumbnail(ds2);
                 if (datasetThumbnail2 == null) {
                     return null;
                 } else {

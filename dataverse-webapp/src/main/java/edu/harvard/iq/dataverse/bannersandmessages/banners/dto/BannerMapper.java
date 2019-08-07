@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.bannersandmessages.banners.dto;
 
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.BannerLimits;
-import edu.harvard.iq.dataverse.bannersandmessages.banners.DataverseBanner;
-import edu.harvard.iq.dataverse.bannersandmessages.banners.DataverseLocalizedBanner;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseBanner;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseLocalizedBanner;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import org.apache.commons.lang.StringUtils;
 import org.imgscalr.Scalr;

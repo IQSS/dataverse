@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

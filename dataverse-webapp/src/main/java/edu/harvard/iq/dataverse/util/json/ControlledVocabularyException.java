@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse.util.json;
 
-import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 
 /**
  * Thrown when value is not a valid controlled vocabulary for datasetFeidType

@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
-import edu.harvard.iq.dataverse.MapLayerMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.MapLayerMetadata;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;

@@ -1,8 +1,9 @@
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.UserNotification;
-import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.common.BrandingUtil;
+import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.persistence.user.UserNotification;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.mail.internet.AddressException;

@@ -1,22 +1,27 @@
 package edu.harvard.iq.dataverse.workflow;
 
-import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
+import edu.harvard.iq.dataverse.persistence.group.IpAddress;
+import edu.harvard.iq.dataverse.persistence.user.ApiToken;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.User;
+import edu.harvard.iq.dataverse.persistence.workflow.PendingWorkflowInvocation;
+import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
+import edu.harvard.iq.dataverse.persistence.workflow.WorkflowStepData;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.internalspi.InternalWorkflowStepSP;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
-import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import org.apache.commons.lang3.StringUtils;
 
@@ -144,7 +149,7 @@ public class WorkflowServiceBean {
      *
      * @param pending The workflow to resume.
      * @param body    the response from the remote system.
-     * @see #doResume(edu.harvard.iq.dataverse.workflow.PendingWorkflowInvocation,
+     * @see #doResume(edu.harvard.iq.dataverse.persistence.workflow.PendingWorkflowInvocation,
      * java.lang.String)
      */
     @Asynchronous
@@ -164,7 +169,8 @@ public class WorkflowServiceBean {
         List<WorkflowStepData> stepsLeft = wf.getSteps().subList(pending.getPendingStepIdx(), wf.getSteps().size());
 
         WorkflowStep pendingStep = createStep(stepsLeft.get(0));
-        WorkflowContext newCtxt = pending.reCreateContext(roleAssignees);
+        WorkflowContext newCtxt = reCreateContext(pending, roleAssignees);
+        
         final WorkflowContext ctxt = refresh(newCtxt, retrieveRequestedSettings(wf.getRequiredSettings()), getCurrentApiToken(newCtxt.getRequest().getAuthenticatedUser()));
         WorkflowStepResult res = pendingStep.resume(ctxt, pending.getLocalData(), body);
         if (res instanceof Failure) {
@@ -176,6 +182,16 @@ public class WorkflowServiceBean {
         }
     }
 
+    public WorkflowContext reCreateContext(PendingWorkflowInvocation pending, RoleAssigneeServiceBean roleAssignees) {
+        DataverseRequest aRequest = new DataverseRequest((User) roleAssignees.getRoleAssignee(pending.getUserId()), IpAddress.valueOf(pending.getIpAddress()));
+        
+        WorkflowContext workflowContext = new WorkflowContext(aRequest, pending.getDataset(), pending.getNextVersionNumber(),
+                pending.getNextMinorVersionNumber(), WorkflowContext.TriggerType.values()[pending.getTypeOrdinal()], null, null,
+                pending.isDatasetExternallyReleased());
+        workflowContext.setInvocationId(pending.getInvocationId());
+        return workflowContext;
+    }
+    
     @Asynchronous
     private void rollback(Workflow wf, WorkflowContext ctxt, Failure failure, int lastCompletedStepIdx) {
         ctxt = refresh(ctxt);
@@ -303,7 +319,17 @@ public class WorkflowServiceBean {
     //////////////////////////////////////////////////////////////
 
     private void pauseAndAwait(Workflow wf, WorkflowContext ctxt, Pending pendingRes, int idx) {
-        PendingWorkflowInvocation pending = new PendingWorkflowInvocation(wf, ctxt, pendingRes);
+        PendingWorkflowInvocation pending = new PendingWorkflowInvocation(wf, new HashMap<>(pendingRes.getData()));
+        
+        pending.setInvocationId(ctxt.getInvocationId());
+        pending.setDataset(ctxt.getDataset());
+        pending.setNextVersionNumber(ctxt.getNextVersionNumber());
+        pending.setNextMinorVersionNumber(ctxt.getNextMinorVersionNumber());
+        pending.setUserId(ctxt.getRequest().getUser().getIdentifier());
+        pending.setIpAddress(ctxt.getRequest().getUser().getIdentifier());
+        pending.setTypeOrdinal(ctxt.getType().ordinal());
+        pending.setDatasetExternallyReleased(ctxt.getDatasetExternallyReleased());
+        
         pending.setPendingStepIdx(idx);
         em.persist(pending);
     }
@@ -321,7 +347,7 @@ public class WorkflowServiceBean {
             }
         } catch (CommandException ex) {
             logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() + ": " + ex.getMessage(), ex);
-            rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.steps.size() - 1);
+            rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.getSteps().size() - 1);
         }
 
     }

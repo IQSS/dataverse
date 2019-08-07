@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.mocks;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 
 /**
  * @author madunlap

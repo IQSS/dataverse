@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 
-import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 import org.junit.Test;
 
 import java.util.Arrays;

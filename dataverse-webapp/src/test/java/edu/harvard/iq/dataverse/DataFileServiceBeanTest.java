@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import org.junit.Before;
 import org.junit.Test;
 

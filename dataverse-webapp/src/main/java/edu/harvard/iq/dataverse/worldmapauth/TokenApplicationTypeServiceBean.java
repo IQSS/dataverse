@@ -6,6 +6,8 @@
 
 package edu.harvard.iq.dataverse.worldmapauth;
 
+import edu.harvard.iq.dataverse.persistence.worldmap.TokenApplicationType;
+
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;

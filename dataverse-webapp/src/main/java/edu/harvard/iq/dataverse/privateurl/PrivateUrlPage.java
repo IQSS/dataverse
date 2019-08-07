@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.privateurl;
 
 import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
 
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;

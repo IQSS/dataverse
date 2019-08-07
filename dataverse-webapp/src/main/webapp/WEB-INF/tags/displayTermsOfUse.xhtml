@@ -1,0 +1,23 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:o="http://omnifaces.org/ui">
+
+    <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
+
+    <ui:fragment rendered="#{termsOfUse.termsOfUseType == termsOfUseTypeEnum.LICENSE_BASED}">
+        #{bundle['file.license']}: #{termsOfUse.license.getLocalizedName(dataverseSession.locale)}
+    </ui:fragment>
+    <ui:fragment rendered="#{termsOfUse.termsOfUseType == termsOfUseTypeEnum.ALL_RIGHTS_RESERVED}">
+        #{bundle['dataset.files.termsOfAccess']}: #{bundle['file.allRightsReserved']}
+    </ui:fragment>
+    <ui:fragment rendered="#{termsOfUse.termsOfUseType == termsOfUseTypeEnum.RESTRICTED}">
+        #{bundle['dataset.files.termsOfAccess']}: #{bundle['file.termsOfAccess.restricted']} - 
+        <ui:fragment rendered="#{termsOfUse.restrictType != restrictTypeEnum.CUSTOM}">
+            #{bundle['file.termsOfAccess.restricted.'.concat(termsOfUse.restrictType)]}
+        </ui:fragment>
+        <ui:fragment rendered="#{fileMetadata.termsOfUse.restrictType == restrictTypeEnum.CUSTOM}">
+            #{termsOfUse.restrictCustomText}
+        </ui:fragment>
+    </ui:fragment>
+
+</ui:composition>

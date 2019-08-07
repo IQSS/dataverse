@@ -2,9 +2,9 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 
 import com.github.scribejava.apis.GoogleApi20;
 import com.github.scribejava.core.builder.api.BaseApi;
-import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 
 import javax.json.Json;
 import javax.json.JsonObject;

@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api.dto;
 
-import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
+import edu.harvard.iq.dataverse.persistence.group.ExplicitGroup;
 
 /**
  * @author michael

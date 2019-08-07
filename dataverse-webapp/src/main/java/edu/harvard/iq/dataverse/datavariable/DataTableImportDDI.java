@@ -6,7 +6,11 @@
 
 package edu.harvard.iq.dataverse.datavariable;
 
-import edu.harvard.iq.dataverse.DataTable;
+import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.SummaryStatistic;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableCategory;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableRange;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
 import javax.xml.stream.XMLStreamConstants;

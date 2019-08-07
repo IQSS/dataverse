@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -10,6 +8,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.user.Permission;
 
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
@@ -35,7 +35,7 @@ public class DeleteProvJsonCommand extends AbstractCommand<DataFile> {
         final String provJsonExtension = "prov-json.json";
 
         try {
-            StorageIO<DataFile> dataAccess = dataFile.getStorageIO(new DataAccess());
+            StorageIO<DataFile> dataAccess = new DataAccess().getStorageIO(dataFile);
             dataAccess.deleteAuxObject(provJsonExtension);
             logger.info("provenance json delete passed io step");
         } catch (NoSuchFileException nf) {

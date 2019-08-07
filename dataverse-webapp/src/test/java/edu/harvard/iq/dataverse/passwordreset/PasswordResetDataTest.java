@@ -5,7 +5,8 @@
  */
 package edu.harvard.iq.dataverse.passwordreset;
 
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
+import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
+import edu.harvard.iq.dataverse.persistence.user.PasswordResetData;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

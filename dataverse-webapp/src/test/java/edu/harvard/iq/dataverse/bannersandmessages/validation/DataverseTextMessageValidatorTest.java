@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.bannersandmessages.validation;
 
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseTextMessageDto;
-import edu.harvard.iq.dataverse.util.DataverseClock;
-import edu.harvard.iq.dataverse.util.DateUtil;
+import edu.harvard.iq.dataverse.common.DataverseClock;
+import edu.harvard.iq.dataverse.common.DateUtil;
 import edu.harvard.iq.dataverse.validation.ValidationException;
 import org.junit.After;
 import org.junit.Before;
