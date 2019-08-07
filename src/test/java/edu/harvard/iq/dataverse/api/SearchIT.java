@@ -631,6 +631,10 @@ public class SearchIT {
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
@@ -653,10 +657,6 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode())
                 // It's expected that you can't find it because it hasn't been published.
                 .body("data.total_count", CoreMatchers.equalTo(0));
-
-        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
-        publishDataverse.then().assertThat()
-                .statusCode(OK.getStatusCode());
 
         // 3 second sleep, to allow the indexing to finish:
         try {
