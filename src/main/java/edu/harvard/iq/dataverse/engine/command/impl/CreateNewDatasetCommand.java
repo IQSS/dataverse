@@ -113,7 +113,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         return Collections.singletonMap("",
-                dv.isReleased() ? Collections.singleton(Permission.AddDataset)
+                dv.isReleased() ? new HashSet<>(Arrays.asList(Permission.AddDataset))
                 : new HashSet<>(Arrays.asList(Permission.AddDataset,Permission.ViewUnpublishedDataverse)));
     }
         
