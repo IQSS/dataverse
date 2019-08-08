@@ -604,7 +604,7 @@
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers</artifactId>
-            <version>1.19</version>
+            <version>1.22</version>
         </dependency>
         <dependency>
             <groupId>org.xmlunit</groupId>
