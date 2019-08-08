@@ -632,7 +632,6 @@
                     <include>**/*.properties</include>
                     <include>**/mime.types</include>
                     <include>**/*.R</include>
-                    <include>**/*.xsl</include>
                 </includes>
             </resource>
             <resource>
