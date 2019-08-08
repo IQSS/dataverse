@@ -1,5 +1,0 @@
-There is a DB migration at: 
-
-https://github.com/IQSS/dataverse/blob/5028-dataset-explore-btn/src/main/resources/db/migration/V4.15.1.1__5028-dataset-explore.sql
-
-We will need to reflect this in the release notes. Verify at release time. 
