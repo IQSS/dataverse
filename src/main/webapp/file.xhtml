@@ -223,7 +223,7 @@
                                                                     <button type="button" class="btn btn-default dropdown-toggle downloadCitation" data-toggle="dropdown">
                                                                         <span class="glyphicon glyphicon-list"/> #{bundle['file.cite.file.downloadBtn']} <span class="caret"></span>
                                                                     </button>
-                                                                    <ul class="dropdown-menu pull-right text-left" role="menu">
+                                                                    <ul class="dropdown-menu" role="menu">
                                                                         <li>
                                                                             <a jsf:id="endNoteLink-2" jsf:action="#{FilePage.fileDownloadService.downloadCitationXML(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}" >
                                                                                 #{bundle['dataset.cite.downloadBtn.xml']}
@@ -276,7 +276,7 @@
                                                                     <button type="button" class="btn btn-default dropdown-toggle downloadCitation" data-toggle="dropdown">
                                                                         <span class="glyphicon glyphicon-list"/> #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
                                                                     </button>
-                                                                    <ul class="dropdown-menu pull-right text-left" role="menu">
+                                                                    <ul class="dropdown-menu" role="menu">
                                                                         <li>
                                                                             <a jsf:id="endNoteLink" jsf:action="#{FilePage.fileDownloadService.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion.dataset)}" >
                                                                                 #{bundle['dataset.cite.downloadBtn.xml']}
