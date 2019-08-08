@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:jsf="http://xmlns.jcp.org/jsf">
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:iqbs="http://java.sun.com/jsf/composite/iqbs">
   
     <!--@elvariable id="roleAssignee" type="edu.harvard.iq.dataverse.persistence.user.RoleAssignee"-->
 
@@ -20,9 +20,14 @@
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{bundle['dataverse.manageGroups.pageTitle']}"/>
             <ui:param name="dataverse" value="#{manageGroupsPage.dataverse}"/>
-            <ui:param name="showMessagePanel" value="#{true}"/>
+            <ui:param name="showMessagePanel" value="false"/>
             <ui:define name="body">
                 <h:form id="manageGroupsForm">
+                    <p:fragment id="manageGroupsMessage">
+                        <div class="container messagePanel">
+                            <iqbs:messages collapsible="true" rendered="#{not facesContext.validationFailed}"/>
+                        </div>
+                    </p:fragment>
                     <div class="form-group clearfix">
                         <div class="pull-right">
                             <p:commandLink type="button" id="createGroup" styleClass="btn btn-default"
@@ -32,7 +37,7 @@
                             </p:commandLink>
                         </div>
                     </div>
-                    <div>
+                    <h:panelGroup id="manage-groups-content" layout="block">
                         <div id="no-groups-message" class="panel panel-default" jsf:rendered="#{empty manageGroupsPage.explicitGroups}">
                             <div class="panel-body">
                                 <span class="help-block h3">#{bundle['dataverse.manageGroups.noGroups.why.header']}</span>
@@ -81,6 +86,7 @@
                                         <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                        action="#{manageGroupsPage.setSelectedGroup(explicitGroup)}"
                                                        oncomplete="PF('deleteConfirmation').show()"
+                                                       update=":manageGroupsForm"
                                                        title="#{bundle['dataverse.manageGroups.tab.action.btn.delete']}">
                                             <span class="glyphicon glyphicon-trash"></span>
                                         </p:commandLink>
@@ -88,7 +94,7 @@
                                 </div>
                             </p:column>
                         </p:dataTable>
-                    </div>
+                    </h:panelGroup>
                     <p:dialog header="#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="help-block">
                             <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.tip']}</span>
