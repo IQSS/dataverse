@@ -465,9 +465,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 return true;
             } catch (CommandException ex) {
                 logger.info("Unable to request access for file id " + fileId + ". Exception: " + ex);
+                return false;
             }             
-        }
-        
+        }        
         return false;
     }    
     

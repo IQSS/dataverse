@@ -453,20 +453,24 @@ public class FileDownloadHelper implements java.io.Serializable {
         // when there's only one file for the access request and there's no pop-up
         processRequestAccess(file, true);        
     }
-    
-    public void requestAccessMultiple(List<DataFile> files) {
 
+     public void requestAccessMultiple(List<DataFile> files) {
+         //need to verify that a valid request was made before 
+         //sending the notification - if at least one is valid send the notification
+         boolean succeeded = false;
+         boolean test = false;
          DataFile notificationFile = null;
          for (DataFile file : files) {
              //Not sending notification via request method so that
              // we can bundle them up into one nofication at dataset level
-             processRequestAccess(file, false);
-             if (notificationFile == null){
+             test = processRequestAccess(file, false);
+             succeeded |= test;
+             if (notificationFile == null) {
                  notificationFile = file;
              }
          }
-         if ( notificationFile != null){
-             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId(), (AuthenticatedUser) session.getUser()); 
+         if (notificationFile != null && succeeded) {
+             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId(), (AuthenticatedUser) session.getUser());
          }
      }
     
@@ -480,7 +484,7 @@ public class FileDownloadHelper implements java.io.Serializable {
      }    
     
     
-     private void processRequestAccess(DataFile file, Boolean sendNotification) {
+     private boolean processRequestAccess(DataFile file, Boolean sendNotification) {
 
          if (fileDownloadService.requestAccess(file.getId())) {
              // update the local file object so that the page properly updates
@@ -489,7 +493,9 @@ public class FileDownloadHelper implements java.io.Serializable {
              if (sendNotification) {
                  fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId(), (AuthenticatedUser) session.getUser());
              }
+             return true;
          }
+         return false;
      } 
      
     private GuestbookResponse guestbookResponse;
