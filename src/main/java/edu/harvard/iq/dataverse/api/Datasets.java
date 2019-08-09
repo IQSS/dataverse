@@ -77,6 +77,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
@@ -145,6 +146,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.UriInfo;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -1681,7 +1683,14 @@ public class Datasets extends AbstractApiBean {
                         }
                         // kick of dataset reindexing, in case the locks removed 
                         // affected the search card:
-                        indexService.indexDataset(dataset, true);
+                        try {
+                            indexService.indexDataset(dataset, true);
+                        } catch (IOException | SolrServerException e) {
+                            String failureLogText = "Post lock removal indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+                            failureLogText += "\r\n" + e.getLocalizedMessage();
+                            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
+
+                        }
                         return ok("locks removed");
                     }
                     return ok("dataset not locked");
@@ -1694,7 +1703,14 @@ public class Datasets extends AbstractApiBean {
                     dataset = findDatasetOrDie(id);
                     // ... and kick of dataset reindexing, in case the lock removed 
                     // affected the search card:
-                    indexService.indexDataset(dataset, true);
+                    try {
+                        indexService.indexDataset(dataset, true);
+                    } catch (IOException | SolrServerException e) {
+                        String failureLogText = "Post lock removal indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+                        failureLogText += "\r\n" + e.getLocalizedMessage();
+                        LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
+
+                    }
                     return ok("lock type " + lock.getReason() + " removed");
                 }
                 return ok("no lock type " + lockType + " on the dataset");
@@ -1725,7 +1741,15 @@ public class Datasets extends AbstractApiBean {
                 // refresh the dataset:
                 dataset = findDatasetOrDie(id);
                 // ... and kick of dataset reindexing:
-                indexService.indexDataset(dataset, true);
+                try {
+                    indexService.indexDataset(dataset, true);
+                } catch (IOException | SolrServerException e) {
+                    String failureLogText = "Post add lock indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+                    failureLogText += "\r\n" + e.getLocalizedMessage();
+                    LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
+
+                }
+
                 return ok("dataset locked with lock type " + lockType);
             } catch (WrappedResponse wr) {
                 return wr.getResponse();

@@ -766,9 +766,8 @@
                     </div>
                 </p:dialog>
 
-                <script type="text/javascript">
+                <script>
                     //<![CDATA[
-                    
                     var scrollPos=0;
 
                     $(document).ready(function () {
@@ -799,7 +798,6 @@
                         } else {
                             $("#featuredDataversesBlock .customNavigation a.btn").hide();
                         }
-
                         $('#featuredDataversesList .item').matchHeight();
                     }
 
@@ -823,17 +821,15 @@
                         } else {
                             PF('resetModifications').show();
                         }
-
                     }
 
                     function check() {
-                            $('button[id$="resetToInherit"]').trigger('click');
+                        $('button[id$="resetToInherit"]').trigger('click');
                     }
 
-                     function uncheck() {
-                         $('input:checkbox[id$="metadataRoot"]').prop('checked', false);
+                    function uncheck() {
+                        $('input:checkbox[id$="metadataRoot"]').prop('checked', false);
                     }
-
                     //]]>                                     
                 </script>
 
