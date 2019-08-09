@@ -349,12 +349,12 @@
                     </div>
 
                     <div id="contentTabs">
-                        <!-- Metadata -->
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{FilePage.selectedTabIndex}">
                             <p:ajax event="tabChange" listener="#{FilePage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
                             <p:tab id="accessTab" class="padding-none" title="#{bundle['file.dataFilesTab.dataAccess']}"
                                    rendered="#{settingsWrapper.rsyncDownload and FilePage.fileMetadata.dataFile.filePackage and systemConfig.rsyncDownload
                                         and !FilePage.fileMetadata.getDataFile().getOwner().getStorageIdentifier().startsWith('s3://') }">
+                                <!-- Access -->
                                 <ui:include src="file-data-access-fragment.xhtml">
                                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                                     <ui:param name="datasetVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
@@ -362,12 +362,61 @@
                                     <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                                 </ui:include>
                             </p:tab>
+                            
+                            
+                             <p:tab id="previewTab" title="Preview" rendered="#{true}">
+                                
+                                <!-- Preview -->
+                                <div id="file-preview-icon-block" jsf:rendered="#{empty worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink()}">
+                                    <div id="border-block" style="border:0;">
+                                        <div id="preview-square">
+                                            <ui:fragment rendered="#{!FilePage.isThumbnailAvailable(FilePage.fileMetadata)}">
+                                                <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(FilePage.fileMetadata.dataFile)} text-muted"/>
+                                            </ui:fragment>
+                                            
+                                            <p:graphicImage styleClass="img-responsive" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" 
+                                                            alt="#{bundle['file.metadata.preview.alt']} #{FilePage.fileMetadata.label}" rendered="#{FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
+                                            
+                                            <!-- #file-preview-icon-block > #border-block > #preview-square PADDING-BOTTOM: 100% -->
+                                        
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="preview-tool-block" jsf:rendered="#{!empty worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink()}">
+
+                                    <!-- POPUP FROM FILE BTNS WORKS BUT THIS DONT, REMOVE THERE AND SEE WHAT HAPPENS -->
+                                    
+                                    <ui:fragment rendered="#{true}">
+                                        
+                                        <!-- BAD RENDER LOGIC worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata) -->
+
+                                        <div class="margin-bottom">
+                                            <!-- REMOVE WORLDMAP LOGO TO BE CONSISTENT WITH OTHER EXTERNAL TOOL
+                                            <a href="# {worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getLayerLink()}" target="_blank" rel="noopener" title="# {bundle['file.mapData.worldMap']}"><img src="https://worldmap.harvard.edu/static/theme/img/WorldMap-Logo_26px.png" alt="# {bundle['file.mapData.worldMap']}"/></a>
+                                            -->
+                                            <a href="#{worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getLayerLink()}" class="btn btn-default" target="_blank" rel="noopener" title="#{bundle['file.metaData.viewOnWorldMap']}"><span class="glyphicon glyphicon-equalizer"/> #{bundle['file.metaData.viewOnWorldMap']}</a>
+                                        </div>
+                                        
+                                        <div class="preview-frame-block">
+                                            <iframe id="id_iframe_map" title="External File Preview Tool" height="500" width="100%" src="#{worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink()}"></iframe>
+                                        </div>
+
+                                    </ui:fragment>
+                                    
+                                    
+                                </div>
+                                
+                            </p:tab>
+                            
+                            
                             <p:tab id="metadataMapTab" class="padding-none" title="#{bundle['file.dataFilesTab.metadata.header']}"
                                    rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
                                                               (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset()))}">
                                 
-                                <!-- Add + Edit Metadata Button -->
+                                <!-- Metadata -->
                                 <div class="button-block tab-header margin-bottom text-right">
+                                    <!-- Add + Edit Metadata Button -->
                                     <h:outputLink styleClass="btn btn-default btn-access #{(FilePage.lockedFromEdits) ? 'disabled' : ''}"
                                                   value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE"
                                                   rendered="#{!widgetWrapper.widgetView and (dataverseSession.user.authenticated
@@ -399,7 +448,6 @@
                                         </ul>
                                     </div>
                                 </div>
-                                <!-- END: Add + Edit Metadata Button -->
                                 
                                 <div class="panel panel-default">
                                     <div data-toggle="collapse" data-target="#panelCollapseFMD" class="panel-heading text-info">
@@ -541,14 +589,8 @@
                                     </div>
                                 </div>
                             </p:tab>
-                            <ui:remove>
-                                <p:tab id="provenanceTab" title="Provenance" rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
-                                                              (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset()))}">
-                                    <!-- Placeholder -->
-                                    <em>Coming soon...</em>
-                                </p:tab>
-                            </ui:remove>
                             <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}">
+                                <!-- Versions -->
                                 <ui:include src="file-versions.xhtml"></ui:include>
                             </p:tab>
                         </p:tabView>
