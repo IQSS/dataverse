@@ -2,7 +2,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:o="http://omnifaces.org/ui">
 
-    <o:importConstants type="edu.harvard.iq.dataverse.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
+    <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
 
     <ui:fragment rendered="#{termsOfUse.termsOfUseType == termsOfUseTypeEnum.LICENSE_BASED}">
         #{bundle['file.license']}: #{termsOfUse.license.getLocalizedName(dataverseSession.locale)}

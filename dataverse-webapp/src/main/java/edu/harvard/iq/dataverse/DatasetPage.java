@@ -139,8 +139,7 @@ public class DatasetPage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
 
     public enum EditMode {
-
-        CREATE, INFO, FILE
+        CREATE
     }
 
 
@@ -1395,12 +1394,6 @@ public class DatasetPage implements java.io.Serializable {
         }
         workingVersion = dataset.getEditVersion();
         clone = workingVersion.cloneDatasetVersion();
-        if (editMode == EditMode.INFO) {
-            // ?
-        } else if (editMode == EditMode.FILE) {
-            // JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.editFiles"));
-            // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
-        }
         this.readOnly = false;
     }
 
@@ -2187,9 +2180,6 @@ public class DatasetPage implements java.io.Serializable {
                     JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess"));
                 }
             }
-            if (editMode.equals(EditMode.FILE)) {
-                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.filesSuccess"));
-            }
 
         } else {
             // must have been a bulk file update or delete:
@@ -2228,20 +2218,12 @@ public class DatasetPage implements java.io.Serializable {
             // that must have been a bulk file update or delete:
             if (bulkFileDeleteInProgress) {
                 JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileDeleteFailure"));
-
             } else {
                 JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.filesFailure"));
             }
         } else {
-
-            if (editMode.equals(EditMode.CREATE)) {
-                JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.createFailure"));
-            }
-            if (editMode.equals(EditMode.FILE)) {
-                JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.filesFailure"));
-            }
+            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.createFailure"));
         }
-
         bulkFileDeleteInProgress = false;
     }
 

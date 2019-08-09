@@ -1274,9 +1274,6 @@ public class DataFileServiceBean implements java.io.Serializable {
     public List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType) throws IOException {
         List<DataFile> datafiles = new ArrayList<>();
 
-        if (true) {
-            throw new RuntimeException();
-        }
         String warningMessage = null;
 
         // save the file, in the temporary location for now:

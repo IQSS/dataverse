@@ -265,26 +265,6 @@
                                             </h:outputFormat>
                                         </p>
                                     </ui:fragment>
-                                    <!-- CAN'T DOWNLOAD RSYNC SCRIPT DUE to DCM BACKEND BUSY. -->
-                                    <!-- TODO: Figure out if we can detect the difference between the DCM being down and the DCM being busy. -->
-                                    <ui:fragment rendered="#{false}">
-                                        <p class="help-block">
-                                            <span class="glyphicon glyphicon-warning-sign text-warning"></span>
-                                            <h:outputFormat class="text-warning" value=" #{bundle['file.rsyncUpload.noScriptBusy']}" escape="false">
-                                                <o:param>
-                                                    <p:commandLink value="#{installationConfig.supportTeamName}"
-                                                                   oncomplete="PF('contactForm').show()"
-                                                                   update=":contactDialog"
-                                                                   actionListener="#{sendFeedbackDialog.initUserInput}">
-                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                                                    </p:commandLink>                                
-                                                </o:param>
-                                            </h:outputFormat>
-                                        </p>
-                                    </ui:fragment>
                                 </ui:fragment>
                             </div>
                         </div>
@@ -459,14 +439,6 @@
                                             <h:outputText value="#{bundle['file.license']}"/>
                                         </p:commandLink>
                                     </li>
-                                    <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}" jsf:rendered="#{false}">
-                                        <p:commandLink id="fileCategoriesButton2"
-                                                   actionListener="#{EditDatafilesPage.refreshTagsPopUp(fileMetadata)}"
-                                                   update=":datasetForm:editFileTagsPopup"
-                                                   oncomplete="PF('editFileTagsPopup').show();bind_bsui_components();">
-                                                    #{bundle['file.tags']} 
-                                        </p:commandLink>    
-                                    </li>     
                                 </ul>
                             </div>
                         </f:facet>
@@ -493,11 +465,6 @@
                                                update=":datasetForm:editFileTagsPopup"
                                                oncomplete="PF('editFileTagsPopup').show();bind_bsui_components();">
                                                 #{bundle['file.tags']} 
-                                    </p:commandLink>
-                                </li>        
-                                <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}" jsf:rendered="#{false}">
-                                    <p:commandLink onclick="testFilesSelectedForDelete();" id="deleteSelectedFile"> 
-                                        <h:outputText value="#{bundle['file.delete']}"/> 
                                     </p:commandLink>
                                 </li>
                                 <li>
