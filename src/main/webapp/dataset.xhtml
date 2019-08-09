@@ -427,11 +427,16 @@
                                                 </p>
                                                 
                                                 <div id="citations-list-block">
-                                                    <ul>
-                                                        <ui:repeat value="#{datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}" var="citation">
-                                                            <li><a href="#{citation.citedByUrl}" target="_blank">#{citation.citedByUrl}</a></li>
-                                                        </ui:repeat>
-                                                    </ul>
+                                                    <div jsf:rendered="#{empty datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}">
+                                                        #{bundle['metrics.citations.dialog.empty']}
+                                                    </div>
+                                                    <ui:fragment rendered="#{!empty datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}">
+                                                        <ul>
+                                                            <ui:repeat value="#{datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}" var="citation">
+                                                                <li><a href="#{citation.citedByUrl}" target="_blank">#{citation.citedByUrl}</a></li>
+                                                            </ui:repeat>
+                                                        </ul>
+                                                    </ui:fragment>
                                                 </div>
 
                                                 <div class="button-block">
