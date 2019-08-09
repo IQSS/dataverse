@@ -615,12 +615,12 @@ public class DataCitation {
         String authorString = getAuthorsString();
 
         if (authorString.isEmpty()) {
-            authorString = ":unav";
+            authorString = AbstractGlobalIdServiceBean.UNAVAILABLE;
     }
         String producerString = getPublisher();
 
         if (producerString.isEmpty()) {
-            producerString = ":unav";
+            producerString =  AbstractGlobalIdServiceBean.UNAVAILABLE;
         }
 
         metadata.put("datacite.creator", authorString);
