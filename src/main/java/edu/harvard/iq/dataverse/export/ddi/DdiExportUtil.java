@@ -1373,7 +1373,6 @@ public class DdiExportUtil {
         writeAttribute(xmlw, "fileid", "f" + dv.getDataTable().getDataFile().getId().toString());
 
         // labl
-
         if ((vm == null || StringUtilisEmpty(vm.getLabel())) && !StringUtilisEmpty(dv.getLabel())) {
             xmlw.writeStartElement("labl");
             writeAttribute(xmlw, "level", "variable");

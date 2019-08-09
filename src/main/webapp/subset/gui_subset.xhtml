@@ -7,9 +7,9 @@
      xmlns:o="http://omnifaces.org/ui">
     
     <link rel="stylesheet" href="/subset/css/app.css"/>
-    <script type="text/javascript" src="/subset/javascript/d3.v3.min.js"></script>
-    <script type="text/javascript" src="/subset/javascript/plots.js"></script>
-    <script type="text/javascript" src="/subset/javascript/app_subset.js"></script>
+    <script src="/subset/javascript/d3.v3.min.js"></script>
+    <script src="/subset/javascript/plots.js"></script>
+    <script src="/subset/javascript/app_subset.js"></script>
     
     <div id="leftpanel" class="sidepanel clearfix">
         <div class="panel-heading text-center" id="leftpaneltitle">
@@ -51,6 +51,7 @@
     </span>
 
     <script>
+        //<![CDATA[
         var hostname = "localhost:8080"; // default host url
         // extract the current host url (with the port!)
         // from the location bar:
@@ -60,5 +61,6 @@
             hostname=myurl.substring(0,cindex);
         };
         var fileid = #{!empty dataFile  ? dataFile.id : 0};
+        //]]>
     </script>
 </ui:composition>

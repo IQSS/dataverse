@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -13,10 +14,12 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.apache.solr.client.solrj.SolrServerException;
 
 @RequiredPermissions(Permission.EditDataset)
 public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Dataset> {
@@ -62,9 +65,23 @@ public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Datase
         }
         
         //  TODO: What should we do with the indexing result? Print it to the log?
-        boolean doNormalSolrDocCleanUp = true;
-        Future<String> indexingResult = ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
         return savedDataset;
+    }
+    
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        boolean retVal = true;
+        Dataset dataset = (Dataset) r;
+
+        try {
+            Future<String> indexString = ctxt.index().indexDataset(dataset, true);
+        } catch (IOException | SolrServerException e) {
+            String failureLogText = "Post submit for review indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, dataset);
+            retVal = false;
+        }
+        return retVal;
     }
 
 }

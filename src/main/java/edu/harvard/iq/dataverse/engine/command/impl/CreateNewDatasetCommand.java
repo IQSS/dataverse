@@ -2,17 +2,22 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Creates a new {@link Dataset}, used to store unpublished data. This is as opposed to 
@@ -21,11 +26,17 @@ import edu.harvard.iq.dataverse.GlobalIdServiceBean;
  * 
  * @author michael
  */
-@RequiredPermissions(Permission.AddDataset)
+//@RequiredPermissions(Permission.AddDataset)
+// Changing the permission setup to dynamic, to accommodate the case of creating 
+// a dataset in an unpublished dataverse; only users with the permission to view it 
+// should be allowed to create child datasets. Otherwise any users with an account 
+// can create a dataset in a dataverse before it's even published, if "Anyone with a 
+// Dataverse account can add datasets" option is chosen. 
 public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     private static final Logger logger = Logger.getLogger(CreateNewDatasetCommand.class.getName());
     
     private final Template template;
+    private final Dataverse dv;
 
     public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         this( theDataset, aRequest, false); 
@@ -38,6 +49,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired, Template template) {
         super(theDataset, aRequest, registrationRequired);
         this.template = template;
+        dv = theDataset.getOwner();
     }
     
     /**
@@ -98,5 +110,11 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
         }
     }
     
-    
+    @Override
+    public Map<String, Set<Permission>> getRequiredPermissions() {
+        return Collections.singletonMap("",
+                dv.isReleased() ? Collections.singleton(Permission.AddDataset)
+                : new HashSet<>(Arrays.asList(Permission.AddDataset,Permission.ViewUnpublishedDataverse)));
+    }
+        
 }
