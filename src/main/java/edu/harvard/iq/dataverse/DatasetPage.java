@@ -1915,17 +1915,6 @@ public class DatasetPage implements java.io.Serializable {
                 return permissionsWrapper.notAuthorized(); 
             }
             
-            // Additional permission check, in case this is an unpublished 
-            // dataverse: if it is configured to allow anyone with an account to 
-            // create datasets, this should only take effect once it is published!
-            // A user with an account, but with no permission to view this 
-            // unpublished dataverse should not be allowed to create any datasets. 
-            
-            if (!dataset.getOwner().isReleased() && !permissionService.on(dataset.getOwner()).has(Permission.ViewUnpublishedDataverse)) {
-                return permissionsWrapper.notAuthorized();
-            }
-            
-
             dataverseTemplates.addAll(dataverseService.find(ownerId).getTemplates());
             if (!dataverseService.find(ownerId).isTemplateRoot()) {
                 dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());
