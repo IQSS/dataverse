@@ -29,7 +29,7 @@ Once a dataset has been published its metadata is exported in a variety of forma
 
 - Dublin Core
 - DDI (Data Documentation Initiative)
-- DDI Codebook
+- DDI HTML Codebook
 - DataCite 4
 - JSON (native Dataverse format)
 - OAI_ORE
