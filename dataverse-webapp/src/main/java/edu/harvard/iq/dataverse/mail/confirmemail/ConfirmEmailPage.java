@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.confirmemail;
+package edu.harvard.iq.dataverse.mail.confirmemail;
 
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;

@@ -24,9 +24,6 @@ import java.text.SimpleDateFormat;
 @Table(indexes = {@Index(columnList = "user_id")})
 
 public class UserNotification implements Serializable {
-    public enum Type {
-        ASSIGNROLE, REVOKEROLE, CREATEDV, CREATEDS, CREATEACC, MAPLAYERUPDATED, MAPLAYERDELETEFAILED, SUBMITTEDDS, RETURNEDDS, PUBLISHEDDS, REQUESTFILEACCESS, GRANTFILEACCESS, REJECTFILEACCESS, FILESYSTEMIMPORT, CHECKSUMIMPORT, CHECKSUMFAIL, CONFIRMEMAIL
-    }
 
     private static final long serialVersionUID = 1L;
 
@@ -45,7 +42,7 @@ public class UserNotification implements Serializable {
 
     @Enumerated
     @Column(nullable = false)
-    private Type type;
+    private NotificationType type;
     private Long objectId;
 
     @Transient
@@ -96,11 +93,11 @@ public class UserNotification implements Serializable {
         this.readNotification = readNotification;
     }
 
-    public Type getType() {
+    public NotificationType getType() {
         return type;
     }
 
-    public void setType(Type type) {
+    public void setType(NotificationType type) {
         this.type = type;
     }
 

@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
+import edu.harvard.iq.dataverse.notification.NotificationObjectType;
+import edu.harvard.iq.dataverse.notification.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
@@ -15,9 +17,9 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse;
 import edu.harvard.iq.dataverse.persistence.user.ApiToken;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.User;
-import edu.harvard.iq.dataverse.persistence.user.UserNotification;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.primefaces.PrimeFaces;
@@ -463,7 +465,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         Stream<AuthenticatedUser> usersWithManageMinorDsPerm = permissionService.getUsersWithPermissionOn(Permission.ManageMinorDatasetPermissions, dataset).stream();
 
         Stream.concat(usersWithManageDsPerm, usersWithManageMinorDsPerm).distinct().forEach((au) ->
-                                                                                                    userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor));
+                                                                                                    userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), NotificationType.REQUESTFILEACCESS,
+                                                                                                                                             fileId, NotificationObjectType.DATAFILE, requestor));
     }
 
 

@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.ApiToken;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
-import edu.harvard.iq.dataverse.persistence.user.UserNotification;
+import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.apache.commons.lang3.StringUtils;
 
@@ -150,9 +150,9 @@ public class BuiltinUsers extends AbstractApiBean {
                 logger.info("The root dataverse is not present. Don't send a notification to dataverseAdmin.");
             }
             if (rootDataversePresent) {
-                userNotificationSvc.sendNotification(au,
-                                                     new Timestamp(new Date().getTime()),
-                                                     UserNotification.Type.CREATEACC, null);
+                userNotificationSvc.sendNotificationWithoutEmail(au,
+                                                                 new Timestamp(new Date().getTime()),
+                                                                 NotificationType.CREATEACC);
             }
 
             ApiToken token = new ApiToken();

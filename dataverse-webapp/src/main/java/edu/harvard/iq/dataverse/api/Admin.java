@@ -22,8 +22,6 @@ import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.Util;
 import edu.harvard.iq.dataverse.common.files.extension.FileExtension;
-import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
-import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailInitResponse;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -35,6 +33,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveComma
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailException;
+import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailInitResponse;
 import edu.harvard.iq.dataverse.persistence.ActionLogRecord;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.GlobalId;

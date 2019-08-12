@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.MailServiceBean;
+import edu.harvard.iq.dataverse.mail.MailService;
 import edu.harvard.iq.dataverse.persistence.ActionLogRecord;
 
 import javax.ejb.EJB;
@@ -16,7 +16,7 @@ import javax.ws.rs.core.Response;
 public class Mail extends AbstractApiBean {
 
     @EJB
-    MailServiceBean mailService;
+    MailService mailService;
 
     @GET
     @Path("notifications")

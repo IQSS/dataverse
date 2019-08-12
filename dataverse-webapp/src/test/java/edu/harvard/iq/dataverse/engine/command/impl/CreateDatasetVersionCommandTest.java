@@ -9,7 +9,12 @@ import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -18,16 +23,23 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeDataset;
 import static edu.harvard.iq.dataverse.mocks.MockRequestFactory.makeRequest;
-import static edu.harvard.iq.dataverse.persistence.MocksFactory.nextId;
+import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeDataset;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author michael
  */
+@RunWith(MockitoJUnitRunner.class)
 public class CreateDatasetVersionCommandTest {
+
+    @Mock
+    private DatasetServiceBean datasetService;
+
+    @Before
+    public void prepare(){
+        Mockito.when(datasetService.storeVersion(Mockito.any(DatasetVersion.class))).thenReturn(new DatasetVersion());
+    }
 
     @Test
     public void testSimpleVersionAddition() throws Exception {
@@ -52,18 +64,17 @@ public class CreateDatasetVersionCommandTest {
         // Execute
         CreateDatasetVersionCommand sut = new CreateDatasetVersionCommand(makeRequest(), ds, dsvNew);
 
-        final MockDatasetServiceBean serviceBean = new MockDatasetServiceBean();
         TestDataverseEngine testEngine = new TestDataverseEngine(new TestCommandContext() {
             @Override
             public DatasetServiceBean datasets() {
-                return serviceBean;
+                return datasetService;
             }
         });
 
         testEngine.submit(sut);
 
         // asserts
-        assertTrue(serviceBean.storeVersionCalled);
+        Mockito.verify(datasetService, Mockito.times(1)).storeVersion(Mockito.any());
         Date dsvCreationDate = dsvNew.getCreateTime();
         assertEquals(dsvCreationDate, dsvNew.getLastUpdateTime());
         assertEquals(dsvCreationDate.getTime(), ds.getModificationTime().getTime());
@@ -85,30 +96,15 @@ public class CreateDatasetVersionCommandTest {
         CreateDatasetVersionCommand sut = new CreateDatasetVersionCommand(makeRequest(), sampleDataset, dsvNew);
 
         TestDataverseEngine testEngine = new TestDataverseEngine(new TestCommandContext() {
-            DatasetServiceBean dsb = new MockDatasetServiceBean();
 
             @Override
             public DatasetServiceBean datasets() {
-                return dsb;
+                return datasetService;
             }
 
         });
 
         testEngine.submit(sut);
-    }
-
-
-    static class MockDatasetServiceBean extends DatasetServiceBean {
-
-        boolean storeVersionCalled = false;
-
-        @Override
-        public DatasetVersion storeVersion(DatasetVersion dsv) {
-            storeVersionCalled = true;
-            dsv.setId(nextId());
-            return dsv;
-        }
-
     }
 
 }

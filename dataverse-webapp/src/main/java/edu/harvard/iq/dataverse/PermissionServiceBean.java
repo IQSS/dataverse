@@ -797,4 +797,26 @@ public class PermissionServiceBean {
         return (isUserAdminForDataverse(user, dataverse) || user.isSuperuser()) && dataverse.isAllowMessagesBanners();
     }
 
+
+    /**
+     * Returns roles that are effective for {@code au}
+     * over {@code dvObj}. Traverses the containment hierarchy of the {@code d}.
+     * Takes into consideration all groups that {@code au} is part of.
+     *
+     * @param au    The authenticated user whose role assignments we look for.
+     * @param dvObj The Dataverse object over which the roles are assigned
+     * @return A set of all the role assignments for {@code ra} over {@code d}.
+     */
+    public Set<RoleAssignment> getRolesOfUser(AuthenticatedUser au, DvObject dvObj) {
+
+        Set<RoleAssignment> roles = assignmentsFor(au, dvObj);
+
+        Set<Group> groupsUserBelongsTo = groupService.groupsFor(au, dvObj);
+        for (Group g : groupsUserBelongsTo) {
+            roles.addAll(assignmentsFor(g, dvObj));
+        }
+
+        return roles;
+    }
+
 }

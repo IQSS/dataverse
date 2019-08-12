@@ -10,8 +10,9 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.notification.NotificationObjectType;
+import edu.harvard.iq.dataverse.notification.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.MapLayerMetadata;
@@ -20,8 +21,8 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
-import edu.harvard.iq.dataverse.persistence.user.UserNotification;
 import edu.harvard.iq.dataverse.persistence.worldmap.WorldMapToken;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.worldmapauth.TokenApplicationTypeServiceBean;
@@ -629,7 +630,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
 
 
         // notify user
-        userNotificationService.sendNotification(dvUser, wmToken.getCurrentTimestamp(), UserNotification.Type.MAPLAYERUPDATED, dfile.getOwner().getLatestVersion().getId());
+        userNotificationService.sendNotification(dvUser, wmToken.getCurrentTimestamp(), NotificationType.MAPLAYERUPDATED,
+                                                 dfile.getOwner().getLatestVersion().getId(), NotificationObjectType.DATASET_VERSION);
 
         // ------------------------------------------
         // Retrieve a PNG representation from WorldMap

@@ -16,7 +16,6 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
-import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.files.extension.FileExtension;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -33,6 +32,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
+import edu.harvard.iq.dataverse.notification.NotificationObjectType;
+import edu.harvard.iq.dataverse.notification.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
@@ -46,12 +47,12 @@ import edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
+import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.persistence.user.User;
-import edu.harvard.iq.dataverse.persistence.user.UserNotification;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -1117,7 +1118,8 @@ public class Access extends AbstractApiBean {
 
         try {
             AuthenticatedUser au = (AuthenticatedUser) ra;
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.GRANTFILEACCESS, dataFile.getOwner().getId());
+            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), NotificationType.GRANTFILEACCESS,
+                                                     dataFile.getOwner().getId(), NotificationObjectType.AUTHENTICATED_USER);
         } catch (ClassCastException e) {
             //nothing to do here - can only send a notification to an authenticated user
         }
@@ -1246,7 +1248,8 @@ public class Access extends AbstractApiBean {
 
             try {
                 AuthenticatedUser au = (AuthenticatedUser) ra;
-                userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REJECTFILEACCESS, dataFile.getOwner().getId());
+                userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), NotificationType.REJECTFILEACCESS,
+                                                         dataFile.getOwner().getId(), NotificationObjectType.AUTHENTICATED_USER);
             } catch (ClassCastException e) {
                 //nothing to do here - can only send a notification to an authenticated user
             }

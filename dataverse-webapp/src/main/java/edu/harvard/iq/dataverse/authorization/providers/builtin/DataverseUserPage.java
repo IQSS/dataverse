@@ -7,7 +7,6 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
-import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthUtil;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
@@ -15,10 +14,11 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
-import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
-import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailUtil;
+import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailException;
+import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
+import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailUtil;
 import edu.harvard.iq.dataverse.mydata.MyDataPage;
+import edu.harvard.iq.dataverse.notification.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.config.EMailValidator;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 import edu.harvard.iq.dataverse.persistence.user.ConfirmEmailData;
+import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.persistence.user.UserNameValidator;
 import edu.harvard.iq.dataverse.persistence.user.UserNotification;
@@ -333,9 +334,9 @@ public class DataverseUserPage implements java.io.Serializable {
              * @todo Move this to
              * AuthenticationServiceBean.createAuthenticatedUser
              */
-            userNotificationService.sendNotification(au,
-                                                     new Timestamp(new Date().getTime()),
-                                                     UserNotification.Type.CREATEACC, null);
+            userNotificationService.sendNotificationWithoutEmail(au,
+                                                                 new Timestamp(new Date().getTime()),
+                                                                 NotificationType.FILESYSTEMIMPORT.CREATEACC);
 
             // go back to where user came from
 

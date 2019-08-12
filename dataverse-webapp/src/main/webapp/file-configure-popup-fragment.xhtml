@@ -1,12 +1,8 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
-                xmlns:c="http://java.sun.com/jsp/jstl/core"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:o="http://omnifaces.org/ui"
-                xmlns:jsf="http://xmlns.jcp.org/jsf"
-                xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+>
 
         <p class="help-block">
             <h:outputText styleClass="text-left" value=" #{configureFragmentBean.configurePopupTool.description}" escape="false"/>
@@ -19,6 +15,8 @@
                 onclick="PF('configureToolPopup').hide();window.open('#{configureFragmentBean.configurePopupToolHandler.toolUrlWithQueryParams}', '_blank')"
                 update=":messagePanel">
             </p:commandLink>
-            <button type="button" class="btn btn-default" onclick="PF('configureToolPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
+            <button type="button" class="btn btn-default"
+                    onclick="PF('configureToolPopup').hide();PF('blockDatasetForm').hide();"
+                    value="#{bundle.cancel}">#{bundle.cancel}</button>
         </div>
 </ui:composition>

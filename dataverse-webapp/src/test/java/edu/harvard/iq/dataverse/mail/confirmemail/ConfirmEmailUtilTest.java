@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.confirmemail;
+package edu.harvard.iq.dataverse.mail.confirmemail;
 
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;

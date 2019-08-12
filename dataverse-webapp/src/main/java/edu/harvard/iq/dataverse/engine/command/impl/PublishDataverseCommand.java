@@ -6,11 +6,12 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
-import edu.harvard.iq.dataverse.persistence.user.UserNotification;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 
 import java.sql.Timestamp;
@@ -46,7 +47,8 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
         for (RoleAssignment ra : ras) {
             if (ra.getRole().permissions().contains(Permission.DownloadFile)) {
                 for (AuthenticatedUser au : ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier()))) {
-                    ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.ASSIGNROLE, dataverse.getId());
+                    ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), NotificationType.ASSIGNROLE,
+                                                          dataverse.getId(), NotificationObjectType.DATAVERSE);
                 }
             }
         }

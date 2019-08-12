@@ -3,6 +3,7 @@
       xmlns:o="http://omnifaces.org/ui">
 
     <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
+    <!--@elvariable id="termsOfUse" type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse"-->
 
     <ui:fragment rendered="#{termsOfUse.termsOfUseType == termsOfUseTypeEnum.LICENSE_BASED}">
         #{bundle['file.license']}: #{termsOfUse.license.getLocalizedName(dataverseSession.locale)}
