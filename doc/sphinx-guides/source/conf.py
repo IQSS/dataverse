@@ -224,6 +224,10 @@ html_title = 'Dataverse.org'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+html_js_files = [
+    'js/jquery-3.4.1.min.js',
+]
+
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
 # directly to the root of the documentation.
