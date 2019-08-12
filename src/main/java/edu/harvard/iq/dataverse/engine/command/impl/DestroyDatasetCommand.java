@@ -80,7 +80,9 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         }
         
         //also, lets delete the uploaded thumbnails!
-        deleteDatasetLogo(doomed);
+        if (!doomed.isHarvested()) {
+            deleteDatasetLogo(doomed);
+        }
         
         
         // ASSIGNMENTS
@@ -92,17 +94,20 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             ctxt.em().remove(ra);
         }   
         
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
-        try{
-            if(idServiceBean.alreadyExists(doomed)){
-                idServiceBean.deleteIdentifier(doomed);
-                for (DataFile df : doomed.getFiles()) {
-                    idServiceBean.deleteIdentifier(df);
+        if (!doomed.isHarvested()) {
+            GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
+            try {
+                if (idServiceBean.alreadyExists(doomed)) {
+                    idServiceBean.deleteIdentifier(doomed);
+                    for (DataFile df : doomed.getFiles()) {
+                        idServiceBean.deleteIdentifier(df);
+                    }
                 }
+            } catch (Exception e) {
+                logger.log(Level.WARNING, "Identifier deletion was not successfull:", e.getMessage());
             }
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "Identifier deletion was not successfull:", e.getMessage());
-        }
+        } 
+        
         Dataverse toReIndex = managedDoomed.getOwner();
 
         // dataset
