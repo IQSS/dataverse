@@ -385,21 +385,30 @@
                                 
                                 <div id="preview-tool-block" jsf:rendered="#{!empty worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink()}">
 
-                                    <!-- POPUP FROM FILE BTNS WORKS BUT THIS DONT, REMOVE THERE AND SEE WHAT HAPPENS -->
+                                    <!-- TODO: CONFIG SETTING/FILE TYPE RENDER LOGIC -->
+                                    <!-- TODO: MAINTAIN WORLDMAP FUNCTIONALITY -->
+                                    
+                                    <!-- TODO: NOFRAMES -->
                                     
                                     <ui:fragment rendered="#{true}">
                                         
-                                        <!-- BAD RENDER LOGIC worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata) -->
+                                        <!-- TODO: DETERMINE IF NECESSARY, BAD RENDER LOGIC worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata) -->
 
                                         <div class="margin-bottom">
-                                            <!-- REMOVE WORLDMAP LOGO TO BE CONSISTENT WITH OTHER EXTERNAL TOOL
+                                            <!-- TODO: DETERMINE IF NECESSARY, REMOVED WORLDMAP LOGO TO BE CONSISTENT WITH OTHER EXTERNAL TOOL
                                             <a href="# {worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getLayerLink()}" target="_blank" rel="noopener" title="# {bundle['file.mapData.worldMap']}"><img src="https://worldmap.harvard.edu/static/theme/img/WorldMap-Logo_26px.png" alt="# {bundle['file.mapData.worldMap']}"/></a>
                                             -->
                                             <a href="#{worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getLayerLink()}" class="btn btn-default" target="_blank" rel="noopener" title="#{bundle['file.metaData.viewOnWorldMap']}"><span class="glyphicon glyphicon-equalizer"/> #{bundle['file.metaData.viewOnWorldMap']}</a>
                                         </div>
                                         
                                         <div class="preview-frame-block">
-                                            <iframe id="id_iframe_map" title="External File Preview Tool" height="500" width="100%" src="#{worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink()}"></iframe>
+                                            
+                                            <!-- TODO: ROLE, TITLE ATTRIBUTES -->
+                                            <!-- TODO: RESPONSIVE HEIGHT, WIDTH -->
+                                            <!-- TODO: MIXED CONTENT -->
+                                            <!-- TODO: LAZY LOAD, DEFER SCRIPTS -->
+                                            
+                                            <iframe id="id_iframe_map" role="presentation" title="External File Preview Tool" height="500" width="100%" src="#{worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink()}"></iframe>
                                         </div>
 
                                     </ui:fragment>
