@@ -1632,14 +1632,12 @@ public class DdiExportUtil {
         return true;
     }
 
-    public static void datasetHtmlDDI(JsonObject datasetDtoAsJson, DatasetVersion version, OutputStream outputStream) throws XMLStreamException {
+    public static void datasetHtmlDDI(File datafile, OutputStream outputStream) throws XMLStreamException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
         try {
             Document document;
             InputStream  styleSheetInput = DdiExportUtil.class.getClassLoader().getResourceAsStream("edu/harvard/iq/dataverse/codebook2-0.xsl");
-            Path cachedMetadataFilePath = Paths.get(version.getDataset().getFileSystemDirectory().toString(), "export_ddi" + ".cached");
-            File datafile = cachedMetadataFilePath.toFile();
 
             DocumentBuilder builder = factory.newDocumentBuilder();
             document = builder.parse(datafile);
@@ -1650,7 +1648,6 @@ public class DdiExportUtil {
             Transformer transformer = tFactory.newTransformer(stylesource);
 
             DOMSource source = new DOMSource(document);
-            //StreamResult result = new StreamResult(System.out);
             StreamResult result = new StreamResult(outputStream);
             transformer.transform(source, result);
         } catch (TransformerConfigurationException tce) {
