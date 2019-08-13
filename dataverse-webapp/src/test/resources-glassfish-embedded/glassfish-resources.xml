@@ -16,7 +16,12 @@
         <property name="User" value=""/>
         <property name="createDatabase" value="create"/>
     </jdbc-connection-pool>
-
+    
+    <mail-resource host="localhost" from="systemEmail" user="tester"
+                   jndi-name="mail/notifyMailSession">
+        <property name="mail.smtp.port" value="2525"/>
+    </mail-resource>
+    
     <jdbc-resource pool-name="dvnDbPool" jndi-name="jdbc/VDCNetDS"/>
 
 </resources>

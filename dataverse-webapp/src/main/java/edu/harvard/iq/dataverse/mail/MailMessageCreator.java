@@ -56,7 +56,7 @@ public class MailMessageCreator {
 
     // -------------------- CONSTRUCTORS --------------------
     @Deprecated /* JEE requirement */
-    MailMessageCreator() {
+    public MailMessageCreator() {
     }
 
     @Inject

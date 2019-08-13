@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import io.vavr.control.Either;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
@@ -24,7 +25,10 @@ import org.mockito.MockitoAnnotations;
 import org.primefaces.model.DualListModel;
 
 import javax.ejb.AsyncResult;
+import javax.ejb.EJBTransactionRolledbackException;
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -35,6 +39,9 @@ import static org.mockito.Mockito.when;
 @RunWith(DataverseArquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
 public class DataverseSaverIT extends ArquillianDeployment {
+
+    @PersistenceContext(unitName = "VDCNet-ejbPU")
+    private EntityManager em;
 
     @Inject
     private DataverseSaver dataverseSaver;
@@ -56,7 +63,9 @@ public class DataverseSaverIT extends ArquillianDeployment {
         when(indexServiceBean.indexDataverse(Mockito.any(Dataverse.class)))
                 .thenReturn(new AsyncResult<>("NICE"));
 
-        dataverseSession.setUser(createUser());
+        AuthenticatedUser user = createUser();
+        em.persist(user);
+        dataverseSession.setUser(user);
     }
 
     @Test
@@ -70,6 +79,24 @@ public class DataverseSaverIT extends ArquillianDeployment {
         //then
         Assert.assertTrue(savedDataverse.isRight());
         Assert.assertEquals(2, dataverseServiceBean.findAll().size());
+        Assert.assertTrue(smtpServer.mailBox().stream()
+                                  .anyMatch(emailModel -> emailModel.getSubject().contains("Your dataverse has been created")));
+
+    }
+
+    @Test
+    public void saveNewDataverse_WithWrongUser() {
+        //given
+        Dataverse dataverse = prepareDataverse();
+        dataverseSession.setUser(GuestUser.get());
+
+        //when
+        Either<DataverseError, Dataverse> savedDataverse = dataverseSaver.saveNewDataverse(Lists.newArrayList(), dataverse, new DualListModel<>());
+
+        //then
+        Assert.assertTrue(savedDataverse.isLeft());
+        Assert.assertEquals(1, dataverseServiceBean.findAll().size());
+
     }
 
     @Test
@@ -84,6 +111,20 @@ public class DataverseSaverIT extends ArquillianDeployment {
 
         //then
         Assert.assertNotEquals(oldDataverseName, updatedDataverse.get().getName());
+
+    }
+
+    @Test(expected = EJBTransactionRolledbackException.class)
+    public void saveEditedDataverse_WithNonExistingDataverse() {
+        //given
+        Dataverse dataverse = new Dataverse();
+
+        //when
+        Either<DataverseError, Dataverse> updatedDataverse = dataverseSaver.saveEditedDataverse(Lists.newArrayList(), dataverse, new DualListModel<>());
+
+        //then
+        Assert.assertTrue(updatedDataverse.isLeft());
+        Assert.assertEquals(1, dataverseServiceBean.findAll().size());
 
     }
 

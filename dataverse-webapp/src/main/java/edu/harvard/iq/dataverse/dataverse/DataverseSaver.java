@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.dataverse;
 
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.common.BundleUtil;
@@ -18,15 +17,12 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFieldTypeInputLevel;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
-import edu.harvard.iq.dataverse.persistence.user.User;
 import io.vavr.control.Either;
 import org.primefaces.model.DualListModel;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import java.util.Collection;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,9 +36,6 @@ public class DataverseSaver {
 
     @Inject
     private DataverseRequestServiceBean dvRequestService;
-
-    @Inject
-    private DataverseServiceBean dataverseService;
 
     @Inject
     private EjbDataverseEngine commandEngine;
@@ -73,7 +66,9 @@ public class DataverseSaver {
                 return Either.left(new DataverseError(ex, BundleUtil.getStringFromBundle("dataverse.create.failure")));
             }
 
-            sendSuccessNotificationAsync(dataverse, session.getUser());
+            userNotificationService.sendNotificationWithEmail((AuthenticatedUser) session.getUser(), dataverse.getCreateDate(),
+                                                              NotificationType.CREATEDV,
+                                                              dataverse.getId(), NotificationObjectType.DATAVERSE);
         } else {
             return Either.left(new DataverseError(BundleUtil.getStringFromBundle("dataverse.create.authenticatedUsersOnly")));
         }
@@ -102,16 +97,4 @@ public class DataverseSaver {
         return Either.right(dataverse);
     }
 
-    // -------------------- PRIVATE --------------------
-
-    private void sendSuccessNotificationAsync(Dataverse dataverse, User user) {
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-
-        executorService.execute(() ->
-                                        userNotificationService.sendNotificationWithEmail((AuthenticatedUser) user, dataverse.getCreateDate(),
-                                                                                          NotificationType.CREATEDV,
-                                                                                          dataverse.getId(), NotificationObjectType.DATASET));
-
-        executorService.shutdown();
-    }
 }

@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.arquillian.arquillianexamples;
 
+import com.github.sleroy.fakesmtp.core.ServerConfiguration;
+import com.github.sleroy.junit.mail.server.test.FakeSmtpRule;
 import edu.harvard.iq.dataverse.ArquillianIntegrationTests;
 import edu.harvard.iq.dataverse.arquillian.ParametrizedGlassfishConfCreator;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -8,6 +10,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
+import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 
 import java.util.logging.Logger;
@@ -20,6 +23,11 @@ public class ArquillianDeployment {
 
     private static ParametrizedGlassfishConfCreator glassfishConfCreator = new ParametrizedGlassfishConfCreator();
 
+    @Rule
+    public FakeSmtpRule smtpServer = new FakeSmtpRule(ServerConfiguration.create()
+                                                              .port(2525)
+                                                              .relayDomains("gmail.com")
+                                                              .charset("UTF-8"));
     @Deployment
     public static Archive<?> createDeployment() {
 

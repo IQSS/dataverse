@@ -48,7 +48,7 @@ public class MailService implements java.io.Serializable {
     // -------------------- CONSTRUCTORS --------------------
 
     @Deprecated /* JEE requirement */
-    MailService() {
+    public MailService() {
     }
 
     @Inject
