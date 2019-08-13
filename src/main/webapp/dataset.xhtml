@@ -21,7 +21,10 @@
             <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
             <ui:param name="locked" value="#{DatasetPage.locked}"/>
 	    <ui:param name="showMessagePanel" value="#{true}"/>
-	    <ui:define name="dc_meta_header">
+	    <ui:define name="meta_header">
+            <meta name="description" content="#{DatasetPage.description}"/>
+            </ui:define>
+            <ui:define name="dc_meta_header">
 	    <meta name="DC.identifier" content="#{DatasetPage.persistentId}"/>
 	    <meta name="DC.type" content="Dataset"/>
 	    <meta name="DC.title" content="#{DatasetPage.title}"/>
