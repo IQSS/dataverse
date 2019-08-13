@@ -29,7 +29,7 @@ import edu.harvard.iq.dataverse.bannersandmessages.messages.DataverseTextMessage
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.notification.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
@@ -120,7 +120,7 @@ public interface CommandContext {
 
     GroupServiceBean groups();
 
-    UserNotificationServiceBean notifications();
+    UserNotificationService notifications();
 
     AuthenticationServiceBean authentication();
 

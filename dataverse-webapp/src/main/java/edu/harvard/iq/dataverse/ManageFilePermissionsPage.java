@@ -11,7 +11,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
-import edu.harvard.iq.dataverse.notification.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
@@ -65,7 +65,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     @EJB
     PermissionServiceBean permissionService;
     @EJB
-    UserNotificationServiceBean userNotificationService;
+    UserNotificationService userNotificationService;
     @EJB
     EjbDataverseEngine commandEngine;
     @Inject
@@ -351,8 +351,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
             if (sendNotification) {
                 for (AuthenticatedUser au : roleAssigneeService.getExplicitUsers(roleAssignee)) {
-                    userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), NotificationType.GRANTFILEACCESS,
-                                                             dataset.getId(), NotificationObjectType.DATASET);
+                    userNotificationService.sendNotificationWithEmail(au, new Timestamp(new Date().getTime()), NotificationType.GRANTFILEACCESS,
+                                                                      dataset.getId(), NotificationObjectType.DATASET);
                 }
             }
         }
@@ -381,7 +381,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         }
         if (actionPerformed) {
             JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.fileAccessGranted", Arrays.asList(au.getDisplayInfo().getTitle())));
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), NotificationType.GRANTFILEACCESS, dataset.getId(), NotificationObjectType.DATASET);
+            userNotificationService.sendNotificationWithEmail(au, new Timestamp(new Date().getTime()), NotificationType.GRANTFILEACCESS, dataset.getId(), NotificationObjectType.DATASET);
             initMaps();
         }
 
@@ -406,7 +406,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
         if (actionPerformed) {
             JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.fileAccessRejected", Arrays.asList(au.getDisplayInfo().getTitle())));
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), NotificationType.REJECTFILEACCESS, dataset.getId(), NotificationObjectType.DATASET);
+            userNotificationService.sendNotificationWithEmail(au, new Timestamp(new Date().getTime()), NotificationType.REJECTFILEACCESS, dataset.getId(), NotificationObjectType.DATASET);
             initMaps();
         }
     }

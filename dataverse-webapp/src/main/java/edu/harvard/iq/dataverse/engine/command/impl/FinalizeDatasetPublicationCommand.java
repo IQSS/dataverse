@@ -257,7 +257,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                         // We are not going to treat it as a fatal condition and bail out, 
                         // but we will send a notification to the user, warning them about
                         // the layer still being out there, un-deleted:
-                        ctxt.notifications().sendNotification(authenticatedUser, getTimestamp(), NotificationType.MAPLAYERDELETEFAILED, dataFile.getFileMetadata().getId(), NotificationObjectType.FILEMETADATA);
+                        ctxt.notifications().sendNotificationWithEmail(authenticatedUser, getTimestamp(), NotificationType.MAPLAYERDELETEFAILED, dataFile.getFileMetadata().getId(), NotificationObjectType.FILEMETADATA);
                     }
 
                 }
@@ -279,7 +279,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 .filter(ra -> ra.getRole().permissions().contains(Permission.DownloadFile))
                 .flatMap(ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream())
                 .distinct() // prevent double-send
-                .forEach(au -> ctxt.notifications().sendNotification(au, getTimestamp(), NotificationType.GRANTFILEACCESS, getDataset().getId(), NotificationObjectType.DATASET));
+                .forEach(au -> ctxt.notifications().sendNotificationWithEmail(au, getTimestamp(), NotificationType.GRANTFILEACCESS, getDataset().getId(), NotificationObjectType.DATASET));
     }
 
     private void notifyUsersDatasetPublish(CommandContext ctxt, DvObject subject) {
@@ -288,7 +288,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 .flatMap(ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream())
                 .distinct() // prevent double-send
                 //.forEach( au -> ctxt.notifications().sendNotification(au, timestamp, messageType, theDataset.getId()) ); //not sure why this line doesn't work instead
-                .forEach(au -> ctxt.notifications().sendNotification(au, getTimestamp(), NotificationType.PUBLISHEDDS, getDataset().getLatestVersion().getId(), NotificationObjectType.DATASET_VERSION));
+                .forEach(au -> ctxt.notifications().sendNotificationWithEmail(au, getTimestamp(), NotificationType.PUBLISHEDDS, getDataset().getLatestVersion().getId(), NotificationObjectType.DATASET_VERSION));
     }
 
 }

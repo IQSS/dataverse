@@ -38,7 +38,7 @@ public class Notifications extends AbstractApiBean {
         }
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        List<UserNotification> notifications = userNotificationSvc.findByUser(authenticatedUser.getId());
+        List<UserNotification> notifications = userNotificationDao.findByUser(authenticatedUser.getId());
         for (UserNotification notification : notifications) {
             NullSafeJsonBuilder notificationObjectBuilder = jsonObjectBuilder();
             JsonArrayBuilder reasonsForReturn = Json.createArrayBuilder();

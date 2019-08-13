@@ -12,7 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContributorRoleCommand;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
-import edu.harvard.iq.dataverse.notification.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -77,7 +77,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
     @EJB
     EjbDataverseEngine commandEngine;
     @EJB
-    UserNotificationServiceBean userNotificationService;
+    UserNotificationService userNotificationService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -474,14 +474,14 @@ public class ManagePermissionsPage implements java.io.Serializable {
      */
     private void notifyRoleChange(RoleAssignee ra, NotificationType type) {
         if (ra instanceof AuthenticatedUser) {
-            userNotificationService.sendNotification((AuthenticatedUser) ra, new Timestamp(new Date().getTime()), type, dvObject.getId(), determineObjectType(dvObject));
+            userNotificationService.sendNotificationWithEmail((AuthenticatedUser) ra, new Timestamp(new Date().getTime()), type, dvObject.getId(), determineObjectType(dvObject));
         } else if (ra instanceof ExplicitGroup) {
             ExplicitGroup eg = (ExplicitGroup) ra;
             Set<String> explicitGroupMembers = eg.getContainedRoleAssgineeIdentifiers();
             for (String id : explicitGroupMembers) {
                 RoleAssignee explicitGroupMember = roleAssigneeService.getRoleAssignee(id);
                 if (explicitGroupMember instanceof AuthenticatedUser) {
-                    userNotificationService.sendNotification((AuthenticatedUser) explicitGroupMember, new Timestamp(new Date().getTime()), type, dvObject.getId(), determineObjectType(dvObject));
+                    userNotificationService.sendNotificationWithEmail((AuthenticatedUser) explicitGroupMember, new Timestamp(new Date().getTime()), type, dvObject.getId(), determineObjectType(dvObject));
                 }
             }
         }

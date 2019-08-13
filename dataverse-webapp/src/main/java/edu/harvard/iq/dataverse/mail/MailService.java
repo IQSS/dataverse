@@ -24,7 +24,9 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
-import java.util.logging.Logger;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Service responsible for mail sending.
@@ -37,8 +39,7 @@ public class MailService implements java.io.Serializable {
     private MailMessageCreator mailMessageCreator;
 
     private Mailer mailSender;
-
-    private static final Logger logger = Logger.getLogger(MailService.class.getCanonicalName());
+    private ExecutorService executorService;
 
 
     @Resource(name = "mail/notifyMailSession")
@@ -63,6 +64,8 @@ public class MailService implements java.io.Serializable {
                 .usingSession(session)
                 .withDebugLogging(true)
                 .buildMailer();
+
+        executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     }
 
     // -------------------- LOGIC --------------------
@@ -102,6 +105,14 @@ public class MailService implements java.io.Serializable {
         }
 
         return sendMail(userEmail, messageAndSubject._2(), messageAndSubject._1());
+    }
+
+    public CompletableFuture<Boolean> sendMailAsync(String recipientsEmails, String subject, String messageText) {
+        return CompletableFuture.supplyAsync(() -> sendMail(recipientsEmails, subject, messageText), executorService);
+    }
+
+    public CompletableFuture<Boolean> sendMailAsync(String replyEmail, String recipientsEmails, String subject, String messageText) {
+        return CompletableFuture.supplyAsync(() -> sendMail(replyEmail, recipientsEmails, subject, messageText), executorService);
     }
 
     /**

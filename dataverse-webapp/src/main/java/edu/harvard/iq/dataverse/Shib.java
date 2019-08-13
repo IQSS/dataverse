@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUserNameFields;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.notification.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.config.EMailValidator;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
@@ -53,7 +53,7 @@ public class Shib implements java.io.Serializable {
     @EJB
     GroupServiceBean groupService;
     @EJB
-    UserNotificationServiceBean userNotificationService;
+    UserNotificationService userNotificationService;
 
     HttpServletRequest request;
 
@@ -306,9 +306,9 @@ public class Shib implements java.io.Serializable {
              * @todo Move this to
              * AuthenticationServiceBean.createAuthenticatedUser
              */
-            userNotificationService.sendNotificationWithoutEmail(au,
-                                                                 new Timestamp(new Date().getTime()),
-                                                                 NotificationType.CREATEACC);
+            userNotificationService.sendNotification(au,
+                                                     new Timestamp(new Date().getTime()),
+                                                     NotificationType.CREATEACC);
             return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
         } else {
             JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("shib.createUser.fail"));

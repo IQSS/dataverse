@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 
 public class EmailNotificationDto {
 
+    private long userNotificationId;
     private String userEmail;
     private NotificationType notificationType;
     private long dvObjectId;
@@ -15,11 +16,9 @@ public class EmailNotificationDto {
     // -------------------- CONSTRUCTORS --------------------
 
 
-    public EmailNotificationDto(String userEmail,
-                                NotificationType notificationType,
-                                long dvObjectId,
-                                NotificationObjectType notificationObjectType,
-                                AuthenticatedUser user) {
+    public EmailNotificationDto(long userNotificationId, String userEmail, NotificationType notificationType,
+                                long dvObjectId, NotificationObjectType notificationObjectType, AuthenticatedUser user) {
+        this.userNotificationId = userNotificationId;
         this.userEmail = userEmail;
         this.notificationType = notificationType;
         this.dvObjectId = dvObjectId;
@@ -28,6 +27,10 @@ public class EmailNotificationDto {
     }
 
     // -------------------- GETTERS --------------------
+
+    public long getUserNotificationId() {
+        return userNotificationId;
+    }
 
     public NotificationObjectType getNotificationObjectType() {
         return notificationObjectType;

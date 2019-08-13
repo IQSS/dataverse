@@ -65,7 +65,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.license.TermsOfUseFactory;
 import edu.harvard.iq.dataverse.license.TermsOfUseFormMapper;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
-import edu.harvard.iq.dataverse.notification.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -152,7 +152,7 @@ public class Datasets extends AbstractApiBean {
     DataverseServiceBean dataverseService;
 
     @EJB
-    UserNotificationServiceBean userNotificationService;
+    UserNotificationService userNotificationService;
 
     @EJB
     PermissionServiceBean permissionService;
@@ -1345,13 +1345,13 @@ public class Datasets extends AbstractApiBean {
             } else if ("validation failed".equals(statusMessageFromDcm)) {
                 Map<String, AuthenticatedUser> distinctAuthors = permissionService.getDistinctUsersWithPermissionOn(Permission.EditDataset, dataset);
                 distinctAuthors.values().forEach((value) -> {
-                    userNotificationService.sendNotification(value, new Timestamp(new Date().getTime()), NotificationType.CHECKSUMFAIL,
-                                                             dataset.getId(), NotificationObjectType.DATASET);
+                    userNotificationService.sendNotificationWithEmail(value, new Timestamp(new Date().getTime()), NotificationType.CHECKSUMFAIL,
+                                                                      dataset.getId(), NotificationObjectType.DATASET);
                 });
                 List<AuthenticatedUser> superUsers = authenticationServiceBean.findSuperUsers();
                 if (superUsers != null && !superUsers.isEmpty()) {
                     superUsers.forEach((au) -> {
-                        userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), NotificationType.CHECKSUMFAIL, dataset.getId(), NotificationObjectType.DATASET);
+                        userNotificationService.sendNotificationWithEmail(au, new Timestamp(new Date().getTime()), NotificationType.CHECKSUMFAIL, dataset.getId(), NotificationObjectType.DATASET);
                     });
                 }
                 return ok("User notified about checksum validation failure.");

@@ -32,7 +32,7 @@ import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
-import edu.harvard.iq.dataverse.notification.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
@@ -86,7 +86,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
     private SystemConfig systemConfig;
 
     @EJB
-    UserNotificationServiceBean notificationServiceBean;
+    UserNotificationService userNotificationService;
 
     @EJB
     AuthenticationServiceBean authenticationServiceBean;
@@ -315,16 +315,16 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
                 // [1] save json log to file
                 LoggingUtil.saveJsonLog(jobJson, logDir, jobId);
                 // [2] send user notifications - to all authors
-                notificationServiceBean.sendNotification(user, timestamp, notifyType, datasetVersionId, NotificationObjectType.DATASET_VERSION);
+                userNotificationService.sendNotificationWithEmail(user, timestamp, notifyType, datasetVersionId, NotificationObjectType.DATASET_VERSION);
                 Map<String, AuthenticatedUser> distinctAuthors = permissionServiceBean.getDistinctUsersWithPermissionOn(Permission.EditDataset, dataset);
                 distinctAuthors.values().forEach((value) -> {
-                    notificationServiceBean.sendNotification(value, new Timestamp(new Date().getTime()), notifyType, datasetVersionId, NotificationObjectType.DATASET_VERSION);
+                    userNotificationService.sendNotificationWithEmail(value, new Timestamp(new Date().getTime()), notifyType, datasetVersionId, NotificationObjectType.DATASET_VERSION);
                 });
                 // [3] send SuperUser notification
                 List<AuthenticatedUser> superUsers = authenticationServiceBean.findSuperUsers();
                 if (superUsers != null && !superUsers.isEmpty()) {
                     superUsers.forEach((au) -> {
-                        notificationServiceBean.sendNotification(au, timestamp, notifyType, datasetVersionId, NotificationObjectType.DATASET_VERSION);
+                        userNotificationService.sendNotificationWithEmail(au, timestamp, notifyType, datasetVersionId, NotificationObjectType.DATASET_VERSION);
                     });
                 }
                 // [4] action log: store location of the full log to avoid truncation issues

@@ -92,7 +92,7 @@ public class PasswordResetServiceBean {
             em.persist(passwordResetData);
             PasswordResetInitResponse passwordResetInitResponse =
                     new PasswordResetInitResponse(true, passwordResetData, createResetUrl(passwordResetData));
-            if ( sendEmail ) {
+            if (sendEmail) {
                 sendPasswordResetEmail(aUser, passwordResetInitResponse.getResetUrl());
             }
 
@@ -129,18 +129,14 @@ public class PasswordResetServiceBean {
         String[] paramArray = {authUser.getName(), aUser.getUserName(), passwordResetUrl, systemConfig.getMinutesUntilPasswordResetTokenExpires() + ""};
         String messageBody = MessageFormat.format(pattern, paramArray);
 
-        try {
-            String toAddress = authUser.getEmail();
-            String subject = BundleUtil.getStringFromBundle("notification.email.passwordReset.subject");
-            mailService.sendMail(toAddress, subject, messageBody);
-        } catch (Exception ex) {
-            /**
-             * @todo get more specific about the exception that's thrown
-             * when `asadmin create-javamail-resource` (or equivalent)
-             * hasn't been run.
-             */
+        String toAddress = authUser.getEmail();
+        String subject = BundleUtil.getStringFromBundle("notification.email.passwordReset.subject");
+        boolean emailSent = mailService.sendMail(toAddress, subject, messageBody);
+
+        if (!emailSent) {
             throw new PasswordResetException("Problem sending password reset email possibily due to mail server not being configured.");
         }
+
         logger.log(Level.INFO, "attempted to send mail to {0}", authUser.getEmail());
     }
 
@@ -264,7 +260,7 @@ public class PasswordResetServiceBean {
             String messageBody = "Hi " + authUser.getName() + ",\n\n"
                     + "Your Dataverse account password was successfully changed.\n\n"
                     + "Please contact us if you did not request this password reset or need further help.\n\n";
-            mailService.sendMail(toAddress, subject, messageBody);
+            mailService.sendMailAsync(toAddress, subject, messageBody);
             return new PasswordChangeAttemptResponse(true, messageSummary, messageDetail);
         } else {
             messageSummary = messageSummaryFail;

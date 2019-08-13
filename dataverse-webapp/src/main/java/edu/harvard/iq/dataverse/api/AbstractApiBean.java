@@ -30,7 +30,7 @@ import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
-import edu.harvard.iq.dataverse.notification.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -44,6 +44,7 @@ import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.User;
+import edu.harvard.iq.dataverse.persistence.user.UserNotificationDao;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -215,7 +216,10 @@ public abstract class AbstractApiBean {
     protected ConfirmEmailServiceBean confirmEmailSvc;
 
     @EJB
-    protected UserNotificationServiceBean userNotificationSvc;
+    protected UserNotificationDao userNotificationDao;
+
+    @EJB
+    protected UserNotificationService userNotificationService;
 
     @EJB
     protected DatasetVersionServiceBean datasetVersionSvc;

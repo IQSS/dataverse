@@ -2,10 +2,6 @@ package edu.harvard.iq.dataverse.api;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
@@ -17,16 +13,12 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteMapLayerMetadataCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.license.TermsOfUseFactory;
-import edu.harvard.iq.dataverse.license.TermsOfUseFormMapper;
-import edu.harvard.iq.dataverse.notification.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.User;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -35,7 +27,6 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
@@ -55,27 +46,11 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 public class Files extends AbstractApiBean {
 
     @EJB
-    DatasetServiceBean datasetService;
-    @EJB
-    DatasetVersionServiceBean datasetVersionService;
-    @EJB
-    DataverseServiceBean dataverseService;
-    @EJB
     IngestServiceBean ingestService;
-    @Inject
-    DataverseRequestServiceBean dvRequestService;
     @EJB
     EjbDataverseEngine commandEngine;
     @EJB
-    UserNotificationServiceBean userNotificationService;
-    @EJB
     SystemConfig systemConfig;
-    @EJB
-    SettingsServiceBean settingsService;
-    @Inject
-    private TermsOfUseFactory termsOfUseFactory;
-    @Inject
-    private TermsOfUseFormMapper termsOfUseFormMapper;
 
     private static final Logger logger = Logger.getLogger(Files.class.getName());
 

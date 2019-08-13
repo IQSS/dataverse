@@ -61,10 +61,10 @@ public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Datase
         for (AuthenticatedUser au : authUsers) {
 
             Option.of(requestor)
-                    .peek(user -> ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), NotificationType.SUBMITTEDDS,
-                                                                        savedDataset.getLatestVersion().getId(), NotificationObjectType.DATASET_VERSION, requestor))
-                    .onEmpty(() -> ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), NotificationType.SUBMITTEDDS,
-                                                                         savedDataset.getLatestVersion().getId(), NotificationObjectType.DATASET_VERSION));
+                    .peek(user -> ctxt.notifications().sendNotificationWithEmail(au, new Timestamp(new Date().getTime()), NotificationType.SUBMITTEDDS,
+                                                                                 savedDataset.getLatestVersion().getId(), NotificationObjectType.DATASET_VERSION, requestor))
+                    .onEmpty(() -> ctxt.notifications().sendNotificationWithEmail(au, new Timestamp(new Date().getTime()), NotificationType.SUBMITTEDDS,
+                                                                                  savedDataset.getLatestVersion().getId(), NotificationObjectType.DATASET_VERSION));
         }
 
         //  TODO: What should we do with the indexing result? Print it to the log?

@@ -12,7 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
-import edu.harvard.iq.dataverse.notification.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFieldTypeInputLevel;
@@ -48,7 +48,7 @@ public class DataverseSaver {
     private EjbDataverseEngine commandEngine;
 
     @Inject
-    private UserNotificationServiceBean userNotificationService;
+    private UserNotificationService userNotificationService;
 
     // -------------------- LOGIC --------------------
 
@@ -108,9 +108,9 @@ public class DataverseSaver {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 
         executorService.execute(() ->
-                                        userNotificationService.sendNotification((AuthenticatedUser) user, dataverse.getCreateDate(),
-                                                                                 NotificationType.CREATEDV,
-                                                                                 dataverse.getId(), NotificationObjectType.DATASET));
+                                        userNotificationService.sendNotificationWithEmail((AuthenticatedUser) user, dataverse.getCreateDate(),
+                                                                                          NotificationType.CREATEDV,
+                                                                                          dataverse.getId(), NotificationObjectType.DATASET));
 
         executorService.shutdown();
     }

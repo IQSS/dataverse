@@ -18,7 +18,6 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2A
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
-import edu.harvard.iq.dataverse.notification.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
 import edu.harvard.iq.dataverse.persistence.ActionLogRecord;
 import edu.harvard.iq.dataverse.persistence.user.ApiToken;
@@ -29,6 +28,7 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 import edu.harvard.iq.dataverse.persistence.user.ConfirmEmailData;
 import edu.harvard.iq.dataverse.persistence.user.PasswordResetData;
+import edu.harvard.iq.dataverse.persistence.user.UserNotificationDao;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 
@@ -91,7 +91,7 @@ public class AuthenticationServiceBean {
     protected ActionLogServiceBean actionLogSvc;
 
     @EJB
-    UserNotificationServiceBean userNotificationService;
+    UserNotificationDao userNotificationDao;
 
     @EJB
     ConfirmEmailServiceBean confirmEmailService;
@@ -278,7 +278,7 @@ public class AuthenticationServiceBean {
                  */
                 em.remove(confirmEmailData);
             }
-            userNotificationService.findByUser(user.getId()).forEach(userNotificationService::delete);
+            userNotificationDao.findByUser(user.getId()).forEach(userNotificationDao::delete);
 
             AuthenticationProvider prv = lookupProvider(user);
             if (prv != null && prv.isUserDeletionAllowed()) {

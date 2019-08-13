@@ -150,9 +150,9 @@ public class BuiltinUsers extends AbstractApiBean {
                 logger.info("The root dataverse is not present. Don't send a notification to dataverseAdmin.");
             }
             if (rootDataversePresent) {
-                userNotificationSvc.sendNotificationWithoutEmail(au,
-                                                                 new Timestamp(new Date().getTime()),
-                                                                 NotificationType.CREATEACC);
+                userNotificationService.sendNotification(au,
+                                                         new Timestamp(new Date().getTime()),
+                                                         NotificationType.CREATEACC);
             }
 
             ApiToken token = new ApiToken();

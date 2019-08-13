@@ -47,8 +47,8 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
         for (RoleAssignment ra : ras) {
             if (ra.getRole().permissions().contains(Permission.DownloadFile)) {
                 for (AuthenticatedUser au : ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier()))) {
-                    ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), NotificationType.ASSIGNROLE,
-                                                          dataverse.getId(), NotificationObjectType.DATAVERSE);
+                    ctxt.notifications().sendNotificationWithEmail(au, new Timestamp(new Date().getTime()), NotificationType.ASSIGNROLE,
+                                                                   dataverse.getId(), NotificationObjectType.DATAVERSE);
                 }
             }
         }

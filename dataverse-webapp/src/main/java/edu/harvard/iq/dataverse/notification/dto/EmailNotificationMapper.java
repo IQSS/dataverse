@@ -12,7 +12,8 @@ public class EmailNotificationMapper {
                                       long dvObjectId,
                                       NotificationObjectType notificationObjectType) {
 
-        return new EmailNotificationDto(userNotification.getUser().getDisplayInfo().getEmailAddress(),
+        return new EmailNotificationDto(userNotification.getId(),
+                                        userNotification.getUser().getDisplayInfo().getEmailAddress(),
                                         userNotification.getType(),
                                         dvObjectId,
                                         notificationObjectType,

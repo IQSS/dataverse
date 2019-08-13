@@ -7,7 +7,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseComma
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
-import edu.harvard.iq.dataverse.notification.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
@@ -61,7 +61,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     @EJB
     PermissionServiceBean permissionService;
     @EJB
-    UserNotificationServiceBean userNotificationService;
+    UserNotificationService userNotificationService;
     @EJB
     AuthenticationServiceBean authService;
 
@@ -465,8 +465,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         Stream<AuthenticatedUser> usersWithManageMinorDsPerm = permissionService.getUsersWithPermissionOn(Permission.ManageMinorDatasetPermissions, dataset).stream();
 
         Stream.concat(usersWithManageDsPerm, usersWithManageMinorDsPerm).distinct().forEach((au) ->
-                                                                                                    userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), NotificationType.REQUESTFILEACCESS,
-                                                                                                                                             fileId, NotificationObjectType.DATAFILE, requestor));
+                                                                                                    userNotificationService.sendNotificationWithEmail(au, new Timestamp(new Date().getTime()), NotificationType.REQUESTFILEACCESS,
+                                                                                                                                                      fileId, NotificationObjectType.DATAFILE, requestor));
     }
 
 

@@ -113,7 +113,6 @@ public class ConfirmEmailServiceBean {
         ));
         logger.log(Level.FINE, "messageBody:{0}", messageBody);
 
-        try {
             String toAddress = aUser.getEmail();
             try {
                 Dataverse rootDataverse = dataverseService.findRootDataverse();
@@ -124,19 +123,16 @@ public class ConfirmEmailServiceBean {
                     userNotification.setType(NotificationType.CONFIRMEMAIL);
                     String subject = BundleUtil.getStringFromBundle("notification.email.verifyEmail.subject", Lists.newArrayList(rootDataverseName));
                     logger.fine("sending email to " + toAddress + " with this subject: " + subject);
-                    mailService.sendMail(toAddress, subject, messageBody);
+                    boolean emailSent = mailService.sendMail(toAddress, subject, messageBody);
+
+                    if (!emailSent) {
+                        throw new ConfirmEmailException("Problem sending email confirmation link possibily due to mail server not being configured.");
+                    }
                 }
             } catch (Exception e) {
                 logger.info("The root dataverse is not present. Don't send a notification to dataverseAdmin.");
             }
-        } catch (Exception ex) {
-            /**
-             * @todo get more specific about the exception that's thrown when
-             * `asadmin create-javamail-resource` (or equivalent) hasn't been
-             * run.
-             */
-            throw new ConfirmEmailException("Problem sending email confirmation link possibily due to mail server not being configured.");
-        }
+
         logger.log(Level.FINE, "attempted to send mail to {0}", aUser.getEmail());
     }
 

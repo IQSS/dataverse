@@ -130,7 +130,8 @@ public class MailServiceTest {
     }
 
     private EmailNotificationDto createTestEmailNotificationDto() {
-        return new EmailNotificationDto("useremail@test.com",
+        return new EmailNotificationDto(1L,
+                                        "useremail@test.com",
                                         NotificationType.CREATEDV,
                                         1L,
                                         NotificationObjectType.DATAVERSE,

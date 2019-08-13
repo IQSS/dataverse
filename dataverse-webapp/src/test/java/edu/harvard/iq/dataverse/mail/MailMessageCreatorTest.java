@@ -186,7 +186,8 @@ public class MailMessageCreatorTest {
     }
 
     private EmailNotificationDto createDataverseEmailNotificationDto() {
-        return new EmailNotificationDto("useremail@test.com",
+        return new EmailNotificationDto(1L,
+                                        "useremail@test.com",
                                         NotificationType.CREATEDV,
                                         1L,
                                         NotificationObjectType.DATAVERSE,
@@ -194,7 +195,8 @@ public class MailMessageCreatorTest {
     }
 
     private EmailNotificationDto createIncorrectNotificationDto() {
-        return new EmailNotificationDto("useremail@test.com",
+        return new EmailNotificationDto(1L,
+                                        "useremail@test.com",
                                         NotificationType.CREATEDV,
                                         1L,
                                         NotificationObjectType.AUTHENTICATED_USER,
@@ -202,7 +204,8 @@ public class MailMessageCreatorTest {
     }
 
     private EmailNotificationDto createAssignRoleEmailNotificationDto() {
-        return new EmailNotificationDto("useremail@test.com",
+        return new EmailNotificationDto(1L,
+                                        "useremail@test.com",
                                         NotificationType.ASSIGNROLE,
                                         1L,
                                         NotificationObjectType.DATAVERSE,
@@ -210,7 +213,8 @@ public class MailMessageCreatorTest {
     }
 
     private EmailNotificationDto createRequestFileAccessNotificationDto() {
-        return new EmailNotificationDto("useremail@test.com",
+        return new EmailNotificationDto(1L,
+                                        "useremail@test.com",
                                         NotificationType.REQUESTFILEACCESS,
                                         1L,
                                         NotificationObjectType.DATAFILE,

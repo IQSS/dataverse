@@ -7,12 +7,12 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.notification.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.user.UserNotificationDao;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -69,7 +69,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     NavigationWrapper navigationWrapper;
 
     @EJB
-    UserNotificationServiceBean userNotificationService;
+    UserNotificationDao userNotificationDao;
 
     List<Breadcrumb> breadcrumbs = new ArrayList<>();
 
@@ -154,7 +154,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         }
 
         try {
-            this.unreadNotificationCount = userNotificationService.getUnreadNotificationCountByUser(userId);
+            this.unreadNotificationCount = userNotificationDao.getUnreadNotificationCountByUser(userId);
         } catch (Exception e) {
             logger.warning("Error trying to retrieve unread notification count for user." + e.getMessage());
             this.unreadNotificationCount = 0L;
