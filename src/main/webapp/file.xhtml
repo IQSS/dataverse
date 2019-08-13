@@ -18,6 +18,10 @@
             <ui:param name="pageTitle" value="#{FilePage.fileMetadata.dataFile.displayName} - #{FilePage.file.owner.owner.displayName}"/>
             <ui:param name="dataverse" value="#{FilePage.file.owner.owner}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
+            <ui:define name="meta_header">
+            <meta name="description" content="#{FilePage.fileMetadata.description}"/>
+            </ui:define>
+            <ui:remove><!-- We might want dc_meta_header/og_header/jsonld_header at the file level some day.--></ui:remove>
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="fileId" value="#{FilePage.fileId}"/>
