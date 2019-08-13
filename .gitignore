@@ -54,3 +54,10 @@ scripts/installer/default.config
 /bin/
 /.classpath
 /.project
+
+# do not track Visual Studio Code files
+.vscode
+
+# ignore UI testing related files
+tests/node_modules
+tests/package-lock.json

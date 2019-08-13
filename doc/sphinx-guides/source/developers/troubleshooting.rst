@@ -14,7 +14,7 @@ For unknown reasons, Netbeans will sometimes change the following line under ``s
 
 ``<context-root>/</context-root>``
 
-Sometimes Netbeans will change ``/`` to ``/dataverse``. Sometimes it will delete the line entirely. Either way, you will see very strange behavior when attempting to click around Dataverse in a browser. The home page will load but icons will be missing. Any other page will fail to load entirely and you'll see a Glassfish error.
+Sometimes Netbeans will change ``/`` to ``/dataverse``. Sometimes it will delete the line entirely. Either way, you will see very strange behavior when attempting to click around Dataverse in a browser. The homepage will load but icons will be missing. Any other page will fail to load entirely and you'll see a Glassfish error.
 
 The solution is to put the file back to how it was before Netbeans touched it. If anyone knows of an open Netbeans bug about this, please let us know.
 

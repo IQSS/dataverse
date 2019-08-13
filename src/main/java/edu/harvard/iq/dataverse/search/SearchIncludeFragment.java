@@ -310,6 +310,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
         String allTypesFilterQuery = SearchFields.TYPE + ":(dataverses OR datasets OR files)";
         filterQueriesFinalAllTypes.add(allTypesFilterQuery);
 
+        if (page <= 1) {
+            // http://balusc.omnifaces.org/2015/10/the-empty-string-madness.html
+            page = 1;
+        }
         int paginationStart = (page - 1) * paginationGuiRows;
         /**
          * @todo
@@ -323,9 +327,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
         setSolrErrorEncountered(false);
         
         try {
-            logger.fine("query from user:   " + query);
-            logger.fine("queryToPassToSolr: " + queryToPassToSolr);
-            logger.fine("sort by: " + sortField);
+            logger.fine("ATTENTION! query from user:   " + query);
+            logger.fine("ATTENTION! queryToPassToSolr: " + queryToPassToSolr);
+            logger.fine("ATTENTION! sort by: " + sortField);
 
             /**
              * @todo Number of search results per page should be configurable -
@@ -341,8 +345,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 logger.info(solrQueryResponse.getError());
                 setSolrErrorEncountered(true);
             }
-            // This 2nd search() is for populating the facets: -- L.A. 
-            // TODO: ...
+            // This 2nd search() is for populating the "type" ("dataverse", "dataset", "file") facets: -- L.A. 
+            // (why exactly do we need it, again?)
             solrQueryResponseAllTypes = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
             if (solrQueryResponse.hasError()){
                 logger.info(solrQueryResponse.getError());
@@ -399,7 +403,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 // (we'll review this later!)
                 
                 if (solrSearchResult.getType().equals("dataverses")) {
-                    //logger.info("XXRESULT: dataverse: "+solrSearchResult.getEntityId());
                     dataverseService.populateDvSearchCard(solrSearchResult);
                     
                     /*
@@ -409,7 +412,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     }*/
 
                 } else if (solrSearchResult.getType().equals("datasets")) {
-                    //logger.info("XXRESULT: dataset: "+solrSearchResult.getEntityId());
                     datasetVersionService.populateDatasetSearchCard(solrSearchResult);
 
                     // @todo - the 3 lines below, should they be moved inside
@@ -420,7 +422,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     }
                     
                 } else if (solrSearchResult.getType().equals("files")) {
-                    //logger.info("XXRESULT: datafile: "+solrSearchResult.getEntityId());
                     dataFileService.populateFileSearchCard(solrSearchResult);
 
                     /**

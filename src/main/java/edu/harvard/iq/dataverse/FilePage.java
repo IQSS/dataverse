@@ -199,10 +199,8 @@ public class FilePage implements java.io.Serializable {
            //  > Go to the Login page
            //
             // Check permissions       
-
-            
-            Boolean authorized = (fileMetadata.getDatasetVersion().isReleased()) ||
-                    (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset());
+            Boolean authorized = (fileMetadata.getDatasetVersion().isReleased())
+                    || (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset());
             
             if (!authorized ) {
                 return permissionsWrapper.notAuthorized();
@@ -487,7 +485,7 @@ public class FilePage implements java.io.Serializable {
         
         for (FileMetadata fmd : editDataset.getEditVersion().getFileMetadatas() ){
             
-            if (fmd.getDataFile().getId().equals(this.getFile().getId())){
+            if (fmd.getDataFile().getId().equals(fileId)) {
                 markedForDelete = fmd;
             }
         }
@@ -684,7 +682,8 @@ public class FilePage implements java.io.Serializable {
 
         if (!filesToBeDeleted.isEmpty()) { 
             // We want to delete the file (there's always only one file with this page)
-            
+            editDataset.getEditVersion().getFileMetadatas().remove(filesToBeDeleted.get(0));
+            deleteFileId = filesToBeDeleted.get(0).getDataFile().getId();
             deleteStorageLocation = datafileService.getPhysicalFileToDelete(filesToBeDeleted.get(0).getDataFile());
         }
         

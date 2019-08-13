@@ -2,14 +2,13 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import java.util.StringTokenizer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.common.SolrInputDocument;
 
@@ -123,6 +122,73 @@ public class SearchUtil {
         }
     }
 
+    public static String constructQuery(String solrField, String userSuppliedQuery) {
+
+        StringBuilder queryBuilder = new StringBuilder();
+        String delimiter = "[\"]+";
+
+        List<String> queryStrings = new ArrayList<>();
+
+        if (userSuppliedQuery != null && !userSuppliedQuery.equals("")) {
+            if (userSuppliedQuery.contains("\"")) {
+                String[] tempString = userSuppliedQuery.split(delimiter);
+                for (int i = 1; i < tempString.length; i++) {
+                    if (!tempString[i].equals(" ") && !tempString[i].isEmpty()) {
+                        queryStrings.add(solrField + ":" + "\"" + tempString[i].trim() + "\"");
+                    }
+                }
+            } else {
+                StringTokenizer st = new StringTokenizer(userSuppliedQuery);
+                while (st.hasMoreElements()) {
+                    queryStrings.add(solrField + ":" + st.nextElement());
+                }
+            }
+        }
+
+        if (queryStrings.size() > 1) {
+            queryBuilder.append("(");
+        }
+
+        for (int i = 0; i < queryStrings.size(); i++) {
+            if (i > 0) {
+                queryBuilder.append(" ");
+            }
+            queryBuilder.append(queryStrings.get(i));
+        }
+
+        if (queryStrings.size() > 1) {
+            queryBuilder.append(")");
+        }
+
+        return queryBuilder.toString().trim();
+    }
+    
+    public static String constructQuery(List<String> queryStrings, boolean isAnd) {
+        return constructQuery(queryStrings, isAnd, true);
+    }
+    
+    public static String constructQuery(List<String> queryStrings, boolean isAnd, boolean surroundWithParens) {
+        StringBuilder queryBuilder = new StringBuilder();
+
+        int count = 0;
+        for (String string : queryStrings) {
+            if (!StringUtils.isBlank(string)) {
+                if (++count > 1) {
+                    queryBuilder.append(isAnd ? " AND " : " OR ");
+                }
+                queryBuilder.append(string);
+            }
+        }
+
+        if (surroundWithParens && count > 1) {
+            queryBuilder.insert(0, "(");
+            queryBuilder.append(")");
+        }
+
+        return queryBuilder.toString().trim();
+    }
+
+    
     /**
      * expandQuery
      * 
