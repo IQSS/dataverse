@@ -104,7 +104,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
                     }
                 }
             } catch (Exception e) {
-                logger.log(Level.WARNING, "Identifier deletion was not successfull:", e.getMessage());
+                logger.log(Level.WARNING, "Identifier deletion was not successful:", e.getMessage());
             }
         } 
         
