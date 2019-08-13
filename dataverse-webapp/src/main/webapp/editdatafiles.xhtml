@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
-      xmlns:pt="http://java.sun.com/jsf/passthrough"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:o="http://omnifaces.org/ui"
-      xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+>
 
     <!--@elvariable id="datasetPage" type="edu.harvard.iq.dataverse.DatasetPage"-->
 
@@ -60,10 +57,16 @@
 
                     <ui:include src="editFilesFragment.xhtml">
                         <ui:param name="editDatafilesPage" value="true"/>
+                        <ui:param name="isDatasetSection" value="false"/>
                         <ui:param name="createDataset" value="false"/>
                         <ui:param name="showFileButtonUpdate" value="true"/>
                         <ui:param name="version" value="#{EditDatafilesPage.workingVersion}"/>
                         <ui:param name="lockedFromEdits" value="#{EditDatafilesPage.lockedFromEdits}"/>
+                        <ui:param name="showFileUpload" value="#{EditDatafilesPage.showFileUploadFragment()}"/>
+                        <ui:param name="isMultiplyFilesUploadAllowed" value="#{EditDatafilesPage.allowMultipleFileUpload()}" />
+                        <ui:param name="fileUploadDisabled" value="#{!EditDatafilesPage.showFileUploadComponent()}" />
+                        <ui:param name="isUploadPermited" value="#{EditDatafilesPage.mode eq 'UPLOAD'}" />
+                        <ui:param name="redirectToEditdataFiles" value="" />
                         </ui:include>
                     </div>
 

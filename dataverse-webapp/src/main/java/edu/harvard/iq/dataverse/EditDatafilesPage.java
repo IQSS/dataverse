@@ -1346,7 +1346,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString() + "&version=DRAFT&faces-redirect=true";
     }
 
-    private String returnToDatasetOnly() {
+    public String returnToDatasetOnly() {
         dataset = datasetService.find(dataset.getId());
         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString() + "&faces-redirect=true";
     }

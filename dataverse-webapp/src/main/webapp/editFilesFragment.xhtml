@@ -1,16 +1,13 @@
 <ui:composition
-    xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:h="http://java.sun.com/jsf/html"
-    xmlns:f="http://java.sun.com/jsf/core"
-    xmlns:ui="http://java.sun.com/jsf/facelets"
-    xmlns:p="http://primefaces.org/ui"
-    xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
-    xmlns:jsf="http://xmlns.jcp.org/jsf"
-    xmlns:pt="http://java.sun.com/jsf/passthrough"
-    xmlns:cc="http://java.sun.com/jsf/composite"
-    xmlns:o="http://omnifaces.org/ui"
-    xmlns:dv="http://dataverse.org/facelets"
-    xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:ui="http://java.sun.com/jsf/facelets"
+        xmlns:p="http://primefaces.org/ui"
+        xmlns:jsf="http://xmlns.jcp.org/jsf"
+        xmlns:o="http://omnifaces.org/ui"
+        xmlns:dv="http://dataverse.org/facelets" xmlns:c="http://java.sun.com/jsp/jstl/core"
+>
 
     <!--@elvariable id="fileMetadata" type="edu.harvard.iq.dataverse.persistence.datafile.FileMetadata"-->
 
@@ -43,7 +40,7 @@
                 </ui:fragment>
                 <!-- Upload -->
                 <div class="panel-group" role="tablist" aria-multiselectable="true"
-                      id="fileUploadFragment" jsf:rendered="#{datasetPage || EditDatafilesPage.showFileUploadFragment()}">
+                      id="fileUploadFragment" jsf:rendered="#{showFileUpload}">
                     
                     <div jsf:id="httpPanel" jsf:rendered="#{settingsWrapper.HTTPUpload}" class="panel panel-default">
                         <div role="tab" id="headingHTTP" data-toggle="collapse" data-target="#panelCollapseHTTP" class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseHTTP">
@@ -131,8 +128,8 @@
                     <p:fileUpload id="fileUpload" 
                                   dragDropSupport="true"
                                   auto="true"
-                                  multiple="#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}"
-                                  disabled="#{lockedFromEdits ||  !(datasetPage || EditDatafilesPage.showFileUploadComponent()) }"
+                                  multiple="#{isMultiplyFilesUploadAllowed}"
+                                  disabled="#{lockedFromEdits || fileUploadDisabled}"
                                   fileUploadListener="#{EditDatafilesPage.handleFileUpload}" 
                                   process="filesTable" 
                                   update=":datasetForm:filesTable, @([id$=filesButtons])"
@@ -151,7 +148,7 @@
                                     <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
                                     <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>
                                     <p:commandButton id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" oncomplete="javascript:dropBoxUploadFinished();" update="@none" style="display:none;" />
-                                    <p:commandButton id="dropBoxUserButton" disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}" value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
+                                    <p:commandButton id="dropBoxUserButton" disabled="#{fileUploadDisabled}" value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
                                     <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" redisplay="false" />
                                 </div>
                     
@@ -302,12 +299,12 @@
                              selection="#{EditDatafilesPage.selectedFiles}" 
                              var="fileMetadata" 
                              widgetVar="filesTable"
-                             emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
+                             emptyMessage="#{showFileUpload ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
                     <f:facet name="header">
                         <div jsf:id="filesHeaderBlock" class="row">
                             <div id="filesHeaderCount" class="col-xs-6 text-left">
                                 <!-- Files Count -->
-                                <h:outputFormat value="#{datasetPage ? bundle['file.count.shown'] : bundle['file.count.shown']}" styleClass="highlightBold" rendered="#{!empty EditDatafilesPage.fileMetadatas}">
+                                <h:outputFormat value="#{bundle['file.count.shown']}" styleClass="highlightBold" rendered="#{!empty EditDatafilesPage.fileMetadatas}">
                                     <f:param value="#{EditDatafilesPage.fileMetadatas.size()}"/>
                                 </h:outputFormat>
                             </div>
@@ -376,7 +373,7 @@
                                 <p:message for="fileDescription"/>
                             </ui:fragment>
                         </div>
-                        <div jsf:rendered="#{createDataset or EditDatafilesPage.mode eq 'UPLOAD' }">
+                        <div jsf:rendered="#{isUploadPermited}">
                             <ui:fragment id="fileTermsOfUse">
 
                                 <p:outputLabel styleClass="control-label" for="fileLicense" value="#{bundle['file.editTermsOfUseDialog.license']}" />
@@ -429,12 +426,12 @@
                                     <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFilesSelected']} <span class="caret"></span>
                                 </button>
                                 <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                                    <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
+                                    <li class="#{lockedFromEdits? 'disabled' : ''}">
                                         <p:commandLink  onclick="checkFilesSelected();" > 
                                             <h:outputText value="#{bundle['file.delete']}"/> 
                                         </p:commandLink>
                                     </li>
-                                    <li jsf:rendered="#{datasetPage}">
+                                    <li jsf:rendered="#{isDatasetSection}">
                                         <p:commandLink  onclick="checkFilesForLicenseEdit();" >
                                             <h:outputText value="#{bundle['file.license']}"/>
                                         </p:commandLink>
@@ -444,12 +441,12 @@
                         </f:facet>
                         <div style="margin-right:14px;" class="btn-group" >
                             <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown"
-                                    disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
+                                    disabled="#{lockedFromEdits ? 'disabled' : ''}">
                                 <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFile']} <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                                 <ui:fragment rendered="#{settingsWrapper.provCollectionEnabled}">
-                                    <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
+                                    <li class="#{lockedFromEdits  ? 'disabled' : ''}">
                                         <p:commandLink id="fileProvenanceButton"
                                                    update=":datasetForm:editProvenancePopup"
                                                    oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
@@ -459,7 +456,7 @@
                                     </li> 
                                 </ui:fragment>
                                 
-                                <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
+                                <li class="#{lockedFromEdits  ? 'disabled' : ''}">
                                     <p:commandLink id="fileCategoriesButton"
                                                actionListener="#{EditDatafilesPage.refreshTagsPopUp(fileMetadata)}"
                                                update=":datasetForm:editFileTagsPopup"
@@ -495,7 +492,7 @@
                                     </p:commandLink>
                                 </li>
                             </ul>
-                            <p:remoteCommand  name="openEditFilesPageCommand2" partialSubmit="true" async="true" update="" action="#{DatasetPage.editFileMetadata()}"  />
+                            <p:remoteCommand  name="openEditFilesPageCommand2" partialSubmit="true" async="true" update="" action="#{redirectToEditdataFiles}"  />
                         </div>
                     </p:column>
                 </p:dataTable>
@@ -555,7 +552,9 @@
     <p:dialog id="fileAdvancedOptions" styleClass="dialog-submenu smallPopUp" header="#{bundle['file.advancedIngestOptions']}" widgetVar="fileAdvancedOptions" modal="true">
         <div class="form-horizontal">
             <!-- select text encoding, for SPSS-SAV (and, and possibly, other) (this option is only available during ingest) data files; not implemented yet -->
-            <div class="form-group" jsf:rendered="#{!(empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup) and (empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.id) and dataFileServiceBean.isSpssSavFile(EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.dataFile)}">
+            <div class="form-group" jsf:rendered="#{!(empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup)
+                                        and (empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.id)
+                                        and dataFileServiceBean.isSpssSavFile(EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.dataFile)}">
                 <label for="spssSavEncodingLanguage" class="col-sm-4 control-label">
                     #{bundle['file.spss-savEncoding']}
                 </label>
@@ -717,20 +716,35 @@
                 </div>
             </div>
             <!-- ODUM-style extra variable labels for SPSS-POR files (this option is only available during ingest) -->
-            <div class="form-group" jsf:rendered="#{!(empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup) and (empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.id) and dataFileServiceBean.isSpssPorFile(EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.dataFile)}">
+            <div class="form-group" jsf:rendered="#{!(empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup)
+                                        and (empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.id)
+                                        and dataFileServiceBean.isSpssPorFile(EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.dataFile)}">
                 <label for="labelsFileUpload" class="col-sm-4 control-label">
                     #{bundle['file.spss-porExtraLabels']}
                 </label>
                 <div class="col-sm-8">
                     <p class="help-block">#{bundle['file.spss-porExtraLabels.title']}</p>
                     <p:growl id="messageForLabelsFileUpload" showDetail="true" />
-                    <p:fileUpload id="labelsFileUpload" label="#{bundle['file.spss-porExtraLabels.selectToAddBtn']}" update="messageForLabelsFileUpload" mode="advanced" auto="true" fileUploadListener="#{EditDatafilesPage.handleLabelsFileUpload}"/>
+                    <p:fileUpload id="labelsFileUpload"
+                                  label="#{bundle['file.spss-porExtraLabels.selectToAddBtn']}"
+                                  update="messageForLabelsFileUpload"
+                                  mode="advanced"
+                                  auto="true"
+                                  fileUploadListener="#{EditDatafilesPage.handleLabelsFileUpload}"/>
                 </div>
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton id="fileAdvancedOptionsSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileAdvancedOptions').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.saveAdvancedOptions()}"/>
-            <p:commandButton id="fileAdvancedOptionsCancelButton" value="#{bundle.cancel}" onclick="PF('fileAdvancedOptions').hide();PF('blockFileForm').hide();" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForIngestOptionsPopup()}"/>        </div>
+            <p:commandButton id="fileAdvancedOptionsSaveButton"
+                             value="#{bundle.saveChanges}"
+                             oncomplete="PF('fileAdvancedOptions').hide()"
+                             update=":datasetForm:filesTable,:messagePanel"
+                             actionListener="#{EditDatafilesPage.saveAdvancedOptions()}"/>
+            <p:commandButton id="fileAdvancedOptionsCancelButton"
+                             value="#{bundle.cancel}"
+                             onclick="PF('fileAdvancedOptions').hide();PF('blockFileForm').hide();"
+                             actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForIngestOptionsPopup()}"/>
+        </div>
     </p:dialog>
     <!-- end of "advanced options" dialogue -->
     <p:dialog id="fileSetThumbnail" styleClass="smallPopUp" header="#{bundle['file.setThumbnail.header']}" widgetVar="fileSetThumbnail" modal="true">
@@ -748,8 +762,15 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton id="fileSetThumbnailSaveBtn" value="#{bundle.saveChanges}" oncomplete="PF('fileSetThumbnail').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.saveAsDesignatedThumbnail()}"/>
-            <p:commandButton id="fileSetThumbnailCancelBtn" value="#{bundle.cancel}" onclick="PF('fileSetThumbnail').hide();PF('blockFileForm').hide();" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForThumbnailPopup()}"/>
+            <p:commandButton id="fileSetThumbnailSaveBtn"
+                             value="#{bundle.saveChanges}"
+                             oncomplete="PF('fileSetThumbnail').hide()"
+                             update=":datasetForm:filesTable,:messagePanel"
+                             actionListener="#{EditDatafilesPage.saveAsDesignatedThumbnail()}"/>
+            <p:commandButton id="fileSetThumbnailCancelBtn"
+                             value="#{bundle.cancel}"
+                             onclick="PF('fileSetThumbnail').hide();PF('blockFileForm').hide();"
+                             actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForThumbnailPopup()}"/>
         </div>
     </p:dialog>
     <p:dialog id="fileThumbnailConfirm" styleClass="smallPopUp" header="#{bundle['file.setThumbnail.header']}" widgetVar="fileThumbnailConfirm" modal="true">
@@ -759,8 +780,14 @@
             </p>
         </div>
         <div class="button-block">
-            <p:commandButton id="fileThumbnailConfirmCntBtn" value="#{bundle.continue}" oncomplete="PF('fileThumbnailConfirm').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead()}"/>
-            <p:commandButton id="fileThumbnailConfirmCancelBtn" value="#{bundle.cancel}" onclick="PF('fileThumbnailConfirm').hide();PF('blockFileForm').hide();"/>
+            <p:commandButton id="fileThumbnailConfirmCntBtn"
+                             value="#{bundle.continue}"
+                             oncomplete="PF('fileThumbnailConfirm').hide()"
+                             update=":datasetForm:filesTable,:messagePanel"
+                             actionListener="#{EditDatafilesPage.deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead()}"/>
+            <p:commandButton id="fileThumbnailConfirmCancelBtn"
+                             value="#{bundle.cancel}"
+                             onclick="PF('fileThumbnailConfirm').hide();PF('blockFileForm').hide();"/>
         </div>
     </p:dialog>
     <ui:include rendered="#{settingsWrapper.provCollectionEnabled}" src="provenance-popups-fragment.xhtml"/>
@@ -774,7 +801,8 @@
                 </label>
                 <div class="col-sm-8">
                     <p:outputPanel id="selectedTagsListEFF" style="padding-top:.5em;">
-                        <h:outputText value="#{bundle['file.editTagsDialog.selectedTags.none']}" rendered="#{(empty EditDatafilesPage.selectedTags) and (empty EditDatafilesPage.selectedTabFileTags)}" />
+                        <h:outputText value="#{bundle['file.editTagsDialog.selectedTags.none']}"
+                                      rendered="#{(empty EditDatafilesPage.selectedTags) and (empty EditDatafilesPage.selectedTabFileTags)}" />
 
                         <ui:repeat value="#{EditDatafilesPage.selectedTags}" var="tags" rendered="#{!empty EditDatafilesPage.selectedTags}">
                             <h:outputText value="#{tags}" styleClass="label label-default" style="margin-right:.5em;display:inline-block;"/>
@@ -813,7 +841,10 @@
                                          onkeypress="if (event.keyCode == 13) {
                                                      return false;
                                                  }" />
-                            <p:commandLink styleClass="btn btn-default" style="margin-left:.5em;" value="#{bundle.apply}" action="#{EditDatafilesPage.saveNewCategory}" update="selectedTagsListEFF, fileTagAddNew, fileTagsMenu"/>
+                            <p:commandLink styleClass="btn btn-default" style="margin-left:.5em;"
+                                           value="#{bundle.apply}"
+                                           action="#{EditDatafilesPage.saveNewCategory}"
+                                           update="selectedTagsListEFF, fileTagAddNew, fileTagsMenu"/>
                             <p:message for="fileTagAddNew" display="text" />
                         </div>
                     </div>
@@ -830,24 +861,25 @@
                                           filter="false">
                         <f:selectItems value="#{EditDatafilesPage.tabFileTags}" />
                         <p:ajax event="toggleSelect" listener="#{EditDatafilesPage.handleTabularTagsSelection}" update="tabularDataTags" />
-                        <p:ajax event="change" listener="#{EditDatafilesPage.TabularTagsSelection}" update="tabularDataTags" />
+                        <p:ajax event="change" listener="#{EditDatafilesPage.handleTabularTagsSelection}" update="tabularDataTags" />
                     </p:selectCheckboxMenu>
                     <p:message for="tabularDataTags" display="text" />
                 </div>
             </div>
-            <!-- <div class="form-group text-left"> REMOVED DELETE CHECKBOX FOR NOW
-                <label class="col-sm-4 control-label">
-                    # {bundle['dataset.removeUnusedFileTags.label']}
-                </label>
-                <div class="col-sm-8">
-                    <p class="help-block"># {bundle['dataset.removeUnusedFileTags.tip']}</p>
-                    <p:selectBooleanCheckbox id="removeUnused" itemLabel="# {bundle['dataset.removeUnusedFileTags.check']}" value="# {EditDatafilesPage.removeUnusedTags}" widgetVar="removeUnused"/>
-                </div>
-            </div> -->
         </div>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" id="editFileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('editFileTagsPopup').hide()" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.saveFileTagsAndCategories()}"/>
-            <p:commandButton styleClass="btn btn-default" id="editFileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('editFileTagsPopup').hide();PF('blockFileForm').hide();"  update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
+            <p:commandButton styleClass="btn btn-default"
+                             id="editFileTagsPopupSaveButton"
+                             value="#{bundle.saveChanges}"
+                             oncomplete="PF('editFileTagsPopup').hide()"
+                             update=":datasetForm:filesTable"
+                             actionListener="#{EditDatafilesPage.saveFileTagsAndCategories()}"/>
+            <p:commandButton styleClass="btn btn-default"
+                             id="editFileTagsPopupCancelButton"
+                             value="#{bundle.cancel}"
+                             onclick="PF('editFileTagsPopup').hide();PF('blockFileForm').hide();"
+                             update=":datasetForm:filesTable"
+                             actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
         </div>
     </p:dialog>
     <script type="text/javascript" src="/resources/js/dropins.js" id="dropboxjs" data-app-key="#{EditDatafilesPage.dropBoxKey}"/>
@@ -889,7 +921,7 @@
 
                 },
                 linkType: "direct",
-                multiselect: "#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}",
+                multiselect: "#{isMultiplyFilesUploadAllowed}",
             };
             Dropbox.choose(options);
         }
