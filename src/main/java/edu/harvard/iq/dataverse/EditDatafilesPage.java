@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
@@ -84,6 +85,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import org.apache.commons.lang.StringUtils;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.primefaces.context.RequestContext;
 
 /**
@@ -1377,6 +1379,12 @@ public class EditDatafilesPage implements java.io.Serializable {
                         dataset = datasetService.find(dataset.getId());
                     }
                 }
+                //We also need to reindex since no commands that include reindexing have been called.
+                indexService.indexDataset(dataset, true);
+            } catch (IOException | SolrServerException e) {
+                String failureLogText = "Post EditDatafilePage save() indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+                failureLogText += "\r\n" + e.getLocalizedMessage();
+                LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
             } finally {
                 datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
             }
@@ -1434,8 +1442,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         //if (newDraftVersion) {
         //    return returnToDraftVersionById();
         //}
-       // indexService.indexDataset(dataset, true);
-       // indexing is handled by the commands
         logger.fine("Redirecting to the dataset page, from the edit/upload page.");
         return returnToDraftVersion();
     }
