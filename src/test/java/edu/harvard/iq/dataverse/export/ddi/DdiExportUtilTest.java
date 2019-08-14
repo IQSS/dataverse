@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -68,7 +69,7 @@ public class DdiExportUtilTest {
         File fileXML = new File("src/test/resources/xml/dct_codebook.xml");
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        DdiExportUtil.datasetHtmlDDI( fileXML, byteArrayOutputStream);
+        DdiExportUtil.datasetHtmlDDI( new FileInputStream(fileXML), byteArrayOutputStream);
         assertNotNull(byteArrayOutputStream);
         assertNotEquals("",byteArrayOutputStream.toString());
         String datasetAsDdiHtml = HtmlPrinter.prettyPrint(byteArrayOutputStream.toString());

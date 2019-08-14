@@ -1632,7 +1632,7 @@ public class DdiExportUtil {
         return true;
     }
 
-    public static void datasetHtmlDDI(File datafile, OutputStream outputStream) throws XMLStreamException {
+    public static void datasetHtmlDDI(InputStream datafile, OutputStream outputStream) throws XMLStreamException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
         try {
