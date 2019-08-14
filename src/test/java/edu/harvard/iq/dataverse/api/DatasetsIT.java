@@ -32,6 +32,7 @@ import com.jayway.restassured.parsing.Parser;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.path.xml.XmlPath;
 import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
+import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -120,7 +121,58 @@ public class DatasetsIT {
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
+        
+        // Now, let's allow anyone with a Dataverse account (any "random user") 
+        // to create datasets in this dataverse: 
+        
+        Response grantRole = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR, AuthenticatedUsers.get().getIdentifier(), apiToken);
+        grantRole.prettyPrint();
+        assertEquals(OK.getStatusCode(), grantRole.getStatusCode());
+        
+        // Create another random user: 
+        
+        Response createRandomUser = UtilIT.createRandomUser();
+        createRandomUser.prettyPrint();
+        String randomUsername = UtilIT.getUsernameFromResponse(createRandomUser);
+        String randomUserApiToken = UtilIT.getApiTokenFromResponse(createRandomUser);
+        
+        // This random user should be able to create a dataset in the dataverse 
+        // above, because we've set it up so, right? - Not exactly: the dataverse
+        // hasn't been published yet! So if this random user tries to create 
+        // a dataset now, it should fail: 
+        /* - this test removed because the perms for create dataset have been reverted
+        createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, randomUserApiToken);
+        createDatasetResponse.prettyPrint();
+        assertEquals(UNAUTHORIZED.getStatusCode(), createDatasetResponse.getStatusCode());
+        */
+        // Now, let's publish this dataverse...
+        
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        assertEquals(OK.getStatusCode(), publishDataverse.getStatusCode());
+        
+        // throw in a short sleep, just in case:
+        try {
+            Thread.sleep(1000l);
+        } catch (InterruptedException iex) {}
+        
+        // ... And now that it's published, try to create a dataset again, 
+        // as the "random", not specifically authorized user: 
+        // (this time around, it should work!)
+        
+        createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, randomUserApiToken);
+        createDatasetResponse.prettyPrint();
+        datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
+        datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // OK, let's delete this dataset as well, and then delete the dataverse...
+        
+        deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+        
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         deleteDataverseResponse.prettyPrint();
         assertEquals(200, deleteDataverseResponse.getStatusCode());

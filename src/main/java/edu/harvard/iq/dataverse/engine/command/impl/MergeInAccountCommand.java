@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -27,8 +28,10 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
+import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  * Merges one account into another.
@@ -73,7 +76,14 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
                     cra.setAssigneeIdentifier(ongoingAU.getIdentifier());
                     ctxt.em().merge(cra);
                     IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(cra.getDefinitionPoint());
-                    ctxt.index().indexDvObject(cra.getDefinitionPoint());
+                    try {
+                        ctxt.index().indexDvObject(cra.getDefinitionPoint());
+                    } catch (IOException | SolrServerException e) {
+                        String failureLogText = "Post merge account dataset indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + cra.getDefinitionPoint().getId().toString();
+                        failureLogText += "\r\n" + e.getLocalizedMessage();
+                        LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, cra.getDefinitionPoint());
+
+                    }                   
                 } // no else here because the any willDelete == true will happen in the named query below.
             } else {
                 throw new IllegalCommandException("Original userIdentifier provided does not seem to be an AuthenticatedUser", this);
