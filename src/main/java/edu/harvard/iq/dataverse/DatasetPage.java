@@ -692,21 +692,21 @@ public class DatasetPage implements java.io.Serializable {
     
     public List<FacetLabel> getFileTypeFacetLabels() {
         if (facetLabelsMap != null) {
-            return facetLabelsMap.get("fileTypeGroupFacet");
+            return facetLabelsMap.get(SearchFields.FILE_TYPE);
         }
         return null;
     }
     
     public List<FacetLabel> getFileAccessFacetLabels() {
         if (facetLabelsMap != null) {
-            return facetLabelsMap.get("fileAccess");
+            return facetLabelsMap.get(SearchFields.ACCESS);
         }
         return null;
     }
     
     public List<FacetLabel> getFileTagsFacetLabels() {
         if (facetLabelsMap != null) {
-            return facetLabelsMap.get("fileTag");
+            return facetLabelsMap.get(SearchFields.FILE_TAG);
         }
         return null;
     }
