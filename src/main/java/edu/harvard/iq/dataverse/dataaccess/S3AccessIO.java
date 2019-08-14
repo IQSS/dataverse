@@ -39,6 +39,7 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -676,6 +677,21 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         
         return key;
+    }
+
+    @Override
+    public URL generateS3PreSignedUrl(String objectKey) {
+        Date expiration = new Date();
+        long expirationAfter = expiration.getTime();
+        expirationAfter += 1000 * 60 * 60;
+        expiration.setTime(expirationAfter);
+
+        GeneratePresignedUrlRequest urlRequest =
+                new GeneratePresignedUrlRequest(bucketName, objectKey). withMethod(HttpMethod.PUT).withExpiration(expiration);
+
+        URL url = s3.generatePresignedUrl(urlRequest);
+
+        return url;
     }
     
     public String generateTemporaryS3Url() throws IOException {
