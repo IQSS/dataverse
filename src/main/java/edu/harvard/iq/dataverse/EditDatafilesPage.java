@@ -1179,7 +1179,6 @@ public class EditDatafilesPage implements java.io.Serializable {
             //This was the simplest way to work around this issue for prov. --MAD 4.8.6.
             datasetUpdateRequired = datasetUpdateRequired || provFreeChanges || provJsonChanges;
         }
- logger.info("upreq: " + datasetUpdateRequired);               
         if (workingVersion.getId() == null  || datasetUpdateRequired) {
             logger.fine("issuing the dataset update command");
             // We are creating a new draft version; 
@@ -1452,14 +1451,13 @@ public class EditDatafilesPage implements java.io.Serializable {
             // the landing page. BUT ONLY if the file still exists - i.e., if 
             // the user hasn't just deleted it!
             versionString = "DRAFT";
-            logger.info("returning after fmd update");     
+            indexService.indexDataset(dataset, true);
             return returnToFileLandingPage();
         }
         
         //if (newDraftVersion) {
         //    return returnToDraftVersionById();
         //}
-        logger.info("reindexing");
         indexService.indexDataset(dataset, true);
         logger.fine("Redirecting to the dataset page, from the edit/upload page.");
         return returnToDraftVersion();
