@@ -568,6 +568,17 @@ public class FileMetadata implements Serializable {
         } else if (other.getDescription() != null) {
             return false;
         }
+        List<String> categoryNames =this.getCategoriesByName();
+        List<String> otherCategoryNames =other.getCategoriesByName();
+        if(!categoryNames.isEmpty()) {
+            categoryNames.sort(null);
+            otherCategoryNames.sort(null);
+            if (!categoryNames.equals(otherCategoryNames)) {
+                return false;
+            }
+        } else if(!otherCategoryNames.isEmpty()) {
+            return false;
+        }
         
         return true;
     }
