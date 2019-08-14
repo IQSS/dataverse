@@ -1401,6 +1401,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                         dataset = datasetService.find(dataset.getId());
                     }
                 }
+                indexService.indexDataset(dataset, true);
             } finally {
                 datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
             }
@@ -1451,14 +1452,12 @@ public class EditDatafilesPage implements java.io.Serializable {
             // the landing page. BUT ONLY if the file still exists - i.e., if 
             // the user hasn't just deleted it!
             versionString = "DRAFT";
-            indexService.indexDataset(dataset, true);
             return returnToFileLandingPage();
         }
         
         //if (newDraftVersion) {
         //    return returnToDraftVersionById();
         //}
-        indexService.indexDataset(dataset, true);
         logger.fine("Redirecting to the dataset page, from the edit/upload page.");
         return returnToDraftVersion();
     }
