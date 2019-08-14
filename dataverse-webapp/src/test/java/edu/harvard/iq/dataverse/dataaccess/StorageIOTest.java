@@ -19,6 +19,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 /**
@@ -29,7 +30,7 @@ public class StorageIOTest {
 
     @Test
     public void testGetChannel() throws IOException {
-        assertEquals(null, instance.getChannel());
+        assertNull(instance.getChannel());
         try (RandomAccessFile randomAccessFile = new RandomAccessFile(Resources.getResource("images/banner.png").getPath(), "r")) {
             Channel c = randomAccessFile.getChannel();
             instance.setChannel(c);
