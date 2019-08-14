@@ -93,7 +93,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
             templates.add(ct);
         }
         if (!templates.isEmpty()){
-             JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.manageTemplates.info.message.notEmptyTable"));
+             JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.manageTemplates.label"), BundleUtil.getStringFromBundle("dataset.message.manageTemplates.message"));
         }
         return null;
     }

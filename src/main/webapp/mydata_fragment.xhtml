@@ -11,7 +11,7 @@
     <div class="row">
         <div class="col-xs-12">
             <p class="help-block">
-                <span class="glyphicon glyphicon-info-sign"></span> #{bundle['mydataFragment.infoAccess']}
+                #{bundle['mydataFragment.infoAccess']}
             </p>
         </div>
     </div>
@@ -70,7 +70,7 @@
                      <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
                             <input style="margin-left:0;" name="published_states" id="id_cbox_#{pstate[1]}" type="checkbox" value="#{pstate[0]}" checked="checked"  />
                         <label>
-                            <a class="mydata_pubstate_label"> #{pstate[0]} <span id="id_#{pstate[1]}_count"></span></a>
+                            <a class="mydata_pubstate_label"> #{bundle[pstate[0]]} <span id="id_#{pstate[1]}_count"></span></a>
                         </label>
                     </div>                   
                 </ui:repeat>
@@ -111,11 +111,27 @@
         <ui:remove>This variable is needed by mydata.js to make the ajax call</ui:remove>
         var RETRIEVE_DATA_API_PATH = '#{MyDataPage.retrieveDataFullAPIPath}';
     </script>
-    <script src="#{resource['js/mydata.js']}?version=#{systemConfig.getVersion()}b"></script>
-    <script>            
-          $(document).ready(function() {
-             init_mydata_page(); // source: mydata.js 
-           });
+    <script src="#{resource['js/mydata.js']}?version=#{systemConfig.getVersion()}"></script>
+    <script>
+        
+        // bundle text variables
+        var mydataresult = '#{bundle['mydata.result']}';
+        var mydataresults = '#{bundle['mydata.results']}';
+        var mydataviewnext = '#{bundle['mydata.viewnext']}';
+        var mydatamore = '#{bundle['mydata.more']}';
+        var draft = '#{bundle['Draft']}';
+        var inreview = '#{bundle['In Review']}';
+        var unpublished = '#{bundle['Unpublished']}';
+        var published = '#{bundle['Published']}';
+        var deaccessioned = '#{bundle['Deaccessioned']}';
+        var mydatato = '#{bundle['to']}';
+        var mydataof = '#{bundle['of']}';
+            
+        $(document).ready(function() {
+              
+            init_mydata_page(); // source: mydata.js
+            
+        });
     </script>
 </div><!-- end panel body -->
 </div><!-- end panel -->

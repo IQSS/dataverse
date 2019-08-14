@@ -129,6 +129,7 @@ public class AddReplaceFileHelper{
     // -----------------------------------
     private User user;
     private DatasetVersion workingVersion;
+    private DatasetVersion clone;
     List<DataFile> initialFileList; 
     List<DataFile> finalFileList;
     
@@ -829,9 +830,9 @@ public class AddReplaceFileHelper{
             throw new NullPointerException("msgName cannot be null");
         }
         if (isErr){        
-            return ResourceBundle.getBundle("Bundle").getString("file.addreplace.error." + msgName);
+            return BundleUtil.getStringFromBundle("file.addreplace.error." + msgName);
         }else{
-            return ResourceBundle.getBundle("Bundle").getString("file.addreplace.success." + msgName);
+            return BundleUtil.getStringFromBundle("file.addreplace.success." + msgName);
         }
        
     }
@@ -1042,7 +1043,7 @@ public class AddReplaceFileHelper{
 
         // Load the working version of the Dataset
         workingVersion = dataset.getEditVersion();
-                
+        clone =   workingVersion.cloneDatasetVersion();
         try {
             initialFileList = FileUtil.createDataFiles(workingVersion,
                     this.newFileInputStream,
@@ -1439,7 +1440,7 @@ public class AddReplaceFileHelper{
         }
 
         Command<Dataset> update_cmd;
-        update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest);
+        update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, clone);
         ((UpdateDatasetVersionCommand) update_cmd).setValidateLenient(true);  
         
         try {            

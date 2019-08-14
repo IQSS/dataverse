@@ -1,13 +1,17 @@
 Metadata Customization
-=================================================
+======================
+
+Dataverse has a flexible data-driven metadata system powered by "metadata blocks" that are listed in the :doc:`/user/appendix` section of the User Guide. In this section we explain the customization options.
 
 .. contents:: |toctitle|
 	:local:
 
-Purpose
--------
+Introduction
+------------
 
-Dataverse installers can customize the dataset-level metadata that Dataverse collects, including:
+Before you embark on customizing metadata in Dataverse you should make sure you are aware of the modest amount of customization that is available with the Dataverse web interface. It's possible to hide fields and make field required by clicking "Edit" at the dataverse level, clicking "General Information" and making adjustments under "Metadata Fields" as described in the context of dataset templates in the :doc:`/user/dataverse-management` section of the User Guide.
+
+Much more customization of metadata is possible, but this is an advanced topic so feedback on what is written below is very welcome. The possibilities for customization include:
 
 -  Editing and adding metadata fields
 
@@ -16,29 +20,29 @@ Dataverse installers can customize the dataset-level metadata that Dataverse col
 
 -  Editing and adding controlled vocabularies
 
--  Changing which fields depositors must use in order to save datasets
+-  Changing which fields depositors must use in order to save datasets (see also "dataset templates" in the :doc:`/user/dataverse-management` section of the User Guide.)
 
 -  Changing how saved metadata values are displayed in the UI
 
-Background
-----------
+Generally speaking it is safer to create your own custom metadata block rather than editing metadata blocks that ship with Dataverse, because changes to these blocks may be made in future releases of Dataverse. If you'd like to make improvements to any of the metadata blocks shipped with Dataverse, please open an issue at https://github.com/IQSS/dataverse/issues so it can be discussed before a pull request is made. Please note that the metadata blocks shipped with Dataverse are based on standards (e.g. DDI for social science) and you can learn more about these standards in the :doc:`/user/appendix` section of the User Guide. If you have developed your own custom metadata block that you think may be of interest to the Dataverse community, please create an issue and consider making a pull request as described in the :doc:`/developers/version-control` section of the Developer Guide.
 
 In Dataverse 4, custom metadata are no longer defined as individual
-fields, as they were in Dataverse Network 3.x, but in metadata blocks.
+fields, as they were in Dataverse Network (DVN) 3.x, but in metadata blocks.
 Dataverse 4 ships with a citation metadata block, which includes
 mandatory fields needed for assigning persistent IDs to datasets, and
-domain specific metadata blocks.
+domain specific metadata blocks. For a complete list, see the
+:doc:`/user/appendix` section of the User Guide.
 
-Definitions of these blocks are transmitted to a Dataverse instance in
+Definitions of these blocks are loaded into a Dataverse installation in
 tab-separated value (TSV). [1]_\ :sup:`,`\  [2]_ While it is technically
 possible to define more than one metadata block in a TSV file, it is
 good organizational practice to define only one in each file.
 
 The metadata block TSVs shipped with Dataverse are in `this folder in
 the Dataverse github
-repo <https://github.com/IQSS/dataverse/tree/68bce75a2cd2b52e47e00a2cf880497481bea59e/scripts/api/data/metadatablocks>`__.
-Human-readable copies are maintained in `this Google Sheets
-document <https://docs.google.com/spreadsheets/d/13HP-jI_cwLDHBetn9UKTREPJ_F4iHdAvhjmlvmYdSSw/edit#gid=0>`__.
+repo <https://github.com/IQSS/dataverse/tree/develop/scripts/api/data/metadatablocks>`__ and the corresponding ResourceBundle property files are `here <https://github.com/IQSS/dataverse/tree/develop/src/main/java>`__.
+Human-readable copies are available in `this Google Sheets
+document <https://docs.google.com/spreadsheets/d/13HP-jI_cwLDHBetn9UKTREPJ_F4iHdAvhjmlvmYdSSw/edit#gid=0>`__ but they tend to get out of sync with the TSV files, which should be considered authoritative. The Dataverse installation process operates on the TSVs, not the Google spreadsheet.
 
 About the metadata block TSV
 ----------------------------
@@ -100,9 +104,9 @@ Each of the three main sections own sets of properties:
 |                       |                       | blocks defined        |
 |                       |                       | elsewhere. [4]_       |
 +-----------------------+-----------------------+-----------------------+
-| dataverseAlias        | If specified, this    | Free text             |
-|                       | metadata block will   |                       |
-|                       | be available only to  |                       |
+| dataverseAlias        | If specified, this    | Free text. For an     |
+|                       | metadata block will   | example, see          |
+|                       | be available only to  | custom_hbgdki.tsv.    |
 |                       | the dataverse         |                       |
 |                       | designated here by    |                       |
 |                       | its alias and to      |                       |
@@ -179,15 +183,15 @@ Each of the three main sections own sets of properties:
 |                       | a prompt for what the |                        |
 |                       | user should enter.    |                        |
 +-----------------------+-----------------------+------------------------+
-| fieldType             | Defines the type of   | | \• None              |
-|                       | content that the      | | \• Date              |
-|                       | field, if not empty,  | | \• Email             |
-|                       | is meant to contain.  | | \• Text              |
-|                       |                       | | \• Textbox           |
-|                       |                       | | \• URL               |
-|                       |                       | | \• Int               |
-|                       |                       | | \• Float             |
-|                       |                       | | \• See Appendix_ for |
+| fieldType             | Defines the type of   | | \• none              |
+|                       | content that the      | | \• date              |
+|                       | field, if not empty,  | | \• email             |
+|                       | is meant to contain.  | | \• text              |
+|                       |                       | | \• textbox           |
+|                       |                       | | \• url               |
+|                       |                       | | \• int               |
+|                       |                       | | \• float             |
+|                       |                       | | \• See below for     |
 |                       |                       | | fieldtype definitions|
 +-----------------------+-----------------------+------------------------+
 | displayOrder          | Controls the sequence | Non-negative integer.  |
@@ -196,7 +200,7 @@ Each of the three main sections own sets of properties:
 |                       | for input and         |                        |
 |                       | presentation.         |                        |
 +-----------------------+-----------------------+------------------------+
-| displayFormat         | Controls how the      | See Appendix_ for      |
+| displayFormat         | Controls how the      | See below for          |
 |                       | content is displayed  | displayFormat          |
 |                       | for presentation (not | variables              |
 |                       | entry). The value of  |                        |
@@ -264,8 +268,8 @@ Each of the three main sections own sets of properties:
 |                       | values that are       |                        |
 |                       | likely to be unique.  |                        |
 +-----------------------+-----------------------+------------------------+
-| displayOnCreate/showA\| Designate fields that | TRUE (display during   |
-| \boveFold [5]_        | should display during | creation) or FALSE     |
+| displayoncreate [5]_  | Designate fields that | TRUE (display during   |
+|                       | should display during | creation) or FALSE     |
 |                       | the creation of a new | (don’t display during  |
 |                       | dataset, even before  | creation)              |
 |                       | the dataset is saved. |                        |
@@ -345,7 +349,7 @@ Each of the three main sections own sets of properties:
 |                       | this value is used as |                       |
 |                       | the identifier.       |                       |
 +-----------------------+-----------------------+-----------------------+
-| Identifier            | A string used to      | Free text             |
+| identifier            | A string used to      | Free text             |
 |                       | encode the selected   |                       |
 |                       | enumerated value of a |                       |
 |                       | field. If this        |                       |
@@ -359,11 +363,6 @@ Each of the three main sections own sets of properties:
 |                       | values are displayed  |                       |
 |                       | for selection.        |                       |
 +-----------------------+-----------------------+-----------------------+
-
-.. _Appendix:
-
-Appendix
---------
 
 FieldType definitions
 ~~~~~~~~~~~~~~~~~~~~~
@@ -380,7 +379,8 @@ FieldType definitions
 |                                   | resolutions of the form           |
 |                                   | YYYY-MM-DD, YYYY-MM, or YYYY.     |
 +-----------------------------------+-----------------------------------+
-| email                             | A valid email address.            |
+| email                             | A valid email address. Not        |
+|                                   | indexed for privacy reasons.      |
 +-----------------------------------+-----------------------------------+
 | text                              | Any text other than newlines may  |
 |                                   | be entered into this field.       |
@@ -481,6 +481,149 @@ These are common ways to use the displayFormat to control how values are display
 |                                   | collection of NMR data.           |
 +-----------------------------------+-----------------------------------+
 
+Metadata Block Setup
+--------------------
+
+Now that you understand the TSV format used for metadata blocks, the next step is to attempt to make improvements to existing metadata blocks or create entirely new metadata blocks. For either task, you should have a Dataverse environment set up for testing where you can drop the database frequently while you make edits to TSV files. Once you have tested your TSV files, you should consider making a pull request to contribute your improvement back to the community.
+
+Exploring Metadata Blocks
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In addition to studying the TSV files themselves you might find the following highly experimental and subject-to-change API endpoints useful to understand the metadata blocks that have already been loaded into your installation of Dataverse:
+
+You can get a dump of metadata fields (yes, the output is odd, please open a issue) like this:
+
+``curl http://localhost:8080/api/admin/datasetfield``
+
+To see details about an individual field such as "title" in the example below:
+
+``curl http://localhost:8080/api/admin/datasetfield/title``
+
+Setting Up a Dev Environment for Testing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You have several options for setting up a dev environment for testing metadata block changes:
+
+- Vagrant: See the :doc:`/developers/tools` section of the Dev Guide.
+- docker-aio: See https://github.com/IQSS/dataverse/tree/develop/conf/docker-aio
+- AWS deployment: See the :doc:`/developers/deployment` section of the Dev Guide.
+- Full dev environment: See the :doc:`/developers/dev-environment` section of the Dev Guide.
+
+To get a clean environment in Vagrant, you'll be running ``vagrant destroy``. In Docker, you'll use ``docker rm``. For a full dev environment or AWS installation, you might find ``rebuild`` and related scripts at ``scripts/deploy/phoenix.dataverse.org`` useful.
+
+Editing TSV files
+~~~~~~~~~~~~~~~~~
+
+Early in Dataverse 4 development metadata blocks were edited in the Google spreadsheet mentioned above and then exported in TSV format. This worked fine when there was only one person editing the Google spreadsheet but now that contributions are coming in from all over, the TSV files are edited directly. We are somewhat painfully aware that another format such as XML might make more sense these days. Please see https://github.com/IQSS/dataverse/issues/4451 for a discussion of non-TSV formats.
+
+Please note that metadata fields share a common namespace so they must be unique. The following curl command will print list of metadata fields already available in the system:
+
+``curl http://localhost:8080/api/admin/index/solr/schema``
+
+We'll use this command again below to update the Solr schema to accomodate metadata fields we've added.
+
+Loading TSV files into Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A number of TSV files are loaded into Dataverse on every new installation, becoming the metadata blocks you see in the UI. For the list of metadata blocks that are included with Dataverse out of the box, see the :doc:`/user/appendix` section of the User Guide.
+
+Along with TSV file, there are corresponding ResourceBundle property files with key=value pair `here <https://github.com/IQSS/dataverse/tree/develop/src/main/java>`__.  To add other language files, see the :doc:`/installation/config` for dataverse.lang.directory JVM Options section, and add a file, for example: "citation_lang.properties" to the path you specified for the ``dataverse.lang.directory`` JVM option, and then restart Glassfish.
+
+If you are improving an existing metadata block, the Dataverse installation process will load the TSV for you, assuming you edited the TSV file in place. The TSV file for the Citation metadata block, for example, can be found at ``scripts/api/data/metadatablocks/citation.tsv``.
+If any of the below mentioned property values are changed, corresponsing ResourceBundle property file has to be edited and stored under ``dataverse.lang.directory`` location
+
+- name, displayName property under #metadataBlock
+- name, title, description, watermark properties under #datasetfield
+- DatasetField, Value property under #controlledVocabulary
+
+If you are creating a new custom metadata block (hopefully with the idea of contributing it back to the community if you feel like it would provide value to others), the Dataverse installation process won't know about your new TSV file so you must load it manually. The script that loads the TSV files into the system is ``scripts/api/setup-datasetfields.sh`` and contains a series of curl commands. Here's an example of the necessary curl command with the new custom metadata block in the "/tmp" directory.
+
+``curl http://localhost:8080/api/admin/datasetfield/load -H "Content-type: text/tab-separated-values" -X POST --upload-file /tmp/new-metadata-block.tsv``
+
+To create a new ResourceBundle, here are the steps to generate key=value pair for the three main sections:
+
+#metadataBlock properties
+~~~~~~~~~~~~~~~~~~~~~~~~~
+metadatablock.name=(the value of **name** property from #metadatablock)
+
+metadatablock.displayName=(the value of **displayName** property from #metadatablock)
+
+example:
+
+metadatablock.name=citation
+
+metadatablock.displayName=Citation Metadata
+
+#datasetField (field) properties
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+datasetfieldtype.(the value of **name** property from #datasetField).title=(the value of **title** property from #datasetField)
+
+datasetfieldtype.(the value of **name** property from #datasetField).description=(the value of **description** property from #datasetField)
+
+datasetfieldtype.(the value of **name** property from #datasetField).watermark=(the value of **watermark** property from #datasetField)
+
+example:
+
+datasetfieldtype.title.title=Title
+
+datasetfieldtype.title.description=Full title by which the Dataset is known.
+
+datasetfieldtype.title.watermark=Enter title...
+
+#controlledVocabulary (enumerated) properties
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+controlledvocabulary.(the value of **DatasetField** property from #controlledVocabulary).(the value of **Value** property from #controlledVocabulary)=(the value of **Value** property from #controlledVocabulary)
+
+Since the **Value** property from #controlledVocabulary is free text, while creating the key, it has to be converted to lowercase, replace space with underscore, and strip accents.
+
+example:
+
+controlledvocabulary.subject.agricultural_sciences=Agricultural Sciences
+
+controlledvocabulary.language.marathi_(marathi)=Marathi (Mar\u0101\u1E6Dh\u012B)
+
+
+Enabling a Metadata Block
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Running a curl command like "load" example above should make the new custom metadata block available within the system but in order to start using the fields you must either enable it from the GUI (see "General Information" in the :doc:`/user/dataverse-management` section of the User Guide) or by running a curl command like the one below using a superuser API token. In the example below we are enabling the "journal" and "geospatial" metadata blocks for the root dataverse:
+
+``curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-type:application/json" -d "[\"journal\",\"geospatial\"]" http://localhost:8080/api/dataverses/:root/metadatablocks``
+
+Updating the Solr Schema
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Once you have enabled a new metadata block you should be able to see the new fields in the GUI but before you can save the dataset, you must add additional fields to your Solr schema. You should run the following curl command to have Dataverse output the "field name" and "copyField" elements for all the metadata fields that have been loaded into Dataverse:
+
+``curl http://localhost:8080/api/admin/index/solr/schema``
+
+See the :doc:`/installation/prerequisites/` section of the Installation Guide for a suggested location on disk for the Solr schema file.
+
+Please note that if you are going to make a pull request updating ``conf/solr/7.3.1/schema.xml`` with fields you have added, you should first load all the custom metadata blocks in ``scripts/api/data/metadatablocks`` (including ones you don't care about) to create a complete list of fields.
+
+Reloading a Metadata Block
+--------------------------
+
+As mentioned above, changes to metadata blocks that ship with Dataverse will be made over time to improve them and release notes will sometimes instruct you to reload an existing metadata block. The syntax for reloading is the same as reloading. Here's an example with the "citation" metadata block:
+
+``curl http://localhost:8080/api/admin/datasetfield/load -H "Content-type: text/tab-separated-values" -X POST --upload-file citation.tsv``
+
+Great care must be taken when reloading a metadata block. Matching is done on field names (or identifiers and then names in the case of controlled vocabulary values) so it's easy to accidentally create duplicate fields.
+
+The ability to reload metadata blocks means that SQL update scripts don't need to be written for these changes. See also the :doc:`/developers/sql-upgrade-scripts` section of the Dev Guide.
+
+Tips from the Dataverse Community
+---------------------------------
+
+If there are tips that you feel are omitted from this document, please open an issue at https://github.com/IQSS/dataverse/issues and consider making a pull request to make improvements. You can find this document at https://github.com/IQSS/dataverse/blob/develop/doc/sphinx-guides/source/admin/metadatacustomization.rst
+
+Alternatively, you are welcome to request "edit" access to this "Tips for Dataverse metadata blocks from the community" Google doc: https://docs.google.com/document/d/1XpblRw0v0SvV-Bq6njlN96WyHJ7tqG0WWejqBdl7hE0/edit?usp=sharing
+
+The thinking is that the tips can become issues and the issues can eventually be worked on as features to improve the Dataverse metadata system.
+
+Footnotes
+---------
+
 .. [1]
    https://www.iana.org/assignments/media-types/text/tab-separated-values
 
@@ -493,8 +636,10 @@ These are common ways to use the displayFormat to control how values are display
 
 .. [4]
    These field names are added to the Solr schema.xml and cannot be
-   duplicated.
+   duplicated. See "Editing TSV files" for how to check for duplication.
 
 .. [5]
-   Labeled “showabovefold” in Dataverse versions before 4.3.1 (see
-   `#3073 <https://github.com/IQSS/dataverse/issues/3073>`__).
+   "displayoncreate" was "showabovefold" in Dataverse versions before 4.3.1 (see
+   `#3073 <https://github.com/IQSS/dataverse/issues/3073>`__) but parsing is
+   done based on column order rather than name so this only matters to the
+   person reading the TSV file.

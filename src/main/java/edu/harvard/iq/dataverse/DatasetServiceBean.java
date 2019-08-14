@@ -4,12 +4,15 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
+import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -102,7 +105,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     public Dataset find(Object pk) {
         return em.find(Dataset.class, pk);
     }
-
+    
     public List<Dataset> findByOwnerId(Long ownerId) {
         return findByOwnerId(ownerId, false);
     }
@@ -113,7 +116,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     private List<Dataset> findByOwnerId(Long ownerId, boolean onlyPublished) {
         List<Dataset> retList = new ArrayList<>();
-        TypedQuery<Dataset>  query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id", Dataset.class);
+        TypedQuery<Dataset>  query = em.createNamedQuery("Dataset.findByOwnerId", Dataset.class);
         query.setParameter("ownerId", ownerId);
         if (!onlyPublished) {
             return query.getResultList();
@@ -134,13 +137,13 @@ public class DatasetServiceBean implements java.io.Serializable {
     private List<Long> findIdsByOwnerId(Long ownerId, boolean onlyPublished) {
         List<Long> retList = new ArrayList<>();
         if (!onlyPublished) {
-            TypedQuery<Long> query = em.createQuery("select o.id from Dataset as o where o.owner.id =:ownerId order by o.id", Long.class);
-            query.setParameter("ownerId", ownerId);
-            return query.getResultList();
+            return em.createNamedQuery("Dataset.findIdByOwnerId")
+                    .setParameter("ownerId", ownerId)
+                    .getResultList();
         } else {
-            TypedQuery<Dataset> query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id", Dataset.class);
-            query.setParameter("ownerId", ownerId);
-            for (Dataset ds : query.getResultList()) {
+            List<Dataset> results = em.createNamedQuery("Dataset.findByOwnerId")
+                    .setParameter("ownerId", ownerId).getResultList();
+            for (Dataset ds : results) {
                 if (ds.isReleased() && !ds.isDeaccessioned()) {
                     retList.add(ds.getId());
                 }
@@ -149,6 +152,25 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
 
+    public List<Dataset> filterByPidQuery(String filterQuery) {
+        // finds only exact matches
+        Dataset ds = findByGlobalId(filterQuery);
+        List<Dataset> ret = new ArrayList<>();
+        if (ds != null) ret.add(ds);
+
+        
+        /*
+        List<Dataset> ret = em.createNamedQuery("Dataset.filterByPid", Dataset.class)
+            .setParameter("affiliation", "%" + filterQuery.toLowerCase() + "%").getResultList();
+        //logger.info("created native query: select o from Dataverse o where o.alias LIKE '" + filterQuery + "%' order by o.alias");
+        logger.info("created named query");
+        */
+        if (ret != null) {
+            logger.info("results list: "+ret.size()+" results.");
+        }
+        return ret;
+    }
+    
     public List<Dataset> findAll() {
         return em.createQuery("select object(o) from Dataset as o order by o.id", Dataset.class).getResultList();
     }
@@ -201,6 +223,24 @@ public class DatasetServiceBean implements java.io.Serializable {
             //try to find with alternative PID
             return (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset", true);
         }        
+    }
+    
+    /**
+     * Instantiate dataset, and its components (DatasetVersions and FileMetadatas)
+     * this method is used for object validation; if there are any invalid values
+     * in the dataset components, a ConstraintViolationException will be thrown,
+     * which can be further parsed to detect the specific offending values.
+     * @param id the id of the dataset
+     * @throws javax.validation.ConstraintViolationException 
+     */
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void instantiateDatasetInNewTransaction(Long id) {
+        Dataset dataset = find(id);
+        for (DatasetVersion version : dataset.getVersions()) {
+            for (FileMetadata fileMetadata : version.getFileMetadatas()) {
+            }
+        }
     }
 
     public String generateDatasetIdentifier(Dataset dataset, GlobalIdServiceBean idServiceBean) {
@@ -288,8 +328,8 @@ public class DatasetServiceBean implements java.io.Serializable {
         Long dsId = dataset.getId();
         if (dsId != null) {
             try {
-                idResults = em.createNamedQuery("Dataset.findByOwnerIdentifier")
-                                .setParameter("owner_id", dsId).getResultList();
+                idResults = em.createNamedQuery("Dataset.findIdentifierByOwnerId")
+                                .setParameter("ownerId", dsId).getResultList();
             } catch (NoResultException ex) {
                 logger.log(Level.FINE, "No files found in dataset id {0}. Returning a count of zero.", dsId);
                 return zeroFiles;
@@ -335,6 +375,17 @@ public class DatasetServiceBean implements java.io.Serializable {
         lockCounter.setMaxResults(1);
         List<DatasetLock> lock = lockCounter.getResultList();
         return lock.size()>0;
+    }
+    
+    public List<DatasetLock> getDatasetLocksByUser( AuthenticatedUser user) {
+
+        TypedQuery<DatasetLock> query = em.createNamedQuery("DatasetLock.getLocksByAuthenticatedUserId", DatasetLock.class);
+        query.setParameter("authenticatedUserId", user.getId());
+        try {
+            return query.getResultList();
+        } catch (javax.persistence.NoResultException e) {
+            return null;
+        }
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -731,9 +782,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         logger.fine("Running FinalizeDatasetPublicationCommand, asynchronously");
         Dataset theDataset = find(datasetId);
-        String nonNullDefaultIfKeyNotFound = "";
-        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-        commandEngine.submit(new FinalizeDatasetPublicationCommand(theDataset, doiProvider, request, isPidPrePublished));
+        commandEngine.submit(new FinalizeDatasetPublicationCommand(theDataset, request, isPidPrePublished));
     }
     
     /*
@@ -808,5 +857,65 @@ public class DatasetServiceBean implements java.io.Serializable {
             }
 
         }
+    }
+    
+    public long findStorageSize(Dataset dataset) throws IOException {
+        return findStorageSize(dataset, false);
+    }
+    
+    /**
+     * Returns the total byte size of the files in this dataset 
+     * 
+     * @param dataset
+     * @param countCachedExtras boolean indicating if the cached disposable extras should also be counted
+     * @return total size 
+     * @throws IOException if it can't access the objects via StorageIO 
+     * (in practice, this can only happen when called with countCachedExtras=true; when run in the 
+     * default mode, the method doesn't need to access the storage system, as the 
+     * sizes of the main files are recorded in the database)
+     */
+    public long findStorageSize(Dataset dataset, boolean countCachedExtras) throws IOException {
+        long total = 0L; 
+        
+        if (dataset.isHarvested()) {
+            return 0L;
+        }
+        
+        for (DataFile datafile : dataset.getFiles()) {
+            total += datafile.getFilesize(); 
+            
+            if (!countCachedExtras) {
+                if (datafile.isTabularData()) {
+                    // count the size of the stored original, in addition to the main tab-delimited file:
+                    Long originalFileSize = datafile.getDataTable().getOriginalFileSize();
+                    if (originalFileSize != null) { 
+                        total += originalFileSize;
+                    }
+                }
+            } else {
+                StorageIO<DataFile> storageIO = datafile.getStorageIO();
+                for (String cachedFileTag : storageIO.listAuxObjects()) {
+                    total += storageIO.getAuxObjectSize(cachedFileTag);
+                }                
+            }
+        }
+        
+        // and finally,
+        if (countCachedExtras) {
+            // count the sizes of the files cached for the dataset itself
+            // (i.e., the metadata exports):
+            StorageIO<Dataset> datasetSIO = DataAccess.getStorageIO(dataset);
+            
+            for (String[] exportProvider : ExportService.getInstance(settingsService).getExportersLabels()) {
+                String exportLabel = "export_" + exportProvider[1] + ".cached";
+                try {
+                    total += datasetSIO.getAuxObjectSize(exportLabel);
+                } catch (IOException ioex) {
+                    // safe to ignore; object not cached
+                }
+            }
+        }
+        
+        return total; 
     }
 }

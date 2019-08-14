@@ -5,6 +5,7 @@
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     
     <p:dialog id="explicitGroupNewDialog" width="65%" header="#{bundle['dataverse.permissions.explicitGroupEditDialog.title.new']}" widgetVar="explicitGroupForm" modal="true">
+        <p:focus for="explicitGroupName"/>
         <p:fragment id="explicitGroupNewDialogMessages">
             <div class="container messagePanel">
                 <iqbs:messages collapsible="true" />
@@ -12,7 +13,7 @@
         </p:fragment>
         <p:fragment id="explicitGroupNewDialogContent">
             <div class="form-horizontal">
-                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.permissions.explicitGroupEditDialog.help']}</p>
+                <p class="help-block">#{bundle['dataverse.permissions.explicitGroupEditDialog.help']}</p>
                 <div class="form-group">
                     <label for="explicitGroupName" class="col-sm-3 control-label">
                         #{bundle['dataverse.permissions.explicitGroupEditDialog.groupName']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
@@ -28,10 +29,10 @@
                 </div>
                 <div class="form-group">
                     <label for="explicitGroupIdentifier" class="col-sm-3 control-label">
-                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.permissions.explicitGroupEditDialog.groupIdentifier.tip']}">
-                            #{bundle['dataverse.permissions.explicitGroupEditDialog.groupIdentifier']}
-                        </span>
+                        #{bundle['dataverse.permissions.explicitGroupEditDialog.groupIdentifier']}
                         <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.permissions.explicitGroupEditDialog.groupIdentifier.tip']}"></span>
                     </label>
                     <div class="col-sm-9">
                         <p:panelGrid columns="2" styleClass="noBorders">
@@ -83,14 +84,16 @@
                 </div>
             </div>
             <div class="button-block">
-                <p:commandLink type="button" styleClass="btn btn-default" 
+                <p:commandButton styleClass="btn btn-default" 
                                value="#{bundle['dataverse.permissions.explicitGroupEditDialog.createGroup']}"
                                update="explicitGroupNewDialogContent allGroups :messagePanel"
                                actionListener="#{manageGroupsPage.createExplicitGroup}"
                                oncomplete="if (args &amp;&amp; !args.validationFailed) PF('explicitGroupForm').hide();">
                     <f:param name="DO_GROUP_VALIDATION" value="true"/>
-                </p:commandLink>
-                <button type="button" class="btn btn-default" onclick="PF('explicitGroupForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
+                </p:commandButton>
+                <button class="btn btn-link" onclick="PF('explicitGroupForm').hide()" type="button">
+                    #{bundle.cancel}
+                </button>
             </div>
         </p:fragment>
     </p:dialog>

@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
+    <!--
+    If you are doing more than bumping the version number, please read
+    doc/sphinx-guides/source/developers/dependencies.rst
+    -->
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.9.4</version>
+    <version>4.15.1</version>
     <packaging>war</packaging>
-
     <name>dataverse</name>
-
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
-	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	<additionalparam>-Xdoclint:none</additionalparam>
-        <aws.version>1.11.172</aws.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <additionalparam>-Xdoclint:none</additionalparam>
+        <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
+        <compilerArgument></compilerArgument>
         <project.timezone>UTC</project.timezone>
         <project.language>en</project.language>
         <project.region>US</project.region>
@@ -22,27 +24,26 @@
             This seems to play well with NetBeans 8.2, IDEA 2018.1 and mvn including compatibility with JaCoCo.
         -->
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
-    
+        <aws.version>1.11.172</aws.version>
+        <jackson.version>2.9.6</jackson.version>
+        <commons.logging.version>1.2</commons.logging.version>
+        <httpcomponents.client.version>4.5.5</httpcomponents.client.version>
         <junit.version>4.12</junit.version>
         <junit.jupiter.version>5.3.1</junit.jupiter.version>
         <junit.vintage.version>5.3.1</junit.vintage.version>
         <junit.platform.version>1.3.1</junit.platform.version>
+        <mockito.version>2.22.0</mockito.version>
+        <flyway.version>5.2.4</flyway.version>
+        <jhove.version>1.20.1</jhove.version>
+        <!--
+        Jacoco 0.8.2 seems to break Netbeans code coverage integration so we'll use 0.8.1 instead.
+        See https://github.com/jacoco/jacoco/issues/772 for discussion of how the XML changed.
+        -->
+        <jacoco.version>0.8.1</jacoco.version>
     </properties>
-
+    <!--Maven checks for dependendies from these repos in the order shown in the pom.xml
+        This isn't well documented and seems to change between maven versions -MAD 4.9.4 -->
     <repositories>
-        <repository>
-            <id>prime-repo</id>
-            <name>PrimeFaces Maven Repository</name>
-            <url>http://repository.primefaces.org</url>
-            <layout>default</layout>
-        </repository>
-        <!-- Geo Toolkit repository is need to obtain the JAI (advanced imaging) libraries; since Oracle kind of abandoned that project, the jars seem to have disappeared from the central repository as well. -->
-        <repository>
-            <id>geotk-repo</id>
-            <name>Geo Toolkit Maven Repository</name>
-            <url>http://maven.geotoolkit.org</url>
-            <layout>default</layout>
-        </repository>
         <repository>
             <id>central-repo</id>
             <name>Central Repository</name>
@@ -50,9 +51,10 @@
             <layout>default</layout>
         </repository>
         <repository>
-            <id>dvn.private</id>
-            <name>Local repository for hosting jars not available from network repositories.</name>
-            <url>file://${project.basedir}/local_lib</url>
+            <id>prime-repo</id>
+            <name>PrimeFaces Maven Repository</name>
+            <url>http://repository.primefaces.org</url>
+            <layout>default</layout>
         </repository>
         <repository>
             <id>dataone.org</id>
@@ -64,12 +66,47 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-
+        <repository>
+            <id>dvn.private</id>
+            <name>Local repository for hosting jars not available from network repositories.</name>
+            <url>file://${project.basedir}/local_lib</url>
+        </repository>
     </repositories>
-  
-    <!--            Due to our old version of glassfish and its version of jackson,
-                we are pointing to an aws sdk with unique references to needed libraries.
-                If we update glassfish, we should return to the normal sdk as well. -->  
+    <!-- Transitive dependencies, bigger library "bill of materials" (BOM) and
+         versions of dependencies used both directly and transitive are managed here. -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-bom</artifactId>
+                <version>${aws.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+                <version>${commons.logging.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${httpcomponents.client.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <!-- Declare any DIRECT dependencies here.
+         In case the depency is both transitive and direct (e. g. some common lib for logging),
+         manage the version above and add the direct dependency here WITHOUT version tag, too.
+    -->
+    <!-- TODO: Housekeeping is utterly needed. -->
     <dependencies>
         <dependency>
             <groupId>org.passay</groupId>
@@ -92,11 +129,19 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
             <version>${junit.vintage.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
@@ -107,7 +152,6 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.5</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -135,9 +179,17 @@
             -->
             <version>1.1-SNAPSHOT</version>
             <type>war</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
+            <!-- Once on Eclipse Glassfish 5.1 or Payara 5.x, this should be changed to aws-java-sdk-s3,
+                 rendering the WAR much lighter. The version tag needs to be removed then, too. -->
             <artifactId>aws-java-sdk-bundle</artifactId>
             <version>${aws.version}</version>
         </dependency>
@@ -160,16 +212,32 @@
             <version>1.3.3</version>
         </dependency>
         <dependency>
+            <!-- a dependency of commons-fileupload, but newer version required by tika -->
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
+        </dependency>
+        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.2.4</version>
             <scope>compile</scope>
         </dependency>
+        <!-- Should be refactored and removed once on Java EE 8 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <!-- Should be refactored and removed once on Java EE 8 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
         <dependency>
             <!-- required by org.swordapp.server.sword2-server -->
-            <groupId>xom</groupId>
+            <groupId>com.io7m.xom</groupId>
             <artifactId>xom</artifactId>
-            <version>1.1</version>
+            <version>1.2.10</version>
         </dependency>
         <!-- END Data Deposit API v1 (SWORD v2) -->
         <dependency>
@@ -183,6 +251,11 @@
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
             <version>0.3m</version>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>${flyway.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -235,7 +308,7 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
-            <version>7.3.0</version>
+            <version>7.3.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -261,7 +334,7 @@
         <dependency>
             <groupId>net.handle</groupId>
             <artifactId>handle</artifactId>
-            <version>2006-06-16-generated</version>
+            <version>8.1.1</version>
         </dependency>
         <!-- UNF v5 (buggy), (temporarily) added for testing ingest against DVN v3  - L.A. -->
         <dependency>
@@ -291,48 +364,38 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>3.10-FINAL</version>
+            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>3.10-FINAL</version>
+            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-examples</artifactId>
-            <version>3.10-FINAL</version>
+            <version>4.0.0</version>
         </dependency>
         <dependency>
-            <groupId>edu.harvard.hul.ois.jhove</groupId>
-            <artifactId>jhove</artifactId>
-            <version>1.11.0</version>
+            <groupId>org.openpreservation.jhove</groupId>
+            <artifactId>jhove-core</artifactId>
+            <version>${jhove.version}</version>
         </dependency>
         <dependency>
-            <groupId>edu.harvard.hul.ois.jhove</groupId>
-            <artifactId>jhove-module</artifactId>
-            <version>1.11.0</version>
+            <groupId>org.openpreservation.jhove</groupId>
+            <artifactId>jhove-modules</artifactId>
+            <version>${jhove.version}</version>
         </dependency>
         <dependency>
-            <groupId>edu.harvard.hul.ois.jhove</groupId>
-            <artifactId>jhove-handler</artifactId>
-            <version>1.11.0</version>
+            <groupId>org.openpreservation.jhove</groupId>
+            <artifactId>jhove-ext-modules</artifactId>
+            <version>${jhove.version}</version>
         </dependency>
         <!-- JAI (Java Advanced Imaging) jars: -->
         <dependency>
-            <groupId>javax.media</groupId>
-            <artifactId>jai_imageio</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.media</groupId>
-            <artifactId>jai_core</artifactId>
-            <version>1.1.3</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.media</groupId>
-            <artifactId>jai_codec</artifactId>
-            <version>1.1.3</version>
+            <groupId>com.github.jai-imageio</groupId>
+            <artifactId>jai-imageio-core</artifactId>
+            <version>1.3.1</version>
         </dependency>
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
@@ -353,18 +416,13 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.8.3</version>
+            <version>1.11.3</version>
         </dependency>
         <dependency>
             <groupId>com.jayway.restassured</groupId>
             <artifactId>rest-assured</artifactId>
             <version>2.4.0</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.7.5.201505241946</version>
         </dependency>
         <!-- Added specific versionf of SLF4J jars; otherwise we end up with
         conflicting versions of slf4j-api and slf4j-log4j12, loaded as
@@ -383,7 +441,13 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>2.22.0</version>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
         <!-- Added for DataCite -->
@@ -407,7 +471,7 @@
             <artifactId>commons-codec</artifactId>
             <version>1.9</version>
         </dependency>
-	<!-- JavaSwift/JOSS: for accessing OpenStack cloud storage -->
+        <!-- JavaSwift/JOSS: for accessing OpenStack cloud storage -->
         <dependency>
             <groupId>org.javaswift</groupId>
             <artifactId>joss</artifactId>
@@ -439,27 +503,27 @@
             <artifactId>scribejava-apis</artifactId>
             <version>3.1.0</version>
         </dependency>
-	<!-- EXPERIMENTAL: -->
-	<!-- lyncode xoai OAI-PMH implementation: -->
-	<!-- unfortunately, their 4.10 version -->
-	<!-- is still buggy. As an experiment, I'm using -->
-	<!-- a patched version I built locally. -->
-	<!-- (pull requests pending - L.A. -->
-	<dependency>
-	  <groupId>com.lyncode</groupId>
-	  <artifactId>xoai-common</artifactId>
-	  <version>4.1.0-header-patch</version>
-	</dependency>
-	<dependency>
-	  <groupId>com.lyncode</groupId>
-	  <artifactId>xoai-data-provider</artifactId>
-	  <version>4.1.0-header-patch</version>
-	</dependency>
+        <!-- EXPERIMENTAL: -->
+        <!-- lyncode xoai OAI-PMH implementation: -->
+        <!-- unfortunately, their 4.10 version -->
+        <!-- is still buggy. As an experiment, I'm using -->
+        <!-- a patched version I built locally. -->
+        <!-- (pull requests pending - L.A. -->
         <dependency>
-	  <groupId>com.lyncode</groupId>
-	  <artifactId>xoai-service-provider</artifactId>
-	  <version>4.1.0-header-patch</version>
-	</dependency>
+            <groupId>com.lyncode</groupId>
+            <artifactId>xoai-common</artifactId>
+            <version>4.1.0-header-patch</version>
+        </dependency>
+        <dependency>
+            <groupId>com.lyncode</groupId>
+            <artifactId>xoai-data-provider</artifactId>
+            <version>4.1.0-header-patch</version>
+        </dependency>
+        <dependency>
+            <groupId>com.lyncode</groupId>
+            <artifactId>xoai-service-provider</artifactId>
+            <version>4.1.0-header-patch</version>
+        </dependency>
         <!-- Added for AutoService -->
         <dependency>
             <groupId>com.google.auto.service</groupId>
@@ -470,30 +534,86 @@
         </dependency>
         <!-- For API File Upload: 1 of 2 -->
         <dependency>
-           <groupId>org.glassfish.jersey.containers</groupId>
-           <artifactId>jersey-container-servlet</artifactId>
-           <version>2.23.2</version>
-       </dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet</artifactId>
+            <version>2.23.2</version>
+        </dependency>
         <!-- For API File Upload: 2 of 2 -->
-       <dependency>
-           <groupId>org.glassfish.jersey.media</groupId>
-           <artifactId>jersey-media-multipart</artifactId>
-           <version>2.23.2</version>
-       </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-multipart</artifactId>
+            <version>2.23.2</version>
+        </dependency>
         <dependency>
             <groupId>com.mashape.unirest</groupId>
             <artifactId>unirest-java</artifactId>
             <version>1.4.9</version>
         </dependency>
+        <!-- BagIt export -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.18</version>
+        </dependency>
+        <dependency>
+            <groupId>org.duracloud</groupId>
+            <artifactId>common</artifactId>
+            <version>4.4.6</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>log4j-over-slf4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.duracloud</groupId>
+            <artifactId>storeclient</artifactId>
+            <version>4.4.6</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>log4j-over-slf4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.amazonaws</groupId>
+                    <artifactId>aws-java-sdk-sqs</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>commons-cli</groupId>
+            <artifactId>commons-cli</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <!--  Full text indexing -->
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-parsers</artifactId>
+            <version>1.19</version>
+        </dependency>
+        <!-- Named Entity Recognition -->
+        <dependency>
+            <groupId>org.apache.opennlp</groupId>
+            <artifactId>opennlp-tools</artifactId>
+            <version>1.9.1</version>
+        </dependency>
     </dependencies>
-
     <build>
-<!--        <testResources>
+        <!--        <testResources>
             <testResource>
                 <directory>${project.basedir}/src/main/resources</directory>
             </testResource>
         </testResources>-->
-<!--        <testResources>
+        <!--        <testResources>
             <testResource>
               <directory>${project.basedir}/src/test/java</directory>
               <excludes>
@@ -509,6 +629,7 @@
                 <directory>src/main/java</directory>
                 <includes>
                     <include>*.properties</include>
+                    <include>**/*.properties</include>
                     <include>**/mime.types</include>
                     <include>**/*.R</include>
                 </includes>
@@ -516,7 +637,9 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
+                    <include>**/*.sql</include>
                     <include>**/*.xml</include>
+                    <include>**/firstNames/*.*</include>
                 </includes>
             </resource>
         </resources>
@@ -553,7 +676,7 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.3</version>
                 <configuration>
-		    <attachClasses>true</attachClasses>
+                    <attachClasses>true</attachClasses>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                     <archive>
                         <manifest>
@@ -566,7 +689,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.6</version>
+                <version>3.1.1</version>
                 <executions>
                     <execution>
                         <phase>validate</phase>
@@ -591,7 +714,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.5.201505241946</version>
+                <version>${jacoco.version}</version>
                 <configuration>
                     <destfile>${basedir}/target/coverage-reports/jacoco-unit.exec</destfile>
                     <datafile>${basedir}/target/coverage-reports/jacoco-unit.exec</datafile>
@@ -618,8 +741,8 @@
                 <version>4.0.0</version>
             </plugin>
             <!-- v4.8: The truezip-maven-plugin below deletes two copies of a file that the AWS SDK bundle
-            includes called javamail.providers which breaks system emails. TODO: make our own AWS SDK without Amazon SES.
-            - bsilverstein 8/8/2017 -->
+            includes called javamail.providers which breaks system emails. - bsilverstein 8/8/2017 -->
+            <!-- Once on Eclipse Glassfish 5.1 or Payara 5.x and changing to aws-java-sdk-s3, this can be deleted. -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>truezip-maven-plugin</artifactId>
@@ -679,20 +802,20 @@
         </plugins>
     </build>
     <profiles>
-      <profile>
-        <id>dev</id>
-        <activation>
-            <!-- https://stackoverflow.com/questions/11824328/default-build-profile-for-maven -->
-            <!-- We set dev to true to developers don't have to run non-essential tests over and over. -->
-          <activeByDefault>true</activeByDefault>
-        </activation>
-        <properties>
-            <testsToExclude>edu.harvard.iq.dataverse.NonEssentialTests</testsToExclude>
-        </properties>
-      </profile>
-      <profile>
-        <id>all-unit-tests</id>
-      </profile>
-      <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
+        <profile>
+            <id>dev</id>
+            <activation>
+                <!-- https://stackoverflow.com/questions/11824328/default-build-profile-for-maven -->
+                <!-- We set dev to true to developers don't have to run non-essential tests over and over. -->
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <testsToExclude>edu.harvard.iq.dataverse.NonEssentialTests</testsToExclude>
+            </properties>
+        </profile>
+        <profile>
+            <id>all-unit-tests</id>
+        </profile>
+        <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
     </profiles>
 </project>

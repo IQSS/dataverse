@@ -6,6 +6,7 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import java.io.Serializable;
 import java.util.Comparator;
@@ -106,7 +107,7 @@ public class DatasetFieldValue implements Serializable {
             // want any issues if the value itself has #NAME in it)
             String displayValue = format
                     .replace("#NAME",  this.datasetField.getDatasetFieldType().getTitle() == null ? "" : this.datasetField.getDatasetFieldType().getTitle())
-                    .replace("#EMAIL", ResourceBundle.getBundle("Bundle").getString("dataset.email.hiddenMessage"))
+                    .replace("#EMAIL", BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
                     .replace("#VALUE", sanitizedValue);
             retVal = displayValue;
         }
@@ -114,6 +115,23 @@ public class DatasetFieldValue implements Serializable {
         return retVal;
     }
 
+    public String getUnsanitizedDisplayValue() {
+        String retVal = "";
+        if (!StringUtils.isBlank(this.getValue()) && !DatasetField.NA_VALUE.equals(this.getValue())) {
+            String format = this.datasetField.getDatasetFieldType().getDisplayFormat();
+            if (StringUtils.isBlank(format)) {
+                format = "#VALUE";
+            }           
+            String value = this.getValue();    
+            String displayValue = format
+                    .replace("#NAME",  this.datasetField.getDatasetFieldType().getTitle() == null ? "" : this.datasetField.getDatasetFieldType().getTitle())
+                    .replace("#EMAIL", BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
+                    .replace("#VALUE", value);
+            retVal = displayValue;
+        }
+        return retVal;
+    }
+    
     public int getDisplayOrder() {
         return displayOrder;
     }

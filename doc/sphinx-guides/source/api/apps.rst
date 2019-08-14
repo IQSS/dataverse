@@ -43,15 +43,21 @@ GeoConnect allows Dataverse files to be visualized on http://worldmap.harvard.ed
 
 https://github.com/IQSS/geoconnect
 
-metrics.dataverse.org
-~~~~~~~~~~~~~~~~~~~~~
+dataverse-metrics
+~~~~~~~~~~~~~~~~~
 
-metrics.dataverse.org_ aggregates metrics across multiple Dataverse installations: https://github.com/IQSS/metrics.dataverse.org
-
-.. _metrics.dataverse.org: http://metrics.dataverse.org
+dataverse-metrics aggregates and visualizes metrics across multiple Dataverse installations but can also be used with a single installation: https://github.com/IQSS/dataverse-metrics
 
 Java
 ----
+
+DVUploader
+~~~~~~~~~~~~~~~~~~~~~
+
+The open-source DVUploader tool is a stand-alone command-line Java application that uses the Dataverse API to upload files to a specified Dataset. Files can be specified by name, or the DVUploader can upload all files in a directory or recursively from a directory tree. The DVUploader can also verify that uploaded files match their local sources by comparing the local and remote fixity checksums. Source code, release 1.0.0- jar file, and documentation are available on GitHub. DVUploader's creation was supported by the Texas Digital Library.
+
+https://github.com/IQSS/dataverse-uploader
+
 
 Dataverse for Android
 ~~~~~~~~~~~~~~~~~~~~~

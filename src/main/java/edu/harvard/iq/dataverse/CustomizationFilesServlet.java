@@ -114,6 +114,11 @@ public class CustomizationFilesServlet extends HttpServlet {
             // Style (css)               
             return settingsService.getValueForKey(SettingsServiceBean.Key.StyleCustomizationFile, nonNullDefaultIfKeyNotFound);
         
+        } else if (fileTypeParam.equals(CustomizationConstants.fileTypeAnalytics)) {
+
+            // Analytics - appears in head               
+            return settingsService.getValueForKey(SettingsServiceBean.Key.WebAnalyticsCode, nonNullDefaultIfKeyNotFound);
+        
         } else if (fileTypeParam.equals(CustomizationConstants.fileTypeLogo)) {
 
             // Logo for installation - appears in header               

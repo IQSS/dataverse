@@ -6,7 +6,9 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -14,6 +16,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -56,9 +59,6 @@ public class EjbDataverseEngine {
 
     @EJB
     DataverseServiceBean dataverseService;
-
-    @EJB
-    DataverseRoleServiceBean roleService;
 
     @EJB
     DataverseRoleServiceBean rolesService;
@@ -110,7 +110,10 @@ public class EjbDataverseEngine {
     
     @EJB
     DOIDataCiteServiceBean doiDataCite;
-    
+
+    @EJB
+    FakePidProviderServiceBean fakePidProvider;
+
     @EJB
     HandlenetServiceBean handleNet;
     
@@ -131,7 +134,10 @@ public class EjbDataverseEngine {
 
     @EJB
     ExplicitGroupServiceBean explicitGroups;
-    
+
+    @EJB
+    GroupServiceBean groups;
+
     @EJB
     RoleAssigneeServiceBean roleAssignees;
     
@@ -164,6 +170,13 @@ public class EjbDataverseEngine {
     
     @EJB
     WorkflowServiceBean workflowService;
+    
+    @EJB
+    FileDownloadServiceBean fileDownloadService;
+    
+    @EJB
+    ConfirmEmailServiceBean confirmEmailService;
+    
     
     @Resource
     EJBContext ejbCtxt;
@@ -367,7 +380,12 @@ public class EjbDataverseEngine {
                 public DOIDataCiteServiceBean doiDataCite() {
                     return doiDataCite;
                 }
-                
+
+                @Override
+                public FakePidProviderServiceBean fakePidProvider() {
+                    return fakePidProvider;
+                }
+
                 @Override
                 public HandlenetServiceBean handleNet() {
                     return handleNet;
@@ -410,6 +428,11 @@ public class EjbDataverseEngine {
                 @Override
                 public ExplicitGroupServiceBean explicitGroups() {
                     return explicitGroups;
+                }
+                
+                @Override
+                public GroupServiceBean groups() {
+                    return groups;
                 }
 
                 @Override
@@ -455,6 +478,21 @@ public class EjbDataverseEngine {
                 @Override
                 public DataCaptureModuleServiceBean dataCaptureModule() {
                     return dataCaptureModule;
+                }
+                
+                @Override
+                public FileDownloadServiceBean fileDownload() {
+                    return fileDownloadService;
+                }
+                
+                @Override
+                public ConfirmEmailServiceBean confirmEmail() {
+                    return confirmEmailService;
+                }
+                
+                @Override
+                public ActionLogServiceBean actionLog() {
+                    return logSvc;
                 }
 
             };

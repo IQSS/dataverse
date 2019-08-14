@@ -31,10 +31,10 @@ Also usable for normal development and system evaluation; not intended for produ
 
 - Run image: `docker run -d -p 8083:8080 -p 8084:80 --name dv dv0` (aka - forward port 8083 locally to 8080 in the container for glassfish, and 8084 to 80 for apache); if you'd like to connect a java debugger to glassfish, use `docker run -d -p 8083:8080 -p 8084:80 -p 9010:9009 --name dv dv0`
 
-- Installation (integration test): `docker exec -it dv /opt/dv/setupIT.bash` 
-  (Note that it's possible to customize the installation by editing `conf/docker-aio/default.config` and running `docker exec -it dv /opt/dv/install.bash` but for the purposes of integration testing, the `setupIT.bash` script above works fine.)
+- Installation (integration test): `docker exec dv /opt/dv/setupIT.bash` 
+  (Note that it's possible to customize the installation by editing `conf/docker-aio/default.config` and running `docker exec dv /opt/dv/install.bash` but for the purposes of integration testing, the `setupIT.bash` script above works fine.)
 
-- update `dataverse.siteUrl` (appears only necessary for `DatasetsIT.testPrivateUrl`): `docker exec -it dv /usr/local/glassfish4/bin/asadmin create-jvm-options "-Ddataverse.siteUrl=http\://localhost\:8084"`
+- update `dataverse.siteUrl` (appears only necessary for `DatasetsIT.testPrivateUrl`): `docker exec dv /usr/local/glassfish4/bin/asadmin create-jvm-options "-Ddataverse.siteUrl=http\://localhost\:8084"` (or use the provided `seturl.bash`)
 
 #### Run integration tests: 
 
@@ -57,4 +57,4 @@ There isn't any strict requirement on the local port (8083, 8084 in this doc), t
 
 * `empty reply from server` or `Failed to connect to ::1: Cannot assign requested address` tend to indicate either that you haven't given glassfish enough time to start, or your docker setup is in an inconsistent state and should probably be restarted.
 
-* For manually fiddling around with the created dataverse, use user `dataverseAdmin` with password `admin`.
+* For manually fiddling around with the created dataverse, use user `dataverseAdmin` with password `admin1`.

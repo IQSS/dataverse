@@ -57,7 +57,9 @@ import org.hibernate.validator.constraints.NotBlank;
 	@NamedQuery( name="DataFile.removeFromDatasetVersion",
 		query="DELETE FROM FileMetadata f WHERE f.datasetVersion.id=:versionId and f.dataFile.id=:fileId"),
         @NamedQuery(name="DataFile.findDataFileByIdProtocolAuth", 
-                query="SELECT s FROM DataFile s WHERE s.identifier=:identifier AND s.protocol=:protocol AND s.authority=:authority")
+                query="SELECT s FROM DataFile s WHERE s.identifier=:identifier AND s.protocol=:protocol AND s.authority=:authority"),
+        @NamedQuery(name="DataFile.findDataFileThatReplacedId", 
+                query="SELECT s.id FROM DataFile s WHERE s.previousDataFileId=:identifier")
 })
 @Entity
 @Table(indexes = {@Index(columnList="ingeststatus")
@@ -369,6 +371,16 @@ public class DataFile extends DvObject implements Comparable {
         }
         return null;
     }
+    
+    public Long getOriginalFileSize() {
+        if (isTabularData()) {
+            DataTable dataTable = getDataTable();
+            if (dataTable != null) {
+                return dataTable.getOriginalFileSize();
+            }
+        }
+        return null;
+    }
 
     @Override
     public boolean isAncestorOf( DvObject other ) {
@@ -424,7 +436,7 @@ public class DataFile extends DvObject implements Comparable {
         return getLatestFileMetadata();
     }
     
-    private FileMetadata getLatestFileMetadata() {
+    public FileMetadata getLatestFileMetadata() {
         FileMetadata fmd = null;
 
         // for newly added or harvested, just return the one fmd
@@ -439,16 +451,43 @@ public class DataFile extends DvObject implements Comparable {
             }            
             
             // otherwise return the one with the latest version number
+            // duplicate logic in getLatestPublishedFileMetadata()
             if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
                 fmd = fileMetadata;
             } else if ((fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber())==0 )&& 
                    ( fileMetadata.getDatasetVersion().getMinorVersionNumber().compareTo( fmd.getDatasetVersion().getMinorVersionNumber()) > 0 )   ) {
                 fmd = fileMetadata;
-        }
+            }
         }
         return fmd;
     }
     
+//    //Returns null if no published version
+    public FileMetadata getLatestPublishedFileMetadata() throws UnsupportedOperationException {
+        FileMetadata fmd = null;
+        
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            // if it finds a draft, skip
+            if (fileMetadata.getDatasetVersion().getVersionState().equals(VersionState.DRAFT)) {
+                continue;
+            }            
+            
+            // otherwise return the one with the latest version number
+            // duplicate logic in getLatestFileMetadata()
+            if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
+                fmd = fileMetadata;
+            } else if ((fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber())==0 )&& 
+                   ( fileMetadata.getDatasetVersion().getMinorVersionNumber().compareTo( fmd.getDatasetVersion().getMinorVersionNumber()) > 0 )   ) {
+                fmd = fileMetadata;
+            }
+        }
+        if(fmd == null) {
+            throw new UnsupportedOperationException("No published metadata version for DataFile " + this.getId());
+        }
+        
+        return fmd;
+    }
+
     /**
      * Get property filesize, number of bytes
      * @return value of property filesize.
@@ -710,6 +749,11 @@ public class DataFile extends DvObject implements Comparable {
     @Override
     public String getDisplayName() {
        return getLatestFileMetadata().getLabel(); 
+    }
+    
+    @Override 
+    public String getCurrentName(){
+        return getLatestFileMetadata().getLabel();
     }
     
     @Override

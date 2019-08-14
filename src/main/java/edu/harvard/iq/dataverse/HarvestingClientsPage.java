@@ -23,6 +23,7 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -124,7 +125,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
         
         pageMode = PageMode.VIEW;
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, JH.localize("harvestclients.title"), JH.localize("harvestclients.toptip")));
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("harvestclients.title"), BundleUtil.getStringFromBundle("harvestclients.toptip")));
         return null; 
     }
     
@@ -216,7 +217,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
             return;
         } 
                 
-        String successMessage = JH.localize("harvestclients.actions.runharvest.success");
+        String successMessage = BundleUtil.getStringFromBundle("harvestclients.actions.runharvest.success");
         successMessage = successMessage.replace("{0}", harvestingClient.getName());
         JsfHelper.addSuccessMessage(successMessage);
         
@@ -297,7 +298,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
                 
                 //engineService.submit(new DeleteHarvestingClientCommand(dvRequestService.getDataverseRequest(), selectedClient));
                 harvestingClientService.deleteClient(selectedClient.getId());
-                JsfHelper.addInfoMessage(JH.localize("harvestclients.tab.header.action.delete.infomessage"));
+                JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("harvestclients.tab.header.action.delete.infomessage"));
                 
             //} catch (CommandException ex) {
             //    String failMessage = "Selected harvesting client cannot be deleted.";
@@ -365,7 +366,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         // from the harvesting url:
         newHarvestingClient.setArchiveUrl(makeDefaultArchiveUrl());
         // set default description - they can customize it as they see fit:
-        newHarvestingClient.setArchiveDescription(JH.localize("harvestclients.viewEditDialog.archiveDescription.default.generic"));
+        newHarvestingClient.setArchiveDescription(BundleUtil.getStringFromBundle("harvestclients.viewEditDialog.archiveDescription.default.generic"));
         
         
         // will try to save it now:
@@ -378,7 +379,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
             // NO, we no longer create timers here. It is the job of the Mother Timer!
             //dataverseTimerService.createHarvestTimer(newHarvestingClient);
             
-            String successMessage = JH.localize("harvestclients.newClientDialog.success");
+            String successMessage = BundleUtil.getStringFromBundle("harvestclients.newClientDialog.success");
             successMessage = successMessage.replace("{0}", newHarvestingClient.getName());
             JsfHelper.addSuccessMessage(successMessage);
 
@@ -486,7 +487,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
 
             input.setValid(false);
             context.addMessage(toValidate.getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestclients.newClientDialog.oaiMetadataFormat.required")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestclients.newClientDialog.oaiMetadataFormat.required")));
 
         }
     }
@@ -498,14 +499,14 @@ public class HarvestingClientsPage implements java.io.Serializable {
             if (getNewNickname().length() > 30 || (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", getNewNickname())) ) {
                 //input.setValid(false);
                 FacesContext.getCurrentInstance().addMessage(getNewClientNicknameInputField().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestclients.newClientDialog.nickname.invalid")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestclients.newClientDialog.nickname.invalid")));
                 return false;
 
                 // If it passes the regex test, check 
             } else if ( harvestingClientService.findByNickname(getNewNickname()) != null ) {
                 //input.setValid(false);
                 FacesContext.getCurrentInstance().addMessage(getNewClientNicknameInputField().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestclients.newClientDialog.nickname.alreadyused")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestclients.newClientDialog.nickname.alreadyused")));
                 return false;
             }
             return true;
@@ -513,14 +514,14 @@ public class HarvestingClientsPage implements java.io.Serializable {
         
         // Nickname field is empty:
         FacesContext.getCurrentInstance().addMessage(getNewClientNicknameInputField().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestclients.newClientDialog.nickname.required")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestclients.newClientDialog.nickname.required")));
         return false;
     }
     
     public boolean validateSelectedDataverse() {
         if (selectedDestinationDataverse == null) {
             FacesContext.getCurrentInstance().addMessage(getSelectedDataverseMenu().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestclients.newClientDialog.dataverse.required")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestclients.newClientDialog.dataverse.required")));
             return false;
         }
         return true;
@@ -579,12 +580,12 @@ public class HarvestingClientsPage implements java.io.Serializable {
             }
 
             FacesContext.getCurrentInstance().addMessage(getNewClientUrlInputField().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", getNewHarvestingUrl() + ": " + JH.localize("harvestclients.newClientDialog.url.invalid")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", getNewHarvestingUrl() + ": " + BundleUtil.getStringFromBundle("harvestclients.newClientDialog.url.invalid")));
             return false;
 
         }
         FacesContext.getCurrentInstance().addMessage(getNewClientUrlInputField().getClientId(),
-                new FacesMessage(FacesMessage.SEVERITY_ERROR, "", getNewHarvestingUrl() + ": " + JH.localize("harvestclients.newClientDialog.url.required")));
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, "", getNewHarvestingUrl() + ": " + BundleUtil.getStringFromBundle("harvestclients.newClientDialog.url.required")));
         return false;
     }
     

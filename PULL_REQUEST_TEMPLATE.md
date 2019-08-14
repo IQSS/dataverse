@@ -4,7 +4,7 @@ Welcome! New contributors should at least glance at [CONTRIBUTING.md](/CONTRIBUT
 
 ## Related Issues
 
-- connects to #ISSUE_NUMBER: ISSUE_TITLE
+- #ISSUE_NUMBER: ISSUE_TITLE
 
 ## Pull Request Checklist
 
@@ -15,7 +15,7 @@ Welcome! New contributors should at least glance at [CONTRIBUTING.md](/CONTRIBUT
 - [ ] Merged latest from "develop" [branch][] and resolved conflicts
 
 [tests]: http://guides.dataverse.org/en/latest/developers/testing.html
-[SQL updates]: https://github.com/IQSS/dataverse/tree/develop/scripts/database/upgrades
+[SQL updates]: http://guides.dataverse.org/en/latest/developers/sql-upgrade-scripts.html
 [Solr updates]: https://github.com/IQSS/dataverse/blob/develop/conf/solr/7.3.0/schema.xml
 [docs]: http://guides.dataverse.org/en/latest/developers/documentation.html
 [branch]: http://guides.dataverse.org/en/latest/developers/branching-strategy.html

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -58,6 +59,18 @@ public class DvObjectServiceBean implements java.io.Serializable {
 
     public List<DvObject> findAll() {
         return em.createNamedQuery("DvObject.findAll", DvObject.class).getResultList();
+    }
+    
+    
+    public List<DvObject> findByOwnerId(Long ownerId) {
+        return em.createNamedQuery("DvObject.findByOwnerId").setParameter("ownerId", ownerId).getResultList();
+    }
+    
+    public List<DvObject> findByAuthenticatedUserId(AuthenticatedUser user) {
+        Query query = em.createNamedQuery("DvObject.findByAuthenticatedUserId"); 
+        query.setParameter("ownerId", user.getId());
+        query.setParameter("releaseUserId", user.getId());
+        return query.getResultList();
     }
 
     // FIXME This type-by-string has to go, in favor of passing a class parameter.

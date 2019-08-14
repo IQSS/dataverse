@@ -7,13 +7,13 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:fn="http://java.sun.com/jsp/jstl/functions"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
-
     <h:head>
     </h:head>
 
     <h:body>
         <f:metadata>
             <f:viewParam name="redirectPage" value="#{LoginPage.redirectPage}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{LoginPage.init}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
@@ -63,13 +63,13 @@
                                     <ui:repeat id="credentialsContainer" value="#{LoginPage.filledCredentials}" var="fc">
                                         <div class="form-group text-left">
                                             <label class="col-sm-4 control-label" for="credValue">
-                                                #{fc.credential.title}
+                                                #{bundle[fc.credential.key]}
                                             </label>
                                             <div class="col-sm-8">
                                                 <h:inputText rendered="#{not fc.credential.secret}" value="#{fc.value}" id="credValue" styleClass="form-control"/>
                                                 <p:message rendered="#{not fc.credential.secret}" for="credValue" display="text"/>
-                                                <h:inputSecret rendered="#{fc.credential.secret}" value="#{fc.value}" id="sCredValue" styleClass="form-control"/>
-                                                <p:message rendered="#{not fc.credential.secret}" for="sCredValue" display="text"/>
+						<h:inputSecret rendered="#{fc.credential.secret}" value="#{fc.value}" id="sCredValue" styleClass="form-control" autocomplete="off"/><!-- browsers will in general not respect autocomplete="foo", but scanners will still flag it as a potential problem -->
+                                                <p:message rendered="#{fc.credential.secret}" for="sCredValue" display="text"/>
                                             </div>
                                         </div>
                                     </ui:repeat>
@@ -92,7 +92,7 @@
                                     
                                     <div class="form-group">
                                         <div class="col-sm-offset-4 col-sm-9 button-block">
-                                            <p:commandButton id="login" styleClass="btn btn-default" value="#{bundle.login}" update="@all" action="#{LoginPage.login}"/>
+                                            <p:commandButton id="login" styleClass="btn btn-default" value="#{bundle.login}" update="@form,:messagePanel" action="#{LoginPage.login}"/>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -107,8 +107,7 @@
                             <div id="remoteProvider" jsf:rendered="#{LoginPage.authProvider.id == 'shib'}">
                                 <h:form>
                                     <p class="help-block">
-                                        <span class="glyphicon glyphicon-info-sign"/>
-                                        <h:outputFormat value=" #{bundle['login.institution.blurb']} " escape="false">
+                                        <h:outputFormat value="#{bundle['login.institution.blurb']} " escape="false">
                                             <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                             <f:param value="#{systemConfig.guidesVersion}"/>
                                         </h:outputFormat>
@@ -144,33 +143,13 @@
 
                                 <script src="/resources/js/shib/idpselect_style.js" type="text/javascript" language="javascript"></script>
 
-                                <noscript>
-                                    <!-- If you need to care about non javascript browsers you will need to
-                                         generate a hyperlink to a non-js DS.
-
-                                         To build you will need:
-                                             - URL:  The base URL of the DS you use
-                                             - EI: Your entityId, URLencoded.  You can get this from the line that
-                                               this page is called with.
-                                             - RET: Your return address dlib-adidp.ucs.ed.ac.uk. Again you can get
-                                               this from the page this is called with, but beware of the
-                                               target%3Dcookie%253A5269905f bit..
-
-                                        < href=${URL}?entityID=${EI}&return=${RET}
-                                    -->
-
-                                    Your Browser does not support javascript. Please use
-                                    <!--FIXME not valid xhtml?-->
-                                    <!--<a href="http://federation.org/DS/DS?entityID=https%3A%2F%2FyourentityId.edu.edu%2Fshibboleth&return=https%3A%2F%2Fyourreturn.edu%2FShibboleth.sso%2FDS%3FSAMLDS%3D1%26target%3Dhttps%3A%2F%2Fyourreturn.edu%2F">this link</a>.-->
-                                </noscript>
                             </div>
 
                             <!--ONLY RENDER BUTTON FOR OAUTH PROVIDERS (ORCID, Google, GitHub)-->
                             <div class="form-horizontal" jsf:rendered="#{LoginPage.authProvider.OAuthProvider}">
                                 <o:form useRequestURI="true">
                                     <p class="help-block">
-                                        <span class="glyphicon glyphicon-info-sign"/>
-                                        <h:outputFormat value=" #{bundle['auth.providers.blurb']}" escape="false">
+                                        <h:outputFormat value="#{bundle['auth.providers.blurb']}" escape="false">
                                             <o:param value="#{LoginPage.authProvider.info.title}"/>
                                             <o:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                             <o:param value="#{systemConfig.guidesVersion}"/>
@@ -214,8 +193,8 @@
                                     </ui:repeat>
                                 </h:form>
                                 <div jsf:rendered="#{LoginPage.authProvider.id == 'builtin'}">
-                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/>
-                                        <h:outputFormat value=" #{bundle['auth.providers.tip']}" escape="false">
+                                    <p class="help-block">
+                                        <h:outputFormat value="#{bundle['auth.providers.tip']}" escape="false">
                                             <o:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                             <o:param value="#{systemConfig.guidesVersion}"/>
                                         </h:outputFormat>

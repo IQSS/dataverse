@@ -9,12 +9,13 @@ We encourage anyone interested in building tools that interoperate with Datavers
 How This Guide is Organized
 ---------------------------
 
-We document the Dataverse API in four sections:
+We document the Dataverse API in five sections:
 
 - :doc:`sword`: For depositing data using a standards-based approach rather than the :doc:`native-api`.
 - :doc:`search`: For searching dataverses, datasets, and files.
 - :doc:`dataaccess`: For downloading and subsetting data.
 - :doc:`native-api`: For performing most tasks that are possible in the GUI.
+- :doc:`metrics`: For query statisics about usage of a Dataverse installation.
 
 We use the term "native" to mean that the API is not based on any standard. For this reason, the :doc:`search` and :doc:`dataaccess` could also be considered "native" and in the future we may reorganize the API Guide to split the :doc:`native-api` section into "Datasets API", "Files" API, etc.
 
@@ -46,11 +47,6 @@ Rather than using a production installation of Dataverse, API users are welcome 
 Support
 -------
 
-If you are using the APIs for an installation of Dataverse hosted by your institution, you may want to reach out to the team that supports it. At the top of the Dataverse installation's home page, there should be a form you can fill out by clicking the "Support" link.
+If you are using the APIs for an installation of Dataverse hosted by your institution, you may want to reach out to the team that supports it. In the header at the top of the site, there should be a form you can fill out by clicking the "Support" link.
 
 If you are having trouble with http://demo.dataverse.org or have questions about the APIs, please feel free to reach out to the Dataverse community via https://groups.google.com/forum/#!forum/dataverse-community .
-
-Metrics
--------
-
-APIs described in this guide are shipped with the Dataverse software itself. Additional APIs are available if someone at your institution installs the "miniverse" application from https://github.com/IQSS/miniverse and gives it read only access to a production Dataverse database. http://dataverse.org/metrics is powered by miniverse.

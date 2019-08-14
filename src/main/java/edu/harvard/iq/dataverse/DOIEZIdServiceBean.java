@@ -51,22 +51,31 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public boolean alreadyExists(DvObject dvObject) throws Exception {
+        if(dvObject==null) {
+            logger.severe("Null DvObject sent to alreadyExists().");
+            return false;
+        }
+        return alreadyExists(dvObject.getGlobalId());
+    }
+    
+    @Override
+    public boolean alreadyExists(GlobalId pid) throws Exception {
         logger.log(Level.FINE,"alreadyExists");
         try {
-            HashMap<String, String> result = ezidService.getMetadata(getIdentifier(dvObject));            
+            HashMap<String, String> result = ezidService.getMetadata(pid.asString());            
             return result != null && !result.isEmpty();
             // TODO just check for HTTP status code 200/404, sadly the status code is swept under the carpet
         } catch (EZIDException e ){
             //No such identifier is treated as an exception
             //but if that is the case then we want to just return false
-            if(dvObject.getIdentifier() == null){
+            if(pid.getIdentifier() == null){
                 return false;
             }
             if (e.getLocalizedMessage().contains("no such identifier")){
                 return false;
             }
             logger.log(Level.WARNING, "alreadyExists failed");
-            logger.log(Level.WARNING, "getIdentifier(dvObject) {0}", getIdentifier(dvObject));
+            logger.log(Level.WARNING, "getIdentifier(dvObject) {0}", pid.asString());
             logger.log(Level.WARNING, "String {0}", e.toString());
             logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
             logger.log(Level.WARNING, "cause", e.getCause());
@@ -213,17 +222,21 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
     }
 
     private boolean updateIdentifierStatus(DvObject dvObject, String statusIn) {
-        logger.log(Level.FINE,"updateIdentifierStatus");
+        logger.log(Level.FINE, "updateIdentifierStatus");
         String identifier = getIdentifier(dvObject);
         Map<String, String> metadata = getUpdateMetadata(dvObject);
-        metadata.put("_status", statusIn);
-        metadata.put("_target", getTargetUrl(dvObject));
+        String objMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
+        Map<String, String> dcMetadata;
+        dcMetadata = new HashMap<>();
+        dcMetadata.put("datacite", objMetadata);
+        dcMetadata.put("_status", statusIn);
+        dcMetadata.put("_target", getTargetUrl(dvObject));
+
         try {
-            // ezID API requires HashMap, not just any map.
-            ezidService.setMetadata(identifier,
-                (metadata instanceof HashMap) ? (HashMap)metadata : new HashMap<>(metadata));
+            // ezID API requires HashMap, not just any map.            
+            ezidService.setMetadata(identifier, asHashMap(dcMetadata));
             return true;
-            
+
         } catch (EZIDException e) {
             logger.log(Level.WARNING, "modifyMetadata failed");
             logger.log(Level.WARNING, "String {0}", e.toString());
@@ -252,10 +265,15 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
         }
         String identifier = getIdentifier(dvObject);
         Map<String, String> metadata = getMetadataForCreateIndicator(dvObject);
-        metadata.put("datacite.resourcetype", "Dataset");
-        metadata.put("_status", "reserved");
+        String objMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
+        Map<String, String> dcMetadata;
+        dcMetadata = new HashMap<>();
+        dcMetadata.put("datacite", objMetadata);
+        dcMetadata.put("datacite.resourcetype", "Dataset");
+        dcMetadata.put("_status", "reserved");
+
         try {
-            String retString = ezidService.createIdentifier(identifier, asHashMap(metadata));
+            String retString = ezidService.createIdentifier(identifier, asHashMap(dcMetadata));
             logger.log(Level.FINE, "create DOI identifier retString : {0}", retString);
             return retString;
         } catch (EZIDException e) {
