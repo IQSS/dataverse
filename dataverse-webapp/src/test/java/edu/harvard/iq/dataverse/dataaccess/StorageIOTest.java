@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
+import com.google.common.io.Resources;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -29,9 +30,11 @@ public class StorageIOTest {
     @Test
     public void testGetChannel() throws IOException {
         assertEquals(null, instance.getChannel());
-        Channel c = new RandomAccessFile(getClass().getResource("/Bundle_en.properties").getPath(), "r").getChannel();
-        instance.setChannel(c);
-        assertEquals(c, instance.getChannel());
+        try (RandomAccessFile randomAccessFile = new RandomAccessFile(Resources.getResource("images/banner.png").getPath(), "r")) {
+            Channel c = randomAccessFile.getChannel();
+            instance.setChannel(c);
+            assertEquals(c, instance.getChannel());
+        }
     }
 
     @Test
