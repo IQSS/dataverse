@@ -247,7 +247,7 @@ public class Datasets extends AbstractApiBean {
     
     @GET
     @Path("/export")
-    @Produces({"application/xml", "application/json"})
+    @Produces({"application/xml", "application/json", "application/html" })
     public Response exportDataset(@QueryParam("persistentId") String persistentId, @QueryParam("exporter") String exporter, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
 
         try {
