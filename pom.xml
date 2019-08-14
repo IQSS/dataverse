@@ -606,6 +606,11 @@
             <artifactId>opennlp-tools</artifactId>
             <version>1.9.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.quartz-scheduler</groupId>
+            <artifactId>quartz</artifactId>
+            <version>2.3.1</version>
+        </dependency>
     </dependencies>
     <build>
         <!--        <testResources>

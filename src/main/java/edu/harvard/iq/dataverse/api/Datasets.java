@@ -16,10 +16,13 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.DeleteOneTimeUrlTask;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.S3BigDataUpload;
+import edu.harvard.iq.dataverse.S3BigDataUploadServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -29,6 +32,8 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -94,6 +99,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -102,14 +109,29 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.math.BigDecimal;
+import java.net.URL;
+import java.net.URLDecoder;
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.HttpMethod;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -118,6 +140,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -132,7 +156,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -148,6 +174,8 @@ import javax.ws.rs.core.UriInfo;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -194,6 +222,12 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     S3PackageImporter s3PackageImporter;
+
+    @EJB
+    S3BigDataUploadServiceBean s3BigDataUploadServiceBean;
+
+    @Context
+    protected HttpServletRequest httpRequest;
      
     @EJB
     SettingsServiceBean settingsService;
@@ -1422,6 +1456,152 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+    }
+
+    /**
+     * Get a pre-signed URL to upload data too large for add-method to S3
+     *
+     * @param idSupplied
+     * @param jsonData
+     * @return
+     */
+    @POST
+    @Path("{id}/getOneTimeUrl")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response getOneTimeUrl(@PathParam("id")String idSupplied,
+            @FormDataParam("fileName") String fileName, @FormDataParam("jsonData") String jsonData,
+            @FormDataParam("checksum") String checksum, @FormDataParam("checksumType") String checksumType,
+            @FormDataParam("contentType") String contentType){
+        // -------------------------------------
+        // (1) Get the user from the API key
+        // -------------------------------------
+        User authUser;
+        try {
+            String apiKey = httpRequest.getHeader("X-Dataverse-key");
+            if (apiKey == null) {
+                apiKey = httpRequest.getParameter("key");
+            }
+            authUser = authSvc.lookupUser(apiKey);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return error(Response.Status.FORBIDDEN, ResourceBundle.getBundle("Bundle").getString("file.addreplace"
+                    + ".error.auth"));
+        }
+        // -------------------------------------
+        // (1a) Find dataset
+        // -------------------------------------
+        Dataset dataset = null;
+        String datasetId = null;
+        try {
+            if (idSupplied.equals(":persistentId")) {
+                datasetId = httpRequest.getParameter("persistentId");
+                dataset = datasetService.findByGlobalId(datasetId);
+                logger.info("Dataset Identifier: " + dataset.getIdentifier());
+                logger.info("Dataset Id: " + dataset.getId());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return error(Response.Status.NOT_FOUND, "dataset not found");
+        }
+
+        // -------------------------------------
+        // (2) Generate pre-signed URL for uploading file to S3
+        // -------------------------------------
+        StorageIO<DataFile> dataAccess = null;
+        DataFile emptyFile = new DataFile();
+        emptyFile.setOwner(dataset);
+        try {
+            dataAccess = DataAccess.createNewStorageIO(emptyFile, "s3");
+            FileUtil.generateStorageIdentifier(emptyFile);
+            logger.info("StorageId is: " + emptyFile.getStorageIdentifier());
+        } catch (IOException e) {
+            Logger.getLogger(Files.class.getName()).warning("Failed to save the file, storage id " + emptyFile.getStorageIdentifier() + " (" + e.getMessage() + ")");
+        }
+
+        URL url = dataAccess.generateS3PreSignedUrl(emptyFile.getStorageIdentifier());
+        Timestamp creationTime = new Timestamp(System.currentTimeMillis());
+
+        // -------------------------------------
+        // (3) Save the pre-signed URL and provided JSON-Data in database
+        // -------------------------------------
+        s3BigDataUploadServiceBean.addS3BigDataUpload(url.toString(), authUser, jsonData, datasetId,
+                emptyFile.getStorageIdentifier(),
+                fileName, checksum, checksumType, contentType, creationTime);
+
+        DeleteOneTimeUrlTask task = new DeleteOneTimeUrlTask(url.toString(), 2880 * 60 * 1000,
+                s3BigDataUploadServiceBean);
+        task.schedule();
+
+        // -------------------------------------
+        // (4) Return the pre-signed URL
+        // -------------------------------------
+
+        return Response.ok().entity(url).build();
+    }
+
+    @POST
+    @Path("/notifyS3upload")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response registerFileFromS3(@FormParam("Action") String action, @FormParam("Message") String message,
+            @FormParam("TopicArn") String topic, @FormParam("Version") String version) {
+        if (message != null && message.startsWith("Storage")) {
+
+            StringBuilder response = new StringBuilder("<PublishResponse xmlns=\"http://vishnus-sns-server/\">");
+            response.append("<PublishResult>" );
+            response.append("<MessageId>" + UUID.randomUUID() + "</MessageId> ");
+            response.append("</PublishResult>");
+            response.append("<ResponseMetadata>");
+            response.append("<RequestId>" + UUID.randomUUID() + "</RequestId>");
+            response.append("</ResponseMetadata> ");
+            response.append("\n" + "    </PublishResponse>\n");
+            response.toString();
+
+            return Response.ok(response.toString()).build();
+        } else if (message != null && message.startsWith("{")) {
+
+            JSONObject messageBody = new JSONObject(message);
+            String eventType = messageBody.getJSONArray("Records").getJSONObject(0).getString("eventName");
+            String requestId = messageBody.getJSONArray("Records").getJSONObject(0).getJSONObject("responseElements")
+                    .getString("x" + "-amz-request-id");
+
+            if (eventType.equals("ObjectCreated:Put")) {
+                String storageId = messageBody.getJSONArray("Records").getJSONObject(0).getJSONObject("s3").getJSONObject("object").getString("key");
+
+                S3BigDataUpload s3BigDataUpload = s3BigDataUploadServiceBean.getS3BigDataUploadByStorageId(storageId);
+                if (s3BigDataUpload != null) {
+                    try {
+                        DataverseRequest dvRequest = createDataverseRequest(s3BigDataUpload.getUser());
+                        AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest, ingestService,
+                                datasetService, fileService, permissionService, commandEngine, systemConfig);
+
+                        Dataset dataset = datasetService.findByGlobalId(s3BigDataUpload.getDatasetId());
+
+                        OptionalFileParams optionalFileParams = new OptionalFileParams(s3BigDataUpload.getJsonData());
+
+                        addFileHelper.runAddFileS3BigData(dataset, s3BigDataUpload.getFileName(), s3BigDataUpload.getContentType(), optionalFileParams, storageId,
+                                s3BigDataUpload.getChecksumType(), s3BigDataUpload.getChecksum(),
+                                messageBody.getJSONArray("Records").getJSONObject(0).getJSONObject("s3").getJSONObject("object").getInt("size"));
+
+                    } catch (DataFileTagException e) {
+                        e.printStackTrace();
+                        return error(Response.Status.INTERNAL_SERVER_ERROR, " Error while processing request occured");
+                    }
+                }
+            }
+            StringBuilder response = new StringBuilder("<PublishResponse xmlns=\"http://vishnus-sns-server/\">");
+            response.append("<PublishResult>" );
+            response.append("<MessageId>" + requestId + "</MessageId> ");
+            response.append("</PublishResult>");
+            response.append("<ResponseMetadata>");
+            response.append("<RequestId>" + requestId + "</RequestId>");
+            response.append("</ResponseMetadata> ");
+            response.append("\n" + "    </PublishResponse>\n");
+            response.toString();
+
+            return Response.ok(response.toString()).build();
+        }
+
+        return Response.status(Response.Status.BAD_REQUEST).build();
     }
 
     /**
