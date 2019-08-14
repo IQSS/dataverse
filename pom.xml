@@ -82,6 +82,7 @@
     </repositories>
 
     <modules>
+        <module>dataverse-test-common</module>
         <module>dataverse-persistence</module>
         <module>dataverse-webapp</module>
     </modules>
@@ -147,6 +148,18 @@
                 <groupId>org.glassfish</groupId>
                 <artifactId>javax.json</artifactId>
                 <version>1.0.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.woodstox</groupId>
+                <artifactId>wstx-asl</artifactId>
+                <version>3.2.6</version>
+                <scope>runtime</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>stax</groupId>
+                        <artifactId>stax-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -303,6 +316,12 @@
             <artifactId>xoai-service-provider</artifactId>
             <version>4.1.0-header-patch</version>
         </dependency>
+        
+        <dependency>
+            <groupId>io.vavr</groupId>
+            <artifactId>vavr</artifactId>
+            <version>0.10.0</version>
+        </dependency>
     
     </dependencies>
 
@@ -359,6 +378,31 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.1.1</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${endorsed.dir}</outputDirectory>
+                            <silent>true</silent>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>javax</groupId>
+                                    <artifactId>javaee-endorsed-api</artifactId>
+                                    <version>7.0</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${jacoco.version}</version>
@@ -405,7 +449,7 @@
                         </goals>
                         <configuration>
                             <reuseForks>false</reuseForks>
-                            <groups>edu.harvard.iq.dataverse.ArquillianIntegrationTests</groups>
+                            <groups>edu.harvard.iq.dataverse.test.arquillian.ArquillianIntegrationTests</groups>
                         </configuration>
                     </execution>
                 </executions>
@@ -439,7 +483,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <testsToExclude>edu.harvard.iq.dataverse.NonEssentialTests</testsToExclude>
+                <testsToExclude>edu.harvard.iq.dataverse.test.NonEssentialTests</testsToExclude>
             </properties>
         </profile>
         <profile>

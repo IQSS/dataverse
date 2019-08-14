@@ -1,6 +1,6 @@
-package edu.harvard.iq.dataverse.arquillian.arquillianglassfishconfig;
+package edu.harvard.iq.dataverse.test.arquillian;
 
-import edu.harvard.iq.dataverse.arquillian.ParametrizedGlassfishConfCreator;
+import edu.harvard.iq.dataverse.test.arquillian.ParametrizedGlassfishConfCreator;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;

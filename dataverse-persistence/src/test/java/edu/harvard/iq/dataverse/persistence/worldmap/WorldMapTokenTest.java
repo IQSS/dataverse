@@ -6,11 +6,11 @@
 
 package edu.harvard.iq.dataverse.persistence.worldmap;
 
-import edu.harvard.iq.dataverse.NonEssentialTests;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.worldmap.TokenApplicationType;
 import edu.harvard.iq.dataverse.persistence.worldmap.WorldMapToken;
+import edu.harvard.iq.dataverse.test.NonEssentialTests;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 

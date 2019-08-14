@@ -1,6 +1,4 @@
-package edu.harvard.iq.dataverse.license;
-
-import edu.harvard.iq.dataverse.persistence.datafile.license.License;
+package edu.harvard.iq.dataverse.persistence.datafile.license;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;

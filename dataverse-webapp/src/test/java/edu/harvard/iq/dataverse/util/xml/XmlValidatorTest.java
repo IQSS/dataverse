@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.util.xml;
 
-import edu.harvard.iq.dataverse.NonEssentialTests;
+import edu.harvard.iq.dataverse.test.NonEssentialTests;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;

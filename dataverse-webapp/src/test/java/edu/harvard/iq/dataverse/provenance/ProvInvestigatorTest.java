@@ -6,7 +6,7 @@
 package edu.harvard.iq.dataverse.provenance;
 
 import com.google.gson.JsonParser;
-import edu.harvard.iq.dataverse.NonEssentialTests;
+import edu.harvard.iq.dataverse.test.NonEssentialTests;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

@@ -1,5 +1,6 @@
-package edu.harvard.iq.dataverse.arquillian;
+package edu.harvard.iq.dataverse.test.arquillian;
 
+import com.google.common.io.Resources;
 import io.vavr.control.Try;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -73,8 +74,8 @@ public class ParametrizedGlassfishConfCreator {
     private Document replaceGlassfishXmlValues(Properties properties) {
         SAXReader reader = new SAXReader();
 
-        Document document = Try.of(() -> reader
-                .read(new FileInputStream("src/test/resources-glassfish-embedded/glassfish-resources.xml")))
+        Document document = Try.of(() -> Resources.getResource("glassfish-resources.xml"))
+                .mapTry(resourcesXmlUrl -> reader.read(resourcesXmlUrl))
                 .getOrElseThrow(throwable -> new RuntimeException("Unable to read glassfish-resources.xml", throwable));
 
         List<Node> list = document.selectNodes("/resources/jdbc-connection-pool/child::*");

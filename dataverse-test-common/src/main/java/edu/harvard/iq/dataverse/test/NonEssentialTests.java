@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.test;
 
 /**
  * Tests annotated as non-essential will not be run by default on developers'
