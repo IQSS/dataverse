@@ -811,7 +811,7 @@ public class SearchServiceBean {
         }
 
         solrQuery.setQuery(query);
-        solrQuery.setParam("fl", returnField);
+        //solrQuery.setParam("fl", returnField);
         solrQuery.setParam("qt", "/select");
 
         if (null!=facets && !facets.isEmpty()) {
