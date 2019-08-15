@@ -825,15 +825,14 @@ public class DatasetPage implements java.io.Serializable {
         
         try {
             queryResponse = searchService.simpleSearch(dvRequestService.getDataverseRequest(), SearchFields.ENTITY_ID, pattern, filterQueries, facetList, 0, Integer.MAX_VALUE);
-        } catch (HttpSolrClient.RemoteSolrException ex) {
+        } catch (Exception ex) {
             logger.fine("Remote Solr Exception: " + ex.getLocalizedMessage());
             String msg = ex.getLocalizedMessage(); 
             if (msg.contains(SearchFields.FILE_DELETED)) {
                 fileDeletedFlagNotIndexed = true; 
+            } else {
+                return resultIds;
             }
-        } catch (Exception ex) {
-            logger.warning("Solr exception: " + ex.getLocalizedMessage());
-            return resultIds; 
         }
         
         if (fileDeletedFlagNotIndexed) {
