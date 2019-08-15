@@ -763,56 +763,41 @@ public class DatasetPage implements java.io.Serializable {
     public Set<Long> getFileIdsInVersionFromSolr(Long datasetVersionId, String pattern) {
         logger.fine("searching for file ids, in solr");
         
-        SolrQuery solrQuery = new SolrQuery();
-        
         List<String> queryStrings = new ArrayList<>();
+        List<String> filterQueries = new ArrayList<>();
+        List<String> facetList = new ArrayList<>();
         
         // Main query: 
-        if (!StringUtil.isEmpty(pattern)) {
-            // searching on the file name ("label") and description:
-            queryStrings.add(SearchUtil.constructQuery(SearchFields.FILE_NAME, pattern + "*"));
-            queryStrings.add(SearchUtil.constructQuery(SearchFields.FILE_DESCRIPTION, pattern + "*"));
-
-            solrQuery.setQuery(SearchUtil.constructQuery(queryStrings, false));
-        } else {
-            // ... or "everything", if no search pattern is supplied: 
+        if (StringUtil.isEmpty(pattern)) {
+            //if no search pattern is supplied, 
             // (presumably, one or more facet fields is supplied, below)
-            solrQuery.setQuery("*");
+            pattern="*";
         }
         
-        
-        // ask for facets: 
-        
-        solrQuery.setParam("facet", "true");
-        /**
-         * @todo: do we need facet.query?
-         */
-        solrQuery.setParam("facet.query", "*");
-        
-        solrQuery.addFacetField(SearchFields.FILE_TYPE);
-        solrQuery.addFacetField(SearchFields.ACCESS);
-        solrQuery.addFacetField(SearchFields.FILE_TAG);
+        facetList.add(SearchFields.FILE_TYPE);
+        facetList.add(SearchFields.ACCESS);
+        facetList.add(SearchFields.FILE_TAG);
         
         
         // Extra filter queries from the facets, if specified: 
         
         if (!StringUtil.isEmpty(fileTypeFacet)) {
-            solrQuery.addFilterQuery(SearchFields.FILE_TYPE + ":" + fileTypeFacet);
+            filterQueries.add(SearchFields.FILE_TYPE + ":" + fileTypeFacet);
         } 
         
         if (!StringUtil.isEmpty(fileAccessFacet)) {
-            solrQuery.addFilterQuery(SearchFields.ACCESS + ":" + fileAccessFacet);
+            filterQueries.add(SearchFields.ACCESS + ":" + fileAccessFacet);
         }
         
         if (!StringUtil.isEmpty(fileTagsFacet)) {
-            solrQuery.addFilterQuery(SearchFields.FILE_TAG + ":" + fileTagsFacet);
+            filterQueries.add(SearchFields.FILE_TAG + ":" + fileTagsFacet);
         }        
         
         // Additional filter queries, to restrict the results to files in this version only:
         
-        solrQuery.addFilterQuery(SearchFields.TYPE + ":" + SearchConstants.FILES);
+        filterQueries.add(SearchFields.TYPE + ":" + SearchConstants.FILES);
         if (!workingVersion.isDraft()) {
-            solrQuery.addFilterQuery(SearchFields.DATASET_VERSION_ID + ":" + datasetVersionId);
+            filterQueries.add(SearchFields.DATASET_VERSION_ID + ":" + datasetVersionId);
         } else {
             // To avoid indexing duplicate solr documents, we don't index ALL of the files
             // in a draft version - only the new files added to the draft and/or the
@@ -822,13 +807,13 @@ public class DatasetPage implements java.io.Serializable {
             // above. Instead we are searching for all the indexed files in the dataset, 
             // except the ones indexed with the "fileDeleted" flag - that indicates that 
             // they are no longer in the draft:
-            solrQuery.addFilterQuery(SearchFields.PARENT_ID + ":" + workingVersion.getDataset().getId());
+            filterQueries.add(SearchFields.PARENT_ID + ":" + workingVersion.getDataset().getId());
             // Note that we don't want to use the query "fileDeleted: false" - that 
             // would only find the documents in which the fileDeleted boolean field 
             // is actually present, AND set to false. Instead we are searching with 
             // "!(fileDeleted: true)" - that will find ALL the records, except for 
             // the ones where the value is explicitly set to true.
-            solrQuery.addFilterQuery("!(" + SearchFields.FILE_DELETED + ":" + true + ")");
+            filterQueries.add("!(" + SearchFields.FILE_DELETED + ":" + true + ")");
             
         }
 
@@ -843,7 +828,7 @@ public class DatasetPage implements java.io.Serializable {
         Set<Long> resultIds = new HashSet<>();
         
         try {
-            queryResponse = getSolrServer().query(solrQuery);
+            queryResponse = searchService.simpleSearch(dvRequestService.getDataverseRequest(), SearchFields.ENTITY_ID, pattern, filterQueries, facetList, 0, Integer.MAX_VALUE);
         } catch (HttpSolrClient.RemoteSolrException ex) {
             logger.fine("Remote Solr Exception: " + ex.getLocalizedMessage());
             String msg = ex.getLocalizedMessage(); 
@@ -857,11 +842,11 @@ public class DatasetPage implements java.io.Serializable {
         
         if (fileDeletedFlagNotIndexed) {
             // try again, without the flag:
-            solrQuery.removeFilterQuery("!(" + SearchFields.FILE_DELETED + ":" + true + ")");
+            filterQueries.remove("!(" + SearchFields.FILE_DELETED + ":" + true + ")");
             logger.fine("Solr query (trying again): " + solrQuery);
 
             try {
-                queryResponse = getSolrServer().query(solrQuery);
+                queryResponse = searchService.simpleSearch(dvRequestService.getDataverseRequest(), SearchFields.ENTITY_ID, pattern, filterQueries, facetList, 0, Integer.MAX_VALUE);
             } catch (Exception ex) {
                 logger.warning("Caught a Solr exception (again!): " + ex.getLocalizedMessage());
                 return resultIds;

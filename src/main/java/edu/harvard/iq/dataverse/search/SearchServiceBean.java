@@ -789,7 +789,7 @@ public class SearchServiceBean {
         return solrQueryResponse;
     }
 
-    public SolrDocumentList simpleSearch(DataverseRequest dataverseRequest, String returnField, String query, List<String> filterQueries, int paginationStart, int numResultsPerPage) throws SearchException {
+    public QueryResponse simpleSearch(DataverseRequest dataverseRequest, String returnField, String query, List<String> filterQueries, List<String> facets, int paginationStart, int numResultsPerPage) throws SearchException {
 
         if (paginationStart < 0) {
             throw new IllegalArgumentException("paginationStart must be 0 or greater");
@@ -814,6 +814,19 @@ public class SearchServiceBean {
         solrQuery.setParam("fl", returnField);
         solrQuery.setParam("qt", "/select");
 
+        if (null!=facets && !facets.isEmpty()) {
+            // ask for facets:
+
+            solrQuery.setParam("facet", "true");
+            /**
+             * @todo: do we need facet.query?
+             */
+            solrQuery.setParam("facet.query", "*");
+            for (String facet : facets) {
+                solrQuery.addFacetField(facet);
+            }
+        }
+        
         for (String filterQuery : filterQueries) {
             solrQuery.addFilterQuery(filterQuery);
         }
@@ -850,7 +863,7 @@ public class SearchServiceBean {
             throw new SearchException("Internal Dataverse Search Engine Error " + BundleUtil.getStringFromBundle("dataverse.results.solrIsDown"), ex);
         }
 
-        return queryResponse.getResults();
+        return queryResponse;
     }
 
     
