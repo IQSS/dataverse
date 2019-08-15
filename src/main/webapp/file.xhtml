@@ -581,14 +581,6 @@
                             <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                         </ui:include>
                     </p:dialog>
-                    <p:dialog id="downloadDataSubsetPopup" styleClass="smallPopUp" header="#{bundle['file.download.subset.header']}" widgetVar="downloadDataSubsetPopup"
-                               modal="true">
-                        <div class="form-inline clearfix" jsf:rendered="#{!(empty FilePage.fileMetadata) and FilePage.fileMetadata.dataFile.tabularData}">
-                            <ui:include src="/subset/gui_subset.xhtml">
-                                <ui:param name="dataFile" value="#{FilePage.fileMetadata.dataFile}"/>
-                             </ui:include>
-                        </div>
-                    </p:dialog>
                     <p:dialog id="downloadPackagePopup" styleClass="smallPopUp" header="#{bundle['packageDownload.title']}" widgetVar="downloadPackagePopup" modal="true">
                          <ui:include src="package-download-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>

@@ -684,9 +684,6 @@ public class GuestbookResponseServiceBean {
             initCustomQuestions(guestbookResponse, dataset);
         }
         guestbookResponse.setDownloadtype("Download");
-        if(downloadFormat.toLowerCase().equals("subset")){
-            guestbookResponse.setDownloadtype("Subset");
-        }
         if(downloadFormat.toLowerCase().equals("explore")){
             /**
              * TODO: Investigate this "if downloadFormat=explore" and think
