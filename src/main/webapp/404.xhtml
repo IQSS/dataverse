@@ -6,7 +6,6 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:o="http://omnifaces.org/ui"      
       xmlns:jsf="http://xmlns.jcp.org/jsf">
-
     <h:head>
     </h:head>
 
@@ -32,13 +31,20 @@
                         </h:outputFormat>   
                     </o:form>                  
                 </div>                   
-                <div class="row text-center" jsf:rendered="#{!widgetWrapper.widgetView}">
+                <div class="row" jsf:rendered="#{!widgetWrapper.widgetView}" style="margin-top:3em;">
                     <o:form useRequestURI="true">
-                        <input id="search404" type="text" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" size="28" value="" placeholder="#{bundle['header.search.title']}"
-                               style="font-size:1em;margin-right:1em;" onkeypress="if (event.keyCode == 13) {window.location = '/?q=' + document.getElementById('search404').value; return false;}" />
-                        <a href="#" id="search404button" class="btn btn-default" onclick="window.location = '/?q=' + document.getElementById('search404').value; return false;">
-                            <span class="glyphicon glyphicon-search"/> #{bundle.find}
-                        </a>
+                        <p:focus for="search404"/>
+                        <div class="col-sm-6 col-sm-offset-3">
+                            <div class="input-group">
+                                <input jsf:id="search404" type="text" class="form-control" size="28" value="" placeholder="#{bundle['header.search.title']}"
+                                       style="font-size:1em;" onkeypress="if (event.keyCode == 13) {window.location = '/dataverse/#{dataverseServiceBean.findRootDataverse().alias}/?q=' + this.value; return false;}"/>
+                                <span class="input-group-btn">
+                                    <button id="search404button" class="btn btn-default" onclick="window.location = '/dataverse/#{dataverseServiceBean.findRootDataverse().alias}/?q=' + this.parentNode.previousElementSibling.value; return false;" type="button">
+                                        <span class="glyphicon glyphicon-search"/> #{bundle.find}
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
                     </o:form>
                 </div>
             </ui:define>

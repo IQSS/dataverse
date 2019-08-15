@@ -11,6 +11,9 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GuestbookResponse;
 import java.util.List;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
+import javax.faces.context.FacesContext;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.UriInfo;
 
 /**
  *
@@ -49,7 +52,10 @@ public class DownloadInstance {
     private DataverseRequestServiceBean dataverseRequestService;
 
     private GuestbookResponse gbr;
-      
+    
+    private UriInfo requestUriInfo;
+    
+    private HttpHeaders requestHttpHeaders;      
 
     public DownloadInstance() {
         
@@ -83,6 +89,22 @@ public class DownloadInstance {
         this.conversionParamValue = paramValue;
     }
 
+    public void setRequestUriInfo(UriInfo uri) {
+        this.requestUriInfo = uri;
+    }
+    
+    public UriInfo getRequestUriInfo() {
+        return requestUriInfo;
+    }
+    
+    public HttpHeaders getRequestHttpHeaders() {
+        return requestHttpHeaders;
+    }
+
+    public void setRequestHttpHeaders(HttpHeaders requestHttpHeaders) {
+        this.requestHttpHeaders = requestHttpHeaders;
+    }
+    
     // Move this method into the DownloadInfo instead -- ?
     public Boolean checkIfServiceSupportedAndSetConverter(String serviceArg, String serviceArgValue) {
         if (downloadInfo == null || serviceArg == null) {
@@ -93,12 +115,21 @@ public class DownloadInstance {
 
         for (OptionalAccessService dataService : servicesAvailable) {
             if (dataService != null) {
-                // Special case for the subsetting parameter (variables=<LIST>):
                 if (serviceArg.equals("variables")) {
+                    // Special case for the subsetting parameter (variables=<LIST>):
                     if ("subset".equals(dataService.getServiceName())) {
                         conversionParam = "subset";
                         conversionParamValue = serviceArgValue; 
                         return true; 
+                    }
+                } else if (serviceArg.equals("noVarHeader")) {
+                    // Another special case available for tabular ("subsettable") data files - 
+                    // "do not add variable header" flag:
+                    if ("true".equalsIgnoreCase(serviceArgValue) || "1".equalsIgnoreCase(serviceArgValue)) {
+                        if ("subset".equals(dataService.getServiceName())) {
+                            this.conversionParam = serviceArg;
+                            return true;
+                        }
                     }
                 } else if ("imageThumb".equals(serviceArg)) {
                     if ("true".equals(serviceArgValue)) {

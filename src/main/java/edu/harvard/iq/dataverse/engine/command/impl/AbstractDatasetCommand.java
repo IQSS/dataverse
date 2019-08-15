@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 import javax.validation.ConstraintViolation;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 
 /**
  *
@@ -130,6 +131,10 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
         while (dsfItSort.hasNext()) {
             dsfItSort.next().setValueDisplayOrder();
         }
+        Iterator<DatasetField> dsfItTrim = dsv.getDatasetFields().iterator();
+        while (dsfItTrim.hasNext()) {
+            dsfItTrim.next().trimTrailingSpaces();
+        }
     }
 
     /**
@@ -154,6 +159,16 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
         if (!theDataset.isIdentifierRegistered()) {
             GlobalIdServiceBean globalIdServiceBean = GlobalIdServiceBean.getBean(theDataset.getProtocol(), ctxt);
             if ( globalIdServiceBean != null ) {
+                if (globalIdServiceBean instanceof FakePidProviderServiceBean) {
+                    try {
+                        globalIdServiceBean.createIdentifier(theDataset);
+                    } catch (Throwable ex) {
+                        logger.warning("Problem running createIdentifier for FakePidProvider: " + ex);
+                    }
+                    theDataset.setGlobalIdCreateTime(getTimestamp());
+                    theDataset.setIdentifierRegistered(true);
+                    return;
+                }
                 try {
                     if (globalIdServiceBean.alreadyExists(theDataset)) {
                         int attempts = 0;

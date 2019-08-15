@@ -1,0 +1,357 @@
+
+<style>
+    /* Custom CSS for the custom homepage... */
+    .lite-header {font-weight: normal;}
+    .heavy-rule {border: 1px solid #DDD;}
+    .spacer-rule {border:0;margin-top:0;}
+    .activity-rule {width:85%;margin-left:30px;}
+    div.hmpg-action-block {padding-top:1em;}
+    .btn-harvard { 
+      color: #A51C30;
+      background: #FFFFFF;
+      font-weight: bold;
+    }
+    .btn-harvard:hover, 
+    .btn-harvard:focus, 
+    .btn-harvard:active, 
+    .btn-harvard.active, 
+    .open .dropdown-toggle.btn-harvard { 
+      color: #7F000A;
+      background: #FFFFFF;
+      font-weight: bold;
+    }
+    .btn-harvard span.glyphicon {margin-right:0;}
+
+    div.search-widget {padding-bottom: 2em;}
+    
+    @media (min-width: 768px) {
+        #dataversesBySubject {-webkit-column-count: 3; -moz-column-count: 3; column-count: 3; overflow: hidden; -webkit-column-break-inside: avoid; page-break-inside: avoid; break-inside: avoid; break-inside: avoid-column;}
+
+        #journals {-webkit-column-count: 1; -moz-column-count: 1; column-count: 1; overflow: hidden;}
+        #researchers {-webkit-column-count: 2; -moz-column-count: 2; column-count: 2; overflow: hidden;}
+        #journals div.hmpg-recent-block, #researchers div.hmpg-recent-block {-webkit-column-break-inside: avoid; page-break-inside: avoid; break-inside: avoid; break-inside: avoid-column;}
+
+    }
+    #browseBySubject p.browse-subjects {display:inline-block; width:100%; padding:0 2px;}
+    #browseBySubject p.browse-subjects a {color: #C55B28;}
+    #browseBySubject p.browse-subjects a:focus, #browseBySubject p.browse-subjects a:hover {color: #9F3502;}
+
+    div.hmpg-recent-col p.placeholder {display:inline-block;}
+    div.hmpg-recent-col div.hmpg-recent-block {border-bottom:1px solid #DDD;margin-bottom:12px;}
+    
+    /* NOTE: REMOVED THUMBNAILS
+    div.hmpg-recent-col div.col-xs-2.hmpg-recent-thumb {width: 48px !important;height:48px;padding: 0 !important;}
+    div.hmpg-recent-col div.hmpg-recent-thumb img {max-height:48px;max-width:48px;}
+    div.hmpg-recent-col div.hmpg-recent-thumb span {font-size:38px;}
+    */
+
+    div.activity-label {line-height: 19px;margin-top: 10px;margin-bottom: 10px;}
+</style>
+
+    <!-- ACTIONS -->
+    <div class="row hmpg-action-block">
+        <div class="col-sm-6 col-xs-12">
+            <div class="h4 lite-header">Deposit and share your data. Get academic credit.</div>
+            <p class="text-muted margin-bottom">Harvard Dataverse is a repository for research data. Deposit data and code here.</p>
+            
+            <p class="margin-bottom-half">
+                <span id="headAllTimeAllDatasetsValue" class="h4 lite-header"></span> <span class="text-muted">datasets</span>
+                &nbsp;&nbsp;
+                <span id="headAllTimeAllDownloadsValue" class="h4 lite-header"></span> <span class="text-muted">downloads</span>
+            </p>
+
+            <a class="btn btn-default btn-harvard margin-top margin-bottom" href="/dataset.xhtml?ownerId=1">
+                Add a dataset <span class="glyphicon glyphicon-plus text-muted"></span>
+            </a>
+        </div>
+        <div class="col-sm-6 col-xs-12">
+            <div class="h4 lite-header">Organize datasets and gather metrics in your own repository.</div>
+            <p class="text-muted margin-bottom">A dataverse is a container for all your datasets, files, and metadata.</p>
+            
+            <p class="margin-bottom-half">
+                <span id="headAllTimeAllDataversesValue" class="h4 lite-header"></span> <span class="text-muted">dataverses</span>
+            </p>
+
+            <a class="btn btn-default btn-harvard margin-top margin-bottom" href="/dataverse.xhtml?ownerId=1">
+                Add a dataverse <span class="glyphicon glyphicon-plus text-muted"></span>
+            </a>
+        </div>
+    </div>
+
+    <hr class="heavy-rule"/>
+
+    <!-- SEARCH + BROWSE + RECENT -->
+    <div class="row hmpg-browse-block">
+        
+        <!-- SEARCH -->
+        <!-- 
+        NOTE: The alias of the root dataverse will need to be configured in this URL 
+        -->
+        <div class="col-xs-12">
+            <div class="h4 lite-header margin-bottom">Find data across research fields, preview metadata, and download files</div>
+            <div class="row">
+                <div class="col-md-5 col-sm-6 col-xs-11">
+                    <div class="search-widget input-group">
+                        <input id="inputDataverseSearch" class="form-control" type="text" placeholder="" onkeydown="if (event.keyCode == 13) document.getElementById('btnDataverseSearch').click();">
+                        <span class="input-group-btn">
+                            <button id="btnDataverseSearch" class="btn btn-default" type="button" onclick="window.location = '/dataverse/root?q=' + document.getElementById('inputDataverseSearch').value;return false;"><span class="glyphicon glyphicon-search"></span> Find</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- BROWSE SUBJECT -->
+        <div id="browseBySubject" class="col-xs-12">
+            <p class="text-muted margin-bottom">Browse by subject</p>
+            <div class="row margin-bottom">
+                <!-- SUBJECTS -->
+                <div id="dataversesBySubject" class="col-xs-12">
+                </div>
+                
+                <!-- VIEW ALL -->
+                <!-- 
+                NOTE: The alias of the root dataverse will need to be configured in this URL 
+                -->
+                <div class="col-xs-12 margin-top">
+                    <p class="browse-subjects small text-muted"><a href= "/dataverse/root">ALL DATA</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- RECENT CATEGORY -->
+        <div id="recentActivity" class="col-xs-12">
+            <div class="row">
+                <div class="col-lg-4 col-xs-12 hmpg-recent-col">
+                    <div class="h4 lite-header margin-bottom">Datasets from journal dataverses</div>
+
+                    <hr class="col-xs-11 no-margin-top"/>
+
+                    <!-- JOURNAL RESULTS -->
+                    <div id="journals" class="row col-xs-12"><p class="text-muted">Loading...</p></div>
+
+                    <!-- VIEW ALL -->
+                    <!-- 
+                    NOTE: The alias of the root dataverse will need to be configured in this URL 
+                    -->
+                    <div class="row col-xs-12 hidden-lg">
+                        <p class="small text-muted"><a href="/dataverse/root?q=%28categoryOfDataverse%3A%22Journal%22+OR+dvCategory%3A%22Journal%22%29&types=datasets%3Adataverses&sort=dateSort">ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                    </div>
+                </div>
+
+                <hr class="col-xs-12 hidden-lg spacer-rule" />
+
+                <div class="col-lg-8 col-xs-12 hmpg-recent-col">
+                    <div class="h4 lite-header margin-bottom">Datasets from other dataverses</div>
+
+                    <hr class="col-xs-11 no-margin-top"/>
+
+                    <!-- RESEARCHERS RESULTS -->
+                    <div id="researchers" class="row col-xs-12"><p class="placeholder text-muted">Loading...</p></div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-4 col-xs-12 hmpg-recent-col">
+                    <!-- VIEW ALL -->
+                    <!-- 
+                    NOTE: The alias of the root dataverse will need to be configured in this URL 
+                    -->
+                    <div class="row col-xs-12 hidden-md hidden-sm hidden-xs margin-top">
+                        <p class="small text-muted"><a href="/dataverse/root?q=%28categoryOfDataverse%3A%22Journal%22+OR+dvCategory%3A%22Journal%22%29&types=datasets%3Adataverses&sort=dateSort">ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                    </div>
+                </div>
+                <div class="col-lg-8 col-xs-12 hmpg-recent-col">
+                    <!-- VIEW ALL -->
+                    <!-- 
+                    NOTE: The alias of the root dataverse will need to be configured in this URL 
+                    -->
+                    <div class="row col-xs-12 margin-top">
+                        <p class="small text-muted"><a href= "/dataverse/root">ALL RECENT ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr/>
+
+    <!-- ACTIVITY -->
+    <div class="row hmpg-activity-block">
+        <div class="col-xs-12">
+            <div class="h4 lite-header margin-bottom">Activity</div>
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-6 col-xs-12">
+                <div class="col-xs-12 row">
+                    <div class="col-xs-4 highlightBold">Datasets</div>
+                    <div class="col-xs-4 highlightBold">All Activity</div>
+                    <div class="col-xs-4 highlightBold">Past 30 Days</div>
+                </div>
+                <div class="col-xs-12 row">
+                    <div class="col-xs-4 activity-label">Total</div>
+                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeAllDatasetsValue"><span class="text-muted">...</span></div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysAllDatasetsValue"><span class="text-muted">...</span></div>
+                </div>
+                <div class="col-xs-12 row">
+                    <div class="col-xs-4 activity-label">Deposited</div>
+                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeDepositedDatasetsValue"><span class="text-muted">...</span></div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysDepositedDatasetsValue"><span class="text-muted">...</span></div>
+                </div>
+                <div class="col-xs-12 row">
+                    <div class="col-xs-4 activity-label">Harvested</div>
+                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeHarvestedDatasetsValue"><span class="text-muted">...</span></div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysHarvestedDatasetsValue"><span class="text-muted">...</span></div>
+                </div>
+            </div>
+
+            <hr class="col-sm-12 hidden-md hidden-lg activity-rule" />
+
+            <div class="col-md-6 col-xs-12">
+                <div class="col-xs-12 row">
+                    <div class="col-xs-4 highlightBold">Files</div>
+                    <div class="col-xs-4 highlightBold">All Activity</div>
+                    <div class="col-xs-4 highlightBold">Past 30 Days</div>
+                </div>
+                <div class="col-xs-12 row">
+                    <div class="col-xs-4 activity-label">Downloaded</div>
+                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeAllDownloadsValue"><span class="text-muted">...</span></div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysAllDownloadsValue"><span class="text-muted">...</span></div>
+                </div>
+                <div class="col-xs-12 row">
+                    <div class="col-xs-4 activity-label">Deposited</div>
+                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeDepositedFilesValue"><span class="text-muted">...</span></div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysDepositedFilesValue"><span class="text-muted">...</span></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <hr class="heavy-rule"/>
+
+    <!-- OTHER LINKS -->
+    <div class="row hmpg-other-block">
+        <div class="col-xs-12">
+            <div class="h4 lite-header margin-bottom">Looking for other online repositories at Harvard?</div>
+            <div class="row">
+                <div class="col-lg-4 col-xs-12">
+                    <p class="text-muted"><a href="https://library.harvard.edu/services-tools/dash" target="_blank">Harvard DASH central, open-access repository</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                </div>
+                <div class="col-lg-4 col-xs-12">
+                    <p class="text-muted"><a href="https://library.harvard.edu/services-tools/harvard-library-apis-datasets" target="_blank">Other data at Harvard</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script type="text/javascript">
+//<![CDATA[
+
+    //switch baseUrl to point to a different server than the local box
+    var baseUrl = ""; 
+
+    // NOTE: REMOVED THUMBNAILS
+    // var thumbBaseURL = baseUrl + "/api/datasets/:persistentId/thumbnail" + "?persistentId=";
+    var metricBaseUrl = baseUrl + "/api/info/metrics/";
+    var simpleCatSearch = baseUrl + "/api/search?q=*&type=dataset&sort=dateSort&order=desc&fq=categoryOfDataverse:";
+
+    function writeRecentDatasetsInDataverses(fqString, resultCount, elm) {
+        $.get(simpleCatSearch + fqString + "&per_page=" + resultCount, function(jData) {
+            var resultHtml = "";
+            jData.data.items.forEach(function(item){
+                var options = { year: 'numeric', month: 'short', day: 'numeric' };
+                var date = new Date(item.published_at).toLocaleString('en-US', options);
+                resultHtml += "<div class=\"hmpg-recent-block clearfix\">";
+                // NOTE: REMOVED THUMBNAILS
+                // resultHtml += "<div class=\"col-xs-2 text-center hmpg-recent-thumb\"><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">";
+                // resultHtml += "<object data=\"" + thumbBaseURL + item.global_id + "\" type=\"image/png\"/><span class=\"icon-dataset\"></span></object>";
+                // resultHtml += "</a></div>";
+                // NOTE: REMOVED THUMBNAILS... in next line, change grid layout class to `col-xs-9 col-md-10`
+                resultHtml += "<div class=\"col-xs-12 hmpg-recent-metadata\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">" + item.name + "</a></p><p class=\"small text-muted\"><a href=\"/dataverse/" + item.identifier_of_dataverse + "\" class=\"highlightBold\">" + item.name_of_dataverse + "</a> " + date + "</p></div>";
+                resultHtml += "</div>";
+            });
+            document.getElementById(elm).innerHTML = resultHtml;
+        });
+    }
+    
+    //For metrics that return simple json with a count
+    //Can take a single element or an array of elements
+    function queryMetricSimple(metricRelPath, month, elm) {
+        $.get(metricBaseUrl + metricRelPath + month, function(jData) {
+            var resultCount = jData.data.count;
+            if(Array.isArray(elm)) {
+                elm.forEach(function(e) {
+                    document.getElementById(e).innerHTML = resultCount.toLocaleString('en');
+                });
+            } else {
+                document.getElementById(elm).innerHTML = resultCount.toLocaleString('en');
+            }
+        });
+    }
+    
+    function queryMetricSearch(metricRelPath, month) {
+        $.get(metricBaseUrl + metricRelPath + month, function(jData) {
+            var resultCount = jData.data.count;
+            var roundedDatasetCount = Math.floor(resultCount / 100) * 100;
+            var dynamicSearchPlaceholder = "Search over " + roundedDatasetCount.toLocaleString('en') + " datasets...";
+            $("#inputDataverseSearch").attr({"placeholder" : dynamicSearchPlaceholder});
+        });
+    }
+    
+    function querySubjectDataverseDataset(elm) {
+        var dvArray = [];
+        var fullArray = [];
+        $.get(metricBaseUrl + "dataverses/bySubject", function(jData) {
+            jData.data.forEach(function(item) {
+                if(item.subject !== "N/A" && item.subject !== "Other") {
+                    dvArray.push([item.subject, item.count]);
+                }
+            });
+            $.get(metricBaseUrl + "datasets/bySubject?dataLocation=all", function(jData) {
+                var resultHtml = "";
+                jData.data.forEach(function(item) {
+                    if(item.subject !== "N/A" && item.subject !== "Other") {
+                        var dvCount = 0;
+                        for (var dvi = 0; dvi < dvArray.length; dvi++) {
+                            if(item.subject === dvArray[dvi][0]) {
+                                dvCount = dvArray[dvi][1];
+                                break;
+                            }
+                        }
+                        fullArray.push([item.subject, (item.count + dvCount -1).toLocaleString('en')]); //subtract 1 to remove root dv from counts
+                    }
+                });
+                fullArray.sort();
+                fullArray.forEach(function(subject){
+                    // NOTE: The alias of the root dataverse will need to be configured in this URL 
+                    resultHtml += "<p class=\"browse-subjects\"><a href=\"/dataverse/root?q=&fq0=subject_ss%3A%22" + subject[0] + "%22&types=dataverses%3Adatasets&sort=dateSort&order=desc\">" + subject[0] + "</a> <span class=\"text-muted\">" + subject[1] + "</span></p>";
+                });
+                document.getElementById(elm).innerHTML = resultHtml;
+            });
+        });
+    }
+
+    queryMetricSimple("datasets", "?dataLocation=all", ["headAllTimeAllDatasetsValue", "activityAllTimeAllDatasetsValue"]);
+    queryMetricSimple("downloads", "", ["headAllTimeAllDownloadsValue", "activityAllTimeAllDownloadsValue"]);
+    queryMetricSimple("dataverses", "", "headAllTimeAllDataversesValue");
+
+    writeRecentDatasetsInDataverses("(Journal)" , 3, "journals");
+    writeRecentDatasetsInDataverses("(\"Research+Project\"%20OR%20Researcher%20OR%20\"Research+Group\")" , 6, "researchers");
+    
+    queryMetricSimple("datasets/pastDays", "/30?dataLocation=all", "activity30DaysAllDatasetsValue");
+    queryMetricSimple("datasets", "?dataLocation=local", "activityAllTimeDepositedDatasetsValue");
+    queryMetricSimple("datasets/pastDays", "/30?dataLocation=local", "activity30DaysDepositedDatasetsValue");
+    queryMetricSimple("datasets", "?dataLocation=remote", "activityAllTimeHarvestedDatasetsValue");
+    queryMetricSimple("datasets/pastDays", "/30?dataLocation=remote", "activity30DaysHarvestedDatasetsValue");
+
+    queryMetricSimple("downloads/pastDays", "/30", "activity30DaysAllDownloadsValue");
+    queryMetricSimple("files", "", "activityAllTimeDepositedFilesValue");
+    queryMetricSimple("files/pastDays", "/30", "activity30DaysDepositedFilesValue");
+
+    querySubjectDataverseDataset("dataversesBySubject");
+    queryMetricSearch("datasets", "?dataLocation=all");
+//]]>
+</script>

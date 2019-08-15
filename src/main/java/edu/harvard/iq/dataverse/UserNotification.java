@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.DateUtil;
+
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -25,7 +27,7 @@ import javax.persistence.Transient;
 
 public class UserNotification implements Serializable {
     public enum Type {
-        ASSIGNROLE, REVOKEROLE, CREATEDV, CREATEDS, CREATEACC, MAPLAYERUPDATED, MAPLAYERDELETEFAILED, SUBMITTEDDS, RETURNEDDS, PUBLISHEDDS, REQUESTFILEACCESS, GRANTFILEACCESS, REJECTFILEACCESS, FILESYSTEMIMPORT, CHECKSUMIMPORT, CHECKSUMFAIL, CONFIRMEMAIL
+        ASSIGNROLE, REVOKEROLE, CREATEDV, CREATEDS, CREATEACC, MAPLAYERUPDATED, MAPLAYERDELETEFAILED, SUBMITTEDDS, RETURNEDDS, PUBLISHEDDS, REQUESTFILEACCESS, GRANTFILEACCESS, REJECTFILEACCESS, FILESYSTEMIMPORT, CHECKSUMIMPORT, CHECKSUMFAIL, CONFIRMEMAIL, APIGENERATED
     };
     
     private static final long serialVersionUID = 1L;
@@ -37,6 +39,9 @@ public class UserNotification implements Serializable {
     @ManyToOne
     @JoinColumn( nullable = false )
     private AuthenticatedUser user;
+    @ManyToOne
+    @JoinColumn( nullable = true )
+    private AuthenticatedUser requestor;
     private Timestamp sendDate;
     private boolean readNotification;
     
@@ -67,6 +72,14 @@ public class UserNotification implements Serializable {
 
     public void setUser(AuthenticatedUser user) {
         this.user = user;
+    }
+        
+    public AuthenticatedUser getRequestor() {
+        return requestor;
+    }
+
+    public void setRequestor(AuthenticatedUser requestor) {
+        this.requestor = requestor;
     }
 
     public String getSendDate() {
@@ -135,5 +148,9 @@ public class UserNotification implements Serializable {
 
     public void setRoleString(String roleString) {
         this.roleString = roleString;
+    }
+
+    public String getLocaleSendDate() {
+        return DateUtil.formatDate(sendDate);
     }
 }

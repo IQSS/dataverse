@@ -9,7 +9,7 @@
     <!-- input text start -->
     <span id="pre-input-#{dsf.datasetFieldType.name}" class="pre-input-tag"/>
 
-    <p:inputText value="#{dsfv.valueForEdit}" id="inputText" tabindex="#{block.index+1}"
+    <p:inputText value="#{dsfv.valueForEdit}" id="inputText"
                  styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
                  rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary
                              and (dsfv.datasetField.datasetFieldType.fieldType == 'TEXT'
@@ -17,16 +17,15 @@
                              or dsfv.datasetField.datasetFieldType.fieldType == 'FLOAT'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'URL'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'DATE'
-                             or dsfv.datasetField.datasetFieldType.fieldType == 'EMAIL'
-                             )}"/>
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'EMAIL')}"/>
 
-    <p:watermark for="inputText" value="#{dsfv.datasetField.datasetFieldType.watermark}"></p:watermark>
+    <p:watermark for="inputText" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
 
-    <p:inputTextarea value="#{dsfv.valueForEdit}" id="description" tabindex="#{block.index+1}"
+    <p:inputTextarea value="#{dsfv.valueForEdit}" id="description"
                      rows="5" cols="60" styleClass="form-control"
-                     rendered="#{dsfv.datasetField.datasetFieldType.fieldType == 'TEXTBOX'}" />
+                     rendered="#{dsfv.datasetField.datasetFieldType.fieldType == 'TEXTBOX'}"/>
 
-    <p:watermark for="description" value="#{dsfv.datasetField.datasetFieldType.watermark}"></p:watermark>
+    <p:watermark for="description" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
 
     <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{dsfvIndex eq 0 and !empty dsfv.datasetField.validationMessage}">
         <span class="ui-message-error-detail">#{dsfv.datasetField.validationMessage}</span>
@@ -38,7 +37,7 @@
 
     <!-- This button / script is for replication data for the title field and is client side only -->
     <ui:fragment rendered="#{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE' }">
-        <input type="button" id="replicationDataButton" tabindex="#{block.index+1}"
+        <input type="button" id="replicationDataButton"
                class="btn btn-default" value="#{bundle['dataset.AddReplication']}"
                onclick="replicationFor();return false;"/>
 

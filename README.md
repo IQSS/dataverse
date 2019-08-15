@@ -1,7 +1,7 @@
 Dataverse&#174; 
 ===============
 
-Dataverse is an [open source][] web application for sharing, citing, analyzing, and preserving research data (developed by the [Data Science and Products team](http://www.iq.harvard.edu/people/people/data-science-products) at the [Institute for Quantitative Social Science](http://iq.harvard.edu/) and the [Dataverse community][]).
+Dataverse is an [open source][] software platform for sharing, finding, citing, and preserving research data (developed by the [Data Science and Products team](http://www.iq.harvard.edu/people/people/data-science-products) at the [Institute for Quantitative Social Science](http://iq.harvard.edu/) and the [Dataverse community][]).
 
 [dataverse.org][] is our home on the web and shows a map of Dataverse installations around the world, a list of [features][], [integrations][] that have been made possible through [REST APIs][], our development [roadmap][], and more.
 
@@ -16,8 +16,6 @@ We love contributors! Please see our [Contributing Guide][] for ways you can hel
 Dataverse is a trademark of President and Fellows of Harvard College and is registered in the United States.
 
 [![Dataverse Project logo](src/main/webapp/resources/images/dataverseproject_logo.jpg?raw=true "Dataverse Project")](http://dataverse.org)
-
-[![Waffle.io - Columns and their card count](https://badge.waffle.io/IQSS/dataverse.svg?columns=all)](https://waffle.io/IQSS/dataverse)
 
 [![Build Status](https://travis-ci.org/IQSS/dataverse.svg?branch=develop)](https://travis-ci.org/IQSS/dataverse) [![Coverage Status](https://coveralls.io/repos/IQSS/dataverse/badge.svg?branch=develop&service=github)](https://coveralls.io/github/IQSS/dataverse?branch=develop)
 

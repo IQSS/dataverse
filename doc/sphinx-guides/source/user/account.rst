@@ -142,7 +142,11 @@ You can also convert your Dataverse account to use authentication provided by Gi
 My Data
 -------
 
-The My Data section of your account page displays a listing of all the dataverses, datasets, and files you have either created, uploaded or that you have access to edit. You are able to filter through all the dataverses, datasets, and files listed there using the filter box. You may also use the facets on the left side to only view a specific Publication Status or Role.
+The My Data section of your account page displays a listing of all the dataverses, datasets, and files you have either created, uploaded or that you have a role assigned on. If you see unexpected dataverses or datasets in your My Data page, it might be because someone has assigned your account a role on those dataverses or datasets. For example, some institutions automatically assign the "File Downloader" role on their datasets to all accounts using their institutional login.
+
+
+You are able to filter through all the dataverses, datasets, and files listed on your My Data page using the filter box. You may also use the facets on the left side to only view a specific Publication Status or Role.
+
 
 Notifications
 -------------

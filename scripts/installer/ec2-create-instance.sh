@@ -1,24 +1,34 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # For docs, see the "Deployment" page in the Dev Guide.
 
-SUGGESTED_REPO_URL='https://github.com/IQSS/dataverse.git'
-SUGGESTED_BRANCH='develop'
+# repo and branch defaults
+REPO_URL='https://github.com/IQSS/dataverse.git'
+BRANCH='develop'
+PEM_DEFAULT=${HOME}
 
 usage() {
-  echo "Usage: $0 -r $REPO_URL -b $SUGGESTED_BRANCH" 1>&2
+  echo "Usage: $0 -b <branch> -r <repo> -p <pem_dir> -g <group_vars>" 1>&2
+  echo "default branch is develop"
+  echo "default repo is https://github.com/IQSS/dataverse"
+  echo "default .pem location is ${HOME}"
+  echo "example group_vars may be retrieved from https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/defaults/main.yml"
   exit 1
 }
 
-REPO_URL=$SUGGESTED_REPO_URL
-
-while getopts ":r:b:" o; do
+while getopts ":r:b:g:p:" o; do
   case "${o}" in
   r)
     REPO_URL=${OPTARG}
     ;;
   b)
-    BRANCH_NAME=${OPTARG}
+    BRANCH=${OPTARG}
+    ;;
+  g)
+    GRPVRS=${OPTARG}
+    ;;
+  p)
+    PEM_DIR=${OPTARG}
     ;;
   *)
     usage
@@ -26,20 +36,36 @@ while getopts ":r:b:" o; do
   esac
 done
 
+# test for user-supplied conf files
+if [ ! -z "$GRPVRS" ]; then
+   GVFILE=$(basename "$GRPVRS")
+   GVARG="-e @$GVFILE"
+   echo "using $GRPVRS for extra vars"
+fi
+
+if [ ! -z "$REPO_URL" ]; then
+   GVARG+=" -e dataverse_repo=$REPO_URL"
+   echo "using $REPO_URL"
+fi
+
+if [ ! -z "$BRANCH" ]; then
+   GVARG+=" -e dataverse_branch=$BRANCH"
+   echo "building $BRANCH"
+fi
+
+if [ -z "$PEM_DIR" ]; then
+   PEM_DIR="$PEM_DEFAULT"
+   echo "using $PEM_DIR"
+fi
+
 AWS_CLI_VERSION=$(aws --version)
 if [[ "$?" -ne 0 ]]; then
   echo 'The "aws" program could not be executed. Is it in your $PATH?'
   exit 1
 fi
 
-if [ "$BRANCH_NAME" = "" ]; then
-  echo "No branch name provided. You could try adding \"-b $SUGGESTED_BRANCH\" or other branches listed at $SUGGESTED_REPO_URL"
-  usage
-  exit 1
-fi
-
-if [[ $(git ls-remote --heads $REPO_URL $BRANCH_NAME | wc -l) -eq 0 ]]; then
-  echo "Branch \"$BRANCH_NAME\" does not exist at $REPO_URL"
+if [[ $(git ls-remote --heads $REPO_URL $BRANCH | wc -l) -eq 0 ]]; then
+  echo "Branch \"$BRANCH\" does not exist at $REPO_URL"
   usage
   exit 1
 fi
@@ -58,9 +84,9 @@ fi
 RANDOM_STRING="$(uuidgen | cut -c-8)"
 KEY_NAME="key-$USER-$RANDOM_STRING"
 
-PRIVATE_KEY=$(aws ec2 create-key-pair --key-name $KEY_NAME --query 'KeyMaterial' --output text)
+PRIVATE_KEY=$(aws ec2 create-key-pair --key-name $PEM_DIR/$KEY_NAME --query 'KeyMaterial' --output text)
 if [[ $PRIVATE_KEY == '-----BEGIN RSA PRIVATE KEY-----'* ]]; then
-  PEM_FILE="$KEY_NAME.pem"
+  PEM_FILE="$PEM_DIR/$KEY_NAME.pem"
   printf -- "$PRIVATE_KEY" >$PEM_FILE
   chmod 400 $PEM_FILE
   echo "Your newly created private key file is \"$PEM_FILE\". Keep it secret. Keep it safe."
@@ -81,8 +107,10 @@ AMI_ID='ami-9887c6e7'
 SIZE='t2.medium'
 echo "Creating EC2 instance"
 # TODO: Add some error checking for "ec2 run-instances".
-INSTANCE_ID=$(aws ec2 run-instances --image-id $AMI_ID --security-groups $SECURITY_GROUP --count 1 --instance-type $SIZE --key-name $KEY_NAME --query 'Instances[0].InstanceId' --block-device-mappings '[ { "DeviceName": "/dev/sda1", "Ebs": { "DeleteOnTermination": true } } ]' | tr -d \")
+INSTANCE_ID=$(aws ec2 run-instances --image-id $AMI_ID --security-groups $SECURITY_GROUP --count 1 --instance-type $SIZE --key-name $PEM_DIR/$KEY_NAME --query 'Instances[0].InstanceId' --block-device-mappings '[ { "DeviceName": "/dev/sda1", "Ebs": { "DeleteOnTermination": true } } ]' | tr -d \")
 echo "Instance ID: "$INSTANCE_ID
+echo "giving instance 30 seconds to wake up..."
+sleep 30
 echo "End creating EC2 instance"
 
 PUBLIC_DNS=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[*].Instances[*].[PublicDnsName]" --output text)
@@ -92,16 +120,22 @@ USER_AT_HOST="centos@${PUBLIC_DNS}"
 echo "New instance created with ID \"$INSTANCE_ID\". To ssh into it:"
 echo "ssh -i $PEM_FILE $USER_AT_HOST"
 
-echo "Please wait at least 15 minutes while the branch \"$BRANCH_NAME\" from $REPO_URL is being deployed."
+echo "Please wait at least 15 minutes while the branch \"$BRANCH\" from $REPO_URL is being deployed."
+
+if [ ! -z "$GRPVRS" ]; then
+   scp -i $PEM_FILE -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' -o 'ConnectTimeout=300' $GRPVRS $USER_AT_HOST:$GVFILE
+fi
 
 # epel-release is installed first to ensure the latest ansible is installed after
 # TODO: Add some error checking for this ssh command.
 ssh -T -i $PEM_FILE -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' -o 'ConnectTimeout=300' $USER_AT_HOST <<EOF
 sudo yum -y install epel-release
-sudo yum -y install git nano ansible
+sudo yum -y install https://releases.ansible.com/ansible/rpm/release/epel-7-x86_64/ansible-2.7.9-1.el7.ans.noarch.rpm
+sudo yum -y install git nano
 git clone https://github.com/IQSS/dataverse-ansible.git dataverse
 export ANSIBLE_ROLES_PATH=.
-ansible-playbook -i dataverse/inventory dataverse/dataverse.pb --connection=local --extra-vars "dataverse_branch=$BRANCH_NAME dataverse_repo=$REPO_URL"
+echo $extra_vars
+ansible-playbook -v -i dataverse/inventory dataverse/dataverse.pb --connection=local $GVARG
 EOF
 
 # Port 8080 has been added because Ansible puts a redirect in place
@@ -110,6 +144,6 @@ EOF
 CLICKABLE_LINK="http://${PUBLIC_DNS}:8080"
 echo "To ssh into the new instance:"
 echo "ssh -i $PEM_FILE $USER_AT_HOST"
-echo "Branch \"$BRANCH_NAME\" from $REPO_URL has been deployed to $CLICKABLE_LINK"
+echo "Branch \"$BRANCH\" from $REPO_URL has been deployed to $CLICKABLE_LINK"
 echo "When you are done, please terminate your instance with:"
 echo "aws ec2 terminate-instances --instance-ids $INSTANCE_ID"

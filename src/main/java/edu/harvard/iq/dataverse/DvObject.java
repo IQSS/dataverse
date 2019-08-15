@@ -29,7 +29,11 @@ import javax.persistence.*;
             query = "SELECT o FROM DvObject o, AlternativePersistentIdentifier a  WHERE o.id = a.dvObject.id and a.identifier=:identifier and a.authority=:authority and a.protocol=:protocol and o.dtype=:dtype"),
 
     @NamedQuery(name = "DvObject.findByProtocolIdentifierAuthority",
-            query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol")
+            query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol"),
+    @NamedQuery(name = "DvObject.findByOwnerId", 
+                query = "SELECT o FROM DvObject o WHERE o.owner.id=:ownerId"),
+    @NamedQuery(name = "DvObject.findByAuthenticatedUserId", 
+                query = "SELECT o FROM DvObject o WHERE o.creator.id=:ownerId or o.releaseUser.id=:releaseUserId")
 })
 @Entity
 // Inheritance strategy "JOINED" will create 4 db tables - 
@@ -356,6 +360,8 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     }
     
     public abstract String getDisplayName();
+    
+    public abstract String getCurrentName();
     
     // helper method used to mimic instanceof on JSF pge
     public boolean isInstanceofDataverse() {

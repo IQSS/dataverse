@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -52,6 +53,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -296,6 +298,22 @@ public class AuthenticationServiceBean {
             return em.createNamedQuery("AuthenticatedUser.findByIdentifier", AuthenticatedUser.class)
                     .setParameter("identifier", identifier)
                     .getSingleResult();
+        } catch ( NoResultException nre ) {
+            return null;
+        }
+    }
+    
+    public AuthenticatedUser getAuthenticatedUserWithProvider( String identifier ) {
+        try {
+            AuthenticatedUser authenticatedUser = em.createNamedQuery("AuthenticatedUser.findByIdentifier", AuthenticatedUser.class)
+                    .setParameter("identifier", identifier)
+                    .getSingleResult();
+            AuthenticatedUserLookup aul = em.createNamedQuery("AuthenticatedUserLookup.findByAuthUser", AuthenticatedUserLookup.class)
+                    .setParameter("authUser", authenticatedUser)
+                    .getSingleResult();
+            authenticatedUser.setAuthProviderId(aul.getAuthenticationProviderId());
+            
+            return authenticatedUser;
         } catch ( NoResultException nre ) {
             return null;
         }
@@ -781,11 +799,12 @@ public class AuthenticationServiceBean {
 
         AuthenticationRequest authReq = new AuthenticationRequest();
         /**
-         * @todo Should this really be coming from a bundle like this? Added
-         * because that's what BuiltinAuthenticationProvider does.
+         * @todo Should the credential key really be a Bundle key?
+         * BuiltinAuthenticationProvider.KEY_USERNAME_OR_EMAIL, for example, is
+         * "login.builtin.credential.usernameOrEmail" as of this writing.
          */
-        authReq.putCredential(BundleUtil.getStringFromBundle("login.builtin.credential.usernameOrEmail"), username);
-        authReq.putCredential(BundleUtil.getStringFromBundle("login.builtin.credential.password"), password);
+        authReq.putCredential(BuiltinAuthenticationProvider.KEY_USERNAME_OR_EMAIL, username);
+        authReq.putCredential(BuiltinAuthenticationProvider.KEY_PASSWORD, password);
         /**
          * @todo Should probably set IP address here.
          */
@@ -869,6 +888,12 @@ public class AuthenticationServiceBean {
                 github.getId(),
                 google.getId()
         );
+    }
+    
+    public List <WorkflowComment> getWorkflowCommentsByAuthenticatedUser(AuthenticatedUser user){ 
+        Query query = em.createQuery("SELECT wc FROM WorkflowComment wc WHERE wc.authenticatedUser.id = :auid");
+        query.setParameter("auid", user.getId());       
+        return query.getResultList();
     }
 
 }

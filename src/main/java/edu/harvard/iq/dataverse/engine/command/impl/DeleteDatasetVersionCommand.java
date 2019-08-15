@@ -27,7 +27,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
 
     private static final Logger logger = Logger.getLogger(DeleteDatasetVersionCommand.class.getCanonicalName());
 
-    private final Dataset doomed;
+    private Dataset doomed;
 
     public DeleteDatasetVersionCommand(DataverseRequest aRequest, Dataset dataset) {
         super(aRequest, dataset);
@@ -37,8 +37,8 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         ctxt.permissions().checkEditDatasetLock(doomed, getRequest(), this);
-
-        // if you are deleting a dataset that only has 1 draft, we are actually destroying the dataset
+        doomed = ctxt.em().find(Dataset.class, doomed.getId());
+        // if you are deleting a dataset that only has 1 version, we are actually destroying the dataset
         if (doomed.getVersions().size() == 1) {
             ctxt.engine().submit(new DestroyDatasetCommand(doomed, getRequest()));
         } else {

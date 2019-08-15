@@ -18,7 +18,6 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.AbstractCreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -129,6 +128,7 @@ public class AddReplaceFileHelper{
     // -----------------------------------
     private User user;
     private DatasetVersion workingVersion;
+    private DatasetVersion clone;
     List<DataFile> initialFileList; 
     List<DataFile> finalFileList;
     
@@ -411,6 +411,184 @@ public class AddReplaceFileHelper{
        
         return runAddReplacePhase2();
         
+    }
+
+    public boolean runAddFileS3BigData(Dataset dataset, String filename, String contentType,
+            OptionalFileParams optionalFileParams, String storageId, String checksumType, String checksum,
+            int fileSize) {
+        this.currentOperation = FILE_ADD_OPERATION;
+
+        if (!step_001_loadDataset(dataset)) {
+            return false;
+        }
+
+         boolean phase1Success = runAddFileS3BigDataPhase1(dataset, filename, contentType, optionalFileParams,
+                 storageId, checksumType, checksum, fileSize);
+
+
+        if (!phase1Success) {
+            return false;
+        }
+
+        return runAddFileS3BigDataPhase2();
+    }
+
+
+
+    private boolean runAddFileS3BigDataPhase1(Dataset dataset, String filename, String contentType,
+            OptionalFileParams optionalFileParams, String storageId, String checksumType, String checksum,
+            int fileSize) {
+
+        msgt("step_001_loadDataset");
+        if (!this.step_001_loadDataset(dataset)){
+            return false;
+        }
+
+        msgt("step_010_VerifyUserAndPermissions");
+        if (!this.step_010_VerifyUserAndPermissions()){
+            return false;
+
+        }
+
+        msgt("step_020_loadNewFile");
+        if (!this.step_020_loadNewFileBigDataS3(filename, contentType)){
+            return false;
+        }
+
+        msgt("step_030_createNewFilesViaIngestBigDataS3");
+        if (!this.step_030_createNewFilesViaIngestBigDataS3(storageId, checksumType, checksum, fileSize)) {
+            return false;
+        }
+
+        msgt("step_050_checkForConstraintViolations");
+        if (!this.step_050_checkForConstraintViolations()){
+            return false;
+        }
+
+        msgt("step_055_loadOptionalFileParams");
+        if (!this.step_055_loadOptionalFileParams(optionalFileParams)){
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean step_020_loadNewFileBigDataS3(String fileName, String fileContentType){
+
+        if (this.hasError()){
+            return false;
+        }
+
+        if (fileName == null){
+            this.addErrorSevere(getBundleErr("filename_undetermined"));
+            return false;
+
+        }
+
+        if (fileContentType == null){
+            this.addErrorSevere(getBundleErr("file_content_type_undetermined"));
+            return false;
+
+        }
+
+        newFileName = fileName;
+        newFileContentType = fileContentType;
+
+        return true;
+    }
+
+    private boolean step_030_createNewFilesViaIngestBigDataS3(String storageId, String checksumType, String checksum,
+            int fileSize) {
+        if (this.hasError()){
+            return false;
+        }
+
+        // Load the working version of the Dataset
+        workingVersion = dataset.getEditVersion();
+
+        try {
+            initialFileList = FileUtil.createDataFilesWithoutTempFile(this.newFileName, this.newFileContentType,
+                    storageId, checksumType, checksum, fileSize);
+
+        } catch (Exception ex) {
+            if (!Strings.isNullOrEmpty(ex.getMessage())) {
+                this.addErrorSevere(getBundleErr("ingest_create_file_err") + " " + ex.getMessage());
+            } else {
+                this.addErrorSevere(getBundleErr("ingest_create_file_err"));
+            }
+            logger.severe(ex.toString());
+            this.runMajorCleanup();
+            return false;
+        }
+
+        if (initialFileList.isEmpty()){
+            this.addErrorSevere(getBundleErr("initial_file_list_empty"));
+            this.runMajorCleanup();
+            return false;
+        }
+
+        if (this.step_040_auto_checkForDuplicates()){
+            return true;
+        }
+
+
+        return false;
+    }
+
+    private boolean runAddFileS3BigDataPhase2() {
+
+        if (this.hasError()){
+            return false;   // possible to have errors already...
+        }
+
+        if ((finalFileList ==  null)||(finalFileList.isEmpty())){
+            addError(getBundleErr("phase2_S3BigData called_early_no_new_files"));
+            return false;
+        }
+
+        msgt("step_060_addFilesViaIngestServiceS3BigData");
+        if (!this.step_060_addFilesViaIngestServiceS3BigData()){
+            return false;
+
+        }
+
+        msgt("step_070_run_update_dataset_command");
+        if (!this.step_070_run_update_dataset_command()){
+                return false;
+        }
+
+        msgt("step_090_notifyUser");
+        if (!this.step_090_notifyUser()){
+            return false;
+        }
+
+
+        return true;
+    }
+
+    private boolean step_060_addFilesViaIngestServiceS3BigData() {
+        if (this.hasError()){
+            return false;
+        }
+
+        if (finalFileList.isEmpty()){
+            this.addErrorSevere(getBundleErr("final_file_list_empty"));
+            return false;
+        }
+
+        int nFiles = finalFileList.size();
+        finalFileList = ingestService.addFileToDatasetS3BigData(workingVersion, finalFileList);
+
+        if (nFiles != finalFileList.size()) {
+            if (nFiles == 1) {
+                addError("Failed to save the content of the uploaded file.");
+            } else {
+                addError("Failed to save the content of at least one of the uploaded files.");
+            }
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -829,9 +1007,9 @@ public class AddReplaceFileHelper{
             throw new NullPointerException("msgName cannot be null");
         }
         if (isErr){        
-            return ResourceBundle.getBundle("Bundle").getString("file.addreplace.error." + msgName);
+            return BundleUtil.getStringFromBundle("file.addreplace.error." + msgName);
         }else{
-            return ResourceBundle.getBundle("Bundle").getString("file.addreplace.success." + msgName);
+            return BundleUtil.getStringFromBundle("file.addreplace.success." + msgName);
         }
        
     }
@@ -946,7 +1124,7 @@ public class AddReplaceFileHelper{
     /**
      * Optional: old file to replace
      * 
-     * @param oldFile
+     * @param
      * @return 
      */
     private boolean step_005_loadFileToReplaceById(Long dataFileId){
@@ -1042,7 +1220,7 @@ public class AddReplaceFileHelper{
 
         // Load the working version of the Dataset
         workingVersion = dataset.getEditVersion();
-                
+        clone =   workingVersion.cloneDatasetVersion();
         try {
             initialFileList = FileUtil.createDataFiles(workingVersion,
                     this.newFileInputStream,
@@ -1439,7 +1617,7 @@ public class AddReplaceFileHelper{
         }
 
         Command<Dataset> update_cmd;
-        update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest);
+        update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, clone);
         ((UpdateDatasetVersionCommand) update_cmd).setValidateLenient(true);  
         
         try {            

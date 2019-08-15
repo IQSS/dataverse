@@ -10,6 +10,21 @@ services:
     container_name: dcmsrv
     volumes:
       - hold:/hold
+  rsalsrv:
+    build:
+      context: .
+      dockerfile: rsalsrv.dockerfile
+    container_name: rsalsrv
+#    image: rsalrepo_rsal
+    volumes:
+      - hold:/hold
+      - ./:/mnt
+    environment:
+      DV_HOST: http://dvsrv:8080
+      DV_APIKEY: burrito
+    ports:
+      - "8889:80"
+      - "873:873"
   dvsrv:
     build:
       context: .
@@ -17,6 +32,7 @@ services:
     container_name: dvsrv
     volumes:
       - hold:/hold
+      - ./:/mnt
     ports:
       - "8083:8080"
       - "8084:80"

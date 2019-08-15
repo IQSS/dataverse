@@ -25,19 +25,14 @@ import java.io.FileReader;
 import java.util.logging.*;
 import java.util.*;
 
-import javax.inject.Inject;
-
-
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang.StringUtils;
 
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
@@ -51,8 +46,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 
 /**
@@ -99,15 +92,15 @@ public class XLSXFileReader extends TabularDataFileReader {
         try {
             processSheet(stream, dataTable, firstPassWriter);
         } catch (Exception ex) {
-            throw new IOException("Could not parse Excel/XLSX spreadsheet. "+ex.getMessage());
+            throw new IOException(BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.parse" , Arrays.asList(ex.getMessage())));
         }
 
         if (dataTable.getCaseQuantity() == null || dataTable.getCaseQuantity().intValue() < 1) {
             String errorMessage; 
             if (dataTable.getVarQuantity() == null || dataTable.getVarQuantity().intValue() < 1) {
-                errorMessage = "No rows of data found in the Excel (XLSX) file.";
+                errorMessage = BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.norows");
             } else {
-                errorMessage = "Only one row of data (column name header?) detected in the Excel (XLSX) file.";
+                errorMessage = BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.onlyonerow");
             }
             throw new IOException(errorMessage);
         }
@@ -132,12 +125,11 @@ public class XLSXFileReader extends TabularDataFileReader {
             valueTokens = line.split("" + delimiterChar, -2);
 
             if (valueTokens == null) {
-                throw new IOException("Failed to read line " + (lineCounter + 1) + " during the second pass.");
+                throw new IOException(BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.failed" , Arrays.asList(Integer.toString(lineCounter + 1))));
             }
 
             if (valueTokens.length != varQnty) {
-                throw new IOException("Reading mismatch, line " + (lineCounter + 1) + " during the second pass: "
-                        + varQnty + " delimited values expected, " + valueTokens.length + " found.");
+                throw new IOException(BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.mismatch" , Arrays.asList(Integer.toString(lineCounter + 1),Integer.toString(varQnty),Integer.toString(valueTokens.length))));
             }
         
             for (int i = 0; i < varQnty; i++) {
@@ -203,7 +195,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         finalWriter.close();
         
         if (dataTable.getCaseQuantity().intValue() != lineCounter) {
-            throw new IOException("Mismatch between line counts in first and final passes!");
+            throw new IOException(BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.linecount"));
         }
         
         dataTable.setUnf("UNF:6:NOTCALCULATED");
@@ -367,21 +359,43 @@ public class XLSXFileReader extends TabularDataFileReader {
             cellContents = "";
         }
 
+        /* Works from 1-702 columns. Could be made recursive to work beyond that*/
         private int getColumnCount(String columnTag) {
             int count = -1;
             if (columnTag.length() == 1 && columnTag.matches("[A-Z]")) {
                 count = columnTag.charAt(0) - 'A';
             } else {
-                dbglog.warning("Unsupported column index tag: "+columnTag);
+                if (columnTag.length() == 2) {
+                    int c1 = columnTag.charAt(0) - 'A';
+                    int c2 = columnTag.charAt(1) - 'A';
+                    if (c1 >= 0 && c1 < 26 && c2 >= 0 && c2 < 26) {
+                        dbglog.fine(columnTag + ": " + ((c1 + 1) * 26 + c2));
+                        return ((c1 + 1) * 26 + c2);
+                    } else {
+                        dbglog.warning("Unsupported column index tag: " + columnTag);
+                    }
+                } else {
+                    dbglog.warning("Unsupported column index tag: " + columnTag);
+                }
             }
             
             return count;
         }
-        
+        /* Supports A-Z and AA-ZZ (0-701 column count/position) */
         private String getColumnLetterTag(int columnCount) {
             if (columnCount < 0 || columnCount > 25) {
-                dbglog.warning("Multi-letter column codes not yet supported.");
-                return null; 
+                if(columnCount >25 && columnCount < 702) { //AA-ZZ
+                    int code1 = 'A' + columnCount/26 -1;
+                    int code2 = 'A' + columnCount%26;
+                    char[] letterTag = new char[2]; 
+                    letterTag[0] = (char)code1;
+                    letterTag[1] = (char)code2;
+                    dbglog.fine(columnCount + ": " + new String(letterTag));
+                    return new String(letterTag);
+                } else {
+                    dbglog.warning("3+ letter column codes not yet supported.");
+                    return null;
+                }
             }
             int letterCode = 'A' + columnCount;
             char[] letterTag = new char[1]; 

@@ -5,9 +5,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:p="http://primefaces.org/ui">
-
   <h:head>
-
   </h:head>
 
   <h:body>
@@ -23,7 +21,8 @@
                     <f:viewParam name="versionId" value="#{DatasetPage.versionId}"/>
                     <f:viewParam name="persistentId" value="#{DatasetPage.persistentId}"/>
                 </ui:remove>
-                    <f:viewAction action="#{RolePermissionHelperPage.init}" />
+                <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
+                <f:viewAction action="#{RolePermissionHelperPage.init}" />
           </f:metadata>
           <div>
         

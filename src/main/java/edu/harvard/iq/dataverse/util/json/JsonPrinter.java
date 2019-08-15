@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileTag;
@@ -41,21 +40,11 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Set;
+
+import java.util.*;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import java.util.Date;
-import java.util.List;
-import java.util.TreeSet;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.EnumSet;
-import java.util.LinkedList;
-import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -76,14 +65,15 @@ public class JsonPrinter {
 
     private static final Logger logger = Logger.getLogger(JsonPrinter.class.getCanonicalName());
 
-    static SettingsServiceBean settingsService;
+    static SettingsServiceBean settingsService = null;
 
-    public JsonPrinter(SettingsServiceBean settingsService) {
-        this.settingsService = settingsService;
+    // Passed to DatasetFieldWalker so it can check the :ExcludeEmailFromExport setting
+    public static void setSettingsService(SettingsServiceBean ssb) {
+            settingsService = ssb;
     }
 
     public JsonPrinter() {
-        this(null);
+   
     }
 
     public static final BriefJsonPrinter brief = new BriefJsonPrinter();
@@ -106,22 +96,23 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(AuthenticatedUser authenticatedUser) {
-        return jsonObjectBuilder()
-                .add("id", authenticatedUser.getId())
-                .add("identifier", authenticatedUser.getIdentifier())
-                .add("displayName", authenticatedUser.getDisplayInfo().getTitle())
-                .add("firstName", authenticatedUser.getFirstName())
-                .add("lastName", authenticatedUser.getLastName())
-                .add("email", authenticatedUser.getEmail())
-                .add("superuser", authenticatedUser.isSuperuser())
-                .add("affiliation", authenticatedUser.getAffiliation())
-                .add("position", authenticatedUser.getPosition())
-                .add("persistentUserId", authenticatedUser.getAuthenticatedUserLookup().getPersistentUserId())
-                .add("emailLastConfirmed", authenticatedUser.getEmailConfirmed())
-                .add("createdTime", authenticatedUser.getCreatedTime())
-                .add("lastLoginTime", authenticatedUser.getLastLoginTime())
-                .add("lastApiUseTime", authenticatedUser.getLastApiUseTime())
-                .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
+        NullSafeJsonBuilder builder = jsonObjectBuilder()
+            .add("id", authenticatedUser.getId())
+            .add("identifier", authenticatedUser.getIdentifier())
+            .add("displayName", authenticatedUser.getDisplayInfo().getTitle())
+            .add("firstName", authenticatedUser.getFirstName())
+            .add("lastName", authenticatedUser.getLastName())
+            .add("email", authenticatedUser.getEmail())
+            .add("superuser", authenticatedUser.isSuperuser())
+            .add("affiliation", authenticatedUser.getAffiliation())
+            .add("position", authenticatedUser.getPosition())
+            .add("persistentUserId", authenticatedUser.getAuthenticatedUserLookup().getPersistentUserId())
+            .add("emailLastConfirmed", authenticatedUser.getEmailConfirmed())
+            .add("createdTime", authenticatedUser.getCreatedTime())
+            .add("lastLoginTime", authenticatedUser.getLastLoginTime())
+            .add("lastApiUseTime", authenticatedUser.getLastApiUseTime())
+            .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
+        return builder;
     }
     
     public static JsonObjectBuilder json(RoleAssignment ra) {
@@ -230,22 +221,31 @@ public class JsonPrinter {
             for ( WorkflowStepData stp : wf.getSteps() ) {
                 arr.add( jsonObjectBuilder().add("stepType", stp.getStepType())
                                    .add("provider", stp.getProviderId())
-                                   .add("parameters", mapToObject(stp.getStepParameters())) );
+                                   .add("parameters", mapToObject(stp.getStepParameters()))
+                                   .add("requiredSettings", mapToObject(stp.getStepSettings())) );
             }
             bld.add("steps", arr );
         }
         
         return bld;
     }
-
+    
     public static JsonObjectBuilder json(Dataverse dv) {
+        return json(dv, false);
+    }
+
+    //TODO: Once we upgrade to Java EE 8 we can remove objects from the builder, and this email removal can be done in a better place.
+    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dv.getId())
                 .add("alias", dv.getAlias())
                 .add("name", dv.getName())
-                .add("affiliation", dv.getAffiliation())
-                .add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()))
-                .add("permissionRoot", dv.isPermissionRoot())
+                .add("affiliation", dv.getAffiliation());
+        if(!hideEmail) { 
+            bld.add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()));
+        }
+        
+        bld.add("permissionRoot", dv.isPermissionRoot())
                 .add("description", dv.getDescription())
                 .add("dataverseType", dv.getDataverseType().name());
         if (dv.getOwner() != null) {
@@ -253,9 +253,6 @@ public class JsonPrinter {
         }
         if (dv.getCreateDate() != null) {
             bld.add("creationDate", Util.getDateTimeFormat().format(dv.getCreateDate()));
-        }
-        if (dv.getCreator() != null) {
-            bld.add("creator", JsonPrinter.json(dv.getCreator()));
         }
         if (dv.getDataverseTheme() != null) {
             bld.add("theme", JsonPrinter.json(dv.getDataverseTheme()));
@@ -265,13 +262,16 @@ public class JsonPrinter {
     }
 
     public static JsonArrayBuilder json(List<DataverseContact> dataverseContacts) {
-        return dataverseContacts.stream()
-                .map( dc -> jsonObjectBuilder()
-                        .add("displayOrder", dc.getDisplayOrder())
-                        .add("contactEmail", dc.getContactEmail())
-                ).collect( toJsonArray() );
+        JsonArrayBuilder jsonArrayOfContacts = Json.createArrayBuilder();
+        for (DataverseContact dataverseContact : dataverseContacts) {
+            NullSafeJsonBuilder contactJsonObject = NullSafeJsonBuilder.jsonObjectBuilder();
+            contactJsonObject.add("displayOrder", dataverseContact.getDisplayOrder());
+            contactJsonObject.add("contactEmail", dataverseContact.getContactEmail());
+            jsonArrayOfContacts.add(contactJsonObject);
+        }
+        return jsonArrayOfContacts;
     }
-    
+
     public static JsonObjectBuilder json( DataverseTheme theme ) {
         final NullSafeJsonBuilder baseObject = jsonObjectBuilder()
                 .add("id", theme.getId() )
@@ -340,7 +340,8 @@ public class JsonPrinter {
                 .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus() != null ? dsv.getTermsOfUseAndAccess().getAvailabilityStatus() : null)
                 .add("contactForAccess", dsv.getTermsOfUseAndAccess().getContactForAccess() != null ? dsv.getTermsOfUseAndAccess().getContactForAccess() : null)
                 .add("sizeOfCollection", dsv.getTermsOfUseAndAccess().getSizeOfCollection() != null ? dsv.getTermsOfUseAndAccess().getSizeOfCollection() : null)
-                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion() != null ? dsv.getTermsOfUseAndAccess().getStudyCompletion() : null);
+                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion() != null ? dsv.getTermsOfUseAndAccess().getStudyCompletion() : null)
+                .add("fileAccessRequest", dsv.getTermsOfUseAndAccess().isFileAccessRequest());
 
         bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields()));
 
@@ -586,6 +587,7 @@ public class JsonPrinter {
                 .add("storageIdentifier", df.getStorageIdentifier())
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())
+                .add ("originalFileSize", df.getOriginalFileSize())
                 .add("UNF", df.getUnf())
                 //---------------------------------------------
                 // For file replace: rootDataFileId, previousDataFileId
@@ -595,11 +597,12 @@ public class JsonPrinter {
                 //---------------------------------------------
                 // Checksum
                 // * @todo Should we deprecate "md5" now that it's under
-                // * "checksum" (which may also be a SHA-1 rather than an MD5)?
+                // * "checksum" (which may also be a SHA-1 rather than an MD5)? - YES!
                 //---------------------------------------------
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
                 .add("tabularTags", getTabularFileTags(df))
+                .add("creationDate",  df.getCreateDateFormattedYYYYMMDD())
                 ;
     }
     
@@ -622,7 +625,7 @@ public class JsonPrinter {
         return fileCategories;
     }
 
-    private static JsonArrayBuilder getTabularFileTags(DataFile df) {
+    public static JsonArrayBuilder getTabularFileTags(DataFile df) {
         if (df == null) {
             return null;
         }

@@ -1,7 +1,10 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.AccessRequest;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
@@ -9,12 +12,14 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -61,20 +66,6 @@ public class DataFileServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
-    // File type "classes" tags:
-    
-    private static final String FILE_CLASS_AUDIO = "audio";
-    private static final String FILE_CLASS_CODE = "code";
-    private static final String FILE_CLASS_DOCUMENT = "document";
-    private static final String FILE_CLASS_ASTRO = "astro";
-    private static final String FILE_CLASS_IMAGE = "image";
-    private static final String FILE_CLASS_NETWORK = "network";
-    private static final String FILE_CLASS_GEO = "geodata";
-    private static final String FILE_CLASS_TABULAR = "tabular";
-    private static final String FILE_CLASS_VIDEO = "video";
-    private static final String FILE_CLASS_PACKAGE = "package";
-    private static final String FILE_CLASS_OTHER = "other";
-
     // Assorted useful mime types:
     
     // 3rd-party and/or proprietary tabular data formasts that we know
@@ -86,7 +77,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     private static final String MIME_TYPE_CSV   = "text/csv";
     private static final String MIME_TYPE_CSV_ALT = "text/comma-separated-values";
     private static final String MIME_TYPE_TSV   = "text/tsv";
-    private static final String MIME_TYPE_TSV_ALT   = "text/tab-separated-values";
+    public static final String MIME_TYPE_TSV_ALT   = "text/tab-separated-values";
     private static final String MIME_TYPE_XLSX  = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private static final String MIME_TYPE_SPSS_SAV = "application/x-spss-sav";
     private static final String MIME_TYPE_SPSS_POR = "application/x-spss-por";
@@ -279,7 +270,23 @@ public class DataFileServiceBean implements java.io.Serializable {
                 + " order by o." + sortField + " " + sortOrder)
                 .getResultList();
     }
+    
+    public List<Long> findDataFileIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
+        FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
         
+        searchTerm=searchTerm.trim();
+        String sortField = sortFieldAndOrder.getSortField();
+        String sortOrder = sortFieldAndOrder.getSortOrder();
+        String searchClause = "";
+        if(searchTerm != null && !searchTerm.isEmpty()){
+            searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
+        }
+        
+        return em.createNativeQuery("select o.datafile_id from FileMetadata o where o.datasetVersion_id = "  + datasetVersionId
+                + searchClause
+                + " order by o." + sortField + " " + sortOrder)
+                .getResultList();
+    }
     
     public List<FileMetadata> findFileMetadataByDatasetVersionIdLazy(Long datasetVersionId, int maxResults, String userSuppliedSortField, String userSuppliedSortOrder, int firstResult) {
         FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
@@ -491,7 +498,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         if (MIME_TYPE_TSV.equalsIgnoreCase(contentType)) {
             Object[] dtResult;
             try {
-                dtResult = (Object[]) em.createNativeQuery("SELECT ID, UNF, CASEQUANTITY, VARQUANTITY, ORIGINALFILEFORMAT FROM dataTable WHERE DATAFILE_ID = " + id).getSingleResult();
+                dtResult = (Object[]) em.createNativeQuery("SELECT ID, UNF, CASEQUANTITY, VARQUANTITY, ORIGINALFILEFORMAT, ORIGINALFILESIZE FROM dataTable WHERE DATAFILE_ID = " + id).getSingleResult();
             } catch (Exception ex) {
                 dtResult = null;
             }
@@ -508,6 +515,8 @@ public class DataFileServiceBean implements java.io.Serializable {
                 dataTable.setVarQuantity((Long)dtResult[3]);
             
                 dataTable.setOriginalFileFormat((String)dtResult[4]);
+                
+                dataTable.setOriginalFileSize((Long)dtResult[5]);
                 
                 dataTable.setDataFile(dataFile);
                 dataFile.setDataTable(dataTable);
@@ -567,7 +576,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         int i = 0; 
         
-        List<Object[]> dataTableResults = em.createNativeQuery("SELECT t0.ID, t0.DATAFILE_ID, t0.UNF, t0.CASEQUANTITY, t0.VARQUANTITY, t0.ORIGINALFILEFORMAT FROM dataTable t0, dataFile t1, dvObject t2 WHERE ((t0.DATAFILE_ID = t1.ID) AND (t1.ID = t2.ID) AND (t2.OWNER_ID = " + owner.getId() + ")) ORDER BY t0.ID").getResultList();
+        List<Object[]> dataTableResults = em.createNativeQuery("SELECT t0.ID, t0.DATAFILE_ID, t0.UNF, t0.CASEQUANTITY, t0.VARQUANTITY, t0.ORIGINALFILEFORMAT, t0.ORIGINALFILESIZE FROM dataTable t0, dataFile t1, dvObject t2 WHERE ((t0.DATAFILE_ID = t1.ID) AND (t1.ID = t2.ID) AND (t2.OWNER_ID = " + owner.getId() + ")) ORDER BY t0.ID").getResultList();
         
         for (Object[] result : dataTableResults) {
             DataTable dataTable = new DataTable(); 
@@ -582,6 +591,8 @@ public class DataFileServiceBean implements java.io.Serializable {
             dataTable.setVarQuantity((Long)result[4]);
             
             dataTable.setOriginalFileFormat((String)result[5]);
+            
+            dataTable.setOriginalFileSize((Long)result[6]);
             
             dataTables.add(dataTable);
             datatableMap.put(fileId, i++);
@@ -1126,51 +1137,25 @@ public class DataFileServiceBean implements java.io.Serializable {
             return null; 
         }
         
-        return getFileClass(file);
+        return getFileThumbnailClass(file);
     }
     
-    public String getFileClass (DataFile file) {
-        if (isFileClassImage(file)) {
-            return FILE_CLASS_IMAGE;
-        }
-        
-        if (isFileClassVideo(file)) {
-            return FILE_CLASS_VIDEO;
-        }
-        
-        if (isFileClassAudio(file)) {
-            return FILE_CLASS_AUDIO;
-        }
-        
-        if (isFileClassCode(file)) {
-            return FILE_CLASS_CODE;
-        }
-        
-        if (isFileClassDocument(file)) {
-            return FILE_CLASS_DOCUMENT;
-        }
-        
-        if (isFileClassAstro(file)) {
-            return FILE_CLASS_ASTRO;
-        }
-        
-        if (isFileClassNetwork(file)) {
-            return FILE_CLASS_NETWORK;
-        }
-        
-        if (isFileClassGeo(file)) {
-            return FILE_CLASS_GEO;
-        }
-        
-        if (isFileClassTabularData(file)) {
-            return FILE_CLASS_TABULAR;
-        }
-        
+    public String getFileThumbnailClass (DataFile file) {
+        // there's no solr search facet for "package files", but
+        // there is a special thumbnail icon:
         if (isFileClassPackage(file)) {
-            return FILE_CLASS_PACKAGE;
+            return FileUtil.FILE_THUMBNAIL_CLASS_PACKAGE;
         }
         
-        return FILE_CLASS_OTHER;
+        if (file != null) {
+            String fileTypeFacet = FileUtil.getFacetFileType(file);
+        
+            if (fileTypeFacet != null && FileUtil.FILE_THUMBNAIL_CLASSES.containsKey(fileTypeFacet)) {
+                return FileUtil.FILE_THUMBNAIL_CLASSES.get(fileTypeFacet);
+            }
+        }
+        
+        return FileUtil.FILE_THUMBNAIL_CLASS_OTHER;
     }
     
     
@@ -1444,7 +1429,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }  // end: isReplacementFile
     
     public List<Long> selectFilesWithMissingOriginalTypes() {
-        Query query = em.createNativeQuery("SELECT f.id FROM datafile f, datatable t where t.datafile_id = f.id AND t.originalfileformat='" + MIME_TYPE_TSV + "' ORDER BY f.id");
+        Query query = em.createNativeQuery("SELECT f.id FROM datafile f, datatable t where t.datafile_id = f.id AND (t.originalfileformat='" + MIME_TYPE_TSV + "' OR t.originalfileformat IS NULL) ORDER BY f.id");
         
         try {
             return query.getResultList();
@@ -1453,7 +1438,15 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
     }
     
-    
+    public List<Long> selectFilesWithMissingOriginalSizes() {
+        Query query = em.createNativeQuery("SELECT f.id FROM datafile f, datatable t where t.datafile_id = f.id AND (t.originalfilesize IS NULL ) AND (t.originalfileformat IS NOT NULL) ORDER BY f.id");
+        
+        try {
+            return query.getResultList();
+        } catch (Exception ex) {
+            return new ArrayList<>();
+        }
+    }
     
     public String generateDataFileIdentifier(DataFile datafile, GlobalIdServiceBean idServiceBean) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
@@ -1555,7 +1548,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             .getResultList().isEmpty();
             
         try{
-            if (idServiceBean.alreadyExists(datafile)) {
+            if (idServiceBean.alreadyExists(new GlobalId(testProtocol, testAuthority, userIdentifier))) {
                 u = false;
             }
         } catch (Exception e){
@@ -1566,4 +1559,110 @@ public class DataFileServiceBean implements java.io.Serializable {
         return u;
     }
     
+    public void finalizeFileDelete(Long dataFileId, String storageLocation) throws IOException {
+        // Verify that the DataFile no longer exists: 
+        if (find(dataFileId) != null) {
+            throw new IOException("Attempted to permanently delete a physical file still associated with an existing DvObject "
+                    + "(id: " + dataFileId + ", location: " + storageLocation);
+        }
+        StorageIO directStorageAccess = DataAccess.getDirectStorageIO(storageLocation);
+        directStorageAccess.delete();
+    }
+    
+    public void finalizeFileDeletes(Map<Long, String> storageLocations) {
+        storageLocations.keySet().stream().forEach((dataFileId) -> {
+            String storageLocation = storageLocations.get(dataFileId);
+
+            try {
+                finalizeFileDelete(dataFileId, storageLocation);
+            } catch (IOException ioex) {
+                logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                        + dataFileId + ", storage location: " + storageLocation);
+            }
+        });
+    }
+    
+    public Map<Long, String> getPhysicalFilesToDelete(DatasetVersion datasetVersion) {
+        return getPhysicalFilesToDelete(datasetVersion, false);
+    }
+    
+    public Map<Long, String> getPhysicalFilesToDelete(DatasetVersion datasetVersion, boolean destroy) {
+        // Gather the locations of the physical files associated with DRAFT
+        // (unpublished) DataFiles (or ALL the DataFiles, if "destroy") in the 
+        // DatasetVersion, that will need to be deleted once the 
+        // DeleteDatasetVersionCommand execution has been finalized:
+
+        return getPhysicalFilesToDelete(datasetVersion.getFileMetadatas(), destroy);
+    }
+    
+    public Map<Long, String> getPhysicalFilesToDelete(List<FileMetadata> fileMetadatasToDelete) {
+        return getPhysicalFilesToDelete(fileMetadatasToDelete, false);
+    }
+    
+    public Map<Long, String> getPhysicalFilesToDelete(List<FileMetadata> fileMetadatasToDelete, boolean destroy) {
+        Map<Long, String> deleteStorageLocations = new HashMap<>();
+
+        Iterator<FileMetadata> dfIt = fileMetadatasToDelete.iterator();
+        while (dfIt.hasNext()) {
+            DataFile df = dfIt.next().getDataFile();
+
+            if (destroy || !df.isReleased()) {
+
+                String storageLocation = getPhysicalFileToDelete(df);
+                if (storageLocation != null) {
+                    deleteStorageLocations.put(df.getId(), storageLocation);
+                }
+
+            }
+        }
+
+        return deleteStorageLocations;
+    }
+  
+    public Map<Long, String> getPhysicalFilesToDelete(Dataset dataset) {
+        // Gather the locations of ALL the physical files associated with 
+        // a DATASET that is being DESTROYED, that will need to be deleted
+        // once the DestroyDataset command execution has been finalized. 
+        // Once again, note that we are selecting all the files from the dataset
+        // - not just drafts. 
+
+        Map<Long, String> deleteStorageLocations = new HashMap<>();
+
+        Iterator<DataFile> dfIt = dataset.getFiles().iterator();
+        while (dfIt.hasNext()) {
+            DataFile df = dfIt.next();
+
+            String storageLocation = getPhysicalFileToDelete(df);
+            if (storageLocation != null) {
+                deleteStorageLocations.put(df.getId(), storageLocation);
+            }
+
+        }
+
+        return deleteStorageLocations;
+    }
+    
+    public String getPhysicalFileToDelete(DataFile dataFile) {
+        try {
+            StorageIO<DataFile> storageIO = dataFile.getStorageIO();
+            return storageIO.getStorageLocation();
+
+        } catch (IOException ioex) {
+            // something potentially wrong with the physical file,
+            // or connection to the physical storage? 
+            // we don't care (?) - we'll still try to delete the datafile from the database.
+        }
+        return null;
+    }
+    
+    public boolean isFoldersMetadataPresentInVersion(DatasetVersion datasetVersion) {
+        Query query = em.createNativeQuery("SELECT id FROM fileMetadata WHERE datasetversion_id="+datasetVersion.getId()+" AND directoryLabel IS NOT null LIMIT 1");
+        
+        try {
+            int count = query.getResultList().size();
+            return count > 0;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
 }

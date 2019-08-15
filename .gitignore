@@ -2,6 +2,9 @@ nb-configuration.xml
 target
 infer-out
 nbactions.xml
+.settings
+.classpath
+.project
 michael-local
 GPATH
 GTAGS
@@ -44,3 +47,15 @@ conf/docker-aio/dv/install/dvinstall.zip
 conf/docker-aio/testdata/
 scripts/installer/default.config
 *.pem
+
+# do not track IntelliJ IDEA files
+.idea
+**/*.iml
+/bin/
+
+# do not track Visual Studio Code files
+.vscode
+
+# ignore UI testing related files
+tests/node_modules
+tests/package-lock.json

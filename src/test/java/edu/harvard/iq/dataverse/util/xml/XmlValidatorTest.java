@@ -1,12 +1,17 @@
 package edu.harvard.iq.dataverse.util.xml;
 
 import edu.harvard.iq.dataverse.NonEssentialTests;
+
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
-import java.util.logging.Logger;
+
 import javax.xml.parsers.ParserConfigurationException;
-import org.junit.Assert;
+
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -14,51 +19,61 @@ import org.xml.sax.SAXException;
 
 public class XmlValidatorTest {
 
-    private static final Logger logger = Logger.getLogger(XmlValidatorTest.class.getCanonicalName());
-
-    // FIXME: Remove @Ignore after figuring out why `mvn` (but not NetBeans) shows "javax.xml.transform.TransformerException: org.xml.sax.SAXParseException; Premature end of file"
+    //Ignored as this relies on an external resource that has been down occasionally. 
+    //May be a good test for our full vs. everytime test classifications (#4896) -MAD 4.9.1
     @Ignore
     @Category(NonEssentialTests.class)
     @Test
     public void testValidateXml() throws IOException, SAXException, ParserConfigurationException {
         assertTrue(XmlValidator.validateXmlSchema("src/test/java/edu/harvard/iq/dataverse/util/xml/sendToDataCite.xml", new URL("https://schema.datacite.org/meta/kernel-3/metadata.xsd")));
         // FIXME: Make sure the DDI we export is valid: https://github.com/IQSS/dataverse/issues/3648
-//        assertTrue(XmlValidator.validateXml("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml", new URL("http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd")));
+        // assertTrue(XmlValidator.validateXml("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml", new URL("http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd")));
     }
 
-    @Category(NonEssentialTests.class)
     @Test
-    public void testWellFormedXml() {
-
-        // well-formed XML
-        Exception ex1 = null;
+    public void validateXmlWellFormed_validXML() {
+        String xmlFile = "src/test/java/edu/harvard/iq/dataverse/util/xml/sendToDataCite.xml";
         try {
-            assertTrue(XmlValidator.validateXmlWellFormed("src/test/java/edu/harvard/iq/dataverse/util/xml/sendToDataCite.xml"));
-        } catch (Exception ex) {
-            ex1 = ex;
+            assertTrue(XmlValidator.validateXmlWellFormed(xmlFile));
+        } catch(Exception e) {
+            fail();
         }
-        Assert.assertNull(ex1);
-
-        // not well-formed XML
-        Exception ex2 = null;
-        try {
-            XmlValidator.validateXmlWellFormed("src/test/java/edu/harvard/iq/dataverse/util/xml/not-well-formed.xml");
-        } catch (Exception ex) {
-            ex2 = ex;
-        }
-        Assert.assertNotNull(ex2);
-        Assert.assertEquals("XML is not well formed: The element type \"br\" must be terminated by the matching end-tag \"</br>\".", ex2.getMessage());
-
-        // other exception
-        Exception ex3 = null;
-        try {
-            XmlValidator.validateXmlWellFormed("path/to/nowhere.xml");
-        } catch (Exception ex) {
-            ex3 = ex;
-        }
-        Assert.assertNotNull(ex3);
-        Assert.assertEquals("class java.io.FileNotFoundException", ex3.getClass().toString());
-
     }
 
+    @Test
+    public void validateXmlWellFormed_invalidXML() {
+        String xmlFile = "src/test/java/edu/harvard/iq/dataverse/util/xml/not-well-formed.xml";
+        try {
+            assertTrue(XmlValidator.validateXmlWellFormed(xmlFile));
+            fail("validateXmlWellFormed() should throw exception on malformed XML");
+        } catch(Exception e) {
+            return;
+        }
+    }
+
+    @Test
+    public void validateXmlWellFormed_exceptionMessage() {
+        String xmlFile = "src/test/java/edu/harvard/iq/dataverse/util/xml/not-well-formed.xml";
+        String expectedExceptionMessage = "XML is not well formed: The element type \"br\" must be terminated by the matching end-tag \"</br>\".";
+        String actualExceptionMessage = "";
+
+        try {
+            XmlValidator.validateXmlWellFormed(xmlFile);
+            fail("validateXmlWellFormed() should throw exception on malformed XML");
+        } catch (Exception ex) {
+            actualExceptionMessage = ex.getMessage();
+        }
+        assertEquals(expectedExceptionMessage, actualExceptionMessage);
+    }
+
+    @Test
+    public void validateXmlWellFormed_nonexistentFile() {
+        String xmlFile = "path/to/nowhere.xml";
+        try {
+            XmlValidator.validateXmlWellFormed(xmlFile);
+            fail("validateXmlWellFormed() should throw exception on malformed XML");
+        } catch(Exception e) {
+            assertEquals(FileNotFoundException.class, e.getClass());
+        }
+    }
 }

@@ -151,15 +151,15 @@ public class PasswordValidatorUtil {
         String returnString = "";
         
         if(lowercase <= 1 && uppercase <= 1 && digit <= 1 && alphabetical <= 1 && special <= 1) {
-            returnString = ((uppercase == 1) ? "uppercase" : "") 
-                    + ((lowercase == 1) ? ", lowercase" : "") 
-                    + ((alphabetical == 1 ) ? ", letter" : "") 
-                    + ((digit == 1) ? ", numeral" : "") 
-                    + ((special == 1) ? ", special" : "");
+            returnString = ((uppercase == 1) ? BundleUtil.getStringFromBundle("passwdVal.passwdReq.uppercase") : "")
+                    + ((lowercase == 1) ? ", "+BundleUtil.getStringFromBundle("passwdVal.passwdReq.lowercase") : "")
+                    + ((alphabetical == 1 ) ? ", "+BundleUtil.getStringFromBundle("passwdVal.passwdReq.letter") : "")
+                    + ((digit == 1) ? ", "+BundleUtil.getStringFromBundle("passwdVal.passwdReq.numeral") : "")
+                    + ((special == 1) ? ", "+BundleUtil.getStringFromBundle("passwdVal.passwdReq.special") : "");
             
 
             
-            String eachOrSomeCharacteristics = ((characterRules.size()) > numberOfCharacteristics ) ? Integer.toString(numberOfCharacteristics) : "each";
+            String eachOrSomeCharacteristics = ((characterRules.size()) > numberOfCharacteristics ) ? Integer.toString(numberOfCharacteristics) : BundleUtil.getStringFromBundle("passwdVal.passwdReq.each");
             return BundleUtil.getStringFromBundle("passwdVal.passwdReq.characteristicsReq" , Arrays.asList(eachOrSomeCharacteristics)) 
                     + " " + StringUtils.strip(returnString, " ,");
         } else {

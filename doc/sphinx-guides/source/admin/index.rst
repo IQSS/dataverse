@@ -18,6 +18,7 @@ This guide documents the functionality only available to superusers (such as "da
    metadatacustomization
    metadataexport
    timers
+   make-data-count
    integrations
    geoconnect-worldmap
    user-administration
@@ -25,6 +26,7 @@ This guide documents the functionality only available to superusers (such as "da
    solr-search-index
    ip-groups
    monitoring
+   reporting-tools
    maintenance
    backups
    troubleshooting

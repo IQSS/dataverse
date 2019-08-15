@@ -58,7 +58,7 @@ public class ManageGroupsPage implements java.io.Serializable {
     GroupServiceBean groupService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
-    
+
     @Inject
     PermissionsWrapper permissionsWrapper;
 
@@ -78,22 +78,23 @@ public class ManageGroupsPage implements java.io.Serializable {
     private Dataverse dataverse;
     private Long dataverseId;
     private ExplicitGroup selectedGroup = null;
+    private Boolean showDeletePopup = false;
 
     public String init() {
         setDataverse(dataverseService.find(getDataverseId()));
         Dataverse editDv = getDataverse();
         dvpage.setDataverse(editDv);
-        
+
         if (editDv == null) {
             return permissionsWrapper.notFound();
         }
-        
+
         Boolean hasPermissions = permissionsWrapper.canIssueCommand(editDv, CreateExplicitGroupCommand.class);
         hasPermissions |= permissionsWrapper.canIssueCommand(editDv, DeleteExplicitGroupCommand.class);
         hasPermissions |= permissionsWrapper.canIssueCommand(editDv, UpdateExplicitGroupCommand.class);
         if (!hasPermissions) {
             return permissionsWrapper.notAuthorized();
-        } 
+        }
         explicitGroups = new LinkedList<>(explicitGroupService.findByOwner(getDataverseId()));
 
         return null;
@@ -101,6 +102,7 @@ public class ManageGroupsPage implements java.io.Serializable {
 
 
     public void setSelectedGroup(ExplicitGroup selectedGroup) {
+        setShowDeletePopup(true);
         this.selectedGroup = selectedGroup;
     }
 
@@ -182,7 +184,7 @@ public class ManageGroupsPage implements java.io.Serializable {
      * @return The set of role assignees belonging to explicit group.
      */
     public List<RoleAssignee> getExplicitGroupMembers(ExplicitGroup eg) {
-        return (eg != null) ? 
+        return (eg != null) ?
                 new ArrayList<>(eg.getDirectMembers()) : null;
     }
 
@@ -194,11 +196,11 @@ public class ManageGroupsPage implements java.io.Serializable {
      */
     public String getRoleAssigneeTypeString(RoleAssignee ra) {
         if (ra instanceof User) {
-            return "User";
+            return BundleUtil.getStringFromBundle("dataverse.manageGroups.User");
         } else if (ra instanceof Group) {
-            return "Group";
+            return BundleUtil.getStringFromBundle("dataverse.manageGroups.Group");
         } else {
-            return "unknown";
+            return BundleUtil.getStringFromBundle("dataverse.manageGroups.unknown");
         }
     }
 
@@ -214,20 +216,20 @@ public class ManageGroupsPage implements java.io.Serializable {
         }
 
         if (userCount == 0 && groupCount == 0) {
-            return "No members";
+            return BundleUtil.getStringFromBundle("dataverse.manageGroups.nomembers");
         }
-        
+
         String memberString = "";
         if (userCount == 1) {
-            memberString = "1 user";
+            memberString = "1 "+BundleUtil.getStringFromBundle("dataverse.manageGroups.user");
         } else if (userCount != 1) {
-            memberString = Long.toString(userCount) + " users";
+            memberString = Long.toString(userCount) + " "+BundleUtil.getStringFromBundle("dataverse.manageGroups.users");
         }
 
         if (groupCount == 1) {
-            memberString = memberString + ", 1 group";
+            memberString = memberString + ", 1 " + BundleUtil.getStringFromBundle("dataverse.manageGroups.group");
         } else if (groupCount != 1) {
-            memberString = memberString + ", " + Long.toString(groupCount) + " groups";
+            memberString = memberString + ", " + Long.toString(groupCount) + " " + BundleUtil.getStringFromBundle("dataverse.manageGroups.groups");
         }
 
         return memberString;
@@ -236,11 +238,22 @@ public class ManageGroupsPage implements java.io.Serializable {
     public void removeMemberFromSelectedGroup(RoleAssignee ra) {
         selectedGroup.remove(ra);
     }
+    
+    public Boolean getShowDeletePopup() {
+        return showDeletePopup;
+    }
+
+    public void setShowDeletePopup(Boolean showDeletePopup) {
+        this.showDeletePopup = showDeletePopup;
+    }
+    
+    public void unrenderDeletePopup() {
+        setShowDeletePopup(false);
+    }
 
     public List<RoleAssignee> completeRoleAssignee( String query ) {
-        
         List<RoleAssignee> alreadyAssignedRoleAssignees = new ArrayList<>();
-        
+
         if (this.getNewExplicitGroupRoleAssignees() != null) {
             alreadyAssignedRoleAssignees.addAll(this.getNewExplicitGroupRoleAssignees());
         }
@@ -249,10 +262,10 @@ public class ManageGroupsPage implements java.io.Serializable {
         }
         if (this.getSelectedGroupAddRoleAssignees() != null) {
             alreadyAssignedRoleAssignees.addAll(this.getSelectedGroupAddRoleAssignees());
-        }        
-        
-        return roleAssigneeService.filterRoleAssignees(query, dataverse, alreadyAssignedRoleAssignees);         
-        
+        }
+
+        return roleAssigneeService.filterRoleAssignees(query, dataverse, alreadyAssignedRoleAssignees);
+
     }
 
     /*
@@ -293,7 +306,7 @@ public class ManageGroupsPage implements java.io.Serializable {
             } catch ( GroupException ge ) {
                 JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
                         BundleUtil.getStringFromBundle("dataverse.manageGroups.create.fail"),
-                                        ge.getMessage());
+                        ge.getMessage());
                 return;
             }
         }
@@ -306,16 +319,16 @@ public class ManageGroupsPage implements java.io.Serializable {
         } catch ( CreateExplicitGroupCommand.GroupAliasExistsException gaee ) {
             explicitGroupIdentifierField.setValid( false );
             FacesContext.getCurrentInstance().addMessage(explicitGroupIdentifierField.getClientId(),
-                           new FacesMessage( FacesMessage.SEVERITY_ERROR, gaee.getMessage(), null));
+                    new FacesMessage( FacesMessage.SEVERITY_ERROR, gaee.getMessage(), null));
 
         } catch (CommandException ex) {
             logger.log(Level.WARNING, "Group creation failed", ex);
             JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
                     BundleUtil.getStringFromBundle("dataverse.manageGroups.create.fail"),
-                                    ex.getMessage());
+                    ex.getMessage());
         } catch (Exception ex) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("permission.roleNotSaved"));
-             logger.log(Level.SEVERE, "Error saving role: " + ex.getMessage(), ex);
+            logger.log(Level.SEVERE, "Error saving role: " + ex.getMessage(), ex);
         }
         showAssignmentMessages();
     }
@@ -331,7 +344,7 @@ public class ManageGroupsPage implements java.io.Serializable {
             } catch ( GroupException ge ) {
                 JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
                         BundleUtil.getStringFromBundle("dataverse.manageGroups.edit.fail"),
-                                        ge.getMessage());
+                        ge.getMessage());
                 return;
             }
         }
@@ -343,10 +356,10 @@ public class ManageGroupsPage implements java.io.Serializable {
 
         } catch (CommandException ex) {
             JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,BundleUtil.getStringFromBundle("dataverse.manageGroups.save.fail"),
-                                    ex.getMessage());
+                    ex.getMessage());
         } catch (Exception ex) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("permission.roleNotSaved"));
-             logger.log(Level.SEVERE, "Error saving role: " + ex.getMessage(), ex);
+            logger.log(Level.SEVERE, "Error saving role: " + ex.getMessage(), ex);
         }
         showAssignmentMessages();
     }
@@ -387,13 +400,13 @@ public class ManageGroupsPage implements java.io.Serializable {
             if (! Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", value) ) {
                 input.setValid(false);
                 context.addMessage(toValidate.getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("dataverse.permissions.explicitGroupEditDialog.groupIdentifier.invalid")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("dataverse.permissions.explicitGroupEditDialog.groupIdentifier.invalid")));
 
             } else if ( explicitGroupService.findInOwner(dataverse.getId(), value) != null ) {
                 // Ok, see that the alias is not taken
                 input.setValid(false);
                 context.addMessage(toValidate.getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("dataverse.permissions.explicitGroupEditDialog.groupIdentifier.taken")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("dataverse.permissions.explicitGroupEditDialog.groupIdentifier.taken")));
             }
         }
     }

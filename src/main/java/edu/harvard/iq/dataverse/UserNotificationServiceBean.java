@@ -40,6 +40,12 @@ public class UserNotificationServiceBean {
         return query.getResultList();
     }
     
+    public List<UserNotification> findByRequestor(Long userId) {
+        TypedQuery<UserNotification> query = em.createQuery("select un from UserNotification un where un.requestor.id =:userId order by un.sendDate desc", UserNotification.class);
+        query.setParameter("userId", userId);
+        return query.getResultList();
+    }
+    
     public List<UserNotification> findByDvObject(Long dvObjId) {
         TypedQuery<UserNotification> query = em.createQuery("select object(o) from UserNotification as o where o.objectId =:dvObjId order by o.sendDate desc", UserNotification.class);
         query.setParameter("dvObjId", dvObjId);
@@ -82,12 +88,18 @@ public class UserNotificationServiceBean {
     }
     
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment) {
+        sendNotification(dataverseUser, sendDate, type, objectId, comment, null);
+    }
+    
+    public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment, AuthenticatedUser requestor) {
         UserNotification userNotification = new UserNotification();
         userNotification.setUser(dataverseUser);
         userNotification.setSendDate(sendDate);
         userNotification.setType(type);
         userNotification.setObjectId(objectId);
-        if (mailService.sendNotificationEmail(userNotification)) {
+        userNotification.setRequestor(requestor);
+        
+        if (mailService.sendNotificationEmail(userNotification, comment, requestor)) {
             logger.fine("email was sent");
             userNotification.setEmailed(true);
             save(userNotification);

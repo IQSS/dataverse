@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FeaturedDataverseServiceBean;
+import edu.harvard.iq.dataverse.FileDownloadServiceBean;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
@@ -24,11 +25,15 @@ import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.TemplateServiceBean;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
@@ -97,6 +102,8 @@ public interface CommandContext {
 
     public DOIDataCiteServiceBean doiDataCite();
 
+    public FakePidProviderServiceBean fakePidProvider();
+
     public HandlenetServiceBean handleNet();
 
     public GuestbookServiceBean guestbooks();
@@ -110,6 +117,8 @@ public interface CommandContext {
     public SettingsServiceBean settings();
 
     public ExplicitGroupServiceBean explicitGroups();
+
+    public GroupServiceBean groups();
 
     public UserNotificationServiceBean notifications();
 
@@ -126,4 +135,10 @@ public interface CommandContext {
     public MapLayerMetadataServiceBean mapLayerMetadata();
 
     public DataCaptureModuleServiceBean dataCaptureModule();
+    
+    public FileDownloadServiceBean fileDownload();
+    
+    public ConfirmEmailServiceBean confirmEmail();
+    
+    public ActionLogServiceBean actionLog();
 }

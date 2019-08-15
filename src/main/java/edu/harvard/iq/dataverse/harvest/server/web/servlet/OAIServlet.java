@@ -39,6 +39,8 @@ import edu.harvard.iq.dataverse.harvest.server.xoai.XsetRepository;
 import edu.harvard.iq.dataverse.harvest.server.xoai.XlistRecords;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.apache.commons.lang.StringUtils;
+
 import java.io.ByteArrayOutputStream;
 
 import java.io.IOException;
@@ -57,7 +59,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.stream.XMLStreamException;
-import org.codehaus.plexus.util.StringUtils;
 
 /**
  *
@@ -260,19 +261,19 @@ public class OAIServlet extends HttpServlet {
                        
         } catch (IOException ex) {
             logger.warning("IO exception in Get; "+ex.getMessage());
-            throw new ServletException ("IO Exception in Get");
+            throw new ServletException ("IO Exception in Get", ex);
         } catch (OAIException oex) {
             logger.warning("OAI exception in Get; "+oex.getMessage());
-            throw new ServletException ("OAI Exception in Get");
+            throw new ServletException ("OAI Exception in Get", oex);
         } catch (XMLStreamException xse) {
             logger.warning("XML Stream exception in Get; "+xse.getMessage());
-            throw new ServletException ("XML Stream Exception in Get");
+            throw new ServletException ("XML Stream Exception in Get", xse);
         } catch (XmlWriteException xwe) {
             logger.warning("XML Write exception in Get; "+xwe.getMessage());
-            throw new ServletException ("XML Write Exception in Get");  
+            throw new ServletException ("XML Write Exception in Get", xwe);  
         } catch (Exception e) {
             logger.warning("Unknown exception in Get; "+e.getMessage());
-            throw new ServletException ("Unknown servlet exception in Get.");
+            throw new ServletException ("Unknown servlet exception in Get.", e);
         }
         
     }

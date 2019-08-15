@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -16,6 +17,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.ByteArrayInputStream;
@@ -158,9 +160,15 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         logger.fine("preparing to delete file id " + fileIdLong);
                         DataFile fileToDelete = dataFileService.find(fileIdLong);
                         if (fileToDelete != null) {
+                            boolean deleteCommandSuccess = false; 
                             Dataset dataset = fileToDelete.getOwner();
                             Dataset datasetThatOwnsFile = fileToDelete.getOwner();
                             Dataverse dataverseThatOwnsFile = datasetThatOwnsFile.getOwner();
+                            String deleteStorageLocation = null; 
+                            
+                            
+                            deleteStorageLocation = dataFileService.getPhysicalFileToDelete(fileToDelete);
+                            
                             /**
                              * @todo it would be nice to have this check higher
                              * up. Do we really need the file ID? Should the
@@ -173,8 +181,24 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                             }
                             try {
                                 commandEngine.submit(updateDatasetCommand);
+                                deleteCommandSuccess = true; 
                             } catch (CommandException ex) {
                                 throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_BAD_REQUEST, "Could not delete file: " + ex);
+                            }
+                            
+                            if (deleteCommandSuccess) {
+                                if (deleteStorageLocation != null) {
+                                    // Finalize the delete of the physical file 
+                                    // (File service will double-check that the datafile no 
+                                    // longer exists in the database, before proceeding to 
+                                    // delete the physical file)
+                                    try {
+                                        dataFileService.finalizeFileDelete(fileIdLong, deleteStorageLocation);
+                                    } catch (IOException ioex) {
+                                        logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                                                + fileIdLong + ", storage location: " + deleteStorageLocation);
+                                    }
+                                }
                             }
                         } else {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find file id " + fileIdLong + " from URL: " + uri);
@@ -200,6 +224,9 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     }
 
     DepositReceipt replaceOrAddFiles(String uri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration swordConfiguration, boolean shouldReplace) throws SwordError, SwordAuthException, SwordServerException {
+        if (!systemConfig.isHTTPUpload()) {
+            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
+        }
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         DataverseRequest dvReq = new DataverseRequest(user, httpRequest);
 
@@ -217,12 +244,14 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             }
             
             //---------------------------------------
-            // Make sure that the upload type is not rsync
+            // Make sure that the upload type is not rsync - handled above for dual mode
             // ------------------------------------- 
-            if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsSvc.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, SettingsServiceBean.Key.UploadMethods + " contains " + SystemConfig.FileUploadMethods.RSYNC + ". Please use rsync file upload.");
-            }
 
+            if (dataset.getEditVersion().isHasPackageFile()) {                
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile"));
+            }
+            
+            
             // Right now we are only supporting UriRegistry.PACKAGE_SIMPLE_ZIP but
             // in the future maybe we'll support other formats? Rdata files? Stata files?
             /**
