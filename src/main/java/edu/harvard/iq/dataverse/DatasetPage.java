@@ -817,15 +817,11 @@ public class DatasetPage implements java.io.Serializable {
             
         }
 
-        // Unlimited number of search results: 
-        // (but we are searching within one dataset(version), so it should be manageable)
-        solrQuery.setRows(Integer.MAX_VALUE);
-
-        logger.fine("Solr query (file search): " + solrQuery);
-                
         QueryResponse queryResponse = null;
         boolean fileDeletedFlagNotIndexed = false; 
         Set<Long> resultIds = new HashSet<>();
+        // Unlimited number of search results: 
+        // (but we are searching within one dataset(version), so it should be manageable)
         
         try {
             queryResponse = searchService.simpleSearch(dvRequestService.getDataverseRequest(), SearchFields.ENTITY_ID, pattern, filterQueries, facetList, 0, Integer.MAX_VALUE);
@@ -843,7 +839,7 @@ public class DatasetPage implements java.io.Serializable {
         if (fileDeletedFlagNotIndexed) {
             // try again, without the flag:
             filterQueries.remove("!(" + SearchFields.FILE_DELETED + ":" + true + ")");
-            logger.fine("Solr query (trying again): " + solrQuery);
+            logger.fine("Solr query (trying again)");
 
             try {
                 queryResponse = searchService.simpleSearch(dvRequestService.getDataverseRequest(), SearchFields.ENTITY_ID, pattern, filterQueries, facetList, 0, Integer.MAX_VALUE);
