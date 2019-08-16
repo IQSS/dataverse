@@ -1,24 +1,28 @@
 This release brings new features, enhancements, and bug fixes to Dataverse. The release highlights include:
 
-- Metrics view updates
-- Codebook
-- Lock improvements
-- On success
+**Metrics Redesign** 
+The metrics view at both the Dataset and File level has been redesigned. The main driver of this redesign has been the expanded metrics (citations and views) provided through an integration with Make Data Count, but installations that do not adopt Make Data Count will also be able to take advantage of the new metrics view. <a href="https://guides.dataverse.org">Read more in the guides.</a>
 
-- Researchers will now be able to <a href="https://github.com/IQSS/dataverse/pull/6081">download HTML Codebooks</a> as an additional Dataset Export format. This pro
-<a href="https://github.com/IQSS/dataverse/pull/6040">The metrics view at both the Dataset and File level has been redesigned. layout has be</a>,
-and <a href="https://github.com/IQSS/dataverse/pull/xxx">yyy</a>.
+**HTML Codebook Export**
+Researchers will now be able to download HTML Codebooks as an additional Dataset Export format. This provides... <a href="https://guides.dataverse.org">Read more in the guides.</a>
 
 If you're running a Dataverse Installation, you should be aware of these things:
 
-- Destroy behavior
+**Run ReExportall**
+We made changes to the citation block in this release that will require installations to run ReExportall as part of the upgrade process. 
 
- - In making the fix for xxx we discovered that notifications created prior to 2018 may have been invalidated. With this release we advise that these older notifications are deleted from the database. The following query can be used for this purpose:
+**Destroy Updates**
+Destroying Datasets in Dataverse will now unregister/delete the PID for that Dataset. This eliminates the need for an extra step to "clean up" a PID registration after destroying a Dataset. 
+
+**Deleting Notifications**
+In making the fix for #5687 we discovered that notifications created prior to 2018 may have been invalidated. With this release we advise that these older notifications are deleted from the database. The following query can be used for this purpose:
 delete from usernotification where date_part('year', senddate) < 2018;
- - You should update your custom analytics code to include CDATA sections, inside the `script` tags, around the javascript code. We have updated the documentation and sample analytics code snippet provided in [Installation Guide > Configuration > Web Analytics Code](http://guides.dataverse.org/en/latest/installation/config.html#web-analytics-code) to fix a bug that broke the rendering of the 403 and 500 custom error pgs (#5967). 
- - You should update citation metadata block and run ReExportall to remove an errant tab
-curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @citation.tsv -H "Content-type: text/tab-separated-values"
-Run ReExportall to update the citation metadata block to remove an errant tab: http://guides.dataverse.org/en/4.16/admin/metadataexport.html?highlight=export#batch-exports-through-the-api
+
+**Lock Improvements**
+A new type of Dataset lock implemented in 4.15 caused <a href="https://guides.dataverse.org">Read more in the guides.</a>
+
+**Custom Analytics Code Changes**
+You should update your custom analytics code to include CDATA sections, inside the `script` tags, around the javascript code. We have updated the documentation and sample analytics code snippet provided in [Installation Guide > Configuration > Web Analytics Code](http://guides.dataverse.org/en/latest/installation/config.html#web-analytics-code) to fix a bug that broke the rendering of the 403 and 500 custom error pgs (#5967). 
 
 For the complete list of code changes in this release, see the <a href="https://github.com/IQSS/dataverse/milestone/83?closed=1">4.16 milestone</a> in Github.
 
