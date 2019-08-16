@@ -1,10 +1,17 @@
-This release includes the following new features, enhancements, and bug features:
+This release brings new features, enhancements, and bug fixes to Dataverse. The release highlights include:
 
-<a href="https://github.com/IQSS/dataverse/pull/xxx">yyy</a>,
-<a href="https://github.com/IQSS/dataverse/pull/xxx">yyy</a>,
+- Metrics view updates
+- Codebook
+- Lock improvements
+- On success
+
+- Researchers will now be able to <a href="https://github.com/IQSS/dataverse/pull/6081">download HTML Codebooks</a> as an additional Dataset Export format. This pro
+<a href="https://github.com/IQSS/dataverse/pull/6040">The metrics view at both the Dataset and File level has been redesigned. layout has be</a>,
 and <a href="https://github.com/IQSS/dataverse/pull/xxx">yyy</a>.
 
 If you're running a Dataverse Installation, you should be aware of these things:
+
+- Destroy behavior
 
  - In making the fix for xxx we discovered that notifications created prior to 2018 may have been invalidated. With this release we advise that these older notifications are deleted from the database. The following query can be used for this purpose:
 delete from usernotification where date_part('year', senddate) < 2018;
