@@ -250,6 +250,21 @@ public class FileDownloadHelper implements java.io.Serializable {
          }
 
      }
+     
+     public void writeGuestbookAndOpenSubset(GuestbookResponse guestbookResponse) {
+        RequestContext requestContext = RequestContext.getCurrentInstance();
+        boolean valid = validateGuestbookResponse(guestbookResponse);
+
+         if (!valid) {
+
+         } else {
+             requestContext.execute("PF('downloadPopup').hide()"); 
+             requestContext.execute("PF('downloadDataSubsetPopup').show()");
+             guestbookResponse.setDownloadtype("Subset");
+             fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
+         }
+
+     }
 
      /**
       * This method is only invoked from a popup. A popup appears when the

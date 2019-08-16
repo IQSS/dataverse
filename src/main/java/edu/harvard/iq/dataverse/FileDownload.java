@@ -53,10 +53,10 @@ public class FileDownload implements Serializable {
     
     
     /**
-     * Possible values for downloadType include "Download",
+     * Possible values for downloadType include "Download", "Subset",
      * "WorldMap", or the displayName of an ExternalTool.
      *
-     * TODO: Types like "Download" and probably "WorldMap" should
+     * TODO: Types like "Download" and "Subset" and probably "WorldMap" should
      * be defined once as constants (likely an enum) rather than having these
      * strings duplicated in various places when setDownloadtype() is called.
      * (Some day it would be nice to convert WorldMap into an ExternalTool but
