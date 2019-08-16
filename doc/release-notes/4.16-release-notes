@@ -1,1 +1,32 @@
+This release includes the following new features, enhancements, and bug features:
 
+<a href="https://github.com/IQSS/dataverse/pull/xxx">yyy</a>,
+<a href="https://github.com/IQSS/dataverse/pull/xxx">yyy</a>,
+and <a href="https://github.com/IQSS/dataverse/pull/xxx">yyy</a>.
+
+If you're running a Dataverse Installation, you should be aware of these changes:
+
+For the complete list of code changes in this release, see the <a href="https://github.com/IQSS/dataverse/milestone/83?closed=1">4.16 milestone</a> in Github.
+
+For help with upgrading, installing, or general questions please post to the <a href="https://groups.google.com/forum/#!forum/dataverse-community">Dataverse Google Group</a> or email support@dataverse.org. 
+
+## Installation:
+
+If this is a new installation, please see our <a href=http://guides.dataverse.org/en/4.16/installation/>Installation Guide</a>.
+
+## Upgrade:
+
+1.  Undeploy the previous version.
+
+  - &lt;glassfish install path&gt;/glassfish4/bin/asadmin list-applications
+  - &lt;glassfish install path&gt;/glassfish4/bin/asadmin undeploy dataverse
+
+2. Stop glassfish and remove the generated directory, start
+  - service glassfish stop
+  - remove the generated directory: rm -rf &lt;glassfish install path&gt;glassfish4/glassfish/domains/domain1/generated
+  - service glassfish start
+
+3. Deploy this version.
+  - &lt;glassfish install path&gt;/glassfish4/bin/asadmin deploy &lt;path&gt;dataverse-4.16.war
+
+4. Restart glassfish
