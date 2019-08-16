@@ -158,7 +158,6 @@ Additional download options available for tabular data (found in the same drop-d
 - Data File Citation (currently in either RIS, EndNote XML, or BibTeX format); 
 - All of the above, as a zipped bundle. 
 
-|image2|
 
 Geospatial
 ----------
@@ -523,8 +522,6 @@ If you deaccession the most recently published version of the dataset but not al
 **Important Note**: A tombstone landing page with the basic citation metadata will always be accessible to the public if they use the persistent URL (Handle or DOI) provided in the citation for that dataset.  Users will not be able to see any of the files or additional metadata that were previously available prior to deaccession.
 
 .. |image1| image:: ./img/DatasetDiagram.png
-   :class: img-responsive
-.. |image2| image:: ./img/data-download.png
    :class: img-responsive
 .. |image3| image:: ./img/data_publishing_version_workflow.png
    :class: img-responsive
