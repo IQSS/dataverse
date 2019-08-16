@@ -4,7 +4,11 @@ This release includes the following new features, enhancements, and bug features
 <a href="https://github.com/IQSS/dataverse/pull/xxx">yyy</a>,
 and <a href="https://github.com/IQSS/dataverse/pull/xxx">yyy</a>.
 
-If you're running a Dataverse Installation, you should be aware of these changes:
+If you're running a Dataverse Installation, you should be aware of these things:
+
+ - In making the fix for xxx we discovered that notifications created prior to 2018 may have been invalidated. With this release we advise that these older notifications are deleted from the database. The following query can be used for this purpose:
+
+- delete from usernotification where date_part('year', senddate) < 2018;
 
 For the complete list of code changes in this release, see the <a href="https://github.com/IQSS/dataverse/milestone/83?closed=1">4.16 milestone</a> in Github.
 
