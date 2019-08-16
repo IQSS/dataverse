@@ -27,8 +27,6 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.Timer;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.faces.bean.ManagedBean;
 import javax.inject.Named;
 //import javax.xml.bind.Unmarshaller;
@@ -39,14 +37,9 @@ import org.apache.commons.lang.mutable.MutableLong;
 import org.xml.sax.SAXException;
 
 import com.lyncode.xoai.model.oaipmh.Header;
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandlerException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -263,13 +256,14 @@ public class HarvesterServiceBean {
 
                 Header h = idIter.next();
                 String identifier = h.getIdentifier();
+                Date dateStamp = h.getDatestamp();
                 
-                hdLogger.info("processing identifier: " + identifier);
+                hdLogger.info("processing identifier: " + identifier + ", date: " + dateStamp);
 
                 MutableBoolean getRecordErrorOccurred = new MutableBoolean(false);
 
                 // Retrieve and process this record with a separate GetRecord call:
-                Long datasetId = processRecord(dataverseRequest, hdLogger, importCleanupLog, oaiHandler, identifier, getRecordErrorOccurred, processedSizeThisBatch, deletedIdentifiers);
+                Long datasetId = processRecord(dataverseRequest, hdLogger, importCleanupLog, oaiHandler, identifier, getRecordErrorOccurred, processedSizeThisBatch, deletedIdentifiers, dateStamp);
                 
                 hdLogger.info("Total content processed in this batch so far: "+processedSizeThisBatch);
                 if (datasetId != null) {
@@ -315,8 +309,7 @@ public class HarvesterServiceBean {
     
     
     
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public Long processRecord(DataverseRequest dataverseRequest, Logger hdLogger, PrintWriter importCleanupLog, OaiHandler oaiHandler, String identifier, MutableBoolean recordErrorOccurred, MutableLong processedSizeThisBatch, List<String> deletedIdentifiers) {
+    private Long processRecord(DataverseRequest dataverseRequest, Logger hdLogger, PrintWriter importCleanupLog, OaiHandler oaiHandler, String identifier, MutableBoolean recordErrorOccurred, MutableLong processedSizeThisBatch, List<String> deletedIdentifiers, Date dateStamp) {
         String errMessage = null;
         Dataset harvestedDataset = null;
         logGetRecord(hdLogger, oaiHandler, identifier);
@@ -334,7 +327,7 @@ public class HarvesterServiceBean {
                 Dataset dataset = datasetService.getDatasetByHarvestInfo(oaiHandler.getHarvestingClient().getDataverse(), identifier);
                 if (dataset != null) {
                     hdLogger.info("Deleting dataset " + dataset.getGlobalIdString());
-                    deleteHarvestedDataset(dataset, dataverseRequest, hdLogger);
+                    datasetService.deleteHarvestedDataset(dataset, dataverseRequest, hdLogger);
                     // TODO: 
                     // check the status of that Delete - see if it actually succeeded
                     deletedIdentifiers.add(identifier);
@@ -351,7 +344,8 @@ public class HarvesterServiceBean {
                         oaiHandler.getHarvestingClient(),
                         identifier,
                         oaiHandler.getMetadataPrefix(), 
-                        record.getMetadataFile(), 
+                        record.getMetadataFile(),
+                        dateStamp,
                         importCleanupLog);
                 
                 hdLogger.fine("Harvest Successful for identifier " + identifier);
@@ -388,36 +382,7 @@ public class HarvesterServiceBean {
 
         return harvestedDataset != null ? harvestedDataset.getId() : null;
     }
-    
-    private void deleteHarvestedDataset(Dataset dataset, DataverseRequest request, Logger hdLogger) {
-        // Purge all the SOLR documents associated with this client from the 
-        // index server: 
-        indexService.deleteHarvestedDocuments(dataset);
-        
-        try {
-            // files from harvested datasets are removed unceremoniously, 
-            // directly in the database. no need to bother calling the 
-            // DeleteFileCommand on them.
-            for (DataFile harvestedFile : dataset.getFiles()) {
-                DataFile merged = em.merge(harvestedFile);
-                em.remove(merged);
-                harvestedFile = null; 
-            }
-            dataset.setFiles(null);
-            Dataset merged = em.merge(dataset);
-            engineService.submit(new DeleteDatasetCommand(request, merged));
-        } catch (IllegalCommandException ex) {
-            // TODO: log the result
-        } catch (PermissionException ex) {
-            // TODO: log the result
-        } catch (CommandException ex) {
-            // TODO: log the result                    
-        }
-                            
-        // TODO: log the success result
-    }
-    
-    
+       
     private void logBeginOaiHarvest(Logger hdLogger, HarvestingClient harvestingClient) {
         hdLogger.log(Level.INFO, "BEGIN HARVEST, oaiUrl=" 
                 +harvestingClient.getHarvestingUrl() 
