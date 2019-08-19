@@ -155,7 +155,7 @@ Sample Data
 
 You may want to populate your installation of Dataverse with sample data. You have a couple options:
 
-- Code in https://github.com/IQSS/dataverse-sample-data (recommended).
+- Code in https://github.com/IQSS/dataverse-sample-data (recommended). This set of sample data includes several common data types, data subsetted from production datasets in dataverse.harvard.edu, datasets with file hierarchy, and includes integrations with explore tools.
 - Scripts called from ``scripts/deploy/phoenix.dataverse.org/post``.
 
 ----
