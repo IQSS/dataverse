@@ -1,13 +1,11 @@
 <ui:composition
-    xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:h="http://java.sun.com/jsf/html"
-     xmlns:f="http://java.sun.com/jsf/core"
-     xmlns:ui="http://java.sun.com/jsf/facelets"
-     xmlns:c="http://java.sun.com/jsp/jstl/core"
-     xmlns:p="http://primefaces.org/ui"
-     xmlns:o="http://omnifaces.org/ui"
-     xmlns:jsf="http://xmlns.jcp.org/jsf"
-     xmlns:dv="http://dataverse.org/facelets">
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:ui="http://java.sun.com/jsf/facelets"
+        xmlns:p="http://primefaces.org/ui"
+        xmlns:jsf="http://xmlns.jcp.org/jsf"
+        xmlns:dv="http://dataverse.org/facelets">
 
     <ui:fragment rendered="#{widgetWrapper.widgetView}">
         <p class="help-block">
@@ -134,14 +132,14 @@
                                update="@form"
                                value="#{bundle['file.dataFilesTab.versions.viewDetails.btn']}"></p:commandLink>
             </p:column><!-- end: description column -->
-    
+
             <!-- contributor column -->
             <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.contributors']}" class="col-sm-3">
                 <ui:fragment rendered="#{!empty(versionSummary.contributorNames)}">
                     <h:outputText value="#{versionSummary.contributorNames}" />
                 </ui:fragment>
             </p:column><!-- end: contributor column -->
-    
+
             <!-- date column -->
             <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.published']}" class="col-sm-2">
                 <ui:fragment>
@@ -192,10 +190,10 @@
                 </div>
             </ui:repeat>
         </ui:fragment>
-        <div class="panel panel-default" jsf:rendered="#{!empty(datasetVersionsTab.versionsDifferenceForDialog.datasetFilesDiffList) and
-                                                         !empty(datasetVersionsTab.versionsDifferenceForDialog.datasetFilesReplacementList)}">
+            <div class="panel panel-default"
+                 jsf:rendered="#{!empty(datasetVersionsTab.versionsDifferenceForDialog.datasetFilesDiffList)}">
             <div class="panel-heading text-info">
-                <h:outputText id="outputTextAddedRemoved" value="#{bundle['file.viewDiffDialog.files.header']}"/>
+                <h:outputText id="outputTextAddedRemoved" value="#{bundle['file.viewDiffDialog.files.addedRemoved']}"/>
             </div>
             <p:dataTable id="diffFilesDataTable" styleClass="dvnDifferanceTable"  value="#{datasetVersionsTab.versionsDifferenceForDialog.datasetFilesDiffList}" var="fileDiff"
                     rendered="#{!empty(datasetVersionsTab.versionsDifferenceForDialog.datasetFilesDiffList)}">
@@ -227,7 +225,12 @@
                     &#160;
                 </p:column>
             </p:dataTable>
-            
+            </div>
+            <div class="panel panel-default"
+                 jsf:rendered="#{!empty(datasetVersionsTab.versionsDifferenceForDialog.datasetFilesReplacementList)}">
+                <div class="panel-heading text-info">
+                    <h:outputText id="outputTextReplacedFiles" value="#{bundle['file.viewDiffDialog.files.replaced']}"/>
+                </div>
             <p:dataTable id="replacemetFilesDataTable" style="border-top:1px solid #ddd;" styleClass="dvnDifferanceTable"
                             value="#{datasetVersionsTab.versionsDifferenceForDialog.datasetFilesReplacementList}" var="fileReplace"
                             rendered="#{!empty(datasetVersionsTab.versionsDifferenceForDialog.datasetFilesReplacementList)}">
@@ -262,8 +265,8 @@
                 </p:column>
             </p:dataTable>
         </div>
-        
-        <div class="panel panel-default" jsf:rendered="#{!empty(datasetVersionsTab.versionsDifferenceForDialog.datasetFileTermsDiffList)}">
+
+            <div class="panel panel-default" jsf:rendered="#{!empty(datasetVersionsTab.versionsDifferenceForDialog.datasetFileTermsDiffList)}">
             <div class="panel-heading text-info">
                 <h:outputText value="#{bundle['file.viewDiffDialog.fileTerms.header']}"/>
             </div>
@@ -282,7 +285,7 @@
                 </p:column>
             </p:dataTable>
         </div>
-        
+
         </ui:fragment>
         <ui:fragment rendered="#{datasetVersionsTab.versionsDifferenceForDialog.isEmpty()}">
             <p class="help-block">
