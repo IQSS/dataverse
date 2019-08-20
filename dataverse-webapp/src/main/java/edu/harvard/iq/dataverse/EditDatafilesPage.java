@@ -519,6 +519,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (!permissionService.on(dataset).has(Permission.EditDataset)) {
             return permissionsWrapper.notAuthorized();
         }
+        if (datasetService.isInReview(dataset) && !permissionsWrapper.canUpdateAndPublishDataset(dvRequestService.getDataverseRequest(), dataset)) {
+            return permissionsWrapper.notAuthorized();
+        }
 
         // TODO: Think about why this call to populateFileMetadatas was added. It seems like it isn't needed after all.
 //        populateFileMetadatas();

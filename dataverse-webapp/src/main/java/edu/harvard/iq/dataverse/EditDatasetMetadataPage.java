@@ -17,8 +17,13 @@ import javax.faces.application.FacesMessage;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import javax.validation.ConstraintViolation;
 
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
+import edu.harvard.iq.dataverse.persistence.user.Permission;
 import org.apache.commons.lang.StringUtils;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -49,7 +54,8 @@ public class EditDatasetMetadataPage implements Serializable {
     private EjbDataverseEngine commandEngine;
     @Inject
     private DatasetVersionUI datasetVersionUI;
-
+    @Inject
+    private PermissionServiceBean permissionService;
 
     private Long datasetId;
     private String persistentId;
@@ -100,7 +106,7 @@ public class EditDatasetMetadataPage implements Serializable {
         if (!permissionsWrapper.canUpdateDataset(dvRequestService.getDataverseRequest(), dataset)) {
             return permissionsWrapper.notAuthorized();
         }
-        if (!dataset.getLocks().isEmpty()) {
+        if (datasetService.isInReview(dataset) && !permissionsWrapper.canUpdateAndPublishDataset(dvRequestService.getDataverseRequest(), dataset)) {
             return permissionsWrapper.notAuthorized();
         }
 

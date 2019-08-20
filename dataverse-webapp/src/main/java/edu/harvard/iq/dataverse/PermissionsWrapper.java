@@ -156,6 +156,9 @@ public class PermissionsWrapper implements java.io.Serializable {
         return doesSessionUserHaveDataSetPermission(dr, dataset, Permission.EditDataset);
     }
 
+    public boolean canUpdateAndPublishDataset(DataverseRequest dr, Dataset dataset) {
+        return canUpdateDataset(dr, dataset) && canIssuePublishDatasetCommand(dataset);
+    }
 
     /**
      * (Using Raman's implementation in DatasetPage - moving it here, so that

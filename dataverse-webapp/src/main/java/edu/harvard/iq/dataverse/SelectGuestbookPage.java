@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
+import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import org.apache.commons.lang.StringUtils;
 
@@ -36,6 +37,9 @@ public class SelectGuestbookPage implements java.io.Serializable {
 
     @Inject
     private DataverseRequestServiceBean dvRequestService;
+
+    @Inject
+    private PermissionServiceBean permissionService;
 
     @EJB
     EjbDataverseEngine commandEngine;
@@ -92,7 +96,7 @@ public class SelectGuestbookPage implements java.io.Serializable {
         if (!permissionsWrapper.canUpdateDataset(dvRequestService.getDataverseRequest(), dataset)) {
             return permissionsWrapper.notAuthorized();
         }
-        if (!dataset.getLocks().isEmpty()) {
+        if (datasetService.isInReview(dataset) && !permissionsWrapper.canUpdateAndPublishDataset(dvRequestService.getDataverseRequest(), dataset)) {
             return permissionsWrapper.notAuthorized();
         }
 

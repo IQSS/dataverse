@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailComman
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import org.primefaces.event.FileUploadEvent;
@@ -39,6 +40,9 @@ public class DatasetWidgetsPage implements java.io.Serializable {
 
     @Inject
     DataverseRequestServiceBean dvRequestService;
+
+    @Inject
+    private PermissionServiceBean permissionService;
 
     private Long datasetId;
     private Dataset dataset;
@@ -71,6 +75,12 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         if (!permissionsWrapper.canIssueCommand(dataset, UpdateDatasetVersionCommand.class)) {
             return permissionsWrapper.notAuthorized();
         }
+        if (datasetService.isInReview(dataset) && !permissionsWrapper.canUpdateAndPublishDataset(dvRequestService.getDataverseRequest(), dataset)) {
+            return permissionsWrapper.notAuthorized();
+        }
+
+
+
         datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate, new DataAccess());
         datasetThumbnail = DatasetUtil.getThumbnail(dataset);
         if (datasetThumbnail != null) {
