@@ -10,7 +10,6 @@ API Guide
 
 .. toctree::
 
-   new
    intro
    getting-started
    auth
