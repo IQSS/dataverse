@@ -10,11 +10,15 @@ API Guide
 
 .. toctree::
 
+   new
    intro
-   sword
+   getting-started
+   auth
    search
    dataaccess
    native-api
    metrics
+   sword
    client-libraries
    apps
+   faq

@@ -164,5 +164,33 @@ Notifications will only be emailed one time even if you haven't read the notific
 API Token
 ---------
 
-#. To create your API token, click on your name in the header on the right hand side and then click on API Token.
-#. In this tab, you can create your API Token for the first time as well as recreate it if you need a new API Token or if your API Token becomes compromised.
+What APIs Are and Why They Are Useful
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+API stands for "Application Programming Interface" and Dataverse APIs allow you to take advantage of integrations with other software that may have been set up by admins of your installation of Dataverse. See the :doc:`/admin/integrations` section of the Admin Guide and the :doc:`/installation/external-tools` section of the Installation Guide for examples of software that is commonly integrated with Dataverse.
+
+Additionally, if you are willing to write a little code (or find someone to write it for you), APIs provide a way to automate parts of your workflow. See the  :doc:`/api/getting-started` section of the API Guide for details.
+
+How Your API Token Is Like a Password
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In many cases, such as when depositing data, an API Token is required to interact with Dataverse APIs. The word "token" indicates a series of letters and numbers such as ``c6527048-5bdc-48b0-a1d5-ed1b62c8113b``. Anyone who has your API Token can add and delete data as you so you should treat it with the same care as a password.
+
+How to Create Your API Token
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To create your API token, click on your name in the upper right and then click "API Token". In this tab, click "Create Token".
+
+How to Recreate Your API Token
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If your API Token becomes compromised or has expired, click on your name in the upper right and click "API Token". In this tab, click "Recreate Token".
+
+Additional Information about API Tokens and Dataverse APIs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Dataverse APIs are documented in the :doc:`/api/index` but the following sections may be of particular interest:
+
+- :doc:`/api/getting-started`
+- :doc:`/api/auth`
+- :doc:`/api/faq`
