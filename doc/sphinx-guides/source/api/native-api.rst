@@ -1079,6 +1079,8 @@ List all the authentication providers in the system (both enabled and disabled):
 
   GET http://$SERVER/api/admin/authenticationProviders
 
+.. _native_api_add_auth_provider:
+
 Add Authentication Provider
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

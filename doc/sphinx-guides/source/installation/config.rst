@@ -179,17 +179,22 @@ Auth Modes: Local vs. Remote vs. Both
 
 There are three valid configurations or modes for authenticating users to Dataverse:
 
-- Local only (also known as "builtin" or "Username/Email").
-- Both local and remote (Shibboleth and/or OAuth).
-- Remote (Shibboleth and/or OAuth) only.
+Local Only Auth
++++++++++++++++
 
 Out of the box, Dataverse is configured in "local only" mode. The "dataverseAdmin" superuser account mentioned in the :doc:`/installation/installation-main` section is an example of a local account. Internally, these accounts are called "builtin" because they are built in to the Dataverse application itself.
 
+Both Local and Remote Auth
+++++++++++++++++++++++++++
+
 The ``authenticationproviderrow`` database table controls which "authentication providers" are available within Dataverse. Out of the box, a single row with an id of "builtin" will be present. For each user in Dataverse, the ``authenticateduserlookup`` table will have a value under ``authenticationproviderid`` that matches this id. For example, the default "dataverseAdmin" user will have the value "builtin" under  ``authenticationproviderid``. Why is this important? Users are tied to a specific authentication provider but conversion mechanisms are available to switch a user from one authentication provider to the other. As explained in the :doc:`/user/account` section of the User Guide, a graphical workflow is provided for end users to convert from the "builtin" authentication provider to a remote provider. Conversion from a remote authentication provider to the builtin provider can be performed by a sysadmin with access to the "admin" API. See the :doc:`/api/native-api` section of the API Guide for how to list users and authentication providers as JSON.
 
-Adding and enabling a second authentication provider (``Add Authentication Provider`` and ``Enable or Disable an Authentication Provider`` from :doc:`/api/native-api`) will result in the Log In page showing additional providers for your users to choose from. By default, the Log In page will show the "builtin" provider, but you can adjust this via the ``:DefaultAuthProvider`` configuration option. Further customization can be achieved by setting ``:AllowSignUp`` (in :doc:`config`) to "false", thus preventing users from creating local accounts via the web interface. Please note that local accounts can also be created via API, and the way to prevent this is to block the ``builtin-users`` endpoint or scramble (or remove) the ``BuiltinUsers.KEY`` database setting per the :doc:`config` section.
+Adding and enabling a second authentication provider (:ref:`native_api_add_auth_provider` and :ref:`api_toggle_auth_provider`) will result in the Log In page showing additional providers for your users to choose from. By default, the Log In page will show the "builtin" provider, but you can adjust this via the :ref:`conf_default_auth_provider` configuration option. Further customization can be achieved by setting :ref:`:AllowSignUp` to "false", thus preventing users from creating local accounts via the web interface. Please note that local accounts can also be created via API, and the way to prevent this is to block the ``builtin-users`` endpoint (:ref:`conf_blocked_api_endpoints`) or scramble (or remove) the ``BuiltinUsers.KEY`` database setting (:ref:`conf_built_in_users_key`) per the :doc:`config` section.
 
 To configure Shibboleth see the :doc:`shibboleth` section and to configure OAuth see the :doc:`oauth2` section.
+
+Remote Only Auth
+++++++++++++++++
 
 As for the "Remote only" authentication mode, it means that:
 
@@ -1043,6 +1048,8 @@ Out of the box, all API endpoints are completely open, as mentioned in the secti
 
 ``curl -X PUT -d localhost-only http://localhost:8080/api/admin/settings/:BlockedApiPolicy``
 
+.. _conf_blocked_api_endpoints:
+
 :BlockedApiEndpoints
 ++++++++++++++++++++
 
@@ -1058,6 +1065,8 @@ See the :doc:`/api/index` for a list of API endpoints.
 Used in conjunction with the ``:BlockedApiPolicy`` being set to ``unblock-key``. When calling blocked APIs, add a query parameter of ``unblock-key=theKeyYouChose`` to use the key.
 
 ``curl -X PUT -d s3kretKey http://localhost:8080/api/admin/settings/:BlockedApiKey``
+
+.. _conf_built_in_users_key:
 
 BuiltinUsers.KEY
 ++++++++++++++++
@@ -1471,6 +1480,8 @@ Allow for migration of non-conformant data (especially dates) from DVN 3.x to Da
 
 The duration in minutes before "Confirm Email" URLs expire. The default is 1440 minutes (24 hours).  See also the :doc:`/admin/user-administration` section of our Admin Guide.
 
+.. _conf_default_auth_provider:
+
 :DefaultAuthProvider
 ++++++++++++++++++++
 
@@ -1485,6 +1496,8 @@ If you have enabled Shibboleth and/or one or more OAuth providers, you may wish 
 Here is an example of setting the default auth provider back to ``builtin``:
 
 ``curl -X PUT -d builtin http://localhost:8080/api/admin/settings/:DefaultAuthProvider``
+
+.. _:AllowSignUp:
 
 :AllowSignUp
 ++++++++++++
