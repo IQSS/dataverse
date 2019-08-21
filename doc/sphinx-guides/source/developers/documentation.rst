@@ -77,6 +77,8 @@ To edit the existing documentation:
 - Go to ~/dataverse/doc/sphinx-guides/source directory inside your clone. There, you will find the .rst files that correspond to the guides in the dataverse page (http://guides.dataverse.org/en/latest/).
 - Using your preferred text editor, open and edit the necessary files, or create new ones.
 
+**NOTE:** When adding ReStructured Text (RST) `cross references <https://www.sphinx-doc.org/en/master/usage/restructuredtext/roles.html#ref-role>`_, use the hyphen character (``-``) as the word separator for the cross reference label. For example, ``my-reference-label`` would be the preferred label for a cross reference as oposed to, for example, ``my_refrence_label``.
+
 Once you are done, open a terminal and change directories to ~/dataverse/doc/sphinx-guides . Then, run the following commands:
 
 - ``make clean``

@@ -1079,7 +1079,7 @@ List all the authentication providers in the system (both enabled and disabled):
 
   GET http://$SERVER/api/admin/authenticationProviders
 
-.. _native_api_add_auth_provider:
+.. _native-api-add-auth-provider:
 
 Add Authentication Provider
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1096,7 +1096,7 @@ Show data about an authentication provider::
   GET http://$SERVER/api/admin/authenticationProviders/$id
 
 
-.. _api_toggle_auth_provider:
+.. _api-toggle-auth-provider:
 
 Enable or Disable an Authentication Provider
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
