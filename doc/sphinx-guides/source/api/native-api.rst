@@ -205,16 +205,50 @@ Delete the assignment whose id is ``$id``::
 List Metadata Blocks Defined on a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Get the metadata blocks defined on the passed dataverse::
+|CORS| Get the metadata blocks defined on a dataverse which determine which field are available to authors when they create and edit datasets within that dataverse. This feature is described under "General Information" in the :doc:`/user/dataverse-management` section of the User Guide.
 
-  GET http://$SERVER/api/dataverses/$id/metadatablocks?key=$apiKey
+Please note that an API token is only required if the dataverse has not been published.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export ALIAS=root
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ALIAS/metadatablocks
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/metadatablocks
 
 Define Metadata Blocks for a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sets the metadata blocks of the dataverse. Makes the dataverse a metadatablock root. The query body is a JSON array with a list of metadatablocks identifiers (either id or name), such as "journal" and "geospatial" in the example below. Requires "EditDataverse" permission. In this example the "root" dataverse is being modified but you can substitute any dataverse alias:
+You can define the metadata blocks available to authors within a dataverse.
 
-``curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-type:application/json" -d "[\"journal\",\"geospatial\"]" http://localhost:8080/api/dataverses/:root/metadatablocks``
+The metadata blocks that are available with a default installation of Dataverse are in :download:`define-metadatablocks.json <../_static/api/define-metadatablocks.json>` (also shown below) and you should download this file and edit it to meet your needs. Please note that the "citation" metadata block is required. You must have "EditDataverse" permission on the dataverse.
+
+.. literalinclude:: ../_static/api/define-metadatablocks.json
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export ALIAS=root
+  export SERVER_URL=https://demo.dataverse.org
+  
+  curl -H X-Dataverse-key:$API_TOKEN -X POST -H \"Content-type:application/json\" --upload-file define-metadatablocks.json $SERVER_URL/api/dataverses/$ALIAS/metadatablocks
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -H "Content-type:application/json" --upload-file define-metadatablocks.json https://demo.dataverse.org/api/dataverses/root/metadatablocks
 
 Determine if a Dataverse Inherits Its Metadata Blocks from Its Parent
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
