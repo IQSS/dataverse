@@ -1757,3 +1757,11 @@ This can be helpful in situations where multiple organizations are sharing one D
 or 
 ``curl -X PUT -d '*' http://localhost:8080/api/admin/settings/:InheritParentRoleAssignments``
 
+:AllowCors
+++++++++++
+
+Allows Cross-Origin Resource sharing(CORS). By default this setting is absent and Dataverse assumes it to be true.
+
+If you don’t want to allow CORS for your installation, set:
+
+``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:AllowCors``

@@ -737,11 +737,6 @@ public abstract class AbstractApiBean {
                         .add( "message", msg ).build()
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
-
-   protected Response allowCors( Response r ) {
-       r.getHeaders().add("Access-Control-Allow-Origin", "*");
-       return r;
-   }
 }
 
 class LazyRef<T> {
