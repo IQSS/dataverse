@@ -406,11 +406,11 @@ Deletes the draft version of dataset ``$id``. Only the draft version can be dele
 Set Citation Date Field for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sets the dataset field type to be used as the citation date for the given dataset (if the dataset does not include the dataset field type, the default logic is used). The name of the dataset field type should be sent in the body of the reqeust.
+Sets the dataset field type to be used as the citation date for the given dataset (if the dataset does not include the dataset field type, the default logic is used). The name of the dataset field type should be sent in the body of the request.
 To revert to the default logic, use ``:publicationDate`` as the ``$datasetFieldTypeName``.
 Note that the dataset field used has to be a date field::
 
-    PUT http://$SERVER/api/datasets/$id/citationdate?key=$apiKey
+    PUT http://$SERVER/api/datasets/$id/citationdate?key=$apiKey --data "$datasetFieldTypeName"
 
 Revert Citation Date Field to Default for Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
