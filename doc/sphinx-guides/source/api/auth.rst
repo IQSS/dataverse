@@ -9,7 +9,7 @@ An API token is similar to a password and allows you to authenticate to Datavers
 How to Get an API Token
 -----------------------
 
-Your API token is unique to the server you are using. You cannot use your API token from one server on another server.
+Your API token is unique to the server you are using. You cannot take your API token from one server and use it on another server.
 
 Instructions for getting a token are described in the :doc:`/user/account` section of the User Guide.
 

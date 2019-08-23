@@ -65,7 +65,7 @@ No, but there probably should be. If you have suggestions for how it should look
 
 .. _no-api:
 
-What Funtionality is GUI Only and Not Available Via API
+What Functionality is GUI Only and Not Available Via API
 -------------------------------------------------------
 
 The following tasks cannot currently be automated via API because no API exists for them. The web interface should be used instead for these GUI-only features:

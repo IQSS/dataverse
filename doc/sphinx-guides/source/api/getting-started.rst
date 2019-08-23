@@ -22,7 +22,7 @@ Once you have identified a server to test with, create an account, click on your
 
 .. _curl-examples-and-environment-variables:
 
-curl Examples and Enviroment Variables
+curl Examples and Environment Variables
 --------------------------------------
 
 The examples in this guide use `curl`_ for the following reasons:
@@ -104,7 +104,7 @@ In order to download files, you must know their database IDs which you can get f
 Downloading Metadata
 ~~~~~~~~~~~~~~~~~~~~
 
-Dataset metadata is availabe in a variety of formats listed at :ref:`metadata-export-formats`.
+Dataset metadata is available in a variety of formats listed at :ref:`metadata-export-formats`.
 
 See :ref:`export-dataset-metadata-api`.
 

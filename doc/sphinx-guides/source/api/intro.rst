@@ -35,7 +35,7 @@ API stands for "Application Programming Interface" and an example is Dataverse's
       uploader [label="DvUploader"]
       script [label="Script\n(Python,\nR, etc.)"]
   
-      addfilebutton [label="Add File Button"]
+      addfilebutton [label="Add File GUI"]
       addfileapi [label="Add File API"]
       storage [label="Storage",shape=box3d]
   
@@ -66,7 +66,7 @@ The components above that use the "file" upload API are:
 
 - DvUploader is terminal-based application for uploading files that is described in the :doc:`/user/dataset-management` section of the User Guide.
 - OJS, OSF, and RSpace are all web applications that can integrate with Dataverse and are described in "Getting Data In" in the :doc:`/admin/integrations` section of the Admin Guide.
-- The script in the diagram can be as simple as single line of code that is run in a terminal. You can copy and paste "one-liners" like this from the guide. See the :doc:`getting-started` section for examples using a tool called "curl".
+- The script in the diagram can be as simple as a single line of code that is run in a terminal. You can copy and paste "one-liners" like this from the guide. See the :doc:`getting-started` section for examples using a tool called "curl".
 
 The diagram above shows only a few examples of software using a specific API but many more APIs are available.
 
@@ -104,7 +104,7 @@ Power users may be researchers or curators who are comfortable with automating p
 Support Teams and Superusers
 ++++++++++++++++++++++++++++
 
-Support teams that answer questions about their installation of Dataverse should familiarized themselves with the :doc:`getting-started` section to get a sense of common tasks that researchers and curators might be trying to accomplish by using Dataverse APIs.
+Support teams that answer questions about their installation of Dataverse should familiarize themselves with the :doc:`getting-started` section to get a sense of common tasks that researchers and curators might be trying to accomplish by using Dataverse APIs.
 
 Superusers of an installation of Dataverse have access a superuser dashboard described in the :doc:`/admin/dashboard` section of the Admin Guide but some operations can only be done via API.
 
@@ -187,7 +187,7 @@ Lists of Dataverse APIs
   - Files
   - etc.
 
-- :doc:`metrics`: For query statisics about usage of a Dataverse installation.
+- :doc:`metrics`: For query statistics about usage of a Dataverse installation.
 - :doc:`sword`: For depositing data using a standards-based approach rather than the :doc:`native-api`.
 
 Please note that some APIs are only documented in other guides that are more suited to their audience:
