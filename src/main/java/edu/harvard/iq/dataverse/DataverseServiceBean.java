@@ -12,12 +12,14 @@ import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,6 +43,7 @@ import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.ws.rs.core.Response;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  *
@@ -90,8 +93,16 @@ public class DataverseServiceBean implements java.io.Serializable {
         Dataverse savedDataverse = em.merge(dataverse);
         /**
          * @todo check the result to see if indexing was successful or not
+         * added logging of exceptions 
          */
-        Future<String> indexingResult = indexService.indexDataverse(savedDataverse);
+        try {
+            Future<String> indexingResult = indexService.indexDataverse(savedDataverse);
+        } catch (IOException | SolrServerException e) {
+            String failureLogText = "Post-save indexing failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + savedDataverse.getId().toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, savedDataverse);
+        }
+
 //        logger.log(Level.INFO, "during dataverse save, indexing result was: {0}", indexingResult);
         return savedDataverse;
     }

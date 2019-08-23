@@ -37,8 +37,8 @@ public class Info extends AbstractApiBean {
         String version = comps[0].trim();
         JsonValue build = comps.length > 1 ? Json.createArrayBuilder().add(comps[1].trim()).build().get(0) : JsonValue.NULL;
         
-        return allowCors(response( req -> ok( Json.createObjectBuilder().add("version", version)
-                                                              .add("build", build))));
+        return response( req -> ok( Json.createObjectBuilder().add("version", version)
+                                                              .add("build", build)));
     }
     
     @GET
@@ -50,6 +50,6 @@ public class Info extends AbstractApiBean {
     @GET
     @Path("apiTermsOfUse")
     public Response getTermsOfUse() {
-        return allowCors(response( req -> ok(systemConfig.getApiTermsOfUse())));
+        return response( req -> ok(systemConfig.getApiTermsOfUse()));
     }
 }

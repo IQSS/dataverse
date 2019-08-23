@@ -64,7 +64,7 @@ Show Contents of a Dataverse
 
 |CORS| Lists all the DvObjects under dataverse ``id``. ::
 
-    GET http://$SERVER/api/dataverses/$id/contents
+``curl -H "X-Dataverse-key:$API_TOKEN" http://$SERVER_URL/api/dataverses/$id/contents``
 
 
 Report the data (file) size of a Dataverse
@@ -72,7 +72,7 @@ Report the data (file) size of a Dataverse
 
 Shows the combined size in bytes of all the files uploaded into the dataverse ``id``. ::
 
-    GET http://$SERVER/api/dataverses/$id/storagesize
+``curl -H "X-Dataverse-key:$API_TOKEN" http://$SERVER_URL/api/dataverses/$id/storagesize``
 
 Both published and unpublished files will be counted, in the dataverse specified, and in all its sub-dataverses, recursively. 
 By default, only the archival files are counted - i.e., the files uploaded by users (plus the tab-delimited versions generated for tabular data files on ingest). If the optional argument ``includeCached=true`` is specified, the API will also add the sizes of all the extra files generated and cached by Dataverse - the resized thumbnail versions for image files, the metadata exports for published datasets, etc. 
@@ -406,11 +406,11 @@ Deletes the draft version of dataset ``$id``. Only the draft version can be dele
 Set Citation Date Field for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sets the dataset field type to be used as the citation date for the given dataset (if the dataset does not include the dataset field type, the default logic is used). The name of the dataset field type should be sent in the body of the reqeust.
+Sets the dataset field type to be used as the citation date for the given dataset (if the dataset does not include the dataset field type, the default logic is used). The name of the dataset field type should be sent in the body of the request.
 To revert to the default logic, use ``:publicationDate`` as the ``$datasetFieldTypeName``.
 Note that the dataset field used has to be a date field::
 
-    PUT http://$SERVER/api/datasets/$id/citationdate?key=$apiKey
+    PUT http://$SERVER/api/datasets/$id/citationdate?key=$apiKey --data "$datasetFieldTypeName"
 
 Revert Citation Date Field to Default for Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -812,6 +812,19 @@ Example::
 
 Also note that dataFileTags are not versioned and changes to these will update the published version of the file.
 
+.. _EditingVariableMetadata:
+
+Editing Variable Level Metadata
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates variable level metadata using ddi xml ``$file``, where ``$id`` is file id::
+
+    PUT https://$SERVER/api/edit/$id --upload-file $file
+
+Example: ``curl -H "X-Dataverse-key:$API_TOKEN" -X PUT http://localhost:8080/api/edit/95 --upload-file dct.xml``
+
+You can download :download:`dct.xml <../../../../src/test/resources/xml/dct.xml>` from the example above to see what the XML looks like.
+
 Provenance
 ~~~~~~~~~~
 Get Provenance JSON for an uploaded file::
@@ -1066,6 +1079,8 @@ List all the authentication providers in the system (both enabled and disabled):
 
   GET http://$SERVER/api/admin/authenticationProviders
 
+.. _native-api-add-auth-provider:
+
 Add Authentication Provider
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1081,7 +1096,7 @@ Show data about an authentication provider::
   GET http://$SERVER/api/admin/authenticationProviders/$id
 
 
-.. _api_toggle_auth_provider:
+.. _api-toggle-auth-provider:
 
 Enable or Disable an Authentication Provider
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1373,10 +1388,13 @@ if validation fails, will report the specific database entity and the offending 
    
    {"status":"OK","data":{"entityClassDatabaseTableRowId":"[DatasetVersion id:73]","field":"archiveNote","invalidValue":"random text, not a url"}} 
 
+If the optional argument ``variables=true`` is specified, the API will also validate the metadata associated with any tabular data files found in the dataset specified. (For example: an invalid or empty variable name). 
 
 Validate all the datasets in the Dataverse, report any constraint violations found::
 
   curl $SERVER_URL/api/admin/validate/datasets
+
+If the optional argument ``variables=true`` is specified, the API will also validate the metadata associated with any tabular data files. (For example: an invalid or empty variable name). Note that validating all the tabular metadata may significantly increase the run time of the full validation pass. 
 
 This API streams its output in real time, i.e. it will start producing the output immediately and will be reporting on the progress as it validates one dataset at a time. For example:: 
 
@@ -1472,3 +1490,5 @@ Recursively applies the role assignments of the specified dataverse, for the rol
   GET http://$SERVER/api/admin/dataverse/{dataverse alias}/addRoleAssignmentsToChildren
   
 Note: setting ``:InheritParentRoleAssignments`` will automatically trigger inheritance of the parent dataverse's role assignments for a newly created dataverse. Hence this API call is intended as a way to update existing child dataverses or to update children after a change in role assignments has been made on a parent dataverse.
+
+

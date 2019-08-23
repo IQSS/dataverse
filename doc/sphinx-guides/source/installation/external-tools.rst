@@ -19,6 +19,8 @@ Support for external tools is just getting off the ground but the following tool
 
 - `File Previewers <https://github.com/QualitativeDataRepository/dataverse-previewers>`_: A set of tools that display the content of files - including audio, html, `Hypothes.is <https://hypothes.is/>` annotations, images, PDF, text, video - allowing them to be viewed without downloading. The previewers can be run directly from github.io, so the only required step is using the Dataverse API to register the ones you want to use. Documentation, including how to optionally brand the previewers, and an invitation to contribute through github are in the README.md file. 
 
+- Data Curation Tool: a GUI for curating data by adding labels, groups, weights and other details to assist with informed reuse. See the README.md file at https://github.com/scholarsportal/Dataverse-Data-Curation-Tool for the installation instructions.
+
 - [Your tool here! Please get in touch! :) ]
 
 

@@ -79,6 +79,7 @@
                             </button>
                         </span>
                         <script>
+                            //<![CDATA[
                             $(document).ready(function () {
                                 // clipboard.js > cloud storage copy btn
                                 var clipboard = new Clipboard('button.btn-copy');
@@ -90,6 +91,7 @@
                                     console.log(e);
                                 });
                             });
+                            //]]>
                         </script>
                     </div>
                 </div>
@@ -172,7 +174,7 @@
                                         <f:param name="persistentId" value="#{DatasetPage.persistentId}"/>
                                         <f:param name="version" value="#{DatasetPage.version}"/>
                                         <f:param name="q" value="#{DatasetPage.fileLabelSearchTerm}"/>
-                                        <f:param name="fileTypeGroupFacet" value="#{facetLabel.name}"/>
+                                        <f:param name="fileTypeGroupFacet" value='"#{facetLabel.name}"'/>
                                         <f:param name="fileAccess" value="#{DatasetPage.fileAccessFacet}"/>
                                         <f:param name="fileTag" value="#{DatasetPage.fileTagsFacet}"/>
                                         <f:param name="fileSortField" value="#{DatasetPage.fileSortField}"/>
@@ -248,7 +250,7 @@
                                         <f:param name="q" value="#{DatasetPage.fileLabelSearchTerm}"/>
                                         <f:param name="fileTypeGroupFacet" value="#{DatasetPage.fileTypeFacet}"/>
                                         <f:param name="fileAccess" value="#{DatasetPage.fileAccessFacet}"/>
-                                        <f:param name="fileTag" value="#{facetLabel.name}"/>
+                                        <f:param name="fileTag" value='"#{facetLabel.name}"'/>
                                         <f:param name="fileSortField" value="#{DatasetPage.fileSortField}"/>
                                         <f:param name="fileSortOrder" value="#{DatasetPage.fileSortOrder}"/>
                                     </h:outputLink></li>

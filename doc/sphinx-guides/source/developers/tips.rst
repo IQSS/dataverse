@@ -153,9 +153,9 @@ On a Mac, you won't have git installed unless you have "Command Line Developer T
 Sample Data
 -----------
 
-You may want to populate your installation of Dataverse with sample data. You have a couple options:
+You may want to populate your **non-production** installation(s) of Dataverse with sample data. You have a couple options:
 
-- Code in https://github.com/IQSS/dataverse-sample-data (recommended).
+- Code in https://github.com/IQSS/dataverse-sample-data (recommended). This set of sample data includes several common data types, data subsetted from production datasets in dataverse.harvard.edu, datasets with file hierarchy, and more.
 - Scripts called from ``scripts/deploy/phoenix.dataverse.org/post``.
 
 ----
