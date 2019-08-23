@@ -74,7 +74,7 @@ Institutional log in allows you to use your log in information for your universi
 Create a Dataverse account using Institutional Log In
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-#. Go to “Log In” in the upper right corner of Dataverse.
+#. Click the "Log In" link in the navbar.
 #. Select the "Your Institution" button under the "Other options" header
 #. Using the dropdown menu, select your institution then click the Continue button to go to your institution's log in page.
 #. After you put in your institutional credentials successfully, you will be brought back to Dataverse to confirm your account information, and click "Create Account".
@@ -89,7 +89,7 @@ If you already have a Dataverse account associated with the Username/Email log i
 
 #. Go to the Account Information page to confirm that your account email address is the same as your institutional email address. If not, you will need to update your Dataverse account to make them match.
 #. Log out of Dataverse.
-#. Go to “Log In” in the upper right corner of Dataverse.
+#. Click the "Log In" link in the navbar.
 #. Select the "Your Institution" button under the "Other options" header.
 #. Using the dropdown menu, select your institution then click the Continue button to go to your institution's log in page.
 #. After you put in your institutional credentials successfully, you will be brought back to Dataverse to confirm your account information.
@@ -109,7 +109,7 @@ You can set up your Dataverse account to allow you to log in using your ORCID cr
 Create a Dataverse account using ORCID
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-#. Go to “Log In” in the upper right corner of Dataverse.
+#. Click the "Log In" link in the navbar.
 #. Click the "ORCID" button under the "Other options" header.
 #. Click the "Log In with ORCID" button to go to the ORCID website.
 #. If you do not already have an ORCID account, you can create one on this page. If you already have an ORCID account, click on "Sign in" and then enter your login under the "Personal account" tab.
@@ -121,7 +121,7 @@ Convert your Dataverse account to use ORCID for log in
 If you already have a Dataverse account associated with the Username/Email log in option, but you want to convert it to use ORCID for log in, follow these steps:
 
 #. Log out of Dataverse.
-#. Go to "Log In" in the upper right corner of Dataverse.
+#. Click the "Log In" link in the navbar.
 #. Click the "ORCID" button under the "Other options" header.
 #. Click the "Log In with ORCID" button to go to the ORCID website.
 #. If you do not already have an ORCID account, you can create one on this page. If you already have an ORCID account, click on "Sign in" and then enter your login under the "Personal account" tab.
@@ -179,12 +179,12 @@ In many cases, such as when depositing data, an API Token is required to interac
 How to Create Your API Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To create your API token, click on your name in the upper right and then click "API Token". In this tab, click "Create Token".
+To create your API token, click on your account name in the navbar, then select "API Token" from the dropdown menu. In this tab, click "Create Token".
 
 How to Recreate Your API Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If your API Token becomes compromised or has expired, click on your name in the upper right and click "API Token". In this tab, click "Recreate Token".
+If your API Token becomes compromised or has expired, click on your account name in the navbar, then select "API Token" from the dropdown menu. In this tab, click "Recreate Token".
 
 Additional Information about API Tokens and Dataverse APIs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
