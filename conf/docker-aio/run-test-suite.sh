@@ -9,4 +9,4 @@ fi
 # Please note the "dataverse.test.baseurl" is set to run for "all-in-one" Docker environment.
 # TODO: Rather than hard-coding the list of "IT" classes here, add a profile to pom.xml.
 #mvn test -Dtest=DataversesIT,DatasetsIT,SwordIT,AdminIT,BuiltinUsersIT,UsersIT,UtilIT,ConfirmEmailIT,FileMetadataIT,FilesIT,SearchIT,InReviewWorkflowIT -Ddataverse.test.baseurl='http://localhost:8083'
-mvn test -Dtest=InReviewWorkflowIT -Ddataverse.test.baseurl='http://localhost:8083'
+mvn test -Dtest=BuiltinUsersIT -Ddataverse.test.baseurl='http://localhost:8083'
