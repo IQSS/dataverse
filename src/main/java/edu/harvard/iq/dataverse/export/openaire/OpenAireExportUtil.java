@@ -1332,6 +1332,10 @@ public class OpenAireExportUtil {
         String geoLocationPlace = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.productionPlace);
         boolean geoLocations_check = false;
 
+        // write geoLocations
+        geoLocations_check = writeOpenTag(xmlw, "geoLocations", geoLocations_check);
+        writeGeolocationPlace(xmlw, geoLocationPlace, language);
+                
         // get DatasetFieldConstant.geographicBoundingBox
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             MetadataBlockDTO value = entry.getValue();
@@ -1340,10 +1344,10 @@ public class OpenAireExportUtil {
                     geoLocations_check = writeOpenTag(xmlw, "geoLocations", geoLocations_check);
                     if (fieldDTO.getMultiple()) {
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            writeGeoLocationsElement(xmlw, foo, geoLocationPlace, language);
+                            writeGeoLocationsElement(xmlw, foo, language);
                         }
                     } else {
-                        writeGeoLocationsElement(xmlw, fieldDTO.getSingleCompound(), geoLocationPlace, language);
+                        writeGeoLocationsElement(xmlw, fieldDTO.getSingleCompound(), language);
                     }
                 }
             }
@@ -1355,22 +1359,36 @@ public class OpenAireExportUtil {
     /**
      * 18 GeoLocation (R)
      *
+     * Write geoLocationPlace inside geoLocation element
+     * 
      * @param xmlw The Steam writer
-     * @param foo
-     * @param geoLocationPlace
+     * @param geoLocationPlace Geo location place
      * @param language current language
      * @throws XMLStreamException
      */
-    public static void writeGeoLocationsElement(XMLStreamWriter xmlw, Set<FieldDTO> foo, String geoLocationPlace, String language) throws XMLStreamException {
+    public static void writeGeolocationPlace(XMLStreamWriter xmlw, String geoLocationPlace, String language) throws XMLStreamException {
+        boolean geoLocation_check = false;
+        
+        if (StringUtils.isNotBlank(geoLocationPlace)) {
+            geoLocation_check = writeOpenTag(xmlw, "geoLocation", geoLocation_check);
+            writeFullElement(xmlw, null, "geoLocationPlace", null, geoLocationPlace, language);
+        }
+        writeEndTag(xmlw, geoLocation_check);
+    }
+    
+    /**
+     * 18 GeoLocation (R)
+     *
+     * @param xmlw The Steam writer
+     * @param foo
+     * @param language current language
+     * @throws XMLStreamException
+     */
+    public static void writeGeoLocationsElement(XMLStreamWriter xmlw, Set<FieldDTO> foo, String language) throws XMLStreamException {
         //boolean geoLocations_check = false;
         boolean geoLocation_check = false;
         boolean geoLocationbox_check = false;
 
-        if (StringUtils.isNotBlank(geoLocationPlace)) {
-
-            geoLocation_check = writeOpenTag(xmlw, "geoLocation", geoLocation_check);
-            writeFullElement(xmlw, null, "geoLocationPlace", null, geoLocationPlace, language);
-        }
         geoLocation_check = writeOpenTag(xmlw, "geoLocation", geoLocation_check);
         geoLocationbox_check = writeOpenTag(xmlw, "geoLocationBox", geoLocationbox_check);
 
