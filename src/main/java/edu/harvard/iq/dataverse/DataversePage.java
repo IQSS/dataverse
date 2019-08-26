@@ -679,6 +679,9 @@ public class DataversePage implements java.io.Serializable {
 
     public void setInheritMetadataBlockFromParent(boolean inheritMetadataBlockFromParent) {
         dataverse.setMetadataBlockRoot(!inheritMetadataBlockFromParent);
+        if(!inheritMetadataBlockFromParent){
+            //set to citation
+        }
     }
 
     public void editMetadataBlocks() {
