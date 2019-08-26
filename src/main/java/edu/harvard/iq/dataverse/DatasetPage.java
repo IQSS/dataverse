@@ -127,6 +127,8 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
+import edu.harvard.iq.dataverse.search.SolrClientService;
+
 import java.util.Comparator;
 import java.util.TimeZone;
 import javax.servlet.http.HttpServletRequest;
@@ -195,6 +197,8 @@ public class DatasetPage implements java.io.Serializable {
     SettingsServiceBean settingsService;
     @EJB
     SearchServiceBean searchService;
+    @EJB
+    SolrClientService solrClientService;
     @EJB
     AuthenticationServiceBean authService;
     @EJB
@@ -5165,7 +5169,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private SolrClient getSolrServer () {
-        return searchService.getSolrServer();       
+        return solrClientService.getSolrClient();       
     }
 
     private static Date getFileDateToCompare(FileMetadata fileMetadata) {

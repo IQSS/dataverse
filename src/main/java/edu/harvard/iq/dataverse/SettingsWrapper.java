@@ -253,15 +253,7 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     public Boolean isHasHypothesisKey() {
-
         return !getHypothesisKey().isEmpty();
-    }
-
-    public Map<String, String> getConfiguredLocales() {
-        if (configuredLocales == null) {
-            initLocaleSettings(); 
-        }
-        return configuredLocales;
     }
 
     public boolean isMakeDataCountEnabled(){

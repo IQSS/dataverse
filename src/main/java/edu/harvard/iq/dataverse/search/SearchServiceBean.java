@@ -852,7 +852,7 @@ public class SearchServiceBean {
         QueryResponse queryResponse = null;
         try {
 logger.info("Solr query: " + solrQuery);
-            queryResponse = solrServer.query(solrQuery);
+            queryResponse = solrClientService.getSolrClient().query(solrQuery);
         } catch (RemoteSolrException ex) {
             String messageFromSolr = ex.getLocalizedMessage();
             if (messageFromSolr.contains("org.apache.solr.search.SyntaxError")) {
