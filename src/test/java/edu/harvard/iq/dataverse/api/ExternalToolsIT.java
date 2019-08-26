@@ -75,7 +75,7 @@ public class ExternalToolsIT {
         Response addExternalTool = UtilIT.addExternalTool(job.build());
         addExternalTool.prettyPrint();
         addExternalTool.then().assertThat()
-                .body("message", CoreMatchers.equalTo("Required reserved word not found: {fileId}"))
+                .body("message", CoreMatchers.equalTo("type is required."))
                 .statusCode(BAD_REQUEST.getStatusCode());
     }
 
