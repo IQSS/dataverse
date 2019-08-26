@@ -1046,7 +1046,8 @@ public class OpenAireExportUtilTest {
         xmlw.close();
         Assert.assertEquals("<geoLocations>"
                 + "<geoLocation>"
-                + "<geoLocationPlace>ProductionPlace</geoLocationPlace>"
+                + "<geoLocationPlace>ProductionPlace</geoLocationPlace></geoLocation>"
+                + "<geoLocation>"
                 + "<geoLocationBox>"
                 + "<westBoundLongitude>10</westBoundLongitude>"
                 + "<eastBoundLongitude>20</eastBoundLongitude>"
@@ -1055,7 +1056,6 @@ public class OpenAireExportUtilTest {
                 + "</geoLocationBox>"
                 + "</geoLocation>"
                 + "<geoLocation>"
-                + "<geoLocationPlace>ProductionPlace</geoLocationPlace>"
                 + "<geoLocationBox>"
                 + "<southBoundLatitude>80</southBoundLatitude>"
                 + "<northBoundLatitude>70</northBoundLatitude>"
