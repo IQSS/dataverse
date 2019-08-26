@@ -22,7 +22,6 @@ import javax.xml.stream.XMLStreamWriter;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -1005,9 +1004,9 @@ public class OpenAireExportUtilTest {
                 + "</description>"
                 + "<description descriptionType=\"Abstract\">DescriptionText2"
                 + "</description>"
-                + "<description descriptionType=\"Methods\">SoftwareName1, SoftwareVersion1"
+                + "<description descriptionType=\"TechnicalInfo\">SoftwareName1, SoftwareVersion1"
                 + "</description>"
-                + "<description descriptionType=\"Methods\">SoftwareName2, SoftwareVersion2"
+                + "<description descriptionType=\"TechnicalInfo\">SoftwareName2, SoftwareVersion2"
                 + "</description>"
                 + "<description descriptionType=\"Methods\">OriginOfSources"
                 + "</description>"

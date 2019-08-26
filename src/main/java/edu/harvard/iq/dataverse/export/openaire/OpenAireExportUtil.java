@@ -1230,7 +1230,7 @@ public class OpenAireExportUtil {
 
                             if (StringUtils.isNotBlank(softwareName) && StringUtils.isNotBlank(softwareVersion)) {
                                 description_check = writeOpenTag(xmlw, "descriptions", description_check);
-                                writeDescriptionElement(xmlw, "Methods", softwareName + ", " + softwareVersion, language);
+                                writeDescriptionElement(xmlw, "TechnicalInfo", softwareName + ", " + softwareVersion, language);
                             }
                         }
                     }
