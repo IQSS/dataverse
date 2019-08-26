@@ -369,10 +369,6 @@ public class Access extends AbstractApiBean {
                 // TODO: throw new ServiceUnavailableException(); 
             }
         }
-        /* 
-         * Provide "Access-Control-Allow-Origin" header:
-         */
-        response.setHeader("Access-Control-Allow-Origin", "*");
                 
         /* 
          * Provide some browser-friendly headers: (?)
@@ -449,8 +445,6 @@ public class Access extends AbstractApiBean {
             throw new ServiceUnavailableException();
         }
 
-        response.setHeader("Access-Control-Allow-Origin", "*");
-
         return retValue;
     }
     
@@ -478,8 +472,6 @@ public class Access extends AbstractApiBean {
         }
 
         retValue = outStream.toString();
-        
-        response.setHeader("Access-Control-Allow-Origin", "*");
         
         return retValue; 
     }
@@ -515,8 +507,6 @@ public class Access extends AbstractApiBean {
         if (downloadInstance.checkIfServiceSupportedAndSetConverter("format", "prep")) {
             logger.fine("Preprocessed data for tabular file "+fileId);
         }
-        
-        response.setHeader("Access-Control-Allow-Origin", "*");
         
         return downloadInstance;
     }

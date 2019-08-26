@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
+import edu.harvard.iq.dataverse.PackagePopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -4848,6 +4849,17 @@ public class DatasetPage implements java.io.Serializable {
         privateUrlWasJustCreated = false;
     }
 
+    public boolean isShowLinkingPopup() {
+        return showLinkingPopup;
+    }
+
+    public void setShowLinkingPopup(boolean showLinkingPopup) {
+        this.showLinkingPopup = showLinkingPopup;
+    }    
+    
+    private boolean showLinkingPopup = false;
+    
+
     public void createPrivateUrl() {
         try {
             PrivateUrl createdPrivateUrl = commandEngine.submit(new CreatePrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
@@ -5155,7 +5167,7 @@ public class DatasetPage implements java.io.Serializable {
     private SolrClient getSolrServer () {
         return searchService.getSolrServer();       
     }
-    
+
     private static Date getFileDateToCompare(FileMetadata fileMetadata) {
         DataFile datafile = fileMetadata.getDataFile();
 

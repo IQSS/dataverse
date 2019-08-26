@@ -632,18 +632,20 @@
             <a class="btn btn-default" href="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}" title="#{bundle['dataverse.results.dialog.addDataGuest.login.title']}">#{bundle['login']}</a>
         </div>
     </p:dialog>
-    <script type="text/javascript">
+    <script>
+        <ui:remove>
+        // For postLoad() see: https://github.com/IQSS/dataverse/issues/2004
+        </ui:remove>
+        //<![CDATA[
         $(document).ready(function () {
             // Calls the p:remoteCommand postLoad.
             // Posted at end of fragment to work correctly with Account information
-            <ui:remove>
-            // See: https://github.com/IQSS/dataverse/issues/2004
-            </ui:remove>
             postLoad();
 
             $('[data-toggle=offcanvas]').click(function() {
                 $('.row-offcanvas').toggleClass('active', 200);
             });
         });
+        //]]>
     </script>
 </ui:composition>

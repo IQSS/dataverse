@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,7 +20,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -621,13 +619,13 @@ public class DataCitation {
         String authorString = getAuthorsString();
 
         if (authorString.isEmpty()) {
-            authorString = ":unav";
+            authorString = AbstractGlobalIdServiceBean.UNAVAILABLE;
         }
         // QDR - use institution name
         String producerString = getPublisher();
 
         if (producerString.isEmpty()) {
-            producerString = ":unav";
+            producerString =  AbstractGlobalIdServiceBean.UNAVAILABLE;
         }
 
         metadata.put("datacite.creator", authorString);

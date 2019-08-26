@@ -657,6 +657,7 @@
                     <include>**/*.sql</include>
                     <include>**/*.xml</include>
                     <include>**/firstNames/*.*</include>
+                    <include>**/*.xsl</include>
                 </includes>
             </resource>
         </resources>

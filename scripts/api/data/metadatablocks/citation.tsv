@@ -100,7 +100,7 @@
 	subject	Social Sciences	D11	7											
 	subject	Other	D12	8											
 	publicationIDType	ark		0											
-	publicationIDType	arXiv		1	arxiv										
+	publicationIDType	arXiv		1											
 	publicationIDType	doi		2											
 	publicationIDType	handle		3											
 	publicationIDType	isbn		4											

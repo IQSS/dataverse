@@ -393,7 +393,6 @@ public class SettingsServiceBean {
         
         ArchiverClassName,
         ArchiverSettings,
-        
         /**
          * A comma-separated list of roles for which new dataverses should inherit the
          * corresponding role assignments from the parent dataverse. Also affects
@@ -423,8 +422,13 @@ public class SettingsServiceBean {
         /** Base Url of this Dataverse Site */
         QDRDataverseBaseURL,
         
-        MDCLogPath
-        ;
+        MDCLogPath,
+
+        /**
+         * Allow CORS flag (true or false). It is true by default
+         *
+         */
+        AllowCors;
 
         @Override
         public String toString() {

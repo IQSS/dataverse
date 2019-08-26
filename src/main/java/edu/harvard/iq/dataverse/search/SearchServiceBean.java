@@ -31,21 +31,18 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionRolledbackLocalException;
 import javax.inject.Named;
 import javax.persistence.NoResultException;
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient.RemoteSolrException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -79,35 +76,9 @@ public class SearchServiceBean {
     SystemConfig systemConfig;
     @EJB
     SettingsServiceBean settingsService;
+    @EJB
+    SolrClientService solrClientService;
 
-    private SolrClient solrServer;
-    
-    @PostConstruct
-    public void init() {
-        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
-        solrServer = new HttpSolrClient.Builder(urlString).build();
-    }
-    
-    @PreDestroy
-    public void close() {
-        if (solrServer != null) {
-            try {
-                solrServer.close();
-            } catch (IOException e) {
-                logger.warning("Solr closing error: " + e);
-            }
-            solrServer = null;
-        }
-    }
-    
-     public SolrClient getSolrServer() {
-        return solrServer;
-    }
-
-    public void setSolrServer(SolrClient solrServer) {
-        this.solrServer = solrServer;
-    }
-    
     /**
      * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
      * access to Private Data for the correct user
@@ -334,7 +305,7 @@ public class SearchServiceBean {
         // -----------------------------------
         QueryResponse queryResponse = null;
         try {
-            queryResponse = solrServer.query(solrQuery);
+            queryResponse = solrClientService.getSolrClient().query(solrQuery);
         } catch (RemoteSolrException ex) {
             String messageFromSolr = ex.getLocalizedMessage();
             String error = "Search Syntax Error: ";
@@ -628,22 +599,49 @@ public class SearchServiceBean {
             FacetCategory facetCategory = new FacetCategory();
             List<FacetLabel> facetLabelList = new ArrayList<>();
             int numMetadataSources = 0;
+            String metadataBlockName = "";
+            String datasetFieldName = "";
+            /**
+             * To find the metadata block name to which the facetField belongs to
+             * ===facetField: authorName_ss   metadatablockname : citation
+             * ===facetField: dvCategory  metadatablockname : ""
+             */
+            for (DatasetFieldType datasetField : datasetFields) {
+                String solrFieldNameForDataset = datasetField.getSolrField().getNameFacetable();
+                if (solrFieldNameForDataset != null && facetField.getName().equals(solrFieldNameForDataset)) {
+                    metadataBlockName = datasetField.getMetadataBlock().getName() ;
+                    datasetFieldName = datasetField.getName();
+                    break;
+                }
+            }
+
+
             for (FacetField.Count facetFieldCount : facetField.getValues()) {
                 /**
                  * @todo we do want to show the count for each facet
                  */
 //                logger.info("field: " + facetField.getName() + " " + facetFieldCount.getName() + " (" + facetFieldCount.getCount() + ")");
+                String localefriendlyName = null;
                 if (facetFieldCount.getCount() > 0) {
-                    FacetLabel facetLabel = new FacetLabel(facetFieldCount.getName(), facetFieldCount.getCount());
+                   if(metadataBlockName.length() > 0 ) {
+                       localefriendlyName = getLocaleTitle(datasetFieldName,facetFieldCount.getName(), metadataBlockName);
+                    } else {
+                       try {
+                           localefriendlyName = BundleUtil.getStringFromPropertyFile(facetFieldCount.getName(), "Bundle");
+                       } catch (Exception e) {
+                           localefriendlyName = facetFieldCount.getName();
+                       }
+                   }
+                    FacetLabel facetLabel = new FacetLabel(localefriendlyName, facetFieldCount.getCount());
                     // quote field facets
                     facetLabel.setFilterQuery(facetField.getName() + ":\"" + facetFieldCount.getName() + "\"");
                     facetLabelList.add(facetLabel);
                     if (facetField.getName().equals(SearchFields.PUBLICATION_STATUS)) {
-                        if (facetLabel.getName().equals(IndexServiceBean.getUNPUBLISHED_STRING())) {
+                        if (facetFieldCount.getName().equals(IndexServiceBean.getUNPUBLISHED_STRING())) {
                             unpublishedAvailable = true;
-                        } else if (facetLabel.getName().equals(IndexServiceBean.getDRAFT_STRING())) {
+                        } else if (facetFieldCount.getName().equals(IndexServiceBean.getDRAFT_STRING())) {
                             draftsAvailable = true;
-                        } else if (facetLabel.getName().equals(IndexServiceBean.getDEACCESSIONED_STRING())) {
+                        } else if (facetFieldCount.getName().equals(IndexServiceBean.getDEACCESSIONED_STRING())) {
                             deaccessionedAvailable = true;
                         }
                     }
@@ -694,14 +692,20 @@ public class SearchServiceBean {
                     Logger.getLogger(SearchServiceBean.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 if (staticSearchField != null && facetField.getName().equals(staticSearchField)) {
+                    String friendlyName = BundleUtil.getStringFromBundle("staticSearchFields."+staticSearchField);
+                    if(friendlyName != null && friendlyName.length() > 0) {
+                        facetCategory.setFriendlyName(friendlyName);
+                    } else {
                     String[] parts = name.split("_");
                     StringBuilder stringBuilder = new StringBuilder();
                     for (String part : parts) {
                         stringBuilder.append(getCapitalizedName(part.toLowerCase()) + " ");
                     }
                     String friendlyNameWithTrailingSpace = stringBuilder.toString();
-                    String friendlyName = friendlyNameWithTrailingSpace.replaceAll(" $", "");
+                        friendlyName = friendlyNameWithTrailingSpace.replaceAll(" $", "");
                     facetCategory.setFriendlyName(friendlyName);
+                    }
+
 //                    logger.info("adding <<<" + staticSearchField + ":" + friendlyName + ">>>");
                     staticSolrFieldFriendlyNamesBySolrField.put(staticSearchField, friendlyName);
                     // stop examining the declared/static fields in the SearchFields object. we found a match
@@ -867,6 +871,31 @@ logger.info("Solr query: " + solrQuery);
     }
 
     
+    public String getLocaleTitle(String title,  String controlledvoc , String propertyfile) {
+
+        String output = "";
+        try {
+            if(controlledvoc != "" ) {
+                output =  BundleUtil.getStringFromPropertyFile("controlledvocabulary." + title +"."+ controlledvoc.toLowerCase().replace(" ","_")  , propertyfile);
+            } else {
+                output = BundleUtil.getStringFromPropertyFile("datasetfieldtype." + title + ".title", propertyfile);
+            }
+        } catch (MissingResourceException e1) {
+            if(controlledvoc != "" ) {
+                return controlledvoc;
+            } else {
+                return title;
+            }
+        }
+
+        if(output != null && output.length() >0) {
+            return output;
+        }
+        else
+            return title;
+    }
+
+
     public String getCapitalizedName(String name) {
         return Character.toUpperCase(name.charAt(0)) + name.substring(1);
     }

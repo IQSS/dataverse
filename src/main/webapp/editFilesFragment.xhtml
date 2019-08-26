@@ -11,7 +11,7 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
-    <script type="text/javascript" language="javascript" src="#{resource['js/fileupload.js']}"></script>
+    <script src="#{resource['js/fileupload.js']}"></script>
     <!-- Static Tab Layout -->
     <div data-widget="content" class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container ui-tabs-top" id="datasetForm:tabView">
         <ul role="tablist" class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
@@ -76,6 +76,7 @@
                         </h:outputFormat>                      
                     </p>
                     <script>
+                        //<![CDATA[
                         function uploadWidgetDropMsg() {
                             var fileUpload = $('div[id$="fileUpload"] div.ui-fileupload-content');
                             if ($(fileUpload).children('#dragdropMsg').length === 0) {
@@ -94,6 +95,7 @@
                         $(document).ready(function () {
                             uploadWidgetDropMsg();
                         });
+                        //]]>
                     </script>
                     <!-- ATTENTION: the update= attribute in the fileUpload component --> 
                     <!-- below appears to be super important -->
@@ -909,8 +911,9 @@
             <p:commandButton styleClass="btn btn-link" id="editFileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('editFileTagsPopup').hide();PF('blockFileForm').hide();" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
         </div>
     </p:dialog>
-    <script type="text/javascript" src="/resources/js/dropins.js" id="dropboxjs" data-app-key="#{EditDatafilesPage.dropBoxKey}"/>
-    <script type="text/javascript">
+    <script src="/resources/js/dropins.js" id="dropboxjs" data-app-key="#{EditDatafilesPage.dropBoxKey}"/>
+    <script>
+        //<![CDATA[
         function openDialog() {
             PF('details').show();
         }
@@ -934,7 +937,6 @@
                 PF('selectFilesForDeleteFragment').show();              
             }
         }
-
         function openDropboxChooser() {
             options = {
                 // Required. Called when a user selects an item in the Chooser.
@@ -946,12 +948,12 @@
                     // Trigger the upload processing method in the backing
                     // bean, via an invisible commandButton:
                     $('button[id$="dropBoxButton"]').trigger('click');
-
                 },
                 linkType: "direct",
                 multiselect: "#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}",
             };
             Dropbox.choose(options);
         }
+        //]]>
     </script>
 </ui:composition>

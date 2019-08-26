@@ -55,30 +55,11 @@ public class SolrIndexServiceBean {
     DataverseRoleServiceBean rolesSvc;
     @EJB
     IndexServiceBean indexService;
+    @EJB
+    SolrClientService solrClientService;
 
     public static String numRowsClearedByClearAllIndexTimes = "numRowsClearedByClearAllIndexTimes";
     public static String messageString = "message";
-    private SolrClient solrServer;
-    
-    @PostConstruct
-    public void init() {
-        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
-        solrServer = new HttpSolrClient.Builder(urlString).build();
-        
-    }
-    
-    @PreDestroy
-    public void close() {
-        if (solrServer != null) {
-            try {
-                solrServer.close();
-            } catch (IOException e) {
-                logger.warning("Solr closing error: " + e);
-            }
-
-            solrServer = null;
-        }
-    }
 
     /**
      * @deprecated Now that MyData has shipped in 4.1 we have no plans to change
@@ -390,8 +371,8 @@ public class SolrIndexServiceBean {
         /**
          * @todo Do something with these responses from Solr.
          */
-        UpdateResponse addResponse = solrServer.add(docs);
-        UpdateResponse commitResponse = solrServer.commit();
+        UpdateResponse addResponse = solrClientService.getSolrClient().add(docs);
+        UpdateResponse commitResponse = solrClientService.getSolrClient().commit();
     }
 
     public IndexResponse indexPermissionsOnSelfAndChildren(long definitionPointId) {
@@ -540,7 +521,7 @@ public class SolrIndexServiceBean {
             return new IndexResponse("nothing to delete");
         }
         try {
-            solrServer.deleteById(solrIdsToDelete);
+            solrClientService.getSolrClient().deleteById(solrIdsToDelete);
         } catch (SolrServerException | IOException ex) {
             /**
              * @todo mark these for re-deletion
@@ -548,7 +529,7 @@ public class SolrIndexServiceBean {
             return new IndexResponse("problem deleting the following documents from Solr: " + solrIdsToDelete);
         }
         try {
-            solrServer.commit();
+            solrClientService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
             return new IndexResponse("problem committing deletion of the following documents from Solr: " + solrIdsToDelete);
         }
@@ -558,8 +539,8 @@ public class SolrIndexServiceBean {
     public JsonObjectBuilder deleteAllFromSolrAndResetIndexTimes() throws SolrServerException, IOException {
         JsonObjectBuilder response = Json.createObjectBuilder();
         logger.info("attempting to delete all Solr documents before a complete re-index");
-        solrServer.deleteByQuery("*:*");
-        solrServer.commit();
+        solrClientService.getSolrClient().deleteByQuery("*:*");
+        solrClientService.getSolrClient().commit();
         int numRowsAffected = dvObjectService.clearAllIndexTimes();
         response.add(numRowsClearedByClearAllIndexTimes, numRowsAffected);
         response.add(messageString, "Solr index and database index timestamps cleared.");

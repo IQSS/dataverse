@@ -1,7 +1,7 @@
 {% extends "basic/layout.html" %}
 
 {% if theme_bootstrap_version == "3" %}
-  {% set bootstrap_version, navbar_version = "3.3.7", "" %}
+  {% set bootstrap_version, navbar_version = "3.4.1", "" %}
   {% set bs_span_prefix = "col-md-" %}
 {% else %}
   {% set bootstrap_version, navbar_version = "2.3.2", "-2" %}
@@ -9,9 +9,9 @@
 {% endif %}
 
 {% set script_files = script_files + [
-    '_static/js/jquery-3.1.0.min.js',
-    '_static/js/jquery-fix.js',
+    '_static/js/jquery-ui.min.js',
     '_static/bootstrap-' + bootstrap_version + '/js/bootstrap.min.js',
+    '_static/js/jquery-fix.js',
     '_static/bootstrap-sphinx.js',
     '_static/navbarscroll.js',
     '_static/dv_rebind_bootstrap_ui.js'
@@ -38,7 +38,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<link type="image/png" rel="icon" href="../_static/images/favicondataverse.png" />
+<link type="image/png" rel="icon" href="{{pathto("_static/images/favicondataverse.png", 1)}}" />
 {% endblock %}
 
 {# Sidebar: Rework into our Bootstrap nav section. #}

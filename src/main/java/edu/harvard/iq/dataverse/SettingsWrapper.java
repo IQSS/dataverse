@@ -16,7 +16,6 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
@@ -217,6 +216,13 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return configuredLocales.size() > 1;
     }
+
+    public Map<String, String> getConfiguredLocales() {
+        if (configuredLocales == null) {
+            initLocaleSettings(); 
+        }
+        return configuredLocales;
+    }
     
     private void initLocaleSettings() {
         
@@ -257,5 +263,24 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return configuredLocales;
     }
+
+    public boolean isMakeDataCountEnabled(){
+        String logPath = systemConfig.getMDCLogPath();
+        if (logPath != null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean isDoiInstallation() {
+        String protocol = getValueForKey(SettingsServiceBean.Key.Protocol);
+        if ("doi".equals(protocol)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }
 

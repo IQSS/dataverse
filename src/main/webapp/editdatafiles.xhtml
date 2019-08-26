@@ -94,11 +94,11 @@
                 
                 <p:blockUI block="datasetForm" widgetVar="blockFileForm"/>
 
-                <script type="text/javascript">
+                <script>
+                    //<![CDATA[
                     function clickSave(){
                         $('button[id$="datasetSave"]').trigger('click');
                     }
-
                     function checkNewlyRestricted() {
                         if ($('input[id$="showAccessPopup"]').val() === 'true') {
                             PF('editFileAccessPopup').show();
@@ -114,6 +114,7 @@
                         }
                       }
                     }
+                    //]]>
                 </script>
             </ui:define>
         </ui:composition>

@@ -17,11 +17,13 @@
             <ui:param name="loginRedirectPage" value="dataverseuser.xhtml"/>
             <ui:define name="body">
                 <script>
-                window.onpageshow = function(event) {
-                    if (event.persisted) {
-                        window.location.reload();
-                    }
-                };
+                    //<![CDATA[
+                    window.onpageshow = function(event) {
+                        if (event.persisted) {
+                            window.location.reload();
+                        }
+                    };
+                    //]]>
                 </script>
                 <f:loadBundle basename="propertyFiles.Bundle" var="bundle"/>
                 <f:metadata>
@@ -349,6 +351,7 @@
                             </div>
                             <!--Script removes "hidden" class from div containing API token to stop javascript browser exploits-->
                             <script>
+                                //<![CDATA[
                                 $(document).ready(function() {
                                     $("div#apiToken").removeClass("hidden");
                                 });
@@ -356,6 +359,7 @@
                                 $(window).on("beforeunload", function() {
                                     $("div#apiToken").addClass("hidden");
                                 });
+                                //]]>
                             </script>
                             <div>
                                 <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
