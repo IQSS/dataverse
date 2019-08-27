@@ -2,10 +2,12 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.DataFileComparator;
 import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
@@ -198,11 +200,6 @@ public class DatasetVersion implements Serializable {
     }
     
     public List<FileMetadata> getFileMetadatas() {
-        return fileMetadatas;
-    }
-    
-    public List<FileMetadata> getFileMetadatasSorted() {
- 
         /*
          * fileMetadatas can sometimes be an
          * org.eclipse.persistence.indirection.IndirectList When that happens, the
@@ -217,16 +214,22 @@ public class DatasetVersion implements Serializable {
             for(FileMetadata fmd: fileMetadatas) {
                 newFMDs.add(fmd);
             }
-            setFileMetadatas(newFMDs);
+            fileMetadatas = newFMDs;
         }
-        Collections.sort(fileMetadatas, FileMetadata.compareByCategoryAndLabelAndFolder);
+        return fileMetadatas;
+    }
+    
+    public List<FileMetadata> getFileMetadatasSorted() {
+        DataFileComparator dfc = new DataFileComparator();
+        Collections.sort(getFileMetadatas(), dfc.compareBy(true, null!=FileMetadata.getCategorySortOrder(), "name", true));
         return fileMetadatas;
     }
     
     public List<FileMetadata> getFileMetadatasSortedByLabelAndFolder() {
         ArrayList<FileMetadata> fileMetadatasCopy = new ArrayList<>();
         fileMetadatasCopy.addAll(fileMetadatas);
-        Collections.sort(fileMetadatasCopy, FileMetadata.compareByCategoryAndLabelAndFolder);
+        DataFileComparator dfc = new DataFileComparator();
+        Collections.sort(fileMetadatasCopy, dfc.compareBy(true, null!=FileMetadata.getCategorySortOrder(), "name", true));
         return fileMetadatasCopy;
     }
 

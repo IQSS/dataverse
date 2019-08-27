@@ -596,7 +596,7 @@ public class FileMetadata implements Serializable {
         }
     };
     
-    static Map<String,Long> categoryMap;
+    static Map<String,Long> categoryMap=null;
     
     public static void setCategorySortOrder(String categories) {
        categoryMap=new HashMap<String, Long>();
@@ -607,56 +607,10 @@ public class FileMetadata implements Serializable {
        }
     }
     
-    public static final Comparator<FileMetadata> compareByCategoryAndLabelAndFolder = new Comparator<FileMetadata>() {
-        @Override
-        public int compare(FileMetadata o1, FileMetadata o2) {
-            //Compare folders first
-            String folder1 = o1.getDirectoryLabel() == null ? "" : o1.getDirectoryLabel().toUpperCase();
-            String folder2 = o2.getDirectoryLabel() == null ? "" : o2.getDirectoryLabel().toUpperCase();
-            
-            
-            if ("".equals(folder1) && !"".equals(folder2)) {
-                return -1;
-            }
-            
-            if ("".equals(folder2) && !"".equals(folder1)) {
-                return 1;
-            }
-            
-            int comp = folder1.compareTo(folder2); 
-            if (comp != 0) {
-                return comp;
-            }
-            //Then by category if set
-            if (categoryMap != null) {
-                long rank1 = Long.MAX_VALUE;
-                for (DataFileCategory c : o1.getCategories()) {
-                    Long rank = categoryMap.get(c.getName().toUpperCase());
-                    if (rank != null) {
-                        if (rank < rank1) {
-                            rank1 = rank;
-                        }
-                    }
-                }
-                long rank2 = Long.MAX_VALUE;
-                for (DataFileCategory c : o2.getCategories()) {
-                    Long rank = categoryMap.get(c.getName().toUpperCase());
-                    if (rank != null) {
-                        if (rank < rank2) {
-                            rank2 = rank;
-                        }
-                    }
-                }
-                if (rank1 != rank2) {
-                    return rank1 < rank2 ? -1 : 1;
-                }
-            }
-            //Folders are equal, no categories or category score is equal, so compare labels
-
-            return o1.getLabel().toUpperCase().compareTo(o2.getLabel().toUpperCase());
-
-        }
-    };
+    public static Map<String,Long> getCategorySortOrder() {
+        return categoryMap;
+    }
+    
     
     public static final Comparator<DataFileCategory> compareByNameWithSortCategories = new Comparator<DataFileCategory>() {
         @Override

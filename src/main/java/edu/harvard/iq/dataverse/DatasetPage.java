@@ -47,6 +47,7 @@ import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.DataFileComparator;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -632,19 +633,9 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private void sortFileMetadatas(List<FileMetadata> fileList) {
-        if ("name".equals(fileSortField) && "desc".equals(fileSortOrder)) {
-            Collections.sort(fileList, compareByLabelZtoA);
-        } else if ("date".equals(fileSortField)) {
-            if ("desc".equals(fileSortOrder)) {
-                Collections.sort(fileList, compareByOldest);
-            } else {
-                Collections.sort(fileList, compareByNewest);
-            }
-        } else if ("type".equals(fileSortField)) {
-            Collections.sort(fileList, compareByType);
-        } else if ("size".equals(fileSortField)) {
-            Collections.sort(fileList, compareBySize);
-        }
+        
+        DataFileComparator dfc = new DataFileComparator();
+        Collections.sort(fileList, dfc.compareBy(true, null != FileMetadata.getCategorySortOrder(), fileSortField, !"desc".equals(fileSortOrder)));
     }
     
     private Boolean isIndexedVersion = null; 
@@ -5172,50 +5163,4 @@ public class DatasetPage implements java.io.Serializable {
         return solrClientService.getSolrClient();       
     }
 
-    private static Date getFileDateToCompare(FileMetadata fileMetadata) {
-        DataFile datafile = fileMetadata.getDataFile();
-
-        if (datafile.isReleased()) {
-            return datafile.getPublicationDate();
-        }
-
-        return datafile.getCreateDate();
-    }
-    
-    private static final Comparator<FileMetadata> compareByLabelZtoA = new Comparator<FileMetadata>() {
-        @Override
-        public int compare(FileMetadata o1, FileMetadata o2) {
-            return o2.getLabel().toUpperCase().compareTo(o1.getLabel().toUpperCase());
-        }
-    };
-    
-    private static final Comparator<FileMetadata> compareByNewest = new Comparator<FileMetadata>() {
-        @Override
-        public int compare(FileMetadata o1, FileMetadata o2) {
-            return getFileDateToCompare(o2).compareTo(getFileDateToCompare(o1));
-        }
-    };
-    
-    private static final Comparator<FileMetadata> compareByOldest = new Comparator<FileMetadata>() {
-        @Override
-        public int compare(FileMetadata o1, FileMetadata o2) {
-            return getFileDateToCompare(o1).compareTo(getFileDateToCompare(o2));
-        }
-    };
-    
-    private static final Comparator<FileMetadata> compareBySize = new Comparator<FileMetadata>() {
-        @Override
-        public int compare(FileMetadata o1, FileMetadata o2) {
-            return (new Long(o1.getDataFile().getFilesize())).compareTo(new Long(o2.getDataFile().getFilesize()));
-        }
-    };
-    
-    private static final Comparator<FileMetadata> compareByType = new Comparator<FileMetadata>() {
-        @Override
-        public int compare(FileMetadata o1, FileMetadata o2) {
-            String type1 = StringUtil.isEmpty(o1.getDataFile().getFriendlyType()) ? "" : o1.getDataFile().getContentType();
-            String type2 = StringUtil.isEmpty(o2.getDataFile().getFriendlyType()) ? "" : o2.getDataFile().getContentType();
-            return type1.compareTo(type2);
-        }
-    };
 }
