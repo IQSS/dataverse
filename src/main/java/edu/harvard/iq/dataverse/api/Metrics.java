@@ -48,7 +48,7 @@ public class Metrics extends AbstractApiBean {
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
         } catch (IllegalArgumentException ia) {
-            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
             
         String metricName = "dataversesToMonth";
@@ -64,12 +64,12 @@ public class Metrics extends AbstractApiBean {
                 metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, jsonString));
             }
 
-            return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
+            return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
 
         //TODO: Eventually the catch in each endpoint should be more specific
         //          and more general errors should be logged.
         } catch (Exception ex) {
-            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
         }
     }
     
@@ -79,13 +79,13 @@ public class Metrics extends AbstractApiBean {
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
         } catch (IllegalArgumentException ia) {
-            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
             
         String metricName = "dataversesPastDays";
         
         if(days < 1) {
-            return allowCors(error(BAD_REQUEST, "Invalid parameter for number of days."));
+            return error(BAD_REQUEST, "Invalid parameter for number of days.");
         }
         try {
             String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null);
@@ -97,10 +97,10 @@ public class Metrics extends AbstractApiBean {
                 metricsSvc.save(new Metric(metricName, String.valueOf(days), null, jsonString));
             }
 
-            return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
+            return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
 
         } catch (Exception ex) {
-            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
         }
     }
     
@@ -110,7 +110,7 @@ public class Metrics extends AbstractApiBean {
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
         } catch (IllegalArgumentException ia) {
-            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
             
         String metricName = "dataversesByCategory";
@@ -124,9 +124,9 @@ public class Metrics extends AbstractApiBean {
                 metricsSvc.save(new Metric(metricName, null, null, jsonArrayString));
             }
 
-            return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
+            return ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString));
         } catch (Exception ex) {
-            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
         }
     }
     
@@ -136,7 +136,7 @@ public class Metrics extends AbstractApiBean {
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
         } catch (IllegalArgumentException ia) {
-            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
             
         String metricName = "dataversesBySubject";
@@ -150,9 +150,9 @@ public class Metrics extends AbstractApiBean {
                 metricsSvc.save(new Metric(metricName, null, null, jsonArrayString));
             }
 
-            return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
+            return ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString));
         } catch (Exception ex) {
-            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
         }
     }
     
@@ -177,7 +177,7 @@ public class Metrics extends AbstractApiBean {
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"dataLocation"});
         } catch (IllegalArgumentException ia) {
-            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
             
         String metricName = "datasetsToMonth";
@@ -194,10 +194,10 @@ public class Metrics extends AbstractApiBean {
                 metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, jsonString));
             }
 
-            return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
+            return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
 
         } catch (Exception ex) {
-            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
         }
     }
     
@@ -207,13 +207,13 @@ public class Metrics extends AbstractApiBean {
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"dataLocation"});
         } catch (IllegalArgumentException ia) {
-            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
             
         String metricName = "datasetsPastDays";
         
         if(days < 1) {
-            return allowCors(error(BAD_REQUEST, "Invalid parameter for number of days."));
+            return error(BAD_REQUEST, "Invalid parameter for number of days.");
         }
         try {
             String validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
@@ -226,10 +226,10 @@ public class Metrics extends AbstractApiBean {
                 metricsSvc.save(new Metric(metricName, String.valueOf(days), validDataLocation, jsonString));
             }
 
-            return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
+            return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
 
         } catch (Exception ex) {
-            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
         }
     }
     
@@ -245,7 +245,7 @@ public class Metrics extends AbstractApiBean {
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"dataLocation"});
         } catch (IllegalArgumentException ia) {
-            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
             
         String metricName = "datasetsBySubjectToMonth";
@@ -261,9 +261,9 @@ public class Metrics extends AbstractApiBean {
                 metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, jsonArrayString));
             }
 
-            return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
+            return ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString));
         } catch (Exception ex) {
-            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
         }
     }
     
@@ -287,7 +287,7 @@ public class Metrics extends AbstractApiBean {
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
         } catch (IllegalArgumentException ia) {
-            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
             
         String metricName = "filesToMonth";
@@ -303,9 +303,9 @@ public class Metrics extends AbstractApiBean {
                 metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, jsonString));
             }
 
-            return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
+            return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
         } catch (Exception ex) {
-            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
         }
     }
     
@@ -315,13 +315,13 @@ public class Metrics extends AbstractApiBean {
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
         } catch (IllegalArgumentException ia) {
-            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
             
         String metricName = "filesPastDays";
         
         if(days < 1) {
-            return allowCors(error(BAD_REQUEST, "Invalid parameter for number of days."));
+            return error(BAD_REQUEST, "Invalid parameter for number of days.");
         }
         try {
             String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null);
@@ -333,10 +333,10 @@ public class Metrics extends AbstractApiBean {
                 metricsSvc.save(new Metric(metricName, String.valueOf(days), null, jsonString));
             }
 
-            return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
+            return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
 
         } catch (Exception ex) {
-            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
         }
     }
 
@@ -361,7 +361,7 @@ public class Metrics extends AbstractApiBean {
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
         } catch (IllegalArgumentException ia) {
-            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
         
         String metricName = "downloadsToMonth";
@@ -378,11 +378,11 @@ public class Metrics extends AbstractApiBean {
                 metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, jsonString));
             }
 
-            return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
+            return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
         } catch (IllegalArgumentException ia) {
-            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
         } catch (Exception ex) {
-            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
         }
     }
     
@@ -392,13 +392,13 @@ public class Metrics extends AbstractApiBean {
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
         } catch (IllegalArgumentException ia) {
-            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
                 
         String metricName = "downloadsPastDays";
         
         if(days < 1) {
-            return allowCors(error(BAD_REQUEST, "Invalid parameter for number of days."));
+            return error(BAD_REQUEST, "Invalid parameter for number of days.");
         }
         try {
             String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null);
@@ -410,10 +410,10 @@ public class Metrics extends AbstractApiBean {
                 metricsSvc.save(new Metric(metricName, String.valueOf(days), null, jsonString));
             }
 
-            return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
+            return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
 
         } catch (Exception ex) {
-            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
         }
     }
 

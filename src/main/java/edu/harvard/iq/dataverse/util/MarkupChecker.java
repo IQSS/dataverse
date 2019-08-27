@@ -7,8 +7,8 @@ package edu.harvard.iq.dataverse.util;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.jsoup.safety.Whitelist;
+import org.jsoup.parser.Parser;
 
 /**
  * Wrapper for Jsoup clean
@@ -25,22 +25,22 @@ public class MarkupChecker {
      * @param unsafe
      * @return 
      */
-    public static String sanitizeBasicHTML(String unsafe){
-        
-        if (unsafe == null){
+    public static String sanitizeBasicHTML(String unsafe) {
+
+        if (unsafe == null) {
             return null;
         }
         // basic includes: a, b, blockquote, br, cite, code, dd, dl, dt, em, i, li, ol, p, pre, q, small, span, strike, strong, sub, sup, u, ul
         //Whitelist wl = Whitelist.basic().addTags("img", "h1", "h2", "h3", "kbd", "hr", "s", "del");  
 
-        Whitelist wl = Whitelist.basicWithImages().addTags( "h1", "h2", "h3", "kbd", "hr", "s", "del","map","area").addAttributes("img", "usemap")
-                .addAttributes("map", "name").addAttributes("area", "shape","coords","href","title","alt")
+        Whitelist wl = Whitelist.basicWithImages().addTags("h1", "h2", "h3", "kbd", "hr", "s", "del", "map", "area").addAttributes("img", "usemap")
+                .addAttributes("map", "name").addAttributes("area", "shape", "coords", "href", "title", "alt")
                 .addEnforcedAttribute("a", "target", "_blank");
 
         return Jsoup.clean(unsafe, wl);
-        
-    }
 
+    }
+        
     /**
      * Strip all HTMl tags
      * 
@@ -49,16 +49,16 @@ public class MarkupChecker {
      * @param unsafe
      * @return 
      */
-    public static String stripAllTags(String unsafe){
-        
-        if (unsafe == null){
-            return null;
-        }        
-        
-        return Jsoup.clean(unsafe, Whitelist.none());
-        
-    }
+    public static String stripAllTags(String unsafe) {
 
+        if (unsafe == null) {
+            return null;
+        }
+
+        return Parser.unescapeEntities(Jsoup.clean(unsafe, Whitelist.none()), true);
+
+    }
+    
     public static String escapeHtml(String unsafe) {
          return StringEscapeUtils.escapeHtml(unsafe);
     }

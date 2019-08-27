@@ -20,7 +20,7 @@ public class MetadataBlocks extends AbstractApiBean {
     
     @GET
     public Response list()  {
-        return allowCors(ok(metadataBlockSvc.listMetadataBlocks().stream().map(brief::json).collect(toJsonArray())));
+        return ok(metadataBlockSvc.listMetadataBlocks().stream().map(brief::json).collect(toJsonArray()));
     }
     
     @Path("{identifier}")
@@ -28,7 +28,7 @@ public class MetadataBlocks extends AbstractApiBean {
     public Response getBlock( @PathParam("identifier") String idtf ) {
         MetadataBlock b = findMetadataBlock(idtf);
         
-        return  allowCors( (b != null ) ? ok(json(b)) : notFound("Can't find metadata block '" + idtf + "'"));
+        return   (b != null ) ? ok(json(b)) : notFound("Can't find metadata block '" + idtf + "'");
     }
     
 }

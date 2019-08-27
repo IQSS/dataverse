@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseLinkingDataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -16,9 +17,13 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.Date;
+import java.util.concurrent.Future;
+import javax.ws.rs.core.Response;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  *
@@ -54,7 +59,23 @@ public class LinkDataverseCommand extends AbstractCommand<DataverseLinkingDatave
         dataverseLinkingDataverse.setLinkingDataverse(linkingDataverse);
         dataverseLinkingDataverse.setLinkCreateTime(new Timestamp(new Date().getTime()));
         ctxt.dvLinking().save(dataverseLinkingDataverse);
-        ctxt.index().indexDataverse(linkedDataverse);
         return dataverseLinkingDataverse;
-    }   
+    }  
+    
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        DataverseLinkingDataverse result = (DataverseLinkingDataverse) r;
+
+        try {
+            ctxt.index().indexDataverse(result.getDataverse());
+        } catch (IOException | SolrServerException e) {
+            String failureLogText = "Dataverse indexing failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + result.getDataverse().getId().toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, result.getDataverse());
+            return false;
+        }
+
+        return true;
+    }
+    
 }
