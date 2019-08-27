@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -114,6 +115,12 @@ public class ExternalToolHandler {
             case FILE_ID:
                 // getDataFile is never null for file tools because of the constructor
                 return key + "=" + getDataFile().getId();
+            case FILE_PID:
+                GlobalId filePid = getDataFile().getGlobalId();
+                if (filePid != null) {
+                    return key + "=" + getDataFile().getGlobalId();
+                }
+                break;
             case SITE_URL:
                 return key + "=" + SystemConfig.getDataverseSiteUrlStatic();
             case API_TOKEN:

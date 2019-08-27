@@ -163,19 +163,28 @@ public class ExternalToolServiceBean {
         JsonArray queryParams = toolParametersObj.getJsonArray("queryParameters");
         boolean allRequiredReservedWordsFound = false;
         if (scope.equals(Scope.FILE)) {
+            List<ReservedWord> requiredReservedWordCandidates = new ArrayList<>();
+            requiredReservedWordCandidates.add(ReservedWord.FILE_ID);
+            requiredReservedWordCandidates.add(ReservedWord.FILE_PID);
             for (JsonObject queryParam : queryParams.getValuesAs(JsonObject.class)) {
                 Set<String> keyValuePair = queryParam.keySet();
                 for (String key : keyValuePair) {
                     String value = queryParam.getString(key);
                     ReservedWord reservedWord = ReservedWord.fromString(value);
-                    if (reservedWord.equals(ReservedWord.FILE_ID)) {
-                        allRequiredReservedWordsFound = true;
+                    for (ReservedWord requiredReservedWordCandidate : requiredReservedWordCandidates) {
+                        if (reservedWord.equals(requiredReservedWordCandidate)) {
+                            allRequiredReservedWordsFound = true;
+                        }
                     }
                 }
             }
             if (!allRequiredReservedWordsFound) {
-                // Some day there might be more reserved words than just {fileId}.
-                throw new IllegalArgumentException("Required reserved word not found: " + ReservedWord.FILE_ID.toString());
+                List<String> requiredReservedWordCandidatesString = new ArrayList<>();
+                for (ReservedWord requiredReservedWordCandidate : requiredReservedWordCandidates) {
+                    requiredReservedWordCandidatesString.add(requiredReservedWordCandidate.toString());
+                }
+                String friendly = String.join(", ", requiredReservedWordCandidatesString);
+                throw new IllegalArgumentException("One of the following reserved words is required: " + friendly + ".");
             }
         } else if (scope.equals(Scope.DATASET)) {
             List<ReservedWord> requiredReservedWordCandidates = new ArrayList<>();
