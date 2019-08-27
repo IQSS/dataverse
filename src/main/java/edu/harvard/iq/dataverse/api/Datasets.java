@@ -238,7 +238,7 @@ public class Datasets extends AbstractApiBean {
             MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, retrieved);
             mdcLogService.logEntry(entry);
             
-            return allowCors(ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null)));
+            return ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null));
         });
     }
     
@@ -250,7 +250,7 @@ public class Datasets extends AbstractApiBean {
     
     @GET
     @Path("/export")
-    @Produces({"application/xml", "application/json"})
+    @Produces({"application/xml", "application/json", "application/html" })
     public Response exportDataset(@QueryParam("persistentId") String persistentId, @QueryParam("exporter") String exporter, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
 
         try {
@@ -268,10 +268,10 @@ public class Datasets extends AbstractApiBean {
             MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, dataset);
             mdcLogService.logEntry(entry);
             
-            return allowCors(Response.ok()
+            return Response.ok()
                     .entity(is)
                     .type(mediaType).
-                    build());
+                    build();
         } catch (Exception wr) {
             return error(Response.Status.FORBIDDEN, "Export Failed");
         }
@@ -437,37 +437,37 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{id}/versions")
     public Response listVersions( @PathParam("id") String id ) {
-        return allowCors(response( req -> 
+        return response( req ->
              ok( execCommand( new ListVersionsCommand(req, findDatasetOrDie(id)) )
                                 .stream()
                                 .map( d -> json(d) )
-                                .collect(toJsonArray()))));
+                                .collect(toJsonArray())));
     }
     
     @GET
     @Path("{id}/versions/{versionId}")
     public Response getVersion( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return allowCors(response( req -> {
+        return response( req -> {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);            
             return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
                                                         : ok(json(dsv));
-        }));
+        });
     }
     
     @GET
     @Path("{id}/versions/{versionId}/files")
     public Response getVersionFiles( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return allowCors(response( req -> ok( jsonFileMetadatas(
-                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getFileMetadatas()))));
+        return response( req -> ok( jsonFileMetadatas(
+                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getFileMetadatas())));
     }
     
     @GET
     @Path("{id}/versions/{versionId}/metadata")
     public Response getVersionMetadata( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return allowCors(response( req -> ok(
+        return response( req -> ok(
                     jsonByBlocks(
                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers )
-                                .getDatasetFields()))));
+                                .getDatasetFields())));
     }
     
     @GET
@@ -478,7 +478,7 @@ public class Datasets extends AbstractApiBean {
                                              @Context UriInfo uriInfo, 
                                              @Context HttpHeaders headers ) {
         
-        return allowCors(response( req -> {
+        return response( req -> {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId), uriInfo, headers );
             
             Map<MetadataBlock, List<DatasetField>> fieldsByBlock = DatasetField.groupByBlock(dsv.getDatasetFields());
@@ -488,7 +488,7 @@ public class Datasets extends AbstractApiBean {
                 }
             }
             return notFound("metadata block named " + blockName + " not found");
-        }));
+        });
     }
     
     @GET
@@ -1890,7 +1890,7 @@ public class Datasets extends AbstractApiBean {
             jsonObjectBuilder.add("viewsUnique", viewsUnique);
             jsonObjectBuilder.add("downloadsTotal", downloadsTotal);
             jsonObjectBuilder.add("downloadsUnique", downloadsUnique);
-            return allowCors(ok(jsonObjectBuilder));
+            return ok(jsonObjectBuilder);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

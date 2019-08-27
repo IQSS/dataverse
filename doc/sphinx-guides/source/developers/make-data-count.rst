@@ -3,6 +3,9 @@ Make Data Count
 
 Support for Make Data Count is a feature of Dataverse that is described in the :doc:`/admin/make-data-count` section of the Admin Guide. In order for developers to work on the feature, they must install Counter Processor, a Python 3 application, as described below. Counter Processor can be found at https://github.com/CDLUC3/counter-processor
 
+.. contents:: |toctitle|
+        :local:
+
 Architecture
 ------------
 
@@ -12,6 +15,18 @@ There are many components involved in Dataverse's architecture for Make Data Cou
 
 Dev Environment Setup for Make Data Count
 -----------------------------------------
+
+Generate Fake Metrics Only
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The quickest way to put populate tables with some data is to run the ``MakeDataCountApiIT`` integration test. For more on running integration tests see the :doc:`testing` section. This will populate views and downloads.
+
+To insert a citation you could insert a row like below, changing "72" in the example below with the dataset id for your dataset.
+
+``INSERT INTO datasetexternalcitations (id, citedbyurl, dataset_id) VALUES (1, 'https://doi.org/10.1007/s12520-017-0578-2', 72);``
+
+Full Setup
+~~~~~~~~~~
 
 The recommended way to work on the Make Data Count feature is to spin up an EC2 instance that has both Dataverse and Counter Processor installed. Go to the :doc:`deployment` page for details on how to spin up an EC2 instance and make sure that your Ansible file is configured to install Counter Processor before running the "create" script.
 

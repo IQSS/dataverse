@@ -140,11 +140,11 @@ public class DatasetsIT {
         // above, because we've set it up so, right? - Not exactly: the dataverse
         // hasn't been published yet! So if this random user tries to create 
         // a dataset now, it should fail: 
-        
+        /* - this test removed because the perms for create dataset have been reverted
         createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, randomUserApiToken);
         createDatasetResponse.prettyPrint();
         assertEquals(UNAUTHORIZED.getStatusCode(), createDatasetResponse.getStatusCode());
-        
+        */
         // Now, let's publish this dataverse...
         
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
