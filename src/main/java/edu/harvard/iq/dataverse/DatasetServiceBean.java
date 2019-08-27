@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
@@ -19,11 +20,9 @@ import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,9 +47,6 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.lang.RandomStringUtils;
 import org.ocpsoft.common.util.Strings;
 
@@ -927,5 +923,36 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         
         return total; 
+    }
+    
+    /**
+     * An optimized method for deleting a harvested dataset. 
+     * 
+     * @param dataset
+     * @param request DataverseRequest (for initializing the DestroyDatasetCommand)
+     * @param hdLogger logger object (in practice, this will be a separate log file created for a specific harvesting job)
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void deleteHarvestedDataset(Dataset dataset, DataverseRequest request, Logger hdLogger) {
+        // Purge all the SOLR documents associated with this client from the 
+        // index server: 
+        indexService.deleteHarvestedDocuments(dataset);
+        
+        try {
+            // files from harvested datasets are removed unceremoniously, 
+            // directly in the database. no need to bother calling the 
+            // DeleteFileCommand on them.
+            for (DataFile harvestedFile : dataset.getFiles()) {
+                DataFile merged = em.merge(harvestedFile);
+                em.remove(merged);
+                harvestedFile = null; 
+            }
+            dataset.setFiles(null);
+            Dataset merged = em.merge(dataset);
+            commandEngine.submit(new DestroyDatasetCommand(merged, request));
+            hdLogger.info("Successfully destroyed the dataset");
+        } catch (Exception ex) {
+            hdLogger.warning("Failed to destroy the dataset");
+        } 
     }
 }
