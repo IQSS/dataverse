@@ -317,14 +317,58 @@
                                                     </div>
                                                 </div>
 
-                                <div class="col-xs-12">
-                                    <p class="help-block">
-                                        <h:outputFormat value="#{bundle['file.citation.notice']}" escape="false">
-                                            <o:param value="#{FilePage.fileMetadata.datasetVersion.dataset.displayName}"/>
-                                        </h:outputFormat>
-                                    </p>
-                                    <h:outputFormat styleClass="h5" value="#{bundle['file.citation.dataset']}" escape="false" />
-                                </div>
+                                                <div class="col-sm-12">
+                                                    <p class="help-block">
+                                                        <h:outputFormat value="#{bundle['file.citation.notice']}" escape="false">
+                                                            <o:param value="#{FilePage.fileMetadata.datasetVersion.dataset.displayName}"/>
+                                                        </h:outputFormat>
+                                                    </p>
+                                                    <h:outputFormat styleClass="h5" value="#{bundle['file.citation.dataset']}" escape="false" />
+                                                </div>
+                                                <div class="col-sm-12 citation-block no-margin-bottom">
+                                                    <div class="col-sm-12 #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
+                                                        <div class="row">
+                                                            <div class="col-sm-12 citation">
+                                                                <span class="citation-select" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
+                                                                    <h:outputText value="#{FilePage.fileMetadata.datasetVersion.getCitation(true)}" escape="false"/>
+                                                                </span>
+                                                                <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" 
+                                                                      data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
+                                                                <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released and FilePage.fileMetadata.datasetVersion.draft}" 
+                                                                      data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
+                                                                <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}" 
+                                                                      data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
+                                                            </div>
+                                                            <div class="col-sm-6 citation-download vcenter" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
+                                                                <div class="dropdown">
+                                                                    <button type="button" class="btn btn-default dropdown-toggle downloadCitation" data-toggle="dropdown">
+                                                                        <span class="glyphicon glyphicon-list"/> #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
+                                                                    </button>
+                                                                    <ul class="dropdown-menu" role="menu">
+                                                                        <li>
+                                                                            <a jsf:id="endNoteLink" jsf:action="#{FilePage.fileDownloadService.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion.dataset)}" >
+                                                                                #{bundle['dataset.cite.downloadBtn.xml']}
+                                                                            </a>
+                                                                        </li>
+                                                                        <li>
+                                                                            <a jsf:id="risLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatasetCitationRIS(FilePage.fileMetadata.datasetVersion.dataset)}">
+                                                                                #{bundle['dataset.cite.downloadBtn.ris']}
+                                                                            </a>
+                                                                        </li>
+                                                                        <li>
+                                                                            <a jsf:id="bibLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatasetCitationBibtex(FilePage.fileMetadata.datasetVersion.dataset)}" target="_blank">
+                                                                                #{bundle['dataset.cite.downloadBtn.bib']}
+                                                                            </a>
+                                                                        </li>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-sm-6 text-right small text-muted citation-standards vcenter" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
+                                                                <h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
                                                 <div id="deaccession-reason-block" class="col-xs-12" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                                     <div class="col-xs-12 bg-danger">
@@ -489,13 +533,11 @@
                                                     <h:outputText value="#{FilePage.file.unf}"/>
                                                 </div>
                                             </div>
-                                            <div id="fileMetadataBlock" class="col-xs-12">
-                                                <div class="text-muted">
-                                                    <h:outputText id="fileTypeOutputRegular" value="#{FilePage.fileMetadata.dataFile.friendlyType}" rendered="#{!(FilePage.fileMetadata.dataFile.tabularData)}"/>
-                                                    <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{FilePage.fileMetadata.dataFile.tabularData}"/>
-                                                    <h:outputText id="fileSize" value=" - #{FilePage.fileMetadata.dataFile.friendlySize}" />
-                                                    <h:outputText id="fileCreatePublishDate" value=" - #{bundle['file.lastupdated.label']}: #{FilePage.fileMetadata.fileDateToDisplay}" rendered="#{!(empty FilePage.fileMetadata.id)}"/>
-                                                    <div class="checksum-block" jsf:rendered="#{!FilePage.file.tabularData and !(empty FilePage.file.checksumValue)}">
+                                            <div class="form-group checksum-block" jsf:rendered="#{!FilePage.file.tabularData and !(empty FilePage.file.checksumValue)}">
+                                                <label class="col-sm-3 control-label">
+                                                   #{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}
+                                                </label>
+                                                <div class="col-sm-9">
                                                     <button class="btn btn-secondary checksum" type="button"
                                                         data-clipboard-action="copy"
                                                         data-clipboard-text="#{FilePage.file.checksumValue}"
@@ -518,6 +560,7 @@
                                                         //]]>
                                                     </script>
                                                 </div>
+                                            </div>
                                             <div class="form-group" jsf:rendered="#{FilePage.file.released}">
                                                 <label class="col-sm-3 control-label">
                                                    #{bundle['file.metadataTab.fileMetadata.publicationDate.label']}
@@ -585,6 +628,7 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
                             </p:tab>
                             <ui:remove>
                                 <p:tab id="provenanceTab" title="Provenance" rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
@@ -698,6 +742,7 @@
                                                              value="#{FilePage.fileMetadata.datasetVersion.termsOfUseAndAccess.fileAccessRequest}" widgetVar="inputfar"/>
                                 </div>
                             </div>
+                        </div>
                         <div class="button-block">
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('accessPopup').hide();" update=":messagePanel" onerror="javascript:editTimedOut(xhr);" action="#{FilePage.restrictFile(true)}"/>
                             <button class="btn btn-link" onclick="PF('accessPopup').hide();" type="button">
