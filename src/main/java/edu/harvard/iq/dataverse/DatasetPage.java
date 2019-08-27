@@ -316,9 +316,13 @@ public class DatasetPage implements java.io.Serializable {
         this.showIngestSuccess = showIngestSuccess;
     }
         
+    // TODO: Consider renaming "configureTools" to "fileConfigureTools".
     List<ExternalTool> configureTools = new ArrayList<>();
+    // TODO: Consider renaming "exploreTools" to "fileExploreTools".
     List<ExternalTool> exploreTools = new ArrayList<>();
+    // TODO: Consider renaming "configureToolsByFileId" to "fileConfigureToolsByFileId".
     Map<Long, List<ExternalTool>> configureToolsByFileId = new HashMap<>();
+    // TODO: Consider renaming "exploreToolsByFileId" to "fileExploreToolsByFileId".
     Map<Long, List<ExternalTool>> exploreToolsByFileId = new HashMap<>();
     private List<ExternalTool> datasetExploreTools;
     
@@ -2030,9 +2034,9 @@ public class DatasetPage implements java.io.Serializable {
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.unlocked.ingest.message"));
         }
         
-        configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
-        exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
-        datasetExploreTools = externalToolService.findByScopeAndType(ExternalTool.Scope.DATASET, ExternalTool.Type.EXPLORE);
+        configureTools = externalToolService.findFileToolsByType(ExternalTool.Type.CONFIGURE);
+        exploreTools = externalToolService.findFileToolsByType(ExternalTool.Type.EXPLORE);
+        datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
       
         

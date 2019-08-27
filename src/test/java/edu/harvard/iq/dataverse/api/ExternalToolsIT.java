@@ -14,6 +14,7 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -69,21 +70,28 @@ public class ExternalToolsIT {
 
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
 
-        String pathToFile = "src/test/java/edu/harvard/iq/dataverse/util/irclog.tsv";
-        UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        String pathToJupyterNotebok = "src/test/java/edu/harvard/iq/dataverse/util/irc-metrics.ipynb";
+        Response uploadJupyterNotebook = UtilIT.uploadFileViaNative(datasetId.toString(), pathToJupyterNotebok, apiToken);
+        uploadJupyterNotebook.prettyPrint();
+        uploadJupyterNotebook.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
-        Response getFileIdRequest = UtilIT.nativeGet(datasetId, apiToken);
-        getFileIdRequest.prettyPrint();
-        getFileIdRequest.then().assertThat()
-                .statusCode(OK.getStatusCode());;
+        Integer jupyterNotebookFileId = JsonPath.from(uploadJupyterNotebook.getBody().asString()).getInt("data.files[0].dataFile.id");
 
-        Integer fileId = JsonPath.from(getFileIdRequest.getBody().asString()).getInt("data.latestVersion.files[0].dataFile.id");
+        String pathToTabularFile = "src/test/java/edu/harvard/iq/dataverse/util/irclog.tsv";
+        Response uploadTabularFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTabularFile, apiToken);
+        uploadTabularFile.prettyPrint();
+        uploadTabularFile.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Integer tabularFileId = JsonPath.from(uploadTabularFile.getBody().asString()).getInt("data.files[0].dataFile.id");
 
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
         job.add("scope", "file");
+        job.add("contentType", "text/tab-separated-values");
         job.add("toolUrl", "http://awesometool.com");
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
@@ -101,15 +109,29 @@ public class ExternalToolsIT {
                 .body("data.displayName", CoreMatchers.equalTo("AwesomeTool"))
                 .statusCode(OK.getStatusCode());
 
-//        Response getExternalToolsByFileId = UtilIT.getExternalToolsByFileId(fileId);
-        Response getExternalToolsByFileId = UtilIT.getExternalToolsForFile(fileId.toString(), "explore", apiToken);
-        getExternalToolsByFileId.prettyPrint();
-        getExternalToolsByFileId.then().assertThat()
-                .body("data[0].displayName", CoreMatchers.equalTo("AwesomeTool"))
-                .body("data[0].scope", CoreMatchers.equalTo("file"))
-                .body("data[0].toolUrlWithQueryParams", CoreMatchers.equalTo("http://awesometool.com?fileid=" + fileId + "&key=" + apiToken))
+        long toolId = JsonPath.from(addExternalTool.getBody().asString()).getLong("data.id");
+
+        Response getTool = UtilIT.getExternalTool(toolId);
+        getTool.prettyPrint();
+        getTool.then().assertThat()
+                .body("data.scope", CoreMatchers.equalTo("file"))
                 .statusCode(OK.getStatusCode());
 
+        Response getExternalToolsForTabularFiles = UtilIT.getExternalToolsForFile(tabularFileId.toString(), "explore", apiToken);
+        getExternalToolsForTabularFiles.prettyPrint();
+        getExternalToolsForTabularFiles.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].displayName", CoreMatchers.equalTo("AwesomeTool"))
+                .body("data[0].scope", CoreMatchers.equalTo("file"))
+                .body("data[0].contentType", CoreMatchers.equalTo("text/tab-separated-values"))
+                .body("data[0].toolUrlWithQueryParams", CoreMatchers.equalTo("http://awesometool.com?fileid=" + tabularFileId + "&key=" + apiToken));
+
+        Response getExternalToolsForJuptyerNotebooks = UtilIT.getExternalToolsForFile(jupyterNotebookFileId.toString(), "explore", apiToken);
+        getExternalToolsForJuptyerNotebooks.prettyPrint();
+        getExternalToolsForJuptyerNotebooks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // No tools for this file type.
+                .body("data", Matchers.hasSize(0));
     }
 
     @Test
@@ -185,42 +207,14 @@ public class ExternalToolsIT {
                 .body("data.displayName", CoreMatchers.equalTo("DatasetTool1"))
                 .statusCode(OK.getStatusCode());
 
-//        Response getExternalToolsByDatasetId = UtilIT.getExternalToolsByScopeTypeAndDvObjectId("dataset", "explore", datasetId);
         Response getExternalToolsByDatasetId = UtilIT.getExternalToolsForDataset(datasetId.toString(), "explore", apiToken);
         getExternalToolsByDatasetId.prettyPrint();
         getExternalToolsByDatasetId.then().assertThat()
                 .body("data[0].displayName", CoreMatchers.equalTo("DatasetTool1"))
                 .body("data[0].scope", CoreMatchers.equalTo("dataset"))
-                // FIXME: Instead of "text/tab-separated-values" we want null. We want dataset tools to have a nullable file type.
-                .body("data[0].contentType", CoreMatchers.equalTo("text/tab-separated-values"))
                 .body("data[0].toolUrlWithQueryParams", CoreMatchers.equalTo("http://datasettool1.com?datasetPid=" + datasetPid + "&key=" + apiToken))
                 .statusCode(OK.getStatusCode());
 
-    }
-
-    @Test
-    public void testAddExternalTool() throws IOException {
-        JsonObjectBuilder job = Json.createObjectBuilder();
-        job.add("displayName", "AwesomeTool");
-        job.add("description", "This tool is awesome.");
-        job.add("type", "explore");
-        job.add("scope", "file");
-        job.add("toolUrl", "http://awesometool.com");
-        job.add("toolParameters", Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
-                                .add("fileid", "{fileId}")
-                                .build())
-                        .add(Json.createObjectBuilder()
-                                .add("key", "{apiToken}")
-                                .build())
-                        .build())
-                .build());
-        Response addExternalTool = UtilIT.addExternalTool(job.build());
-        addExternalTool.prettyPrint();
-        addExternalTool.then().assertThat()
-                .body("data.displayName", CoreMatchers.equalTo("AwesomeTool"))
-                .statusCode(OK.getStatusCode());
     }
 
     @Test
@@ -293,36 +287,6 @@ public class ExternalToolsIT {
         addExternalTool.then().assertThat()
                 .body("message", CoreMatchers.equalTo("Unknown reserved word: mode1"))
                 .statusCode(BAD_REQUEST.getStatusCode());
-    }
-
-    @Test
-    public void testAddDatasetExploreTool() throws IOException {
-        JsonObjectBuilder job = Json.createObjectBuilder();
-        job.add("displayName", "AwesomeTool");
-        job.add("description", "This tool is awesome.");
-        job.add("type", "explore");
-        job.add("scope", "dataset");
-        job.add("toolUrl", "http://awesometool.com");
-        job.add("toolParameters", Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
-                                .add("dataset", "{datasetPid}")
-                                .build())
-                        .build())
-                .build());
-        Response addExternalTool = UtilIT.addExternalTool(job.build());
-        addExternalTool.prettyPrint();
-        addExternalTool.then().assertThat()
-                .body("data.displayName", CoreMatchers.equalTo("AwesomeTool"))
-                .statusCode(OK.getStatusCode());
-
-        long id = JsonPath.from(addExternalTool.getBody().asString()).getLong("data.id");
-
-        Response getTool = UtilIT.getExternalTool(id);
-        getTool.prettyPrint();
-        getTool.then().assertThat()
-                .body("data.scope", CoreMatchers.equalTo("dataset"))
-                .statusCode(OK.getStatusCode());
     }
 
 }

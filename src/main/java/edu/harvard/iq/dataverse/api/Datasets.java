@@ -1903,7 +1903,7 @@ public class Datasets extends AbstractApiBean {
         try {
             dataset = findDatasetOrDie(idSupplied);
             JsonArrayBuilder tools = Json.createArrayBuilder();
-            List<ExternalTool> datasetTools = externalToolService.findByScopeAndType(ExternalTool.Scope.DATASET, ExternalTool.Type.fromString(type));
+            List<ExternalTool> datasetTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.fromString(type));
             for (ExternalTool tool : datasetTools) {
                 String apiTokenString = null;
                 apiTokenString = getRequestApiKey();

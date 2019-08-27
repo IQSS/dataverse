@@ -627,7 +627,7 @@ public class Files extends AbstractApiBean {
         try {
             DataFile dataFile = findDataFileOrDie(idSupplied);
             JsonArrayBuilder tools = Json.createArrayBuilder();
-            List<ExternalTool> datasetTools = externalToolService.findByScopeAndType(ExternalTool.Scope.FILE, ExternalTool.Type.fromString(type));
+            List<ExternalTool> datasetTools = externalToolService.findFileToolsByScopeAndContentType(ExternalTool.Type.fromString(type), dataFile.getContentType());
             for (ExternalTool tool : datasetTools) {
                 String apiTokenString = null;
                 apiTokenString = getRequestApiKey();

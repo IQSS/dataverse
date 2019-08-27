@@ -13,6 +13,7 @@ import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 public class ExternalToolServiceBeanTest {
@@ -288,7 +289,7 @@ public class ExternalToolServiceBeanTest {
             System.out.println(ex.getMessage());
         }
         assertNotNull(externalTool);
-        assertEquals(externalTool.getContentType(), DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        assertNull(externalTool.getContentType());
     }
 
     @Test
@@ -346,7 +347,7 @@ public class ExternalToolServiceBeanTest {
             System.out.println(ex.getMessage());
         }
         assertNotNull(externalTool);
-        assertEquals(externalTool.getContentType(), DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        assertNull(externalTool.getContentType());
     }
 
     @Test
@@ -377,7 +378,7 @@ public class ExternalToolServiceBeanTest {
             System.out.println(ex.getMessage());
         }
         assertNotNull(externalTool);
-        assertEquals(externalTool.getContentType(), DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        assertNull(externalTool.getContentType());
     }
 
 }

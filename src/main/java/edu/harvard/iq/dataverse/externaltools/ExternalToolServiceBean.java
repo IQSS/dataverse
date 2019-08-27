@@ -45,45 +45,50 @@ public class ExternalToolServiceBean {
     }
 
     /**
-     * @param type
+     * @param type explore or configure
      * @return A list of tools or an empty list.
      */
-    public List<ExternalTool> findByType(Type type) {
-        return findByType(type, null);
+    public List<ExternalTool> findDatasetToolsByType(Type type) {
+        String nullContentType = null;
+        return findByScopeTypeAndContentType(ExternalTool.Scope.DATASET, type, nullContentType);
     }
 
     /**
-     * @param type
-     * @param contentType - mimetype
+     * @param type explore or configure
      * @return A list of tools or an empty list.
      */
-    public List<ExternalTool> findByType(Type type, String contentType) {
+    public List<ExternalTool> findFileToolsByType(Type type) {
+        String nullContentType = null;
+        return findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, nullContentType);
+    }
 
+    /**
+     * @param type explore or configure
+     * @param contentType file content type (MIME type)
+     * @return A list of tools or an empty list.
+     */
+    public List<ExternalTool> findFileToolsByScopeAndContentType(Type type, String contentType) {
+        return findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, contentType);
+    }
+
+    /**
+     * @param scope dataset or file
+     * @param type explore or configure
+     * @param contentType file content type (MIME type)
+     * @return A list of tools or an empty list.
+     */
+    private List<ExternalTool> findByScopeTypeAndContentType(Scope scope, Type type, String contentType) {
         List<ExternalTool> externalTools = new ArrayList<>();
-
-        //If contentType==null, get all tools of the given ExternalTool.Type 
-        TypedQuery<ExternalTool> typedQuery = contentType != null ? em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type AND o.contentType = :contentType", ExternalTool.class)
-                : em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type", ExternalTool.class);
+        String contentTypeClause = "";
+        if (contentType != null) {
+            contentTypeClause = "AND o.contentType = :contentType";
+        }
+        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.scope = :scope AND o.type = :type " + contentTypeClause, ExternalTool.class);
+        typedQuery.setParameter("scope", scope);
         typedQuery.setParameter("type", type);
         if (contentType != null) {
             typedQuery.setParameter("contentType", contentType);
         }
-        List<ExternalTool> toolsFromQuery = typedQuery.getResultList();
-        if (toolsFromQuery != null) {
-            externalTools = toolsFromQuery;
-        }
-        return externalTools;
-    }
-
-    /**
-     * @param scope - dataset or file
-     * @return A list of tools or an empty list.
-     */
-    public List<ExternalTool> findByScopeAndType(Scope scope, Type type) {
-        List<ExternalTool> externalTools = new ArrayList<>();
-        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.scope = :scope AND o.type = :type", ExternalTool.class);
-        typedQuery.setParameter("scope", scope);
-        typedQuery.setParameter("type", type);
         List<ExternalTool> toolsFromQuery = typedQuery.getResultList();
         if (toolsFromQuery != null) {
             externalTools = toolsFromQuery;
@@ -149,10 +154,6 @@ public class ExternalToolServiceBean {
         String typeUserInput = getRequiredTopLevelField(jsonObject, TYPE);
         String scopeUserInput = getRequiredTopLevelField(jsonObject, SCOPE);
         String contentType = getOptionalTopLevelField(jsonObject, CONTENT_TYPE);
-        //Legacy support - assume tool manifests without any mimetype are for tabular data
-        if (contentType == null) {
-            contentType = DataFileServiceBean.MIME_TYPE_TSV_ALT;
-        }
 
         // Allow IllegalArgumentException to bubble up from ExternalTool.Type.fromString
         ExternalTool.Type type = ExternalTool.Type.fromString(typeUserInput);

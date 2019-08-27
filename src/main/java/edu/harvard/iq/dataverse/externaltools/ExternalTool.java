@@ -74,7 +74,7 @@ public class ExternalTool implements Serializable {
      * The file content type the tool works on. For tabular files, the type
      * text/tab-separated-values should be sent
      */
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = true, columnDefinition = "TEXT")
     private String contentType;
 
     /**
@@ -222,7 +222,9 @@ public class ExternalTool implements Serializable {
         jab.add(SCOPE, getScope().text);
         jab.add(TOOL_URL, getToolUrl());
         jab.add(TOOL_PARAMETERS, getToolParameters());
-        jab.add(CONTENT_TYPE, getContentType());
+        if (getContentType() != null) {
+            jab.add(CONTENT_TYPE, getContentType());
+        }
         return jab;
     }
 
