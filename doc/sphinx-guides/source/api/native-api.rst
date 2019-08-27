@@ -868,6 +868,33 @@ Normally published datasets should not be deleted, but there exists a "destroy" 
   
 Calling the destroy endpoint is permanent and irreversible. It will remove the dataset and its datafiles, then re-index the parent dataverse in Solr. This endpoint requires the API token of a superuser.
 
+.. _list-external-tools-for-a-dataset-api:
+
+List External Tools for a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some installations of Dataverse have external tools enabled for datasets and there are two types:
+
+- explore
+- configure
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/J8SJZB
+  export TYPE=explore
+  
+  curl -H X-Dataverse-key:$API_TOKEN \""$SERVER_URL/api/datasets/:persistentId/externalTools?persistentId=$PERSISTENT_ID&type=$TYPE"\"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx "https://demo.dataverse.org/api/datasets/:persistentId/externalTools?persistentId=doi:10.5072/FK2/J8SJZB&type=explore"
+
 Files
 -----
 
@@ -1022,6 +1049,33 @@ Starting the release 4.10 the size of the saved original file (for an ingested t
 	    GET http://$SERVER/api/admin/datafiles/integrity/fixmissingoriginalsizes{?limit=N}
 
 Note the optional "limit" parameter. Without it, the API will attempt to populate the sizes for all the saved originals that don't have them in the database yet. Otherwise it will do so for the first N such datafiles. 
+
+.. _list-external-tools-for-a-file-api:
+
+List External Tools for a File
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some installations of Dataverse have external tools enabled for files and there are two types:
+
+- explore
+- configure
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/J8SJZB
+  export TYPE=explore
+  
+  curl -H X-Dataverse-key:$API_TOKEN \""$SERVER_URL/api/files/:persistentId/externalTools?persistentId=$PERSISTENT_ID&type=$TYPE"\"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx "https://demo.dataverse.org/api/files/:persistentId/externalTools?persistentId=doi:10.5072/FK2/J8SJZB&type=explore"
 
 Builtin Users
 -------------

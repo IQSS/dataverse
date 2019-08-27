@@ -37,15 +37,16 @@ External tools must be expressed in an external tool manifest file, a specific J
 
 ``scope`` is required and must be ``file`` or ``dataset`` to make the tool appear at the file level or dataset level.
 
-File level tools can operate on any file, including tabular files that have been created by successful ingestion. (For more on ingest, see the :doc:`/user/tabulardataingest/ingestprocess` of the User Guide.) The optional ``contentType`` entry specifies the mimetype a tool works on. (Not providing this parameter makes the tool work on ingested tabular files and is equivalent to specifying the ``contentType`` as "text/tab-separated-values".)  
+File level tools can operate on any file, including tabular files that have been created by successful ingestion. (For more on ingest, see the :doc:`/user/tabulardataingest/ingestprocess` of the User Guide.) The optional ``contentType`` entry specifies the mimetype a tool works on.
 
 In the example above, a mix of required and optional reserved words appear that can be used to insert dynamic values into tools. The supported values are:
 
-- ``{fileId}`` (required for file tools) - The Dataverse database ID of a file from which the external tool has been launched.
+- ``{fileId}`` (required for file tools, or ``{filePid}``) - The database ID of a file from which the external tool has been launched.
+- ``{filePid}`` (required for file tools, or ``{fileId}``) - The Persistent ID (DOI or Handle) of a file (if available) from which the external tool has been launched.
 - ``{siteUrl}`` (optional) - The URL of the Dataverse installation from which the tool was launched.
 - ``{apiToken}`` (optional) - The Dataverse API token of the user launching the external tool, if available.
-- ``{datasetId}`` (optional) - The ID of the dataset.
-- ``{datasetPid}`` (optional) - The Persistent ID (DOI or Handle) of the dataset.
+- ``{datasetId}`` (required for dataset tools, or ``{datasetPid}``) - The database ID of the dataset.
+- ``{datasetPid}`` (required for dataset tools, or ``{datasetId}``) - The Persistent ID (DOI or Handle) of the dataset.
 - ``{datasetVersion}`` (optional) - The friendly version number ( or \:draft ) of the dataset version the tool is being launched from.
 
 Making an External Tool Available in Dataverse
@@ -77,6 +78,16 @@ Removing an External Tool Available in Dataverse
 Assuming the external tool database id is "1", remove it with the following command:
 
 ``curl -X DELETE http://localhost:8080/api/admin/externalTools/1``
+
+List External Tools for a Dataset
+---------------------------------
+
+See :ref:`list-external-tools-for-a-dataset-api`
+
+List External Tools for a File
+------------------------------
+
+See :ref:`list-external-tools-for-a-file-api`
 
 Writing Your Own External Tool
 ------------------------------
