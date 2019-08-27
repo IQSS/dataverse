@@ -42,6 +42,7 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Formatter;
@@ -197,7 +198,7 @@ public class ImportServiceBean {
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public Dataset doImportHarvestedDataset(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, String harvestIdentifier, String metadataFormat, File metadataFile, PrintWriter cleanupLog) throws ImportException, IOException {
+    public Dataset doImportHarvestedDataset(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, String harvestIdentifier, String metadataFormat, File metadataFile, Date oaiDateStamp, PrintWriter cleanupLog) throws ImportException, IOException {
         if (harvestingClient == null || harvestingClient.getDataverse() == null) {
             throw new ImportException("importHarvestedDataset called wiht a null harvestingClient, or an invalid harvestingClient.");
         }
@@ -275,6 +276,10 @@ public class ImportServiceBean {
             ds.setOwner(owner);
             ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
 
+            if (ds.getVersions().get(0).getReleaseTime() == null) {
+                ds.getVersions().get(0).setReleaseTime(oaiDateStamp);
+            }
+            
             // Check data against required contraints
             List<ConstraintViolation<DatasetField>> violations = ds.getVersions().get(0).validateRequired();
             if (!violations.isEmpty()) {

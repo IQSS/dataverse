@@ -404,8 +404,13 @@ public class SettingsServiceBean {
         /*
         *
         */
-        MDCLogPath
-        ;
+        MDCLogPath,
+
+        /**
+         * Allow CORS flag (true or false). It is true by default
+         *
+         */
+        AllowCors;
 
         @Override
         public String toString() {

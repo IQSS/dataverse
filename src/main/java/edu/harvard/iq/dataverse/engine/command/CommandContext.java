@@ -41,6 +41,8 @@ import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import java.util.List;
+import java.util.Stack;
 import javax.persistence.EntityManager;
 
 /**
@@ -141,4 +143,14 @@ public interface CommandContext {
     public ConfirmEmailServiceBean confirmEmail();
     
     public ActionLogServiceBean actionLog();
+    
+    public void beginCommandSequence();
+    
+    public boolean completeCommandSequence(Command command);
+    
+    public void cancelCommandSequence();
+    
+    public Stack<Command> getCommandsCalled();
+    
+    public void addCommand(Command command);
 }

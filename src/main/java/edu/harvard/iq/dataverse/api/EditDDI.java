@@ -386,7 +386,9 @@ public class EditDDI  extends AbstractApiBean {
             thedefault = false;
         } else {
             DataVariable dv = em.find(DataVariable.class, varMet.getDataVariable().getId());
-            if (dv.getLabel() != null && !dv.getLabel().equals(varMet.getLabel())) {
+            if (dv.getLabel() == null && varMet.getLabel() != null && !varMet.getLabel().trim().equals("")) {
+                thedefault = false;
+            } else if (dv.getLabel() != null && !dv.getLabel().equals(varMet.getLabel())) {
                 thedefault = false;
             }
         }

@@ -598,7 +598,7 @@
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers</artifactId>
-            <version>1.19</version>
+            <version>1.22</version>
         </dependency>
         <!-- Named Entity Recognition -->
         <dependency>
@@ -640,6 +640,7 @@
                     <include>**/*.sql</include>
                     <include>**/*.xml</include>
                     <include>**/firstNames/*.*</include>
+                    <include>**/*.xsl</include>
                 </includes>
             </resource>
         </resources>
