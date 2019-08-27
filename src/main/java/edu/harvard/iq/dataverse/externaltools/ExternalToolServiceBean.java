@@ -44,29 +44,28 @@ public class ExternalToolServiceBean {
         return typedQuery.getResultList();
     }
 
-
     /**
-     * @param type 
+     * @param type
      * @return A list of tools or an empty list.
      */
     public List<ExternalTool> findByType(Type type) {
         return findByType(type, null);
     }
-    
+
     /**
-     * @param type 
-     * @param contentType  - mimetype
+     * @param type
+     * @param contentType - mimetype
      * @return A list of tools or an empty list.
      */
     public List<ExternalTool> findByType(Type type, String contentType) {
 
         List<ExternalTool> externalTools = new ArrayList<>();
-        
+
         //If contentType==null, get all tools of the given ExternalTool.Type 
-        TypedQuery<ExternalTool> typedQuery = contentType != null ? em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type AND o.contentType = :contentType", ExternalTool.class):
-            em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type", ExternalTool.class);
+        TypedQuery<ExternalTool> typedQuery = contentType != null ? em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type AND o.contentType = :contentType", ExternalTool.class)
+                : em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type", ExternalTool.class);
         typedQuery.setParameter("type", type);
-        if(contentType!=null) {
+        if (contentType != null) {
             typedQuery.setParameter("contentType", contentType);
         }
         List<ExternalTool> toolsFromQuery = typedQuery.getResultList();
@@ -120,8 +119,9 @@ public class ExternalToolServiceBean {
     }
 
     /**
-     * This method takes a list of tools and a file and returns which tools that file supports
-     * The list of tools is passed in so it doesn't hit the database each time
+     * This method takes a list of tools and a file and returns which tools that
+     * file supports The list of tools is passed in so it doesn't hit the
+     * database each time
      */
     public static List<ExternalTool> findExternalToolsByFile(List<ExternalTool> allExternalTools, DataFile file) {
         List<ExternalTool> externalTools = new ArrayList<>();
@@ -133,7 +133,7 @@ public class ExternalToolServiceBean {
                 externalTools.add(externalTool);
             }
         });
-        
+
         return externalTools;
     }
 
@@ -150,10 +150,10 @@ public class ExternalToolServiceBean {
         String scopeUserInput = getRequiredTopLevelField(jsonObject, SCOPE);
         String contentType = getOptionalTopLevelField(jsonObject, CONTENT_TYPE);
         //Legacy support - assume tool manifests without any mimetype are for tabular data
-        if(contentType==null) {
-            contentType=DataFileServiceBean.MIME_TYPE_TSV_ALT;
+        if (contentType == null) {
+            contentType = DataFileServiceBean.MIME_TYPE_TSV_ALT;
         }
-        
+
         // Allow IllegalArgumentException to bubble up from ExternalTool.Type.fromString
         ExternalTool.Type type = ExternalTool.Type.fromString(typeUserInput);
         ExternalTool.Scope scope = ExternalTool.Scope.fromString(scopeUserInput);
@@ -176,6 +176,31 @@ public class ExternalToolServiceBean {
                 // Some day there might be more reserved words than just {fileId}.
                 throw new IllegalArgumentException("Required reserved word not found: " + ReservedWord.FILE_ID.toString());
             }
+        } else if (scope.equals(Scope.DATASET)) {
+            List<ReservedWord> requiredReservedWordCandidates = new ArrayList<>();
+            requiredReservedWordCandidates.add(ReservedWord.DATASET_ID);
+            requiredReservedWordCandidates.add(ReservedWord.DATASET_PID);
+            for (JsonObject queryParam : queryParams.getValuesAs(JsonObject.class)) {
+                Set<String> keyValuePair = queryParam.keySet();
+                for (String key : keyValuePair) {
+                    String value = queryParam.getString(key);
+                    ReservedWord reservedWord = ReservedWord.fromString(value);
+                    for (ReservedWord requiredReservedWordCandidate : requiredReservedWordCandidates) {
+                        if (reservedWord.equals(requiredReservedWordCandidate)) {
+                            allRequiredReservedWordsFound = true;
+                        }
+                    }
+                }
+            }
+            if (!allRequiredReservedWordsFound) {
+                List<String> requiredReservedWordCandidatesString = new ArrayList<>();
+                for (ReservedWord requiredReservedWordCandidate : requiredReservedWordCandidates) {
+                    requiredReservedWordCandidatesString.add(requiredReservedWordCandidate.toString());
+                }
+                String friendly = String.join(", ", requiredReservedWordCandidatesString);
+                throw new IllegalArgumentException("One of the following reserved words is required: " + friendly + ".");
+            }
+
         }
         String toolParameters = toolParametersObj.toString();
         return new ExternalTool(displayName, description, type, scope, toolUrl, toolParameters, contentType);
@@ -188,7 +213,7 @@ public class ExternalToolServiceBean {
             throw new IllegalArgumentException(key + " is required.");
         }
     }
-    
+
     private static String getOptionalTopLevelField(JsonObject jsonObject, String key) {
         try {
             return jsonObject.getString(key);
@@ -196,8 +221,5 @@ public class ExternalToolServiceBean {
             return null;
         }
     }
-
-
-
 
 }

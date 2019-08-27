@@ -19,7 +19,7 @@ public class ExternalToolServiceBeanTest {
 
     public ExternalToolServiceBeanTest() {
     }
-    
+
     @Test
     public void testfindAll() {
         DataFile dataFile = new DataFile();
@@ -87,7 +87,7 @@ public class ExternalToolServiceBeanTest {
         dataFile.setFileMetadatas(fmdl);
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
-        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken,fmd);
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd);
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
         System.out.println("result: " + toolUrl);
         assertEquals("http://awesometool.com?fileid=42&key=7196b5ce-f200-4286-8809-03ffdbc255d7&fileMetadataId=2", toolUrl);
@@ -269,7 +269,7 @@ public class ExternalToolServiceBeanTest {
         job.add("type", "explore");
         job.add("scope", "file");
         job.add("toolUrl", "http://awesometool.com");
-        
+
         job.add("toolParameters", Json.createObjectBuilder().add("queryParameters", Json.createArrayBuilder()
                 .add(Json.createObjectBuilder()
                         .add("fileid", "{fileId}")
@@ -278,9 +278,98 @@ public class ExternalToolServiceBeanTest {
                         .add("key", "{apiToken}")
                         .build())
                 .build())
-            .build());
+                .build());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
+        ExternalTool externalTool = null;
+        try {
+            externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        assertNotNull(externalTool);
+        assertEquals(externalTool.getContentType(), DataFileServiceBean.MIME_TYPE_TSV_ALT);
+    }
+
+    @Test
+    public void testParseAddDatasetToolNoRequiredFields() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("displayName", "AwesomeTool");
+        job.add("description", "This tool is awesome.");
+        job.add("type", "explore");
+        job.add("scope", "dataset");
+        job.add("toolUrl", "http://awesometool.com");
+
+        job.add("toolParameters", Json.createObjectBuilder().add("queryParameters", Json.createArrayBuilder()
+                .add(Json.createObjectBuilder()
+                        .add("key", "{apiToken}")
+                        .build())
+                .build())
+                .build());
+        String tool = job.build().toString();
+        System.out.println("tool: " + tool);
+        Exception expectedException = null;
+        try {
+            ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
+        } catch (Exception ex) {
+            expectedException = ex;
+        }
+        assertNotNull(expectedException);
+        assertEquals("One of the following reserved words is required: {datasetId}, {datasetPid}.", expectedException.getMessage());
+    }
+
+    @Test
+    public void testParseAddDatasetToolDatasetId() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("displayName", "AwesomeTool");
+        job.add("description", "This tool is awesome.");
+        job.add("type", "explore");
+        job.add("scope", "dataset");
+        job.add("toolUrl", "http://awesometool.com");
+
+        job.add("toolParameters", Json.createObjectBuilder().add("queryParameters", Json.createArrayBuilder()
+                .add(Json.createObjectBuilder()
+                        .add("datasetId", "{datasetId}")
+                        .build())
+                .add(Json.createObjectBuilder()
+                        .add("key", "{apiToken}")
+                        .build())
+                .build())
+                .build());
+        String tool = job.build().toString();
+        System.out.println("tool: " + tool);
+
+        ExternalTool externalTool = null;
+        try {
+            externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        assertNotNull(externalTool);
+        assertEquals(externalTool.getContentType(), DataFileServiceBean.MIME_TYPE_TSV_ALT);
+    }
+
+    @Test
+    public void testParseAddDatasetToolDatasetPid() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("displayName", "AwesomeTool");
+        job.add("description", "This tool is awesome.");
+        job.add("type", "explore");
+        job.add("scope", "dataset");
+        job.add("toolUrl", "http://awesometool.com");
+
+        job.add("toolParameters", Json.createObjectBuilder().add("queryParameters", Json.createArrayBuilder()
+                .add(Json.createObjectBuilder()
+                        .add("datasetPid", "{datasetPid}")
+                        .build())
+                .add(Json.createObjectBuilder()
+                        .add("key", "{apiToken}")
+                        .build())
+                .build())
+                .build());
+        String tool = job.build().toString();
+        System.out.println("tool: " + tool);
+
         ExternalTool externalTool = null;
         try {
             externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);

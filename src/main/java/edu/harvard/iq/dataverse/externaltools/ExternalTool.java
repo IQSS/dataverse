@@ -71,12 +71,12 @@ public class ExternalTool implements Serializable {
     private String toolParameters;
 
     /**
-     * The file content type the tool works on. For tabular files, the type text/tab-separated-values should be sent 
+     * The file content type the tool works on. For tabular files, the type
+     * text/tab-separated-values should be sent
      */
     @Column(nullable = false, columnDefinition = "TEXT")
     private String contentType;
 
-    
     /**
      * This default constructor is only here to prevent this error at
      * deployment:
@@ -208,7 +208,7 @@ public class ExternalTool implements Serializable {
     public String getContentType() {
         return this.contentType;
     }
-    
+
     public void setContentType(String contentType) {
         this.contentType = contentType;
     }

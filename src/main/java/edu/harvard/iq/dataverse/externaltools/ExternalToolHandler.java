@@ -136,8 +136,7 @@ public class ExternalToolHandler {
                     version = dataset.getLatestVersionForCopy().getFriendlyVersionNumber();
                 }
                 if (("DRAFT").equals(version)) {
-                    version = ":draft"; // send the token needed in api calls that can be substituted for a numeric
-                                        // version.
+                    version = ":draft"; // send the token needed in api calls that can be substituted for a numeric version.
                 }
                 return key + "=" + version;
             case FILE_METADATA_ID:

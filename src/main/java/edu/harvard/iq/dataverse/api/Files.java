@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
@@ -27,10 +28,12 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftFileMetadataIfAvailableCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RedetectFileTypeCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
@@ -43,10 +46,14 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -55,6 +62,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -64,8 +72,6 @@ import javax.ws.rs.core.UriInfo;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import java.util.List;
-import javax.ws.rs.QueryParam;
 
 @Path("files")
 public class Files extends AbstractApiBean {
@@ -612,6 +618,35 @@ public class Files extends AbstractApiBean {
             // condition. We'll just log the error as a warning and keep
             // going:
             logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", ex.getMessage());
+        }
+    }
+
+    @Path("{id}/externalTools")
+    @GET
+    public Response getExternalTools(@PathParam("id") String idSupplied, @QueryParam("type") String type) {
+        try {
+            DataFile dataFile = findDataFileOrDie(idSupplied);
+            JsonArrayBuilder tools = Json.createArrayBuilder();
+            List<ExternalTool> datasetTools = externalToolService.findByScopeAndType(ExternalTool.Scope.FILE, ExternalTool.Type.fromString(type));
+            for (ExternalTool tool : datasetTools) {
+                String apiTokenString = null;
+                apiTokenString = getRequestApiKey();
+                ApiToken apiToken = null;
+                if (apiTokenString != null) {
+                    apiToken = new ApiToken();
+                    apiToken.setTokenString(apiTokenString);
+                }
+                ExternalToolHandler externalToolHandler = null;
+                String toolUrlWithQueryParams = null;
+                externalToolHandler = new ExternalToolHandler(tool, dataFile, apiToken, dataFile.getFileMetadata());
+                toolUrlWithQueryParams = externalToolHandler.getToolUrlWithQueryParams();
+                JsonObjectBuilder toolToJson = tool.toJson();
+                toolToJson.add("toolUrlWithQueryParams", toolUrlWithQueryParams);
+                tools.add(toolToJson);
+            }
+            return ok(tools);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
     }
 

@@ -77,6 +77,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -84,6 +85,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDvObjectPIDMetadataCommand;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitationsServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
@@ -1888,6 +1891,36 @@ public class Datasets extends AbstractApiBean {
             jsonObjectBuilder.add("downloadsTotal", downloadsTotal);
             jsonObjectBuilder.add("downloadsUnique", downloadsUnique);
             return allowCors(ok(jsonObjectBuilder));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    @GET
+    @Path("{id}/externalTools")
+    public Response getExternalTools(@PathParam("id") String idSupplied, @QueryParam("type") String type) {
+        Dataset dataset;
+        try {
+            dataset = findDatasetOrDie(idSupplied);
+            JsonArrayBuilder tools = Json.createArrayBuilder();
+            List<ExternalTool> datasetTools = externalToolService.findByScopeAndType(ExternalTool.Scope.DATASET, ExternalTool.Type.fromString(type));
+            for (ExternalTool tool : datasetTools) {
+                String apiTokenString = null;
+                apiTokenString = getRequestApiKey();
+                ApiToken apiToken = null;
+                if (apiTokenString != null) {
+                    apiToken = new ApiToken();
+                    apiToken.setTokenString(apiTokenString);
+                }
+                ExternalToolHandler externalToolHandler = null;
+                String toolUrlWithQueryParams = null;
+                externalToolHandler = new ExternalToolHandler(tool, dataset, apiToken);
+                toolUrlWithQueryParams = externalToolHandler.getToolUrlWithQueryParams();
+                JsonObjectBuilder toolToJson = tool.toJson();
+                toolToJson.add("toolUrlWithQueryParams", toolUrlWithQueryParams);
+                tools.add(toolToJson);
+            }
+            return ok(tools);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
