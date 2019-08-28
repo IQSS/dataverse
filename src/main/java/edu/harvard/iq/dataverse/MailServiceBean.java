@@ -241,6 +241,7 @@ public class MailServiceBean implements java.io.Serializable {
             logger.warning("Skipping " + notification.getType() +  " notification, because email address is null");
         }
         return retval;
+        
     }
 
     private String getDatasetManageFileAccessLink(DataFile datafile){
