@@ -407,7 +407,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private List<FileMetadata> fileMetadatas;
-    private String fileSortField;
+    private String fileSortField = "name";
     private String fileSortOrder;
     private static boolean tagPresort = true;
 
