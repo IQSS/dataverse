@@ -635,7 +635,13 @@ public class DatasetPage implements java.io.Serializable {
     private void sortFileMetadatas(List<FileMetadata> fileList) {
         
         DataFileComparator dfc = new DataFileComparator();
-        Collections.sort(fileList, dfc.compareBy(true, null != FileMetadata.getCategorySortOrder(), fileSortField, !"desc".equals(fileSortOrder)));
+        Comparator<FileMetadata> comp = dfc.compareBy(true, null != FileMetadata.getCategorySortOrder(), fileSortField, !"desc".equals(fileSortOrder));
+        if(null == comp) {
+            logger.warning("Null comparator");
+        } else {
+            logger.info("Folder " + dfc.getByFolder() + " Categories: " + dfc.getByCategory() + " Filed: " + dfc.getField() + " asc: " + dfc.getAsc());
+        }
+        Collections.sort(fileList, comp);
     }
     
     private Boolean isIndexedVersion = null; 
