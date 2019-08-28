@@ -607,29 +607,19 @@ public class DatasetPage implements java.io.Serializable {
             // If the search term was specified, we'll run a search in the db;
             // if not - return the full list of files in the version. 
             // (no facets without solr!)
-            if (StringUtil.isEmpty(this.fileLabelSearchTerm)) {
-                if ((StringUtil.isEmpty(fileSortField) || fileSortField.equals("name")) && StringUtil.isEmpty(fileSortOrder)) {
-                    return workingVersion.getFileMetadatasSorted();
-                }
-            } else {
+            if (!StringUtil.isEmpty(this.fileLabelSearchTerm)) {
                 searchResultsIdSet = getFileIdsInVersionFromDb(workingVersion.getId(), this.fileLabelSearchTerm);
             }
         }
 
         List<FileMetadata> retList = new ArrayList<>();
 
-        for (FileMetadata fileMetadata : workingVersion.getFileMetadatasSorted()) {
+        for (FileMetadata fileMetadata : workingVersion.getFileMetadatas()) {
             if (searchResultsIdSet == null || searchResultsIdSet.contains(fileMetadata.getDataFile().getId())) {
                 retList.add(fileMetadata);
             }
         }
-
-        if ((StringUtil.isEmpty(fileSortOrder) && !("name".equals(fileSortField))) 
-                || ("desc".equals(fileSortOrder) || !("name".equals(fileSortField)))) {
-            sortFileMetadatas(retList);
-            
-        }
-        
+        sortFileMetadatas(retList);
         return retList;     
     }
     

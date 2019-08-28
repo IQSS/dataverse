@@ -200,6 +200,10 @@ public class DatasetVersion implements Serializable {
     }
     
     public List<FileMetadata> getFileMetadatas() {
+        return fileMetadatas;
+    }
+    
+    public List<FileMetadata> getFileMetadatasSorted() {
         /*
          * fileMetadatas can sometimes be an
          * org.eclipse.persistence.indirection.IndirectList When that happens, the
@@ -216,12 +220,9 @@ public class DatasetVersion implements Serializable {
             }
             fileMetadatas = newFMDs;
         }
-        return fileMetadatas;
-    }
-    
-    public List<FileMetadata> getFileMetadatasSorted() {
+        
         DataFileComparator dfc = new DataFileComparator();
-        Collections.sort(getFileMetadatas(), dfc.compareBy(true, null!=FileMetadata.getCategorySortOrder(), "name", true));
+        Collections.sort(fileMetadatas, dfc.compareBy(true, null!=FileMetadata.getCategorySortOrder(), "name", true));
         return fileMetadatas;
     }
     
