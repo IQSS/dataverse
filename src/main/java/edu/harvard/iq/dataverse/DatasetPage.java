@@ -409,7 +409,7 @@ public class DatasetPage implements java.io.Serializable {
     private List<FileMetadata> fileMetadatas;
     private String fileSortField;
     private String fileSortOrder;
-    private boolean tagPresort = false;
+    private static boolean tagPresort = true;
 
     private LazyFileMetadataDataModel lazyModel;
 
@@ -640,7 +640,7 @@ public class DatasetPage implements java.io.Serializable {
         if(null == comp) {
             logger.warning("Null comparator");
         } else {
-            logger.info("Folder " + dfc.getByFolder() + " Categories: " + dfc.getByCategory() + " Filed: " + dfc.getField() + " asc: " + dfc.getAsc());
+            logger.info("Folder " + dfc.getByFolder() + " Categories: " + dfc.getByCategory() + " Field: " + dfc.getField() + " asc: " + dfc.getAsc());
         }
         Collections.sort(fileList, comp);
     }
@@ -1738,7 +1738,6 @@ public class DatasetPage implements java.io.Serializable {
         String sortOrder = settingsWrapper.getValueForKey(SettingsServiceBean.Key.CategorySortOrder, null);
         if(sortOrder != null) {
             FileMetadata.setCategorySortOrder(sortOrder);
-            setTagPresort(true);
         }
         if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset     
 
@@ -5176,7 +5175,8 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void setTagPresort(boolean tagPresort) {
-        this.tagPresort = tagPresort;
+        
+        this.tagPresort = tagPresort && (null != FileMetadata.getCategorySortOrder());
     }
 
 }
