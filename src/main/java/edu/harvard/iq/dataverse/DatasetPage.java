@@ -409,6 +409,7 @@ public class DatasetPage implements java.io.Serializable {
     private List<FileMetadata> fileMetadatas;
     private String fileSortField;
     private String fileSortOrder;
+    private boolean tagPresort = false;
 
     private LazyFileMetadataDataModel lazyModel;
 
@@ -1737,6 +1738,7 @@ public class DatasetPage implements java.io.Serializable {
         String sortOrder = settingsWrapper.getValueForKey(SettingsServiceBean.Key.CategorySortOrder, null);
         if(sortOrder != null) {
             FileMetadata.setCategorySortOrder(sortOrder);
+            setTagPresort(true);
         }
         if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset     
 
@@ -5167,6 +5169,14 @@ public class DatasetPage implements java.io.Serializable {
     
     private SolrClient getSolrServer () {
         return solrClientService.getSolrClient();       
+    }
+
+    public boolean isTagPresort() {
+        return tagPresort;
+    }
+
+    public void setTagPresort(boolean tagPresort) {
+        this.tagPresort = tagPresort;
     }
 
 }
