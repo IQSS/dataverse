@@ -586,26 +586,24 @@ public class DatasetPage implements java.io.Serializable {
         Set<Long> searchResultsIdSet = null;
 
         if (isIndexedVersion()) {
-            // We run the search even if no search term and/or facets are 
+            // We run the search even if no search term and/or facets are
             // specified - to generate the facet labels list:
             searchResultsIdSet = getFileIdsInVersionFromSolr(workingVersion.getId(), this.fileLabelSearchTerm);
-            // But, if no search terms were specified, we can immediately return the full 
-            // list of the files in the version: 
+            // But, if no search terms were specified, we return the full
+            // list of the files in the version:
             if (StringUtil.isEmpty(fileLabelSearchTerm)
                     && StringUtil.isEmpty(fileTypeFacet)
                     && StringUtil.isEmpty(fileAccessFacet)
                     && StringUtil.isEmpty(fileTagsFacet)) {
-                if ((StringUtil.isEmpty(fileSortField) || fileSortField.equals("name")) && StringUtil.isEmpty(fileSortOrder)) {
-                    return workingVersion.getFileMetadatasSorted();
-                } else {
-                    searchResultsIdSet = null; 
-                }
+                // Since the search results should include the full set of fmds if all the
+                // terms/facets are empty, setting them to null should just be
+                // an optimization for the loop below
+                searchResultsIdSet = null;
             }
-
         } else {
-            // No, this is not an indexed version. 
+            // No, this is not an indexed version.
             // If the search term was specified, we'll run a search in the db;
-            // if not - return the full list of files in the version. 
+            // if not - return the full list of files in the version.
             // (no facets without solr!)
             if (!StringUtil.isEmpty(this.fileLabelSearchTerm)) {
                 searchResultsIdSet = getFileIdsInVersionFromDb(workingVersion.getId(), this.fileLabelSearchTerm);
@@ -620,7 +618,7 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         sortFileMetadatas(retList);
-        return retList;     
+        return retList;
     }
     
     private void sortFileMetadatas(List<FileMetadata> fileList) {
