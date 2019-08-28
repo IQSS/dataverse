@@ -409,7 +409,7 @@ public class DatasetPage implements java.io.Serializable {
     private List<FileMetadata> fileMetadatas;
     private String fileSortField = "name";
     private String fileSortOrder;
-    private static String tagPresort = null;
+    private boolean tagPresort = true;
 
     private LazyFileMetadataDataModel lazyModel;
 
@@ -5163,20 +5163,11 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean isTagPresort() {
-        if(DatasetPage.tagPresort==null) {
-        return true;
-        } else {
-            return(DatasetPage.tagPresort.equals(this.persistentId));
-        }
+       return this.tagPresort;
     }
 
     public void setTagPresort(boolean tagPresort) {
-        boolean presort = tagPresort && (null != FileMetadata.getCategorySortOrder());
-        if(presort) {
-            DatasetPage.tagPresort=null;
-        } else {
-        DatasetPage.tagPresort = this.persistentId;
-        }
+        this.tagPresort = tagPresort && (null != getSortOrder());
     }
 
 }
