@@ -338,6 +338,8 @@ Create both print and web version of the Dataverse Project logo by downloading t
 
 The brand logo (below) was created as a custom icon to represent the concept of a "dataverse." It is used as the brand logo in the Bootstrap navbar component and across the application.
 
+Create both print and web version of the Dataverse brand logo by downloading this vector-based SVG file: :download:`Dataverse_brand_icon.svg <../_static/Dataverse_brand_icon.svg>`
+
 .. raw:: html
 
   <div class="panel panel-default">
