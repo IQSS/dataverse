@@ -409,7 +409,7 @@ public class DatasetPage implements java.io.Serializable {
     private List<FileMetadata> fileMetadatas;
     private String fileSortField = "name";
     private String fileSortOrder;
-    private static boolean tagPresort = true;
+    private static String tagPresort = null;
 
     private LazyFileMetadataDataModel lazyModel;
 
@@ -1723,7 +1723,7 @@ public class DatasetPage implements java.io.Serializable {
         String nonNullDefaultIfKeyNotFound = "";
         protocol = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         authority = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        String sortOrder = settingsWrapper.getValueForKey(SettingsServiceBean.Key.CategorySortOrder, null);
+        String sortOrder = getSortOrder();
         if(sortOrder != null) {
             FileMetadata.setCategorySortOrder(sortOrder);
         }
@@ -1998,6 +1998,10 @@ public class DatasetPage implements java.io.Serializable {
         return null;
     }
     
+    public String getSortOrder() {
+        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.CategorySortOrder, null);
+    }
+
     private Boolean fileTreeViewRequired = null; 
     
     public boolean isFileTreeViewRequired() {
@@ -5159,12 +5163,20 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean isTagPresort() {
-        return tagPresort;
+        if(DatasetPage.tagPresort==null) {
+        return true;
+        } else {
+            return(DatasetPage.tagPresort.equals(this.persistentId));
+        }
     }
 
     public void setTagPresort(boolean tagPresort) {
-        
-        this.tagPresort = tagPresort && (null != FileMetadata.getCategorySortOrder());
+        boolean presort = tagPresort && (null != FileMetadata.getCategorySortOrder());
+        if(presort) {
+            DatasetPage.tagPresort=null;
+        } else {
+        DatasetPage.tagPresort = this.persistentId;
+        }
     }
 
 }
