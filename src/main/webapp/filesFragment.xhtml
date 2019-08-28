@@ -267,7 +267,7 @@
                 </div>
                 <div class="col-xs-2 text-left #{DatasetPage.indexedVersion ? '' : 'col-xs-offset-8'} text-muted small" style="font-weight:normal;" rendered='#{DatasetPage.getSortOrder()}'>
                     <p:selectBooleanCheckbox value="#{DatasetPage.tagPresort}" itemLabel="Presort by Tag" title="When checked items with the same tag will be grouped before sorting occurs.">
-                        <p:ajax update="@form" />
+                        <p:ajax update="filesTable" />
                     </p:selectBooleanCheckbox>
                 </div>
                 <div class="col-xs-2 text-right #{DatasetPage.indexedVersion ? '' : 'col-xs-offset-10'}">

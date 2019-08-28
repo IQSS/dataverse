@@ -624,7 +624,7 @@ public class DatasetPage implements java.io.Serializable {
     private void sortFileMetadatas(List<FileMetadata> fileList) {
         
         DataFileComparator dfc = new DataFileComparator();
-        Comparator<FileMetadata> comp = dfc.compareBy(true, isTagPresort(), fileSortField, !"desc".equals(fileSortOrder));
+        Comparator<FileMetadata> comp = dfc.compareBy(true, tagPresort, fileSortField, !"desc".equals(fileSortOrder));
         if(null == comp) {
             logger.warning("Null comparator");
         } else {
@@ -1714,6 +1714,7 @@ public class DatasetPage implements java.io.Serializable {
     
     private String init(boolean initFull) {
   
+        logger.info("TagPresort: " + tagPresort);
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
