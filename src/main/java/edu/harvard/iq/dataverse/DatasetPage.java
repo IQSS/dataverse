@@ -636,7 +636,7 @@ public class DatasetPage implements java.io.Serializable {
     private void sortFileMetadatas(List<FileMetadata> fileList) {
         
         DataFileComparator dfc = new DataFileComparator();
-        Comparator<FileMetadata> comp = dfc.compareBy(true, null != FileMetadata.getCategorySortOrder(), fileSortField, !"desc".equals(fileSortOrder));
+        Comparator<FileMetadata> comp = dfc.compareBy(true, isTagPresort(), fileSortField, !"desc".equals(fileSortOrder));
         if(null == comp) {
             logger.warning("Null comparator");
         } else {
