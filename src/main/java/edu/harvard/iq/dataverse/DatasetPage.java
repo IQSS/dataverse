@@ -2650,6 +2650,14 @@ public class DatasetPage implements java.io.Serializable {
     public void refresh(ActionEvent e) {
         refresh();
     }
+ 
+    
+    public void sort() {
+        sortFileMetadatas(fileMetadatasSearch);
+        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.results.presort.change.success"));
+        
+        
+    }
         
     public String refresh() {
         logger.fine("refreshing");
