@@ -410,6 +410,7 @@ public class DatasetPage implements java.io.Serializable {
     private String fileSortField = "name";
     private String fileSortOrder;
     private boolean tagPresort = true;
+    private boolean folderPresort = true;
 
     private LazyFileMetadataDataModel lazyModel;
 
@@ -624,7 +625,7 @@ public class DatasetPage implements java.io.Serializable {
     private void sortFileMetadatas(List<FileMetadata> fileList) {
         
         DataFileComparator dfc = new DataFileComparator();
-        Comparator<FileMetadata> comp = dfc.compareBy(true, tagPresort, fileSortField, !"desc".equals(fileSortOrder));
+        Comparator<FileMetadata> comp = dfc.compareBy(folderPresort, tagPresort, fileSortField, !"desc".equals(fileSortOrder));
         if(null == comp) {
             logger.warning("Null comparator");
         } else {
@@ -5170,5 +5171,13 @@ public class DatasetPage implements java.io.Serializable {
     public void setTagPresort(boolean tagPresort) {
         this.tagPresort = tagPresort && (null != getSortOrder());
     }
+    
+    public boolean isFolderPresort() {
+        return this.folderPresort;
+     }
+
+     public void setFolderPresort(boolean folderPresort) {
+         this.folderPresort = folderPresort;
+     }
 
 }

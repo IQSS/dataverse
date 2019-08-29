@@ -165,6 +165,7 @@
                                     <f:param name="fileSortField" value="#{DatasetPage.fileSortField}"/>
                                     <f:param name="fileSortOrder" value="#{DatasetPage.fileSortOrder}"/>
                                     <f:param name="tagPresort" value="#{DatasetPage.tagPresort}"/>
+                                    <f:param name="folderPresort" value="#{DatasetPage.folderPresort}"/>
                                     
                                 </h:outputLink></li>
                             <li role="separator" class="divider"></li>
@@ -182,6 +183,7 @@
                                         <f:param name="fileSortField" value="#{DatasetPage.fileSortField}"/>
                                         <f:param name="fileSortOrder" value="#{DatasetPage.fileSortOrder}"/>
                                         <f:param name="tagPresort" value="#{DatasetPage.tagPresort}"/>
+                                        <f:param name="folderPresort" value="#{DatasetPage.folderPresort}"/>
                                     </h:outputLink></li>
                             </ui:repeat>
                         </ul>
@@ -205,6 +207,7 @@
                                     <f:param name="fileSortField" value="#{DatasetPage.fileSortField}"/>
                                     <f:param name="fileSortOrder" value="#{DatasetPage.fileSortOrder}"/>
                                     <f:param name="tagPresort" value="#{DatasetPage.tagPresort}"/>
+                                    <f:param name="folderPresort" value="#{DatasetPage.folderPresort}"/>
                                 </h:outputLink></li>
                             <li role="separator" class="divider"></li>
                             <ui:repeat value="#{DatasetPage.fileAccessFacetLabels}" var="facetLabel">
@@ -221,6 +224,7 @@
                                         <f:param name="fileSortField" value="#{DatasetPage.fileSortField}"/>
                                         <f:param name="fileSortOrder" value="#{DatasetPage.fileSortOrder}"/>
                                         <f:param name="tagPresort" value="#{DatasetPage.tagPresort}"/>
+                                        <f:param name="folderPresort" value="#{DatasetPage.folderPresort}"/>
                                     </h:outputLink></li>
                             </ui:repeat>
                         </ul>
@@ -244,6 +248,7 @@
                                     <f:param name="fileSortField" value="#{DatasetPage.fileSortField}"/>
                                     <f:param name="fileSortOrder" value="#{DatasetPage.fileSortOrder}"/>
                                     <f:param name="tagPresort" value="#{DatasetPage.tagPresort}"/>
+                                    <f:param name="folderPresort" value="#{DatasetPage.folderPresort}"/>
                                 </h:outputLink></li>
                             <li role="separator" class="divider"></li>
                             <ui:repeat value="#{DatasetPage.fileTagsFacetLabels}" var="facetLabel">
@@ -260,16 +265,22 @@
                                         <f:param name="fileSortField" value="#{DatasetPage.fileSortField}"/>
                                         <f:param name="fileSortOrder" value="#{DatasetPage.fileSortOrder}"/>
                                         <f:param name="tagPresort" value="#{DatasetPage.tagPresort}"/>
+                                        <f:param name="folderPresort" value="#{DatasetPage.folderPresort}"/>
                                     </h:outputLink></li>
                             </ui:repeat>
                         </ul>
                     </div>
                 </div>
-                <div class="col-xs-2 text-left #{DatasetPage.indexedVersion ? '' : 'col-xs-offset-8'} text-muted small" style="font-weight:normal;" rendered='#{DatasetPage.getSortOrder()}'>
-                    <p:selectBooleanCheckbox value="#{DatasetPage.tagPresort}" itemLabel="Presort by Tag" title="When checked items with the same tag will be grouped before sorting occurs.">
+                <div class="col-xs-2 text-left #{DatasetPage.indexedVersion ? '' : 'col-xs-offset-8'} text-muted small" style="font-weight:normal;"'>
+                    <p:selectBooleanCheckbox value="#{DatasetPage.folderPresort}" itemLabel="#{bundle['file.results.presort.folder']}" title="#{bundle['file.results.presort.folder.desc']}"  rendered='#{DatasetPage.getSortOrder()}>
                         <p:ajax update="filesTable" />
                     </p:selectBooleanCheckbox>
+                    <p:selectBooleanCheckbox value="#{DatasetPage.tagPresort}" itemLabel="#{bundle['file.results.presort.tag']}" title="#{bundle['file.results.presort.tag.desc']}"  rendered='#{DatasetPage.getSortOrder()}>
+                        <p:ajax update="filesTable" />
+                    </p:selectBooleanCheckbox>
+                    
                 </div>
+                
                 <div class="col-xs-2 text-right #{DatasetPage.indexedVersion ? '' : 'col-xs-offset-10'}">
                     <!-- FILES SORT -->
                     <div class="btn-group">
@@ -285,6 +296,7 @@
                                     <f:param name="fileTypeGroupFacet" value="#{DatasetPage.fileTypeFacet}"/>
                                     <f:param name="fileAccess" value="#{DatasetPage.fileAccessFacet}"/>
                                     <f:param name="tagPresort" value="#{DatasetPage.tagPresort}"/>
+                                    <f:param name="folderPresort" value="#{DatasetPage.folderPresort}"/>
                                 </h:outputLink></li>
                             <li><h:outputLink value="/dataset.xhtml">
                                     <h:outputText styleClass="#{(DatasetPage.fileSortField == 'name' and DatasetPage.fileSortOrder == 'desc') ? 'highlightBold' : ''}" value="#{bundle['file.results.btn.sort.option.nameZA']}"/>
@@ -296,6 +308,7 @@
                                     <f:param name="fileSortField" value="name"/>
                                     <f:param name="fileSortOrder" value="desc"/>
                                     <f:param name="tagPresort" value="#{DatasetPage.tagPresort}"/>
+                                    <f:param name="folderPresort" value="#{DatasetPage.folderPresort}"/>
                                 </h:outputLink></li>
                             <li><h:outputLink value="/dataset.xhtml">
                                     <h:outputText styleClass="#{(DatasetPage.fileSortField == 'date' and (empty DatasetPage.fileSortOrder)) ? 'highlightBold' : ''}" value="#{bundle['file.results.btn.sort.option.newest']}"/>
