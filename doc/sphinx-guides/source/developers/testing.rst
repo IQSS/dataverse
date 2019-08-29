@@ -225,7 +225,7 @@ One way of generating load is by downloading many files. You can download :downl
 The script requires a file called ``files.txt`` to operate and database IDs for the files you want to download should each be on their own line.
 
 Continuous Integration
-~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 The Dataverse Project currently makes use of two Continuous Integration platforms, Travis and Jenkins.
 
@@ -236,10 +236,10 @@ Our Jenkins config is a work in progress and may be viewed at https://github.com
 As always, pull requests to improve our continuous integration configurations are welcome.
 
 The Phoenix Server
-------------------
+~~~~~~~~~~~~~~~~~~
 
 How the Phoenix Tests Work
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A server at http://phoenix.dataverse.org has been set up to test the latest code from the develop branch. Testing is done using chained builds of Jenkins jobs:
 
@@ -248,14 +248,14 @@ A server at http://phoenix.dataverse.org has been set up to test the latest code
 - REST Assured Tests are run across the wire from the Jenkins server to the Phoenix server:  https://build.hmdc.harvard.edu:8443/job/phoenix.dataverse.org-apitest-develop/
 
 How to Run the Phoenix Tests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Take a quick look at http://phoenix.dataverse.org to make sure the server is up and running Dataverse. If it's down, fix it.
 - Log into Jenkins and click "Build Now" at https://build.hmdc.harvard.edu:8443/job/phoenix.dataverse.org-build-develop/
 - Wait for all three chained Jenkins jobs to complete and note if they passed or failed. If you see a failure, open a GitHub issue or at least get the attention of some developers.
 
 List of Tests Run Against the Phoenix Server
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 We haven't thought much about a good way to publicly list the "IT" classes that are executed against the phoenix server. (Currently your best bet is to look at the ``Executing Maven`` line at the top of the "Full Log" of "Console Output" of ``phoenix.dataverse.org-apitest-develop`` Jenkins job mentioned above.) We endeavor to keep the list of tests in the "all-in-one" Docker environment described above in sync with the list of tests configured in Jenkins. That is to say, refer to :download:`run-test-suite.sh <../../../../conf/docker-aio/run-test-suite.sh>` mentioned in ``conf/docker-aio/readme.txt`` for the current list of IT tests that are expected to pass. Here's a dump of that file:
 
