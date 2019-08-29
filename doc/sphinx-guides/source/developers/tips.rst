@@ -150,6 +150,13 @@ Git on Mac
 
 On a Mac, you won't have git installed unless you have "Command Line Developer Tools" installed but running ``git clone`` for the first time will prompt you to install them.
 
+Automation of custom build number on webpage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can create symbolic links from ``.git/hooks/post-checkout`` and ``.git/hooks/post-commit`` to ``scripts/installer/custom-build-number-hook``
+to let Git automatically update ``src/main/java/BuildNumber.properties`` for you. This will result in showing branch name and
+commit id in your test deployment webpages on the bottom right corner next to the version.
+
 Sample Data
 -----------
 
