@@ -235,6 +235,24 @@ Our Jenkins config is a work in progress and may be viewed at https://github.com
 
 As always, pull requests to improve our continuous integration configurations are welcome.
 
+Enhance build time by caching dependencies
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In the future, CI builds in ephemeral build environments and Docker builds can benefit from caching all dependencies and plugins.
+As Dataverse is a huge project, build times can be enhanced by avoiding re-downloading everything when the Maven POM is unchanged.
+To seed the cache, use the following Maven goal before using Maven in (optional) offline mode in your scripts:
+
+.. code:: shell
+
+  mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies``
+  mvn -o package -DskipTests
+
+The example above builds the WAR file without running any tests. For other scenarios: not using offline mode allows
+Maven to download more dynamic dependencies, which are not easy to track, like Surefire Plugins. Overall downloads will
+reduced anyway.
+
+You will obviously have to utilize caching functionality of your CI service or do proper Docker layering.
+
 The Phoenix Server
 ~~~~~~~~~~~~~~~~~~
 
