@@ -271,11 +271,11 @@
                         </ul>
                     </div>
                 </div>
-                <div class="col-xs-2 text-left #{DatasetPage.indexedVersion ? '' : 'col-xs-offset-8'} text-muted small" style="font-weight:normal;"'>
-                    <p:selectBooleanCheckbox value="#{DatasetPage.folderPresort}" itemLabel="#{bundle['file.results.presort.folder']}" title="#{bundle['file.results.presort.folder.desc']}"  rendered='#{DatasetPage.getSortOrder()}>
+                <div class="col-xs-2 text-left #{DatasetPage.indexedVersion ? '' : 'col-xs-offset-8'} text-muted small" style="font-weight:normal;">
+                    <p:selectBooleanCheckbox value="#{DatasetPage.folderPresort}" itemLabel="#{bundle['file.results.presort.folder']}" title="#{bundle['file.results.presort.folder.desc']}">
                         <p:ajax update="filesTable" />
                     </p:selectBooleanCheckbox>
-                    <p:selectBooleanCheckbox value="#{DatasetPage.tagPresort}" itemLabel="#{bundle['file.results.presort.tag']}" title="#{bundle['file.results.presort.tag.desc']}"  rendered='#{DatasetPage.getSortOrder()}>
+                    <p:selectBooleanCheckbox value="#{DatasetPage.tagPresort}" itemLabel="#{bundle['file.results.presort.tag']}" title="#{bundle['file.results.presort.tag.desc']}"  rendered='#{DatasetPage.getSortOrder()}'>
                         <p:ajax update="filesTable" />
                     </p:selectBooleanCheckbox>
                     
