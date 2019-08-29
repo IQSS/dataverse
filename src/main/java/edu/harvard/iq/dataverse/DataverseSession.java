@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Locale;
@@ -16,6 +17,7 @@ import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 /**
  *
@@ -39,6 +41,9 @@ public class DataverseSession implements Serializable{
     
     @Inject
     SettingsWrapper settingsWrapper;
+    
+    @EJB
+    SystemConfig systemConfig;
     
     private static final Logger logger = Logger.getLogger(DataverseSession.class.getCanonicalName());
     
@@ -133,6 +138,14 @@ public class DataverseSession implements Serializable{
         } 
     }
     
-    
+    public void configureSessionTimeout() {
+        HttpSession httpSession = (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false);
+        
+        if (httpSession != null) {
+            logger.info("jsession: "+httpSession.getId()+" setting the lifespan of the session to " + systemConfig.getLoginSessionTimeout() + " minutes");
+            httpSession.setMaxInactiveInterval(systemConfig.getLoginSessionTimeout() * 60); // session timeout, in seconds
+        }
+        
+    }
 
 }
