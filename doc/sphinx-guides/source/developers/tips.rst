@@ -45,6 +45,8 @@ Ensure that Dataverse Will Be Deployed to Glassfish 4.1
 
 Click "Window" and then "Projects". Click "File" and then "Project Properties (dataverse)". Click "Run" and change "Server" from "No Server Selected" to your installation of Glassfish 4.1. Click OK.
 
+.. _custom_build_num_script:
+
 Make a Small Change to the Code
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -149,6 +151,15 @@ Git on Mac
 ~~~~~~~~~~
 
 On a Mac, you won't have git installed unless you have "Command Line Developer Tools" installed but running ``git clone`` for the first time will prompt you to install them.
+
+Automation of Custom Build Number on Webpage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can create symbolic links from ``.git/hooks/post-checkout`` and ``.git/hooks/post-commit`` to ``scripts/installer/custom-build-number-hook``
+to let Git automatically update ``src/main/java/BuildNumber.properties`` for you. This will result in showing branch name and
+commit id in your test deployment webpages on the bottom right corner next to the version.
+
+When you prefer manual updates, there is another script, see above: :ref:`custom_build_num_script`.
 
 Sample Data
 -----------
