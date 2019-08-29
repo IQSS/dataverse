@@ -720,7 +720,7 @@ public class PermissionServiceBean {
         return dataversesUserHasPermissionOn;
     }
 
-    public void checkEditDatasetLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
+    public boolean checkEditDatasetLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
         if (dataset.isLocked()) {
             if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
                 // The "InReview" lock is not really a lock for curators. They can still make edits.
@@ -743,6 +743,7 @@ public class PermissionServiceBean {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
             }
         }
+        return false;
     }
 
     public void checkDownloadFileLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {

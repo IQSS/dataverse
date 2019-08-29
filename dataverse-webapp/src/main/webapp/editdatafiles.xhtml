@@ -3,7 +3,6 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
 >
@@ -15,7 +14,8 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? (EditDatafilesPage.mode == 'SINGLE_REPLACE' ? bundle['file.replaceFile'] : bundle['file.uploadFiles']) : bundle['file.editFiles']} - #{EditDatafilesPage.workingVersion.title}"/>
+            <ui:param name="pageTitle"
+                      value="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? bundle['file.uploadFiles'] : bundle['file.editFiles']} - #{EditDatafilesPage.workingVersion.title}"/>
             <ui:param name="dataverse" value="#{EditDatafilesPage.dataset.owner}"/>
             <ui:param name="dataset" value="#{EditDatafilesPage.dataset}"/>
             <ui:param name="version" value="#{EditDatafilesPage.workingVersion}"/>
@@ -30,28 +30,14 @@
                     <f:viewParam name="versionString" value="#{EditDatafilesPage.versionString}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{EditDatafilesPage.init}" />
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(EditDatafilesPage.dataset, (datasetPage || EditDatafilesPage.showFileUploadFragment() ? (EditDatafilesPage.mode == 'SINGLE_REPLACE' ? bundle['file.replaceFile'] : bundle['file.uploadFiles']) : bundle['file.editFiles']))}"
-                                  if="#{!(param.mode == 'SINGLE' || param.mode == 'SINGLE_REPLACE')}" />
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(EditDatafilesPage.singleFile, (EditDatafilesPage.mode == 'SINGLE_REPLACE' ? bundle['file.replaceFile'] : bundle['file.editFiles']))}"
-                                  if="#{(param.mode == 'SINGLE' || param.mode == 'SINGLE_REPLACE')  }" />
+                    <f:viewAction
+                            action="#{dataverseHeaderFragment.initBreadcrumbs(EditDatafilesPage.dataset, (datasetPage || EditDatafilesPage.showFileUploadFragment() ? bundle['file.uploadFiles'] : bundle['file.editFiles']))}"
+                            if="#{!(param.mode == 'SINGLE')}"/>
+                    <f:viewAction
+                            action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(EditDatafilesPage.singleFile, bundle['file.editFiles'])}"
+                            if="#{(param.mode == 'SINGLE')  }"/>
                 </f:metadata>
                 <h:form id="datasetForm">
-                    <!-- BEGIN: file replace original -->
-                    <ui:fragment rendered="#{EditDatafilesPage.fileReplaceOperation}">
-                        <div id="file-replace-original-block" class="col-sm-12">
-                            <label class="col-sm-2 control-label">
-                                <span>#{bundle['file.replace.original']}</span>
-                            </label>
-                            <div class="col-sm-10">
-                                <ui:include src="file-info-fragment.xhtml">
-                                    <c:if test="#{EditDatafilesPage.getFileToReplace().fileMetadata != null}">
-                                        <ui:param name="fileMetadata" value="#{EditDatafilesPage.getFileToReplace().fileMetadata}" />
-                                    </c:if>
-                                </ui:include>
-                            </div>
-                        </div>
-                    </ui:fragment>
-                    <!-- END: file replace original -->
 
                     <div id="contentTabs">
 
