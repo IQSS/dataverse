@@ -2652,7 +2652,7 @@ public class DatasetPage implements java.io.Serializable {
     }
  
     
-    public String sort() {
+    public void sort() {
         sortFileMetadatas(fileMetadatasSearch);
         JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.results.presort.change.success"));
     }
