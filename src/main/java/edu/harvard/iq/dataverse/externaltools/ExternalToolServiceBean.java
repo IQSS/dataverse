@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Type;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Scope;
@@ -23,6 +24,7 @@ import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -230,6 +232,22 @@ public class ExternalToolServiceBean {
         } catch (NullPointerException ex) {
             return null;
         }
+    }
+
+    public ApiToken getApiToken(String apiTokenString) {
+        ApiToken apiToken = null;
+        if (apiTokenString != null) {
+            apiToken = new ApiToken();
+            apiToken.setTokenString(apiTokenString);
+        }
+        return apiToken;
+    }
+
+    public JsonObjectBuilder getToolAsJsonWithQueryParameters(ExternalToolHandler externalToolHandler) {
+        JsonObjectBuilder toolToJson = externalToolHandler.getExternalTool().toJson();
+        String toolUrlWithQueryParams = externalToolHandler.getToolUrlWithQueryParams();
+        toolToJson.add("toolUrlWithQueryParams", toolUrlWithQueryParams);
+        return toolToJson;
     }
 
 }

@@ -629,19 +629,9 @@ public class Files extends AbstractApiBean {
             JsonArrayBuilder tools = Json.createArrayBuilder();
             List<ExternalTool> datasetTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.fromString(type), dataFile.getContentType());
             for (ExternalTool tool : datasetTools) {
-                String apiTokenString = null;
-                apiTokenString = getRequestApiKey();
-                ApiToken apiToken = null;
-                if (apiTokenString != null) {
-                    apiToken = new ApiToken();
-                    apiToken.setTokenString(apiTokenString);
-                }
-                ExternalToolHandler externalToolHandler = null;
-                String toolUrlWithQueryParams = null;
-                externalToolHandler = new ExternalToolHandler(tool, dataFile, apiToken, dataFile.getFileMetadata());
-                toolUrlWithQueryParams = externalToolHandler.getToolUrlWithQueryParams();
-                JsonObjectBuilder toolToJson = tool.toJson();
-                toolToJson.add("toolUrlWithQueryParams", toolUrlWithQueryParams);
+                ApiToken apiToken = externalToolService.getApiToken(getRequestApiKey());
+                ExternalToolHandler externalToolHandler = new ExternalToolHandler(tool, dataFile, apiToken, dataFile.getFileMetadata());
+                JsonObjectBuilder toolToJson = externalToolService.getToolAsJsonWithQueryParameters(externalToolHandler);
                 tools.add(toolToJson);
             }
             return ok(tools);
