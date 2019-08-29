@@ -4,22 +4,25 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
+import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -44,9 +47,6 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.lang.RandomStringUtils;
 import org.ocpsoft.common.util.Strings;
 
@@ -232,10 +232,19 @@ public class DatasetServiceBean implements java.io.Serializable {
      */
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void instantiateDatasetInNewTransaction(Long id) {
+    public void instantiateDatasetInNewTransaction(Long id, boolean includeVariables) {
         Dataset dataset = find(id);
         for (DatasetVersion version : dataset.getVersions()) {
             for (FileMetadata fileMetadata : version.getFileMetadatas()) {
+                // todo: make this optional!
+                if (includeVariables) {
+                    if (fileMetadata.getDataFile().isTabularData()) {
+                        DataTable dataTable = fileMetadata.getDataFile().getDataTable();
+                        for (DataVariable dataVariable : dataTable.getDataVariables()) {
+
+                        }
+                    }
+                }
             }
         }
     }
@@ -854,5 +863,96 @@ public class DatasetServiceBean implements java.io.Serializable {
             }
 
         }
+    }
+    
+    public long findStorageSize(Dataset dataset) throws IOException {
+        return findStorageSize(dataset, false);
+    }
+    
+    /**
+     * Returns the total byte size of the files in this dataset 
+     * 
+     * @param dataset
+     * @param countCachedExtras boolean indicating if the cached disposable extras should also be counted
+     * @return total size 
+     * @throws IOException if it can't access the objects via StorageIO 
+     * (in practice, this can only happen when called with countCachedExtras=true; when run in the 
+     * default mode, the method doesn't need to access the storage system, as the 
+     * sizes of the main files are recorded in the database)
+     */
+    public long findStorageSize(Dataset dataset, boolean countCachedExtras) throws IOException {
+        long total = 0L; 
+        
+        if (dataset.isHarvested()) {
+            return 0L;
+        }
+        
+        for (DataFile datafile : dataset.getFiles()) {
+            total += datafile.getFilesize(); 
+            
+            if (!countCachedExtras) {
+                if (datafile.isTabularData()) {
+                    // count the size of the stored original, in addition to the main tab-delimited file:
+                    Long originalFileSize = datafile.getDataTable().getOriginalFileSize();
+                    if (originalFileSize != null) { 
+                        total += originalFileSize;
+                    }
+                }
+            } else {
+                StorageIO<DataFile> storageIO = datafile.getStorageIO();
+                for (String cachedFileTag : storageIO.listAuxObjects()) {
+                    total += storageIO.getAuxObjectSize(cachedFileTag);
+                }                
+            }
+        }
+        
+        // and finally,
+        if (countCachedExtras) {
+            // count the sizes of the files cached for the dataset itself
+            // (i.e., the metadata exports):
+            StorageIO<Dataset> datasetSIO = DataAccess.getStorageIO(dataset);
+            
+            for (String[] exportProvider : ExportService.getInstance(settingsService).getExportersLabels()) {
+                String exportLabel = "export_" + exportProvider[1] + ".cached";
+                try {
+                    total += datasetSIO.getAuxObjectSize(exportLabel);
+                } catch (IOException ioex) {
+                    // safe to ignore; object not cached
+                }
+            }
+        }
+        
+        return total; 
+    }
+    
+    /**
+     * An optimized method for deleting a harvested dataset. 
+     * 
+     * @param dataset
+     * @param request DataverseRequest (for initializing the DestroyDatasetCommand)
+     * @param hdLogger logger object (in practice, this will be a separate log file created for a specific harvesting job)
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void deleteHarvestedDataset(Dataset dataset, DataverseRequest request, Logger hdLogger) {
+        // Purge all the SOLR documents associated with this client from the 
+        // index server: 
+        indexService.deleteHarvestedDocuments(dataset);
+        
+        try {
+            // files from harvested datasets are removed unceremoniously, 
+            // directly in the database. no need to bother calling the 
+            // DeleteFileCommand on them.
+            for (DataFile harvestedFile : dataset.getFiles()) {
+                DataFile merged = em.merge(harvestedFile);
+                em.remove(merged);
+                harvestedFile = null; 
+            }
+            dataset.setFiles(null);
+            Dataset merged = em.merge(dataset);
+            commandEngine.submit(new DestroyDatasetCommand(merged, request));
+            hdLogger.info("Successfully destroyed the dataset");
+        } catch (Exception ex) {
+            hdLogger.warning("Failed to destroy the dataset");
+        } 
     }
 }

@@ -79,6 +79,7 @@
                             </button>
                         </span>
                         <script>
+                            //<![CDATA[
                             $(document).ready(function () {
                                 // clipboard.js > cloud storage copy btn
                                 var clipboard = new Clipboard('button.btn-copy');
@@ -90,6 +91,7 @@
                                     console.log(e);
                                 });
                             });
+                            //]]>
                         </script>
                     </div>
                 </div>
@@ -172,7 +174,7 @@
                                         <f:param name="persistentId" value="#{DatasetPage.persistentId}"/>
                                         <f:param name="version" value="#{DatasetPage.version}"/>
                                         <f:param name="q" value="#{DatasetPage.fileLabelSearchTerm}"/>
-                                        <f:param name="fileTypeGroupFacet" value="#{facetLabel.name}"/>
+                                        <f:param name="fileTypeGroupFacet" value='"#{facetLabel.name}"'/>
                                         <f:param name="fileAccess" value="#{DatasetPage.fileAccessFacet}"/>
                                         <f:param name="fileTag" value="#{DatasetPage.fileTagsFacet}"/>
                                         <f:param name="fileSortField" value="#{DatasetPage.fileSortField}"/>
@@ -248,7 +250,7 @@
                                         <f:param name="q" value="#{DatasetPage.fileLabelSearchTerm}"/>
                                         <f:param name="fileTypeGroupFacet" value="#{DatasetPage.fileTypeFacet}"/>
                                         <f:param name="fileAccess" value="#{DatasetPage.fileAccessFacet}"/>
-                                        <f:param name="fileTag" value="#{facetLabel.name}"/>
+                                        <f:param name="fileTag" value='"#{facetLabel.name}"'/>
                                         <f:param name="fileSortField" value="#{DatasetPage.fileSortField}"/>
                                         <f:param name="fileSortOrder" value="#{DatasetPage.fileSortOrder}"/>
                                     </h:outputLink></li>
@@ -370,7 +372,7 @@
                         </span>
 
                         <!-- Default Icon -->
-                        <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !DatasetPage.isThumbnailAvailable(fileMetadata)) or (empty fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType))}"/>
+                        <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !DatasetPage.isThumbnailAvailable(fileMetadata)) or (empty fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType))}"/>
 
                         <!-- the "temp preview" is for new, not yet saved files; these should never appear on this page - as we now have the editfilespage for that, correct? -->
                         <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.storageIdentifier and dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType)}">
@@ -507,7 +509,7 @@
                                     and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
                                     and !DatasetPage.isHasTabular()}">
                     <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
-                                    type="button" styleClass="btn btn-default btn-download"
+                                    styleClass="btn btn-default btn-download"
                                     disabled="#{false and DatasetPage.lockedFromDownload}"
                                     update="@form"
                                     actionListener="#{DatasetPage.validateFilesForDownload(false, false)}">
@@ -515,7 +517,7 @@
                     </p:commandLink>
                     <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                     <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
-                                    type="button" styleClass="btn btn-default btn-download"
+                                    styleClass="btn btn-default btn-download"
                                     disabled="#{false and DatasetPage.lockedFromDownload}"
                                     action="#{DatasetPage.validateFilesForDownload(true, false)}"
                                     update="@form" oncomplete="">
@@ -564,13 +566,13 @@
                 </div>
 
                 <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired}"
-                                type="button" styleClass="btn btn-default btn-request"                                   
+                                styleClass="btn btn-default btn-request"                                   
                                 update="@form" action="#{DatasetPage.requestAccessMultipleFiles()}"
                                 disabled="#{DatasetPage.locked}">
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
                 <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiSignUpButtonRequired}"
-                                type="button" styleClass="btn btn-default btn-request"
+                                styleClass="btn btn-default btn-request"
                                 onclick="PF('accessSignUpLogIn_popup').show()"
                                 disabled="#{DatasetPage.locked}">
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
@@ -631,7 +633,7 @@
 
         <p:treeNode type="customFileNode">
             <!-- For a file, the payload data ("node") is the corresponding FileMetadata object: -->
-            <span class="icon-#{dataFileServiceBean.getFileClass(node.dataFile)} text-muted" />
+            <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(node.dataFile)} text-muted" />
             
             <!-- same approach to rendering file page links, as in the file table above: -->
             <!-- if the file has the global id, we use that; if not, we use the database id in the url. -->

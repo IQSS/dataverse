@@ -432,9 +432,10 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         //SEK 12/3/2018 changing this to open the json in a new tab. 
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
-        // FIXME: BibTeX isn't JSON. Firefox will try to parse it and report "SyntaxError".
-        response.setContentType("application/json");
-
+        
+        //Fix for 6029 FireFox was failing to parse it when content type was set to json 
+        response.setContentType("text/plain");
+        
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation:
@@ -466,9 +467,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 return true;
             } catch (CommandException ex) {
                 logger.info("Unable to request access for file id " + fileId + ". Exception: " + ex);
+                return false;
             }             
-        }
-        
+        }        
         return false;
     }    
     

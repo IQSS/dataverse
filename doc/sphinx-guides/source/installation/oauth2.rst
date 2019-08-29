@@ -80,6 +80,8 @@ Converting Local Users to OAuth
 
 Once you have enabled at least one OAuth provider, existing users might want to change their login method from local to OAuth to avoid having a Dataverse-specific password. This is documented from the end user perspective in the :doc:`/user/account` section of the User Guide. Users will be prompted to create a new account but can choose to convert an existing local account after confirming their password.
 
+.. _converting-oauth-users-to-local:
+
 Converting OAuth Users to Local
 -------------------------------
 

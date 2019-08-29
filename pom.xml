@@ -7,7 +7,7 @@
     -->
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.14</version>
+    <version>4.16</version>
     <packaging>war</packaging>
     <name>dataverse</name>
     <properties>
@@ -34,6 +34,7 @@
         <junit.platform.version>1.3.1</junit.platform.version>
         <mockito.version>2.22.0</mockito.version>
         <flyway.version>5.2.4</flyway.version>
+        <jhove.version>1.20.1</jhove.version>
         <!--
         Jacoco 0.8.2 seems to break Netbeans code coverage integration so we'll use 0.8.1 instead.
         See https://github.com/jacoco/jacoco/issues/772 for discussion of how the XML changed.
@@ -376,19 +377,19 @@
             <version>4.0.0</version>
         </dependency>
         <dependency>
-            <groupId>edu.harvard.hul.ois.jhove</groupId>
-            <artifactId>jhove</artifactId>
-            <version>1.11.0</version>
+            <groupId>org.openpreservation.jhove</groupId>
+            <artifactId>jhove-core</artifactId>
+            <version>${jhove.version}</version>
         </dependency>
         <dependency>
-            <groupId>edu.harvard.hul.ois.jhove</groupId>
-            <artifactId>jhove-module</artifactId>
-            <version>1.11.0</version>
+            <groupId>org.openpreservation.jhove</groupId>
+            <artifactId>jhove-modules</artifactId>
+            <version>${jhove.version}</version>
         </dependency>
         <dependency>
-            <groupId>edu.harvard.hul.ois.jhove</groupId>
-            <artifactId>jhove-handler</artifactId>
-            <version>1.11.0</version>
+            <groupId>org.openpreservation.jhove</groupId>
+            <artifactId>jhove-ext-modules</artifactId>
+            <version>${jhove.version}</version>
         </dependency>
         <!-- JAI (Java Advanced Imaging) jars: -->
         <dependency>
@@ -597,7 +598,7 @@
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers</artifactId>
-            <version>1.19</version>
+            <version>1.22</version>
         </dependency>
         <!-- Named Entity Recognition -->
         <dependency>
@@ -639,6 +640,7 @@
                     <include>**/*.sql</include>
                     <include>**/*.xml</include>
                     <include>**/firstNames/*.*</include>
+                    <include>**/*.xsl</include>
                 </includes>
             </resource>
         </resources>
