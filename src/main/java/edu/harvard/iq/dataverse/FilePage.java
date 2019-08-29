@@ -206,8 +206,8 @@ public class FilePage implements java.io.Serializable {
             if (file.isTabularData()) {
                 contentType=DataFileServiceBean.MIME_TYPE_TSV_ALT;
             }
-            configureTools = externalToolService.findFileToolsByScopeAndContentType(ExternalTool.Type.CONFIGURE, contentType);
-            exploreTools = externalToolService.findFileToolsByScopeAndContentType(ExternalTool.Type.EXPLORE, contentType);
+            configureTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.CONFIGURE, contentType);
+            exploreTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.EXPLORE, contentType);
 
         } else {
 

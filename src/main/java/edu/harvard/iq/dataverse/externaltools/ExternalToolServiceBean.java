@@ -67,7 +67,7 @@ public class ExternalToolServiceBean {
      * @param contentType file content type (MIME type)
      * @return A list of tools or an empty list.
      */
-    public List<ExternalTool> findFileToolsByScopeAndContentType(Type type, String contentType) {
+    public List<ExternalTool> findFileToolsByTypeAndContentType(Type type, String contentType) {
         return findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, contentType);
     }
 
