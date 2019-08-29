@@ -185,7 +185,7 @@
                     <h:outputText value="#{facetCategory.displayName}" styleClass="facetCategoryName"/>
                     <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5)}">
                         <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{!SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
-                            <h:outputFormat value="#{facetLabel.name} &#40;{0}&#41;">
+                            <h:outputFormat value="#{facetLabel.displayName} &#40;{0}&#41;">
                                 <f:param value="#{facetLabel.count}"/>
                             </h:outputFormat>
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
@@ -199,7 +199,7 @@
                         </h:outputLink>
 
                         <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink facetSelected">
-                            <h:outputFormat value="#{facetLabel.name} &#40;{0}&#41;">
+                            <h:outputFormat value="#{facetLabel.displayName} &#40;{0}&#41;">
                                 <f:param value="#{facetLabel.count}"/>
                             </h:outputFormat>
                             <span class="glyphicon glyphicon-remove"></span>
@@ -240,7 +240,7 @@
 
             <!--toggle sidebar button-->
             <p class="visible-xs-block">
-              <button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas"><i class="glyphicon glyphicon-chevron-left"></i> Filter Results</button>
+              <button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas"><i class="glyphicon glyphicon-chevron-left"></i> #{bundle['dataverse.search.btn.sidebar.filter_results']}</button>
             </p>
 
             <!-- Message for zero results -->

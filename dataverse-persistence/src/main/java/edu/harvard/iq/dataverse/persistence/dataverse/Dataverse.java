@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
@@ -121,19 +122,19 @@ public class Dataverse extends DvObjectContainer {
     public String getFriendlyCategoryName() {
         switch (this.dataverseType) {
             case RESEARCHERS:
-                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.researchers");
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.researcher");
             case RESEARCH_PROJECTS:
-                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.researchProjects");
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.research_project");
             case JOURNALS:
-                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.journals");
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.journal");
             case ORGANIZATIONS_INSTITUTIONS:
-                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.organizationsAndInsitutions");
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.organization_or_institution");
             case TEACHING_COURSES:
-                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.teachingCourses");
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.teaching_course");
             case LABORATORY:
                 return BundleUtil.getStringFromBundle("dataverse.type.selectTab.laboratory");
             case RESEARCH_GROUP:
-                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.researchGroup");
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.research_group");
             case DEPARTMENT:
                 return BundleUtil.getStringFromBundle("dataverse.type.selectTab.department");
             case UNCATEGORIZED:
@@ -143,13 +144,33 @@ public class Dataverse extends DvObjectContainer {
         }
     }
 
-    public String getIndexableCategoryName() {
-        String friendlyName = getFriendlyCategoryName();
-        if (friendlyName.equals(uncategorizedString)) {
-            return null;
-        } else {
-            return friendlyName;
+    private String getCategoryNameForIndex() {
+        switch (this.dataverseType) {
+            case RESEARCHERS:
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.researcher", Locale.ENGLISH);
+            case RESEARCH_PROJECTS:
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.research_project", Locale.ENGLISH);
+            case JOURNALS:
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.journal", Locale.ENGLISH);
+            case ORGANIZATIONS_INSTITUTIONS:
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.organization_or_institution", Locale.ENGLISH);
+            case TEACHING_COURSES:
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.teaching_course", Locale.ENGLISH);
+            case LABORATORY:
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.laboratory", Locale.ENGLISH);
+            case RESEARCH_GROUP:
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.research_group", Locale.ENGLISH);
+            case DEPARTMENT:
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.department", Locale.ENGLISH);
+            case UNCATEGORIZED:
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.uncategorized", Locale.ENGLISH);
+            default:
+                return "";
         }
+    }
+
+    public String getIndexableCategoryName() {
+        return getCategoryNameForIndex();
     }
 
     private String affiliation;

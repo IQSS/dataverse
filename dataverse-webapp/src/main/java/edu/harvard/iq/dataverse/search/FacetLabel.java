@@ -1,13 +1,24 @@
 package edu.harvard.iq.dataverse.search;
 
+import edu.harvard.iq.dataverse.common.BundleUtil;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.MissingResourceException;
+
+import static edu.harvard.iq.dataverse.common.BundleUtil.getStringFromBundle;
+import static java.lang.String.format;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 public class FacetLabel {
 
     private String name;
+    private String displayName;
     private Long count;
     private String filterQuery;
 
-    FacetLabel(String name, Long count) {
+    FacetLabel(String name, String displayName, Long count) {
         this.name = name;
+        this.displayName = displayName;
         this.count = count;
     }
 
@@ -27,6 +38,14 @@ public class FacetLabel {
         this.name = name;
     }
 
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
     public Long getCount() {
         return count;
     }
@@ -42,5 +61,4 @@ public class FacetLabel {
     public void setFilterQuery(String filterQuery) {
         this.filterQuery = filterQuery;
     }
-
 }
