@@ -954,3 +954,5 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
 #datasetForm\3AhypothesisBlock>div {
 	margin-bottom: 5px;
 }
+
+.ui-chkbox .ui-chkbox-label {display:inline; vertical-align:bottom;}
