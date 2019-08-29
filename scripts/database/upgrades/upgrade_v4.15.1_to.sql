@@ -1,10 +1,13 @@
+ALTER TABLE ONLY setting DROP CONSTRAINT setting_pkey ;
+
+ALTER TABLE setting ADD COLUMN ID SERIAL PRIMARY KEY;
+
 ALTER TABLE setting ADD COLUMN lang text;
 
-UPDATE setting
-SET lang = 'en';
+ALTER TABLE setting
+   ADD CONSTRAINT non_empty_lang
+            CHECK (lang <> '');
 
-ALTER TABLE ONLY setting
-    DROP CONSTRAINT setting_pkey ;
-
-ALTER TABLE ONLY setting
-    ADD CONSTRAINT setting_pkey PRIMARY KEY (name,lang);
+CREATE UNIQUE INDEX unique_settings
+    ON setting
+       (name, coalesce(lang, ''));

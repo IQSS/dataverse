@@ -430,8 +430,14 @@ public class SettingsServiceBean {
      * @return the actual setting, or {@code null}.
      */
     public String get( String name ) {
-        Setting s = em.find( Setting.class, name );
-        return (s!=null) ? s.getContent() : null;
+        List<Setting> tokens = em.createNamedQuery("Setting.findByName", Setting.class)
+                .setParameter("name", name )
+                .getResultList();
+        String val = null;
+        if(tokens.size() > 0) {
+            val = tokens.get(0).getContent();
+        }
+        return (val!=null) ? val : null;
     }
     
     /**

@@ -57,7 +57,7 @@ public class SystemConfig {
     public static final String FQDN = "dataverse.fqdn";
     
     /**
-     * A JVM option for specifying the "official" URL of the site. 
+     * A JVM option for specifying the "official" URL of the site.
      * Unlike the FQDN option above, this would be a complete URL, 
      * with the protocol, port number etc. 
      */
@@ -491,7 +491,15 @@ public class SystemConfig {
     public String getApplicationTermsOfUse() {
         String language = BundleUtil.getCurrentLocale().getLanguage();
         String saneDefaultForAppTermsOfUse = BundleUtil.getStringFromBundle("system.app.terms");
-        String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, language, saneDefaultForAppTermsOfUse);
+        String appTermsOfUse = "";
+         if(language.equalsIgnoreCase(BundleUtil.getDefaultLocale().getLanguage()) )
+        {
+             appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
+        }
+        else
+        {
+            appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, language, saneDefaultForAppTermsOfUse);
+        }
         return appTermsOfUse;
     }
 
