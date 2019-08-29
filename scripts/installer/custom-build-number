@@ -3,6 +3,7 @@ if [ -z "$1" ]; then
     echo "No custom build number specified. Using branch name and commit id."
     SCRIPT=$(readlink -f "$0")
     SCRIPTPATH=$(dirname "$SCRIPT")
+    cd $(git rev-parse --show-toplevel)
     $SCRIPTPATH/custom-build-number-hook
 else
     echo "build.number=$@" > src/main/java/BuildNumber.properties
