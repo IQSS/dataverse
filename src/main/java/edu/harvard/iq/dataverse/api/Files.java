@@ -623,11 +623,17 @@ public class Files extends AbstractApiBean {
 
     @Path("{id}/externalTools")
     @GET
-    public Response getExternalTools(@PathParam("id") String idSupplied, @QueryParam("type") String type) {
+    public Response getExternalTools(@PathParam("id") String idSupplied, @QueryParam("type") String typeSupplied) {
+        ExternalTool.Type type;
+        try {
+            type = ExternalTool.Type.fromString(typeSupplied);
+        } catch (IllegalArgumentException ex) {
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
+        }
         try {
             DataFile dataFile = findDataFileOrDie(idSupplied);
             JsonArrayBuilder tools = Json.createArrayBuilder();
-            List<ExternalTool> datasetTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.fromString(type), dataFile.getContentType());
+            List<ExternalTool> datasetTools = externalToolService.findFileToolsByTypeAndContentType(type, dataFile.getContentType());
             for (ExternalTool tool : datasetTools) {
                 ApiToken apiToken = externalToolService.getApiToken(getRequestApiKey());
                 ExternalToolHandler externalToolHandler = new ExternalToolHandler(tool, dataFile, apiToken, dataFile.getFileMetadata());

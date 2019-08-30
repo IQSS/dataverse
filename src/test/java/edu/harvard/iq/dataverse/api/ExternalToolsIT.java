@@ -117,6 +117,12 @@ public class ExternalToolsIT {
                 .body("data.scope", CoreMatchers.equalTo("file"))
                 .statusCode(OK.getStatusCode());
 
+        Response getExternalToolsForFileInvalidType = UtilIT.getExternalToolsForFile(tabularFileId.toString(), "invalidType", apiToken);
+        getExternalToolsForFileInvalidType.prettyPrint();
+        getExternalToolsForFileInvalidType.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure]."));
+
         Response getExternalToolsForTabularFiles = UtilIT.getExternalToolsForFile(tabularFileId.toString(), "explore", apiToken);
         getExternalToolsForTabularFiles.prettyPrint();
         getExternalToolsForTabularFiles.then().assertThat()
@@ -206,6 +212,12 @@ public class ExternalToolsIT {
         addExternalTool.then().assertThat()
                 .body("data.displayName", CoreMatchers.equalTo("DatasetTool1"))
                 .statusCode(OK.getStatusCode());
+
+        Response getExternalToolsByDatasetIdInvalidType = UtilIT.getExternalToolsForDataset(datasetId.toString(), "invalidType", apiToken);
+        getExternalToolsByDatasetIdInvalidType.prettyPrint();
+        getExternalToolsByDatasetIdInvalidType.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure]."));
 
         Response getExternalToolsByDatasetId = UtilIT.getExternalToolsForDataset(datasetId.toString(), "explore", apiToken);
         getExternalToolsByDatasetId.prettyPrint();

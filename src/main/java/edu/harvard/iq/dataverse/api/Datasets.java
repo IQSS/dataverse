@@ -1898,12 +1898,18 @@ public class Datasets extends AbstractApiBean {
 
     @GET
     @Path("{id}/externalTools")
-    public Response getExternalTools(@PathParam("id") String idSupplied, @QueryParam("type") String type) {
+    public Response getExternalTools(@PathParam("id") String idSupplied, @QueryParam("type") String typeSupplied) {
+        ExternalTool.Type type;
+        try {
+            type = ExternalTool.Type.fromString(typeSupplied);
+        } catch (IllegalArgumentException ex) {
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
+        }
         Dataset dataset;
         try {
             dataset = findDatasetOrDie(idSupplied);
             JsonArrayBuilder tools = Json.createArrayBuilder();
-            List<ExternalTool> datasetTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.fromString(type));
+            List<ExternalTool> datasetTools = externalToolService.findDatasetToolsByType(type);
             for (ExternalTool tool : datasetTools) {
                 ApiToken apiToken = externalToolService.getApiToken(getRequestApiKey());
                 ExternalToolHandler externalToolHandler = new ExternalToolHandler(tool, dataset, apiToken);
