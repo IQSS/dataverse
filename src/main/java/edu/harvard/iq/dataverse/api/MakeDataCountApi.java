@@ -139,7 +139,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             // DataCite wants "doi=", not "doi:".
             String authorityPlusIdentifier = persistentId.replaceFirst("doi:", "");
             // curl https://api.datacite.org/events?doi=10.7910/dvn/hqzoob&source=crossref
-            URL url = new URL("https://api.datacite.org/events?doi=" + authorityPlusIdentifier + "&source=crossref");
+            URL url = new URL("https://api.test.datacite.org/events?doi=" + authorityPlusIdentifier + "&source=crossref");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             int status = connection.getResponseCode();
