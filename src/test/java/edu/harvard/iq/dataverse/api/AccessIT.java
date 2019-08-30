@@ -108,7 +108,6 @@ public class AccessIT {
         tabFile1Name = "120745.dta";
         tabFile1NameConvert = tabFile1Name.substring(0, tabFile1Name.indexOf(".dta")) + ".tab";
         String tab1PathToFile = "scripts/search/data/tabular/" + tabFile1Name;
-        Thread.sleep(1000); //Added because tests are failing during setup, test is probably going too fast. Especially between first and second file
         Response tab1AddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), tab1PathToFile, apiToken);
         tabFile1Id = JsonPath.from(tab1AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
         //String origFilePid = JsonPath.from(addResponse.body().asString()).getString("data.files[0].dataFile.persistentId");
@@ -116,17 +115,36 @@ public class AccessIT {
         tabFile2Name = "stata13-auto.dta";
         tabFile2NameConvert = tabFile2Name.substring(0, tabFile2Name.indexOf(".dta")) + ".tab";
         String tab2PathToFile = "scripts/search/data/tabular/" + tabFile2Name;
-        Thread.sleep(1000); //Added because tests are failing during setup, test is probably going too fast. Especially between first and second file
         Response tab2AddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), tab2PathToFile, apiToken);
         tabFile2Id = JsonPath.from(tab2AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
         
         tabFile3NameRestricted = "stata13-auto-withstrls.dta";
         tabFile3NameRestrictedConvert = tabFile3NameRestricted.substring(0, tabFile3NameRestricted.indexOf(".dta")) + ".tab";
         String tab3PathToFile = "scripts/search/data/tabular/" + tabFile3NameRestricted;
-        Thread.sleep(1000); //Added because tests are failing during setup, test is probably going too fast. Especially between first and second file
+
+        Response lockedForIngest;
+        int i = 0;
+        do {
+            Thread.sleep(1000);
+            lockedForIngest = UtilIT.checkDatasetLocks(datasetId.longValue(), "Ingest", apiToken);
+            i++;
+            if (i > 3) break; // only do this three times if ingest takes longer fail the test
+        } while (lockedForIngest.body().prettyPrint().contains("Ingest"));
+
+        assertTrue("Failed test if Ingest Lock lasts more than sleep(3000)", i <= 3);
+        
         Response tab3AddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), tab3PathToFile, apiToken);
         tabFile3IdRestricted = JsonPath.from(tab3AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        Thread.sleep(3000); //Dataverse needs more time...
+        
+        i = 0;
+        do {
+            Thread.sleep(1000);
+            lockedForIngest = UtilIT.checkDatasetLocks(datasetId.longValue(), "Ingest", apiToken);
+            i++;
+            if (i > 3) break; // only do this three times if ingest takes longer fail the test
+        } while (lockedForIngest.body().prettyPrint().contains("Ingest"));
+
+        assertTrue("Failed test if Ingest Lock lasts more than sleep(3000)", i <= 3);
         Response restrictResponse = UtilIT.restrictFile(tabFile3IdRestricted.toString(), true, apiToken);
         restrictResponse.prettyPrint();
         restrictResponse.then().assertThat()
@@ -142,7 +160,6 @@ public class AccessIT {
         tabFile4NameUnpublished = "stata14-auto-withstrls.dta";
         tabFile4NameUnpublishedConvert = tabFile4NameUnpublished.substring(0, tabFile4NameUnpublished.indexOf(".dta")) + ".tab";
         String tab4PathToFile = "scripts/search/data/tabular/" + tabFile4NameUnpublished;
-        Thread.sleep(1000); //Added because tests are failing during setup, test is probably going too fast. Especially between first and second file
         Response tab4AddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), tab4PathToFile, apiToken);
         tabFile4IdUnpublished = JsonPath.from(tab4AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
                         
@@ -444,10 +461,20 @@ public class AccessIT {
 
         String tabFile3NameRestrictedNew = "stata13-auto-withstrls.dta";
         String tab3PathToFile = "scripts/search/data/tabular/" + tabFile3NameRestrictedNew;
-        Thread.sleep(1000); //Added because tests are failing during setup, test is probably going too fast. Especially between first and second file
         Response tab3AddResponse = UtilIT.uploadFileViaNative(datasetIdNew.toString(), tab3PathToFile, apiToken);
         Integer tabFile3IdRestrictedNew = JsonPath.from(tab3AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        Thread.sleep(3000); //Dataverse needs more time...
+
+        Response lockedForIngest;
+        int i = 0;
+        do {
+            Thread.sleep(1000);
+            lockedForIngest = UtilIT.checkDatasetLocks(datasetIdNew.longValue(), "Ingest", apiToken);
+            i++;
+            if (i > 3) break; // only do this three times if ingest takes longer fail the test 
+        } while (lockedForIngest.body().prettyPrint().contains("Ingest"));
+        
+        assertTrue("Failed test if Ingest Lock lasts more than sleep(3000)", i <= 3);
+        
         Response restrictResponse = UtilIT.restrictFile(tabFile3IdRestrictedNew.toString(), true, apiToken);
         restrictResponse.prettyPrint();
         restrictResponse.then().assertThat()
@@ -518,8 +545,7 @@ public class AccessIT {
     // zipped bundle - that should have the folder hierarchy preserved. 
     @Test
     public void testZipUploadAndDownload() throws IOException {
-        // sleep for a couple of sec. - there may still be a tab. ingest in progress:
-        try {Thread.sleep(3000);}catch(Exception ex){}
+        
         System.out.println("Testing round trip zip upload-and-download");
         // Upload the zip file that has a mix of files with and without folders:
         Response uploadZipResponse = UtilIT.uploadFileViaNative(datasetId.toString(), testZipFileWithFolders, apiToken);
