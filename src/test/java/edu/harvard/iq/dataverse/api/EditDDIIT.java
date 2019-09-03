@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
+import static edu.harvard.iq.dataverse.api.AccessIT.datasetId;
 
 
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
@@ -32,6 +34,7 @@ import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import java.nio.file.Files;
+import static org.junit.Assert.assertTrue;
 
 
 public class EditDDIIT {
@@ -77,7 +80,19 @@ public class EditDDIIT {
         assertNotEquals("",origFileId);
 
         // Give file time to ingest
-        Thread.sleep(10000);
+      //  Thread.sleep(10000);
+        
+        int i = 0;
+        Response lockedForIngest = UtilIT.checkDatasetLocks(datasetId.longValue(), "Ingest", apiToken);
+        do {
+            lockedForIngest = UtilIT.checkDatasetLocks(datasetId.longValue(), "Ingest", apiToken);
+            Thread.sleep(1000);
+            i++;
+            if (i > 3) {
+                break; // only do this three times if ingest takes longer fail the test
+            }
+        } while (lockedForIngest.body().prettyPrint().contains("Ingest") );
+        assertTrue("Failed test if Ingest Lock lasts more than sleep(3000)", i <= 3);
 
         Response origXml = UtilIT.getFileMetadata(origFileId, null, apiToken);
         assertEquals(200, origXml.getStatusCode());
