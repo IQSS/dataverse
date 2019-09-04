@@ -449,7 +449,7 @@ public class AccessIT {
         Response tab3AddResponse = UtilIT.uploadFileViaNative(datasetIdNew.toString(), tab3PathToFile, apiToken);
         Integer tabFile3IdRestrictedNew = JsonPath.from(tab3AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
 
-        assertTrue("Failed test if Ingest Lock lasts more than sleep(3000)" + tab3PathToFile , UtilIT.sleepForLock(datasetIdNew.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + tab3PathToFile , UtilIT.sleepForLock(datasetIdNew.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
         
         Response restrictResponse = UtilIT.restrictFile(tabFile3IdRestrictedNew.toString(), true, apiToken);
         restrictResponse.prettyPrint();

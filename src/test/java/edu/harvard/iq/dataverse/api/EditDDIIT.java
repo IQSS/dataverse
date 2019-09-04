@@ -80,20 +80,9 @@ public class EditDDIIT {
         assertNotEquals("",origFileId);
 
         // Give file time to ingest
-      //  Thread.sleep(10000);
         
-        int i = 0;
-        Response lockedForIngest = UtilIT.checkDatasetLocks(datasetId.longValue(), "Ingest", apiToken);
-        do {
-            lockedForIngest = UtilIT.checkDatasetLocks(datasetId.longValue(), "Ingest", apiToken);
-            Thread.sleep(1000);
-            i++;
-            if (i > 3) {
-                break; // only do this three times if ingest takes longer fail the test
-            }
-        } while (lockedForIngest.body().prettyPrint().contains("Ingest") );
-        assertTrue("Failed test if Ingest Lock lasts more than sleep(3000)", i <= 3);
-
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFileThatGoesThroughIngest , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        
         Response origXml = UtilIT.getFileMetadata(origFileId, null, apiToken);
         assertEquals(200, origXml.getStatusCode());
 
