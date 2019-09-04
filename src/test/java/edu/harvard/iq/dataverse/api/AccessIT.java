@@ -122,29 +122,14 @@ public class AccessIT {
         tabFile3NameRestrictedConvert = tabFile3NameRestricted.substring(0, tabFile3NameRestricted.indexOf(".dta")) + ".tab";
         String tab3PathToFile = "scripts/search/data/tabular/" + tabFile3NameRestricted;
 
-        Response lockedForIngest;
-        int i = 0;
-        do {
-            Thread.sleep(1000);
-            lockedForIngest = UtilIT.checkDatasetLocks(datasetId.longValue(), "Ingest", apiToken);
-            i++;
-            if (i > 3) break; // only do this three times if ingest takes longer fail the test
-        } while (lockedForIngest.body().prettyPrint().contains("Ingest"));
-
-        assertTrue("Failed test if Ingest Lock lasts more than sleep(3000)", i <= 3);
+        assertTrue("Failed test if Ingest Lock lasts more than sleep(3000) " + tabFile3NameRestricted , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, 3));     
         
         Response tab3AddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), tab3PathToFile, apiToken);
+
         tabFile3IdRestricted = JsonPath.from(tab3AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
         
-        i = 0;
-        do {
-            Thread.sleep(1000);
-            lockedForIngest = UtilIT.checkDatasetLocks(datasetId.longValue(), "Ingest", apiToken);
-            i++;
-            if (i > 3) break; // only do this three times if ingest takes longer fail the test
-        } while (lockedForIngest.body().prettyPrint().contains("Ingest"));
-
-        assertTrue("Failed test if Ingest Lock lasts more than sleep(3000)", i <= 3);
+        assertTrue("Failed test if Ingest Lock lasts more than sleep(3000)" + tabFile3NameRestricted , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, 3));
+        
         Response restrictResponse = UtilIT.restrictFile(tabFile3IdRestricted.toString(), true, apiToken);
         restrictResponse.prettyPrint();
         restrictResponse.then().assertThat()
@@ -464,16 +449,7 @@ public class AccessIT {
         Response tab3AddResponse = UtilIT.uploadFileViaNative(datasetIdNew.toString(), tab3PathToFile, apiToken);
         Integer tabFile3IdRestrictedNew = JsonPath.from(tab3AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
 
-        Response lockedForIngest;
-        int i = 0;
-        do {
-            Thread.sleep(1000);
-            lockedForIngest = UtilIT.checkDatasetLocks(datasetIdNew.longValue(), "Ingest", apiToken);
-            i++;
-            if (i > 3) break; // only do this three times if ingest takes longer fail the test 
-        } while (lockedForIngest.body().prettyPrint().contains("Ingest"));
-        
-        assertTrue("Failed test if Ingest Lock lasts more than sleep(3000)", i <= 3);
+        assertTrue("Failed test if Ingest Lock lasts more than sleep(3000)" + tab3PathToFile , UtilIT.sleepForLock(datasetIdNew.longValue(), "Ingest", apiToken, 3));
         
         Response restrictResponse = UtilIT.restrictFile(tabFile3IdRestrictedNew.toString(), true, apiToken);
         restrictResponse.prettyPrint();
