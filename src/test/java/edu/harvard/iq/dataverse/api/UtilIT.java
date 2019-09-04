@@ -51,6 +51,7 @@ public class UtilIT {
     private static final String API_TOKEN_KEY = "apiToken";
     private static final String BUILTIN_USER_KEY = "burrito";
     private static final String EMPTY_STRING = "";
+    public static final int MAXIMUM_INGEST_LOCK_DURATION = 3;
 
     private static SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
     

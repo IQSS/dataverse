@@ -122,13 +122,13 @@ public class AccessIT {
         tabFile3NameRestrictedConvert = tabFile3NameRestricted.substring(0, tabFile3NameRestricted.indexOf(".dta")) + ".tab";
         String tab3PathToFile = "scripts/search/data/tabular/" + tabFile3NameRestricted;
 
-        assertTrue("Failed test if Ingest Lock lasts more than sleep(3000) " + tabFile3NameRestricted , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, 3));     
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + tabFile3NameRestricted , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));     
         
         Response tab3AddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), tab3PathToFile, apiToken);
 
         tabFile3IdRestricted = JsonPath.from(tab3AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
         
-        assertTrue("Failed test if Ingest Lock lasts more than sleep(3000)" + tabFile3NameRestricted , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, 3));
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + tabFile3NameRestricted , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
         
         Response restrictResponse = UtilIT.restrictFile(tabFile3IdRestricted.toString(), true, apiToken);
         restrictResponse.prettyPrint();
@@ -449,7 +449,7 @@ public class AccessIT {
         Response tab3AddResponse = UtilIT.uploadFileViaNative(datasetIdNew.toString(), tab3PathToFile, apiToken);
         Integer tabFile3IdRestrictedNew = JsonPath.from(tab3AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
 
-        assertTrue("Failed test if Ingest Lock lasts more than sleep(3000)" + tab3PathToFile , UtilIT.sleepForLock(datasetIdNew.longValue(), "Ingest", apiToken, 3));
+        assertTrue("Failed test if Ingest Lock lasts more than sleep(3000)" + tab3PathToFile , UtilIT.sleepForLock(datasetIdNew.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
         
         Response restrictResponse = UtilIT.restrictFile(tabFile3IdRestrictedNew.toString(), true, apiToken);
         restrictResponse.prettyPrint();
