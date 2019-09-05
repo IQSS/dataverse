@@ -593,6 +593,8 @@ Running a curl command like "load" example above should make the new custom meta
 Updating the Solr Schema
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
+**TODO: describe usage of new script.**
+
 Once you have enabled a new metadata block you should be able to see the new fields in the GUI but before you can save the dataset, you must add additional fields to your Solr schema. You should run the following curl command to have Dataverse output the "field name" and "copyField" elements for all the metadata fields that have been loaded into Dataverse:
 
 ``curl http://localhost:8080/api/admin/index/solr/schema``
