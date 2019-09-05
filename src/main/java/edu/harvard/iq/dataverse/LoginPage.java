@@ -169,9 +169,6 @@ public class LoginPage implements java.io.Serializable {
             logger.log(Level.FINE, "User authenticated: {0}", r.getEmail());
             session.setUser(r);
             session.configureSessionTimeout();
-            //HttpSession httpSession = (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false);
-            //logger.log(Level.INFO, "logged in as user "+r.getName()+", jsession id: "+httpSession.getId()+" (setting the lifespan of the session to 1 hour)");
-            //httpSession.setMaxInactiveInterval(systemConfig.getLoginSessionTimeout() * 60); // session timeout, in seconds
             
             if ("dataverse.xhtml".equals(redirectPage)) {
                 redirectPage = redirectToRoot();
