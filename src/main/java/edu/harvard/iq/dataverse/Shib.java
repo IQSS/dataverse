@@ -341,9 +341,6 @@ public class Shib implements java.io.Serializable {
     private void logInUserAndSetShibAttributes(AuthenticatedUser au) {
         au.setShibIdentityProvider(shibIdp);
         session.setUser(au);
-        // TODO: Should I extend the user session timeout here? 
-        // or is this workflow will eventually send the user to the login page, and
-        // the timeout will be set there? -- L.A. 
         session.configureSessionTimeout();
         logger.fine("Groups for user " + au.getId() + " (" + au.getIdentifier() + "): " + getGroups(au));
     }
