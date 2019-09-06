@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:o="http://omnifaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
+
+<h:head>
+</h:head>
+<h:body>
+    <ui:composition template="/dataverse_template.xhtml">
+        <ui:param name="pageTitle" value="#{bundle['dataset.pageTitle']} - #{CreateDatasetPage.dataset.owner.name}"/>
+        <ui:param name="dataverse" value="#{CreateDatasetPage.dataset.owner}"/>
+        <ui:param name="showMessagePanel" value="#{true}"/>
+        <ui:define name="body">
+            <f:metadata>
+                <f:viewParam name="ownerId" value="#{CreateDatasetPage.ownerId}"/>
+                <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
+                <f:viewAction action="#{CreateDatasetPage.init}"/>
+                <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(CreateDatasetPage.dataset)}"/>
+                <f:viewAction action="#{EditDatafilesPage.initCreateMode(CreateDatasetPage.workingVersion, CreateDatasetPage.newFiles, CreateDatasetPage.selectedFiles)}"/>
+            </f:metadata>
+            <h:form id="datasetForm">
+                
+                <!-- Create editMode -->
+                <ui:fragment>
+                    <div class="form-group">
+                        <label for="select_HostDataverse" class="col-sm-2 control-label">
+                            #{bundle.hostDataverse}
+                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                  data-toggle="tooltip" data-placement="auto right"
+                                  data-original-title="#{bundle['dataverse.host.title']}"></span>
+                        </label>
+                        <div class="col-sm-10">
+                            <h:outputText styleClass="highlightBold" value="#{CreateDatasetPage.dataset.owner.name}"/>
+                            <h:inputHidden value="#{CreateDatasetPage.ownerId}" id="select_HostDataverse"/>
+                        </div>
+                    </div>
+                    <div class="form-group" jsf:rendered="#{!empty CreateDatasetPage.dataverseTemplates}">
+                        <label for="select_DatasetTemplate" class="col-sm-2 control-label">
+                            #{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate']}
+                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                  data-toggle="tooltip" data-placement="auto right"
+                                  data-original-title="#{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate.title']}"></span>
+                        </label>
+                        <div class="col-sm-6">
+                            <p class="help-block">
+                                #{bundle['dataset.template.tip']}
+                            </p>
+                            <p:selectOneMenu value="#{CreateDatasetPage.selectedTemplate}"
+                                             converter="templateConverter" id="select_DatasetTemplate"
+                                             styleClass="form-control"
+                                             style="width:auto !important; max-width:100%; min-width:200px;">
+                                
+                                <f:selectItem itemLabel="#{bundle['dataset.noTemplate.label']}" itemValue="#{null}"/>
+                                <f:selectItems value="#{CreateDatasetPage.dataverseTemplates}"
+                                               var="template" itemLabel="#{template.name}" itemValue="#{template}"/>
+                                
+                                <p:ajax event="change" update="@form"
+                                        listener="#{CreateDatasetPage.updateSelectedTemplate}"
+                                        oncomplete="javascript:bind_bsui_components();"/>
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-12">
+                            <span class="glyphicon glyphicon-asterisk text-danger"/> <h:outputText
+                                value="#{bundle['dataset.asterisk.tip']}"/>
+                        </div>
+                    </div>
+                </ui:fragment>
+                <ui:fragment>
+                    <ui:include src="editMetadata.xhtml">
+                        <ui:param name="showAllBlocks" value="#{false}"/>
+                        <ui:param name="showAllFields" value="#{false}"/>
+                        <ui:param name="expandAllBlocks" value="#{true}"/>
+                        <ui:param name="showAddReplicationForTitleButton" value="#{true}"/>
+
+                        <ui:param name="metadataBlocks"
+                                  value="#{CreateDatasetPage.metadataBlocksForEdit.entrySet().toArray()}"/>
+                    </ui:include>
+                </ui:fragment>
+                <!-- END Create editMode -->
+                
+                <!-- View/Tabs infoMode -->
+                <!-- Tabs -->
+                <div id="contentTabs">
+                
+                    <ui:fragment id="uploadFilesOnCreateTab">
+
+                        <ui:include src="editFilesFragment.xhtml">
+                            <ui:param name="isDatasetSection" value="true"/>
+                            <ui:param name="lockedFromEdits" value="false"/>
+                            <ui:param name="createDataset" value="true"/>
+                            <ui:param name="showFileUpload" value="true"/>
+                            <ui:param name="isMultiplyFilesUploadAllowed" value="true" />
+                            <ui:param name="fileUploadDisabled" value="false" />
+                            <ui:param name="isUploadPermited" value="true" />
+                        </ui:include>
+
+                    </ui:fragment>
+                </div>
+                <!-- END View/Tabs infoMode -->
+                
+                <!-- Create Metadata Tip -->
+                <div class="alert alert-info margin-top">
+                    #{bundle['file.metadataTip']}
+                </div>
+                
+                <!-- Create/Save Dataset Button Panel -->
+                <div class="button-block">
+                    <p:commandButton tabindex="1000" id="save"
+                                     value="#{bundle['file.addBtn']}"
+                                     action="#{CreateDatasetPage.save}"
+                                     update="@form,:messagePanel"
+                                     oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
+                                     />
+                    <p:button id="cancelCreate" value="#{bundle.cancel}"
+                              outcome="/dataverse.xhtml?alias=#{CreateDatasetPage.dataset.owner.alias}" />
+                </div>
+                <!-- END: Create/Save Dataset Button Panel -->
+
+                <p:blockUI block="datasetForm" widgetVar="blockDatasetForm"/>
+            </h:form>
+            
+            <script type="text/javascript">
+                $(document).ready(function () {
+                    popoverHTML('#{bundle.htmlAllowedTitle}');
+                });
+            </script>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>
+

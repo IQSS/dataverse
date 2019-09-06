@@ -490,6 +490,11 @@ public class DatasetVersion implements Serializable {
         return !this.fileMetadatas.get(0).getDataFile().getContentType().equals(PackageMimeType.DATAVERSE_PACKAGE.getMimeValue());
     }
 
+    /**
+     * Replaces dataset fields in this version
+     * by merged blank fields (see {@link #initDatasetFields()}) and
+     * fields from template 
+     */
     public void updateDefaultValuesFromTemplate(Template template) {
         List<DatasetField> datasetFields = initDatasetFields();
         Map<DatasetFieldType, DatasetField> datasetFieldsMap = new LinkedHashMap<>();
@@ -505,18 +510,6 @@ public class DatasetVersion implements Serializable {
             }
         }
         setDatasetFields(new ArrayList<>(datasetFieldsMap.values()));
-
-        if (template.getTermsOfUseAndAccess() != null) {
-            TermsOfUseAndAccess terms = template.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
-            terms.setDatasetVersion(this);
-            this.setTermsOfUseAndAccess(terms);
-        } else {
-            TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-            terms.setDatasetVersion(this);
-            terms.setLicense(TermsOfUseAndAccess.License.CC0);
-            terms.setDatasetVersion(this);
-            this.setTermsOfUseAndAccess(terms);
-        }
     }
 
     public DatasetVersion cloneDatasetVersion() {

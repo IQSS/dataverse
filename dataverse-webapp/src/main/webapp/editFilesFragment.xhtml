@@ -492,7 +492,6 @@
                                     </p:commandLink>
                                 </li>
                             </ul>
-                            <p:remoteCommand  name="openEditFilesPageCommand2" partialSubmit="true" async="true" update="" action="#{redirectToEditdataFiles}"  />
                         </div>
                     </p:column>
                 </p:dataTable>
@@ -903,9 +902,6 @@
             } else {
                 PF('selectFilesForLicenseEdit').show();
             }
-        }
-        function checkNewlyRestricted() {
-            $('button[id$="datasetSave"]').trigger('click');
         }
         function openDropboxChooser() {
             options = {

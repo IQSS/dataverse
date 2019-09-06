@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.qualifiers.TestBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import org.apache.commons.io.IOUtils;
@@ -478,6 +479,7 @@ public class FeedbackUtilTest {
     }
 
     // We are starting to accumulate a lot of these. See DDIExporterTest, SchemaDotOrgExporterTest, JsonParserTest, and JsonPrinterTest.
+    @TestBean
     static class MockDatasetFieldSvc extends DatasetFieldServiceBean {
 
         Map<String, DatasetFieldType> fieldTypes = new HashMap<>();

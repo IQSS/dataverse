@@ -407,17 +407,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.versionId = versionId;
     }
 
-    public String initCreateMode(String modeToken, DatasetVersion version, List<DataFile> newFilesList, List<FileMetadata> selectedFileMetadatasList) {
-        if (modeToken == null) {
-            logger.fine("Request to initialize Edit Files page with null token (aborting).");
-            return null;
-        }
-
-        if (!modeToken.equals("CREATE")) {
-            logger.fine("Request to initialize Edit Files page with token " + modeToken + " (aborting).");
-            return null;
-        }
-
+    public String initCreateMode(DatasetVersion version, List<DataFile> newFilesList, List<FileMetadata> selectedFileMetadatasList) {
         logger.fine("Initializing Edit Files page in CREATE mode;");
 
         if (version == null) {

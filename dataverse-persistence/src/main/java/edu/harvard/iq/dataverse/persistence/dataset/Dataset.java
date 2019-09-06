@@ -272,7 +272,7 @@ public class Dataset extends DvObjectContainer {
         this.versions = versions;
     }
 
-    private DatasetVersion createNewDatasetVersion(Template template) {
+    private DatasetVersion createNewDatasetVersion() {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
         dsv.setFileMetadatas(new ArrayList<>());
@@ -280,63 +280,51 @@ public class Dataset extends DvObjectContainer {
         DatasetVersion latestVersion;
 
         //if the latest version has values get them copied over
-        if (template != null) {
-            dsv.updateDefaultValuesFromTemplate(template);
-            setVersions(new ArrayList());
-        } else {
-            latestVersion = getLatestVersionForCopy();
+        latestVersion = getLatestVersionForCopy();
 
-            if (latestVersion.getUNF() != null) {
-                dsv.setUNF(latestVersion.getUNF());
-            }
-
-            if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
-                dsv.setDatasetFields(dsv.copyDatasetFields(latestVersion.getDatasetFields()));
-            }
-
-            if (latestVersion.getTermsOfUseAndAccess() != null) {
-                dsv.setTermsOfUseAndAccess(latestVersion.getTermsOfUseAndAccess().copyTermsOfUseAndAccess());
-            } else {
-                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-                terms.setDatasetVersion(dsv);
-                terms.setLicense(TermsOfUseAndAccess.License.CC0);
-                dsv.setTermsOfUseAndAccess(terms);
-            }
-
-            for (FileMetadata fm : latestVersion.getFileMetadatas()) {
-                FileMetadata newFm = new FileMetadata();
-                // TODO: 
-                // the "category" will be removed, shortly. 
-                // (replaced by multiple, tag-like categories of 
-                // type DataFileCategory) -- L.A. beta 10
-                //newFm.setCategory(fm.getCategory());
-                // yep, these are the new categories:
-                newFm.setCategories(fm.getCategories());
-                newFm.setDescription(fm.getDescription());
-                newFm.setLabel(fm.getLabel());
-                newFm.setDirectoryLabel(fm.getDirectoryLabel());
-                newFm.setDataFile(fm.getDataFile());
-                newFm.setDatasetVersion(dsv);
-                newFm.setProvFreeForm(fm.getProvFreeForm());
-                newFm.setDisplayOrder(fm.getDisplayOrder());
-
-                FileTermsOfUse termsOfUse = fm.getTermsOfUse();
-                FileTermsOfUse clonedTermsOfUse = termsOfUse.createCopy();
-                clonedTermsOfUse.setFileMetadata(newFm);
-                newFm.setTermsOfUse(clonedTermsOfUse);
-
-                dsv.getFileMetadatas().add(newFm);
-            }
+        if (latestVersion.getUNF() != null) {
+            dsv.setUNF(latestVersion.getUNF());
         }
 
-        // I'm adding the version to the list so it will be persisted when
-        // the study object is persisted.
-        if (template == null) {
-            getVersions().add(0, dsv);
-        } else {
-            this.setVersions(new ArrayList<>());
-            getVersions().add(0, dsv);
+        if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
+            dsv.setDatasetFields(dsv.copyDatasetFields(latestVersion.getDatasetFields()));
         }
+
+        if (latestVersion.getTermsOfUseAndAccess() != null) {
+            dsv.setTermsOfUseAndAccess(latestVersion.getTermsOfUseAndAccess().copyTermsOfUseAndAccess());
+        } else {
+            TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+            terms.setDatasetVersion(dsv);
+            terms.setLicense(TermsOfUseAndAccess.License.CC0);
+            dsv.setTermsOfUseAndAccess(terms);
+        }
+
+        for (FileMetadata fm : latestVersion.getFileMetadatas()) {
+            FileMetadata newFm = new FileMetadata();
+            // TODO: 
+            // the "category" will be removed, shortly. 
+            // (replaced by multiple, tag-like categories of 
+            // type DataFileCategory) -- L.A. beta 10
+            //newFm.setCategory(fm.getCategory());
+            // yep, these are the new categories:
+            newFm.setCategories(fm.getCategories());
+            newFm.setDescription(fm.getDescription());
+            newFm.setLabel(fm.getLabel());
+            newFm.setDirectoryLabel(fm.getDirectoryLabel());
+            newFm.setDataFile(fm.getDataFile());
+            newFm.setDatasetVersion(dsv);
+            newFm.setProvFreeForm(fm.getProvFreeForm());
+            newFm.setDisplayOrder(fm.getDisplayOrder());
+
+            FileTermsOfUse termsOfUse = fm.getTermsOfUse();
+            FileTermsOfUse clonedTermsOfUse = termsOfUse.createCopy();
+            clonedTermsOfUse.setFileMetadata(newFm);
+            newFm.setTermsOfUse(clonedTermsOfUse);
+
+            dsv.getFileMetadatas().add(newFm);
+        }
+        
+        getVersions().add(0, dsv);
 
 
         return dsv;
@@ -349,32 +337,11 @@ public class Dataset extends DvObjectContainer {
      * @return The edit version {@code this}.
      */
     public DatasetVersion getEditVersion() {
-        return getEditVersion(null);
-    }
-
-    public DatasetVersion getEditVersion(Template template) {
         DatasetVersion latestVersion = this.getLatestVersion();
-        if (!latestVersion.isWorkingCopy() || template != null) {
-            // if the latest version is released or archived, create a new version for editing
-            return createNewDatasetVersion(template);
-        } else {
-            // else, edit existing working copy
+        if (latestVersion.isWorkingCopy()) {
             return latestVersion;
         }
-    }
-
-    /*
-     * @todo Investigate if this method should be deprecated in favor of
-     * createNewDatasetVersion.
-     */
-    public DatasetVersion getCreateVersion() {
-        DatasetVersion dsv = new DatasetVersion();
-        dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
-        dsv.setDataset(this);
-        dsv.initDefaultValues();
-        this.setVersions(new ArrayList<>());
-        getVersions().add(0, dsv);
-        return dsv;
+        return createNewDatasetVersion();
     }
 
     public Date getMostRecentMajorVersionReleaseDate() {

@@ -14,11 +14,10 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetRelPublication;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
+import org.apache.commons.collections4.SetUtils;
 
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -26,41 +25,36 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author skraffmiller
  */
 @ViewScoped
 public class DatasetVersionUI implements Serializable {
-
+    
     @EJB
-    DataverseServiceBean dataverseService;
+    private DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService;
 
     public DatasetVersionUI() {
     }
 
-    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForView = new HashMap<>();
-    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new HashMap<>();
+    public enum MetadataBlocksMode {
+        FOR_VIEW,
+        FOR_EDIT
+    }
+    
+    private Map<MetadataBlock, List<DatasetField>> metadataBlocks = new HashMap<>();
 
-    public Map<MetadataBlock, List<DatasetField>> getMetadataBlocksForView() {
-        return metadataBlocksForView;
+    public Map<MetadataBlock, List<DatasetField>> getMetadataBlocks() {
+        return metadataBlocks;
     }
 
-    public void setMetadataBlocksForView(Map<MetadataBlock, List<DatasetField>> metadataBlocksForView) {
-        this.metadataBlocksForView = metadataBlocksForView;
-    }
-
-    public Map<MetadataBlock, List<DatasetField>> getMetadataBlocksForEdit() {
-        return metadataBlocksForEdit;
-    }
-
-    public void setMetadataBlocksForEdit(Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit) {
-        this.metadataBlocksForEdit = metadataBlocksForEdit;
-    }
-
-    public DatasetVersionUI initDatasetVersionUI(DatasetVersion datasetVersion, boolean createBlanks) {
+    public DatasetVersionUI initDatasetVersionUI(DatasetVersion datasetVersion, MetadataBlocksMode mode) {
         /*takes in the values of a dataset version 
          and apportions them into lists for 
          viewing and editng in the dataset page.
@@ -134,13 +128,29 @@ public class DatasetVersionUI implements Serializable {
             }
         }
 
-        datasetVersion.setDatasetFields(initDatasetFields(createBlanks));
+        Set<MetadataBlock> dataverseMetadataBlocks = new HashSet<>(this.getDataset().getOwner().getRootMetadataBlocks());
+        long  metadataBlocksDataverseId = this.getDataset().getOwner().getMetadataRootId();
+        
+        
+        List<DatasetField> datasetFields = datasetVersion.getDatasetFields();
+        if (mode == MetadataBlocksMode.FOR_EDIT) {
+            datasetFields = createBlankDatasetFields(datasetVersion, dataverseMetadataBlocks);
+        }
+        sortDatasetFieldsRecursively(datasetFields);
+        datasetVersion.setDatasetFields(datasetFields);
 
-        setMetadataValueBlocks(datasetVersion);
+        updateDatasetFieldIncludeFlag(datasetVersion, metadataBlocksDataverseId);
+        
+        if (mode == MetadataBlocksMode.FOR_EDIT) {
+            metadataBlocks = buildMetadataBlocksForEdit(datasetVersion, dataverseMetadataBlocks);
+            
+        } else if (mode == MetadataBlocksMode.FOR_VIEW) {
+            metadataBlocks = buildMetadataBlocksForView(datasetVersion);
+        }
 
         return this;
     }
-
+    
     private Dataset getDataset() {
         return this.datasetVersion.getDataset();
     }
@@ -313,121 +323,150 @@ public class DatasetVersionUI implements Serializable {
         return "";
     }
 
+    /***
+    *
+    * Note: Updated to retrieve DataverseFieldTypeInputLevel objects in single query
+    *
+    */
+   private void updateDatasetFieldIncludeFlag(DatasetVersion datasetVersion, long metadataBlocksDataverseId) {
+       
+       List<DatasetField> datasetFields = datasetVersion.getFlatDatasetFields();
+       List<Long> datasetFieldTypeIds = new ArrayList<>();
+       
+       for (DatasetField dsf: datasetFields) {
+           datasetFieldTypeIds.add(dsf.getDatasetFieldType().getId());
+       }
+       
+       List<Long> fieldTypeIdsToHide = dataverseFieldTypeInputLevelService
+               .findByDataverseIdAndDatasetFieldTypeIdList(metadataBlocksDataverseId, datasetFieldTypeIds).stream()
+               .filter(inputLevel -> !inputLevel.isInclude())
+               .map(inputLevel -> inputLevel.getDatasetFieldType().getId())
+               .collect(Collectors.toList());
+       
+       
+       for (DatasetField dsf: datasetFields) {
+           dsf.setInclude(true);
+           if (fieldTypeIdsToHide.contains(dsf.getDatasetFieldType().getId())) {
+               dsf.setInclude(false);
+           }
+       }
+   }
+    
+    
     // TODO: clean up init methods and get them to work, cascading all the way down.
     // right now, only work for one level of compound objects
-    private DatasetField initDatasetField(DatasetField dsf, boolean createBlanks) {
+    private DatasetField createBlankChildDatasetFields(DatasetField dsf) {
         if (dsf.getDatasetFieldType().isCompound()) {
             for (DatasetFieldCompoundValue cv : dsf.getDatasetFieldCompoundValues()) {
                 // for each compound value; check the datasetfieldTypes associated with its type
-                for (DatasetFieldType dsfType : dsf.getDatasetFieldType().getChildDatasetFieldTypes()) {
-                    boolean add = createBlanks;
-                    for (DatasetField subfield : cv.getChildDatasetFields()) {
-                        if (dsfType.equals(subfield.getDatasetFieldType())) {
-                            add = false;
-                            break;
-                        }
-                    }
-
-                    if (add) {
-                        cv.getChildDatasetFields().add(DatasetField.createNewEmptyChildDatasetField(dsfType, cv));
-                    }
+                Set<DatasetFieldType> allChildFieldTypes = new HashSet<>(dsf.getDatasetFieldType().getChildDatasetFieldTypes());
+                
+                Set<DatasetFieldType> alreadyPresentChildFieldTypes = new HashSet<>();
+                for (DatasetField df: cv.getChildDatasetFields()) {
+                    DatasetFieldType dsft = df.getDatasetFieldType();
+                    alreadyPresentChildFieldTypes.add(dsft);
                 }
-
-                sortDatasetFields(cv.getChildDatasetFields());
+                
+                Set<DatasetFieldType> missingChildFieldTypes = SetUtils.difference(allChildFieldTypes, alreadyPresentChildFieldTypes);
+                
+                missingChildFieldTypes.forEach(dsft -> {
+                    cv.getChildDatasetFields().add(DatasetField.createNewEmptyChildDatasetField(dsft, cv));
+                });
             }
         }
 
         return dsf;
     }
 
-    private List<DatasetField> initDatasetFields(boolean createBlanks) {
+    private List<DatasetField> createBlankDatasetFields(DatasetVersion datasetVersion, Set<MetadataBlock> dataverseMetadataBlocks) {
         //retList - Return List of values
         List<DatasetField> retList = new ArrayList<>();
-        for (DatasetField dsf : this.datasetVersion.getDatasetFields()) {
-            retList.add(initDatasetField(dsf, createBlanks));
+        for (DatasetField dsf : datasetVersion.getDatasetFields()) {
+            retList.add(createBlankChildDatasetFields(dsf));
         }
 
-
-        //Test to see that there are values for 
-        // all fields in this dataset via metadata blocks
-        //only add if not added above
-        for (MetadataBlock mdb : this.getDataset().getOwner().getRootMetadataBlocks()) {
-            for (DatasetFieldType dsfType : mdb.getDatasetFieldTypes()) {
-                if (!dsfType.isSubField()) {
-                    boolean add = createBlanks;
-                    //don't add if already added as a val
-                    for (DatasetField dsf : retList) {
-                        if (dsfType.equals(dsf.getDatasetFieldType())) {
-                            add = false;
-                            break;
-                        }
-                    }
-
-                    if (add) {
-                        retList.add(DatasetField.createNewEmptyDatasetField(dsfType, this.datasetVersion));
-                    }
+        Set<DatasetFieldType> allFieldTypes = new HashSet<>();
+        for (MetadataBlock mdb: dataverseMetadataBlocks) {
+            for (DatasetFieldType dsft: mdb.getDatasetFieldTypes()) {
+                if (!dsft.isSubField()) {
+                    allFieldTypes.add(dsft);
                 }
             }
         }
+        
+        Set<DatasetFieldType> alreadyPresentFieldTypes = new HashSet<>();
+        for (DatasetField df: datasetVersion.getDatasetFields()) {
+            alreadyPresentFieldTypes.add(df.getDatasetFieldType());
+        }
+        
+        Set<DatasetFieldType> missingFieldTypes = SetUtils.difference(allFieldTypes, alreadyPresentFieldTypes);
+        
+        missingFieldTypes.forEach(dsft -> {
+            retList.add(DatasetField.createNewEmptyDatasetField(dsft, datasetVersion));
+        });
 
-        return sortDatasetFields(retList);
+        return retList;
     }
 
-    private List<DatasetField> sortDatasetFields(List<DatasetField> dsfList) {
+    private void sortDatasetFieldsRecursively(List<DatasetField> dsfList) {
+        for (DatasetField dsf : dsfList) {
+            if (dsf.getDatasetFieldType().isCompound()) {
+                for (DatasetFieldCompoundValue cv : dsf.getDatasetFieldCompoundValues()) {
+                    sortDatasetFields(cv.getChildDatasetFields());
+                }
+            }
+        }
+        sortDatasetFields(dsfList);
+        
+    }
+    private void sortDatasetFields(List<DatasetField> dsfList) {
         Collections.sort(dsfList, Comparator.comparing(df -> df.getDatasetFieldType().getDisplayOrder()));
-        return dsfList;
     }
 
-    private void setMetadataValueBlocks(DatasetVersion datasetVersion) {
-        //TODO: A lot of clean up on the logic of this method
-        metadataBlocksForView.clear();
-        metadataBlocksForEdit.clear();
-        Long dvIdForInputLevel = datasetVersion.getDataset().getOwner().getId();
-
-        if (!dataverseService.find(dvIdForInputLevel).isMetadataBlockRoot()) {
-            dvIdForInputLevel = dataverseService.find(dvIdForInputLevel).getMetadataRootId();
-        }
-
-        List<DatasetField> filledInFields = this.datasetVersion.getDatasetFields();
-
-        List<MetadataBlock> actualMDB = new ArrayList<>();
-
-        actualMDB.addAll(this.datasetVersion.getDataset().getOwner().getRootMetadataBlocks());
-
-        for (DatasetField dsfv : filledInFields) {
-            if (!dsfv.isEmptyForDisplay()) {
-                MetadataBlock mdbTest = dsfv.getDatasetFieldType().getMetadataBlock();
-                if (!actualMDB.contains(mdbTest)) {
-                    actualMDB.add(mdbTest);
-                }
+    private Map<MetadataBlock, List<DatasetField>> buildMetadataBlocksForView(DatasetVersion datasetVersion) {
+        Map<MetadataBlock, List<DatasetField>> metadataBlocksForView = new HashMap<>();
+        
+        for (DatasetField dsf: datasetVersion.getDatasetFields()) {
+            if (!dsf.isEmptyForDisplay()) {
+                MetadataBlock metadataBlockOfField = dsf.getDatasetFieldType().getMetadataBlock();
+                metadataBlocksForView.putIfAbsent(metadataBlockOfField, new ArrayList<>());
+                metadataBlocksForView.get(metadataBlockOfField).add(dsf);
             }
         }
-
-        for (MetadataBlock mdb : actualMDB) {
-            mdb.setEmpty(true);
-            mdb.setHasRequired(false);
-            List<DatasetField> datasetFieldsForView = new ArrayList<>();
-            List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
-            for (DatasetField dsf : datasetVersion.getDatasetFields()) {
-                if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
-                    datasetFieldsForEdit.add(dsf);
-                    if (dsf.isRequired()) {
-                        mdb.setHasRequired(true);
-                    }
-                    if (!dsf.isEmptyForDisplay()) {
-                        mdb.setEmpty(false);
-                        datasetFieldsForView.add(dsf);
-                    }
-                }
+        
+        return metadataBlocksForView;
+    }
+    
+    private Map<MetadataBlock, List<DatasetField>> buildMetadataBlocksForEdit(DatasetVersion datasetVersion,
+            Set<MetadataBlock> dataverseMetadataBlocks) {
+        Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new HashMap<>();
+        
+        for (DatasetField dsf: datasetVersion.getDatasetFields()) {
+            MetadataBlock metadataBlockOfField = dsf.getDatasetFieldType().getMetadataBlock();
+            
+            if (!dsf.isEmptyForDisplay() || dataverseMetadataBlocks.contains(metadataBlockOfField)) {
+                metadataBlocksForEdit.putIfAbsent(metadataBlockOfField, new ArrayList<>());
+                metadataBlocksForEdit.get(metadataBlockOfField).add(dsf);
             }
-
-            if (!datasetFieldsForView.isEmpty()) {
-                metadataBlocksForView.put(mdb, datasetFieldsForView);
-            }
-            if (!datasetFieldsForEdit.isEmpty()) {
-                metadataBlocksForEdit.put(mdb, datasetFieldsForEdit);
-            }
+        }
+        
+        updateEmptyAndHasRequiredFlag(metadataBlocksForEdit);
+        
+        return metadataBlocksForEdit;
+    }
+    
+    private void updateEmptyAndHasRequiredFlag(Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit) {
+        for (MetadataBlock mdb : metadataBlocksForEdit.keySet()) {
+            mdb.setEmpty(allFieldsEmpty(metadataBlocksForEdit.get(mdb)));
+            mdb.setHasRequired(anyFieldsRequired(metadataBlocksForEdit.get(mdb)));
         }
     }
 
+    private boolean anyFieldsRequired(List<DatasetField> datasetFields) {
+        return datasetFields.stream().anyMatch(DatasetField::isRequired);
+    }
+    
+    private boolean allFieldsEmpty(List<DatasetField> datasetFields) {
+        return datasetFields.stream().allMatch(DatasetField::isEmptyForDisplay);
+    }
 }

@@ -54,7 +54,7 @@ public class DatasetVersionTest {
     public void testIsInReview() {
         Dataset ds = MocksFactory.makeDataset();
 
-        DatasetVersion draft = ds.getCreateVersion();
+        DatasetVersion draft = ds.getLatestVersion();
         draft.setVersionState(DatasetVersion.VersionState.DRAFT);
         ds.addLock(new DatasetLock(DatasetLock.Reason.InReview, MocksFactory.makeAuthenticatedUser("Lauren", "Ipsumowitch")));
         assertTrue(draft.isInReview());

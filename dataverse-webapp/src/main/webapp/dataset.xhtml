@@ -18,11 +18,8 @@
 <h:body>
     <ui:composition template="/dataverse_template.xhtml">
         <ui:param name="pageTitle"
-                  value="#{DatasetPage.editMode == 'CREATE' ? bundle['dataset.pageTitle'] : DatasetPage.workingVersion.title} - #{DatasetPage.dataset.owner.name}"/>
+                  value="#{DatasetPage.workingVersion.title} - #{DatasetPage.dataset.owner.name}"/>
         <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
-        <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
-        <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
-        <ui:param name="locked" value="#{DatasetPage.locked}"/>
         <ui:param name="showMessagePanel" value="#{true}"/>
         <ui:define name="dc_meta_header">
             <meta name="DC.identifier" content="#{DatasetPage.persistentId}"/>
@@ -66,7 +63,6 @@
                 <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType"
                                    var="termsOfUseTypeEnum"/>
                 <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
-                <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
                 <f:viewParam name="version" value="#{DatasetPage.version}"/>
                 <f:viewParam name="versionId" value="#{DatasetPage.versionId}"/>
                 <f:viewParam name="persistentId" value="#{DatasetPage.persistentId}"/>
@@ -76,10 +72,8 @@
                 <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
                 <f:viewAction action="#{DatasetGuestbookTab.init(DatasetPage.dataset)}"/>
                 <f:viewAction
-                        action="#{DatasetMetadataTab.init(DatasetPage.dataset, DatasetPage.locked, DatasetPage.datasetVersionUI.metadataBlocksForView)}"/>
+                        action="#{DatasetMetadataTab.init(DatasetPage.dataset, DatasetPage.locked, DatasetPage.datasetVersionUI.metadataBlocks)}"/>
                 <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetPage.dataset)}"/>
-                <f:viewAction
-                        action="#{EditDatafilesPage.initCreateMode(DatasetPage.editMode, DatasetPage.workingVersion, DatasetPage.newFiles, DatasetPage.selectedFiles)}"/>
                 <f:viewAction action="#{datasetVersionsTab.init(DatasetPage.dataset)}"/>
                 <f:viewAction action="#{datasetDeaccessionDialog.init(DatasetPage.dataset)}"/>
             </f:metadata>
@@ -87,7 +81,7 @@
                 <!-- Header / Button Panel -->
                 <!-- View editMode -->
                 <p:fragment id="topDatasetBlockFragment">
-                    <div id="topDatasetBlock" jsf:rendered="#{empty DatasetPage.editMode}">
+                    <div id="topDatasetBlock">
                         <div id="actionButtonBlock" class="button-block clearfix"
                              jsf:rendered="#{!widgetWrapper.widgetView}">
                             <div class="btn-group pull-right" role="group">
@@ -557,82 +551,13 @@
                     </div>
                 </p:fragment>
                 <!-- END View editMode -->
-
-                <!-- Create editMode -->
-                <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
-                    <div class="form-group">
-                        <label for="select_HostDataverse" class="col-sm-2 control-label">
-                            #{bundle.hostDataverse}
-                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                  data-toggle="tooltip" data-placement="auto right"
-                                  data-original-title="#{bundle['dataverse.host.title']}"></span>
-                        </label>
-                        <div class="col-sm-10">
-                            <h:outputText styleClass="highlightBold" value="#{DatasetPage.dataset.owner.name}"/>
-                            <h:inputHidden value="#{DatasetPage.ownerId}" id="select_HostDataverse"/>
-                            <ui:remove><!-- removed for beta -->
-                                <p:selectOneMenu id="select_HostDataverse" value="#{DatasetPage.ownerId}" filter="true"
-                                                 filterMatchMode="startsWith" effect="none">
-                                    <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv"
-                                                   itemLabel="#{dv.name}" itemValue="#{dv.id}"/>
-                                </p:selectOneMenu>
-                            </ui:remove>
-                        </div>
-                    </div>
-                    <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataverseTemplates}">
-                        <label for="select_DatasetTemplate" class="col-sm-2 control-label">
-                            #{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate']}
-                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                  data-toggle="tooltip" data-placement="auto right"
-                                  data-original-title="#{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate.title']}"></span>
-                        </label>
-                        <div class="col-sm-6">
-                            <p class="help-block">
-                                #{bundle['dataset.template.tip']}
-                            </p>
-                            <p:selectOneMenu value="#{DatasetPage.selectedTemplate}" onchange="updateTemplate()"
-                                             converter="templateConverter" id="select_DatasetTemplate"
-                                             styleClass="form-control"
-                                             valueChangeListener="#{DatasetPage.updateSelectedTemplate}"
-                                             style="width:auto !important; max-width:100%; min-width:200px;">
-                                <f:selectItem itemLabel="#{bundle['dataset.noTemplate.label']}" itemValue="#{null}"/>
-                                <f:selectItems value="#{DatasetPage.dataverseTemplates}"
-                                               var="template" itemLabel="#{template.name}" itemValue="#{template}"/>
-                            </p:selectOneMenu>
-                            <p:commandButton value="#{bundle['file.dataFilesTab.button.direct']}" id="updateTemplate"
-                                             style="display:none"
-                                             update=":datasetForm"
-                                             action="#{DatasetPage.handleChangeButton}"
-                                             oncomplete="javascript:bind_bsui_components();">
-                            </p:commandButton>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="col-sm-12">
-                            <span class="glyphicon glyphicon-asterisk text-danger"/> <h:outputText
-                                value="#{bundle['dataset.asterisk.tip']}"/>
-                        </div>
-                    </div>
-                </ui:fragment>
-                <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
-                    <ui:include src="editMetadata.xhtml">
-                        <ui:param name="showAllBlocks" value="#{false}"/>
-                        <ui:param name="showAllFields" value="#{false}"/>
-                        <ui:param name="expandAllBlocks" value="#{true}"/>
-                        <ui:param name="showAddReplicationForTitleButton" value="#{true}"/>
-
-                        <ui:param name="metadataBlocks"
-                                  value="#{DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray()}"/>
-                    </ui:include>
-                </ui:fragment>
-                <!-- END Create editMode -->
-
                 <!-- END Header / Button Panel -->
+                
                 <!-- View/Tabs infoMode -->
                 <!-- Tabs -->
                 <div id="contentTabs">
 
-                    <p:fragment id="pageRefreshFragment"> <!-- rendered="_{empty DatasetPage.editMode}" -->
+                    <p:fragment id="pageRefreshFragment">
                         <h:inputHidden value="#{DatasetPage.lockedForAnyReason}"
                                        id="datasetLockedForAnyReasonVariable"/>
                         <h:inputHidden value="#{DatasetPage.stateChanged}" id="datasetStateChangedVariable"/>
@@ -695,29 +620,8 @@
                         </script>
                     </p:fragment>
 
-                    <ui:fragment id="uploadFilesOnCreateTab" rendered="#{!DatasetPage.workingVersion.deaccessioned and
-                                                                             (DatasetPage.editMode == 'CREATE')}">
-
-                        <ui:include src="editFilesFragment.xhtml">
-                            <ui:param name="isDatasetSection" value="true"/>
-                            <ui:param name="editDatafilesPage" value="false"/>
-                            <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
-                            <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
-                            <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
-                            <ui:param name="lockedFromEdits" value="#{DatasetPage.lockedFromEdits}"/>
-                            <ui:param name="createDataset" value="true"/>
-                            <ui:param name="showFileUpload" value="true"/>
-                            <ui:param name="isMultiplyFilesUploadAllowed" value="true" />
-                            <ui:param name="fileUploadDisabled" value="false" />
-                            <ui:param name="isUploadPermited" value="true" />
-                            <ui:param name="redirectToEditdataFiles" value="#{DatasetPage.editFileMetadata()}" />
-                        </ui:include>
-
-                    </ui:fragment>
-
                     <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
-                                   dynamic="true"
-                                   rendered="#{empty DatasetPage.editMode}">
+                                   dynamic="true">
 
                         <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned or
                                                               (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset())}">
@@ -729,8 +633,7 @@
                         <!-- 4.2.1: the 3 tabs below - metadata, terms and versions: these account for ~100 queries total -->
                         <!-- a lot of these however, are repeated queries on AuthenticatedUser and RoleAssignment; once these are optimized, the tabs will become very cheap. -->
                         <p:tab id="metadataTab" title="#{bundle['file.dataFilesTab.metadata.header']}"
-                                   rendered="#{(!DatasetPage.workingVersion.deaccessioned or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))
-                                             and (empty DatasetPage.editMode)}">
+                                   rendered="#{(!DatasetPage.workingVersion.deaccessioned or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))}">
                             <ui:include src="metadataTab.xhtml"/>
                         </p:tab>
 
@@ -747,31 +650,6 @@
                     </p:tabView>
                 </div>
                 <!-- END View/Tabs infoMode -->
-
-                <!-- Create Metadata Tip -->
-                <div class="alert alert-info margin-top" jsf:rendered="#{DatasetPage.editMode == 'CREATE'}">
-                    #{bundle['file.metadataTip']}
-                </div>
-
-                <!-- Create/Save Dataset Button Panel -->
-                <div class="button-block" jsf:rendered="#{!empty DatasetPage.editMode}">
-                    <p:commandButton tabindex="1000" id="save"
-                                     value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}"
-                                     onclick="checkNewlyRestricted();PF('blockDatasetForm').show();"/>
-                    <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{DatasetPage.cancel}"
-                                     process="@this" update="@form" rendered="#{DatasetPage.editMode != 'CREATE'}"
-                                     oncomplete="javascript:bind_bsui_components();">
-                    </p:commandButton>
-                    <p:button id="cancelCreate" value="#{bundle.cancel}"
-                              outcome="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}"
-                              rendered="#{DatasetPage.editMode == 'CREATE'}"/>
-                    <p:commandButton value="Direct" id="datasetSave"
-                                     style="display:none"
-                                     update=":datasetForm,:messagePanel"
-                                     oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
-                                     action="#{DatasetPage.save}"/>
-                </div>
-                <!-- END: Create/Save Dataset Button Panel -->
 
                 <p:blockUI block="datasetForm" widgetVar="blockDatasetForm"/>
 
@@ -1012,10 +890,6 @@
                                  update=":datasetForm:fileTagsPopup"
                                  oncomplete="PF('fileTagsPopup').show();"/>
 
-                <!-- We no longer need this remoteCommand; see my comments in the javascript method testFilesSelectedForEditMetadata() -->
-                <!-- for more info. - L.A. 4.2.1 -->
-                <!-- p:remoteCommand  name="openEditFilesPageCommand" action=" {DatasetPage.editFileMetadata()}"  / -->
-
                 <p:dialog id="fileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}"
                           widgetVar="fileTagsPopup" modal="true">
                     <p class="help-block">#{bundle['file.editTagsDialog.tip']}</p>
@@ -1146,11 +1020,9 @@
                 </p:dialog>
                 <!-- END: Request Access Sign Up/Log In Button -->
 
-                <div jsf:rendered="#{empty DatasetPage.editMode}">
-                    <dv:termsOfUseDialog id="editTermsOfUseDialog" widgetVar="editTermsOfUseDialog"
-                                         action="#{DatasetPage.saveTermsOfUse(editTermsOfUseDialog.termsOfUseForm)}"
-                                         update=""/>
-                </div>
+                <dv:termsOfUseDialog id="editTermsOfUseDialog" widgetVar="editTermsOfUseDialog"
+                                     action="#{DatasetPage.saveTermsOfUse(editTermsOfUseDialog.termsOfUseForm)}"
+                                     update=""/>
 
                 <p:dialog header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}"
                           widgetVar="configureToolPopup" modal="true"
@@ -1200,7 +1072,7 @@
 
                 <p:dialog id="downloadDataSubsetPopup" styleClass="smallPopUp"
                           header="#{bundle['file.download.subset.header']}" widgetVar="downloadDataSubsetPopup"
-                          rendered="#{empty DatasetPage.editMode}" modal="true">
+                          modal="true">
                     <div class="form-inline clearfix"
                          jsf:rendered="#{!(empty DatasetPage.guestbookResponse.dataFile) and DatasetPage.guestbookResponse.dataFile.tabularData}">
                         <ui:include src="/subset/gui_subset.xhtml">
@@ -1477,9 +1349,6 @@
 
 
             <script type="text/javascript">
-                $(document).ready(function () {
-                    popoverHTML('#{bundle.htmlAllowedTitle}');
-                });
 
                 function testReturnReason() {
                     var returnReasonText = PF('returnReason').jq.val();
@@ -1538,14 +1407,6 @@
                     } else {
                         PF('editTermsOfUseDialog').show();
                     }
-                }
-
-                function updateTemplate() {
-                    $('button[id$="updateTemplate"]').trigger('click');
-                }
-
-                function checkNewlyRestricted() {
-                    $('button[id$="datasetSave"]').trigger('click');
                 }
 
                 /* using this function to prevent syntax errors on conditionally deciding onclick action */

@@ -42,17 +42,14 @@
                     <div id="contentTabs">
 
                     <ui:include src="editFilesFragment.xhtml">
-                        <ui:param name="editDatafilesPage" value="true"/>
                         <ui:param name="isDatasetSection" value="false"/>
                         <ui:param name="createDataset" value="false"/>
                         <ui:param name="showFileButtonUpdate" value="true"/>
-                        <ui:param name="version" value="#{EditDatafilesPage.workingVersion}"/>
                         <ui:param name="lockedFromEdits" value="#{EditDatafilesPage.lockedFromEdits}"/>
                         <ui:param name="showFileUpload" value="#{EditDatafilesPage.showFileUploadFragment()}"/>
                         <ui:param name="isMultiplyFilesUploadAllowed" value="#{EditDatafilesPage.allowMultipleFileUpload()}" />
                         <ui:param name="fileUploadDisabled" value="#{!EditDatafilesPage.showFileUploadComponent()}" />
                         <ui:param name="isUploadPermited" value="#{EditDatafilesPage.mode eq 'UPLOAD'}" />
-                        <ui:param name="redirectToEditdataFiles" value="" />
                         </ui:include>
                     </div>
 
@@ -61,14 +58,13 @@
                         <div  class="button-block">
                             <p:outputPanel id="filesButtons" >
                                 <div jsf:rendered="#{!(empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment()))}">
-                                    <p:commandButton tabindex="1000" id="save" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockFileForm').show();" />
+                                    <p:commandButton tabindex="1000" id="save" value="#{bundle.saveChanges}"
+                                            onclick="PF('blockFileForm').show();"
+                                            action="#{EditDatafilesPage.save}"
+                                            update="@form,:messagePanel"
+                                            oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);" />
                                     <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();">
                                     </p:commandButton>
-                                    <p:commandButton value="Direct" id="datasetSave"
-                                                     style="display:none"
-                                                     update=":datasetForm,:messagePanel"
-                                                     oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
-                                                     action="#{EditDatafilesPage.save}" />
                                 </div>
                                 <div jsf:rendered="#{empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment())}">
                                     <p:commandButton tabindex="1000" id="doneFilesButton" value="#{bundle.done}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();">
@@ -84,7 +80,7 @@
                 </h:form>
                 
                 <p:blockUI block="datasetForm" widgetVar="blockFileForm"/>
-
+                
             </ui:define>
         </ui:composition>
     </h:body>

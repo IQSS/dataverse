@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.persistence.group.IpAddress;
 import edu.harvard.iq.dataverse.persistence.group.IpAddressRange;
 import edu.harvard.iq.dataverse.persistence.group.IpGroup;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
+import edu.harvard.iq.dataverse.qualifiers.TestBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -663,6 +664,7 @@ public class JsonParserTest {
     }
 
 
+    @TestBean
     static class MockDatasetFieldSvc extends DatasetFieldServiceBean {
 
         Map<String, DatasetFieldType> fieldTypes = new HashMap<>();

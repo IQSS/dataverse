@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.qualifiers.TestBean;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import org.junit.Before;
 import org.junit.Test;
@@ -125,6 +126,7 @@ public class DDIExporterTest {
         assertEquals("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", DRAFT VERSION", citation);
     }
 
+    @TestBean
     static class MockDatasetFieldSvc extends DatasetFieldServiceBean {
 
         Map<String, DatasetFieldType> fieldTypes = new HashMap<>();

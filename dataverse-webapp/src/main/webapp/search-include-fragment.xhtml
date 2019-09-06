@@ -55,7 +55,7 @@
                             </ui:fragment>
                             <ui:fragment rendered="#{permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse) }">
                                 <li>
-                                    <a href="${pageContext.request.contextPath}/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">#{bundle['dataverse.results.btn.addData.newDataset']}</a>
+                                    <a href="${pageContext.request.contextPath}/createDataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">#{bundle['dataverse.results.btn.addData.newDataset']}</a>
                                 </li>
                             </ui:fragment>
                         </ul>
