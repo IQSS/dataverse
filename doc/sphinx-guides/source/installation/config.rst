@@ -1428,7 +1428,7 @@ Session timeout (in minutes) for logged-in users. The default is 8 hours (480 mi
 
 In the example below we reduce the timeout to 4 hours: 
 
-``curl -X PUT -d 480 http://localhost:8080/api/admin/settings/:LoginSessionTimeout``
+``curl -X PUT -d 240 http://localhost:8080/api/admin/settings/:LoginSessionTimeout``
 
 :TwoRavensUrl
 +++++++++++++
