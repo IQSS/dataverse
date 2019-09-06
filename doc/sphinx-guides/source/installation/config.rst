@@ -1421,6 +1421,15 @@ The relative path URL to which users will be sent for signup. The default settin
 
 ``curl -X PUT -d '/dataverseuser.xhtml?editMode=CREATE' http://localhost:8080/api/admin/settings/:SignUpUrl``
 
+:LoginSessionTimeout
+++++++++++++++++++++
+
+Session timeout (in minutes) for logged-in users. The default is 8 hours (480 minutes). For the anonymous user sessions, the timeout is set to the default value, configured in the web.xml file of the Dataverse application. 
+
+In the example below we reduce the timeout to 4 hours: 
+
+``curl -X PUT -d 480 http://localhost:8080/api/admin/settings/:LoginSessionTimeout``
+
 :TwoRavensUrl
 +++++++++++++
 
