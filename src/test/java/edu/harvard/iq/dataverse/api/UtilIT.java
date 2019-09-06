@@ -243,6 +243,13 @@ public class UtilIT {
         logger.info("Id found in create dataset response: " + datasetId);
         return datasetId;
     }
+    
+    static Integer getSearchCountFromResponse(Response searchResponse) {
+        JsonPath createdDataset = JsonPath.from(searchResponse.body().asString());
+        int searchCount = createdDataset.getInt("data.total_count");
+        logger.info("Search Count found: " + searchCount);
+        return searchCount;
+    }
 
     static String getDatasetPersistentIdFromResponse(Response createDatasetResponse) {
         JsonPath createdDataset = JsonPath.from(createDatasetResponse.body().asString());
@@ -2002,6 +2009,32 @@ public class UtilIT {
         return i <= duration;
 
     }
+    
+    //Helper function that returns true if a given search returns a non-zero response within a fixed time limit
+    // a given duration returns false if still zero results after given duration
+    static Boolean sleepForSearch(String searchPart, String apiToken,  String subTree, int duration) {
+        
+
+        Response searchResponse = UtilIT.search(searchPart, apiToken, subTree);
+        int i = 0;
+        do {
+            try {
+                searchResponse = UtilIT.search(searchPart, apiToken, subTree);
+                Thread.sleep(1000);
+                i++;
+                if (i > duration) {
+                    break; 
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } while (UtilIT.getSearchCountFromResponse(searchResponse) == 0);
+
+        return i <= duration;
+
+    }
+    
+    
     
     static Response checkDatasetLocks(long datasetId, String lockType, String apiToken) {
         Response response = given()
