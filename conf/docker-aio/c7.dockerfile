@@ -28,7 +28,7 @@ RUN sudo -u postgres /usr/pgsql-9.6/bin/initdb -D /var/lib/pgsql/data
 
 # copy configuration related files
 RUN cp /tmp/dv/pg_hba.conf /var/lib/pgsql/data/
-RUN sed -i 's/#log_lock_waits\ \=\ off/log_lock_waits\ \=\ on/g' /var/lib/pgsql/9.6/data/postgresql.conf
+RUN sed -i 's/#log_lock_waits\ \=\ off/log_lock_waits\ \=\ on/g' /var/lib/pgsql/data/postgresql.conf
 RUN cp -r /opt/solr-7.3.1/server/solr/configsets/_default /opt/solr-7.3.1/server/solr/collection1
 RUN cp /tmp/dv/schema.xml /opt/solr-7.3.1/server/solr/collection1/conf/schema.xml
 RUN cp /tmp/dv/solrconfig.xml /opt/solr-7.3.1/server/solr/collection1/conf/solrconfig.xml
