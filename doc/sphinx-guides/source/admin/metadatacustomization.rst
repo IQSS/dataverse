@@ -593,11 +593,26 @@ Running a curl command like "load" example above should make the new custom meta
 Updating the Solr Schema
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-**TODO: describe usage of new script.**
+Once you have enabled a new metadata block you should be able to see the new fields in the GUI but before you can save
+the dataset, you must add additional fields to your Solr schema.
 
-Once you have enabled a new metadata block you should be able to see the new fields in the GUI but before you can save the dataset, you must add additional fields to your Solr schema. You should run the following curl command to have Dataverse output the "field name" and "copyField" elements for all the metadata fields that have been loaded into Dataverse:
+An API endpoint of Dataverse provides you with a generated set of all fields that need to be added to the Solr schema
+configuration, including any enabled metadata schemas:
 
 ``curl http://localhost:8080/api/admin/index/solr/schema``
+
+For convenience and automation you can use the *updateSchemaCMB.sh* script. It downloads, parses and writes the schema
+files before triggering a Solr reload. You should run this as the Solr user, not root.
+
+By default, it will download from Dataverse at `http://localhost:8080` and reload Solr at `http://localhost:8983`.
+You may use the following variables with this script:
+
+.. code::
+
+    DATAVERSE_URL: provide the URL to your Dataverse installation (e.g. http://localhost:8080)
+    SOLR_URL: provide the URL to your Solr instance (e. g. http://localhost:8983)
+    UNBLOCK_KEY: if your installation has a blocked admin API endpoint, you can provide either the key itself or a path to a keyfile
+    TARGET: provide the config directory of your Solr core "collection1" (e. g. /usr/local/solr/solr-7.3.1/server/solr/collection1/conf)
 
 See the :doc:`/installation/prerequisites/` section of the Installation Guide for a suggested location on disk for the Solr schema file.
 
