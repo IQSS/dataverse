@@ -1,20 +1,4 @@
 <schema>
-    <copyField source="ARCS1" dest="_text_" maxChars="3000"/>
-    <copyField source="ARCS2" dest="_text_" maxChars="3000"/>
-    <copyField source="ARCS3" dest="_text_" maxChars="3000"/>
-    <copyField source="ARCS4" dest="_text_" maxChars="3000"/>
-    <copyField source="ARCS5" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI1" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI10" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI11" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI2" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI3" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI4" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI5" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI6" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI7" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI8" dest="_text_" maxChars="3000"/>
-    <copyField source="PSRI9" dest="_text_" maxChars="3000"/>
     <copyField source="accessToSources" dest="_text_" maxChars="3000"/>
     <copyField source="actionsToMinimizeLoss" dest="_text_" maxChars="3000"/>
     <copyField source="alternativeTitle" dest="_text_" maxChars="3000"/>
@@ -30,7 +14,6 @@
     <copyField source="authorName" dest="_text_" maxChars="3000"/>
     <copyField source="characteristicOfSources" dest="_text_" maxChars="3000"/>
     <copyField source="city" dest="_text_" maxChars="3000"/>
-    <copyField source="classificationSchemaCHIA" dest="_text_" maxChars="3000"/>
     <copyField source="cleaningOperations" dest="_text_" maxChars="3000"/>
     <copyField source="collectionMode" dest="_text_" maxChars="3000"/>
     <copyField source="collectorTraining" dest="_text_" maxChars="3000"/>
@@ -59,7 +42,6 @@
     <copyField source="dataCollectionSituation" dest="_text_" maxChars="3000"/>
     <copyField source="dataCollector" dest="_text_" maxChars="3000"/>
     <copyField source="dataSources" dest="_text_" maxChars="3000"/>
-    <copyField source="datadePublicao" dest="_text_" maxChars="3000"/>
     <copyField source="datasetContact" dest="_text_" maxChars="3000"/>
     <copyField source="datasetContactAffiliation" dest="_text_" maxChars="3000"/>
     <copyField source="datasetContactEmail" dest="_text_" maxChars="3000"/>
@@ -69,7 +51,6 @@
     <copyField source="dateOfCollectionEnd" dest="_text_" maxChars="3000"/>
     <copyField source="dateOfCollectionStart" dest="_text_" maxChars="3000"/>
     <copyField source="dateOfDeposit" dest="_text_" maxChars="3000"/>
-    <copyField source="datesAdditionalInformationCHIA" dest="_text_" maxChars="3000"/>
     <copyField source="depositor" dest="_text_" maxChars="3000"/>
     <copyField source="deviationsFromSampleDesign" dest="_text_" maxChars="3000"/>
     <copyField source="distributionDate" dest="_text_" maxChars="3000"/>
@@ -90,42 +71,6 @@
     <copyField source="grantNumber" dest="_text_" maxChars="3000"/>
     <copyField source="grantNumberAgency" dest="_text_" maxChars="3000"/>
     <copyField source="grantNumberValue" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdAccreditation" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdCoordinator" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdCourseName" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdFacultyName" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdPrizes" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdProgramBrief" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdRecommendation" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdSemester" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdSiteType" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdStudentName" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdStudentProgram" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdTags" dest="_text_" maxChars="3000"/>
-    <copyField source="gsdTypes" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiAnthropometry" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiBiosampleType" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiBirthWeight" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiFeedingCare" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiGestationalAge" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiImmunizations" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiInfantChildhoodMorbidity" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiIntervention" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiLowerLimitAge" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiMaternalChar" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiNeurocognitiveDev" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiOther" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiPregnancyBirth" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiSocioeconomicChar" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiStudyName" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiStudyRegistry" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiStudyRegistryNumber" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiStudyRegistryType" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiStudyType" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiUnitsLowerLimitAge" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiUnitsUpperLimitAge" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiUpperLimitAge" dest="_text_" maxChars="3000"/>
-    <copyField source="hbgdkiWaterSanHygiene" dest="_text_" maxChars="3000"/>
     <copyField source="journalArticleType" dest="_text_" maxChars="3000"/>
     <copyField source="journalIssue" dest="_text_" maxChars="3000"/>
     <copyField source="journalPubDate" dest="_text_" maxChars="3000"/>
@@ -137,11 +82,8 @@
     <copyField source="keywordVocabularyURI" dest="_text_" maxChars="3000"/>
     <copyField source="kindOfData" dest="_text_" maxChars="3000"/>
     <copyField source="language" dest="_text_" maxChars="3000"/>
-    <copyField source="localdePublicao" dest="_text_" maxChars="3000"/>
-    <copyField source="mraCollection" dest="_text_" maxChars="3000"/>
     <copyField source="northLongitude" dest="_text_" maxChars="3000"/>
     <copyField source="notesText" dest="_text_" maxChars="3000"/>
-    <copyField source="numero" dest="_text_" maxChars="3000"/>
     <copyField source="originOfSources" dest="_text_" maxChars="3000"/>
     <copyField source="otherDataAppraisal" dest="_text_" maxChars="3000"/>
     <copyField source="otherGeographicCoverage" dest="_text_" maxChars="3000"/>
@@ -157,16 +99,6 @@
     <copyField source="producerURL" dest="_text_" maxChars="3000"/>
     <copyField source="productionDate" dest="_text_" maxChars="3000"/>
     <copyField source="productionPlace" dest="_text_" maxChars="3000"/>
-    <copyField source="proprietrio" dest="_text_" maxChars="3000"/>
-    <copyField source="provenanceCHIA" dest="_text_" maxChars="3000"/>
-    <copyField source="psiBehavior" dest="_text_" maxChars="3000"/>
-    <copyField source="psiDonor" dest="_text_" maxChars="3000"/>
-    <copyField source="psiHealthArea" dest="_text_" maxChars="3000"/>
-    <copyField source="psiIntervention" dest="_text_" maxChars="3000"/>
-    <copyField source="psiPopulation" dest="_text_" maxChars="3000"/>
-    <copyField source="psiProductsServices" dest="_text_" maxChars="3000"/>
-    <copyField source="psiStudyDesignElement" dest="_text_" maxChars="3000"/>
-    <copyField source="psiStudyType" dest="_text_" maxChars="3000"/>
     <copyField source="publication" dest="_text_" maxChars="3000"/>
     <copyField source="publicationCitation" dest="_text_" maxChars="3000"/>
     <copyField source="publicationIDNumber" dest="_text_" maxChars="3000"/>
@@ -181,7 +113,6 @@
     <copyField source="resolution.Spectral" dest="_text_" maxChars="3000"/>
     <copyField source="resolution.Temporal" dest="_text_" maxChars="3000"/>
     <copyField source="responseRate" dest="_text_" maxChars="3000"/>
-    <copyField source="rightsAvailabilityCHIA" dest="_text_" maxChars="3000"/>
     <copyField source="samplingErrorEstimates" dest="_text_" maxChars="3000"/>
     <copyField source="samplingProcedure" dest="_text_" maxChars="3000"/>
     <copyField source="series" dest="_text_" maxChars="3000"/>
@@ -194,7 +125,6 @@
     <copyField source="software" dest="_text_" maxChars="3000"/>
     <copyField source="softwareName" dest="_text_" maxChars="3000"/>
     <copyField source="softwareVersion" dest="_text_" maxChars="3000"/>
-    <copyField source="sourceCHIA" dest="_text_" maxChars="3000"/>
     <copyField source="southLongitude" dest="_text_" maxChars="3000"/>
     <copyField source="state" dest="_text_" maxChars="3000"/>
     <copyField source="studyAssayCellType" dest="_text_" maxChars="3000"/>
@@ -216,14 +146,12 @@
     <copyField source="timePeriodCoveredEnd" dest="_text_" maxChars="3000"/>
     <copyField source="timePeriodCoveredStart" dest="_text_" maxChars="3000"/>
     <copyField source="title" dest="_text_" maxChars="3000"/>
-    <copyField source="titulo" dest="_text_" maxChars="3000"/>
     <copyField source="topicClassValue" dest="_text_" maxChars="3000"/>
     <copyField source="topicClassVocab" dest="_text_" maxChars="3000"/>
     <copyField source="topicClassVocabURI" dest="_text_" maxChars="3000"/>
     <copyField source="topicClassification" dest="_text_" maxChars="3000"/>
     <copyField source="unitOfAnalysis" dest="_text_" maxChars="3000"/>
     <copyField source="universe" dest="_text_" maxChars="3000"/>
-    <copyField source="variablesCHIA" dest="_text_" maxChars="3000"/>
     <copyField source="weighting" dest="_text_" maxChars="3000"/>
     <copyField source="westLongitude" dest="_text_" maxChars="3000"/>
 </schema>

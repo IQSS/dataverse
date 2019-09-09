@@ -1,20 +1,4 @@
 <fields>
-    <field name="ARCS1" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="ARCS2" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="ARCS3" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="ARCS4" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="ARCS5" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI1" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI10" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI11" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI2" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI3" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI4" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI5" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI6" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI7" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI8" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="PSRI9" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="accessToSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="actionsToMinimizeLoss" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="alternativeTitle" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -30,7 +14,6 @@
     <field name="authorName" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="characteristicOfSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="city" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="classificationSchemaCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="cleaningOperations" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="collectionMode" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="collectorTraining" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -59,7 +42,6 @@
     <field name="dataCollectionSituation" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="dataCollector" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="dataSources" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="datadePublicao" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="datasetContact" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="datasetContactAffiliation" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="datasetContactEmail" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -69,7 +51,6 @@
     <field name="dateOfCollectionEnd" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="dateOfCollectionStart" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="dateOfDeposit" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="datesAdditionalInformationCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="depositor" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="deviationsFromSampleDesign" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="distributionDate" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -90,42 +71,6 @@
     <field name="grantNumber" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="grantNumberAgency" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="grantNumberValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="gsdAccreditation" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="gsdCoordinator" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="gsdCourseName" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="gsdFacultyName" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="gsdPrizes" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="gsdProgramBrief" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="gsdRecommendation" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="gsdSemester" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="gsdSiteType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="gsdStudentName" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="gsdStudentProgram" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="gsdTags" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="gsdTypes" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="hbgdkiAnthropometry" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiBiosampleType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="hbgdkiBirthWeight" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiFeedingCare" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiGestationalAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiImmunizations" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiInfantChildhoodMorbidity" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiIntervention" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiLowerLimitAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiMaternalChar" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiNeurocognitiveDev" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiOther" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiPregnancyBirth" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiSocioeconomicChar" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiStudyName" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiStudyRegistry" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="hbgdkiStudyRegistryNumber" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="hbgdkiStudyRegistryType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="hbgdkiStudyType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="hbgdkiUnitsLowerLimitAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiUnitsUpperLimitAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiUpperLimitAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="hbgdkiWaterSanHygiene" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="journalArticleType" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="journalIssue" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="journalPubDate" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -137,11 +82,8 @@
     <field name="keywordVocabularyURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="kindOfData" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="language" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="localdePublicao" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="mraCollection" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="northLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="notesText" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="numero" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="originOfSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="otherDataAppraisal" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="otherGeographicCoverage" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -157,16 +99,6 @@
     <field name="producerURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="productionDate" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="productionPlace" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="proprietrio" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="provenanceCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="psiBehavior" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="psiDonor" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="psiHealthArea" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="psiIntervention" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="psiPopulation" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="psiProductsServices" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="psiStudyDesignElement" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="psiStudyType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="publication" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="publicationCitation" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="publicationIDNumber" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -181,7 +113,6 @@
     <field name="resolution.Spectral" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="resolution.Temporal" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="responseRate" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="rightsAvailabilityCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="samplingErrorEstimates" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="samplingProcedure" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="series" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -194,7 +125,6 @@
     <field name="software" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="softwareName" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="softwareVersion" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="sourceCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="southLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="state" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyAssayCellType" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -216,14 +146,12 @@
     <field name="timePeriodCoveredEnd" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="timePeriodCoveredStart" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="title" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="titulo" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="topicClassValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="topicClassVocab" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="topicClassVocabURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="topicClassification" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="unitOfAnalysis" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="universe" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="variablesCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="weighting" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="westLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
 </fields>
