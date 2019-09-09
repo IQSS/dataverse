@@ -1,0 +1,17 @@
+{
+  "displayName": "Dynamic Dataset Tool",
+  "description": "Dazzles! Dizzying!",
+  "type": "explore",
+  "scope": "dataset",
+  "toolUrl": "https://dynamicdatasettool.com",
+  "toolParameters": {
+    "queryParameters": [
+      {
+        "PID": "{datasetPid}"
+      },
+      {
+        "apiToken": "{apiToken}"
+      }
+    ]
+  }
+}

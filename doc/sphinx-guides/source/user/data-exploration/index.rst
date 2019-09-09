@@ -6,12 +6,7 @@
 Data Exploration Guide
 =======================================================
 
-Note that the installation of Dataverse you are using may have additional or different tools configured. Developers interested in creating tools should refer to the :doc:`/installation/external-tools` section of the Installation Guide.
-
-API users can determine if external tools are configured at the dataset for file level by following the instructions below.
-
-- :ref:`list-external-tools-for-a-dataset-api`
-- :ref:`list-external-tools-for-a-file-api`
+The installation of Dataverse you are using may have additional or different tools configured than what appears below. For the complete list of available tools, see :ref:`inventory-of-external-tools`.
 
 Contents:
 

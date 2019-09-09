@@ -1,10 +1,10 @@
 {
-  "displayName": "Awesome Tool",
-  "description": "The most awesome tool.",
+  "displayName": "Fabulous File Tool",
+  "description": "Fabulous Fun for Files!",
   "type": "explore",
   "scope": "file",
   "contentType": "text/tab-separated-values",
-  "toolUrl": "https://awesometool.com",
+  "toolUrl": "https://fabulousfiletool.com",
   "toolParameters": {
     "queryParameters": [
       {

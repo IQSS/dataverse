@@ -1,7 +1,7 @@
 External Tools
 ==============
 
-External tools can provide additional features that are not part of Dataverse itself, such as data exploration. See the "Writing Your Own External Tool" section below for more information on developing your own tool for Dataverse.
+External tools can provide additional features that are not part of Dataverse itself, such as data exploration.
 
 .. contents:: |toctitle|
   :local:
@@ -9,91 +9,14 @@ External tools can provide additional features that are not part of Dataverse it
 Inventory of External Tools
 ---------------------------
 
-The following tools have been successfully integrated with Dataverse:
+See :ref:`inventory-of-external-tools`.
 
-- TwoRavens: a system of interlocking statistical tools for data exploration, analysis, and meta-analysis: http://2ra.vn. See the :doc:`/user/data-exploration/tworavens` section of the User Guide for more information on TwoRavens from the user perspective and the :doc:`r-rapache-tworavens` section of the Installation Guide. 
+Managing External Tools
+-----------------------
 
-- Data Explorer: a GUI which lists the variables in a tabular data file allowing searching, charting and cross tabulation analysis. See the README.md file at https://github.com/scholarsportal/Dataverse-Data-Explorer for the instructions on adding Data Explorer to your Dataverse; and the :doc:`prerequisites` section of the Installation Guide for the instructions on how to set up **basic R configuration required** (specifically, Dataverse uses R to generate .prep metadata files that are needed to run Data Explorer). 
+See the :doc:`/admin/external-tools` section of the Admin Guide.
 
-- `Whole Tale <https://wholetale.org>`_: a platform for the creation of reproducible research packages that allows users to launch containerized interactive analysis environments based on popular tools such as Jupyter and RStudio. Using this integration, Dataverse users can launch Jupyter and RStudio environments to analyze published datasets. For more information, see the `Whole Tale User Guide <https://wholetale.readthedocs.io/en/stable/users_guide/integration.html>`_.
+Building External Tools
+-----------------------
 
-- `File Previewers <https://github.com/QualitativeDataRepository/dataverse-previewers>`_: A set of tools that display the content of files - including audio, html, `Hypothes.is <https://hypothes.is/>` annotations, images, PDF, text, video - allowing them to be viewed without downloading. The previewers can be run directly from github.io, so the only required step is using the Dataverse API to register the ones you want to use. Documentation, including how to optionally brand the previewers, and an invitation to contribute through github are in the README.md file. 
-
-- Data Curation Tool: a GUI for curating data by adding labels, groups, weights and other details to assist with informed reuse. See the README.md file at https://github.com/scholarsportal/Dataverse-Data-Curation-Tool for the installation instructions.
-
-- [Your tool here! Please get in touch! :) ]
-
-
-Downloading and Adjusting an External Tool Manifest File
---------------------------------------------------------
-
-In order to make external tools available within Dataverse, you need to configure Dataverse to be aware of them.
-
-External tools must be expressed in an external tool manifest file, a specific JSON format Dataverse requires. The author of the external tool may be able to provide you with a JSON file and installation instructions.  The JSON file might look like this:
-
-.. literalinclude:: ../_static/installation/files/root/external-tools/awesomeTool.json
-
-``type`` is required and must be ``explore`` or ``configure`` to make the tool appear under a button called "Explore" or "Configure", respectively. 
-
-``scope`` is required and must be ``file`` or ``dataset`` to make the tool appear at the file level or dataset level.
-
-File level tools can operate on any file, including tabular files that have been created by successful ingestion. (For more on ingest, see the :doc:`/user/tabulardataingest/ingestprocess` of the User Guide.) The optional ``contentType`` entry specifies the mimetype a tool works on.
-
-In the example above, a mix of required and optional reserved words appear that can be used to insert dynamic values into tools. The supported values are:
-
-- ``{fileId}`` (required for file tools, or ``{filePid}``) - The database ID of a file from which the external tool has been launched.
-- ``{filePid}`` (required for file tools, or ``{fileId}``) - The Persistent ID (DOI or Handle) of a file (if available) from which the external tool has been launched.
-- ``{siteUrl}`` (optional) - The URL of the Dataverse installation from which the tool was launched.
-- ``{apiToken}`` (optional) - The Dataverse API token of the user launching the external tool, if available.
-- ``{datasetId}`` (required for dataset tools, or ``{datasetPid}``) - The database ID of the dataset.
-- ``{datasetPid}`` (required for dataset tools, or ``{datasetId}``) - The Persistent ID (DOI or Handle) of the dataset.
-- ``{datasetVersion}`` (optional) - The friendly version number ( or \:draft ) of the dataset version the tool is being launched from.
-
-Making an External Tool Available in Dataverse
-----------------------------------------------
-
-If the JSON file were called, for example, :download:`awesomeTool.json <../_static/installation/files/root/external-tools/awesomeTool.json>` you would make any necessary adjustments, as described above, and then make the tool available within Dataverse with the following curl command:
-
-``curl -X POST -H 'Content-type: application/json' --upload-file awesomeTool.json http://localhost:8080/api/admin/externalTools``
-
-Listing all External Tools in Dataverse
----------------------------------------
-
-To list all the external tools that are available in Dataverse:
-
-``curl http://localhost:8080/api/admin/externalTools``
-
-Showing an External Tool in Dataverse
--------------------------------------
-
-To show one of the external tools that are available in Dataverse, pass its database id:
-
-``export TOOL_ID=1``
-
-``curl http://localhost:8080/api/admin/externalTools/$TOOL_ID``
-
-Removing an External Tool Available in Dataverse
-------------------------------------------------
-
-Assuming the external tool database id is "1", remove it with the following command:
-
-``curl -X DELETE http://localhost:8080/api/admin/externalTools/1``
-
-List External Tools for a Dataset
----------------------------------
-
-See :ref:`list-external-tools-for-a-dataset-api`
-
-List External Tools for a File
-------------------------------
-
-See :ref:`list-external-tools-for-a-file-api`
-
-Writing Your Own External Tool
-------------------------------
-
-If you have an idea for an external tool, please let the Dataverse community know by posting about it on the dataverse-community mailing list: https://groups.google.com/forum/#!forum/dataverse-community
-
-If you need help with your tool, please feel free to post on the dataverse-dev mailing list: https://groups.google.com/forum/#!forum/dataverse-dev
-
-Once you've gotten your tool working, please make a pull request to update the list of tools above.
+See the :doc:`/developers/external-tools` section of the Developer Guide.

@@ -146,7 +146,7 @@ After you've downloaded the Dataverse Package, you may want to double-check that
 Explore Data
 ------------
 
-Please see the :doc:`/user/data-exploration/index`.
+Please see the :doc:`/user/data-exploration/index` to get started.
 
 .. |image-file-tree-view| image:: ./img/file-tree-view.png
    :class: img-responsive
