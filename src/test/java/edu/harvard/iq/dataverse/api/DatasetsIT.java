@@ -149,12 +149,13 @@ public class DatasetsIT {
         
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(OK.getStatusCode(), publishDataverse.getStatusCode());
-        
+        //Remove random sleep #6128 9/3/2019
         // throw in a short sleep, just in case:
+        /*
         try {
             Thread.sleep(1000l);
         } catch (InterruptedException iex) {}
-        
+        */
         // ... And now that it's published, try to create a dataset again, 
         // as the "random", not specifically authorized user: 
         // (this time around, it should work!)
@@ -341,12 +342,13 @@ public class DatasetsIT {
                 .statusCode(403);
         
         logger.info("Attempting to publish a major version");
-        
+        //Remove random sleep #6128 9/3/2019
         // 3 second sleep, to allow the indexing to finish:
+        /*
         try {
             Thread.sleep(3000l);
         } catch (InterruptedException iex) {}
-
+*/
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
 
@@ -484,12 +486,13 @@ public class DatasetsIT {
                 .statusCode(403);
 
         logger.info("In testExport; attempting to publish, as major version");
-        
+        //Remove random sleep #6128 9/3/2019
         // 3 second sleep, to allow the indexing to finish: 
+        /*
         try {
             Thread.sleep(3000l);
         } catch (InterruptedException iex) {}
-        
+        */
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
 
@@ -613,12 +616,13 @@ public class DatasetsIT {
         Response setToExcludeEmailFromExport = UtilIT.setSetting(SettingsServiceBean.Key.ExcludeEmailFromExport, "true");
         setToExcludeEmailFromExport.then().assertThat()
                 .statusCode(OK.getStatusCode());
-
+        //Remove random sleep #6128 9/3/2019
         // 3 second sleep, to allow the indexing to finish:
+        /*
         try {
             Thread.sleep(3000l);
         } catch (InterruptedException iex) {}
-        
+        */
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
 
@@ -713,11 +717,12 @@ public class DatasetsIT {
         logger.info("identifier: " + identifier);
         String numericPart = identifier.replace("FK2/", ""); //remove shoulder from identifier
         assertTrue(StringUtils.isNumeric(numericPart));
-
+        //Remove random sleep #6128 9/3/2019        
+/*
         try {
             Thread.sleep(3000l);
         } catch (Exception ex) {logger.warning("failed to execute sleep 3 sec.");}
-
+*/
         
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
@@ -1729,11 +1734,12 @@ public class DatasetsIT {
 
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
-
+        //Remove random sleep #6128 9/3/2019
+/*
         try {
             Thread.sleep(3000l);
         } catch (InterruptedException iex){}
-        
+ */       
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
 
