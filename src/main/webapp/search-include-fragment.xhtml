@@ -100,7 +100,7 @@
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                         <f:param name="page" value="1"/>
 
-                        <i class="icon-dataverse text-icon-inline"></i>
+                        <span class="icon-dataverse text-icon-inline"></span>
 
                         <h:outputFormat styleClass="facetTypeDataverse" value="#{bundle['dataverse.results.types.dataverses']} &#40;{0}&#41;">
                             <f:param value="#{SearchIncludeFragment.facetCountDataverses}"/>
@@ -131,7 +131,7 @@
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                         <f:param name="page" value="1"/>
 
-                        <i class="icon-dataset text-icon-inline"></i>
+                        <span class="icon-dataset text-icon-inline"></span>
 
                         <h:outputFormat styleClass="facetTypeDataset" value="#{bundle['dataverse.results.types.datasets']} &#40;{0}&#41;">
                             <f:param value="#{SearchIncludeFragment.facetCountDatasets}"/>
@@ -162,7 +162,7 @@
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                         <f:param name="page" value="1"/>
 
-                        <i class="icon-file text-icon-inline"></i>
+                        <span class="icon-file text-icon-inline"></span>
 
                         <h:outputFormat styleClass="facetTypeFile" value="#{bundle['dataverse.results.types.files']} &#40;{0}&#41;">
                             <f:param value="#{SearchIncludeFragment.facetCountFiles}"/>
@@ -232,7 +232,7 @@
 
             <!--toggle sidebar button-->
             <p class="visible-xs-block">
-              <button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas"><i class="glyphicon glyphicon-chevron-left"></i> #{bundle['dataverse.results.btn.filterResults']}</button>
+              <button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas"><span class="glyphicon glyphicon-chevron-left"></span> #{bundle['dataverse.results.btn.filterResults']}</button>
             </p>
 
             <!-- Message for zero results -->
