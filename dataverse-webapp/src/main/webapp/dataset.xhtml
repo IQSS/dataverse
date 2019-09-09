@@ -66,8 +66,6 @@
                 <f:viewParam name="version" value="#{DatasetPage.version}"/>
                 <f:viewParam name="versionId" value="#{DatasetPage.versionId}"/>
                 <f:viewParam name="persistentId" value="#{DatasetPage.persistentId}"/>
-                <f:viewParam name="fileSortField" value="#{DatasetPage.fileSortField}"/>
-                <f:viewParam name="fileSortOrder" value="#{DatasetPage.fileSortOrder}"/>
                 <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                 <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
                 <f:viewAction action="#{DatasetGuestbookTab.init(DatasetPage.dataset)}"/>
@@ -997,8 +995,7 @@
                                          action="#{DatasetPage.saveFileTagsAndCategories()}"/>
                         <p:commandButton styleClass="btn btn-default" id="fileTagsPopupCancelButton"
                                          value="#{bundle.cancel}"
-                                         onclick="PF('fileTagsPopup').hide();PF('blockDatasetForm').hide();"
-                                         actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>
+                                         onclick="PF('fileTagsPopup').hide();PF('blockDatasetForm').hide();"/>
                     </div>
                 </p:dialog>
                 <!-- Request Access Sign Up/Log In Button -->
