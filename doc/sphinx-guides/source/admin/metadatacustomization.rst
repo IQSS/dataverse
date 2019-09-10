@@ -602,17 +602,22 @@ configuration, including any enabled metadata schemas:
 ``curl http://localhost:8080/api/admin/index/solr/schema``
 
 For convenience and automation you can use the *updateSchemaMDB.sh* script. It downloads, parses and writes the schema
-files before triggering a Solr reload. You should run this as the Solr user, not root.
+files before triggering a Solr reload. **You should run this as the Solr user, not root.**
 
 By default, it will download from Dataverse at `http://localhost:8080` and reload Solr at `http://localhost:8983`.
-You may use the following variables with this script:
+You may use the following environment variables with this script or mix'n'match with options:
 
-.. code::
-
-    DATAVERSE_URL: provide the URL to your Dataverse installation (e.g. http://localhost:8080)
-    SOLR_URL: provide the URL to your Solr instance (e. g. http://localhost:8983)
-    UNBLOCK_KEY: if your installation has a blocked admin API endpoint, you can provide either the key itself or a path to a keyfile
-    TARGET: provide the config directory of your Solr core "collection1" (e. g. /usr/local/solr/solr-7.3.1/server/solr/collection1/conf)
+====================  ======  ===============================================  =========================================================
+Environment variable  Option  Description                                      Example
+====================  ======  ===============================================  =========================================================
+`DATAVERSE_URL`       `-d`    Provide the URL to your Dataverse installation   *http://localhost:8080*
+`SOLR_URL`            `-s`    Provide the URL to your Solr instance            *http://localhost:8983*
+`UNBLOCK_KEY`         `-u`    If your installation has a blocked admin API     *xyz* or */secrets/unblock.key*
+                              endpoint, you can provide either the key itself
+                              or a path to a keyfile
+`TARGET`              `-t`    Provide the config directory of your Solr core   */usr/local/solr/solr-7.3.1/server/solr/collection1/conf*
+                              "collection1"
+====================  ======  ===============================================  =========================================================
 
 See the :doc:`/installation/prerequisites/` section of the Installation Guide for a suggested location on disk for the Solr schema file.
 
