@@ -53,7 +53,7 @@ Related Projects
 
 As a developer, you also may be interested in these projects related to Dataverse:
 
-- External Tools - add additional features to Dataverse: See the :doc:`/installation/external-tools` section of the Installation Guide.
+- External Tools - add additional features to Dataverse without modifying the core: :doc:`external-tools`
 - Dataverse API client libraries - use Dataverse APIs from various languages: :doc:`/api/client-libraries`
 - DVUploader - a stand-alone command-line Java application that uses the Dataverse API to support upload of files from local disk to a Dataset: https://github.com/IQSS/dataverse-uploader 
 - dataverse-sample-data - populate your Dataverse installation with sample data: https://github.com/IQSS/dataverse-sample-data

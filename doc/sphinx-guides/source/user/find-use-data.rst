@@ -96,7 +96,7 @@ Within the Files tab on a dataset page, you can download the files in that datas
 
 You may also download a file from its file page by clicking the Download button in the upper right corner of the page, or by :ref:`url_download` under the Metadata tab on the lower half of the page.
 
-Tabular data files offer additional options: You can explore using any data exploration or visualization :doc:`/installation/external-tools` (if they have been enabled) by clicking the Explore button, or choose from a number of tabular-data-specific download options available as a dropdown under the Download button.
+Tabular data files offer additional options: You can explore using any data exploration or visualization :doc:`/admin/external-tools` (if they have been enabled) by clicking the Explore button, or choose from a number of tabular-data-specific download options available as a dropdown under the Download button.
 
 Tabular Data
 ^^^^^^^^^^^^
