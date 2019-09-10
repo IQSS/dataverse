@@ -409,7 +409,13 @@ public class SettingsServiceBean {
          * Allow CORS flag (true or false). It is true by default
          *
          */
-        AllowCors;
+        AllowCors, 
+        
+        /**
+         * Lifespan, in minutes, of a login user session 
+         * (both DataverseSession and the underlying HttpSession)
+         */
+        LoginSessionTimeout;
 
         @Override
         public String toString() {
