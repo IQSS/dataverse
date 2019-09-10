@@ -35,6 +35,8 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import static com.jayway.restassured.RestAssured.given;
+import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
+import static edu.harvard.iq.dataverse.api.AccessIT.datasetId;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -49,6 +51,7 @@ public class UtilIT {
     private static final String API_TOKEN_KEY = "apiToken";
     private static final String BUILTIN_USER_KEY = "burrito";
     private static final String EMPTY_STRING = "";
+    public static final int MAXIMUM_INGEST_LOCK_DURATION = 3;
 
     private static SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
     
@@ -239,6 +242,13 @@ public class UtilIT {
         int datasetId = createdDataset.getInt("data.id");
         logger.info("Id found in create dataset response: " + datasetId);
         return datasetId;
+    }
+    
+    static Integer getSearchCountFromResponse(Response searchResponse) {
+        JsonPath createdDataset = JsonPath.from(searchResponse.body().asString());
+        int searchCount = createdDataset.getInt("data.total_count");
+        logger.info("Search Count found: " + searchCount);
+        return searchCount;
     }
 
     static String getDatasetPersistentIdFromResponse(Response createDatasetResponse) {
@@ -2006,6 +2016,55 @@ public class UtilIT {
         String title = getTitleFromSwordStatement(swordStatementWithNoFiles);
         assertEquals("A Dataset with a File", title);
     }
+    
+    //Helper function that returns true if a given dataset locked for a  given reason is unlocked within
+    // a given duration returns false if still locked after given duration
+    static Boolean sleepForLock(long datasetId, String lockType, String apiToken, int duration) {
+
+        Response lockedForIngest = UtilIT.checkDatasetLocks(datasetId, lockType, apiToken);
+        int i = 0;
+        do {
+            try {
+                lockedForIngest = UtilIT.checkDatasetLocks(datasetId, lockType, apiToken);
+                Thread.sleep(1000);
+                i++;
+                if (i > duration) {
+                    break; 
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } while (lockedForIngest.body().prettyPrint().contains(lockType));
+
+        return i <= duration;
+
+    }
+    
+    //Helper function that returns true if a given search returns a non-zero response within a fixed time limit
+    // a given duration returns false if still zero results after given duration
+    static Boolean sleepForSearch(String searchPart, String apiToken,  String subTree, int duration) {
+        
+
+        Response searchResponse = UtilIT.search(searchPart, apiToken, subTree);
+        int i = 0;
+        do {
+            try {
+                searchResponse = UtilIT.search(searchPart, apiToken, subTree);
+                Thread.sleep(1000);
+                i++;
+                if (i > duration) {
+                    break; 
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } while (UtilIT.getSearchCountFromResponse(searchResponse) == 0);
+
+        return i <= duration;
+
+    }
+    
+    
     
     static Response checkDatasetLocks(long datasetId, String lockType, String apiToken) {
         Response response = given()
