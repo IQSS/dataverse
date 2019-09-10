@@ -1,5 +1,5 @@
 #!/bin/sh
-set -e
+set -euo pipefail
 
 # This script updates the <field> and <copyField> schema configuration necessary to properly
 # index custom metadata fields in Solr.
@@ -17,13 +17,37 @@ set -e
 # coreutils: mktemp, csplit
 # curl
 
-### Init
+usage() {
+  echo "usage: updateSchemaMDB.sh [options]"
+  echo "options:"
+  echo "    -d <url>      Dataverse URL, defaults to http://localhost:8080"
+  echo "    -h            Show this help text"
+  echo "    -s <url>      Solr URL, defaults to http://localhost:8983"
+  echo "    -t <path>     Directory where to write the XML files. Defaults to /tmp"
+  echo "    -u <key/file> Dataverse unblock key either as key string or path to keyfile"
+}
+
+### Init (with sane defaults)
 DATAVERSE_URL=${DATAVERSE_URL:-"http://localhost:8080"}
 SOLR_URL=${SOLR_URL:-"http://localhost:8983"}
 TARGET=${TARGET:-"/tmp"}
+UNBLOCK_KEY=${UNBLOCK_KEY:-""}
+
+# if cmdline args are given, override any env var setting (or defaults)
+while getopts ":d:hs:t:u:" opt
+do
+   case $opt in
+       d) DATAVERSE_URL=${OPTARG};;
+       h) usage; exit 0;;
+       s) SOLR_URL=${OPTARG};;
+       t) TARGET=${OPTARG};;
+       u) UNBLOCK_KEY=${OPTARG};;
+       :) echo "Missing option argument for -${OPTARG}. Use -h for help." >&2; exit 1;;
+      \?) echo "Unknown option -${OPTARG}." >&2; usage; exit 1;;
+   esac
+done
 
 # Special handling of unblock key depending on referencing a secret file or key in var
-UNBLOCK_KEY=${UNBLOCK_KEY:-""}
 if [ ! -z "${UNBLOCK_KEY}" ]; then
   if [ -f "${UNBLOCK_KEY}" ]; then
     UNBLOCK_KEY="?unblock-key=$(cat ${UNBLOCK_KEY})"
