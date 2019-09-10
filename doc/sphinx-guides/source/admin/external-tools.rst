@@ -102,6 +102,6 @@ Configure tools at the dataset level are not currently supported. No button appe
 Writing Your Own External Tool
 ------------------------------
 
-If you plan to write a external tool, see the :doc:`/developers/external-tools` section of the Developer Guide.
+If you plan to write a external tool, see the :doc:`/api/external-tools` section of the API Guide.
 
 If you have an idea for an external tool, please let the Dataverse community know by posting about it on the dataverse-community mailing list: https://groups.google.com/forum/#!forum/dataverse-community

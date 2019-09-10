@@ -135,7 +135,7 @@ Developers of Integrations, External Tools, and Apps
 One of the primary purposes for Dataverse APIs in the first place is to enable integrations with third party software. Integrations are listed in the following places:
 
 - The :doc:`/admin/integrations` section of the Admin Guide.
-- The :doc:`/developers/external-tools` section of the Developer Guide.
+- The :doc:`/api/external-tools` section this guide.
 - The :doc:`apps` section of this guide.
 
 |Start| Good starting points are the three sections above to get a sense of third-party software that already integrates with Dataverse, followed by the :doc:`getting-started` section.

@@ -33,4 +33,3 @@ Developer Guide
    selinux
    big-data-support
    workflows
-   external-tools

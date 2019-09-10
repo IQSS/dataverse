@@ -19,4 +19,4 @@ See the :doc:`/admin/external-tools` section of the Admin Guide.
 Building External Tools
 -----------------------
 
-See the :doc:`/developers/external-tools` section of the Developer Guide.
+See the :doc:`/api/external-tools` section of the API Guide.
