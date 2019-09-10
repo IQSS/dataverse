@@ -6,7 +6,7 @@ API_SCRIPTS=${INSTALLER_ZIP_DIR}/setup-datasetfields.sh ${INSTALLER_ZIP_DIR}/set
 DB_SCRIPT=${INSTALLER_ZIP_DIR}/reference_data.sql
 JHOVE_CONFIG=${INSTALLER_ZIP_DIR}/jhove.conf
 JHOVE_SCHEMA=${INSTALLER_ZIP_DIR}/jhoveConfig.xsd
-SOLR_SCHEMA=${INSTALLER_ZIP_DIR}/schema.xml ${INSTALLER_ZIP_DIR}/schema_dv_cmb_fields.xml ${INSTALLER_ZIP_DIR}/schema_dv_cmb_copies.xml ${INSTALLER_ZIP_DIR}/updateSchemaCMB.sh
+SOLR_SCHEMA=${INSTALLER_ZIP_DIR}/schema.xml ${INSTALLER_ZIP_DIR}/schema_dv_cmb_fields.xml ${INSTALLER_ZIP_DIR}/schema_dv_cmb_copies.xml ${INSTALLER_ZIP_DIR}/updateSchemaMDB.sh
 SOLR_CONFIG=${INSTALLER_ZIP_DIR}/solrconfig.xml
 INSTALL_SCRIPT=${INSTALLER_ZIP_DIR}/install
 
@@ -70,10 +70,10 @@ ${JHOVE_SCHEMA}:	../../conf/jhove/jhoveConfig.xsd
 	@mkdir -p ${INSTALLER_ZIP_DIR}
 	/bin/cp ../../conf/jhove/jhoveConfig.xsd ${INSTALLER_ZIP_DIR}
 
-${SOLR_SCHEMA}:		../../conf/solr/7.3.1/schema.xml ../../conf/solr/7.3.1/schema_dv_cmb_fields.xml ../../conf/solr/7.3.1/schema_dv_cmb_copies.xml ../../conf/solr/7.3.1/updateSchemaCMB.sh
+${SOLR_SCHEMA}:		../../conf/solr/7.3.1/schema.xml ../../conf/solr/7.3.1/schema_dv_cmb_fields.xml ../../conf/solr/7.3.1/schema_dv_cmb_copies.xml ../../conf/solr/7.3.1/updateSchemaMDB.sh
 	@echo copying Solr schema file
 	@mkdir -p ${INSTALLER_ZIP_DIR}
-	/bin/cp ../../conf/solr/7.3.1/schema*.xml ../../conf/solr/7.3.1/updateSchemaCMB.sh ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/solr/7.3.1/schema*.xml ../../conf/solr/7.3.1/updateSchemaMDB.sh ${INSTALLER_ZIP_DIR}
 
 ${SOLR_CONFIG}:		../../conf/solr/7.3.1/solrconfig.xml
 	@echo copying Solr config file

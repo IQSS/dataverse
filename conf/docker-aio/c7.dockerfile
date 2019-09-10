@@ -58,7 +58,7 @@ COPY dv/install/ /opt/dv/
 COPY install.bash /opt/dv/
 COPY entrypoint.bash /opt/dv/
 COPY testdata /opt/dv/testdata
-COPY testdata/updateSchemaCMB.sh /opt/dv/testdata/
+COPY testdata/updateSchemaMDB.sh /opt/dv/testdata/
 COPY testscripts/* /opt/dv/testdata/
 COPY setupIT.bash /opt/dv
 WORKDIR /opt/dv

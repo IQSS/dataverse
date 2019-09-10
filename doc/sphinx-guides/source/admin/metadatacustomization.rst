@@ -601,7 +601,7 @@ configuration, including any enabled metadata schemas:
 
 ``curl http://localhost:8080/api/admin/index/solr/schema``
 
-For convenience and automation you can use the *updateSchemaCMB.sh* script. It downloads, parses and writes the schema
+For convenience and automation you can use the *updateSchemaMDB.sh* script. It downloads, parses and writes the schema
 files before triggering a Solr reload. You should run this as the Solr user, not root.
 
 By default, it will download from Dataverse at `http://localhost:8080` and reload Solr at `http://localhost:8983`.
