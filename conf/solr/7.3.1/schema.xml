@@ -222,7 +222,7 @@
     <field name="filePersistentId" type="text_en" multiValued="false" stored="true" indexed="true"/>
     
     <!-- Dynamic Dataverse fields from http://localhost:8080/api/admin/index/solr/schema -->
-    <xi:include href="schema_dv_cmb_fields.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+    <xi:include href="schema_dv_mdb_fields.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
 
     <copyField source="description" dest="_text_" maxChars="3000"/>
 
@@ -279,7 +279,7 @@
     <!-- <copyField source="*_i" dest="_text_" maxChars="3000"/> -->
 
     <!-- Dataverse copyField from http://localhost:8080/api/admin/index/solr/schema -->
-    <xi:include href="schema_dv_cmb_copies.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+    <xi:include href="schema_dv_mdb_copies.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
     
 <!-- End: Dataverse Specific -->
     
