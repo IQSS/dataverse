@@ -268,7 +268,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             
                             // finally, issue the redirect:
                             Response response = Response.seeOther(redirect_uri).build();
-                            logger.info("Issuing redirect to the file location on S3.");
+                            logger.fine("Issuing redirect to the file location on S3.");
                             throw new RedirectionException(response);
                         }
                         throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
