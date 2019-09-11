@@ -62,17 +62,14 @@ TMPFILE=`mktemp`
 curl -f -sS "${DATAVERSE_URL}/api/admin/index/solr/schema${UNBLOCK_KEY}" > $TMPFILE
 
 ### Processing
-echo "Splitting up based on \"---\" marker"
-csplit -f"$TMPFILE" --suppress-matched -s $TMPFILE "/---/" '{*}'
-
 echo "Writing ${TARGET}/schema_dv_mdb_fields.xml"
 echo "<fields>" > ${TARGET}/schema_dv_mdb_fields.xml
-cat ${TMPFILE}00 >> ${TARGET}/schema_dv_mdb_fields.xml
+cat ${TMPFILE} | grep ".*<field" >> ${TARGET}/schema_dv_mdb_fields.xml
 echo "</fields>" >> ${TARGET}/schema_dv_mdb_fields.xml
 
 echo "Writing ${TARGET}/schema_dv_mdb_copies.xml"
 echo "<schema>" > ${TARGET}/schema_dv_mdb_copies.xml
-cat ${TMPFILE}01 >> ${TARGET}/schema_dv_mdb_copies.xml
+cat ${TMPFILE} | grep ".*<copyField" >> ${TARGET}/schema_dv_mdb_copies.xml
 echo "</schema>" >> ${TARGET}/schema_dv_mdb_copies.xml
 
 rm ${TMPFILE}*
