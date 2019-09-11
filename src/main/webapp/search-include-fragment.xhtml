@@ -100,7 +100,7 @@
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                         <f:param name="page" value="1"/>
 
-                        <i class="icon-dataverse text-icon-inline"></i>
+                        <span class="icon-dataverse text-icon-inline"></span>
 
                         <h:outputFormat styleClass="facetTypeDataverse" value="#{bundle['dataverse.results.types.dataverses']} &#40;{0}&#41;">
                             <f:param value="#{SearchIncludeFragment.facetCountDataverses}"/>
@@ -131,7 +131,7 @@
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                         <f:param name="page" value="1"/>
 
-                        <i class="icon-dataset text-icon-inline"></i>
+                        <span class="icon-dataset text-icon-inline"></span>
 
                         <h:outputFormat styleClass="facetTypeDataset" value="#{bundle['dataverse.results.types.datasets']} &#40;{0}&#41;">
                             <f:param value="#{SearchIncludeFragment.facetCountDatasets}"/>
@@ -162,7 +162,7 @@
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                         <f:param name="page" value="1"/>
 
-                        <i class="icon-file text-icon-inline"></i>
+                        <span class="icon-file text-icon-inline"></span>
 
                         <h:outputFormat styleClass="facetTypeFile" value="#{bundle['dataverse.results.types.files']} &#40;{0}&#41;">
                             <f:param value="#{SearchIncludeFragment.facetCountFiles}"/>
@@ -232,7 +232,7 @@
 
             <!--toggle sidebar button-->
             <p class="visible-xs-block">
-              <button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas"><i class="glyphicon glyphicon-chevron-left"></i> #{bundle['dataverse.results.btn.filterResults']}</button>
+              <button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas"><span class="glyphicon glyphicon-chevron-left"></span> #{bundle['dataverse.results.btn.filterResults']}</button>
             </p>
 
             <!-- Message for zero results -->
@@ -666,18 +666,29 @@
     </p:dialog>
     <script>
         <ui:remove>
+        // The javascript below would be called once the page finished 
+        // the initial rendering, and trigger an extra partial submit that 
+        // displayed the extra cosmetic features of the page - the thumbnails
+        // primarily - thus making the initial load happen faster. 
+        // We have decided to disable this feature (at least for now) in order 
+        // to be able to change SearchIncludeFragment and ThumbnailServiceWrapper 
+        // to @RequestScoped (to eliminate the objects in memory associated with the 
+        // @View scope).
         // For postLoad() see: https://github.com/IQSS/dataverse/issues/2004
-        </ui:remove>
         //<![CDATA[
-        $(document).ready(function () {
+        //$(document).ready(function () {
             // Calls the p:remoteCommand postLoad.
             // Posted at end of fragment to work correctly with Account information
-            postLoad();
+        //    postLoad();
 
-            $('[data-toggle=offcanvas]').click(function() {
-                $('.row-offcanvas').toggleClass('active', 200);
-            });
-        });
+        //    $('[data-toggle=offcanvas]').click(function() {
+        //        $('.row-offcanvas').toggleClass('active', 200);
+        //    });
+        //});
         //]]>
+        </ui:remove>
+
+        
+        
     </script>
 </ui:composition>

@@ -115,3 +115,7 @@ div.form-group .glyphicon.glyphicon-asterisk {font-size: .5em; vertical-align: t
 /* #sidebar.bs-sidenav.affix {
 	position: static;
 } REMOVED STATIC ToC */
+
+pre {
+    white-space: pre-wrap;
+}
