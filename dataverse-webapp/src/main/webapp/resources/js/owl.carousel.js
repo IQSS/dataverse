@@ -1112,6 +1112,10 @@ if (typeof Object.create !== "function") {
             base.$elem.on("owl.jumpTo", function (event, item) {
                 base.jumpTo(item);
             });
+            // force reload to update the carousel item width
+            base.$elem.on("owl.reload", function (event, item) {
+                base.reload();
+            });
         },
 
         stopOnHover : function () {
