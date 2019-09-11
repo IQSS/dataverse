@@ -92,6 +92,7 @@ public class SystemConfig {
      */
     private static final int defaultZipUploadFilesLimit = 1000; 
     private static final int defaultMultipleUploadFilesLimit = 1000;
+    private static final int defaultLoginSessionTimeout = 480; // = 8 hours
 
     private static String appVersionString = null; 
     private static String buildNumberString = null; 
@@ -430,6 +431,16 @@ public class SystemConfig {
     public int getZipUploadFilesLimit() {
         String limitOption = settingsService.getValueForKey(SettingsServiceBean.Key.ZipUploadFilesLimit);
         return getIntLimitFromStringOrDefault(limitOption, defaultZipUploadFilesLimit);
+    }
+    
+    /**
+     * Session timeout, in minutes. 
+     * (default value provided)
+     */
+    public int getLoginSessionTimeout() {
+        return getIntLimitFromStringOrDefault(
+                settingsService.getValueForKey(SettingsServiceBean.Key.LoginSessionTimeout), 
+                defaultLoginSessionTimeout); 
     }
     
     /*

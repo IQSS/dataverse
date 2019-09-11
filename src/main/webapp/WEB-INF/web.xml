@@ -131,8 +131,15 @@
     </servlet-mapping>
 
     <session-config>
+        <!-- This is the DEFAULT HttpSession timeout, in minutes. -->
+        <!-- In practice, it will only apply to ANONYMOUS user sessions -->
+        <!-- For logged in users, the session timeout is set explicitly -->
+        <!-- in the application code, to the value that is configurable -->
+        <!-- (LoginSessionTimeout in the settings table), with the -->
+        <!-- default value of 8 hours. -->
+        
         <session-timeout>
-            1440
+            10
         </session-timeout>
         <!-- Uncomment the line below to disble `;jsessionid=` in URLs -->
 	<!-- tracking-mode>COOKIE</tracking-mode -->
