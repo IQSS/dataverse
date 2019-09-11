@@ -56,20 +56,22 @@
     <h:body styleClass="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
         <f:loadBundle basename="propertyFiles.Bundle" var="bundle"/>
 	<a href="#content" class="sr-only">#{bundle['body.skip']}</a>                
-        <ui:include src="dataverse_header.xhtml">
-            <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
-            <ui:param name="showDataverseHeader" value="#{showDataverseHeader != null ? showDataverseHeader : true}"/>
-            <ui:param name="showMessagePanel" value="#{showMessagePanel != null ? showMessagePanel : true}"/>
-            <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : navigationWrapper.redirectPage}"/>
-        </ui:include>
+        <!-- Comment out custom header in favor of using Drupal's header on iframe -->
+        <!-- <ui:include src="dataverse_header.xhtml"> -->
+        <!--     <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/> -->
+        <!--     <ui:param name="showDataverseHeader" value="#{showDataverseHeader != null ? showDataverseHeader : true}"/> -->
+        <!--     <ui:param name="showMessagePanel" value="#{showMessagePanel != null ? showMessagePanel : true}"/> -->
+        <!--     <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : navigationWrapper.redirectPage}"/> -->
+        <!-- </ui:include> -->
         <div class="container" id="content">
             <ui:insert name="body">#{bundle.defaultBody}</ui:insert>
         </div>
         <!-- FOOTER BLOCK -->
-        <ui:include src="dataverse_footer.xhtml">
-            <ui:param name="widgetView" value="#{widgetWrapper.widgetView}"/>
-            <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : navigationWrapper.redirectPage}"/>
-        </ui:include>
+        <!-- Comment out custom footer in favor of Drupal's footer on iframe -->
+        <!-- <ui:include src="dataverse_footer.xhtml"> -->
+        <!--     <ui:param name="widgetView" value="#{widgetWrapper.widgetView}"/> -->
+        <!--     <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : navigationWrapper.redirectPage}"/> -->
+        <!-- </ui:include> -->
         <p:ajaxStatus id="ajaxStatusPanel">
             <f:facet name="start">
                 <h:graphicImage value="/resources/images/ajax-loading.gif" alt="Loading" />

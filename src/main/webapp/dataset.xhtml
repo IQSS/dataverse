@@ -380,79 +380,79 @@
                                     </ui:fragment>
                                 </div>
                                 
-                                <!-- Metrics -->
-                                <div id="metrics-block" class="col-sm-3" jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">
-                                    <div id="metrics-heading">
-                                        #{bundle['metrics.dataset.title']}
-                                        <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
-                                                data-original-title="#{settingsWrapper.makeDataCountEnabled ? bundle['metrics.dataset.tip.makedatacount'] : bundle['metrics.dataset.tip.default']}"></span>
-                                    </div>
-                                    <div id="metrics-body">
-                                        <!-- Classic downloads -->
-                                        <div class="metrics-count-block" jsf:rendered="#{!settingsWrapper.makeDataCountEnabled}">
-                                            <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
-                                                <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
-                                            </h:outputFormat>
-                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                    data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.default.tip']}"></span>
-                                        </div>
-                                        <!-- Make Data Count views -->
-                                        <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountEnabled}">
-                                            <h:outputFormat value="{0} #{bundle['metrics.views']}">
-                                                <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getViewsTotal()}"/>
-                                            </h:outputFormat>
-                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                    data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.views.tip']}"></span>
-                                        </div>
-                                        <!-- Make Data Count downloads -->
-                                        <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountEnabled}">
-                                            <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
-                                                <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getDownloadsTotal()}"/>
-                                            </h:outputFormat>
-                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                    data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.makedatacount.tip']}"></span>
-                                        </div>
-                                        <!-- Make Data Count citations (DOIs only, not Handles) -->
-                                        <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountEnabled and settingsWrapper.doiInstallation}">
-                                            <p:commandLink oncomplete="PF('citationsDialog').show();">
-                                                <h:outputFormat value="{0} #{bundle['metrics.citations']}">
-                                                    <f:param value="#{fn:length(datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset))}"/>
-                                                </h:outputFormat>
-                                            </p:commandLink>
-                                            
-                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                    data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.citations.tip']}"></span>
-                                        
-                                            <p:dialog id="citationsDialog" styleClass="smallPopUp" header="#{bundle['metrics.citations.dialog.header']}" widgetVar="citationsDialog" modal="true">
-                                                <p class="help-block">
-                                                    <h:outputFormat value="#{bundle['metrics.citations.dialog.help']}" escape="false">
-                                                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                                        <f:param value="#{systemConfig.guidesVersion}"/>
-                                                    </h:outputFormat>
-                                                </p>
-                                                
-                                                <div id="citations-list-block">
-                                                    <div jsf:rendered="#{empty datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}">
-                                                        #{bundle['metrics.citations.dialog.empty']}
-                                                    </div>
-                                                    <ui:fragment rendered="#{!empty datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}">
-                                                        <ul>
-                                                            <ui:repeat value="#{datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}" var="citation">
-                                                                <li><a href="#{citation.citedByUrl}" target="_blank">#{citation.citedByUrl}</a></li>
-                                                            </ui:repeat>
-                                                        </ul>
-                                                    </ui:fragment>
-                                                </div>
-
-                                                <div class="button-block">
-                                                    <button class="btn btn-default" onclick="PF('citationsDialog').hide()" type="button">
-                                                        #{bundle.close}
-                                                    </button>
-                                                </div>
-                                            </p:dialog>
-                                        </div>
-                                    </div>
-                                </div>
+                                <!-- Metrics: Commented out for Schema Redesign -->
+                                <!-- <div id="metrics-block" class="col-sm-3" jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}"> -->
+                                <!--     <div id="metrics-heading"> -->
+                                <!--         #{bundle['metrics.dataset.title']} -->
+                                <!--         <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top"  -->
+                                <!--                 data-original-title="#{settingsWrapper.makeDataCountEnabled ? bundle['metrics.dataset.tip.makedatacount'] : bundle['metrics.dataset.tip.default']}"></span> -->
+                                <!--     </div> -->
+                                <!--     <div id="metrics-body"> -->
+                                <!--         [> Classic downloads <] -->
+                                <!--         <div class="metrics-count-block" jsf:rendered="#{!settingsWrapper.makeDataCountEnabled}"> -->
+                                <!--             <h:outputFormat value="{0} #{bundle['metrics.downloads']}"> -->
+                                <!--                 <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/> -->
+                                <!--             </h:outputFormat> -->
+                                <!--             <span class="glyphicon glyphicon-question-sign tooltip-icon" -->
+                                <!--                     data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.default.tip']}"></span> -->
+                                <!--         </div> -->
+                                <!--         [> Make Data Count views <] -->
+                                <!--         <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountEnabled}"> -->
+                                <!--             <h:outputFormat value="{0} #{bundle['metrics.views']}"> -->
+                                <!--                 <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getViewsTotal()}"/> -->
+                                <!--             </h:outputFormat> -->
+                                <!--             <span class="glyphicon glyphicon-question-sign tooltip-icon" -->
+                                <!--                     data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.views.tip']}"></span> -->
+                                <!--         </div> -->
+                                <!--         [> Make Data Count downloads <] -->
+                                <!--         <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountEnabled}"> -->
+                                <!--             <h:outputFormat value="{0} #{bundle['metrics.downloads']}"> -->
+                                <!--                 <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getDownloadsTotal()}"/> -->
+                                <!--             </h:outputFormat> -->
+                                <!--             <span class="glyphicon glyphicon-question-sign tooltip-icon" -->
+                                <!--                     data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.makedatacount.tip']}"></span> -->
+                                <!--         </div> -->
+                                <!--         [> Make Data Count citations (DOIs only, not Handles) <] -->
+                                <!--         <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountEnabled and settingsWrapper.doiInstallation}"> -->
+                                <!--             <p:commandLink oncomplete="PF('citationsDialog').show();"> -->
+                                <!--                 <h:outputFormat value="{0} #{bundle['metrics.citations']}"> -->
+                                <!--                     <f:param value="#{fn:length(datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset))}"/> -->
+                                <!--                 </h:outputFormat> -->
+                                <!--             </p:commandLink> -->
+                                <!--              -->
+                                <!--             <span class="glyphicon glyphicon-question-sign tooltip-icon" -->
+                                <!--                     data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.citations.tip']}"></span> -->
+                                <!--          -->
+                                <!--             <p:dialog id="citationsDialog" styleClass="smallPopUp" header="#{bundle['metrics.citations.dialog.header']}" widgetVar="citationsDialog" modal="true"> -->
+                                <!--                 <p class="help-block"> -->
+                                <!--                     <h:outputFormat value="#{bundle['metrics.citations.dialog.help']}" escape="false"> -->
+                                <!--                         <f:param value="#{systemConfig.guidesBaseUrl}"/> -->
+                                <!--                         <f:param value="#{systemConfig.guidesVersion}"/> -->
+                                <!--                     </h:outputFormat> -->
+                                <!--                 </p> -->
+                                <!--                  -->
+                                <!--                 <div id="citations-list-block"> -->
+                                <!--                     <div jsf:rendered="#{empty datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}"> -->
+                                <!--                         #{bundle['metrics.citations.dialog.empty']} -->
+                                <!--                     </div> -->
+                                <!--                     <ui:fragment rendered="#{!empty datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}"> -->
+                                <!--                         <ul> -->
+                                <!--                             <ui:repeat value="#{datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}" var="citation"> -->
+                                <!--                                 <li><a href="#{citation.citedByUrl}" target="_blank">#{citation.citedByUrl}</a></li> -->
+                                <!--                             </ui:repeat> -->
+                                <!--                         </ul> -->
+                                <!--                     </ui:fragment> -->
+                                <!--                 </div> -->
+                                <!--  -->
+                                <!--                 <div class="button-block"> -->
+                                <!--                     <button class="btn btn-default" onclick="PF('citationsDialog').hide()" type="button"> -->
+                                <!--                         #{bundle.close} -->
+                                <!--                     </button> -->
+                                <!--                 </div> -->
+                                <!--             </p:dialog> -->
+                                <!--         </div> -->
+                                <!--     </div> -->
+                                <!-- </div> -->
                                 <!-- END: Metrics -->
                             </div>
                             
