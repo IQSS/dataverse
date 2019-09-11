@@ -601,8 +601,7 @@ configuration, including any enabled metadata schemas:
 
 ``curl http://localhost:8080/api/admin/index/solr/schema``
 
-For convenience and automation you can download :download:`updateSchemaMDB.sh <../../../../conf/solr/7.3.1/updateSchemaMDB.sh>`. It downloads, parses and writes the schema
-files before triggering a Solr reload. **You should run this as the Solr user, not root.**
+For convenience and automation you can download and consider running :download:`updateSchemaMDB.sh <../../../../conf/solr/7.3.1/updateSchemaMDB.sh>`. It uses the API endpoint above and writes schema files to the filesystem (so be sure to run it on the Solr server itself as the Unix user who owns the Solr files) and then triggers a Solr reload.
 
 By default, it will download from Dataverse at `http://localhost:8080` and reload Solr at `http://localhost:8983`.
 You may use the following environment variables with this script or mix'n'match with options:
