@@ -25,7 +25,7 @@
         <ui:param name="pageTitle"
                   value="#{bundle['file.replaceFile']} - #{ReplaceDatafilesPage.dataset.getEditVersion().title}"/>
         <ui:param name="dataverse" value="#{ReplaceDatafilesPage.fileToBeReplaced.owner.owner}"/>
-        <ui:param name="showMessagePanel" value="#{true}"/>
+        <ui:param name="showMessagePanel" value="true"/>
         <ui:define name="body">
             <f:metadata>
                 <f:viewParam name="datasetId" value="#{ReplaceDatafilesPage.datasetId}"/>
@@ -55,7 +55,6 @@
                 <o:importConstants
                         type="edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key"
                         var="settingEnum"/>
-
                 <div id="contentTabs">
                     <div data-widget="content"
                          class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container ui-tabs-top"
@@ -106,12 +105,14 @@
                                                 </h:outputFormat>
                                             </p>
 
+                                            <p:messages/>
+
                                             <p:fileUpload id="fileUpload"
                                                           dragDropSupport="true"
                                                           auto="true"
-                                                          disabled="#{ReplaceDatafilesPage.lockedFromEdits || !ReplaceDatafilesPage.fileReplacePageHelper.showFileUploadComponent()}"
+                                                          disabled="#{ReplaceDatafilesPage.lockedFromEdits || ReplaceDatafilesPage.fileToBeSaved != null}"
                                                           fileUploadListener="#{ReplaceDatafilesPage.handleFileUpload}"
-                                                          update=":replaceFileForm"
+                                                          update="@form"
                                                           label="#{bundle['file.selectToAddBtn']}"
                                                           oncomplete="javascript:bind_bsui_components();uploadFinished(PF('fileUploadWidget'));"
                                                           onstart="#{ReplaceDatafilesPage.uploadStarted()}"
@@ -149,7 +150,7 @@
                                                              oncomplete="javascript:dropBoxUploadFinished();"
                                                              update="@none" style="display:none;"/>
                                             <p:commandButton id="dropBoxUserButton"
-                                                             disabled="#{ReplaceDatafilesPage.fileReplacePageHelper.showFileUploadComponent()}"
+                                                             disabled="#{ReplaceDatafilesPage.fileToBeSaved != null}"
                                                              value="#{bundle['file.fromDropbox']}"
                                                              onclick="openDropboxChooser();" icon="dropin-btn-status"/>
                                             <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text"
@@ -159,12 +160,11 @@
                                         <p:message for="fileUpload" id="uploadMessage" display="text"/>
 
                                         <p:commandButton id="AllUploadsFinished"
-                                                         action="#{ReplaceDatafilesPage.uploadFinished()}"
-                                                         update="@form"
+                                                         update=":replaceFileForm:filesTable, :messagePanel"
                                                          style="display:none"/>
                                         <p:commandButton id="dropBoxUploadFinished"
-                                                         action="#{ReplaceDatafilesPage.uploadFinished()}"
-                                                         update="@form" style="display:none"/>
+                                                         update=":replaceFileForm:filesTable, :messagePanel"
+                                                         style="display:none"/>
 
 
                                     </div>
@@ -180,7 +180,7 @@
                                                  selection="#{ReplaceDatafilesPage.selectedFiles}"
                                                  var="fileMetadata"
                                                  widgetVar="filesTable"
-                                                 emptyMessage="#{ReplaceDatafilesPage.fileReplacePageHelper.showFileUploadComponent() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
+                                                 emptyMessage="#{ReplaceDatafilesPage.fileToBeSaved != null ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
                                         <f:facet name="header">
                                             <div jsf:id="filesHeaderBlock" class="row">
                                                 <div id="filesHeaderCount" class="col-xs-6 text-left">
@@ -425,7 +425,7 @@
                 <p:dialog styleClass="smallPopUp" header="#{bundle['file.addreplace.content_type.header']}"
                           widgetVar="fileTypeDifferentPopup" id="fileTypeDifferentPopup" modal="true">
                     <p class="text-warning"><span
-                            class="glyphicon glyphicon-warning-sign"/> #{ReplaceDatafilesPage.warningMessageForPopUp}
+                            class="glyphicon glyphicon-warning-sign"/> #{ReplaceDatafilesPage.getDifferentContentTypeMessage()}
                     </p>
                     <div class="button-block">
                         <p:commandButton value="#{bundle['file.delete']}" onclick="PF('fileTypeDifferentPopup').hide()"

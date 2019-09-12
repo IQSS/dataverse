@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.common.Util;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -68,6 +67,7 @@ import java.util.logging.Logger;
  * if (addFileHelper.hasError()){
  * // get some errors
  * System.out.println(addFileHelper.getErrorMessagesAsString("\n"));
+
  * }
  * <p>
  * <p>
@@ -144,33 +144,6 @@ public class AddReplaceFileHelper {
     private boolean contentTypeWarningFound;
     private String contentTypeWarningString;
 
-    public void resetFileHelper() {
-
-        initErrorHandling();
-
-        // operation
-        currentOperation = null;
-
-        // dataset level
-        dataset = null;
-
-        // file to replace
-        fileToReplace = null;
-
-        newFileInputStream = null;
-        newFileName = null;
-        newFileContentType = null;
-
-        // file lists
-        initialFileList = null;
-        finalFileList = null;
-
-        // final files
-        newlyAddedFiles = null;
-        newlyAddedFileMetadatas = null;
-
-    }
-
     /**
      * MAIN CONSTRUCTOR -- minimal requirements
      *
@@ -238,34 +211,6 @@ public class AddReplaceFileHelper {
         return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newFileInputStream, optionalFileParams);
 
     }
-
-
-    /**
-     * After the constructor, this method is called to add a file
-     *
-     * @param dataset
-     * @param newFileName
-     * @param newFileContentType
-     * @param newFileInputStream
-     * @return
-     */
-    /*
-    public boolean runAddFile(Dataset dataset,
-                            String newFileName, 
-                            String newFileContentType, 
-                            InputStream newFileInputStream, 
-                            OptionalFileParams optionalFileParams){
-        msgt(">> runAddFile");
-        
-        initErrorHandling();
-        
-        if (this.hasError()){
-            return false;
-        }
-        this.currentOperation = FILE_ADD_OPERATION;
-        
-        return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newFileInputStream, optionalFileParams);
-    }*/
 
 
     /**
@@ -373,48 +318,6 @@ public class AddReplaceFileHelper {
 
     }
 
-    /**
-     * Note: UI replace is always a "force replace" which means
-     * the replacement file can have a different content type
-     *
-     * @param oldFileId
-     * @param newFileName
-     * @param newFileContentType
-     * @param newFileInputStream
-     * @param optionalFileParams
-     * @return
-     */
-    public boolean runReplaceFromUI_Phase1(Long oldFileId,
-                                           String newFileName,
-                                           String newFileContentType,
-                                           InputStream newFileInputStream,
-                                           OptionalFileParams optionalFileParams) {
-
-
-        initErrorHandling();
-        this.currentOperation = FILE_REPLACE_FORCE_OPERATION;
-
-        if (oldFileId == null) {
-            this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
-            return false;
-        }
-
-
-        // Loads local variable "fileToReplace"
-        //
-        if (!this.step_005_loadFileToReplaceById(oldFileId)) {
-            return false;
-        }
-
-        return this.runAddReplacePhase1(fileToReplace.getOwner(),
-                                        newFileName,
-                                        newFileContentType,
-                                        newFileInputStream,
-                                        optionalFileParams);
-
-
-    }
-
 
     /**
      * For the UI: File add/replace has been broken into 2 steps
@@ -467,49 +370,6 @@ public class AddReplaceFileHelper {
 
     }
 
-
-    public boolean runReplaceFromUI_Phase2() {
-        return runAddReplacePhase2();
-    }
-
-
-    /**
-     * Called from the UI backing bean
-     *
-     * @param categoriesList
-     * @return
-     */
-    public boolean updateCategoriesFromUI(List<String> categoriesList) {
-        if (hasError()) {
-            logger.severe("Should not be calling this method");
-            return false;
-        }
-
-        if ((finalFileList == null) || (finalFileList.size() == 0)) {
-            throw new NullPointerException("finalFileList needs at least 1 file!!");
-        }
-
-        // don't need to make updates
-        //
-        if (categoriesList == null) {
-            return true;
-        }
-
-        // remove nulls, dupes, etc.
-        //
-        categoriesList = Util.removeDuplicatesNullsEmptyStrings(categoriesList);
-        if (categoriesList.isEmpty()) {
-            return true;
-        }
-
-        for (DataFile df : finalFileList) {
-
-            df.getFileMetadata().setCategoriesByName(categoriesList);
-        }
-
-        return true;
-    }
-
     /**
      * For the UI: File add/replace has been broken into 2 steps
      * <p>
@@ -557,17 +417,6 @@ public class AddReplaceFileHelper {
 
     }
 
-
-    /**
-     * Get for currentOperation
-     *
-     * @return String
-     */
-    public String getCurrentOperation() {
-        return this.currentOperation;
-    }
-
-
     /**
      * Is this a file FORCE replace operation?
      * <p>
@@ -592,16 +441,6 @@ public class AddReplaceFileHelper {
         } else {
             return this.currentOperation.equals(FILE_REPLACE_FORCE_OPERATION);
         }
-    }
-
-    /**
-     * Is this a file add operation?
-     *
-     * @return
-     */
-    public boolean isFileAddOperation() {
-
-        return this.currentOperation.equals(FILE_ADD_OPERATION);
     }
 
     /**
@@ -678,15 +517,6 @@ public class AddReplaceFileHelper {
     public boolean hasError() {
         return this.errorFound;
 
-    }
-
-    /**
-     * get error messages
-     *
-     * @return
-     */
-    public List<String> getErrorMessages() {
-        return this.errorMessages;
     }
 
     /**
@@ -1469,7 +1299,7 @@ public class AddReplaceFileHelper {
         // (1) Remove all new FileMetadata objects
         // -----------------------------------------------------------                        
         //Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();//  
-        Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator(); //dataset.getEditVersion().getFileMetadatas().iterator();//  
+        Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator(); //dataset.getEditVersion().getFileMetadatas().iterator();//
         while (fmIt.hasNext()) {
             FileMetadata fm = fmIt.next();
             if (fm.getDataFile().getId() == null) {
@@ -1584,48 +1414,8 @@ public class AddReplaceFileHelper {
                 }
             }
         }
-        /*
-       
-        newlyAddedFile = df;
-        
-        for (FileMetadata fm : dataset.getEditVersion().getFileMetadatas()){
-            
-            // Find a file where the checksum value and identifiers are the same..
-            //
-            if (newlyAddedFile.getChecksumValue().equals(fm.getDataFile().getChecksumValue())){
-                if (newlyAddedFile.getStorageIdentifier().equals(fm.getDataFile().getStorageIdentifier())){
-                    newlyAddedFile = fm.getDataFile();
-                    break;
-                }
-            }
-        }
-        */
 
     }
-
-    /**
-     * For a successful replace operation, return a the first newly added file
-     *
-     * @return
-     */
-    public DataFile getFirstNewlyAddedFile() {
-
-        if ((newlyAddedFiles == null) || (newlyAddedFiles.size() == 0)) {
-            return null;
-        }
-        return newlyAddedFiles.get(0);
-    }
-
-    public List<DataFile> getNewlyAddedFiles() {
-
-        return newlyAddedFiles;
-    }
-
-    public List<FileMetadata> getNewlyAddedFileMetadatas() {
-
-        return newlyAddedFileMetadatas;
-    }
-
 
     public String getSuccessResult() throws NoFilesException {
         if (hasError()) {
@@ -1716,44 +1506,6 @@ public class AddReplaceFileHelper {
     }
 
 
-    /**
-     * Return file list before saving
-     * <p>
-     * Used for UI display
-     *
-     * @return
-     */
-    public List<DataFile> getFileListBeforeSave() {
-
-        return this.finalFileList;
-    }
-
-    public Boolean isFinalFileListEmpty() {
-        return this.finalFileList.isEmpty();
-    }
-
-
-    /**
-     * Return file list before saving
-     * <p>
-     * Used for UI display
-     *
-     * @return
-     */
-    public List<FileMetadata> getNewFileMetadatasBeforeSave() {
-
-        if (this.finalFileList.size() == 0) {
-            return null;
-        }
-
-        List<FileMetadata> fileMetadatas = new ArrayList<>();
-        for (DataFile df : finalFileList) {
-            fileMetadatas.add(df.getFileMetadata());
-        }
-
-        return fileMetadatas;
-
-    }
 
     public void setContentTypeWarning(String warningString) {
 
@@ -1767,15 +1519,6 @@ public class AddReplaceFileHelper {
 
     public boolean hasContentTypeWarning() {
         return this.contentTypeWarningFound;
-    }
-
-    public String getContentTypeWarningString() {
-        if (!hasContentTypeWarning()) {
-            // not really a NullPointerException but want to blow up here without adding try/catch everywhere
-            //
-            throw new NullPointerException("Don't call this method without checking 'hasContentTypeWarning()'");
-        }
-        return contentTypeWarningString;
     }
 
 } // end class

@@ -41,12 +41,16 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 // NIO imports:
 // Dataverse imports:
 
 
 public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
+
+    private static final Logger logger = Logger.getLogger(FileAccessIO.class.getCanonicalName());
 
     public FileAccessIO(String filesDirectory) {
         this((T) null, filesDirectory);
@@ -494,14 +498,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             in = new FileInputStream(getFileSystemPath().toFile());
         } catch (IOException ex) {
-            // We don't particularly care what the reason why we have
-            // failed to access the file was.
-            // From the point of view of the download subsystem, it's a
-            // binary operation -- it's either successfull or not.
-            // If we can't access it for whatever reason, we are saying
-            // it's 404 NOT FOUND in our HTTP response.
-            // TODO: no, we should probably provide some kind of diagnostics. 
-            // -- L.A. 4.0.2
+            logger.log(Level.FINE, "", ex);
             return null;
         }
 
@@ -514,14 +511,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             out = new FileOutputStream(getFileSystemPath().toFile());
         } catch (IOException ex) {
-            // We don't particularly care what the reason why we have
-            // failed to access the file was.
-            // From the point of view of the download subsystem, it's a
-            // binary operation -- it's either successfull or not.
-            // If we can't access it for whatever reason, we are saying
-            // it's 404 NOT FOUND in our HTTP response.
-            // TODO: no, we should probably provide some kind of diagnostics. 
-            // -- L.A. 4.0.2
+            logger.log(Level.FINE, "", ex);
             return null;
         }
 

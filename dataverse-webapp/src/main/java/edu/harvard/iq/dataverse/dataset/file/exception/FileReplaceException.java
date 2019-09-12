@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse.datasetutility;
+package edu.harvard.iq.dataverse.dataset.file.exception;
 
-/**
- * @author rmp553
- */
-public class FileReplaceException extends Exception {
+import javax.ejb.ApplicationException;
+
+@ApplicationException(rollback = true)
+public class FileReplaceException extends RuntimeException {
 
     public FileReplaceException(String message) {
         super(message);
