@@ -145,7 +145,7 @@
             
             <!-- FILES FILTER FACETS -->
             <div class="row" style="margin-bottom:10px;" jsf:rendered="#{(DatasetPage.workingVersion.fileMetadatas.size() gt 1)}">
-                <div class="col-xs-8 text-left" jsf:rendered="#{DatasetPage.indexedVersion}">
+                <div class="col-xs-7 text-left" jsf:rendered="#{DatasetPage.indexedVersion}">
                     <div class="text-muted small" style="font-weight:normal;" jsf:rendered="#{(DatasetPage.fileMetadatasSearch.size() gt 0)}">#{bundle['file.results.filter']}</div>
                     <!-- FACET: TYPE -->
                     <div class="btn-group" style="margin-right:20px;" jsf:rendered="#{!(empty DatasetPage.fileTypeFacetLabels)}">
@@ -275,8 +275,8 @@
                     
 
                 
-                <div class="col-xs-4 text-right #{DatasetPage.indexedVersion ? '' : 'col-xs-offset-8'}">
-                    <div class="col-xs-8 text-left text-muted small" style="font-weight:normal;">
+                <div class="qdr-sort col-xs-5 text-right #{DatasetPage.indexedVersion ? '' : 'col-xs-offset-7'}">
+                    <div class="qdr-group-by col-xs-7 text-left text-muted small" style="font-weight:normal;">
                                     <p:selectBooleanCheckbox value="#{DatasetPage.folderPresort}" itemLabel="#{bundle['file.results.presort.folder']}" title="#{bundle['file.results.presort.folder.desc']}">
                         <p:ajax update="filesTable, messagePanel" listener="#{DatasetPage.sort()}"/>
                     </p:selectBooleanCheckbox>
