@@ -6,10 +6,19 @@ External tools can provide additional features that are not part of Dataverse it
 .. contents:: |toctitle|
   :local:
 
+Introduction
+------------
+
+You can think of a external tool as **a glorified hyperlink** that opens a browser window in a new tab on some other website. The term "external" is used to indicate that the user has left the Dataverse web interface. For example, perhaps the user is looking at a dataset on https://demo.dataverse.org . They click "Explore" and are brought to https://fabulousfiletool.com?fileId=42&siteUrl=http://demo.dataverse.org
+
+The "other website" (fabulousfiletool.com in the example above) is probably part of the same ecosystem of scholarly publishing that Dataverse itself participates in. Sometimes the other website runs entirely in the browser. Sometimes the other website is a full blown server side web application like Dataverse itself.
+
+The possibilities for external tools are endless. Let's look at some examples to get your creative juices flowing.
+
 Examples of External Tools
 --------------------------
 
-To get your creative juices flowing, here are examples of external tools that are available for Dataverse.
+Note: This is the same list that appears in the :doc:`/admin/external-tools` section of the Admin Guide.
 
 .. csv-table:: 
    :header: "Tool", "Type", "Scope", "Description"
@@ -20,62 +29,122 @@ To get your creative juices flowing, here are examples of external tools that ar
 How External Tools Are Presented to Users
 -----------------------------------------
 
-See :ref:`testing-external-tools` for a description of how various tools are presented to users in the Dataverse web interface.
-
-How External Tools are Classified (Type Vs. Scope)
---------------------------------------------------
-
-External tools have a both a "type" and a "scope." Here are defintions for both terms:
-
-.. table::
-    :widths: 10, 20, 70
-
-    =====  ====================  ==========
-    Term   Possible values       Definition
-    =====  ====================  ==========
-    type   explore or configure  The type determines if the tool appears under a button called "Explore" or a button called "Configure". Users must be logged in to Dataverse for configure tools which are expected to write back to Dataverse. Explore tools are typically read-only.
-
-    scope  file or dataset       What "dvObject" the tool operates on. The third dvOjbect is "dataverse" but this is not supported.
-    =====  ====================  ==========
+In short, an external tool appears under an "Explore" or "Configure" button either on a dataset landing page or a file landing page. See also the :ref:`testing-external-tools` section of the Admin Guide for some perspective on how installations of Dataverse will expect to test your tool before announcing it to their users.
 
 Creating an External Tool Manifest
 ----------------------------------
 
 External tools must be expressed in an external tool manifest file, a specific JSON format Dataverse requires. As the author of an external tool, you are expected to provide this JSON file and installation instructions on a web page for your tool.
 
-Let's look at two examples of external tool manifests before we dive into how they work.
+Examples of Manifests
++++++++++++++++++++++
+
+Let's look at two examples of external tool manifests (one at the file level and one at the dataset level) before we dive into how they work.
+
+External Tools for Files
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 :download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` is a file level explore tool that operates on tabular files:
 
 .. literalinclude:: ../_static/installation/files/root/external-tools/fabulousFileTool.json
 
+External Tools for Datasets
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 :download:`dynamicDatasetTool.json <../_static/installation/files/root/external-tools/dynamicDatasetTool.json>` is a dataset level explore tool:
 
 .. literalinclude:: ../_static/installation/files/root/external-tools/dynamicDatasetTool.json
 
-``type`` is required and must be ``explore`` or ``configure`` to make the tool appear under a button called "Explore" or "Configure", respectively. Not that a "Configure" button at the dataset level is not currently supported.
+Terminology
++++++++++++
 
-``scope`` is required and must be ``file`` or ``dataset`` to make the tool appear at the file level or dataset level.
+.. table::
+    :widths: 20, 80
 
-File level tools can operate on any file, including tabular files that have been created by successful ingestion. (For more on ingest, see the :doc:`/user/tabulardataingest/ingestprocess` of the User Guide.) The optional ``contentType`` entry specifies the mimetype a tool works on.
+    ===========================  ==========
+    Term                         Definition
+    ===========================  ==========
+    external tool manifest       A **JSON file** the defines the URL constructed by Dataverse when users click "Explore" or "Configure" buttons. External tool makers are asked to host this JSON file on a website (no app store yet, sorry) and explain how to use install and use the tool. Examples include :download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` and :download:`dynamicDatasetTool.json <../_static/installation/files/root/external-tools/dynamicDatasetTool.json>` as well as the real world examples above such as Data Explorer.
 
-In the example above, a mix of required and optional reserved words appear that can be used to insert dynamic values into tools. The supported values are:
+    displayName                  The **name** of the tool in the Dataverse web interface. For example, "Data Explorer".
 
-- ``{fileId}`` (required for file tools, or ``{filePid}``) - The database ID of a file from which the external tool has been launched.
-- ``{filePid}`` (required for file tools, or ``{fileId}``) - The Persistent ID (DOI or Handle) of a file (if available) from which the external tool has been launched.
-- ``{siteUrl}`` (optional) - The URL of the Dataverse installation from which the tool was launched.
-- ``{apiToken}`` (optional) - The Dataverse API token of the user launching the external tool, if available.
-- ``{datasetId}`` (required for dataset tools, or ``{datasetPid}``) - The database ID of the dataset.
-- ``{datasetPid}`` (required for dataset tools, or ``{datasetId}``) - The Persistent ID (DOI or Handle) of the dataset.
-- ``{datasetVersion}`` (optional) - The friendly version number ( or \:draft ) of the dataset version the tool is being launched from.
+    description                  The **description** of the tool, which appears in a popup (for configure tools only) so the user who clicked the tool can learn about the tool before being redirected the tool in a new tab in their browser. HTML is supported.
 
-Getting Help With Writing Your Own External Tool
-------------------------------------------------
+    scope                        Whether the external tool appears and operates at the **file** level or the **dataset** level. Note that a file level tool much also specify the type of file it operates on (see "contentType" below).
 
-If you need help with your tool, please feel free to post on the dataverse-dev mailing list: https://groups.google.com/forum/#!forum/dataverse-dev
+    type                         Whether the external tool is an **explore** tool or a **configure** tool. Configure tools require an API token because they make changes to data files (files within datasets). Configure tools are currently not supported at the dataset level (no "Configure" button appears in the GUI for datasets).
+
+    toolUrl                      The **base URL** of the tool before query parameters are added.
+
+    contentType                  File level tools operate on a specific **file type** (content type or MIME type). Dataset level tools do not use contentType.
+
+    toolParameters               **Query parameters** are supported and described below.
+
+    queryParameters              **Key/value combinations** that can be appended to the toolUrl. For example, once substitution takes place (described below) the user may be redirected to ``https://fabulousfiletool.com?fileId=42&siteUrl=http://demo.dataverse.org``.
+
+    query parameter keys         An **arbitrary string** to associate with a value that is populated with a reserved word (described below). As the author of the tool, you have control over what "key" you would like to be passed to your tool. For example, if you want to have your tool receive and operate on the query parameter "dataverseFileId=42" instead of just "fileId=42", that's fine.
+
+    query parameter values       A **mechanism for substituting reserved words with dynamic content**. For example, in your manifest file, you can use a reserved word (described below) such as ``{fileId}`` to pass a file's database id to your tool in a query parameter. Your tool might receive this query parameter as "fileId=42".
+
+    reserved words               A **set of strings surrounded by curly braces** such as ``{fileId}`` or ``{datasetId}`` that will be inserted into query parameters. See the table below for a complete list.
+    ===========================  ==========
+
+Reserved Words
+++++++++++++++
+
+.. table::
+    :widths: 15, 15, 70
+
+    ===========================  ==========  ===========
+    Reserved word                Status      Description
+    ===========================  ==========  ===========
+    ``{siteUrl}``                optional    The URL of the Dataverse installation from which the tool was launched. For example, ``https://demo.dataverse.org``.
+
+    ``{fileId}``                 depends     The database ID of a file the user clicks "Explore" or "Configure" on. For example, ``42``. This reserved word is **required for file level tools** unless you use ``{filePid}`` instead.
+
+    ``{filePid}``                depends     The Persistent ID (DOI or Handle) of a file the user clicks "Explore" or "Configure" on. For example, ``doi:10.7910/DVN/TJCLKP/3VSTKY``. Note that not all installations of Dataverse have Persistent IDs (PIDs) enabled at the file level. This reserved word is **required for file level tools** unless you use ``{fileId}`` instead.
+
+    ``{apiToken}``               optional    The Dataverse API token of the user launching the external tool, if available. Please note that API tokens should be treated with the same care as a password. For example, ``f3465b0c-f830-4bc7-879f-06c0745a5a5c``.
+
+    ``{datasetId}``              depends     The database ID of the dataset. For example, ``42``. This reseved word is **required for dataset level tools** unless you use ``{datasetPid}`` instead.
+
+    ``{datasetPid}``             depends     The Persistent ID (DOI or Handle) of the dataset. For example, ``doi:10.7910/DVN/TJCLKP``. This reseved word is **required for dataset level tools** unless you use ``{datasetId}`` instead.
+
+    ``{datasetVersion}``         optional    The friendly version number ( or \:draft ) of the dataset version the tool is being launched from. For example, ``1.0`` or ``:draft``.
+    ===========================  ==========  ===========
+
+Using Example Manifests to Get Started
+++++++++++++++++++++++++++++++++++++++
+
+Again, you can use :download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` or :download:`dynamicDatasetTool.json <../_static/installation/files/root/external-tools/dynamicDatasetTool.json>` as a starting point for your own manifest file.
+
+Testing Your External Tool
+--------------------------
+
+As the author of an external tool, you are not expected to learn how to install and operate Dataverse. There's a very good chance your tool can be added to a server Dataverse developers use for testing if you reach out on any of the channels listed under :ref:`getting-help-developers` in the Developer Guide.
+
+By all means, if you'd like to install Dataverse yourself, a number of developer-centric options are available. For example, there's a script to spin up Dataverse on EC2 at https://github.com/IQSS/dataverse-sample-data . The process for using curl to add your external tool to a Dataverse installation is documented under :ref:`managing-external-tools` in the Admin Guide.
+
+Spreading the Word About Your External Tool
+-------------------------------------------
+
+Adding Your Tool to the Inventory of External Tools
++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Once you've gotten your tool working, please make a pull request to update the list of tools above! You are also welcome to download :download:`dataverse-external-tools.tsv <../_static/admin/dataverse-external-tools.tsv>`, add your tool to the TSV file, create and issue at https://github.com/IQSS/dataverse/issues , and then upload your TSV file there.
 
+Unless your tool runs entirely in a browser, you may have integrated server-side software with Dataverse. If so, please double check that your software is listed in the :doc:`/admin/integrations` section of the Admin Guide and if not, please open an issue or pull request to add it. Thanks!
+
+If you've thought to yourself that there ought to be an app store for Dataverse external tools, you're not alone. Please see https://github.com/IQSS/dataverse/issues/5688 :)
+
+Demoing Your External Tool
+++++++++++++++++++++++++++
+
+https://demo.dataverse.org is the place to play around with Dataverse and your tool can be included. Please email support@dataverse.org to start the conversation about adding your tool. Additionally, you are welcome to open an issue at https://github.com/IQSS/dataverse-ansible which already includes a number of the tools listed above.
+
+Announcing Your External Tool
++++++++++++++++++++++++++++++
+
 You are welcome to announce your external tool at https://groups.google.com/forum/#!forum/dataverse-community
 
-Unless your tool runs entirely in a browser, you may have integrated server-side software with Dataverse. If so, please double check that your software is listed in the :doc:`/admin/integrations` section of the Admin Guide and if not, pleas open an issue or pull request to add it. Thanks!
+If you're too shy, we'll do it for you. We'll probably tweet about it too. Thank you for your contribution to Dataverse!
