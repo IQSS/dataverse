@@ -151,7 +151,11 @@ To install Solr, execute the following commands:
 
 ``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.3.1/schema.xml``
 
-``mv schema.xml collection1/conf``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.3.1/schema_dv_mdb_fields.xml``
+
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.3.1/schema_dv_mdb_copies.xml``
+
+``mv schema*.xml collection1/conf``
 
 ``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.3.1/solrconfig.xml``
 

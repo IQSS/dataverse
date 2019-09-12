@@ -146,7 +146,7 @@ public class BundleUtil {
         return getStringFromBundleNoMissingCheck(key, null, bundle);
     }
 
-    private static Locale getDefaultLocale() {
+    public static Locale getDefaultLocale() {
         String localeEnvVar = System.getenv().get("LANG");
         if (localeEnvVar != null) {
             if (localeEnvVar.indexOf('.') > 0) {

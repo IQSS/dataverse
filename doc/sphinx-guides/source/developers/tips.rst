@@ -129,6 +129,9 @@ By default, Glassfish reports analytics information. The administration guide su
 Solr
 ----
 
+.. TODO: This section should be moved into a dedicated guide about Solr for developers. It should be extended with
+         information about the way Solr is used within Dataverse, ideally explaining concepts and links to upstream docs.
+
 Once some dataverses, datasets, and files have been created and indexed, you can experiment with searches directly from Solr at http://localhost:8983/solr/#/collection1/query and look at the JSON output of searches, such as this wildcard search: http://localhost:8983/solr/collection1/select?q=*%3A*&wt=json&indent=true . You can also get JSON output of static fields Solr knows about: http://localhost:8983/solr/collection1/schema/fields
 
 You can simply double-click "start.jar" rather that running ``java -jar start.jar`` from the command line. Figuring out how to stop Solr after double-clicking it is an exercise for the reader.
