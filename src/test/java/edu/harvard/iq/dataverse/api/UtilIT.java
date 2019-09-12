@@ -1778,7 +1778,7 @@ public class UtilIT {
             requestSpecification = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
-        return requestSpecification.get("/api/datasets/" + idInPath + "/externalTools?type=" + type + optionalQueryParam);
+        return requestSpecification.get("/api/admin/test/datasets/" + idInPath + "/externalTools?type=" + type + optionalQueryParam);
     }
 
     static Response getExternalToolsForFile(String idOrPersistentIdOfFile, String type, String apiToken) {
@@ -1793,7 +1793,7 @@ public class UtilIT {
             requestSpecification = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
-        return requestSpecification.get("/api/files/" + idInPath + "/externalTools?type=" + type + optionalQueryParam);
+        return requestSpecification.get("/api/admin/test/files/" + idInPath + "/externalTools?type=" + type + optionalQueryParam);
     }
 
     static Response submitFeedback(JsonObjectBuilder job) {

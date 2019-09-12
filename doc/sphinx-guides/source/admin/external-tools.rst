@@ -80,8 +80,6 @@ File level explore tools are specific to the file type (content type or MIME typ
 
 An "Explore" button will appear (on both the dataset page and the file landing page) for files that match the type that the tool has been built for. When there are multiple explore tools for a filetype, the button becomes a dropdown.
 
-For a specific file, you can check how many tools are available using the GUI as described above or by using the API as described at :ref:`list-external-tools-for-a-file-api`.
-
 File Level Configure Tools
 ++++++++++++++++++++++++++
 
@@ -91,8 +89,6 @@ Dataset Level Explore Tools
 +++++++++++++++++++++++++++
 
 When a dataset level explore tool is added, an "Explore" button on the dataset page will appear. This button becomes a drop down when there are multiple tools.
-
-You can also use the API to list dataset level tools. See :ref:`list-external-tools-for-a-dataset-api`
 
 Dataset Level Configure Tools
 +++++++++++++++++++++++++++++

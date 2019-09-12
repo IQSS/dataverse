@@ -77,16 +77,10 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
-import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDvObjectPIDMetadataCommand;
-import edu.harvard.iq.dataverse.externaltools.ExternalTool;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitationsServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
@@ -101,26 +95,20 @@ import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import edu.harvard.iq.dataverse.util.DateUtil;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1891,32 +1879,6 @@ public class Datasets extends AbstractApiBean {
             jsonObjectBuilder.add("downloadsTotal", downloadsTotal);
             jsonObjectBuilder.add("downloadsUnique", downloadsUnique);
             return ok(jsonObjectBuilder);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-    }
-
-    @GET
-    @Path("{id}/externalTools")
-    public Response getExternalTools(@PathParam("id") String idSupplied, @QueryParam("type") String typeSupplied) {
-        ExternalTool.Type type;
-        try {
-            type = ExternalTool.Type.fromString(typeSupplied);
-        } catch (IllegalArgumentException ex) {
-            return error(BAD_REQUEST, ex.getLocalizedMessage());
-        }
-        Dataset dataset;
-        try {
-            dataset = findDatasetOrDie(idSupplied);
-            JsonArrayBuilder tools = Json.createArrayBuilder();
-            List<ExternalTool> datasetTools = externalToolService.findDatasetToolsByType(type);
-            for (ExternalTool tool : datasetTools) {
-                ApiToken apiToken = externalToolService.getApiToken(getRequestApiKey());
-                ExternalToolHandler externalToolHandler = new ExternalToolHandler(tool, dataset, apiToken);
-                JsonObjectBuilder toolToJson = externalToolService.getToolAsJsonWithQueryParameters(externalToolHandler);
-                tools.add(toolToJson);
-            }
-            return ok(tools);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

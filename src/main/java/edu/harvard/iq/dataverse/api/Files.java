@@ -14,7 +14,6 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
-import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
@@ -32,8 +31,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
-import edu.harvard.iq.dataverse.externaltools.ExternalTool;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
@@ -51,9 +48,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -618,31 +612,6 @@ public class Files extends AbstractApiBean {
             // condition. We'll just log the error as a warning and keep
             // going:
             logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", ex.getMessage());
-        }
-    }
-
-    @Path("{id}/externalTools")
-    @GET
-    public Response getExternalTools(@PathParam("id") String idSupplied, @QueryParam("type") String typeSupplied) {
-        ExternalTool.Type type;
-        try {
-            type = ExternalTool.Type.fromString(typeSupplied);
-        } catch (IllegalArgumentException ex) {
-            return error(BAD_REQUEST, ex.getLocalizedMessage());
-        }
-        try {
-            DataFile dataFile = findDataFileOrDie(idSupplied);
-            JsonArrayBuilder tools = Json.createArrayBuilder();
-            List<ExternalTool> datasetTools = externalToolService.findFileToolsByTypeAndContentType(type, dataFile.getContentType());
-            for (ExternalTool tool : datasetTools) {
-                ApiToken apiToken = externalToolService.getApiToken(getRequestApiKey());
-                ExternalToolHandler externalToolHandler = new ExternalToolHandler(tool, dataFile, apiToken, dataFile.getFileMetadata());
-                JsonObjectBuilder toolToJson = externalToolService.getToolAsJsonWithQueryParameters(externalToolHandler);
-                tools.add(toolToJson);
-            }
-            return ok(tools);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
         }
     }
 
