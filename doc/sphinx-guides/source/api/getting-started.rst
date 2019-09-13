@@ -23,7 +23,7 @@ Once you have identified a server to test with, create an account, click on your
 .. _curl-examples-and-environment-variables:
 
 curl Examples and Environment Variables
---------------------------------------
+---------------------------------------
 
 The examples in this guide use `curl`_ for the following reasons:
 
