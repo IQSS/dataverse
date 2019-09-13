@@ -559,7 +559,7 @@ public class DataversePage implements java.io.Serializable {
 
     public String save() {
         List<DataverseFieldTypeInputLevel> listDFTIL = new ArrayList<>();
-        if (editMode != null && editMode.equals(EditMode.INFO)) {
+        if (editMode != null && ( editMode.equals(EditMode.INFO) || editMode.equals(EditMode.CREATE))) {
 
             List<MetadataBlock> selectedBlocks = new ArrayList<>();
             if (dataverse.isMetadataBlockRoot()) {
