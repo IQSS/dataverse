@@ -134,6 +134,36 @@
                                     </ui:fragment>
                                 </ul>
                             </div>
+                            
+                            
+                            
+                            <div class="btn-group pull-right" jsf:rendered="#{!DatasetPage.dataset.deaccessioned}">
+                                <!-- Explore Button Group -->
+                                <ui:fragment rendered="#{DatasetPage.datasetExploreTools.size()==1}">
+                                    <button type="button" class="btn btn-default btn-explore" onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
+                                        <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
+                                    </button>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{DatasetPage.datasetExploreTools.size()>1}">
+                                    <button type="button" class="btn btn-default btn-explore dropdown-toggle" data-toggle="dropdown">
+                                        <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span class="caret"></span>
+                                    </button>
+                                </ui:fragment>
+
+                                <ul class="dropdown-menu pull-left text-left" role="menu">
+                                    <!-- Explore tool links -->
+                                    <ui:repeat var="tool" value="#{DatasetPage.datasetExploreTools}">
+                                        <li>
+                                            <h:commandLink action="#{DatasetPage.explore(tool)}">
+                                                <h:outputText value="#{tool.displayName}"/>
+                                            </h:commandLink>
+                                        </li>
+                                    </ui:repeat>
+                                </ul>
+                            </div>
+
+                            
+                            
                             <div class="btn-group pull-right" role="group">
                                 <!-- Edit/Publish Button Group -->
                                 <!-- Publish/Submit for Review/Return to Author Button Group -->
