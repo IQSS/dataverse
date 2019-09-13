@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.SecureRandom;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -192,8 +193,10 @@ public class OAuth2LoginBackingBean implements Serializable {
         if (idp == null) {
             throw new IllegalArgumentException("idp cannot be null");
         }
+        SecureRandom rand = new SecureRandom();
+        
         String base = idp.getId() + "~" + System.currentTimeMillis() 
-                                  + "~" + (int) java.lang.Math.round(java.lang.Math.random() * 1000)
+                                  + "~" + rand.nextInt(1000)
                                   + redirectPage.map( page -> "~"+page).orElse("");
 
         String encrypted = StringUtil.encrypt(base, idp.clientSecret);
