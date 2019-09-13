@@ -18,6 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.toList;
 import javax.ejb.EJB;
+import javax.faces.bean.ManagedProperty;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.faces.view.ViewScoped;
@@ -61,6 +62,9 @@ public class OAuth2LoginBackingBean implements Serializable {
 
     @Inject
     OAuth2FirstLoginPage newAccountPage;
+    
+    @ManagedProperty("#{facesContext}")
+    FacesContext facesCtx;
 
     /**
      * Generate the OAuth2 Provider URL to be used in the login page link for the provider.
@@ -84,7 +88,7 @@ public class OAuth2LoginBackingBean implements Serializable {
      * @throws IOException
      */
     public void exchangeCodeForToken() throws IOException {
-        HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        HttpServletRequest req = (HttpServletRequest) facesCtx.getExternalContext().getRequest();
         
         try {
             Optional<AbstractOAuth2AuthenticationProvider> oIdp = parseStateFromRequest(req);
