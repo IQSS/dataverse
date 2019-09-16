@@ -1,0 +1,404 @@
+/**
+	Variables
+*/
+
+:root {
+	--main-color: #0086BC;
+	--icon-color: #2ba7df;
+}
+
+
+/**
+	Custom font
+*/
+
+@font-face {
+  font-family: 'vecler-icons';
+  src:  url('#{resource["vecler/fonts/icomoon.eot"]}?llaqdc');
+  src:  url('#{resource["vecler/fonts/icomoon.eot"]}?llaqdc#iefix') format('embedded-opentype'),
+    url('#{resource["vecler/fonts/icomoon.ttf"]}?llaqdc') format('truetype'),
+    url('#{resource["vecler/fonts/icomoon.woff"]}?llaqdc') format('woff'),
+    url('#{resource["vecler/fonts/icomoon.svg"]}?llaqdc#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+[data-icon]::before, .icon-astro::before, .icon-audio::before, .icon-code::before, .icon-dataset::before, .icon-dataverse::before, .icon-dataverse::after, .icon-document::before, .icon-file::before, .icon-geodata::before, .icon-image::before, .icon-network::before, .icon-other::before, .icon-package::before, .icon-tabular::before, .icon-unlock::before, .icon-video::before {
+	font-family: "vecler-icons";
+	color: var(--icon-color);
+}
+
+/* Multicolor dataverse icon */
+
+.icon-dataverse {
+	position: relative;
+}
+
+.icon-dataverse::after {
+	content: "\f200";
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: block;
+	color: #a4a5a8;
+	z-index: -1;
+	line-height: 100%;
+	font-style: normal;
+	font-weight: normal;
+}
+
+.card-title-icon-block .icon-dataverse::after {
+	top: 2.2px;
+}
+
+
+/**
+	General rules 
+*/
+
+
+body {
+	font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 15px;
+}
+
+.text-brand {
+	color: var(--icon-color);
+}
+
+.btn {
+	padding-bottom: 5px;
+}
+
+.btn.btn-default.btn-access {
+	border: 1px solid #E8E8E8;
+	color: #043e58;
+}
+
+.btn.btn-primary {
+	background: var(--main-color);
+	border: 1px solid var(--main-color);
+	box-shadow: none;
+}
+
+.btn.btn-default .glyphicon,
+#metrics-block .glyphicon,
+.btn.btn-default .caret {
+	color: var(--icon-color);
+}
+
+.alert.alert-success {
+	background: #E8FAEC;
+}
+.alert.alert-danger {
+	background: #FEECEE;
+}
+.alert.alert-warning {
+	background: #FFF7DC;
+}
+
+.ui-widget {
+	font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* Main page */
+
+#dataverseForm {
+	margin-left: -10px;
+	margin-right: 20px;
+} 
+
+#dataverseDesc {
+	margin-left: 15px;
+	width: 100%;
+	padding-top: 15px;
+	text-align: justify;
+}
+
+#searchResults {
+	margin-left: 15px;
+	margin-right: 15px;
+}
+
+#search-row-panel {
+	border-radius: 7px;
+}
+
+#actionButtonBlock {
+	width: calc(100% + 10px);
+	margin-left: 10px;
+}
+
+.row.panelSearchForm > .col-sm-8 {
+	padding-left: 0;
+}
+.row.panelSearchForm > .col-manage-action {
+	padding-right: 0;
+}
+
+div.panelSearchForm input.search-input {
+	line-height: 23px;
+}
+
+.pagination > .active > a {
+	border-color: var(--main-color);
+	background-color: var(--main-color);
+}
+
+#metrics-block.col-xs-3 {
+	border: none;
+	color: #4A4A4A;
+}
+
+#metrics-label {
+	background: #FFF;
+	border-radius: 6px 0 0 6px;
+	border: 1px solid #eee;
+}
+
+#metrics-content {
+	border-radius: 0 6px 6px 0;
+	border: 1px solid #eee;
+	border-left: none;
+}
+
+@media screen and (max-width: 1199px) {
+	#metrics-label {
+		font-size: 0;
+	}
+
+	#metrics-label .glyphicon-stats {
+		font-size: 18px;
+	}
+}
+
+#dv-main > p > button.btn.btn-primary {
+	font-size: 14px;
+	padding-bottom: 1px;
+}
+
+/* Carousel */
+
+#featuredDataversesList .item .icon-dataverse {
+	top: 5px;
+	margin-left: 12px;
+	margin-right: 16px;
+}
+
+#featuredDataversesBlock div.customNavigation {
+	width: auto;
+}
+
+#featuredDataversesBlock div.customNavigation a.btn:active {
+	box-shadow: none;
+}
+
+#featuredDataversesBlock div.customNavigation a.btn.prev1 {
+	padding-left: 0;
+	padding-right: 10px;
+}
+
+#featuredDataversesBlock div.customNavigation a.btn.next1 {
+	padding-left: 10px;
+	padding-right: 0;
+}
+
+#featuredDataversesBlock div.customNavigation span.glyphicon {
+	font-size: 1em;
+	color: var(--icon-color);
+	border: 1px solid #E8E8E8;
+	border-radius: 333px;
+	width: 29px;
+	height: 29px;
+	box-shadow: rgba(0, 0, 0, 0.05) 0px 2px 2px 0px;
+	margin: 0 auto;
+	line-height: 25px;
+	padding-left: 1px;
+}
+
+#carouselBlocksWrapper {
+	border-bottom: 0;
+	width: calc(100% + 111px);
+	margin-left: -40px;
+}
+
+#featuredDataversesBlock {
+	border-top: 0;
+}
+
+#carouselBlocksWrapper a {
+	color: #043E58;
+}
+
+.owl-carousel .item {
+	border: 1px solid #E8E8E8;
+	text-align: left;
+	border-radius: 7px;
+}
+
+#featuredDataversesList {
+	width: calc(100% - 82px);
+}
+
+#featuredDataversesList .item div {
+	display: table;
+	height: 100%;
+}
+
+#featuredDataversesList .item a {
+	display: table-cell;
+	vertical-align: middle;
+}
+
+/* Center carousel elements */
+#carouselBlocksWrapper.owl-center-elements .owl-carousel .owl-wrapper-outer {
+	text-align: center;
+}
+#carouselBlocksWrapper.owl-center-elements .owl-carousel .owl-wrapper {
+	width: auto !important;
+	display: inline-block !important;
+}
+
+/* Responsive carousel offscreen buttons fix */
+
+#carouselBlocksWrapper.owl-shrink-container {
+	width: calc(100% + 10px);
+	margin-left: 10px;
+}
+
+/* Hide prev/next buttons when not necessary, also fix improper width */
+
+#carouselBlocksWrapper.owl-hide-navigation .customNavigation {
+	display: none;
+}
+
+#carouselBlocksWrapper.owl-hide-navigation {
+	width: calc(100% + 30px);
+	margin-left: 0;
+}
+#carouselBlocksWrapper.owl-hide-navigation #featuredDataversesList {
+	width: 100%;
+}
+
+/* Sidebar */
+
+#dv-sidebar a.facetTypeLink  {
+	color: #043E58;
+	margin-left: 4px;
+}
+
+#dv-sidebar a.facetLink  {
+	color: #043E58;
+}
+
+.ui-chkbox-box,
+.ui-state-active .ui-chkbox-icon.ui-icon,
+.ui-state-default .ui-chkbox-icon.ui-icon {
+	background: none;
+}
+
+.facetTypeChBox.facetLink::before {
+	content: "\e157";
+	position: absolute;
+	font-family: "Glyphicons Halflings";
+	font-size: 17px;
+	color: var(--main-color);
+	background: #FFF;
+	z-index: 3;
+}
+.facetTypeChBox.facetLink.facetSelected::before {
+	content: "\e067";
+	font-size: 16px;
+}
+
+form[id$="facetType"] > div.clearfix a.facetTypeLink span {
+	position: relative;
+	top: -3px;
+}
+
+/* Results */
+
+#resultsCountPaginatorBlock div.results-count {
+	font-weight: normal;
+	color: #4A4A4A;
+}
+
+table[id$="resultsTable"] td > div {
+	padding-top: 16px;
+	padding-bottom: 15px;
+	border-radius: 5px;
+}
+
+table[id$="resultsTable"] td > div.dataverseResult {
+	border-color: #39B0E2;
+}
+
+table[id$="resultsTable"] td > div.datasetResult {
+	border-color: #39B0E2;
+	border-style: dashed;
+}
+.resultDatasetCitationBlock.alert-info {
+	border: 0;
+	background-color: #F2F8FA;
+
+	color: #4A4A4A;
+}
+
+.card-title-icon-block {
+	margin-top: -2px;
+}
+
+[id$="resultsTable"] div.card-preview-icon-block {
+	margin-top: 6px;
+}
+
+
+.card-title-icon-block .label {
+	font-size: 11;
+	font-weight: normal;
+	text-transform: uppercase;
+}
+
+.card-title-icon-block .label.label-primary {
+	background: var(--main-color);
+	border: 1px solid var(--main-color);
+
+	color: #FFF;
+}
+
+.card-title-icon-block .label.label-warning {
+	background: #FFF;
+	border: 1px solid var(--main-color);
+
+	color: #4A4A4A;
+}
+
+.card-title-icon-block .label.label-danger {
+	background: #A50000;
+	border: 1px solid #A50000;
+
+	color: #FFF;
+}
+
+.card-title-icon-block .label.label-success {
+	background: #00A500;
+	border: 1px solid #00A500;
+
+	color: #FFF;
+}
+
+[id$="resultsTable"] div.card-title-icon-block span[class^="icon"] {
+	position: relative;
+	top: -10px;
+	margin-left: 9px;
+}
+
+[id$="resultsTable"] span.label {
+    position: relative;
+	top: -8px;
+	border-radius: 5px;
+	line-height: 12px;
+}
+
+/* Main page end */
+

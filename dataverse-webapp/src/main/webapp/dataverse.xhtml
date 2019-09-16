@@ -500,10 +500,18 @@
 
                 var scrollPos = 0;
 
+                var itemsDesktop = [1201, 3];       // 3 items over 1200px
+                var itemsDesktopSmall = [1200, 2];  // 2 items betweem 1200px and 721px
+                var itemsTablet = [720, 1];         // 1 item between 720px and 0
+
                 $(document).ready(function () {
                     initCarousel();
+                    addCarouselClassName();
                     popoverHTML('#{bundle.htmlAllowedTitle}');
+                    $("#featuredDataversesList").owlCarousel().trigger('owl.reload');
                 });
+
+                $(window).resize(addCarouselClassName);
 
                 function initCarousel() {
                     var owl1 = $("#featuredDataversesList");
@@ -511,25 +519,54 @@
                     owl1.owlCarousel({
                         pagination: false,
                         navigation: false,
-                        items: 4, //10 items above 1000px browser width
-                        itemsDesktop: [1140, 4], //5 items between 1000px and 901px
-                        itemsDesktopSmall: [940, 3], // betweem 900px and 601px
-                        itemsTablet: [720, 2], //2 items between 600 and 0
+                        items: 3, //10 items above 1000px browser width
+                        itemsDesktop: itemsDesktop, 
+                        itemsDesktopSmall: itemsDesktopSmall, 
+                        itemsTablet: itemsTablet, 
                         itemsMobile: false // itemsMobile disabled - inherit from itemsTablet option
                     });
-                    if (owl1.find('div.owl-item').length > 4) {
-                        // Custom Navigation Events
-                        $(".next1").click(function () {
-                            owl1.trigger('owl.next');
-                        });
-                        $(".prev1").click(function () {
-                            owl1.trigger('owl.prev');
-                        });
-                    } else {
-                        $("#featuredDataversesBlock .customNavigation a.btn").hide();
-                    }
+                    // these buttons are now hidden via CSS when necessary
+                    $(".next1").click(function () {
+                        owl1.trigger('owl.next');
+                    });
+                    $(".prev1").click(function () {
+                        owl1.trigger('owl.prev');
+                    });
 
                     $('#featuredDataversesList .item').matchHeight();
+                }
+
+                function addCarouselClassName() {
+                    var owlItemCount = document.querySelectorAll(".owl-item").length;
+                    var owlWrapper = $("#carouselBlocksWrapper");
+
+                    // check if the navigation buttons are necessary
+                    if ((window.innerWidth <= itemsTablet[0] && owlItemCount > itemsTablet[1])
+                         || (window.innerWidth <= itemsDesktopSmall[0] && owlItemCount > itemsDesktopSmall[1])
+                         || owlItemCount > itemsDesktop[1]) {
+                        owlWrapper.removeClass("owl-hide-navigation");
+                    }
+                    else {
+                        owlWrapper.addClass("owl-hide-navigation");
+                    }
+                    
+                    // check if the navigation buttons are outside the viewing area
+                    if (!owlWrapper.hasClass("owl-hide-navigation") && (window.innerWidth < ($("#search-row-panel").outerWidth() + 2*($(".customNavigation").outerWidth() + 24)))) {
+                        owlWrapper.addClass("owl-shrink-container");
+                    }
+                    else {
+                        owlWrapper.removeClass("owl-shrink-container");
+                    }
+                    
+                    // check if the elements need to be centered
+                    if ((window.innerWidth <= itemsTablet[0] && owlItemCount < itemsTablet[1])
+                         || (window.innerWidth <= itemsDesktopSmall[0] && owlItemCount < itemsDesktopSmall[1])
+                         || (window.innerWidth > itemsDesktopSmall[0] && owlItemCount < itemsDesktop[1])) {
+                        owlWrapper.addClass("owl-center-elements");
+                    }
+                    else {
+                        owlWrapper.removeClass("owl-center-elements");
+                    }
                 }
 
                 //]]>

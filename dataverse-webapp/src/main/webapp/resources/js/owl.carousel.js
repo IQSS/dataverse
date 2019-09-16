@@ -1,4 +1,8 @@
 /*
+ *  This version of library contains Dataverse specific modifications. Every of such modification is marked by comment with text: "dataverse_change".
+ */
+
+/*
  *  jQuery OwlCarousel v1.3.3
  *
  *  Copyright (c) 2013 Bartosz Wojciechowski
@@ -1111,6 +1115,10 @@ if (typeof Object.create !== "function") {
             });
             base.$elem.on("owl.jumpTo", function (event, item) {
                 base.jumpTo(item);
+            });
+            // dataverse_change: force reload to update the carousel item width
+            base.$elem.on("owl.reload", function (event, item) {
+                base.reload();
             });
         },
 
