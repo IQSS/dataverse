@@ -955,6 +955,16 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
 	background: url("/resources/images/hypothesisIcon.svg") no-repeat;
 }
 
+#datasetForm .qdr-sort {
+	max-width: 250px;
+	float: right;
+}
+
+#datasetForm .qdr-group-by {
+	min-width: 130px;
+	padding: 0px;
+}
+
 #datasetForm\3AhypothesisButton {
 	margin-bottom: 5px;
 	margin-left: 15px;
