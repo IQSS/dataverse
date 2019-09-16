@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.DatasetVersionUI.MetadataBlocksMode;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -48,6 +47,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.license.TermsOfUseForm;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetRelPublication;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.Template;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -147,8 +147,6 @@ public class DatasetPage implements java.io.Serializable {
     TermsOfUseFormMapper termsOfUseFormMapper;
     @Inject
     DataverseRequestServiceBean dvRequestService;
-    @Inject
-    DatasetVersionUI datasetVersionUI;
     @Inject
     PermissionsWrapper permissionsWrapper;
     @Inject
@@ -717,7 +715,6 @@ public class DatasetPage implements java.io.Serializable {
 
                 datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
                 datasetNextMinorVersion = this.dataset.getNextMinorVersionString();
-                datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, MetadataBlocksMode.FOR_VIEW);
 
                 setExistReleasedVersion(resetExistRealeaseVersion());
                 //moving setVersionTabList to tab change event
@@ -1667,10 +1664,6 @@ public class DatasetPage implements java.io.Serializable {
         // input on the page. 
     }
 
-    public DatasetVersionUI getDatasetVersionUI() {
-        return datasetVersionUI;
-    }
-
     public void startMultipleFileDownload() {
 
         boolean doNotSaveGuestbookResponse = workingVersion.isDraft();
@@ -2254,6 +2247,17 @@ public class DatasetPage implements java.io.Serializable {
         List<String> customFields = settingsService.getValueForKeyAsList(SettingsServiceBean.Key.CustomDatasetSummaryFields);
 
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
+    }
+
+    public String getKeywordsDisplaySummary() {
+        return StringUtils.join(workingVersion.getKeywords(), ", ");
+    }
+
+    public DatasetRelPublication getFirstRelPublication() {
+        List<DatasetRelPublication> datasetRelPublications = workingVersion.getRelatedPublications();
+        DatasetRelPublication firstRelPublication = datasetRelPublications.size() > 0 ? datasetRelPublications.get(0) : null;
+        
+        return firstRelPublication;
     }
 
     public List<ExternalTool> getConfigureToolsForDataFile(Long fileId) {

@@ -8,7 +8,9 @@ import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
@@ -179,6 +181,15 @@ public class MocksFactory {
         return retVal;
     }
 
+    public static MetadataBlock makeMetadataBlock(String name, String displayName) {
+        final Long id = nextId();
+        MetadataBlock metadataBlock = new MetadataBlock();
+        metadataBlock.setId(id);
+        metadataBlock.setName(name);
+        metadataBlock.setDisplayName(displayName);
+        return metadataBlock;
+    }
+    
     public static DatasetFieldType makeDatasetFieldType() {
         final Long id = nextId();
         DatasetFieldType retVal = new DatasetFieldType("SampleType-" + id, FieldType.TEXT, false);
@@ -229,6 +240,47 @@ public class MocksFactory {
         metadataBlock.getDatasetFieldTypes().add(retVal);
         retVal.setMetadataBlock(metadataBlock);
         return retVal;
+    }
+    
+    public static DatasetFieldType makeChildDatasetFieldType(String name, FieldType fieldType, boolean allowMultiple) {
+        final Long id = nextId();
+        DatasetFieldType retVal = new DatasetFieldType(name, fieldType, allowMultiple);
+        retVal.setId(id);
+        return retVal;
+    }
+    
+    public static DatasetField makeEmptyDatasetField(DatasetFieldType datasetFieldType, int numberOfValues) {
+        DatasetField datasetField = new DatasetField();
+        
+        datasetField.setDatasetFieldType(datasetFieldType);
+
+        if (datasetFieldType.isPrimitive()) {
+            if (!datasetFieldType.isControlledVocabulary()) {
+                for (int i=0; i<numberOfValues; ++i) {
+                    DatasetFieldValue value = new DatasetFieldValue(datasetField);
+                    value.setId(nextId());
+                    datasetField.getDatasetFieldValues().add(value);
+                }
+            }
+        } else {
+            for (int i=0; i<numberOfValues; ++i) {
+                DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();
+                compoundValue.setParentDatasetField(datasetField);
+                compoundValue.setId(nextId());
+                
+                for (DatasetFieldType dsfType : datasetField.getDatasetFieldType().getChildDatasetFieldTypes()) {
+                    DatasetField childDatasetField = makeEmptyDatasetField(dsfType, 1);
+                    childDatasetField.setParentDatasetFieldCompoundValue(compoundValue);
+                    compoundValue.getChildDatasetFields().add(childDatasetField);
+                }
+                
+                datasetField.getDatasetFieldCompoundValues().add(compoundValue);
+            }
+            
+        }
+        datasetField.setId(nextId());
+        
+        return datasetField;
     }
 
     public static DataverseRole makeRole(String name) {

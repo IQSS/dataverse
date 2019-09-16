@@ -70,7 +70,7 @@
                 <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
                 <f:viewAction action="#{DatasetGuestbookTab.init(DatasetPage.dataset)}"/>
                 <f:viewAction
-                        action="#{DatasetMetadataTab.init(DatasetPage.dataset, DatasetPage.locked, DatasetPage.datasetVersionUI.metadataBlocks)}"/>
+                        action="#{DatasetMetadataTab.init(DatasetPage.dataset, DatasetPage.locked)}"/>
                 <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetPage.dataset)}"/>
                 <f:viewAction action="#{datasetVersionsTab.init(DatasetPage.dataset)}"/>
                 <f:viewAction action="#{datasetDeaccessionDialog.init(DatasetPage.dataset)}"/>
@@ -353,14 +353,14 @@
 
                         <div id="datasetVersionBlock" class="container-fluid">
                             <div id="title-block" class="row"
-                                 jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
+                                 jsf:rendered="#{!empty DatasetPage.title}">
                                 <div class="col-xs-1 vcenter title-preview-icon-block">
                                     <img src="#{DatasetPage.thumbnailString}"
                                          jsf:rendered="#{!empty DatasetPage.thumbnailString}"/>
                                     <span class="icon-dataset" jsf:rendered="#{empty DatasetPage.thumbnailString}"/>
                                 </div>
                                 <div class="col-xs-11 vcenter">
-                                    <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
+                                    <span id="title">#{DatasetPage.title}</span>
                                     <h:outputText value="#{bundle['dataset.versionUI.draft']}"
                                                   styleClass="label label-primary"
                                                   rendered="#{DatasetPage.workingVersion.draft}"/>
@@ -401,40 +401,45 @@
                             </div>
                             <!-- BEGIN: DATASET SUMMARY -->
                             <div id="dataset-summary-metadata" class="row panel panel-default"
-                                 jsf:rendered="#{!widgetWrapper.widgetView and !DatasetPage.workingVersion.deaccessioned and 
-                                                   ( !empty DatasetPage.datasetVersionUI.descriptionDisplay
-                                                 or !empty DatasetPage.datasetVersionUI.keywordDisplay
-                                                 or !empty DatasetPage.datasetVersionUI.subject.value
-                                                 or !empty DatasetPage.datasetVersionUI.relPublicationCitation
-                                                 or !empty DatasetPage.datasetVersionUI.notes.value  ) and !empty DatasetPage.datasetSummaryFields }">
+                                 jsf:rendered="#{!widgetWrapper.widgetView and !DatasetPage.workingVersion.deaccessioned and
+                                                    (!empty DatasetPage.datasetSummaryFields or !empty DatasetPage.workingVersion.fileMetadatas) }">
                                 <div class="panel-body metadata-panel-body">
                                     <ui:repeat value="#{DatasetPage.datasetSummaryFields}" var="dsf">
 
                                         <div id="keywords" class="form-group"
-                                             jsf:rendered="#{!empty DatasetPage.datasetVersionUI.keywordDisplay and dsf.datasetFieldType.id==DatasetPage.datasetVersionUI.keyword.datasetFieldType.id}">
+                                             jsf:rendered="#{!empty DatasetPage.keywordsDisplaySummary and dsf.datasetFieldType.name=='keyword'}">
                                             <label class="col-sm-3 control-label">
                                                 #{bundle['dataset.keywordDisplay.title']}
                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                       data-toggle="tooltip" data-placement="auto right"
-                                                      data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.localeDescription}"></span>
+                                                      data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                             </label>
-                                            <div class="col-sm-9">#{DatasetPage.datasetVersionUI.keywordDisplay}</div>
+                                            <div class="col-sm-9">#{DatasetPage.keywordsDisplaySummary}</div>
                                         </div>
                                         <div id="publication" class="form-group"
-                                             jsf:rendered="#{!empty DatasetPage.datasetVersionUI.relPublicationCitation and dsf.datasetFieldType.name=='publication'}">
+                                             jsf:rendered="#{!empty DatasetPage.firstRelPublication and 
+                                                dsf.datasetFieldType.name=='publication'}">
                                             <label class="col-sm-3 control-label">
-                                                #{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).title}
+                                                #{dsf.datasetFieldType.localeTitle}
                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                       data-toggle="tooltip" data-placement="auto right"
-                                                      data-original-title="#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).description}"></span>
+                                                      data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                             </label>
                                             <div class="col-sm-9">
                                                 <h:outputText
-                                                        value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.relPublicationCitation)}"
+                                                        value="#{DatasetPage.firstRelPublication.text}"
                                                         escape="false"/>
-                                                <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}"
-                                                   title="#{DatasetPage.datasetVersionUI.relPublicationUrl}"
-                                                   target="_blank">#{DatasetPage.datasetVersionUI.relPublicationId}</a>
+                                                <b>#{DatasetPage.firstRelPublication.url}</b>
+                                                <ui:fragment rendered="#{not empty DatasetPage.firstRelPublication.url}">
+                                                    <a href="#{DatasetPage.firstRelPublication.url}"
+                                                       title="#{DatasetPage.firstRelPublication.url}"
+                                                       target="_blank">
+                                                        <h:outputText value="#{DatasetPage.firstRelPublication.idType}: #{DatasetPage.firstRelPublication.idNumber}" />
+                                                    </a>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{empty DatasetPage.firstRelPublication.url}">
+                                                    <h:outputText value="#{DatasetPage.firstRelPublication.idType}: #{DatasetPage.firstRelPublication.idNumber}" />
+                                                </ui:fragment>
                                             </div>
                                         </div>
 
@@ -447,39 +452,10 @@
                                                       data-toggle="tooltip" data-placement="auto right"
                                                       data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                             </label>
-                                            <!-- Primitive datasetFields -->
-                                            <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.primitive}">
-                                                <h:outputText value="#{dsf.displayValue}"
-                                                              rendered="#{!dsf.datasetFieldType.allowMultiples}"
-                                                              escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
-                                                <ui:repeat value="#{dsf.values}" var="value" varStatus="loop"
-                                                           rendered="#{dsf.datasetFieldType.allowMultiples}">
-                                                    <h:outputText value="#{loop.first?'':'; '}#{ value }"
-                                                                  escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
-                                                </ui:repeat>
-                                            </div>
-                                            <!-- Compound datasetFields -->
-                                            <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.compound}">
-                                                <ui:fragment
-                                                        rendered="#{dsf.datasetFieldType.name == 'datasetContact'}">
-                                                    <p class="help-block">
-                                                        <h:outputText value="#{bundle['dataset.contact.tip']}"/>
-                                                    </p>
-                                                </ui:fragment>
-                                                <ui:repeat value="#{dsf.datasetFieldCompoundValues}"
-                                                           var="compoundValue">
-                                                    <div>
-                                                        <ui:repeat
-                                                                value="#{compoundValue.displayValueMap.entrySet().toArray()}"
-                                                                var="cvPart" varStatus="partStatus">
-                                                            <h:outputText value="#{dsf.datasetFieldType.displayFormat} "
-                                                                          rendered="${!partStatus.first}"/>
-                                                            <h:outputText value="#{cvPart.value}"
-                                                                          escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"/>
-                                                        </ui:repeat>
-                                                    </div>
-                                                </ui:repeat>
-                                            </div>
+                                            
+                                            <ui:include src="viewMetadataField.xhtml">
+                                                <ui:param name="datasetField" value="#{dsf}"/>
+                                            </ui:include>
                                         </div>
                                     </ui:repeat>
 

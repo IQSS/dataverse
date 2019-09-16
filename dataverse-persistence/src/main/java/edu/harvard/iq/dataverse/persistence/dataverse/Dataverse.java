@@ -458,12 +458,16 @@ public class Dataverse extends DvObjectContainer {
     }
 
 
-    public List<MetadataBlock> getRootMetadataBlocks() {
+    public Dataverse getMetadataBlockRootDataverse() {
         if (metadataBlockRoot || getOwner() == null) {
-            return metadataBlocks;
+            return this;
         } else {
-            return getOwner().getRootMetadataBlocks();
+            return getOwner().getMetadataBlockRootDataverse();
         }
+    }
+    
+    public List<MetadataBlock> getRootMetadataBlocks() {
+        return getMetadataBlockRootDataverse().getMetadataBlocks();
     }
 
     public List<MetadataBlock> getMetadataBlocks() {
@@ -471,11 +475,7 @@ public class Dataverse extends DvObjectContainer {
     }
 
     public Long getMetadataRootId() {
-        if (metadataBlockRoot || getOwner() == null) {
-            return this.getId();
-        } else {
-            return getOwner().getMetadataRootId();
-        }
+        return getMetadataBlockRootDataverse().getId();
     }
 
 
@@ -531,16 +531,7 @@ public class Dataverse extends DvObjectContainer {
     }
 
     public String getMetadataRootDataverseName() {
-        Dataverse testDV = this;
-        String retName = "Parent";
-        while (testDV.getOwner() != null) {
-            retName = testDV.getOwner().getDisplayName();
-            if (testDV.getOwner().metadataBlockRoot) {
-                break;
-            }
-            testDV = testDV.getOwner();
-        }
-        return retName;
+        return getMetadataBlockRootDataverse().getDisplayName();
     }
 
     public String getFacetRootDataverseName() {

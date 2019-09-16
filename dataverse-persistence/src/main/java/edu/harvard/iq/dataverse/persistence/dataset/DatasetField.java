@@ -59,7 +59,7 @@ public class DatasetField implements Serializable {
         //TODO - a better way to handle this?
         if (dsv instanceof DatasetVersion) {
             dsfv.setDatasetVersion((DatasetVersion) dsv);
-        } else {
+        } else if (dsv instanceof Template) {
             dsfv.setTemplate((Template) dsv);
         }
 
@@ -500,29 +500,9 @@ public class DatasetField implements Serializable {
         return "DatasetField[ id=" + id + " ]";
     }
 
-    public DatasetField copy(Object version) {
-        return copy(version, null);
-    }
-
-    // originally this was an overloaded method, but we renamed it to get around an issue with Bean Validation
-    // (that looked t overloaded methods, when it meant to look at overriden methods
-    public DatasetField copyChild(DatasetFieldCompoundValue parent) {
-        return copy(null, parent);
-    }
-
-    private DatasetField copy(Object version, DatasetFieldCompoundValue parent) {
+    public DatasetField copy() {
         DatasetField dsf = new DatasetField();
         dsf.setDatasetFieldType(datasetFieldType);
-
-        if (version != null) {
-            if (version instanceof DatasetVersion) {
-                dsf.setDatasetVersion((DatasetVersion) version);
-            } else {
-                dsf.setTemplate((Template) version);
-            }
-        }
-
-        dsf.setParentDatasetFieldCompoundValue(parent);
         dsf.setControlledVocabularyValues(controlledVocabularyValues);
 
         for (DatasetFieldValue dsfv : datasetFieldValues) {
@@ -530,7 +510,9 @@ public class DatasetField implements Serializable {
         }
 
         for (DatasetFieldCompoundValue compoundValue : datasetFieldCompoundValues) {
-            dsf.getDatasetFieldCompoundValues().add(compoundValue.copy(dsf));
+            DatasetFieldCompoundValue compoundValueCopy = compoundValue.copy();
+            compoundValueCopy.setParentDatasetField(dsf);
+            dsf.getDatasetFieldCompoundValues().add(compoundValueCopy);
         }
 
         return dsf;

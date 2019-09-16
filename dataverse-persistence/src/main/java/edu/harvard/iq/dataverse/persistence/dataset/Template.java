@@ -317,7 +317,7 @@ public class Template implements Serializable {
         Template latestVersion = source;
         //if the latest version has values get them copied over
         if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
-            newTemplate.setDatasetFields(newTemplate.copyDatasetFields(source.getDatasetFields()));
+            newTemplate.setDatasetFields(DatasetFieldUtil.copyDatasetFields(source.getDatasetFields()));
         }
         TermsOfUseAndAccess terms;
         if (source.getTermsOfUseAndAccess() != null) {
@@ -330,17 +330,6 @@ public class Template implements Serializable {
         return newTemplate;
     }
 
-    public List<DatasetField> copyDatasetFields(List<DatasetField> copyFromList) {
-        List<DatasetField> retList = new ArrayList<>();
-
-        for (DatasetField sourceDsf : copyFromList) {
-            //the copy needs to have the current version
-            retList.add(sourceDsf.copy(this));
-        }
-
-        return retList;
-    }
-
     public void setDatasetFields(List<DatasetField> datasetFields) {
         for (DatasetField dsf : datasetFields) {
             dsf.setTemplate(this);
@@ -349,21 +338,7 @@ public class Template implements Serializable {
     }
 
     public List<DatasetField> getFlatDatasetFields() {
-        return getFlatDatasetFields(getDatasetFields());
-    }
-
-    private List<DatasetField> getFlatDatasetFields(List<DatasetField> dsfList) {
-        List<DatasetField> retList = new LinkedList<>();
-        for (DatasetField dsf : dsfList) {
-            retList.add(dsf);
-            if (dsf.getDatasetFieldType().isCompound()) {
-                for (DatasetFieldCompoundValue compoundValue : dsf.getDatasetFieldCompoundValues()) {
-                    retList.addAll(getFlatDatasetFields(compoundValue.getChildDatasetFields()));
-                }
-
-            }
-        }
-        return retList;
+        return DatasetFieldUtil.getFlatDatasetFields(datasetFields);
     }
 
     @Override

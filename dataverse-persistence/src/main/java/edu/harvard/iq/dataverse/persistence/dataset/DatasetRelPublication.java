@@ -20,18 +20,6 @@ public class DatasetRelPublication {
     private String idType;
     private String idNumber;
     private String url;
-    private String title;
-    private String description;
-    private boolean replicationData;
-    private int displayOrder;
-
-    public int getDisplayOrder() {
-        return displayOrder;
-    }
-
-    public void setDisplayOrder(int displayOrder) {
-        this.displayOrder = displayOrder;
-    }
 
     public String getIdNumber() {
         return idNumber;
@@ -65,26 +53,8 @@ public class DatasetRelPublication {
         this.url = url;
     }
 
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public boolean isEmpty() {
         return ((text == null || text.trim().equals(""))
-                && (!replicationData)
                 && (idType == null || idType.trim().equals(""))
                 && (idNumber == null || idNumber.trim().equals(""))
                 && (url == null || url.trim().equals("")));

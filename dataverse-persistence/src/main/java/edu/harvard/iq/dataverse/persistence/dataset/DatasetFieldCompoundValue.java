@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.persistence.dataset;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.MarkupChecker;
 import org.apache.commons.lang3.StringUtils;
@@ -119,13 +120,14 @@ public class DatasetFieldCompoundValue implements Serializable {
         return "DatasetFieldCompoundValue[ id=" + id + " ]";
     }
 
-    public DatasetFieldCompoundValue copy(DatasetField parent) {
+    public DatasetFieldCompoundValue copy() {
         DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();
-        compoundValue.setParentDatasetField(parent);
         compoundValue.setDisplayOrder(displayOrder);
 
         for (DatasetField subField : childDatasetFields) {
-            compoundValue.getChildDatasetFields().add(subField.copyChild(compoundValue));
+            DatasetField subFieldCopy = subField.copy();
+            subFieldCopy.setParentDatasetFieldCompoundValue(compoundValue);
+            compoundValue.getChildDatasetFields().add(subFieldCopy);
         }
 
         return compoundValue;
@@ -162,4 +164,5 @@ public class DatasetFieldCompoundValue implements Serializable {
 
         return fieldMap;
     }
+    
 }

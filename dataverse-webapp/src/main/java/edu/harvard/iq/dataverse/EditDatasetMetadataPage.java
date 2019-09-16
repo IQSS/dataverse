@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.DatasetVersionUI.MetadataBlocksMode;
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.dataset.DatasetFieldsInitializer;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -46,7 +46,7 @@ public class EditDatasetMetadataPage implements Serializable {
     @EJB
     private EjbDataverseEngine commandEngine;
     @Inject
-    private DatasetVersionUI datasetVersionUI;
+    private DatasetFieldsInitializer datasetFieldsInitializer;
 
     private Long datasetId;
     private String persistentId;
@@ -104,8 +104,10 @@ public class EditDatasetMetadataPage implements Serializable {
         workingVersion = dataset.getEditVersion();
         clone = workingVersion.cloneDatasetVersion();
 
-        datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, MetadataBlocksMode.FOR_EDIT);
-        metadataBlocksForEdit = datasetVersionUI.getMetadataBlocks();
+        List<DatasetField> datasetFields = datasetFieldsInitializer.prepareDatasetFieldsForEdit(workingVersion.getDatasetFields(),
+                dataset.getOwner().getMetadataBlockRootDataverse());
+        workingVersion.setDatasetFields(datasetFields);
+        metadataBlocksForEdit = datasetFieldsInitializer.groupAndUpdateEmptyAndRequiredFlag(datasetFields);
 
         JH.addMessage(FacesMessage.SEVERITY_INFO,
                 BundleUtil.getStringFromBundle("dataset.message.editMetadata.label"),

@@ -2,10 +2,12 @@ package edu.harvard.iq.dataverse.dataset.tab;
 
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
+import edu.harvard.iq.dataverse.dataset.DatasetFieldsInitializer;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.Tuple;
@@ -27,6 +29,7 @@ public class DatasetMetadataTab implements Serializable {
     private DataverseRequestServiceBean dvRequestService;
     private ExportService exportService;
     private SystemConfig systemConfig;
+    private DatasetFieldsInitializer datasetFieldsInitializer;
 
     private Dataset dataset;
     private boolean isDatasetLocked;
@@ -42,11 +45,13 @@ public class DatasetMetadataTab implements Serializable {
     public DatasetMetadataTab(PermissionsWrapper permissionsWrapper,
                               DataverseRequestServiceBean dvRequestService,
                               ExportService exportService,
-                              SystemConfig systemConfig) {
+                              SystemConfig systemConfig,
+                              DatasetFieldsInitializer datasetVersionUI) {
         this.permissionsWrapper = permissionsWrapper;
         this.dvRequestService = dvRequestService;
         this.exportService = exportService;
         this.systemConfig = systemConfig;
+        this.datasetFieldsInitializer = datasetVersionUI;
     }
 
     // -------------------- GETTERS --------------------
@@ -69,11 +74,12 @@ public class DatasetMetadataTab implements Serializable {
     // -------------------- LOGIC --------------------
 
     public void init(Dataset dataset,
-                     boolean isDatasetLocked,
-                     Map<MetadataBlock, List<DatasetField>> metadataBlocks) {
+                     boolean isDatasetLocked) {
         this.dataset = dataset;
         this.isDatasetLocked = isDatasetLocked;
-        this.metadataBlocks = metadataBlocks;
+        
+        List<DatasetField> datasetFields = datasetFieldsInitializer.prepareDatasetFieldsForView(dataset.getLatestVersion().getDatasetFields());
+        this.metadataBlocks = DatasetFieldUtil.groupByBlock(datasetFields);
     }
 
     public boolean canUpdateDataset() {

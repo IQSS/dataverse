@@ -1,12 +1,9 @@
 package edu.harvard.iq.dataverse.dataset;
 
 import edu.harvard.iq.dataverse.DatasetPage;
-import edu.harvard.iq.dataverse.DatasetVersionUI;
-import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevelServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
-import edu.harvard.iq.dataverse.DatasetVersionUI.MetadataBlocksMode;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.NotAuthenticatedException;
@@ -17,6 +14,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.datafile.license.TermsOfUseForm;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.persistence.dataset.Template;
@@ -61,10 +59,8 @@ public class CreateDatasetPage implements Serializable {
     private PermissionsWrapper permissionsWrapper;
     @EJB
     private SettingsServiceBean settingsService;
-    @EJB
-    private DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService;
     @Inject
-    private DatasetVersionUI datasetVersionUI;
+    private DatasetFieldsInitializer datasetFieldsInitializer;
     @Inject
     private DataverseSession session;
     @EJB
@@ -199,18 +195,22 @@ public class CreateDatasetPage implements Serializable {
     }
     
     private void resetDatasetFields() {
-        workingVersion.initDefaultValues();
+        List<DatasetField> datasetFields = new ArrayList<>();
+        
+        datasetFields = datasetFieldsInitializer.prepareDatasetFieldsForEdit(datasetFields, dataset.getOwner().getMetadataBlockRootDataverse());
         
         if (selectedTemplate != null) {
-            workingVersion.updateDefaultValuesFromTemplate(selectedTemplate);
+            datasetFields = DatasetFieldUtil.mergeDatasetFields(
+                                datasetFields,
+                                DatasetFieldUtil.copyDatasetFields(selectedTemplate.getDatasetFields()));
         }
-        
-        datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, MetadataBlocksMode.FOR_EDIT);
-        metadataBlocksForEdit = datasetVersionUI.getMetadataBlocks();
         
         if (session.getUser().isAuthenticated()) {
-            userDataFieldFiller.fillUserDataInDatasetFields(workingVersion.getDatasetFields(), (AuthenticatedUser) session.getUser());
+            userDataFieldFiller.fillUserDataInDatasetFields(datasetFields, (AuthenticatedUser) session.getUser());
         }
+        
+        workingVersion.setDatasetFields(datasetFields);
+        metadataBlocksForEdit = datasetFieldsInitializer.groupAndUpdateEmptyAndRequiredFlag(datasetFields);
     }
 
     private void mapTermsOfUseInFiles(List<DataFile> files) {

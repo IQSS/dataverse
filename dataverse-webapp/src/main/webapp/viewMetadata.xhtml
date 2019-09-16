@@ -57,31 +57,10 @@
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                 </label>
-                                <!-- Primitive datasetFields -->
-                                <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.primitive}">   
-                                    <h:outputText value="#{dsf.displayValue}" rendered="#{!dsf.datasetFieldType.allowMultiples}"
-                                                  escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
-                                    <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples}">
-                                        <h:outputText value="#{loop.first?'':'; '}#{ value }"
-                                                      escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
-                                    </ui:repeat>
-                                </div>
-                                <!-- Compound datasetFields -->
-                                <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.compound}">
-                                    <ui:fragment rendered="#{dsf.datasetFieldType.name == 'datasetContact'}">
-                                        <p class="help-block">
-                                            <h:outputText value="#{bundle['dataset.contact.tip']}"/>
-                                        </p>
-                                    </ui:fragment>
-                                    <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue">
-                                        <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">                                           
-                                            <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first}"/>
-                                            <h:outputText value="#{cvPart.value}"
-                                                          escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"/>
-                                        </ui:repeat>
-                                        <br/>
-                                    </ui:repeat>
-                                </div>
+                                
+                                <ui:include src="viewMetadataField.xhtml">
+                                    <ui:param name="datasetField" value="#{dsf}"/>
+                                </ui:include>
                             </div>
                         </ui:repeat>
                     </div>

@@ -28,6 +28,7 @@ scripts/installer/dvinstall.zip
 scripts/installer/dvinstall/
 /nbproject/
 oauth-credentials.md
+derby.log
 
 /src/main/webapp/oauth2/newAccount.html
 scripts/api/setup-all.sh*
@@ -51,3 +52,4 @@ scripts/installer/default.config
 .metadata
 .project
 .settings
+.tern-project
