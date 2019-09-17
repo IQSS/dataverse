@@ -143,7 +143,7 @@ One of the primary purposes for Dataverse APIs in the first place is to enable i
 Developers of Dataverse API Client Libraries 
 ++++++++++++++++++++++++++++++++++++++++++++
 
-A client library helps developers using a specific programming language such as Python, R, or Java interact with Dataverse APIs in a manner that is idiomatic for their language. For example, a Python programmer may want to
+A client library helps developers using a specific programming language such as Python, Javascript, R, or Java interact with Dataverse APIs in a manner that is idiomatic for their language. For example, a Python programmer may want to
 
 |Start| A good starting point is the :doc:`client-libraries` section, followed by the :doc:`getting-started` section.
 
