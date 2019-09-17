@@ -52,7 +52,7 @@ If you ever want to check an environment variable, you can "echo" it like this:
 
   echo $SERVER_URL
 
-If you don't like curl, don't have curl, or want to use a different programming language, you are encouraged to check out the Python, R, and Java options in the :doc:`client-libraries` section.
+If you don't like curl, don't have curl, or want to use a different programming language, you are encouraged to check out the Python, Javascript, R, and Java options in the :doc:`client-libraries` section.
 
 .. _curl: https://curl.haxx.se
 
