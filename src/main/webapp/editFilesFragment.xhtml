@@ -335,15 +335,14 @@
                             
                             
                 <div class="file-icon-restricted-block"
-                     jsf:rendered="#{!EditDatafilesPage.fileToReplace.notaryServiceBound}"
-                        >
+                     jsf:rendered="#{!fileMetadata.dataFile.notaryServiceBound}">
                             
                             <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted}">
                                 <span class="icon-unlock text-success"/>
                             </div>
-                </div>                            
-                    <div class="file-icon-restricted-block" jsf:rendered="#{EditDatafilesPage.fileToReplace.notaryServiceBound}">
-                       <span  title="Notary Service Bound" class="glyphicon glyphicon-tower text-danger"/>
+                </div> 
+                <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.dataFile.notaryServiceBound}">
+                   <span  title="Notary Service Bound" class="glyphicon glyphicon-tower text-danger"/>
                 </div>
                             
                             <!-- Dataset Thumbnail -->

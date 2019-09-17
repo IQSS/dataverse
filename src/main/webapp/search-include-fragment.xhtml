@@ -566,8 +566,18 @@
                             <span class="glyphicon glyphicon-new-window text-muted pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
                             <span class="icon-file text-muted pull-right" title="#{bundle.file}"/>
 
+                            
+                <div class="file-icon-restricted-block"
+                     jsf:rendered="#{!result.entity.notaryServiceBound}">
+                            
                             <span class="text-danger glyphicon glyphicon-lock" title="#{bundle.restricted}" jsf:rendered="#{result.entity.restricted and !permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
                             <span class="text-success icon-unlock" title="#{bundle.restrictedaccess}" jsf:rendered="#{result.entity.restricted and permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
+                </div>
+                <div class="file-icon-restricted-block" jsf:rendered="#{result.entity.notaryServiceBound}">
+   <span  title="Notary Service Bound" class="glyphicon glyphicon-tower text-danger"/>
+</div>
+                            
+                            
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? (result.harvested ? result.fileDatasetUrl : result.fileUrl) : widgetWrapper.wrapURL(result.harvested ? result.fileDatasetUrl : result.fileUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
                                 <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
                                 <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
