@@ -817,15 +817,25 @@ sub setup_glassfish {
 # add a check.
 
     print "\nInstalling the Glassfish PostgresQL driver... ";
-#    system( "/bin/cp", "pgdriver/" . $postgres_jdbc, $glassfish_dir . "/glassfish/lib" );
     my $pgdriver_success = copy("pgdriver/" . $postgres_jdbc, $glassfish_dir . "/glassfish/lib" );
 
-    unless ($pgdriver_success) 
+    unless ($pgdriver_success)
     {
 	print "\n*********************\n";
 	print "ERROR! Failed to copy the postgres driver into " . $glassfish_dir . "/glassfish/lib - check the directory permissions!\n";
 	exit 1;
     }
+
+	print "\nPatching glassfish 4.1.2 ... ";
+
+	my @fixedFiles = glob("glassfishfix/*.jar");
+
+    	for my $file (@fixedFiles) {
+    		copy($file, $glassfish_dir . "/glassfish/modules") or die "\nCopy failed for file: $file";
+    	}
+
+    	unlink $glassfish_dir . "/glassfish/modules/org.eclipse.persistence.moxy.jar" or print "\n moxy file couldn't be deleted";
+
 
 # more diagnostics needed?
 
