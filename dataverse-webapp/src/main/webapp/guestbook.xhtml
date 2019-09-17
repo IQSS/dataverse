@@ -136,7 +136,7 @@
                                                                     styleClass="btn btn-default btn-sm bootstrap-button-tooltip nolabel-field-btn"
                                                                     title="#{bundle.add}"
                                                                     update=":guestbookForm:customQuestions"
-                                                                    oncomplete="javascript:bind_bsui_components();"
+
                                                                     actionListener="#{GuestbookPage.addCustomQuestionValue(cq, resCount.index + 1)}">
                                                                 <span class="glyphicon glyphicon-plus no-text"/>
                                                             </p:commandLink>
@@ -145,7 +145,7 @@
                                                                     title="#{bundle.delete}"
                                                                     rendered="#{cq.customQuestionValues.size() > 1}"
                                                                     update=":guestbookForm:customQuestions"
-                                                                    oncomplete="javascript:bind_bsui_components();"
+
                                                                     actionListener="#{GuestbookPage.removeCustomQuestionValue(cq, resCount.index)}">
                                                                 <span class="glyphicon glyphicon-minus no-text"/>
                                                             </p:commandLink>
@@ -164,7 +164,7 @@
                                             <p:commandLink
                                                     styleClass="btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn"
                                                     title="#{bundle.add}" update=":guestbookForm:customQuestions"
-                                                    oncomplete="javascript:bind_bsui_components();"
+
                                                     actionListener="#{GuestbookPage.addCustomQuestion(valCount.index + 1 )}">
                                                 <span class="glyphicon glyphicon-plus no-text"/>
                                             </p:commandLink>
@@ -172,7 +172,7 @@
                                                     styleClass="btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn"
                                                     rendered="#{GuestbookPage.guestbook.customQuestions.size() > 1}"
                                                     title="#{bundle.delete}" update=":guestbookForm:customQuestions"
-                                                    oncomplete="javascript:bind_bsui_components();"
+
                                                     actionListener="#{GuestbookPage.removeCustomQuestion(valCount.index)}">
                                                 <span class="glyphicon glyphicon-minus no-text"/>
                                             </p:commandLink>

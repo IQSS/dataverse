@@ -47,7 +47,7 @@
                                         <p:commandLink type="button" id="userGroupsAdd" styleClass="btn btn-default"
                                                        actionListener="#{manageFilePermissionsPage.initAssignDialog}"
                                                        update="assignDialog"
-                                                       oncomplete="PF('assignWidget').show();handleResizeDialog('assignDialog');bind_bsui_components();">
+                                                       oncomplete="PF('assignWidget').show();handleResizeDialog('assignDialog');">
                                             <span class="glyphicon glyphicon-user"/> #{bundle['dataverse.permissionsFiles.usersOrGroups.assignBtn']}
                                         </p:commandLink>
                                     </div>
@@ -83,7 +83,7 @@
                                                                        update=":#{p:resolveClientId('rolesPermissionsForm:userGroups', view)} :#{p:resolveClientId('rolesPermissionsForm:restrictedFiles', view)} :#{p:resolveClientId('rolesPermissionsForm:fileAccessRequests', view)}                                                                       
                                                                        :#{p:resolveClientId('rolesPermissionsForm:userGroupsRequests', view)}
                                                                        :#{p:resolveClientId('rolesPermissionsForm:userGroupMessages', view)} @([id$=Messages])"
-                                                                       oncomplete="bind_bsui_components();">
+                                                                       >
                                                             <span class="glyphicon glyphicon-ok"/> #{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}
                                                         </p:commandLink>
                                                         <p:commandLink type="button" styleClass="btn btn-default"
@@ -91,7 +91,7 @@
                                                                        update=":#{p:resolveClientId('rolesPermissionsForm:userGroups', view)} :#{p:resolveClientId('rolesPermissionsForm:restrictedFiles', view)} :#{p:resolveClientId('rolesPermissionsForm:fileAccessRequests', view)}                                                                       
                                                                        :#{p:resolveClientId('rolesPermissionsForm:userGroupsRequests', view)}
                                                                        :#{p:resolveClientId('rolesPermissionsForm:userGroupMessages', view)} @([id$=Messages])"
-                                                                       oncomplete="bind_bsui_components();">
+                                                                       >
                                                             <span class="glyphicon glyphicon-ban-circle"/> #{bundle['dataverse.permissionsFiles.assignDialog.rejectBtn']}
                                                         </p:commandLink>
                                                     </div>
@@ -116,7 +116,7 @@
                                                     <p:commandLink id="viewUserGroups"
                                                                    actionListener="#{manageFilePermissionsPage.initViewRemoveDialogByRoleAssignee(ra.key, ra.value)}"
                                                                    update=":#{p:resolveClientId('rolesPermissionsForm:viewRemoveDialog', view)}"
-                                                                   oncomplete="PF('viewRemoveWidget').show(); bind_bsui_components();">
+                                                                   oncomplete="PF('viewRemoveWidget').show(); ">
                                                         <h:outputText value="#{ra.value.size()} #{ra.value.size() eq 1 ?  bundle['dataverse.permissionsFiles.usersOrGroups.file'] : bundle['dataverse.permissionsFiles.usersOrGroups.files']}"/>
                                                     </p:commandLink>
                                                 </p:column>
@@ -192,7 +192,7 @@
                                             <p:commandLink type="button" styleClass="btn btn-default"
                                                            actionListener="#{manageFilePermissionsPage.initAssignDialogByFile(fileEntry.key)}"
                                                            update=":#{p:resolveClientId('rolesPermissionsForm:assignDialog', view)}"
-                                                           oncomplete="PF('assignWidget').show();handleResizeDialog('assignDialog');bind_bsui_components();"><span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.permissionsFiles.files.assignBtn']}</p:commandLink>
+                                                           oncomplete="PF('assignWidget').show();handleResizeDialog('assignDialog');"><span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.permissionsFiles.files.assignBtn']}</p:commandLink>
                                         </p:column>
                                     </p:dataTable>
                                 </div>

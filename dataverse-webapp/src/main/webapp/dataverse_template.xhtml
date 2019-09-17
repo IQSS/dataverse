@@ -36,7 +36,7 @@
         <link type="text/css" rel="stylesheet" href="#{resource['css/socicon.css']}?version=#{systemConfig.getVersion()}" />
         <link type="text/css" rel="stylesheet" href="#{resource['css/structure.css']}?version=#{systemConfig.getVersion()}" />
         <link type="text/css" rel="stylesheet" href="#{resource['vecler/theme.css']}?version=#{systemConfig.getVersion()}" />
-        <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700&amp;display=swap" /> 
+        <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700&amp;display=swap" />
         <ui:fragment rendered="#{!widgetWrapper.widgetView}">
             <script>
                 // Break out of iframe
@@ -52,7 +52,7 @@
     </h:head>
     <h:body styleClass="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
         <f:loadBundle basename="Bundle" var="bundle"/>
-	<a href="#content" class="sr-only">#{bundle['body.skip']}</a>                
+	<a href="#content" class="sr-only">#{bundle['body.skip']}</a>
         <ui:include src="dataverse_header.xhtml">
             <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
             <ui:param name="showDataverseHeader" value="#{showDataverseHeader != null ? showDataverseHeader : true}"/>
@@ -92,8 +92,8 @@
         <script type="text/javascript" defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
         <script type="text/javascript" defer="defer" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersion()}"></script>
         <script type="text/javascript" defer="defer" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>  
-        <script type="text/javascript" defer="defer" src="#{resource['js/clipboard.min.js']}?version=#{systemConfig.getVersion()}"></script>          
+        <script type="text/javascript" defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" defer="defer" src="#{resource['js/clipboard.min.js']}?version=#{systemConfig.getVersion()}"></script>
         <ui:fragment rendered="#{settingsWrapper.shibPassiveLoginEnabled}">
             <script type="text/javascript" language="javascript" src="#{resource['js/shib/isPassive.js']}"></script>
         </ui:fragment>
@@ -113,11 +113,13 @@
                     ;
                 });
 
-                // Rebind bootstrap UI components
                 bind_bsui_components();
+
+                $(document).on('pfAjaxComplete', function () {
+                    bind_bsui_components();
+                })
             });
 
-            
             //]]>
         </script>
     </h:body>

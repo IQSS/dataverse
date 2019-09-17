@@ -115,7 +115,7 @@
                                                 <li class="#{FilePage.lockedFromEdits  ? 'disabled' : ''}">
                                                     <p:commandLink id="fileProvenanceButton"
                                                                update="editProvenancePopup"
-                                                               oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
+                                                               oncomplete="PF('editProvenancePopup').show();">
                                                                <f:actionListener binding="#{provPopupFragmentBean.updatePopupState(fileMetadata, true)}" /> <!--clearProvenanceUpdates() -->
                                                                 #{bundle['file.provenance']} 
                                                     </p:commandLink>
@@ -370,7 +370,7 @@
                     <div id="contentTabs">
                         <!-- Metadata -->
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{FilePage.selectedTabIndex}">
-                            <p:ajax event="tabChange" listener="#{FilePage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
+                            <p:ajax event="tabChange" listener="#{FilePage.tabChanged}"  update="@this" />
                             <p:tab id="accessTab" class="padding-none" title="#{bundle['file.dataFilesTab.dataAccess']}"
                                    rendered="#{settingsWrapper.rsyncDownload and FilePage.fileMetadata.dataFile.filePackage and systemConfig.rsyncDownload
                                         and !FilePage.fileMetadata.getDataFile().getOwner().getStorageIdentifier().startsWith('s3://') }">

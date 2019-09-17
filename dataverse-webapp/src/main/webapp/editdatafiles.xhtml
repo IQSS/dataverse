@@ -62,12 +62,12 @@
                                             onclick="PF('blockFileForm').show();"
                                             action="#{EditDatafilesPage.save}"
                                             update="@form,:messagePanel"
-                                            oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);" />
-                                    <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();">
+                                            oncomplete="$(document).scrollTop(0);" />
+                                    <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" >
                                     </p:commandButton>
                                 </div>
                                 <div jsf:rendered="#{empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment())}">
-                                    <p:commandButton tabindex="1000" id="doneFilesButton" value="#{bundle.done}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();">
+                                    <p:commandButton tabindex="1000" id="doneFilesButton" value="#{bundle.done}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" >
                                     </p:commandButton>
 
                                 </div>

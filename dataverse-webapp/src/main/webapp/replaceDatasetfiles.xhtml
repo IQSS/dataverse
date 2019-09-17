@@ -114,7 +114,7 @@
                                                           fileUploadListener="#{ReplaceDatafilesPage.handleFileUpload}"
                                                           update="@form"
                                                           label="#{bundle['file.selectToAddBtn']}"
-                                                          oncomplete="javascript:bind_bsui_components();uploadFinished(PF('fileUploadWidget'));"
+                                                          oncomplete="uploadFinished(PF('fileUploadWidget'));"
                                                           onstart="#{ReplaceDatafilesPage.uploadStarted()}"
                                                           onerror="uploadFailure();"
                                                           sizeLimit="#{settingsWrapper.getEnumSettingValue(settingEnum.MaxFileUploadSizeInBytes)}"
@@ -341,7 +341,7 @@
                                                         <li class="#{ReplaceDatafilesPage.isLockedFromEdits()  ? 'disabled' : ''}">
                                                             <p:commandLink id="fileProvenanceButton"
                                                                            update="@form"
-                                                                           oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
+                                                                           oncomplete="PF('editProvenancePopup').show();">
                                                                 <f:actionListener
                                                                         binding="#{provPopupFragmentBean.updatePopupStateAndDataset(fileMetadata, ReplaceDatafilesPage.dataset)}"/>
                                                                 #{bundle['file.provenance']}
@@ -353,7 +353,7 @@
                                                         <p:commandLink id="fileCategoriesButton"
                                                                        actionListener="#{ReplaceDatafilesPage.refreshTagsPopUp(fileMetadata)}"
                                                                        update="@form"
-                                                                       oncomplete="PF('editFileTagsPopup').show();bind_bsui_components();">
+                                                                       oncomplete="PF('editFileTagsPopup').show();">
                                                             #{bundle['file.tags']}
                                                         </p:commandLink>
                                                     </li>
@@ -402,19 +402,19 @@
                                 <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}"
                                                  action="#{ReplaceDatafilesPage.returnToFileLandingPage()}"
                                                  process="@this" update="@form"
-                                                 oncomplete="javascript:bind_bsui_components();">
+                                                 >
                                 </p:commandButton>
                                 <p:commandButton value="#{bundle.saveChanges}" id="datasetSave"
                                                  update="@form,:messagePanel"
                                                  onclick="PF('blockFileForm').show();"
-                                                 oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
+                                                 oncomplete="$(document).scrollTop(0);"
                                                  action="#{ReplaceDatafilesPage.saveReplacement()}"/>
                             </div>
                             <div jsf:rendered="#{empty ReplaceDatafilesPage.fileMetadatas}">
                                 <p:commandButton tabindex="1000" id="doneFilesButton" value="#{bundle.done}"
                                                  action="#{ReplaceDatafilesPage.returnToFileLandingPage()}"
                                                  process="@this" update="@form"
-                                                 oncomplete="javascript:bind_bsui_components();">
+                                                 >
                                 </p:commandButton>
 
                             </div>

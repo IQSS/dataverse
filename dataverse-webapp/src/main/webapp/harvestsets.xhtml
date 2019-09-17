@@ -57,7 +57,7 @@
                                 <p:commandLink type="button" id="addSetEmpty" styleClass="btn btn-default margin-bottom"
                                                actionListener="#{harvestingSetsPage.initNewSet}"
                                                update=":harvestingSetsForm:newOAISetDialog"
-                                               oncomplete="PF('newOAISetForm').show();handleResizeDialog('newOAISetDialog');bind_bsui_components();">
+                                               oncomplete="PF('newOAISetForm').show();handleResizeDialog('newOAISetDialog');">
                                     <span class="glyphicon glyphicon-plus"/> #{bundle['harvestserver.btn.add']}
                                 </p:commandLink>
                             </div>
@@ -111,7 +111,7 @@
                                         <p:commandLink type="button" id="addSet" styleClass="btn btn-default"
                                                        actionListener="#{harvestingSetsPage.initNewSet}"
                                                        update=":harvestingSetsForm:newOAISetDialog"
-                                                       oncomplete="PF('newOAISetForm').show();handleResizeDialog('newOAISetDialog');bind_bsui_components();">
+                                                       oncomplete="PF('newOAISetForm').show();handleResizeDialog('newOAISetDialog');">
                                             <span class="glyphicon glyphicon-plus"/> #{bundle['harvestserver.btn.add']}
                                         </p:commandLink>
                                     </div>
@@ -157,7 +157,7 @@
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                    disabled="#{oaiSet.updateInProgress or oaiSet.deleteInProgress}"
                                                    action="#{harvestingSetsPage.editSet(oaiSet)}"
-                                                   oncomplete="PF('newOAISetForm').show();handleResizeDialog('newOAISetDialog');bind_bsui_components();"
+                                                   oncomplete="PF('newOAISetForm').show();handleResizeDialog('newOAISetDialog');"
                                                    update=":harvestingSetsForm:newOAISetDialog"
                                                    title="#{bundle['harvestserver.tab.header.action.btn.edit']}">
                                         <span class="glyphicon glyphicon-pencil no-text"></span>
@@ -165,7 +165,7 @@
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                    disabled="#{oaiSet.defaultSet or oaiSet.updateInProgress or oaiSet.deleteInProgress}"
                                                    action="#{harvestingSetsPage.setSelectedSet(oaiSet)}"
-                                                   oncomplete="PF('deleteConfirmation').show();bind_bsui_components();"
+                                                   oncomplete="PF('deleteConfirmation').show();"
                                                    update=":harvestingSetsForm,:harvestingSetsForm:deleteConfirmation,:harvestingSetsForm:newOAISetDialog"
                                                    title="#{bundle['harvestserver.tab.header.action.btn.delete']}">
                                         <span class="glyphicon glyphicon-trash no-text"></span>
@@ -245,7 +245,7 @@
                                         <p:commandLink type="button" 
                                                          id="validateSetQueryBtn"
                                                          styleClass="btn btn-default"
-                                                         oncomplete="PF('newOAISetForm').show();bind_bsui_components();"
+                                                         oncomplete="PF('newOAISetForm').show();"
                                                          update=":harvestingSetsForm:newOAISetDialog"
                                                          action="#{harvestingSetsPage.validateSetQuery()}">
                                             <span class="glyphicon glyphicon-menu-right"/> #{bundle.next}
@@ -300,7 +300,7 @@
                                                         id="backToQuery"
                                                         styleClass="btn btn-default"
                                                         update=":harvestingSetsForm:newOAISetDialog"
-                                                        oncomplete="PF('newOAISetForm').show();bind_bsui_components();"
+                                                        oncomplete="PF('newOAISetForm').show();"
                                                         action="#{harvestingSetsPage.backToQuery()}">
                                             <span class="glyphicon glyphicon-menu-left"/> #{bundle.previous}
                                             </p:commandLink>
@@ -309,7 +309,7 @@
                                                            value="#{bundle['harvestserver.newSetDialog.btn.create']}"
                                                            update="newOAISetDialogContent :messagePanel :harvestingSetsForm setsTable emptySetsTable"
                                                            actionListener="#{harvestingSetsPage.createSet}"
-                                                           oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newOAISetForm').hide(); else PF('newOAISetForm').show();bind_bsui_components();">
+                                                           oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newOAISetForm').hide(); else PF('newOAISetForm').show();">
                                                 <f:param name="DO_VALIDATION" value="true"/>
                                             </p:commandLink>
                                             <p:commandLink type="button" styleClass="btn btn-default"
@@ -317,7 +317,7 @@
                                                            value="#{bundle['harvestserver.viewEditDialog.btn.save']}"
                                                            update="newOAISetDialogContent :messagePanel :harvestingSetsForm setsTable emptySetsTable"
                                                            actionListener="#{harvestingSetsPage.saveSet}"
-                                                           oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newOAISetForm').hide(); else PF('newOAISetForm').show();bind_bsui_components();"/>
+                                                           oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newOAISetForm').hide(); else PF('newOAISetForm').show();"/>
                                             <button type="button" jsf:rendered="#{harvestingSetsPage.setQueryValidated}" class="btn btn-default" onclick="PF('newOAISetForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
                                         </div>
                                     </div>

@@ -32,7 +32,7 @@
                         <div class="pull-right">
                             <p:commandLink type="button" id="createGroup" styleClass="btn btn-default"
                                            actionListener="#{manageGroupsPage.initExplicitGroupDialog}"
-                                           update="explicitGroupNewDialog" oncomplete="PF('explicitGroupForm').show();handleResizeDialog('explicitGroupNewDialog');bind_bsui_components();">
+                                           update="explicitGroupNewDialog" oncomplete="PF('explicitGroupForm').show();handleResizeDialog('explicitGroupNewDialog');">
                                 <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.manageGroups.createBtn']}
                             </p:commandLink>
                         </div>
@@ -78,7 +78,7 @@
                                     <div class="btn-group" role="group">
                                         <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                        action="#{manageGroupsPage.viewSelectedGroup(explicitGroup)}"
-                                                       oncomplete="PF('viewGroup').show();bind_bsui_components();"
+                                                       oncomplete="PF('viewGroup').show();"
                                                        update=":manageGroupsForm"
                                                        title="#{bundle['dataverse.manageGroups.tab.action.btn.edit']}">
                                             <span class="glyphicon glyphicon-edit"></span>

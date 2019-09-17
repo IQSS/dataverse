@@ -53,13 +53,13 @@
                                 <ui:fragment rendered="#{DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
                                     <li>
                                         <p:commandLink id="editAccount" rendered="#{DataverseUserPage.accountDetailsEditable}"
-                                                       actionListener="#{DataverseUserPage.edit}" update="@form" oncomplete="javascript:bind_bsui_components();">
+                                                       actionListener="#{DataverseUserPage.edit}" update="@form" >
                                             <h:outputText value="#{bundle['account.info']}" />
                                         </p:commandLink>
                                     </li>
                                     <li>
                                         <p:commandLink id="changePassword" rendered="#{DataverseUserPage.passwordEditable}" 
-                                                       actionListener="#{DataverseUserPage.changePassword}" update="@form" oncomplete="javascript:bind_bsui_components();">
+                                                       actionListener="#{DataverseUserPage.changePassword}" update="@form" >
                                             <h:outputText value="#{bundle.passwd}" />
                                         </p:commandLink>
                                     </li>
@@ -73,7 +73,7 @@
                     </p:panel>
 
                     <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
-                        <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" oncomplete="javascript:bind_bsui_components();" />
+                        <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all"  />
                         <p:tab id="myData" title="#{bundle['user.dataRelatedToMe']}">
                             <ui:include src="mydata_fragment.xhtml"></ui:include>
                         </p:tab>
@@ -325,7 +325,7 @@
                                         <div class="notification-item-cell">
                                             <p:commandLink title="#{bundle.removeNotification}" styleClass="bootstrap-button-tooltip"
                                                            action="#{DataverseUserPage.remove(item.id)}" update="@form"
-                                                           oncomplete="bind_bsui_components();">
+                                                           >
                                                 <span class="glyphicon glyphicon-remove"></span>
                                             </p:commandLink>
                                         </div>

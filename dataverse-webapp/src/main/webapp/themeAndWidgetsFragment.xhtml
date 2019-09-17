@@ -24,7 +24,7 @@
                                         <h:selectBooleanCheckbox id="themeRoot" tabindex="7" styleClass="metadata-blocks-default" 
                                                                  rendered="#{themeWidgetFragment.editDv.owner != null}"
                                                                  value="#{themeWidgetFragment.inheritCustomization}" >
-                                            <p:ajax update="@widgetVar(content)" oncomplete="javascript:bind_bsui_components();" listener="#{themeWidgetFragment.checkboxListener()}"/>
+                                            <p:ajax update="@widgetVar(content)"  listener="#{themeWidgetFragment.checkboxListener()}"/>
                                         </h:selectBooleanCheckbox>
                                         <h:outputFormat value="#{bundle['dataverse.theme.inheritCustomization.checkbox']}">
                                             <f:param value="#{themeWidgetFragment.editDv.themeRootDataverseName}"/>
@@ -47,13 +47,13 @@
                                             <img jsf:rendered="#{themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/temp/#{themeWidgetFragment.tempDirName}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{themeWidgetFragment.editDv.name}"/>
                                             <img jsf:rendered="#{not themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/#{themeWidgetFragment.editDv.id}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{themeWidgetFragment.editDv.name}"/>
                                         </p>
-                                        <p:commandButton update=":themeWidgetsForm:themeWidgetsTabView" value="#{bundle.remove}" action="#{themeWidgetFragment.removeLogo()}" oncomplete="bind_bsui_components();"/>
+                                        <p:commandButton update=":themeWidgetsForm:themeWidgetsTabView" value="#{bundle.remove}" action="#{themeWidgetFragment.removeLogo()}" />
                                     </p:column>                              
-                                    <p:fileUpload invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
+                                    <p:fileUpload invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView"  dragDropSupport="true" auto="true" multiple="false"
                                                   fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="#{bundle['dataverse.theme.logo.image.upload']}"/>
                                 </p:panelGrid>
                                 <p:panelGrid rendered="#{empty themeWidgetFragment.editDv.dataverseTheme.logo}" columns="2" styleClass="noBorders">
-                                    <p:fileUpload id="uploadlogo" invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" sizeLimit="#{systemConfig.uploadLogoSizeLimit}" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
+                                    <p:fileUpload id="uploadlogo" invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" sizeLimit="#{systemConfig.uploadLogoSizeLimit}" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView"  dragDropSupport="true" auto="true" multiple="false"
                                                   fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="#{bundle['dataverse.theme.logo.image.uploadImgFile']}"/>
                                 </p:panelGrid>
                                 <ui:fragment rendered="#{not empty themeWidgetFragment.editDv.dataverseTheme.logo}">
@@ -67,7 +67,7 @@
                                             <p:selectOneRadio id="logoFormat" value="#{themeWidgetFragment.editDv.dataverseTheme.logoFormat}">
                                                 <f:selectItem itemLabel="#{bundle['dataverse.theme.logo.format.selectTab.square2']}" itemValue="SQUARE"/>
                                                 <f:selectItem itemLabel="#{bundle['dataverse.theme.logo.format.selectTab.rectangle2']}" itemValue="RECTANGLE"/>
-                                                <p:ajax update="@widgetVar(content)" oncomplete="bind_bsui_components();" />
+                                                <p:ajax update="@widgetVar(content)"  />
                                             </p:selectOneRadio>
                                             <p:message for="logoFormat" display="text"/>
                                         </div>
@@ -182,7 +182,7 @@
                     </ui:fragment>
                 </p:fragment>
                 <div class="button-block">
-                    <p:commandButton class="btn btn-default" value="#{bundle.saveChanges}" update=":#{p:resolveClientId('messagePanel', view)}, :themeWidgetsForm" action="#{themeWidgetFragment.save()}" oncomplete="bind_bsui_components();"/>
+                    <p:commandButton class="btn btn-default" value="#{bundle.saveChanges}" update=":#{p:resolveClientId('messagePanel', view)}, :themeWidgetsForm" action="#{themeWidgetFragment.save()}" />
                     <p:commandButton class="btn btn-default" action="#{themeWidgetFragment.cancel()}" immediate="true" id="themeCancel" value="#{bundle.cancel}"/>
                 </div>
             </p:tab>

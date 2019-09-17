@@ -110,7 +110,7 @@
                                         <p:commandLink type="button" id="userGroupsAdd" styleClass="btn btn-default"
                                                        actionListener="#{managePermissionsPage.initAssigneeDialog}"
                                                        update="userGroupDialog"
-                                                       oncomplete="PF('userGroupsForm').show();handleResizeDialog('userGroupDialog');bind_bsui_components();">
+                                                       oncomplete="PF('userGroupsForm').show();handleResizeDialog('userGroupDialog');">
                                             <span class="glyphicon glyphicon-user"/> #{bundle['dataverse.permissions.usersOrGroups.assignBtn']}
                                         </p:commandLink>
                                     </div>
@@ -168,7 +168,7 @@
                                                        rendered="#{managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)
                                                                     and dataverseSession.user.superuser}"
                                                        actionListener="#{managePermissionsPage.createNewRole}"
-                                                       oncomplete="PF('roleForm').show();handleResizeDialog('rolesPermissionsDialog');bind_bsui_components();"
+                                                       oncomplete="PF('roleForm').show();handleResizeDialog('rolesPermissionsDialog');"
                                                        update=":#{p:resolveClientId('rolesPermissionsForm:editRolePanel', view)}">
                                             <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.permissions.roles.add']}
                                         </p:commandLink>

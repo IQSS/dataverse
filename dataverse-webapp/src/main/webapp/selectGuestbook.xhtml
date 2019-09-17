@@ -81,7 +81,7 @@
                                                                        value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
                                                                        action="#{selectGuestbookPage.viewSelectedGuestbook(guestbook)}"
                                                                        update=":selectGuestbookForm"
-                                                                       oncomplete="PF('viewGuestbook').show();bind_bsui_components();"/>
+                                                                       oncomplete="PF('viewGuestbook').show();"/>
                                                     </p:column>
                                                 </p:dataTable>
                                             </ui:fragment>
@@ -120,7 +120,7 @@
                     <p:commandButton value="Direct" id="datasetSave"
                                      style="display:none"
                                      update=":selectGuestbookForm,:messagePanel"
-                                     oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
+                                     oncomplete="$(document).scrollTop(0);"
                                      action="#{selectGuestbookPage.save}" />
                 </div>
 

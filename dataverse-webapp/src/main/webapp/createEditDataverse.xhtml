@@ -173,7 +173,7 @@
                                                             styleClass="btn btn-default btn-sm bootstrap-button-tooltip"
                                                             title="#{bundle.add}"
                                                             actionListener="#{CreateEditDataversePage.dataverse.addDataverseContact(valCount.index + 1)}"
-                                                            oncomplete="javascript:bind_bsui_components();">
+                                                            >
                                                         <f:param name="SKIP_VALIDATION" value="true"/>
                                                         <h:outputText styleClass="glyphicon glyphicon-plus no-text"/>
                                                     </p:commandLink>
@@ -182,7 +182,7 @@
                                                             title="#{bundle.delete}"
                                                             rendered="#{CreateEditDataversePage.dataverse.dataverseContacts.size() > 1}"
                                                             actionListener="#{CreateEditDataversePage.dataverse.removeDataverseContact(valCount.index)}"
-                                                            oncomplete="javascript:bind_bsui_components();">
+                                                            >
                                                         <f:param name="SKIP_VALIDATION" value="true"/>
                                                         <h:outputText styleClass="glyphicon glyphicon-minus no-text"/>
                                                     </p:commandLink>
@@ -284,7 +284,7 @@
                                                                rendered="#{!CreateEditDataversePage.mdbOptions.isShowDatasetFieldTypes(mdb.id)
                                                                and (CreateEditDataversePage.mdbOptions.mdbViewOptions.get(mdb.id).selected or mdb.isCitationMetaBlock()) and !CreateEditDataversePage.mdbOptions.inheritMetaBlocksFromParent}"
                                                                actionListener="#{CreateEditDataversePage.showEditableDatasetFieldTypes(mdb.id)}"
-                                                               oncomplete="javascript:bind_bsui_components();">
+                                                               >
                                                     <h:outputText value="#{bundle['dataverse.field.set.tip']}"/>
                                                 </p:commandLink>
                                                 <p:commandLink id="viewUnEditableDSFT" style="margin-left:1em;"
@@ -293,7 +293,7 @@
                                                                rendered="#{!CreateEditDataversePage.mdbOptions.isShowDatasetFieldTypes(mdb.id)
                                                                 and (!CreateEditDataversePage.mdbOptions.mdbViewOptions.get(mdb.id).selected or CreateEditDataversePage.mdbOptions.inheritMetaBlocksFromParent)}"
                                                                actionListener="#{CreateEditDataversePage.showUnEditableDatasetFieldTypes(mdb.id)}"
-                                                               oncomplete="javascript:bind_bsui_components();">
+                                                               >
                                                     <h:outputText value="#{bundle['dataverse.field.set.view']}"/>
                                                 </p:commandLink>
                                             </label>
@@ -350,7 +350,7 @@
                                                            update="@widgetVar(optionBlock)"
                                                            actionListener="#{CreateEditDataversePage.hideDatasetFieldTypes(mdb.id)}"
                                                            immediate="true"
-                                                           oncomplete="javascript:bind_bsui_components();"
+
                                                            rendered="#{CreateEditDataversePage.mdbOptions.isShowDatasetFieldTypes(mdb.id) }">
                                                 <h:outputText value="#{bundle.done}"/>
                                             </p:commandLink>
