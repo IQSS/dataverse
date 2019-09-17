@@ -210,7 +210,7 @@
                                     
                                     
 <div class="file-icon-restricted-block"
-     jsf:rendered="#{!FilePage.fileMetadata.dataFile.notaryServiceBound and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}"
+     jsf:rendered="#{!FilePage.fileMetadata.dataFile.notaryServiceBound}"
     >
                                     
                                     
@@ -221,7 +221,7 @@
 </div>                                   
                                     
 
-                        <div class="file-icon-restricted-block" jsf:rendered="#{FilePage.fileMetadata.dataFile.notaryServiceBound and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                        <div class="file-icon-restricted-block" jsf:rendered="#{FilePage.fileMetadata.dataFile.notaryServiceBound }">
                             <span  title="Notary Service Bound" class="glyphicon glyphicon-tower text-danger"/>
                         </div>                                    
                                     

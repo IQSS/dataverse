@@ -380,7 +380,7 @@
 
                         <!-- Restricted File Icon -->
                     <div class="file-icon-restricted-block"
-                         jsf:rendered="#{!fileMetadata.dataFile.notaryServiceBound and fileDownloadHelper.canDownloadFile(fileMetadata)}"
+                         jsf:rendered="#{!fileMetadata.dataFile.notaryServiceBound}"
                         >
                         <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(fileMetadata)}">                  
                             <span class="glyphicon glyphicon-lock text-danger"/>
@@ -390,10 +390,11 @@
                         </div>
                         
                     </div>
-                    <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.dataFile.notaryServiceBound and fileDownloadHelper.canDownloadFile(fileMetadata)}">
+                    <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.dataFile.notaryServiceBound}">
                             <span  title="Notary Service Bound" class="glyphicon glyphicon-tower text-danger"/>
                     </div>
-                    </div>
+                        
+                </div>
                 </div>
 
                 <div class="file-metadata-block">

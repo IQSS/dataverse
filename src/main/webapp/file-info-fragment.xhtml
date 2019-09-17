@@ -20,12 +20,27 @@
                         <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
                     </span>
                     <!-- Restricted File Icon -->
+                    
+                <div class="file-icon-restricted-block"
+                     jsf:rendered="#{!EditDatafilesPage.fileToReplace.notaryServiceBound}"
+                        >
+                    
+                    
                     <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(fileMetadata)}">                  
                         <span class="glyphicon glyphicon-lock text-danger"/>
                     </div>
                     <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and fileDownloadHelper.canDownloadFile(fileMetadata) }">
                         <span class="icon-unlock text-success"/>
                     </div>
+                    
+                </div>
+                    
+                    <div class="file-icon-restricted-block" jsf:rendered="#{EditDatafilesPage.fileToReplace.notaryServiceBound}">
+                       <span  title="Notary Service Bound" class="glyphicon glyphicon-tower text-danger"/>
+                </div>
+                    
+                    
+                    
                 </div>
             </div>
             <div class="col-sm-10 col-file-metadata">

@@ -332,9 +332,20 @@
                                 <h:outputText id="imgPreview" value="#{bundle['preview']}" styleClass="bg-info text-info text-center show"/>
                             </ui:fragment>
                             <!-- Restricted File Icon -->
+                            
+                            
+                <div class="file-icon-restricted-block"
+                     jsf:rendered="#{!EditDatafilesPage.fileToReplace.notaryServiceBound}"
+                        >
+                            
                             <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted}">
                                 <span class="icon-unlock text-success"/>
                             </div>
+                </div>                            
+                    <div class="file-icon-restricted-block" jsf:rendered="#{EditDatafilesPage.fileToReplace.notaryServiceBound}">
+                       <span  title="Notary Service Bound" class="glyphicon glyphicon-tower text-danger"/>
+                </div>
+                            
                             <!-- Dataset Thumbnail -->
                             <span id="datasetThumbnail" class="bg-info text-info text-center small show"
                                   jsf:rendered="#{EditDatafilesPage.isDesignatedDatasetThumbnail(fileMetadata)}"
