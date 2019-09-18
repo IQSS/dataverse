@@ -176,7 +176,6 @@ public class DataCiteRESTfullClient implements Closeable {
      * @return
      */
     public String postMetadata(String metadata) {
-        System.out.println("postMetadata url: " + this.url + "/metadata");
         
         HttpPost httpPost = new HttpPost(this.url + "/metadata");
         httpPost.setHeader("Content-Type", "application/xml;charset=UTF-8");

@@ -4,6 +4,7 @@ import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.path.xml.XmlPath;
 import com.jayway.restassured.response.Response;
+import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import java.util.logging.Logger;
 import javax.json.Json;
@@ -16,6 +17,7 @@ import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.Assert;
+import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -237,8 +239,10 @@ public class InReviewWorkflowIT {
                 // on the phoenix server (because it's fast, I'm guessing?) - but 
                 // I kept seeing an error on my own build at this point once in a while, 
                 // because the dataset is still locked when we try to edit it, 
-                // a few lines down. -- L.A. Oct. 2018
-                Thread.sleep(10000);
+                // a few lines down. -- L.A. Oct. 2018  
+                // Changes to test for ingest lock and 3 seconds duration SEK 09/2019 #6128
+                assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFileThatGoesThroughIngest , UtilIT.sleepForLock(datasetId, "Ingest", curatorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+               // Thread.sleep(10000);
             }
         }
 

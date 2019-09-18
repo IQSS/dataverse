@@ -135,7 +135,7 @@ Developers of Integrations, External Tools, and Apps
 One of the primary purposes for Dataverse APIs in the first place is to enable integrations with third party software. Integrations are listed in the following places:
 
 - The :doc:`/admin/integrations` section of the Admin Guide.
-- The :doc:`/installation/external-tools` section of the Installation Guide.
+- The :doc:`/api/external-tools` section this guide.
 - The :doc:`apps` section of this guide.
 
 |Start| Good starting points are the three sections above to get a sense of third-party software that already integrates with Dataverse, followed by the :doc:`getting-started` section.
@@ -143,7 +143,7 @@ One of the primary purposes for Dataverse APIs in the first place is to enable i
 Developers of Dataverse API Client Libraries 
 ++++++++++++++++++++++++++++++++++++++++++++
 
-A client library helps developers using a specific programming language such as Python, R, or Java interact with Dataverse APIs in a manner that is idiomatic for their language. For example, a Python programmer may want to
+A client library helps developers using a specific programming language such as Python, Javascript, R, or Java interact with Dataverse APIs in a manner that is idiomatic for their language. For example, a Python programmer may want to
 
 |Start| A good starting point is the :doc:`client-libraries` section, followed by the :doc:`getting-started` section.
 
@@ -194,6 +194,7 @@ Please note that some APIs are only documented in other guides that are more sui
 
 - Admin Guide
 
+  - :doc:`/admin/external-tools`
   - :doc:`/admin/metadatacustomization`  
   - :doc:`/admin/metadataexport`
   - :doc:`/admin/make-data-count`
@@ -203,7 +204,6 @@ Please note that some APIs are only documented in other guides that are more sui
 - Installation Guide
 
   - :doc:`/installation/config`
-  - :doc:`/installation/external-tools`
 
 Client Libraries
 ~~~~~~~~~~~~~~~~
