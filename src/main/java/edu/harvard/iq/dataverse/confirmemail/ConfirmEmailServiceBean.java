@@ -91,7 +91,6 @@ public class ConfirmEmailServiceBean {
             String msg = "Unable to save token for " + aUser.getEmail();
             throw new ConfirmEmailException(msg, ex);
         }
-
     }
 
     /**
@@ -176,7 +175,7 @@ public class ConfirmEmailServiceBean {
         try {
             confirmEmailData = typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
-            logger.fine("When looking up " + token + " caught " + ex);
+            logger.warning("When looking up " + token + " at ConfirmEmailData table, exception caught " + ex);
         }
         return confirmEmailData;
     }
@@ -188,7 +187,7 @@ public class ConfirmEmailServiceBean {
         try {
             confirmEmailData = typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
-            logger.fine("When looking up user " + user + " caught " + ex);
+            logger.warning("When looking up user " + user + " at ConfirmEmailData table, exception caught: " + ex);
         }
         return confirmEmailData;
     }
@@ -254,5 +253,4 @@ public class ConfirmEmailServiceBean {
         String optionalConfirmEmailMsg = BundleUtil.getStringFromBundle("notification.email.welcomeConfirmEmailAddOn", args);
         return optionalConfirmEmailMsg;
     }
-
 }
