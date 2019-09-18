@@ -64,5 +64,5 @@ done > $DATAVERSE_APP_DIR/memory-benchmark-out.txt
 
 # Create a simple plot of page GETs vs. memory utilisation: 
 
-grep '^  0\.00' $DATAVERSE_APP_DIR/memory-benchmark-out.txt  | awk '{print (NR*100),$4}' > /tmp/benchmark.data
-gplot.pl -type png -outfile $DATAVERSE_APP_DIR/benchmark.png -xlabel 'dataverse page GETs' -ylabel 'oldgen (%)' -title 'Memory Utilisation' /tmp/benchmark.data
+grep '^  *[0-9][0-9]*\.[0-9]' ${DATAVERSE_APP_DIR}/memory-benchmark-out.txt | awk '{print (NR/10),$4}' > /tmp/dataverse.xhtml
+gplot.pl -type png -outfile ${DATAVERSE_APP_DIR}/benchmark.png -xlabel 'page GETs x1000' -ylabel 'oldgen (%, 2GB total)' -title 'Memory Utilisation, default GC' /tmp/dataverse.xhtml
