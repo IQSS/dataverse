@@ -399,11 +399,20 @@ Get JSON Representation of a Dataset
 
   Example: Getting the dataset whose DOI is *10.5072/FK2/J8SJZB* ::
 
-    GET http://$SERVER/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+    curl http://$SERVER/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+
+  fully expanded::
+
+    curl http://localhost:8080/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
 
   Getting its draft version::
 
-    GET http://$SERVER/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
+    curl http://$SERVER/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
+
+  fully expanded::
+
+    curl http://localhost:8080/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
+
 
 |CORS| Show the dataset whose id is passed::
 
