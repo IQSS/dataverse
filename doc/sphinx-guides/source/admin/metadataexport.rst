@@ -16,9 +16,9 @@ Batch exports through the API
 
 In addition to the automated exports, a Dataverse admin can start a batch job through the API. The following 2 API calls are provided: 
 
-/api/admin/metadata/exportAll
+``curl http://localhost:8080/api/admin/metadata/exportAll``
 
-/api/admin/metadata/reExportAll
+``curl http://localhost:8080/api/admin/metadata/reExportAll``
 
 The former will attempt to export all the published, local (non-harvested) datasets that haven't been exported yet. 
 The latter will *force* a re-export of every published, local dataset, regardless of whether it has already been exported or not. 
