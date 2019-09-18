@@ -52,12 +52,16 @@ scp -i ${EC2_SSH_KEY} -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/
 
 # run the remote script: 
 
-ssh -i ${EC2_SSH_KEY} -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' -o 'ConnectTimeout=14400' ${EC2_SSH_DEST} 'sudo /tmp/memory_benchmark_remote.sh'
+ssh -i ${EC2_SSH_KEY} -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' -o 'ConnectTimeout=14400' ${EC2_SSH_DEST} 'sudo /tmp/ec2-memory-benchmark-remote.sh'
 
 # check the exit code of the command above here!
 
 echo "Memory benchmark test complete!" 
 echo 
-echo "The simplified memory utilisation plot is available here: ${EC2_HTTP_LOCATION}/benchmark.png"
-echo "Raw data output (with complete jmap listing of all the instantiated Dataverse classes every 100 page loads):"
-echo "${EC2_HTTP_LOCATION}/memory-benchmark-out.txt"
+echo "The memory utilisation plots should be available here: "
+echo "  dataverse page: ${EC2_HTTP_LOCATION}/benchmark-dataverse.png"
+echo "  dataset page:   ${EC2_HTTP_LOCATION}/benchmark-dataset.png"
+echo "Raw data output (with GC status and jmap listing of all the instantiated Dataverse classes every N page loads,"
+echo "where N is 100 and 10, for dataverse and dataset pages respectively):"
+echo "  dataverse page: ${EC2_HTTP_LOCATION}/memory-benchmark-raw-dataverse.txt"
+echo "  dataset page:   ${EC2_HTTP_LOCATION}/memory-benchmark-raw-dataset.txt"
