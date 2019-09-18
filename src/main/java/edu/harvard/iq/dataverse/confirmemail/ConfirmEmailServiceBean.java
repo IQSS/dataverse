@@ -175,7 +175,7 @@ public class ConfirmEmailServiceBean {
         try {
             confirmEmailData = typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
-            logger.warning("When looking up " + token + " at ConfirmEmailData table, exception caught " + ex);
+            logger.warning("When looking up token " + token + " at ConfirmEmailData table, exception caught: " + ex);
         }
         return confirmEmailData;
     }
