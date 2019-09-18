@@ -413,10 +413,15 @@ Get JSON Representation of a Dataset
 
     curl http://localhost:8080/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
 
-
 |CORS| Show the dataset whose id is passed::
 
-  GET http://$SERVER/api/datasets/$id?key=$apiKey
+  curl http://$SERVER/api/datasets/$id?key=$apiKey
+
+fully expanded::
+
+  curl http://localhost:8080/api/datasets/xxxx?key=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+
+The (numeric) id isn't shown up at the user interface (which uses the DOI for identification). You can get it from the JSON representation of the dataset.
 
 List Versions of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
