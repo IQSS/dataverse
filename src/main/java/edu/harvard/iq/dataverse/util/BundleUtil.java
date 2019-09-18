@@ -23,7 +23,7 @@ public class BundleUtil {
     }
 
     public static String getStringFromBundle(String key, List<String> arguments) {
-        ResourceBundle bundle = getResourceBundle(defaultBundleFile , null);
+        ResourceBundle bundle = getResourceBundle(defaultBundleFile );
         if (bundle == null) {
             return null;
         }

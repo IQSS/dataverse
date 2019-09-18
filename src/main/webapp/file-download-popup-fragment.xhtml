@@ -149,17 +149,11 @@
         <div class="button-block">
             <!--Note: the guestbookResponse.fileFormat is being set in xhtml via the initial download buttons in file-download-button-fragment.xhtml -->
             <p:commandButton styleClass="btn btn-default" process="@this" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat != 'externalTool'
-                                                                                                                            and guestbookResponse.fileFormat != 'subset'
                                                                                                                             and guestbookResponse.fileFormat != 'worldMap'
                                                                                                                             and guestbookResponse.fileFormat != 'package'}"
                            actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse)}"
                            update="guestbookUIFragment">
                 <f:param name="DO_GB_VALIDATION" value="true"/>
-            </p:commandButton>
-            <p:commandButton styleClass="btn btn-default" process="@this" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'subset'}"
-                           actionListener="#{fileDownloadHelper.writeGuestbookAndOpenSubset(guestbookResponse)}"
-                           update="guestbookUIFragment @form">                                    
-                <f:param name="DO_GB_VALIDATION" value="true"/>               
             </p:commandButton>
             <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'worldMap'}"
                             actionListener="#{fileDownloadHelper.startWorldMapDownloadLink(guestbookResponse, null)}" 
