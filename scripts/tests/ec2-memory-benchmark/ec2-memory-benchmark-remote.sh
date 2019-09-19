@@ -25,7 +25,7 @@ yum -y install gnuplot >/dev/null
 
 GPLOT=gplot-1.11/gplot.pl; export GPLOT
 GPLOTDIST=https://pilotfiber.dl.sourceforge.net/project/gplot/gplot/gplot-1.11.tar.gz; export GPLOTDIST
-(cd /tmp; ; curl ${GPLOTDIST} | tar xvzf - ${GPLOT})
+(cd /tmp; curl ${GPLOTDIST} 2>/dev/null | tar xvzf - ${GPLOT})
 
 
 # Bombard the application with some GET requests. 
@@ -46,6 +46,7 @@ do
 	repeat_outer=200
 	repeat_inner=100
     elif [ $page = "dataset" ]
+    then
 	repeat_outer=100
 	repeat_inner=10
 
@@ -107,7 +108,7 @@ do
 	date
 
 	echo 
-    done >> $DATAVERSE_APP_DIR/memory-benchmark-out.txt
+    done >> $DATAVERSE_APP_DIR/memory-benchmark-raw-${page}.txt
 
     # Create simple plots of page GETs vs. memory utilisation: 
 
