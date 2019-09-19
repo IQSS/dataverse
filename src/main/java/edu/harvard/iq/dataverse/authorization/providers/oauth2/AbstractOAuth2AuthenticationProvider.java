@@ -116,6 +116,10 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         final OAuthRequest request = new OAuthRequest(Verb.GET, userEndpoint, service);
         request.addHeader("Authorization", "Bearer " + accessToken.getAccessToken());
         request.setCharset("UTF-8");
+
+        // Microsoft
+        request.addHeader("Accept", "application/json");
+
         
         final Response response = request.send();
         int responseCode = response.getCode();
