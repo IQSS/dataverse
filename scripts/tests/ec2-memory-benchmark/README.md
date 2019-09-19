@@ -4,6 +4,8 @@ In order to run the benchmark test you will need the following:
 
 * The two scripts from this directory: `ec2-memory-benchmark-remote.sh` and `ec2-memory-benchmark.sh`
 
+* Have the aws command line utilities installed.
+
 * Have your AWS credentials configured, so that you can spin up EC2 instances. 
 
 All the other pieces will be downloaded automatically (from the
