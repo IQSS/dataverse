@@ -14,11 +14,11 @@
 
 @font-face {
   font-family: 'vecler-icons';
-  src:  url('#{resource["vecler/fonts/icomoon.eot"]}?llaqdc');
-  src:  url('#{resource["vecler/fonts/icomoon.eot"]}?llaqdc#iefix') format('embedded-opentype'),
-    url('#{resource["vecler/fonts/icomoon.ttf"]}?llaqdc') format('truetype'),
-    url('#{resource["vecler/fonts/icomoon.woff"]}?llaqdc') format('woff'),
-    url('#{resource["vecler/fonts/icomoon.svg"]}?llaqdc#icomoon') format('svg');
+  src:  url('fonts/icomoon.eot?llaqdc');
+  src:  url('fonts/icomoon.eot?llaqdc#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?llaqdc') format('truetype'),
+    url('fonts/icomoon.woff?llaqdc') format('woff'),
+    url('fonts/icomoon.svg?llaqdc#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -354,37 +354,29 @@ table[id$="resultsTable"] td > div.datasetResult {
 
 
 .card-title-icon-block .label {
-	font-size: 11;
-	font-weight: normal;
-	text-transform: uppercase;
-}
-
-.card-title-icon-block .label.label-primary {
-	background: var(--main-color);
-	border: 1px solid var(--main-color);
-
-	color: #FFF;
-}
-
-.card-title-icon-block .label.label-warning {
-	background: #FFF;
-	border: 1px solid var(--main-color);
-
-	color: #4A4A4A;
-}
-
-.card-title-icon-block .label.label-danger {
-	background: #A50000;
-	border: 1px solid #A50000;
-
-	color: #FFF;
-}
-
-.card-title-icon-block .label.label-success {
-	background: #00A500;
-	border: 1px solid #00A500;
-
-	color: #FFF;
+    
+    font-size: 11;
+    font-weight: normal;
+    text-transform: uppercase;
+    
+    &.label-warning {
+        background: #FFF;
+        border: 1px solid var(--main-color);
+    
+        color: #4A4A4A;
+    }
+    &.label-danger {
+        background: #A50000;
+        border: 1px solid #A50000;
+    
+        color: #FFF;
+    }
+    &.label-success {
+        background: #00A500;
+        border: 1px solid #00A500;
+    
+        color: #FFF;
+    }
 }
 
 [id$="resultsTable"] div.card-title-icon-block span[class^="icon"] {

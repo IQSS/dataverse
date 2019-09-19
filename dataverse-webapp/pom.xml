@@ -14,6 +14,9 @@
 
     <name>dataverse-webapp</name>
 
+    <properties>
+        <m2eclipse.wtp.contextRoot>/</m2eclipse.wtp.contextRoot>
+    </properties>
     <!-- Declare any DIRECT dependencies here.
          In case the depency is both transitive and direct (e. g. some common lib for logging),
          manage the version in <manageDependencies> and add the direct dependency here WITHOUT version tag, too.
@@ -174,7 +177,7 @@
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
-            <version>1.7</version> <!-- Or 1.8-SNAPSHOT -->
+            <version>2.7.1</version> <!-- 3.x versions requires jsf 2.3 -->
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
@@ -440,8 +443,35 @@
                 </includes>
             </resource>
         </resources>
+        
         <plugins>
+            <plugin>
+                <groupId>com.github.warmuuh</groupId>
+                <artifactId>libsass-maven-plugin</artifactId>
+                <version>0.2.10-libsass_3.5.3</version>
+                <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>io.bit3</groupId>
+                        <artifactId>jsass</artifactId>
+                        <version>5.9.1</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <inputPath>${basedir}/src/main/webapp/resources/vecler/</inputPath>
+                    <outputPath>${basedir}/src/main/webapp/resources/vecler/</outputPath>
+                    <sourceMapOutputPath>${basedir}/src/main/webapp/resources/vecler/</sourceMapOutputPath>
+                </configuration>
+            </plugin>
         </plugins>
+        
     </build>
 
 </project>

@@ -1,0 +1,3 @@
+# do not track auto generated css files
+src/main/webapp/resources/vecler/theme.css
+src/main/webapp/resources/vecler/theme.css.map

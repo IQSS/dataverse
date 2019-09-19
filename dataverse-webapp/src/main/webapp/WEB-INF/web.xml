@@ -120,6 +120,7 @@
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>*.xhtml</url-pattern>
+        <url-pattern>/javax.faces.resource/*</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>Push Servlet</servlet-name>
@@ -165,6 +166,10 @@
     <mime-mapping>
         <extension>svg</extension>
         <mime-type>image/svg+xml</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>map</extension>
+        <mime-type>application/json</mime-type>
     </mime-mapping>
     <!-- BEGIN Data Deposit API (SWORD v2) -->
     <!-- See also SwordConfigurationImpl for how deprecation warnings are configured -->

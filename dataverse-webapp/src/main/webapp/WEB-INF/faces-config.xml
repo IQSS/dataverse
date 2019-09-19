@@ -8,6 +8,7 @@
             <base-name>Bundle</base-name>
             <var>bundle</var>
         </resource-bundle>
+        <resource-handler>org.omnifaces.resourcehandler.UnmappedResourceHandler</resource-handler>
     </application>
     <render-kit>
         <renderer>
