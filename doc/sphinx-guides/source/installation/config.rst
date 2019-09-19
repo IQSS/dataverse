@@ -1441,12 +1441,12 @@ In the example below we reduce the timeout to 4 hours:
 :TwoRavensUrl
 +++++++++++++
 
-The ``:TwoRavensUrl`` option is no longer valid. See :doc:`r-rapache-tworavens` and :doc:`external-tools`.
+The ``:TwoRavensUrl`` option is no longer valid. See :doc:`r-rapache-tworavens` and the :doc:`/admin/external-tools` section of the Admin Guide.
 
 :TwoRavensTabularView
 +++++++++++++++++++++
 
-The ``:TwoRavensTabularView`` option is no longer valid. See :doc:`r-rapache-tworavens` and :doc:`external-tools`.
+The ``:TwoRavensTabularView`` option is no longer valid. See :doc:`r-rapache-tworavens` and the :doc:`/admin/external-tools` section of the Admin Guide.
 
 :GeoconnectCreateEditMaps
 +++++++++++++++++++++++++

@@ -1748,9 +1748,9 @@ public class UtilIT {
                 .get("/api/admin/externalTools");
     }
 
-    static Response getExternalToolsByFileId(long fileId) {
+    static Response getExternalTool(long id) {
         return given()
-                .get("/api/admin/externalTools/file/" + fileId);
+                .get("/api/admin/externalTools/" + id);
     }
 
     static Response addExternalTool(JsonObject jsonObject) {
@@ -1764,6 +1764,36 @@ public class UtilIT {
     static Response deleteExternalTool(long externalToolid) {
         return given()
                 .delete("/api/admin/externalTools/" + externalToolid);
+    }
+
+    static Response getExternalToolsForDataset(String idOrPersistentIdOfDataset, String type, String apiToken) {
+        String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/admin/test/datasets/" + idInPath + "/externalTools?type=" + type + optionalQueryParam);
+    }
+
+    static Response getExternalToolsForFile(String idOrPersistentIdOfFile, String type, String apiToken) {
+        String idInPath = idOrPersistentIdOfFile; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentIdOfFile)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfFile;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/admin/test/files/" + idInPath + "/externalTools?type=" + type + optionalQueryParam);
     }
 
     static Response submitFeedback(JsonObjectBuilder job) {

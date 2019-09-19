@@ -19,5 +19,6 @@ API Guide
    metrics
    sword
    client-libraries
+   external-tools
    apps
    faq
