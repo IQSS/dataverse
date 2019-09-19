@@ -205,7 +205,7 @@ Add jacocoagent.jar to Glassfish
 
 In order to get code coverage reports out of Glassfish we'll be adding jacocoagent.jar to the Glassfish "lib" directory.
 
-First, we need to download Jacoco. Look in pom.xml to determine which version of Jacoco we are using. As of this writing we are using 0.8.1 so so in the example below we download the Jacoco zip from https://github.com/jacoco/jacoco/releases/tag/v0.8.1
+First, we need to download Jacoco. Look in pom.xml to determine which version of Jacoco we are using. As of this writing we are using 0.8.1 so in the example below we download the Jacoco zip from https://github.com/jacoco/jacoco/releases/tag/v0.8.1
 
 Note that we are running the following commands as the user "glassfish". In short, we stop Glassfish, add the Jacoco jar file, and start up Glassfish again.
 
