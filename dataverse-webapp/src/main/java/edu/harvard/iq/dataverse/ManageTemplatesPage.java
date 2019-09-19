@@ -1,12 +1,16 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.dataset.DatasetFieldsInitializer;
 import edu.harvard.iq.dataverse.dataverse.DataversePage;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateRootCommand;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldUtil;
+import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.persistence.dataset.Template;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -17,12 +21,11 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,23 +47,17 @@ public class ManageTemplatesPage implements java.io.Serializable {
     @EJB
     EjbDataverseEngine engineService;
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    EntityManager em;
-
     @Inject
     DataversePage dvpage;
-
-    @Inject
-    TemplatePage tempPage;
-
-    @Inject
-    DataverseSession session;
 
     @Inject
     DataverseRequestServiceBean dvRequestService;
 
     @Inject
     PermissionsWrapper permissionsWrapper;
+
+    @Inject
+    private DatasetFieldsInitializer datasetFieldsInitializer;
 
     private List<Template> templates;
     private Dataverse dataverse;
@@ -69,6 +66,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
     private boolean inheritTemplatesAllowed = false;
 
     private Template selectedTemplate = null;
+    private Map<MetadataBlock, List<DatasetField>> mdbForView;
 
     public String init() {
         dataverse = dvService.find(dataverseId);
@@ -228,10 +226,15 @@ public class ManageTemplatesPage implements java.io.Serializable {
         this.selectedTemplate = selectedTemplate;
     }
 
+    public Map<MetadataBlock, List<DatasetField>> getMdbForView() {
+        return mdbForView;
+    }
+
     public void viewSelectedTemplate(Template selectedTemplate) {
         this.selectedTemplate = selectedTemplate;
-        this.selectedTemplate.setMetadataValueBlocks();
-        tempPage.setTemplate(selectedTemplate);
+
+        List<DatasetField> dsfForView = datasetFieldsInitializer.prepareDatasetFieldsForView(selectedTemplate.getDatasetFields());
+        mdbForView = DatasetFieldUtil.groupByBlock(dsfForView);
     }
 
     public String updateTemplatesRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {

@@ -4,7 +4,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:jsf="http://xmlns.jcp.org/jsf">
+>
     <h:head>
     </h:head>
 
@@ -53,8 +53,9 @@
                                 <ui:param name="showAllFields" value="#{true}"/>
                                 <ui:param name="expandAllBlocks" value="#{false}"/>
                                 <ui:param name="showAddReplicationForTitleButton" value="#{false}" />
-                                
-                                <ui:param name="metadataBlocks" value="#{TemplatePage.template.metadataBlocksForEdit.entrySet().toArray()}"/>
+
+                                <ui:param name="metadataBlocks"
+                                          value="#{TemplatePage.mdbForEdit.entrySet().toArray()}"/>
                             </ui:include>  
                         </ui:fragment>
 

@@ -174,7 +174,8 @@
                             </div>
                         </div>
                         <ui:include src="viewMetadata.xhtml">
-                            <ui:param name="metadataBlocks" value="#{TemplatePage.template.metadataBlocksForView.entrySet().toArray()}"/>
+                            <ui:param name="metadataBlocks"
+                                      value="#{manageTemplatesPage.mdbForView.entrySet().toArray()}"/>
                         </ui:include>
                         <div class="button-block">
                             <p:commandButton type="button" value="#{bundle.close}" onclick="PF('viewTemplate').hide()" />
