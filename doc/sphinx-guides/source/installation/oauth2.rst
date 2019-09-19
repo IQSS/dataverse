@@ -1,4 +1,4 @@
-OAuth Login: ORCID, GitHub, Google
+OAuth Login: ORCID, Microsoft, GitHub, Google
 ==================================
 
 .. contents:: |toctitle|
