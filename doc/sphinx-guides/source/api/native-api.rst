@@ -395,6 +395,8 @@ Datasets
 Get JSON Representation of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. note:: In some of the examples below, you'll see ``$id`` which can be the database ID of the dataset (42 or whatever). This database ID The (numeric) id isn't shown in the user interface but you can get it from the JSON representation of the dataset.
+
 .. note:: Datasets can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the dataset is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
 
   Example: Getting the dataset whose DOI is *10.5072/FK2/J8SJZB* ::
@@ -413,15 +415,26 @@ Get JSON Representation of a Dataset
 
     curl http://localhost:8080/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
 
-|CORS| Show the dataset whose id is passed::
+Show the Dataset
+^^^^^^^^^^^^^^^^
 
-  curl http://$SERVER/api/datasets/$id?key=$apiKey
+Note that an API Token is only required if the dataset is not published.
 
-fully expanded::
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
 
-  curl http://localhost:8080/api/datasets/xxxx?key=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+.. code-block:: bash
 
-The (numeric) id isn't shown up at the user interface (which uses the DOI for identification). You can get it from the JSON representation of the dataset.
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/J8SJZB
+
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/datasets/:persistentId?persistentId=$PERSISTENT_ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/datasets/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB
 
 List Versions of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
