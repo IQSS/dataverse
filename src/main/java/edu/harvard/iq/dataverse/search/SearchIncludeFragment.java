@@ -145,7 +145,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private boolean rootDv = false;
     private Map<Long, String> harvestedDatasetDescriptions = null;
     private boolean solrErrorEncountered = false;
-    
+    private String adjustFacetName = null; 
+    private int adjustFacetNumber = 0; 
     /**
      * @todo:
      *
@@ -517,12 +518,17 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public int getNumberOfFacets(String name, int defaultValue) {
-        Integer numFacets = numberOfFacets.get(name);
+        if (adjustFacetName != null && adjustFacetName.equals(name)) {
+            return adjustFacetNumber; 
+        }
+        
+        return defaultValue;
+        /*Integer numFacets = numberOfFacets.get(name);
         if (numFacets == null) {
             numberOfFacets.put(name, defaultValue);
             numFacets = defaultValue;
         }
-        return numFacets;
+        return numFacets;*/
     }
 
     public void incrementFacets(String name, int incrementNum) {
@@ -843,6 +849,22 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 this.sortOrder = SortOrder.desc;
             }
         }
+    }
+    
+    public String getAdjustFacetName() {
+        return adjustFacetName;
+    }
+    
+    public void setAdjustFacetName(String adjustFacetName) {
+        this.adjustFacetName = adjustFacetName;
+    }
+    
+    public int getAdjustFacetNumber() {
+        return adjustFacetNumber;
+    }
+    
+    public void setAdjustFacetNumber(int adjustFacetNumber) {
+        this.adjustFacetNumber = adjustFacetNumber; 
     }
 
     /**

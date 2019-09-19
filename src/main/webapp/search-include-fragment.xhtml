@@ -209,10 +209,34 @@
                     <ui:fragment rendered="#{facetCategory.name != SearchIncludeFragment.searchFieldType and facetCategory.name != SearchIncludeFragment.searchFieldSubtree}">
                         <p:panelGrid styleClass="facetsMoreLess" columns="2" rendered="#{(SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5) lt facetCategory.facetLabel.size()) or (SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5) gt 5)}">
                             <ui:fragment>
-                                <p:commandLink actionListener="#{SearchIncludeFragment.incrementFacets(facetCategory.name,-5)}" update="facetCategoryList" rendered="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5) gt 5}">#{bundle.less}</p:commandLink>
+                                <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5) gt 5}" styleClass="facetLink">
+                                    <h:outputText value="#{bundle.less}"/>
+                                    <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                                    <f:param name="fq#{SearchIncludeFragment.filterQueries.size()}" value="#{facetLabel.filterQuery}"/>
+                                    <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                        <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                    </c:forEach>
+                                    <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                    <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+                                    <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                    <f:param name="adjustFacetName" value="#{facetCategory.name}"/>
+                                    <f:param name="adjustFacetNumber" value="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5)-5}" />
+                                </h:outputLink>
                             </ui:fragment>
                             <ui:fragment>
-                                <p:commandLink actionListener="#{SearchIncludeFragment.incrementFacets(facetCategory.name,5)}" update="facetCategoryList" rendered="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5) lt facetCategory.facetLabel.size()}">#{bundle.more}</p:commandLink>
+                                <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5) lt facetCategory.facetLabel.size()}" styleClass="facetLink">
+                                    <h:outputText value="#{bundle.more}"/>
+                                    <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                                    <f:param name="fq#{SearchIncludeFragment.filterQueries.size()}" value="#{facetLabel.filterQuery}"/>
+                                    <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                        <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                    </c:forEach>
+                                    <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                    <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+                                    <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                    <f:param name="adjustFacetName" value="#{facetCategory.name}"/>
+                                    <f:param name="adjustFacetNumber" value="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5)+5}" />
+                                </h:outputLink>
                             </ui:fragment>
                         </p:panelGrid>
                     </ui:fragment>
