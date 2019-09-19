@@ -19,8 +19,8 @@ curl -O https://raw.githubusercontent.com/IQSS/dataverse-sample-data/memory-moni
 
 # obtain the address of the new instance, and the ssh key: 
 
-EC2_SSH_KEY=`grep '^ssh \-i .* centos' create-instance.log | awk '{print $3}'`
-EC2_SSH_DEST=`grep '^ssh \-i .* centos' create-instance.log | awk '{print $4}'`
+EC2_SSH_KEY=`grep '^ssh \-i .* centos' create-instance.log | head -1 | awk '{print $3}'`
+EC2_SSH_DEST=`grep '^ssh \-i .* centos' create-instance.log | head -1 | awk '{print $4}'`
 
 
 if [[ "${EC2_SSH_KEY}x" = "x" || "${EC2_SSH_DEST}x" = "x" ]]
