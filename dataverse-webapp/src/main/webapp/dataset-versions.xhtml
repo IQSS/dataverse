@@ -19,21 +19,6 @@
 
     <ui:fragment rendered="#{!widgetWrapper.widgetView}">
     <!-- VERSIONS -->
-       <script type="text/javascript">
-           /* Version tab: Retrieve data after page load */
-            $(document).ready(function () {
-                var preload_message = "#{bundle['file.dataFilesTab.versions.loading']}";
-                PF('versionsTable').getJQ().find('tr.ui-datatable-empty-message td').text(preload_message);
-                postLoadVersionTabList();
-           });
-       </script>
-       <!-- Retrieve version differences after the page load -->
-       <p:remoteCommand  name="postLoadVersionTabList"
-               process="@this"
-               update="versionsContent"
-               actionListener="#{datasetVersionsTab.postLoadSetVersionTabList()}" />
-
-
         <h:panelGroup id="versionsContent">
 
         <div class="text-right margin-bottom">
@@ -148,6 +133,20 @@
             </p:column><!-- end: date column -->
         </p:dataTable>
         </h:panelGroup>
+        <!-- Retrieve version differences after the page load -->
+        <p:remoteCommand  name="postLoadVersionTabList"
+                          process="@this"
+                          update="versionsContent"
+                          actionListener="#{datasetVersionsTab.postLoadSetVersionTabList()}" />
+
+        <script type="text/javascript">
+            /* Version tab: Retrieve data after page load */
+            $(document).ready(function () {
+                var preload_message = "#{bundle['file.dataFilesTab.versions.loading']}";
+                PF('versionsTable').getJQ().find('tr.ui-datatable-empty-message td').text(preload_message);
+                postLoadVersionTabList();
+            });
+        </script>
     <!-- / VERSIONS -->
     </ui:fragment>
 
