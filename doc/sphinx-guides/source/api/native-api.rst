@@ -1161,9 +1161,21 @@ Show Dataverse Version and Build Number
 Show Dataverse Server Name
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Get the server name. This is useful when a Dataverse system is composed of multiple Java EE servers behind a load balancer::
+Get the server name. This is useful when a Dataverse system is composed of multiple Java EE servers behind a load balancer:
 
-  GET http://$SERVER/api/info/server
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl $SERVER_URL/api/info/server
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/info/server
 
 Show Custom Popup Text for Publishing Datasets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
