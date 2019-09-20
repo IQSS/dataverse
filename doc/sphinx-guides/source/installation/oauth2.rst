@@ -52,7 +52,7 @@ We will ``POST`` a JSON file containing the Client ID and Client Secret to this 
 - :download:`orcid.json <../_static/installation/files/root/auth-providers/orcid.json>`
 - :download:`github.json <../_static/installation/files/root/auth-providers/github.json>`
 - :download:`google.json <../_static/installation/files/root/auth-providers/google.json>`
-- TBD
+- :download:`microsoft.json <../_static/installation/files/root/auth-providers/microsoft.json>`
 
 Here's how the JSON template for GitHub looks, for example:
 
