@@ -1211,9 +1211,21 @@ The fully expanded example above (without environment variables) looks like this
 Get API Terms of Use URL
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Get API Terms of Use. The response contains the text value inserted as API Terms of use which uses the database setting  ``:ApiTermsOfUse``::
+Get API Terms of Use. The response contains the text value inserted as API Terms of use which uses the database setting  ``:ApiTermsOfUse``:
 
-  GET http://$SERVER/api/info/apiTermsOfUse
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl $SERVER_URL/api/info/apiTermsOfUse
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/info/apiTermsOfUse
 
 Metadata Blocks
 ---------------
