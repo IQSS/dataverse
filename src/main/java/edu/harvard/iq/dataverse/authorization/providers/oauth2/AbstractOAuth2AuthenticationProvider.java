@@ -111,16 +111,18 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         OAuth20Service service = getService(state, redirectUrl);
         OAuth2AccessToken accessToken = service.getAccessToken(code);
 
+        //logger.log(Level.FINE, "Autentication provider id: {0}", id);
+
         final String userEndpoint = getUserEndpoint(accessToken);
         
         final OAuthRequest request = new OAuthRequest(Verb.GET, userEndpoint, service);
         request.addHeader("Authorization", "Bearer " + accessToken.getAccessToken());
         request.setCharset("UTF-8");
 
-        // Microsoft
-        request.addHeader("Accept", "application/json");
+        if (id.equals("microsoft")) {
+            request.addHeader("Accept", "application/json");
+        }
 
-        
         final Response response = request.send();
         int responseCode = response.getCode();
         final String body = response.getBody();        
