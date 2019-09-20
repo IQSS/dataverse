@@ -43,6 +43,8 @@
                     <f:viewParam name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                     <f:viewParam name="page" value="#{SearchIncludeFragment.page}"/>
                     <f:viewParam name="debug" value="#{SearchIncludeFragment.debug}"/>
+                    <f:viewParam name="adjustFacetName" value="#{SearchIncludeFragment.adjustFacetName}"/>
+                    <f:viewParam name="adjustFacetNumber" value="#{SearchIncludeFragment.adjustFacetNumber}"/>
                     <f:viewAction action="#{SearchIncludeFragment.search()}" />
                 </f:metadata>
 
@@ -61,7 +63,7 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.title']}"></span>
                                 </label>
                                 <div class="col-sm-9 form-col-container">
-                                    <p:inputText id="name" tabindex="1" styleClass="form-control" value="#{DataversePage.dataverse.name}"/>
+                                    <p:inputText id="name" tabindex="1" styleClass="form-control" value="#{DataversePage.dataverse.name}XXX"/>
                                 </div>
                             </div>
                             <div class="col-xs-6 form-group form-col-container">
