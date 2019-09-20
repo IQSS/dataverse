@@ -1160,7 +1160,7 @@ Show Dataverse Version and Build Number
 
   export SERVER_URL=https://demo.dataverse.org
 
-  curl http://$SERVER/api/info/version
+  curl $SERVER_URL/api/info/version
 
 The fully expanded example above (without environment variables) looks like this:
 
