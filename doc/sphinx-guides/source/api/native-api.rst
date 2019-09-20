@@ -1158,7 +1158,7 @@ Show Dataverse Version and Build Number
 
 .. code-block:: bash
 
-  export SERVER=https://demo.dataverse.org
+  export SERVER_URL=https://demo.dataverse.org
 
   curl http://$SERVER/api/info/version
 
