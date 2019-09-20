@@ -1156,6 +1156,8 @@ Show Dataverse Version and Build Number
 
 |CORS| Get the Dataverse version. The response contains the version and build numbers:
 
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
 .. code-block:: bash
 
   export SERVER_URL=https://demo.dataverse.org
