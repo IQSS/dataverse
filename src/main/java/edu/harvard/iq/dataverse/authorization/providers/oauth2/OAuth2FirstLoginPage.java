@@ -183,6 +183,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
                 newUser.getDisplayInfo().getPosition());
         final AuthenticatedUser user = authenticationSvc.createAuthenticatedUser(newUser.getUserRecordIdentifier(), getUsername(), newAud, true);
         session.setUser(user);
+        session.configureSessionTimeout();
         /**
          * @todo Move this to AuthenticationServiceBean.createAuthenticatedUser
          */
@@ -210,6 +211,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
             builtinUserSvc.removeUser(existingUser.getUserIdentifier());
 
             session.setUser(existingUser);
+            session.configureSessionTimeout();
             AuthenticationProvider newUserAuthProvider = authenticationSvc.getAuthenticationProvider(newUser.getServiceId());
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("oauth2.convertAccount.success", Arrays.asList(newUserAuthProvider.getInfo().getTitle())));
 

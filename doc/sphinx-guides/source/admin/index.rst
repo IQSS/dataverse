@@ -13,6 +13,7 @@ This guide documents the functionality only available to superusers (such as "da
 .. toctree::
 
    dashboard
+   external-tools
    harvestclients
    harvestserver
    metadatacustomization

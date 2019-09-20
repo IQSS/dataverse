@@ -399,11 +399,20 @@ Get JSON Representation of a Dataset
 
   Example: Getting the dataset whose DOI is *10.5072/FK2/J8SJZB* ::
 
-    GET http://$SERVER/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+    curl http://$SERVER/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+
+  fully expanded::
+
+    curl http://localhost:8080/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
 
   Getting its draft version::
 
-    GET http://$SERVER/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
+    curl http://$SERVER/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
+
+  fully expanded::
+
+    curl http://localhost:8080/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
+
 
 |CORS| Show the dataset whose id is passed::
 
@@ -1145,9 +1154,21 @@ Info
 Show Dataverse Version and Build Number
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Get the Dataverse version. The response contains the version and build numbers::
+|CORS| Get the Dataverse version. The response contains the version and build numbers:
 
-  GET http://$SERVER/api/info/version
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl $SERVER_URL/api/info/version
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/info/version
 
 Show Dataverse Server Name
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

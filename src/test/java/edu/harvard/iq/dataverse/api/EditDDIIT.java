@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
+import static edu.harvard.iq.dataverse.api.AccessIT.datasetId;
 
 
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
@@ -32,6 +34,7 @@ import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import java.nio.file.Files;
+import static org.junit.Assert.assertTrue;
 
 
 public class EditDDIIT {
@@ -77,8 +80,9 @@ public class EditDDIIT {
         assertNotEquals("",origFileId);
 
         // Give file time to ingest
-        Thread.sleep(10000);
-
+        
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFileThatGoesThroughIngest , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        
         Response origXml = UtilIT.getFileMetadata(origFileId, null, apiToken);
         assertEquals(200, origXml.getStatusCode());
 
