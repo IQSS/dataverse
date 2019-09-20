@@ -5,6 +5,9 @@
     <admin-object-resource res-adapter="jmsra" res-type="javax.jms.Queue" jndi-name="jms/DataverseIngest">
         <property name="Name" value="DataverseIngest"/>
     </admin-object-resource>
+    <connector-resource pool-name="jms/IngestQueueConnectionFactoryPool" jndi-name="jms/IngestQueueConnectionFactory" />
+    <connector-connection-pool resource-adapter-name="jmsra" max-pool-size="250" steady-pool-size="1"
+            name="jms/IngestQueueConnectionFactoryPool" connection-definition-name="javax.jms.QueueConnectionFactory" />
 
     <jdbc-connection-pool datasource-classname="org.postgresql.ds.PGPoolingDataSource" name="dvnDbPool"
                           res-type="javax.sql.DataSource">
