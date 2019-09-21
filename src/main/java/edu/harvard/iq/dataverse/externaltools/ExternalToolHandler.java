@@ -143,17 +143,17 @@ public class ExternalToolHandler {
             case DATASET_VERSION:
                 String versionString = null;
                 if(fileMetadata!=null) { //true for file case
-                versionString = fileMetadata.getDatasetVersion().getFriendlyVersionNumber();
-                if (("DRAFT").equals(versionString)) {
-                    versionString = ":draft"; // send the token needed in api calls that can be substituted for a numeric
-                                              // version.
-                } 
+                    versionString = fileMetadata.getDatasetVersion().getFriendlyVersionNumber();
                 } else { //Dataset case - return the latest visible version (unless/until the dataset case allows specifying a version)
                     if (getApiToken() != null) {
                         versionString = dataset.getLatestVersion().getFriendlyVersionNumber();
                     } else {
                         versionString = dataset.getLatestVersionForCopy().getFriendlyVersionNumber();
-                    } 
+                    }
+                }
+                if (("DRAFT").equals(versionString)) {
+                    versionString = ":draft"; // send the token needed in api calls that can be substituted for a numeric
+                                              // version.
                 }
                 return key + "=" + versionString;
             case FILE_METADATA_ID:
