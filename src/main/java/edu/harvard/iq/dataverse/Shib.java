@@ -255,6 +255,13 @@ public class Shib implements java.io.Serializable {
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
         AuthenticatedUser au = authSvc.lookupUser(shibAuthProvider.getId(), userPersistentId);
         if (au != null) {
+            //See if there's another account with this email
+            AuthenticatedUser auEmail = authSvc.getAuthenticatedUserByEmail(emailAddress);
+            if (auEmail!= null && !auEmail.equals(au)){   
+                //If this email already belongs to another account throw a message for user to contact support
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("shib.duplicate.email.error"));
+                return;
+            }
             state = State.REGULAR_LOGIN_INTO_EXISTING_SHIB_ACCOUNT;
             logger.fine("Found user based on " + userPersistentId + ". Logging in.");
             logger.fine("Updating display info for " + au.getName());
@@ -392,6 +399,7 @@ public class Shib implements java.io.Serializable {
     private void logInUserAndSetShibAttributes(AuthenticatedUser au) {
         au.setShibIdentityProvider(shibIdp);
         session.setUser(au);
+        session.configureSessionTimeout();
         logger.fine("Groups for user " + au.getId() + " (" + au.getIdentifier() + "): " + getGroups(au));
     }
 

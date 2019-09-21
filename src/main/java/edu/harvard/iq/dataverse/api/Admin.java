@@ -161,6 +161,13 @@ public class Admin extends AbstractApiBean {
 		return ok(jsonObjectBuilder().add(s.getName(), s.getContent()));
 	}
 
+	@Path("settings/{name}/lang/{lang}")
+	@PUT
+	public Response putSetting(@PathParam("name") String name, @PathParam("lang") String lang, String content) {
+		Setting s = settingsSvc.set(name, lang, content);
+		return ok("Setting " + name + " - " + lang + " - added.");
+	}
+
 	@Path("settings/{name}")
 	@GET
 	public Response getSetting(@PathParam("name") String name) {
@@ -175,6 +182,13 @@ public class Admin extends AbstractApiBean {
 		settingsSvc.delete(name);
 
 		return ok("Setting " + name + " deleted.");
+	}
+
+	@Path("settings/{name}/lang/{lang}")
+	@DELETE
+	public Response deleteSetting(@PathParam("name") String name, @PathParam("lang") String lang) {
+		settingsSvc.delete(name, lang);
+		return ok("Setting " + name + " - " + lang + " deleted.");
 	}
 
 	@Path("authenticationProviderFactories")

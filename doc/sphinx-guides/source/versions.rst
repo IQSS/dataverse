@@ -1,10 +1,10 @@
 :orphan:
 .. _guides_versions:
 
-Dataverse Guides Versions
-=========================
+Dataverse Documentation Versions
+================================
 
-This list provides a way to refer to previous versions of the Dataverse guides, which we still host. In order to learn more about the updates delivered from one version to another, visit the `Releases <https://github.com/IQSS/dataverse/releases>`__ page in our GitHub repo.
+This list provides a way to refer to the documentation for previous versions of Dataverse. In order to learn more about the updates delivered from one version to another, visit the `Releases <https://github.com/IQSS/dataverse/releases>`__ page in our GitHub repo.
 
 - 4.16
 
