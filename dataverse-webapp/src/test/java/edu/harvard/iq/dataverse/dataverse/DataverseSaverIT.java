@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
 import edu.harvard.iq.dataverse.arquillian.facesmock.FacesContextMocker;
 import edu.harvard.iq.dataverse.error.DataverseError;
+import edu.harvard.iq.dataverse.persistence.config.StartupFlywayMigrator;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
@@ -24,24 +25,35 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.primefaces.model.DualListModel;
 
+import javax.annotation.Resource;
 import javax.ejb.AsyncResult;
 import javax.ejb.EJBTransactionRolledbackException;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.when;
 
 @RunWith(Arquillian.class)
-@Transactional(TransactionMode.ROLLBACK)
 public class DataverseSaverIT extends WebappArquillianDeployment {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+
+    @Resource
+    private UserTransaction transaction;
 
     @Inject
     private DataverseSaver dataverseSaver;
@@ -55,6 +67,9 @@ public class DataverseSaverIT extends WebappArquillianDeployment {
     @Inject
     private DataverseServiceBean dataverseServiceBean;
 
+    @Inject
+    private StartupFlywayMigrator startupFlywayMigrator;
+
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
@@ -62,29 +77,40 @@ public class DataverseSaverIT extends WebappArquillianDeployment {
 
         when(indexServiceBean.indexDataverse(Mockito.any(Dataverse.class)))
                 .thenReturn(new AsyncResult<>("NICE"));
+    }
 
+    @Test
+    public void saveNewDataverse_ShouldSuccessfullySave() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+        //given
+        transaction.begin();
+        createSessionUser();
+
+        Dataverse dataverse = prepareDataverse();
+
+        //when
+        Either<DataverseError, Dataverse> savedDataverse = dataverseSaver.saveNewDataverse(Lists.newArrayList(), dataverse, new DualListModel<>());
+        transaction.commit();
+
+        //then
+        Assert.assertTrue(savedDataverse.isRight());
+        Assert.assertEquals(2, dataverseServiceBean.findAll().size());
+
+        await()
+                .atMost(Duration.ofSeconds(3L))
+                .until(() -> smtpServer.mailBox().stream()
+                        .anyMatch(emailModel -> emailModel.getSubject().contains("Your dataverse has been created")));
+
+        cleanupDatabase();
+    }
+
+    private void createSessionUser() {
         AuthenticatedUser user = createUser();
         em.persist(user);
         dataverseSession.setUser(user);
     }
 
     @Test
-    public void saveNewDataverse_ShouldSuccessfullySave() {
-        //given
-        Dataverse dataverse = prepareDataverse();
-
-        //when
-        Either<DataverseError, Dataverse> savedDataverse = dataverseSaver.saveNewDataverse(Lists.newArrayList(), dataverse, new DualListModel<>());
-
-        //then
-        Assert.assertTrue(savedDataverse.isRight());
-        Assert.assertEquals(2, dataverseServiceBean.findAll().size());
-        Assert.assertTrue(smtpServer.mailBox().stream()
-                                  .anyMatch(emailModel -> emailModel.getSubject().contains("Your dataverse has been created")));
-
-    }
-
-    @Test
+    @Transactional(TransactionMode.ROLLBACK)
     public void saveNewDataverse_WithWrongUser() {
         //given
         Dataverse dataverse = prepareDataverse();
@@ -100,8 +126,10 @@ public class DataverseSaverIT extends WebappArquillianDeployment {
     }
 
     @Test
+    @Transactional(TransactionMode.ROLLBACK)
     public void saveEditedDataverse() {
         //given
+        createSessionUser();
         Dataverse dataverse = dataverseServiceBean.findRootDataverse();
         String oldDataverseName = dataverse.getName();
         dataverse.setName("UPDATED DATAVERSE");
@@ -115,6 +143,7 @@ public class DataverseSaverIT extends WebappArquillianDeployment {
     }
 
     @Test(expected = EJBTransactionRolledbackException.class)
+    @Transactional(TransactionMode.ROLLBACK)
     public void saveEditedDataverse_WithNonExistingDataverse() {
         //given
         Dataverse dataverse = new Dataverse();
@@ -126,6 +155,25 @@ public class DataverseSaverIT extends WebappArquillianDeployment {
         Assert.assertTrue(updatedDataverse.isLeft());
         Assert.assertEquals(1, dataverseServiceBean.findAll().size());
 
+    }
+
+    private void cleanupDatabase() throws NotSupportedException, SystemException, RollbackException, HeuristicMixedException, HeuristicRollbackException {
+        transaction.begin();
+
+        dropAllTables();
+        startupFlywayMigrator.migrateDatabase();
+
+        transaction.commit();
+    }
+
+    private void dropAllTables() {
+        em.createNativeQuery("DO $$ DECLARE\n" +
+                                     "    r RECORD;\n" +
+                                     "BEGIN\n" +
+                                     "    FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = current_schema()) LOOP\n" +
+                                     "        EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';\n" +
+                                     "    END LOOP;\n" +
+                                     "END $$;").executeUpdate();
     }
 
     private Dataverse prepareDataverse() {

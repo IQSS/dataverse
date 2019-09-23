@@ -55,6 +55,11 @@
             <artifactId>postgresql</artifactId>
             <version>42.2.5</version>
         </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>4.0.1</version>
+        </dependency>
     </dependencies>
 
     <build>

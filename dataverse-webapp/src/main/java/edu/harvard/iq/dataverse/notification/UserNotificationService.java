@@ -28,7 +28,7 @@ public class UserNotificationService {
 
     // -------------------- CONSTRUCTORS --------------------
     @Deprecated /* JEE requirement*/
-    UserNotificationService() {
+    public UserNotificationService() {
     }
 
     @Inject

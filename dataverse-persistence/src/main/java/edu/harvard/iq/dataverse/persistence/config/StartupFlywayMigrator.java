@@ -16,7 +16,7 @@ public class StartupFlywayMigrator {
     private DataSource dataSource;
 
     @PostConstruct
-    void migrateDatabase() {
+    public void migrateDatabase() {
 
         Flyway flyway = Flyway.configure()
                 .dataSource(dataSource)
