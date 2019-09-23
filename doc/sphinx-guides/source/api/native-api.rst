@@ -1173,23 +1173,59 @@ The fully expanded example above (without environment variables) looks like this
 Show Dataverse Server Name
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Get the server name. This is useful when a Dataverse system is composed of multiple Java EE servers behind a load balancer::
+Get the server name. This is useful when a Dataverse system is composed of multiple Java EE servers behind a load balancer:
 
-  GET http://$SERVER/api/info/server
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl $SERVER_URL/api/info/server
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/info/server
 
 Show Custom Popup Text for Publishing Datasets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For now, only the value for the ``:DatasetPublishPopupCustomText`` setting from the :doc:`/installation/config` section of the Installation Guide is exposed::
+For now, only the value for the ``:DatasetPublishPopupCustomText`` setting from the :doc:`/installation/config` section of the Installation Guide is exposed:
 
-  GET http://$SERVER/api/info/settings/:DatasetPublishPopupCustomText
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl $SERVER_URL/api/info/settings/:DatasetPublishPopupCustomText
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/info/settings/:DatasetPublishPopupCustomText
 
 Get API Terms of Use URL
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Get API Terms of Use. The response contains the text value inserted as API Terms of use which uses the database setting  ``:ApiTermsOfUse``::
+Get API Terms of Use. The response contains the text value inserted as API Terms of use which uses the database setting  ``:ApiTermsOfUse``:
 
-  GET http://$SERVER/api/info/apiTermsOfUse
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl $SERVER_URL/api/info/apiTermsOfUse
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/info/apiTermsOfUse
 
 Metadata Blocks
 ---------------
