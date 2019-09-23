@@ -447,18 +447,18 @@ public class UserServiceBean {
     }*/
     
     private String getSharedSearchClause(String searchTerm){
-        String[] searchTermTokens = searchTerm.split("[ ,][ ,]*");
+        String[] searchTermTokens = searchTerm.replaceAll("['\"]", "").split("[ ,][ ,]*");
         
         String searchClause = "(";
         
         for (int i = 0; i < searchTermTokens.length; i++) {
             if (i > 0) {
-                searchClause += " OR";
+                searchClause += " AND ";
             }
-            searchClause += " u.useridentifier ILIKE '" + searchTermTokens[i] + "%'";
+            searchClause += "(u.useridentifier ILIKE '" + searchTermTokens[i] + "%'";
             searchClause += " OR u.firstname ILIKE '" + searchTermTokens[i] + "%'";
             searchClause += " OR u.lastname ILIKE '" + searchTermTokens[i] + "%'"; 
-            searchClause += " OR u.email ILIKE '" + searchTermTokens[i] + "%'"; 
+            searchClause += " OR u.email ILIKE '" + searchTermTokens[i] + "%')"; 
         }
         
         return searchClause + ")";
