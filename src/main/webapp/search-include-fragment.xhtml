@@ -177,7 +177,8 @@
                     <h:outputText value="#{facetCategory.friendlyName}" styleClass="facetCategoryName"/>
                     <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5)}">
                         <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{!SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
-                            <h:outputFormat value="#{facetLabel.name} &#40;{0}&#41;">
+                            <h:outputFormat value="{0} &#40;{1}&#41;">
+                                <f:param value="#{facetLabel.name}"/>
                                 <f:param value="#{facetLabel.count}"/>
                             </h:outputFormat>
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
@@ -191,7 +192,8 @@
                         </h:outputLink>
 
                         <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink facetSelected">
-                            <h:outputFormat value="#{facetLabel.name} &#40;{0}&#41;">
+                            <h:outputFormat value="{0} &#40;{1}&#41;">
+                                <f:param value="#{facetLabel.name}"/>
                                 <f:param value="#{facetLabel.count}"/>
                             </h:outputFormat>
                             <span class="glyphicon glyphicon-remove"></span>
