@@ -6,8 +6,10 @@ import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -64,6 +66,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Collection;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -74,7 +77,6 @@ import javax.faces.event.ValueChangeEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.mail.internet.InternetAddress;
 
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
@@ -99,6 +101,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewComman
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import java.util.Collections;
@@ -122,7 +125,9 @@ import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.FacetLabel;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
+import edu.harvard.iq.dataverse.search.SolrClientService;
 import java.util.Comparator;
 import java.util.TimeZone;
 import javax.servlet.http.HttpServletRequest;
@@ -133,6 +138,7 @@ import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.primefaces.PrimeFaces;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
@@ -190,6 +196,8 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     SettingsServiceBean settingsService;
     @EJB
+    SearchServiceBean searchService;
+    @EJB
     AuthenticationServiceBean authService;
     @EJB
     SystemConfig systemConfig;
@@ -209,6 +217,8 @@ public class DatasetPage implements java.io.Serializable {
     PrivateUrlServiceBean privateUrlService;
     @EJB
     ExternalToolServiceBean externalToolService;
+    @EJB
+    SolrClientService solrClientService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -306,10 +316,15 @@ public class DatasetPage implements java.io.Serializable {
         this.showIngestSuccess = showIngestSuccess;
     }
         
+    // TODO: Consider renaming "configureTools" to "fileConfigureTools".
     List<ExternalTool> configureTools = new ArrayList<>();
+    // TODO: Consider renaming "exploreTools" to "fileExploreTools".
     List<ExternalTool> exploreTools = new ArrayList<>();
+    // TODO: Consider renaming "configureToolsByFileId" to "fileConfigureToolsByFileId".
     Map<Long, List<ExternalTool>> configureToolsByFileId = new HashMap<>();
+    // TODO: Consider renaming "exploreToolsByFileId" to "fileExploreToolsByFileId".
     Map<Long, List<ExternalTool>> exploreToolsByFileId = new HashMap<>();
+    private List<ExternalTool> datasetExploreTools;
     
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -722,7 +737,7 @@ public class DatasetPage implements java.io.Serializable {
         QueryResponse queryResponse = null;
         
         try {
-            queryResponse = getSolrServer().query(solrQuery);
+            queryResponse = solrClientService.getSolrClient().query(solrQuery);
         } catch (Exception ex) {
             logger.fine("Solr exception: " + ex.getLocalizedMessage());
             // solr maybe down/some error may have occurred... 
@@ -837,7 +852,7 @@ public class DatasetPage implements java.io.Serializable {
         Set<Long> resultIds = new HashSet<>();
         
         try {
-            queryResponse = getSolrServer().query(solrQuery);
+            queryResponse = solrClientService.getSolrClient().query(solrQuery);
         } catch (HttpSolrClient.RemoteSolrException ex) {
             logger.fine("Remote Solr Exception: " + ex.getLocalizedMessage());
             String msg = ex.getLocalizedMessage(); 
@@ -855,7 +870,7 @@ public class DatasetPage implements java.io.Serializable {
             logger.fine("Solr query (trying again): " + solrQuery);
 
             try {
-                queryResponse = getSolrServer().query(solrQuery);
+                queryResponse = solrClientService.getSolrClient().query(solrQuery);
             } catch (Exception ex) {
                 logger.warning("Caught a Solr exception (again!): " + ex.getLocalizedMessage());
                 return resultIds;
@@ -1746,7 +1761,7 @@ public class DatasetPage implements java.io.Serializable {
         String nonNullDefaultIfKeyNotFound = "";
         protocol = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         authority = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset     
+        if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset
 
             DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
 
@@ -1908,7 +1923,7 @@ public class DatasetPage implements java.io.Serializable {
             } else if (!permissionService.on(dataset.getOwner()).has(Permission.AddDataset)) {
                 return permissionsWrapper.notAuthorized(); 
             }
-
+            
             dataverseTemplates.addAll(dataverseService.find(ownerId).getTemplates());
             if (!dataverseService.find(ownerId).isTemplateRoot()) {
                 dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());
@@ -1923,7 +1938,7 @@ public class DatasetPage implements java.io.Serializable {
                         selectedTemplate = testT;
                     }
                 }
-                workingVersion = dataset.getEditVersion(selectedTemplate);
+                workingVersion = dataset.getEditVersion(selectedTemplate, null);
                 updateDatasetFieldInputLevels();
             } else {
                 workingVersion = dataset.getCreateVersion();
@@ -2008,8 +2023,9 @@ public class DatasetPage implements java.io.Serializable {
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.unlocked.ingest.message"));
         }
         
-        configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
-        exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
+        configureTools = externalToolService.findFileToolsByType(ExternalTool.Type.CONFIGURE);
+        exploreTools = externalToolService.findFileToolsByType(ExternalTool.Type.EXPLORE);
+        datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
       
         
@@ -3298,7 +3314,6 @@ public class DatasetPage implements java.io.Serializable {
                 if (!filesToBeDeleted.isEmpty()) {
                     deleteStorageLocations = datafileService.getPhysicalFilesToDelete(filesToBeDeleted);
                 }
-                
                 cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, clone );
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);  
             }
@@ -3361,7 +3376,7 @@ public class DatasetPage implements java.io.Serializable {
                     
                     // and another update command: 
                     boolean addFilesSuccess = false;
-                    cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), new ArrayList<FileMetadata>());
+                    cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest());
                     try {
                         dataset = commandEngine.submit(cmd);
                         addFilesSuccess = true; 
@@ -3471,7 +3486,7 @@ public class DatasetPage implements java.io.Serializable {
     private String returnToDatasetOnly(){
          dataset = datasetService.find(dataset.getId());
          editMode = null;         
-         return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString()  +  "&faces-redirect=true";       
+         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString() +  "&faces-redirect=true";    
     }
     
     private String returnToDraftVersion(){      
@@ -3900,6 +3915,11 @@ public class DatasetPage implements java.io.Serializable {
 
         if (permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {
             for (DatasetVersion version : dataset.getVersions()) {
+                Collection<FileMetadata> fml = version.getFileMetadatas();
+                for (FileMetadata fm : fml) {
+                    fm.setVariableMetadatas(variableService.findVarMetByFileMetaId(fm.getId()));
+                    fm.setVarGroups(variableService.findAllGroupsByFileMetadata(fm.getId()));
+                }
                 version.setContributorNames(datasetVersionService.getContributorsNames(version));
                 retList.add(version);
             }
@@ -4821,6 +4841,25 @@ public class DatasetPage implements java.io.Serializable {
         privateUrlWasJustCreated = false;
     }
 
+    public boolean isShowLinkingPopup() {
+        return showLinkingPopup;
+    }
+
+    public void setShowLinkingPopup(boolean showLinkingPopup) {
+        this.showLinkingPopup = showLinkingPopup;
+    }    
+    
+    private boolean showLinkingPopup = false;
+    
+    //
+    
+    /*
+        public void setSelectedGroup(ExplicitGroup selectedGroup) {
+        setShowDeletePopup(true);
+        this.selectedGroup = selectedGroup;
+    }
+    */
+
     public void createPrivateUrl() {
         try {
             PrivateUrl createdPrivateUrl = commandEngine.submit(new CreatePrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
@@ -5023,6 +5062,10 @@ public class DatasetPage implements java.io.Serializable {
         return cachedTools;
     }
 
+    public List<ExternalTool> getDatasetExploreTools() {
+        return datasetExploreTools;
+    }
+
     Boolean thisLatestReleasedVersion = null;
     
     public boolean isThisLatestReleasedVersion() {
@@ -5124,19 +5167,7 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
     }
-    
-    private SolrClient solrServer = null;
-    
-    private SolrClient getSolrServer () {
-        if (solrServer == null) {
-        }
-        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
-        solrServer = new HttpSolrClient.Builder(urlString).build();
-        
-        return solrServer;
-        
-    }
-    
+
     private static Date getFileDateToCompare(FileMetadata fileMetadata) {
         DataFile datafile = fileMetadata.getDataFile();
 
@@ -5183,4 +5214,17 @@ public class DatasetPage implements java.io.Serializable {
             return type1.compareTo(type2);
         }
     };
+
+    public void explore(ExternalTool externalTool) {
+        ApiToken apiToken = null;
+        User user = session.getUser();
+        if (user instanceof AuthenticatedUser) {
+            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+        }
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataset, apiToken);
+        String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
+        logger.fine("Exploring with " + toolUrl);
+        PrimeFaces.current().executeScript("window.open('"+toolUrl + "', target='_blank');");
+    }
+
 }

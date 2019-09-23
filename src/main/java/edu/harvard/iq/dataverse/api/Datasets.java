@@ -77,11 +77,9 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDvObjectPIDMetadataCommand;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitationsServiceBean;
@@ -97,26 +95,20 @@ import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import edu.harvard.iq.dataverse.util.DateUtil;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -145,6 +137,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.UriInfo;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -233,7 +226,7 @@ public class Datasets extends AbstractApiBean {
             MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, retrieved);
             mdcLogService.logEntry(entry);
             
-            return allowCors(ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null)));
+            return ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null));
         });
     }
     
@@ -245,7 +238,7 @@ public class Datasets extends AbstractApiBean {
     
     @GET
     @Path("/export")
-    @Produces({"application/xml", "application/json"})
+    @Produces({"application/xml", "application/json", "application/html" })
     public Response exportDataset(@QueryParam("persistentId") String persistentId, @QueryParam("exporter") String exporter, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
 
         try {
@@ -263,10 +256,10 @@ public class Datasets extends AbstractApiBean {
             MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, dataset);
             mdcLogService.logEntry(entry);
             
-            return allowCors(Response.ok()
+            return Response.ok()
                     .entity(is)
                     .type(mediaType).
-                    build());
+                    build();
         } catch (Exception wr) {
             return error(Response.Status.FORBIDDEN, "Export Failed");
         }
@@ -432,37 +425,37 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{id}/versions")
     public Response listVersions( @PathParam("id") String id ) {
-        return allowCors(response( req -> 
+        return response( req ->
              ok( execCommand( new ListVersionsCommand(req, findDatasetOrDie(id)) )
                                 .stream()
                                 .map( d -> json(d) )
-                                .collect(toJsonArray()))));
+                                .collect(toJsonArray())));
     }
     
     @GET
     @Path("{id}/versions/{versionId}")
     public Response getVersion( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return allowCors(response( req -> {
+        return response( req -> {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);            
             return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
                                                         : ok(json(dsv));
-        }));
+        });
     }
     
     @GET
     @Path("{id}/versions/{versionId}/files")
     public Response getVersionFiles( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return allowCors(response( req -> ok( jsonFileMetadatas(
-                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getFileMetadatas()))));
+        return response( req -> ok( jsonFileMetadatas(
+                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getFileMetadatas())));
     }
     
     @GET
     @Path("{id}/versions/{versionId}/metadata")
     public Response getVersionMetadata( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return allowCors(response( req -> ok(
+        return response( req -> ok(
                     jsonByBlocks(
                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers )
-                                .getDatasetFields()))));
+                                .getDatasetFields())));
     }
     
     @GET
@@ -473,7 +466,7 @@ public class Datasets extends AbstractApiBean {
                                              @Context UriInfo uriInfo, 
                                              @Context HttpHeaders headers ) {
         
-        return allowCors(response( req -> {
+        return response( req -> {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId), uriInfo, headers );
             
             Map<MetadataBlock, List<DatasetField>> fieldsByBlock = DatasetField.groupByBlock(dsv.getDatasetFields());
@@ -483,7 +476,7 @@ public class Datasets extends AbstractApiBean {
                 }
             }
             return notFound("metadata block named " + blockName + " not found");
-        }));
+        });
     }
     
     @GET
@@ -1681,7 +1674,14 @@ public class Datasets extends AbstractApiBean {
                         }
                         // kick of dataset reindexing, in case the locks removed 
                         // affected the search card:
-                        indexService.indexDataset(dataset, true);
+                        try {
+                            indexService.indexDataset(dataset, true);
+                        } catch (IOException | SolrServerException e) {
+                            String failureLogText = "Post lock removal indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+                            failureLogText += "\r\n" + e.getLocalizedMessage();
+                            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
+
+                        }
                         return ok("locks removed");
                     }
                     return ok("dataset not locked");
@@ -1694,7 +1694,14 @@ public class Datasets extends AbstractApiBean {
                     dataset = findDatasetOrDie(id);
                     // ... and kick of dataset reindexing, in case the lock removed 
                     // affected the search card:
-                    indexService.indexDataset(dataset, true);
+                    try {
+                        indexService.indexDataset(dataset, true);
+                    } catch (IOException | SolrServerException e) {
+                        String failureLogText = "Post lock removal indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+                        failureLogText += "\r\n" + e.getLocalizedMessage();
+                        LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
+
+                    }
                     return ok("lock type " + lock.getReason() + " removed");
                 }
                 return ok("no lock type " + lockType + " on the dataset");
@@ -1725,7 +1732,15 @@ public class Datasets extends AbstractApiBean {
                 // refresh the dataset:
                 dataset = findDatasetOrDie(id);
                 // ... and kick of dataset reindexing:
-                indexService.indexDataset(dataset, true);
+                try {
+                    indexService.indexDataset(dataset, true);
+                } catch (IOException | SolrServerException e) {
+                    String failureLogText = "Post add lock indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+                    failureLogText += "\r\n" + e.getLocalizedMessage();
+                    LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
+
+                }
+
                 return ok("dataset locked with lock type " + lockType);
             } catch (WrappedResponse wr) {
                 return wr.getResponse();
@@ -1863,7 +1878,7 @@ public class Datasets extends AbstractApiBean {
             jsonObjectBuilder.add("viewsUnique", viewsUnique);
             jsonObjectBuilder.add("downloadsTotal", downloadsTotal);
             jsonObjectBuilder.add("downloadsUnique", downloadsUnique);
-            return allowCors(ok(jsonObjectBuilder));
+            return ok(jsonObjectBuilder);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

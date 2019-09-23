@@ -156,6 +156,13 @@ public class Admin extends AbstractApiBean {
 		return ok(jsonObjectBuilder().add(s.getName(), s.getContent()));
 	}
 
+	@Path("settings/{name}/lang/{lang}")
+	@PUT
+	public Response putSetting(@PathParam("name") String name, @PathParam("lang") String lang, String content) {
+		Setting s = settingsSvc.set(name, lang, content);
+		return ok("Setting " + name + " - " + lang + " - added.");
+	}
+
 	@Path("settings/{name}")
 	@GET
 	public Response getSetting(@PathParam("name") String name) {
@@ -170,6 +177,13 @@ public class Admin extends AbstractApiBean {
 		settingsSvc.delete(name);
 
 		return ok("Setting " + name + " deleted.");
+	}
+
+	@Path("settings/{name}/lang/{lang}")
+	@DELETE
+	public Response deleteSetting(@PathParam("name") String name, @PathParam("lang") String lang) {
+		settingsSvc.delete(name, lang);
+		return ok("Setting " + name + " - " + lang + " deleted.");
 	}
 
 	@Path("authenticationProviderFactories")
@@ -855,7 +869,7 @@ public class Admin extends AbstractApiBean {
     @GET
     @Path("validate/datasets")
     @Produces({"application/json"})
-    public Response validateAllDatasets() {
+    public Response validateAllDatasets(@QueryParam("variables") boolean includeVariables) {
         
         // Streaming output: the API will start producing 
         // the output right away, as it goes through the list 
@@ -888,7 +902,7 @@ public class Admin extends AbstractApiBean {
 
                     
                     try {
-                        datasetService.instantiateDatasetInNewTransaction(datasetId);
+                        datasetService.instantiateDatasetInNewTransaction(datasetId, includeVariables);
                         success = true;
                     } catch (Exception ex) {
                         Throwable cause = ex;
@@ -899,12 +913,14 @@ public class Admin extends AbstractApiBean {
                                         .getConstraintViolations()) {
                                     String databaseRow = constraintViolation.getLeafBean().toString();
                                     String field = constraintViolation.getPropertyPath().toString();
-                                    String invalidValue = constraintViolation.getInvalidValue().toString();
-                                    
+                                    String invalidValue = null;
+                                    if (constraintViolation.getInvalidValue() != null) {
+                                        invalidValue = constraintViolation.getInvalidValue().toString();
+                                    }
                                     output.add("status", "invalid");
                                     output.add("entityClassDatabaseTableRowId", databaseRow);
                                     output.add("field", field);
-                                    output.add("invalidValue", invalidValue);
+                                    output.add("invalidValue", invalidValue == null ? "NULL" : invalidValue);
                                     
                                     constraintViolationDetected = true; 
                                     
@@ -946,7 +962,7 @@ public class Admin extends AbstractApiBean {
         
     @Path("validate/dataset/{id}")
     @GET
-    public Response validateDataset(@PathParam("id") String id) {
+    public Response validateDataset(@PathParam("id") String id, @QueryParam("variables") boolean includeVariables) {
         Dataset dataset;
         try {
             dataset = findDatasetOrDie(id);
@@ -958,7 +974,7 @@ public class Admin extends AbstractApiBean {
 
         String msg = "unknown";
         try {
-            datasetService.instantiateDatasetInNewTransaction(dbId);
+            datasetService.instantiateDatasetInNewTransaction(dbId, includeVariables);
             msg = "valid";
         } catch (Exception ex) {
             Throwable cause = ex;
@@ -969,11 +985,14 @@ public class Admin extends AbstractApiBean {
                             .getConstraintViolations()) {
                         String databaseRow = constraintViolation.getLeafBean().toString();
                         String field = constraintViolation.getPropertyPath().toString();
-                        String invalidValue = constraintViolation.getInvalidValue().toString();
+                        String invalidValue = null; 
+                        if (constraintViolation.getInvalidValue() != null) {
+                            invalidValue = constraintViolation.getInvalidValue().toString();
+                        }
                         JsonObjectBuilder violation = Json.createObjectBuilder();
                         violation.add("entityClassDatabaseTableRowId", databaseRow);
                         violation.add("field", field);
-                        violation.add("invalidValue", invalidValue);
+                        violation.add("invalidValue", invalidValue == null ? "NULL" : invalidValue);
                         return ok(violation);
                     }
                 }

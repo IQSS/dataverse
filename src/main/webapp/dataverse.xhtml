@@ -14,6 +14,9 @@
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{empty DataversePage.dataverse.name ? bundle.new : DataversePage.dataverse.name}"/>
             <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
+            <ui:define name="meta_header">
+            <meta name="description" content="#{MarkupChecker:stripAllTags(DataversePage.dataverse.description)}"/>
+            </ui:define>
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
@@ -398,7 +401,7 @@
                                             <li>
                                                 <div id="dataverse-info-dropdown">
                                                     <div class="dataverse-info-logo-icon">
-                                                        <i class="icon-dataverse text-brand"></i>
+                                                        <span class="icon-dataverse text-brand"></span>
                                                     </div>
                                                     <div class="dataverse-info-general">
                                                         <div><h:outputText value="#{DataversePage.dataverse.name}" styleClass="highlightBold"/> <h:outputText value=" (#{DataversePage.dataverse.affiliation})" styleClass="text-muted" rendered="#{!empty DataversePage.dataverse.affiliation}"/></div>
@@ -537,7 +540,7 @@
                                                     <c:set var="dvFeatUrl" value="/dataverse/#{dv.alias}"/>
                                                     <ui:fragment rendered="#{empty dv.dataverseTheme.logo}">
                                                         <a href="#{widgetWrapper.wrapURL(dvFeatUrl)}" title="#{dv.name}">
-                                                            <i class="icon-dataverse"></i>
+                                                            <span class="icon-dataverse"></span>
                                                         </a>
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{!empty dv.dataverseTheme.logo and dv.dataverseTheme.logoFormat == 'SQUARE'}">
@@ -766,9 +769,8 @@
                     </div>
                 </p:dialog>
 
-                <script type="text/javascript">
+                <script>
                     //<![CDATA[
-                    
                     var scrollPos=0;
 
                     $(document).ready(function () {
@@ -799,7 +801,6 @@
                         } else {
                             $("#featuredDataversesBlock .customNavigation a.btn").hide();
                         }
-
                         $('#featuredDataversesList .item').matchHeight();
                     }
 
@@ -823,17 +824,15 @@
                         } else {
                             PF('resetModifications').show();
                         }
-
                     }
 
                     function check() {
-                            $('button[id$="resetToInherit"]').trigger('click');
+                        $('button[id$="resetToInherit"]').trigger('click');
                     }
 
-                     function uncheck() {
-                         $('input:checkbox[id$="metadataRoot"]').prop('checked', false);
+                    function uncheck() {
+                        $('input:checkbox[id$="metadataRoot"]').prop('checked', false);
                     }
-
                     //]]>                                     
                 </script>
 

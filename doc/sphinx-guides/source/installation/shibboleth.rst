@@ -390,6 +390,8 @@ If you are running in "remote and local" mode and have existing local users that
 - If the email address associated with your local account matches the email address asserted by the Identity Provider (IdP), you will be prompted for the password of your local account and asked to confirm the conversion of your account. You're done! Browse around to ensure you see all the data you expect to see. Permissions have been preserved. 
 - If the email address asserted by the Identity Provider (IdP) does not match the email address of any local user, you will be prompted to create a new account. If you were expecting account conversion, you should decline creating a new Shibboleth account, log back in to your local account, and let Support know the email on file for your local account. Support may ask you to change your email address for your local account to the one that is being asserted by the Identity Provider. Someone with access to the Glassfish logs will see this email address there.
 
+.. _converting-shibboleth-users-to-local:
+
 Converting Shibboleth Users to Local
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

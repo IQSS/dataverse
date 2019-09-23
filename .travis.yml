@@ -1,5 +1,5 @@
 language: java
 jdk:
-  - oraclejdk8
+  - openjdk8
 script: mvn -DcompilerArgument=-Xlint:unchecked test -P all-unit-tests
 after_success: mvn jacoco:report coveralls:report 

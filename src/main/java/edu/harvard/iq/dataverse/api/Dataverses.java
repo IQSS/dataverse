@@ -395,10 +395,10 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @Path("{identifier}")
     public Response viewDataverse(@PathParam("identifier") String idtf) {
-        return allowCors(response(req -> ok(
+        return response(req -> ok(
             json(execCommand(new GetDataverseCommand(req, findDataverseOrDie(idtf))),
                 settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false)
-            ))));
+            )));
     }
 
     @DELETE
@@ -429,7 +429,7 @@ public class Dataverses extends AbstractApiBean {
             for (MetadataBlock mdb : blocks) {
                 arr.add(brief.json(mdb));
             }
-            return allowCors(ok(arr));
+            return ok(arr);
         } catch (WrappedResponse we) {
             return we.getResponse();
         }
@@ -521,7 +521,7 @@ public class Dataverses extends AbstractApiBean {
             for (DataverseFacet f : execCommand(new ListFacetsCommand(r, dataverse))) {
                 fs.add(f.getDatasetFieldType().getName());
             }
-            return allowCors(ok(fs));
+            return ok(fs);
         } catch (WrappedResponse e) {
             return e.getResponse();
         }
@@ -588,11 +588,11 @@ public class Dataverses extends AbstractApiBean {
             }
         };
 
-        return allowCors(response(req -> ok(
+        return response(req -> ok(
                 execCommand(new ListDataverseContentCommand(req, findDataverseOrDie(dvIdtf)))
                         .stream()
                         .map(dvo -> (JsonObjectBuilder) dvo.accept(ser))
-                        .collect(toJsonArray()))
+                        .collect(toJsonArray())
         ));
     }
 
