@@ -3,7 +3,7 @@ Apps
 
 The introduction of Dataverse APIs has fostered the development of a variety of software applications that are listed in the :doc:`/admin/integrations`, :doc:`/admin/external-tools`, and :doc:`/admin/reporting-tools` sections of the Admin Guide.
 
-The apps below are open source and demonstrate how to use Dataverse APIs. Some of these apps are built on :doc:`/api/client-libraries` that are available for Dataverse APIs in Python, R, and Java.
+The apps below are open source and demonstrate how to use Dataverse APIs. Some of these apps are built on :doc:`/api/client-libraries` that are available for Dataverse APIs in Python, Javascript, R, and Java.
 
 .. contents:: |toctitle|
 	:local:
