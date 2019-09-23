@@ -458,6 +458,7 @@ public class UserServiceBean {
             searchClause += "(u.useridentifier ILIKE '" + searchTermTokens[i] + "%'";
             searchClause += " OR u.firstname ILIKE '" + searchTermTokens[i] + "%'";
             searchClause += " OR u.lastname ILIKE '" + searchTermTokens[i] + "%'"; 
+            searchClause += " OR u.affiliation ILIKE '" + searchTermTokens[i] + "%'";
             searchClause += " OR u.email ILIKE '" + searchTermTokens[i] + "%')"; 
         }
         
