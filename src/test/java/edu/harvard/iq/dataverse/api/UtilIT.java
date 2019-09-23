@@ -434,16 +434,6 @@ public class UtilIT {
         return response;
     }
     
-    // https://github.com/IQSS/dataverse/issues/3777
-    static Response editDatasetMetadataViaNative(String persistentId, String pathToJsonFile, String apiToken) {
-        String jsonIn = getDatasetJson(pathToJsonFile);
-        Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .body(jsonIn)
-                .contentType("application/json")
-                .put("/api/datasets/:persistentId/editMetadata/?persistentId=" + persistentId + "&replace=true");
-        return response;
-    }
     
     static Response deleteDatasetMetadataViaNative(String persistentId, String pathToJsonFile, String apiToken) {
         String jsonIn = getDatasetJson(pathToJsonFile);

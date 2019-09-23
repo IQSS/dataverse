@@ -297,7 +297,7 @@ public class DatasetsIT {
         assertEquals(200, publishDataset.getStatusCode());
         //6078
         String pathToJsonFileEditPostPub = "doc/sphinx-guides/source/_static/api/dataset-edit-metadata-after-pub.json";
-        Response editPublishedVersion = UtilIT.editDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileEditPostPub, apiToken);
+        Response editPublishedVersion = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileEditPostPub, apiToken);
         editPublishedVersion.prettyPrint();
         editPublishedVersion.then().assertThat().statusCode(OK.getStatusCode());
         
