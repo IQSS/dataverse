@@ -24,10 +24,10 @@
                     </button>                       
                     <a href="/">
                         <ui:fragment rendered="#{empty settingsWrapper.get(':LogoCustomizationFile')}">
-                            <span class="navbar-brand" tabindex="1"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
+                            <span class="navbar-brand" tabindex="1"><span id="icon-dataverse" class="icon-dataverse"></span> #{bundle.dataverse}</span>
                         </ui:fragment>
                         <h:graphicImage rendered="#{!empty settingsWrapper.get(':LogoCustomizationFile')}"
-                            url="#{settingsWrapper.get(':LogoCustomizationFile')}" styleClass="navbar-brand custom-logo"/>
+                            url="#{settingsWrapper.get(':LogoCustomizationFile')}" styleClass="navbar-brand custom-logo" alt="#{dataverseServiceBean.findRootDataverse().name} #{bundle['header.homepage']}"/>
                     </a>
                 </div>
                 <div class="collapse navbar-collapse" id="topNavBar">

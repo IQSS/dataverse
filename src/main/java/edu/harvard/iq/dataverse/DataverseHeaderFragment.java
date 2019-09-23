@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -220,7 +221,19 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     public String logout() {
         dataverseSession.setUser(null);
         dataverseSession.setStatusDismissed(false);
-
+        
+        // Important part of completing a logout - kill the existing HTTP session: 
+        // from the ExternalContext.invalidateSession doc page: 
+        // "Invalidates this session then unbinds any objects bound to it."
+        // - this means whatever allocated SessionScoped classes associated 
+        // with this session may currently be on the heap will become 
+        // garbage-collectable after we log the user out. 
+        FacesContext.getCurrentInstance().getExternalContext().invalidateSession();
+        // Note that the HTTP session no longer exists - 
+        // .getExternalContext().getSession(false) will return null at this point!
+        // so it is important to redirect the user to the next page, where a new 
+        // session is going to be issued to them. 
+        
         String redirectPage = navigationWrapper.getPageFromContext();
         try {
             redirectPage = URLDecoder.decode(redirectPage, "UTF-8");

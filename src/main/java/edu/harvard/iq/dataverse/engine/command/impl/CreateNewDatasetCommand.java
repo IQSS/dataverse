@@ -13,9 +13,11 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -26,12 +28,18 @@ import java.util.Set;
  * 
  * @author michael
  */
-//@RequiredPermissions(Permission.AddDataset)
-// Changing the permission setup to dynamic, to accommodate the case of creating 
-// a dataset in an unpublished dataverse; only users with the permission to view it 
-// should be allowed to create child datasets. Otherwise any users with an account 
-// can create a dataset in a dataverse before it's even published, if "Anyone with a 
-// Dataverse account can add datasets" option is chosen. 
+@RequiredPermissions(Permission.AddDataset)
+// I am reverting the PR #6061, going back to the fixed RequiredPermissions that 
+// specifies the AddDataset to be the only permission needed. We tried to 
+// replace it with a dynamic permissions map, with the extra ViewUnpublishedDataverse
+// permission added when the Dataverse is unpublished (to prevent any user with a 
+// Dataverse account from adding datasets to a dataverse so configured, before it's 
+// published). This caused too many unexpected complications - the most notable
+// one with the SWORD API (a bunch of RestAssured tests apparently rely on this 
+// ability). 
+// In order to re-enable the dynamic permissions, comment out the RequiredPermissions
+// line above, AND un-comment out the getRequiredPermissions() method below. 
+
 public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     private static final Logger logger = Logger.getLogger(CreateNewDatasetCommand.class.getName());
     
@@ -110,11 +118,28 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
         }
     }
     
-    @Override
+    // Re-enabling the method below will change the permission setup to dynamic.
+    // This will make it so that in an unpublished dataverse only users with the 
+    // permission to view it will be allowed to create child datasets. 
+    /*@Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
-        return Collections.singletonMap("",
-                dv.isReleased() ? Collections.singleton(Permission.AddDataset)
-                : new HashSet<>(Arrays.asList(Permission.AddDataset,Permission.ViewUnpublishedDataverse)));
-    }
+        Map<String, Set<Permission>> ret = new HashMap<>();
+        // NOTE: DO NOT use builtin methods such as 
+        // Collections.singleton(Permission.AddDataset) in order to create 
+        // permission HashSets. Collections.singleton() produces a set that is 
+        // *unmutable* - and you should assume that the set may need to be 
+        // modified later on. For example, as follows, in the 
+        // hasGroupPermissionsFor() method in PermissionServiceBean:
+        // 
+        // for (RoleAssignment asmnt : assignmentsFor(ras, dvo)) {
+        //    required.removeAll(asmnt.getRole().permissions());
+        // }
+        // return required.isEmpty();
+        ret.put("", new HashSet<>(Arrays.asList(Permission.AddDataset)));
+        if (!dv.isReleased()) {
+            ret.get("").add(Permission.ViewUnpublishedDataverse);
+        }
+        return ret;
+    }*/
         
 }

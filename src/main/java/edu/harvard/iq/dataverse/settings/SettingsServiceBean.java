@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -403,8 +404,19 @@ public class SettingsServiceBean {
         /*
         *
         */
-        MDCLogPath
-        ;
+        MDCLogPath,
+
+        /**
+         * Allow CORS flag (true or false). It is true by default
+         *
+         */
+        AllowCors, 
+        
+        /**
+         * Lifespan, in minutes, of a login user session 
+         * (both DataverseSession and the underlying HttpSession)
+         */
+        LoginSessionTimeout;
 
         @Override
         public String toString() {
@@ -424,8 +436,14 @@ public class SettingsServiceBean {
      * @return the actual setting, or {@code null}.
      */
     public String get( String name ) {
-        Setting s = em.find( Setting.class, name );
-        return (s!=null) ? s.getContent() : null;
+        List<Setting> tokens = em.createNamedQuery("Setting.findByName", Setting.class)
+                .setParameter("name", name )
+                .getResultList();
+        String val = null;
+        if(tokens.size() > 0) {
+            val = tokens.get(0).getContent();
+        }
+        return (val!=null) ? val : null;
     }
     
     /**
@@ -478,16 +496,71 @@ public class SettingsServiceBean {
         String val = get(name);
         return (val!=null) ? val : defaultValue;
     }
+
+    public String get(String name, String lang, String defaultValue ) {
+        List<Setting> tokens = em.createNamedQuery("Setting.findByNameAndLang", Setting.class)
+                .setParameter("name", name )
+                .setParameter("lang", lang )
+                .getResultList();
+        String val = null;
+        if(tokens.size() > 0) {
+            val = tokens.get(0).getContent();
+        }
+        return (val!=null) ? val : defaultValue;
+    }
     
     public String getValueForKey( Key key, String defaultValue ) {
         return get( key.toString(), defaultValue );
     }
+
+    public String getValueForKey( Key key, String lang, String defaultValue ) {
+        return get( key.toString(), lang, defaultValue );
+    }
      
     public Setting set( String name, String content ) {
-        Setting s = new Setting( name, content );
+        Setting s = null; 
+        
+        List<Setting> tokens = em.createNamedQuery("Setting.findByName", Setting.class)
+                .setParameter("name", name )
+                .getResultList();
+        
+        if(tokens.size() > 0) {
+            s = tokens.get(0);
+        }
+        
+        if (s == null) {
+            s = new Setting( name, content );
+        } else {
+            s.setContent(content);
+        }
+        
         s = em.merge(s);
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
                             .setInfo(name + ": " + content));
+        return s;
+    }
+
+    public Setting set( String name, String lang, String content ) {
+        Setting s = null; 
+        
+        List<Setting> tokens = em.createNamedQuery("Setting.findByNameAndLang", Setting.class)
+                .setParameter("name", name )
+                .setParameter("lang", lang )
+                .getResultList();
+        
+        if(tokens.size() > 0) {
+            s = tokens.get(0);
+        }
+        
+        if (s == null) {
+            s = new Setting( name, lang, content );
+        } else {
+            s.setContent(content);
+        }
+        
+        em.merge(s);
+        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
+                .setInfo(name + ": " +lang + ": " + content));
         return s;
     }
     
@@ -524,6 +597,15 @@ public class SettingsServiceBean {
                             .setInfo(name));
         em.createNamedQuery("Setting.deleteByName")
                 .setParameter("name", name)
+                .executeUpdate();
+    }
+
+    public void delete( String name, String lang ) {
+        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
+                .setInfo(name));
+        em.createNamedQuery("Setting.deleteByNameAndLang")
+                .setParameter("name", name)
+                .setParameter("lang", lang)
                 .executeUpdate();
     }
     

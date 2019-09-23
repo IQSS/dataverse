@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
@@ -40,6 +41,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.enterprise.context.RequestScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -47,7 +49,8 @@ import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 
-@ViewScoped
+//@ViewScoped
+@RequestScoped
 @Named("SearchIncludeFragment")
 public class SearchIncludeFragment implements java.io.Serializable {
 
@@ -169,7 +172,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
      *
      * see also https://trello.com/c/jmry3BJR/28-browse-dataverses
      */
-    public String searchRedirect(String dataverseRedirectPage) {
+    public String searchRedirect(String dataverseRedirectPage, Dataverse dataverseIn) {
         /**
          * These are our decided-upon search/browse rules, the way we expect
          * users to search/browse and how we want the app behave:
@@ -194,6 +197,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
          * 5. Someday the default sort order for browse mode will be by "release
          * date" (newest first) but that functionality is not yet available in
          * the system ( see https://redmine.hmdc.harvard.edu/issues/3628 and
+         * 
          * https://redmine.hmdc.harvard.edu/issues/3629 ) so for now the default
          * sort order for browse mode will by alphabetical (sort by name,
          * ascending). The default sort order for search mode will be by
@@ -202,7 +206,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
          * selections and what page you are on should be preserved.
          *
          */
-
+        
+        dataverse = dataverseIn;
         dataverseRedirectPage = StringUtils.isBlank(dataverseRedirectPage) ? "dataverse.xhtml" : dataverseRedirectPage;
         String optionalDataverseScope = "&alias=" + dataverse.getAlias();
 
@@ -428,9 +433,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
             }
 
             // populate preview counts: https://redmine.hmdc.harvard.edu/issues/3560
-            previewCountbyType.put("dataverses", 0L);
-            previewCountbyType.put("datasets", 0L);
-            previewCountbyType.put("files", 0L);
+            previewCountbyType.put(BundleUtil.getStringFromBundle("dataverses"), 0L);
+            previewCountbyType.put(BundleUtil.getStringFromBundle("datasets"), 0L);
+            previewCountbyType.put(BundleUtil.getStringFromBundle("files"), 0L);
             if (solrQueryResponseAllTypes != null) {
                 for (FacetCategory facetCategory : solrQueryResponseAllTypes.getTypeFacetCategories()) {
                     for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
@@ -438,6 +443,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     }
                 }
             }
+            
+            setDisplayCardValues();
 
         } else {
             // if SOLR is down:
@@ -765,15 +772,15 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public Long getFacetCountDatasets() {
-        return findFacetCountByType("datasets");
+        return findFacetCountByType(BundleUtil.getStringFromBundle("datasets"));
     }
 
     public Long getFacetCountDataverses() {
-        return findFacetCountByType("dataverses");
+        return findFacetCountByType(BundleUtil.getStringFromBundle("dataverses"));
     }
 
     public Long getFacetCountFiles() {
-        return findFacetCountByType("files");
+        return findFacetCountByType(BundleUtil.getStringFromBundle("files"));
     }
 
     public String getSearchFieldRelevance() {
