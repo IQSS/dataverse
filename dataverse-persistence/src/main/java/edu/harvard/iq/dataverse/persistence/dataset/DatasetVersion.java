@@ -47,7 +47,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -134,7 +133,7 @@ public class DatasetVersion implements Serializable {
 
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
     @JoinColumn(name = "termsOfUseAndAccess_id")
-    private TermsOfUseAndAccess termsOfUseAndAccess;
+    private TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
 
     @OneToMany(mappedBy = "datasetVersion", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetField> datasetFields = new ArrayList();
