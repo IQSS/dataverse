@@ -293,6 +293,15 @@ public class DatasetsIT {
         addSubjectViaNative.then().assertThat().body("message", equalTo("Delete metadata failed: Author: Spruce, Sabrina not found."))
                 .statusCode(400);
         
+        publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
+        assertEquals(200, publishDataset.getStatusCode());
+        //6078
+        String pathToJsonFileEditPostPub = "doc/sphinx-guides/source/_static/api/dataset-edit-metadata-after-pub.json";
+        Response editPublishedVersion = UtilIT.editDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileEditPostPub, apiToken);
+        editPublishedVersion.prettyPrint();
+        editPublishedVersion.then().assertThat().statusCode(OK.getStatusCode());
+        
+        publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         //"Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found."
     }
 
