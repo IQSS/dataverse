@@ -93,7 +93,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     protected String clientSecret;
     protected String baseUserEndpoint;
     protected String redirectUrl;
-    protected String scope;
+    protected List<String> scope;
     
     public abstract DefaultApi20 getApiInstance();
     
@@ -108,7 +108,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     public OAuth20Service getService(String callbackUrl) {
         return new ServiceBuilder(getClientId())
                       .apiSecret(getClientSecret())
-                      .defaultScope(getScope())
+                      .defaultScope(getSpacedScope())
                       .callback(callbackUrl)
                       .build(getApiInstance());
     }
@@ -129,8 +129,8 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         
         OAuth2AccessToken accessToken = service.getAccessToken(code);
     
-        if ( ! accessToken.getScope().contains(scope) ) {
-            // We did not get the permissions on the scope we need. Abort and inform the user.
+        if ( !getScope().stream().allMatch(accessToken.getScope()::contains) ) {
+            // We did not get the permissions on the scope(s) we need. Abort and inform the user.
             throw new OAuth2Exception(200, BundleUtil.getStringFromBundle("auth.providers.orcid.insufficientScope"), "");
         }
         
@@ -232,7 +232,9 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         return subTitle;
     }
     
-    public String getScope() { return scope; }
+    public List<String> getScope() { return scope; }
+    
+    public String getSpacedScope() { return String.join(" ", scope); }
 
     @Override
     public int hashCode() {

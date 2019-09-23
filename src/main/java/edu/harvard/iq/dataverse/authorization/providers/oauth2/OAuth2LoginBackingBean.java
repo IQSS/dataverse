@@ -75,7 +75,7 @@ public class OAuth2LoginBackingBean implements Serializable {
         
         return svc.createAuthorizationUrlBuilder()
                   .state(state)
-                  .scope(idp.getScope())
+                  .scope(idp.getSpacedScope())
                   .build();
     }
     

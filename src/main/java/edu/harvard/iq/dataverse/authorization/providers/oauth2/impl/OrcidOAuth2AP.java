@@ -55,7 +55,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     public static final String PROVIDER_ID_SANDBOX = "orcid-sandbox";
     
     public OrcidOAuth2AP(String clientId, String clientSecret, String userEndpoint) {
-        scope = "/read-limited"; 
+        scope = Arrays.asList("/read-limited");
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.baseUserEndpoint = userEndpoint;
