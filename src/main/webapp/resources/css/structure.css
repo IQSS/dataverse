@@ -221,6 +221,22 @@ body.widget-view #dataverse-header-block {padding-top:0px;}
 #dataverseHeader .dataverseHeaderTagline {padding-left:2em; font-size:1.3em;}
 #dataverseHeader .dataverseHeaderLink {padding-left:2em;}
 
+/* -------- Footer -------- */
+#dataverse-Footer-block {padding-top:50px;}
+body.widget-view #dataverse-Footer-block {padding-top:0px;}
+#dataverseFooter {margin:0 auto;}
+#dataverseFooter .dataverseFooterBlock {display:table-row;}
+#dataverseFooter .dataverseFooterCell {display:table-cell;}
+#dataverseFooter .dataverseFooterLogo {padding-right:1em; text-align:center;}
+#dataverseFooter .dataverseFooterLogo img {max-width:940px; max-height:120px;}
+#dataverseFooter .dataverseFooterCell.dataverseFooterLogo img {max-width:100px; max-height:100px;}
+#dataverseFooter .dataverseFooterName {padding:2em 1em 2em 0em;}
+#dataverseFooter .dataverseFooterName .dataverseFooterDataverseName {font-size: 1.3em;}
+#dataverseFooter .dataverseFooterName span.label.label-unpublished {vertical-align:text-top; line-height: normal; margin-left:1em;}
+#dataverseFooter .dataverseFooterTagline {padding-left:2em; font-size:1.3em;}
+#dataverseFooter .dataverseFooterLink {padding-left:2em;}
+
+
 /* -------- BREADCRUMBS -------- */
 #breadcrumbNavBlock {margin-top:.5em;}
 #breadcrumbNavBlock .breadcrumbBlock {float:left; position:relative;}
