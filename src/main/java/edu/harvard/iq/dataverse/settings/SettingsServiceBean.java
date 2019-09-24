@@ -518,7 +518,22 @@ public class SettingsServiceBean {
     }
      
     public Setting set( String name, String content ) {
-        Setting s = new Setting( name, content );
+        Setting s = null; 
+        
+        List<Setting> tokens = em.createNamedQuery("Setting.findByName", Setting.class)
+                .setParameter("name", name )
+                .getResultList();
+        
+        if(tokens.size() > 0) {
+            s = tokens.get(0);
+        }
+        
+        if (s == null) {
+            s = new Setting( name, content );
+        } else {
+            s.setContent(content);
+        }
+        
         s = em.merge(s);
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
                             .setInfo(name + ": " + content));
@@ -526,7 +541,23 @@ public class SettingsServiceBean {
     }
 
     public Setting set( String name, String lang, String content ) {
-        Setting s = new Setting( name, lang, content );
+        Setting s = null; 
+        
+        List<Setting> tokens = em.createNamedQuery("Setting.findByNameAndLang", Setting.class)
+                .setParameter("name", name )
+                .setParameter("lang", lang )
+                .getResultList();
+        
+        if(tokens.size() > 0) {
+            s = tokens.get(0);
+        }
+        
+        if (s == null) {
+            s = new Setting( name, lang, content );
+        } else {
+            s.setContent(content);
+        }
+        
         em.merge(s);
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
                 .setInfo(name + ": " +lang + ": " + content));

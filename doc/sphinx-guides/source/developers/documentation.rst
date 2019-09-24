@@ -1,6 +1,6 @@
-=============
-Documentation
-=============
+=====================
+Writing Documentation
+=====================
 
 .. contents:: |toctitle|
 	:local:

@@ -172,7 +172,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
      *
      * see also https://trello.com/c/jmry3BJR/28-browse-dataverses
      */
-    public String searchRedirect(String dataverseRedirectPage) {
+    public String searchRedirect(String dataverseRedirectPage, Dataverse dataverseIn) {
         /**
          * These are our decided-upon search/browse rules, the way we expect
          * users to search/browse and how we want the app behave:
@@ -206,7 +206,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
          * selections and what page you are on should be preserved.
          *
          */
-
+        
+        dataverse = dataverseIn;
         dataverseRedirectPage = StringUtils.isBlank(dataverseRedirectPage) ? "dataverse.xhtml" : dataverseRedirectPage;
         String optionalDataverseScope = "&alias=" + dataverse.getAlias();
 

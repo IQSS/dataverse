@@ -149,13 +149,14 @@ public class DatasetsIT {
         
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(OK.getStatusCode(), publishDataverse.getStatusCode());
-        //Remove random sleep #6128 9/3/2019
-        // throw in a short sleep, just in case:
-        /*
+
+        // Return a short sleep here
+        //without it we have seen some database deadlocks SEK 09/13/2019
+
         try {
             Thread.sleep(1000l);
         } catch (InterruptedException iex) {}
-        */
+
         // ... And now that it's published, try to create a dataset again, 
         // as the "random", not specifically authorized user: 
         // (this time around, it should work!)
@@ -292,6 +293,15 @@ public class DatasetsIT {
         addSubjectViaNative.then().assertThat().body("message", equalTo("Delete metadata failed: Author: Spruce, Sabrina not found."))
                 .statusCode(400);
         
+        publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
+        assertEquals(200, publishDataset.getStatusCode());
+        //6078
+        String pathToJsonFileEditPostPub = "doc/sphinx-guides/source/_static/api/dataset-edit-metadata-after-pub.json";
+        Response editPublishedVersion = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileEditPostPub, apiToken);
+        editPublishedVersion.prettyPrint();
+        editPublishedVersion.then().assertThat().statusCode(OK.getStatusCode());
+        
+        publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         //"Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found."
     }
 
@@ -342,13 +352,14 @@ public class DatasetsIT {
                 .statusCode(403);
         
         logger.info("Attempting to publish a major version");
-        //Remove random sleep #6128 9/3/2019
+        // Return random sleep  9/13/2019
+        // Without it we've seen some DB deadlocks
         // 3 second sleep, to allow the indexing to finish:
-        /*
+
         try {
             Thread.sleep(3000l);
         } catch (InterruptedException iex) {}
-*/
+
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
 
@@ -486,13 +497,14 @@ public class DatasetsIT {
                 .statusCode(403);
 
         logger.info("In testExport; attempting to publish, as major version");
-        //Remove random sleep #6128 9/3/2019
+        //Return random sleep  9/13/2019
         // 3 second sleep, to allow the indexing to finish: 
-        /*
+        // Without it we've seen som DB dealocks
+
         try {
             Thread.sleep(3000l);
         } catch (InterruptedException iex) {}
-        */
+
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
 
@@ -616,13 +628,13 @@ public class DatasetsIT {
         Response setToExcludeEmailFromExport = UtilIT.setSetting(SettingsServiceBean.Key.ExcludeEmailFromExport, "true");
         setToExcludeEmailFromExport.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        //Remove random sleep #6128 9/3/2019
+        // return random sleep  9/13/2019
         // 3 second sleep, to allow the indexing to finish:
-        /*
+
         try {
             Thread.sleep(3000l);
         } catch (InterruptedException iex) {}
-        */
+
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
 
@@ -717,12 +729,12 @@ public class DatasetsIT {
         logger.info("identifier: " + identifier);
         String numericPart = identifier.replace("FK2/", ""); //remove shoulder from identifier
         assertTrue(StringUtils.isNumeric(numericPart));
-        //Remove random sleep #6128 9/3/2019        
-/*
+        //Return random sleep  9/13/2019        
+
         try {
             Thread.sleep(3000l);
         } catch (Exception ex) {logger.warning("failed to execute sleep 3 sec.");}
-*/
+
         
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
@@ -1734,12 +1746,12 @@ public class DatasetsIT {
 
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
-        //Remove random sleep #6128 9/3/2019
-/*
+        //Return random sleep  9/13/2019
+        //without it we've seen DB deadlocks
         try {
             Thread.sleep(3000l);
         } catch (InterruptedException iex){}
- */       
+      
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
 
