@@ -241,6 +241,12 @@ public class FilePage implements java.io.Serializable {
         return FileUtil.isRequestAccessPopupRequired(fileMetadata.getDatasetVersion());
     }
 
+    public boolean isGuestbookAndTermsPopupRequired() {  
+        if(fileMetadata.getId() == null || fileMetadata.getDatasetVersion().getId() == null ){
+            return false;
+        }
+        return FileUtil.isGuestbookAndTermsPopupRequired(fileMetadata.getDatasetVersion());
+    }
 
     public void setFileMetadata(FileMetadata fileMetadata) {
         this.fileMetadata = fileMetadata;
