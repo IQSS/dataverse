@@ -423,7 +423,6 @@ public class UserServiceBean {
         logger.log(Level.FINE, "getUserCount: {0}", qstr);
 
         Query nativeQuery = em.createNativeQuery(qstr);
-        //nativeQuery.setParameter("searchTerm", searchTerm + "%");
        
         return nativeQuery.getResultList();
 
@@ -436,15 +435,6 @@ public class UserServiceBean {
      * 
      * @return 
      */
-    /*private String getSharedSearchClause(){
-        
-        String searchClause = " (u.useridentifier ILIKE #searchTerm";
-        searchClause += " OR u.firstname ILIKE #searchTerm";
-        searchClause += " OR u.lastname ILIKE #searchTerm"; 
-        searchClause += " OR u.email ILIKE #searchTerm)"; 
-        
-        return searchClause;
-    }*/
     
     private String getSharedSearchClause(String searchTerm){
         String[] searchTermTokens = searchTerm.replaceAll("['\"]", "").split("[ ,][ ,]*");
@@ -522,7 +512,6 @@ public class UserServiceBean {
         qstr += ";";
                
         Query nativeQuery = em.createNativeQuery(qstr);
-        //nativeQuery.setParameter("searchTerm", searchTerm + "%");
         
         return (Long)nativeQuery.getSingleResult();
 
