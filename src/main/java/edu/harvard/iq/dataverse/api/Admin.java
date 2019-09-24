@@ -1431,6 +1431,68 @@ public class Admin extends AbstractApiBean {
 
 		return ok("Datafile rehashing complete." + successes + " of  " + rehashed + " files successfully rehashed.");
 	}
+        
+    @GET
+    @Path("/computeDataFileHashValue/{fileId}/algorithm/{alg}")
+    public Response computeDataFileHashValue(@PathParam("fileId") String fileId, @PathParam("alg") String alg) {
+
+        try {
+            User u = findAuthenticatedUserOrDie();
+            if (!u.isSuperuser()) {
+                return error(Status.UNAUTHORIZED, "must be superuser");
+            }
+        } catch (WrappedResponse e1) {
+            return error(Status.UNAUTHORIZED, "api key required");
+        }
+
+        DataFile fileToUpdate = null;
+        try {
+            fileToUpdate = findDataFileOrDie(fileId);
+        } catch (WrappedResponse r) {
+            logger.info("Could not find file with the id: " + fileId);
+            return error(Status.BAD_REQUEST, "Could not find file with the id: " + fileId);
+        }
+
+        if (fileToUpdate.isHarvested()) {
+            return error(Status.BAD_REQUEST, "File with the id: " + fileId + " is harvested.");
+        }
+
+        DataFile.ChecksumType cType = null;
+        try {
+            cType = DataFile.ChecksumType.fromString(alg);
+        } catch (IllegalArgumentException iae) {
+            return error(Status.BAD_REQUEST, "Unknown algorithm");
+        }
+
+        for (DataFile df : fileService.findAll()) {
+            InputStream in = null;
+            try {
+
+                StorageIO<DataFile> storage = df.getStorageIO();
+                storage.open(DataAccessOption.READ_ACCESS);
+                if (!df.isTabularData()) {
+                    in = storage.getInputStream();
+                } else {
+                    in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                }
+                if (in == null) {
+                    return error(Status.NOT_FOUND, "Could not retrieve file with the id: " + fileId);
+                }
+                String newChecksum = FileUtil.calculateChecksum(in, cType);
+                df.setChecksumType(cType);
+                df.setChecksumValue(newChecksum);
+
+            } catch (Exception e) {
+                logger.warning("Unexpected Exception: " + e.getMessage());
+
+            } finally {
+                IOUtils.closeQuietly(in);
+
+            }
+        }
+
+        return ok("Datafile rehashing complete. " + fileId + "  successfully rehashed.");
+    }
 
     @GET
     @Path("/submitDataVersionToArchive/{id}/{version}")
