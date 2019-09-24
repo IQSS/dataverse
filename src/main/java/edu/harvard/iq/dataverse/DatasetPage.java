@@ -4713,6 +4713,10 @@ public class DatasetPage implements java.io.Serializable {
         return FileUtil.isRequestAccessPopupRequired(workingVersion);
     }
     
+    public boolean isGuestbookAndTermsPopupRequired() {  
+        return FileUtil.isGuestbookAndTermsPopupRequired(workingVersion);
+    }
+    
     public String requestAccessMultipleFiles() {
 
         if (selectedFiles.isEmpty()) {
