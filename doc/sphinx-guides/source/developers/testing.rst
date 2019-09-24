@@ -197,15 +197,86 @@ To see the full list of tests used by the Docker option mentioned above, see :do
 
 Measuring Coverage of Integration Tests
 ---------------------------------------
-Measuring the code coverage of integration tests with jacoco requires several steps:
 
-- Instrument the WAR file. Using an approach similar to :download:`this script <../_static/util/instrument_war_jacoco.bash>` is probably preferable to instrumenting the WAR directly (at least until the ``nu.xom.UnicodeUtil.decompose`` method too large exceptions get sorted).
-- Deploy the WAR file to a glassfish server with ``jacocoagent.jar`` in ``glassfish4/glassfish/lib/``
-- Run integration tests as usual
-- Use ``glassfish4/glassfish/domains/domain1/config/jacoco.exec`` to generate a report: ``java -jar ${JACOCO_HOME}/jacococli.jar report --classfiles ${DV_REPO}/target/classes --sourcefiles ${DV_REPO}/src/main/java --html ${DV_REPO}/target/coverage-it/ jacoco.exec``
+Measuring the code coverage of integration tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/glassfish4" as the Glassfish directory and "glassfish" as the Glassfish Unix user.
 
-The same approach could be used to measure code paths exercised in normal use (by substituting the "run integration tests" step).
-There is obvious potential to improve automation of this process.
+Add jacocoagent.jar to Glassfish
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In order to get code coverage reports out of Glassfish we'll be adding jacocoagent.jar to the Glassfish "lib" directory.
+
+First, we need to download Jacoco. Look in pom.xml to determine which version of Jacoco we are using. As of this writing we are using 0.8.1 so in the example below we download the Jacoco zip from https://github.com/jacoco/jacoco/releases/tag/v0.8.1
+
+Note that we are running the following commands as the user "glassfish". In short, we stop Glassfish, add the Jacoco jar file, and start up Glassfish again.
+
+.. code-block:: bash
+
+  su - glassfish
+  cd /home/glassfish
+  mkdir -p local/jacoco-0.8.1
+  cd local/jacoco-0.8.1
+  wget https://github.com/jacoco/jacoco/releases/download/v0.8.1/jacoco-0.8.1.zip
+  unzip jacoco-0.8.1.zip
+  /usr/local/glassfish4/bin/asadmin stop-domain
+  cp /home/glassfish/local/jacoco-0.8.1/lib/jacocoagent.jar /usr/local/glassfish4/glassfish/lib
+  /usr/local/glassfish4/bin/asadmin start-domain
+
+Add jacococli.jar to the WAR File
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As the "glassfish" user download :download:`instrument_war_jacoco.bash <../_static/util/instrument_war_jacoco.bash>` (or skip ahead to the "git clone" step to get the script that way) and give it two arguments:
+
+- path to your pristine WAR file
+- path to the new WAR file the script will create with jacococli.jar in it
+
+.. code-block:: bash
+
+  ./instrument_war_jacoco.bash dataverse.war dataverse-jacoco.war
+
+Deploy the Instrumented WAR File
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Please note that you'll want to undeploy the old WAR file first, if necessary.
+
+Run this as the "glassfish" user.
+
+.. code-block:: bash
+
+  /usr/local/glassfish4/bin/asadmin deploy dataverse-jacoco.war
+
+Note that after deployment the file "/usr/local/glassfish4/glassfish/domains/domain1/config/jacoco.exec" exists and is empty.
+
+Run Integration Tests
+~~~~~~~~~~~~~~~~~~~~~
+
+Note that even though you see "docker-aio" in the command below, we assume you are not necessarily running the test suite within Docker. (Some day we'll probably move this script to another directory.) For this reason, we pass the URL with the normal port (8080) that Glassfish runs on to the ``run-test-suite.sh`` script.
+
+Note that "/usr/local/glassfish4/glassfish/domains/domain1/config/jacoco.exec" will become non-empty after you stop and start Glassfish. You must stop and start Glassfish before every run of the integration test suite.
+
+.. code-block:: bash
+
+  /usr/local/glassfish4/bin/asadmin stop-domain
+  /usr/local/glassfish4/bin/asadmin start-domain
+  git clone https://github.com/IQSS/dataverse.git
+  cd dataverse
+  conf/docker-aio/run-test-suite.sh http://localhost:8080
+
+(As an aside, you are not limited to API tests for the purposes of learning which code paths are being executed. You could click around the GUI, for example. Jacoco doesn't know or care how you exercise the application.)
+
+Create Code Coverage Report
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Run these commands as the "glassfish" user. The ``cd dataverse`` means that you should change to the directory where you cloned the "dataverse" git repo.
+
+.. code-block:: bash
+
+  cd dataverse
+  java -jar /home/glassfish/local/jacoco-0.8.1/lib/jacococli.jar report --classfiles target/classes --sourcefiles src/main/java --html target/coverage-it/ /usr/local/glassfish4/glassfish/domains/domain1/config/jacoco.exec
+
+Read Code Coverage Report
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+target/coverage-it/index.html is the place to start reading the code coverage report you just created.
 
 Load/Performance Testing
 ------------------------
@@ -225,7 +296,7 @@ One way of generating load is by downloading many files. You can download :downl
 The script requires a file called ``files.txt`` to operate and database IDs for the files you want to download should each be on their own line.
 
 Continuous Integration
-~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 The Dataverse Project currently makes use of two Continuous Integration platforms, Travis and Jenkins.
 
@@ -235,11 +306,29 @@ Our Jenkins config is a work in progress and may be viewed at https://github.com
 
 As always, pull requests to improve our continuous integration configurations are welcome.
 
+Enhance build time by caching dependencies
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In the future, CI builds in ephemeral build environments and Docker builds can benefit from caching all dependencies and plugins.
+As Dataverse is a huge project, build times can be enhanced by avoiding re-downloading everything when the Maven POM is unchanged.
+To seed the cache, use the following Maven goal before using Maven in (optional) offline mode in your scripts:
+
+.. code:: shell
+
+  mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies``
+  mvn -o package -DskipTests
+
+The example above builds the WAR file without running any tests. For other scenarios: not using offline mode allows
+Maven to download more dynamic dependencies, which are not easy to track, like Surefire Plugins. Overall downloads will
+reduced anyway.
+
+You will obviously have to utilize caching functionality of your CI service or do proper Docker layering.
+
 The Phoenix Server
-------------------
+~~~~~~~~~~~~~~~~~~
 
 How the Phoenix Tests Work
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A server at http://phoenix.dataverse.org has been set up to test the latest code from the develop branch. Testing is done using chained builds of Jenkins jobs:
 
@@ -248,14 +337,14 @@ A server at http://phoenix.dataverse.org has been set up to test the latest code
 - REST Assured Tests are run across the wire from the Jenkins server to the Phoenix server:  https://build.hmdc.harvard.edu:8443/job/phoenix.dataverse.org-apitest-develop/
 
 How to Run the Phoenix Tests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Take a quick look at http://phoenix.dataverse.org to make sure the server is up and running Dataverse. If it's down, fix it.
 - Log into Jenkins and click "Build Now" at https://build.hmdc.harvard.edu:8443/job/phoenix.dataverse.org-build-develop/
 - Wait for all three chained Jenkins jobs to complete and note if they passed or failed. If you see a failure, open a GitHub issue or at least get the attention of some developers.
 
 List of Tests Run Against the Phoenix Server
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 We haven't thought much about a good way to publicly list the "IT" classes that are executed against the phoenix server. (Currently your best bet is to look at the ``Executing Maven`` line at the top of the "Full Log" of "Console Output" of ``phoenix.dataverse.org-apitest-develop`` Jenkins job mentioned above.) We endeavor to keep the list of tests in the "all-in-one" Docker environment described above in sync with the list of tests configured in Jenkins. That is to say, refer to :download:`run-test-suite.sh <../../../../conf/docker-aio/run-test-suite.sh>` mentioned in ``conf/docker-aio/readme.txt`` for the current list of IT tests that are expected to pass. Here's a dump of that file:
 

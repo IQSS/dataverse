@@ -1256,9 +1256,17 @@ By default this setting is absent and Dataverse assumes it to be false.
 :ApplicationTermsOfUse
 ++++++++++++++++++++++
 
-Upload an HTML file containing the Terms of Use to be displayed at sign up. Supported HTML tags are listed under the :doc:`/user/dataset-management` section of the User Guide.
+Upload an default language HTML file containing the Terms of Use to be displayed at sign up. Supported HTML tags are listed under the :doc:`/user/dataset-management` section of the User Guide.
 
 ``curl -X PUT -d@/tmp/apptou.html http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse``
+
+To upload a language specific Terms of Use file,
+
+``curl -X PUT -d@/tmp/apptou_fr.html http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse/lang/fr``
+
+To delete language specific option,
+
+``curl -X DELETE http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse/lang/fr``
 
 Unfortunately, in most cases, the text file will probably be too big to upload (>1024 characters) due to a bug. A workaround has been posted to https://github.com/IQSS/dataverse/issues/2669
 
@@ -1421,15 +1429,24 @@ The relative path URL to which users will be sent for signup. The default settin
 
 ``curl -X PUT -d '/dataverseuser.xhtml?editMode=CREATE' http://localhost:8080/api/admin/settings/:SignUpUrl``
 
+:LoginSessionTimeout
+++++++++++++++++++++
+
+Session timeout (in minutes) for logged-in users. The default is 8 hours (480 minutes). For the anonymous user sessions, the timeout is set to the default value, configured in the web.xml file of the Dataverse application. 
+
+In the example below we reduce the timeout to 4 hours: 
+
+``curl -X PUT -d 240 http://localhost:8080/api/admin/settings/:LoginSessionTimeout``
+
 :TwoRavensUrl
 +++++++++++++
 
-The ``:TwoRavensUrl`` option is no longer valid. See :doc:`r-rapache-tworavens` and :doc:`external-tools`.
+The ``:TwoRavensUrl`` option is no longer valid. See :doc:`r-rapache-tworavens` and the :doc:`/admin/external-tools` section of the Admin Guide.
 
 :TwoRavensTabularView
 +++++++++++++++++++++
 
-The ``:TwoRavensTabularView`` option is no longer valid. See :doc:`r-rapache-tworavens` and :doc:`external-tools`.
+The ``:TwoRavensTabularView`` option is no longer valid. See :doc:`r-rapache-tworavens` and the :doc:`/admin/external-tools` section of the Admin Guide.
 
 :GeoconnectCreateEditMaps
 +++++++++++++++++++++++++

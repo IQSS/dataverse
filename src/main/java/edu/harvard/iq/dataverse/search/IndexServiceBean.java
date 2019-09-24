@@ -159,6 +159,8 @@ public class IndexServiceBean {
     public Future<String> indexDataverse(Dataverse dataverse) throws SolrServerException, IOException {
         logger.fine("indexDataverse called on dataverse id " + dataverse.getId() + "(" + dataverse.getAlias() + ")");
         if (dataverse.getId() == null) {
+            // TODO: Investigate the root cause of this "unable to index dataverse"
+            // error showing up in the logs. Try running the API test suite?
             String msg = "unable to index dataverse. id was null (alias: " + dataverse.getAlias() + ")";
             logger.info(msg);
             return new AsyncResult<>(msg);

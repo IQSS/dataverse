@@ -1,13 +1,14 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
-import edu.harvard.iq.dataverse.PackagePopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -39,7 +40,6 @@ import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
-import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
@@ -102,6 +102,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewComman
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import java.util.Collections;
@@ -121,25 +122,19 @@ import org.primefaces.event.TabChangeEvent;
 import org.primefaces.event.data.PageEvent;
 
 
-import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
-import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.FacetLabel;
 import edu.harvard.iq.dataverse.search.SearchConstants;
-import edu.harvard.iq.dataverse.search.SearchFields;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
 
 import java.util.Comparator;
-import java.util.TimeZone;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.primefaces.PrimeFaces;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
@@ -317,10 +312,15 @@ public class DatasetPage implements java.io.Serializable {
         this.showIngestSuccess = showIngestSuccess;
     }
         
+    // TODO: Consider renaming "configureTools" to "fileConfigureTools".
     List<ExternalTool> configureTools = new ArrayList<>();
+    // TODO: Consider renaming "exploreTools" to "fileExploreTools".
     List<ExternalTool> exploreTools = new ArrayList<>();
+    // TODO: Consider renaming "configureToolsByFileId" to "fileConfigureToolsByFileId".
     Map<Long, List<ExternalTool>> configureToolsByFileId = new HashMap<>();
+    // TODO: Consider renaming "exploreToolsByFileId" to "fileExploreToolsByFileId".
     Map<Long, List<ExternalTool>> exploreToolsByFileId = new HashMap<>();
+    private List<ExternalTool> datasetExploreTools;
     
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -629,7 +629,7 @@ public class DatasetPage implements java.io.Serializable {
         if(null == comp) {
             logger.warning("Null comparator");
         } else {
-            logger.info("Folder " + dfc.getByFolder() + " Categories: " + dfc.getByCategory() + " Field: " + dfc.getField() + " asc: " + dfc.getAsc());
+            logger.fine("Folder " + dfc.getByFolder() + " Categories: " + dfc.getByCategory() + " Field: " + dfc.getField() + " asc: " + dfc.getAsc());
         }
         Collections.sort(fileList, comp);
     }
@@ -1715,7 +1715,6 @@ public class DatasetPage implements java.io.Serializable {
     
     private String init(boolean initFull) {
   
-        logger.info("TagPresort: " + tagPresort);
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
@@ -1991,8 +1990,9 @@ public class DatasetPage implements java.io.Serializable {
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.unlocked.ingest.message"));
         }
         
-        configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
-        exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
+        configureTools = externalToolService.findFileToolsByType(ExternalTool.Type.CONFIGURE);
+        exploreTools = externalToolService.findFileToolsByType(ExternalTool.Type.EXPLORE);
+        datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
       
         
@@ -3540,7 +3540,7 @@ public class DatasetPage implements java.io.Serializable {
     private String returnToDatasetOnly(){
          dataset = datasetService.find(dataset.getId());
          editMode = null;         
-         return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString()  +  "&faces-redirect=true";       
+         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString() +  "&faces-redirect=true";    
     }
     
     private String returnToDraftVersion(){      
@@ -5064,6 +5064,10 @@ public class DatasetPage implements java.io.Serializable {
         return cachedTools;
     }
 
+    public List<ExternalTool> getDatasetExploreTools() {
+        return datasetExploreTools;
+    }
+
     Boolean thisLatestReleasedVersion = null;
     
     public boolean isThisLatestReleasedVersion() {
@@ -5185,5 +5189,18 @@ public class DatasetPage implements java.io.Serializable {
      public void setFolderPresort(boolean folderPresort) {
          this.folderPresort = folderPresort;
      }
+
+
+    public void explore(ExternalTool externalTool) {
+        ApiToken apiToken = null;
+        User user = session.getUser();
+        if (user instanceof AuthenticatedUser) {
+            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+        }
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataset, apiToken);
+        String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
+        logger.fine("Exploring with " + toolUrl);
+        PrimeFaces.current().executeScript("window.open('"+toolUrl + "', target='_blank');");
+    }
 
 }

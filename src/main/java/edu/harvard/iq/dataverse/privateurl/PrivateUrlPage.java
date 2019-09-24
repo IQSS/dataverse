@@ -35,6 +35,7 @@ public class PrivateUrlPage implements Serializable {
             String draftDatasetPageToBeRedirectedTo = privateUrlRedirectData.getDraftDatasetPageToBeRedirectedTo() + "&faces-redirect=true";
             PrivateUrlUser privateUrlUser = privateUrlRedirectData.getPrivateUrlUser();
             session.setUser(privateUrlUser);
+            session.configureSessionTimeout();
             logger.info("Redirecting PrivateUrlUser '" + privateUrlUser.getIdentifier() + "' to " + draftDatasetPageToBeRedirectedTo);
             return draftDatasetPageToBeRedirectedTo;
         } catch (Exception ex) {
