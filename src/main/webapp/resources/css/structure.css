@@ -6,7 +6,6 @@ html {
 }
 body {
   /* Sticky footer Margin bottom by footer height */
-  margin-bottom:160px;
   font-family: 'AntoniaH2', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 body.widget-view {margin-bottom:54px;}
@@ -424,14 +423,13 @@ div.panelSearchForm input.search-input {
   vertical-align: middle;
   display: block;
   color: rgba(0, 0, 0, 0.5);
-  display: inline-block;
+  display: block;
   font-size: 25px;
   background: transparent;
   width: auto;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2), inset 0 1px 3px 0 rgba(0, 0, 0, 0.2);
 }
 div.panelSearchForm input.search-input::placeholder {color: rgba(0, 0, 0, 0.3);}
-a[id$='advsearchlink'] {margin-left:1em;}
 
 #search-row-panel {padding: 45px 0;}
 #dv-sidebar {}
@@ -558,7 +556,7 @@ table.ui-panelgrid.facetsMoreLess td:last-child {text-align:right;}
 #dv-main div.results-sort-pagination div.pagination {margin-left:1em;}
 #dv-main div.results-sort-pagination.results-bottom .pagination {margin-top:0; margin-bottom:0;}
 
-table[id$='resultsTable'] td > div {border-top:1px solid grey; margin:6px 0; padding: 4px 10px;}
+table[id$='resultsTable'] td > div {border-top:1px solid #DDD; margin:6px 0; padding: 4px 10px;}
 table[id$='resultsTable'] td > div.dataverseResult {border-color:#c55b28;}
 /* table[id$='resultsTable'] td > div.datasetResult {border-color:#428bca;} */
 table[id$='resultsTable'] td > div > div.card-title-icon-block,
@@ -989,9 +987,11 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
 
 .ui-chkbox .ui-chkbox-label {display:inline; vertical-align:bottom;}
 
+/* Schema Dataverse Additional Classes */
+
 #search-row-panel-backdrop {
   width: 100vw;
-  height: 100vh;
+  height: 85%;
   position: absolute;
   left: 0;
   background-color: #f7f7f9;
@@ -1002,7 +1002,7 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
   font-weight: 700;
   margin-bottom: 15px;
   border-bottom: 1px solid #DDD;
-  padding-bottom: 5px;
+  padding: 7px 6px 12px 6px;
   display: block;
 }
 
@@ -1018,4 +1018,36 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
   display: block;
   width: 540px;
   color: inherit;
+}
+
+.add-data-plus-wrapper {
+  background: none;
+  border: none;
+  position: absolute;
+  right: 15px;
+  z-index: 1;
+}
+
+.add-data-plus-wrapper div {
+  background-image: url(/resources/images/new-project.svg);
+  background-size: contain;
+  height: 70px;
+  width: 70px;
+  display: block;
+}
+
+.add-data-plus-wrapper span {
+  font-weight: normal;
+  margin-top: 11px;
+  color: #337ab7;
+  font-size: 15px;
+  display: block;
+}
+
+.color-btn {
+  background: none;
+  border: none;
+  box-shadow: none;
+  font-size: 15px;
+  color: #337ab7;
 }

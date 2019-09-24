@@ -32,8 +32,9 @@
                 <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
                 <ui:fragment rendered="#{!dataverseSession.user.authenticated and (permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
                                          or permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateNewDatasetCommand'))}">
-                    <button type="button" class="btn btn-default btn-access" onclick="PF('addData_popup').show()">
-                        <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.results.btn.addData']}
+                    <button type="button" class="add-data-plus-wrapper" onclick="PF('addData_popup').show()">
+                        <div></div>
+                        <span> #{bundle['dataverse.results.btn.addData']} </span>
                     </button>
                 </ui:fragment>
                 <h:form id="addDataForm" class="btn-form"
@@ -322,8 +323,8 @@
                 <div class="results-sort-pagination col-xs-6">
                     <!-- SORT BY -->
                     <div class="btn-group pull-right">
-                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                            <span class="glyphicon glyphicon-sort"/> #{bundle['dataverse.results.btn.sort']} <span class="caret"/>
+                        <button type="button" class="btn btn-default dropdown-toggle color-btn" data-toggle="dropdown">
+                            #{bundle['dataverse.results.btn.sort']} <span class="caret"/>
                         </button>
                         <ul class="dropdown-menu pull-right text-left" role="menu">
                             <li>
