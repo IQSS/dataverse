@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
+import com.github.scribejava.core.oauth.AuthorizationUrlBuilder;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -73,10 +74,13 @@ public class OAuth2LoginBackingBean implements Serializable {
         OAuth20Service svc = idp.getService(systemConfig.getOAuth2CallbackUrl());
         String state = createState(idp, toOption(redirectPage));
         
-        return svc.createAuthorizationUrlBuilder()
-                  .state(state)
-                  .scope(idp.getSpacedScope())
-                  .build();
+        AuthorizationUrlBuilder aub = svc.createAuthorizationUrlBuilder()
+                                         .state(state);
+        
+        // Do not include scope if empty string (necessary for GitHub)
+        if (!idp.getSpacedScope().isEmpty()) { aub.scope(idp.getSpacedScope()); }
+        
+        return aub.build();
     }
     
     /**

@@ -14,11 +14,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -93,7 +89,11 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     protected String clientSecret;
     protected String baseUserEndpoint;
     protected String redirectUrl;
-    protected List<String> scope;
+    /**
+     * List of scopes to be requested for authorization at identity provider.
+     * Defaults to empty so no scope will be requested (use case: public info from GitHub)
+     */
+    protected List<String> scope = Arrays.asList("");
     
     public abstract DefaultApi20 getApiInstance();
     
@@ -107,10 +107,9 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
      */
     public OAuth20Service getService(String callbackUrl) {
         return new ServiceBuilder(getClientId())
-                      .apiSecret(getClientSecret())
-                      .defaultScope(getSpacedScope())
-                      .callback(callbackUrl)
-                      .build(getApiInstance());
+                    .apiSecret(getClientSecret())
+                    .callback(callbackUrl)
+                    .build(getApiInstance());
     }
     
     /**
@@ -129,7 +128,9 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         
         OAuth2AccessToken accessToken = service.getAccessToken(code);
     
-        if ( !getScope().stream().allMatch(accessToken.getScope()::contains) ) {
+        // We need to check if scope is null first: GitHub is used without scope, so the responses scope is null.
+        // Checking scopes via Stream to be independent from order.
+        if ( accessToken.getScope() != null && !getScope().stream().allMatch(accessToken.getScope()::contains) ) {
             // We did not get the permissions on the scope(s) we need. Abort and inform the user.
             throw new OAuth2Exception(200, BundleUtil.getStringFromBundle("auth.providers.orcid.insufficientScope"), "");
         }
@@ -234,7 +235,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     
     public List<String> getScope() { return scope; }
     
-    public String getSpacedScope() { return String.join(" ", scope); }
+    public String getSpacedScope() { return String.join(" ", getScope()); }
 
     @Override
     public int hashCode() {
