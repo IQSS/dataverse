@@ -130,7 +130,8 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     
         // We need to check if scope is null first: GitHub is used without scope, so the responses scope is null.
         // Checking scopes via Stream to be independent from order.
-        if ( accessToken.getScope() != null && !getScope().stream().allMatch(accessToken.getScope()::contains) ) {
+        if ( ( accessToken.getScope() != null && ! getScope().stream().allMatch(accessToken.getScope()::contains) ) ||
+             ( accessToken.getScope() == null && ! getSpacedScope().isEmpty() ) ) {
             // We did not get the permissions on the scope(s) we need. Abort and inform the user.
             throw new OAuth2Exception(200, BundleUtil.getStringFromBundle("auth.providers.orcid.insufficientScope"), "");
         }
