@@ -2,7 +2,11 @@
     "fields": [
         {
             "typeName": "subject",
-            "value": ["Astronomy and Astrophysics"]
+            "value": ["Astronomy and Astrophysics", "Other"]
+        },
+        {
+            "typeName": "studyDesignType",
+            "value": ["Parallel Group Design", "Nested Case Control Design"]		
         },
         {
             "typeName": "author",
