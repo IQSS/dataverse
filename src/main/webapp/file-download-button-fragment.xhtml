@@ -65,39 +65,39 @@
             <!--external tools-->
             <ui:repeat var="tool" value="#{exploreTools}">
                 <li>
-                    <h:commandLink rendered="#{!downloadPopupRequired}"
+                    <h:commandLink rendered="#{!guestbookAndTermsPopupRequired}"
                                    styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
                                    disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                    action="#{fileDownloadService.explore(guestbookResponse, fileMetadata, tool )}">
                         #{tool.displayName}
                     </h:commandLink>
                     <!--The modifyDatafileAndFormat method below was added because on the dataset page, "tool" is null in the popup so we store it in the guestbookResponse because we know we'll need it later in the popup.-->
-                    <p:commandLink rendered="#{downloadPopupRequired}"
+                    <p:commandLink rendered="#{guestbookAndTermsPopupRequired}"
                                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'externalTool', tool)}"
                                    disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                    process="@this"
-                                   update="@widgetVar(downloadPopup)"
-                                   oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                                   update="@widgetVar(guestbookAndTermsPopup)"
+                                   oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
                         #{tool.displayName}
                     </p:commandLink>
                 </li>
             </ui:repeat>
             <!--WorldMap Explore-->
             <li jsf:rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
-                <h:commandLink rendered="#{!downloadPopupRequired}"
+                <h:commandLink rendered="#{!guestbookAndTermsPopupRequired}"
                                styleClass="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
                                
                                action="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
                     #{bundle['file.mapData.worldMap']}
                 </h:commandLink>
-                <p:commandLink rendered="#{downloadPopupRequired}"
+                <p:commandLink rendered="#{guestbookAndTermsPopupRequired}"
                                styleClass="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
                                disabled="#{fileMetadata.dataFile.ingestInProgress  or lockedFromDownload}"
                                process="@this"
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'worldMap' )}"
-                               update="@widgetVar(downloadPopup)"
-                               oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                               update="@widgetVar(guestbookAndTermsPopup)"
+                               oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
                     #{bundle['file.mapData.worldMap']}
                 </p:commandLink>
             </li>                       
@@ -113,7 +113,7 @@
         <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
     </h:outputLink>
     
-    <p:commandLink rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
+    <p:commandLink rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(guestbookAndTermsPopupRequired) 
                               and fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}"
                    styleClass="btn btn-default btn-download" process="@this"
                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
@@ -125,20 +125,20 @@
         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
     </p:commandLink>
 
-    <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and (downloadPopupRequired) 
+    <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and (guestbookAndTermsPopupRequired) 
                               and fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}"
                    styleClass="btn btn-default btn-download"
                    process="@this"
                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'package')}"
-                   update="@widgetVar(downloadPopup)" oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                   update="@widgetVar(guestbookAndTermsPopup)" oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
         <f:actionListener binding="#{packagePopupFragmentBean.setFileMetadata(fileMetadata)}" /> 
         <!-- package data file: -->
         <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
     </p:commandLink>
 
-    <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
+    <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(guestbookAndTermsPopupRequired) 
                                 and !(fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload)}"
                    styleClass="btn btn-default btn-download"
                    process="@this"
@@ -149,13 +149,13 @@
         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
     </p:commandLink>
 
-    <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and downloadPopupRequired 
+    <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and guestbookAndTermsPopupRequired 
                                 and !(fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload)}"
                    styleClass="btn btn-default btn-download"
                    process="@this"
                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                    action="#{guestbookResponseService.modifyDatafile(guestbookResponse, fileMetadata)}"
-                   update="@widgetVar(downloadPopup)" oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                   update="@widgetVar(guestbookAndTermsPopup)" oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
         <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
     </p:commandLink>
@@ -168,23 +168,23 @@
         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
             <ui:remove>
                 <li>
-                    <p:commandLink styleClass="highlightBold" rendered="#{!(downloadPopupRequired)}"
+                    <p:commandLink styleClass="highlightBold" rendered="#{!(guestbookAndTermsPopupRequired)}"
                                    process="@this"
                                    actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'bundle')}">
                         #{bundle['file.downloadBtn.format.all']}
                     </p:commandLink>
-                    <p:commandLink styleClass="highlightBold" rendered="#{downloadPopupRequired}"
+                    <p:commandLink styleClass="highlightBold" rendered="#{guestbookAndTermsPopupRequired}"
                                    process="@this"
                                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'bundle' )}"
-                                   update="@widgetVar(downloadPopup)"
-                                   oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                                   update="@widgetVar(guestbookAndTermsPopup)"
+                                   oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
                         #{bundle['file.downloadBtn.format.all']}
                     </p:commandLink>
                 </li>
                 <li role="presentation" class="divider"></li>
             </ui:remove>
             <li>
-                <p:commandLink rendered="#{!downloadPopupRequired and !(fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}"
+                <p:commandLink rendered="#{!guestbookAndTermsPopupRequired and !(fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'original')}">
@@ -192,63 +192,63 @@
                         <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
                     </h:outputFormat>
                 </p:commandLink>
-                <p:commandLink rendered="#{downloadPopupRequired and !(fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}"
+                <p:commandLink rendered="#{guestbookAndTermsPopupRequired and !(fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'original' )}"
-                               update="@widgetVar(downloadPopup)"
-                               oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                               update="@widgetVar(guestbookAndTermsPopup)"
+                               oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
                     <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
                         <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
                     </h:outputFormat>
                 </p:commandLink>
             </li>
             <li>
-                <p:commandLink rendered="#{!downloadPopupRequired}"
+                <p:commandLink rendered="#{!guestbookAndTermsPopupRequired}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'tab')}">
                     #{bundle['file.downloadBtn.format.tab']}
                 </p:commandLink>
-                <p:commandLink rendered="#{downloadPopupRequired}"
+                <p:commandLink rendered="#{guestbookAndTermsPopupRequired}"
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'tab' )}"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
-                               update="@widgetVar(downloadPopup)"
-                               oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                               update="@widgetVar(guestbookAndTermsPopup)"
+                               oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
                     #{bundle['file.downloadBtn.format.tab']}
                 </p:commandLink>
             </li>
             <ui:fragment rendered="#{!(fileMetadata.dataFile.originalFormatLabel == 'RData')}">
                 <li>
-                    <p:commandLink rendered="#{!downloadPopupRequired}"
+                    <p:commandLink rendered="#{!guestbookAndTermsPopupRequired}"
                                    process="@this"
                                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                    actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'RData')}">
                         #{bundle['file.downloadBtn.format.rdata']}
                     </p:commandLink>
-                    <p:commandLink rendered="#{downloadPopupRequired}"
+                    <p:commandLink rendered="#{guestbookAndTermsPopupRequired}"
                                    process="@this"
                                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'RData' )}"
-                                   update="@widgetVar(downloadPopup)"
-                                   oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                                   update="@widgetVar(guestbookAndTermsPopup)"
+                                   oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
                         #{bundle['file.downloadBtn.format.rdata']}
                     </p:commandLink>
                 </li>
             </ui:fragment>
             <li>
-                <p:commandLink rendered="#{!downloadPopupRequired}"
+                <p:commandLink rendered="#{!guestbookAndTermsPopupRequired}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'var')}">
                     #{bundle['file.downloadBtn.format.var']}
                 </p:commandLink>
-                <p:commandLink rendered="#{downloadPopupRequired}"
+                <p:commandLink rendered="#{guestbookAndTermsPopupRequired}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'var' )}"
-                               update="@widgetVar(downloadPopup)"
-                               oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                               update="@widgetVar(guestbookAndTermsPopup)"
+                               oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
                     #{bundle['file.downloadBtn.format.var']}
                 </p:commandLink>
             </li>
@@ -278,7 +278,7 @@
                                                                           and !fileMetadata.datasetVersion.deaccessioned
                                                                           and fileMetadata.dataFile.owner.fileAccessRequest 
                                                                           and !(fileDownloadHelper.canDownloadFile(fileMetadata)))
-                                                                          and !requestAccessPopupRequired}"
+                                                                          and !guestbookAndTermsPopupRequired}"
                    process="@this"
                    actionListener="#{fileDownloadHelper.requestAccess(fileMetadata.dataFile)}"
                    update="@this"
@@ -289,11 +289,11 @@
                                                                           and !fileMetadata.datasetVersion.deaccessioned
                                                                           and fileMetadata.dataFile.owner.fileAccessRequest 
                                                                           and !(fileDownloadHelper.canDownloadFile(fileMetadata))
-                                                                          and requestAccessPopupRequired}"
+                                                                          and guestbookAndTermsPopupRequired}"
                    process="@this"
                    actionListener="#{fileDownloadHelper.addFileForRequestAccess(fileMetadata.dataFile)}"
-                   onclick="PF('requestAccessPopup').show()"
-                   id="requestAccessPopupButton"
+                   onclick="PF('guestbookAndTermsPopup').show()"
+                   id="guestbookAndTermsPopupButton"
                    disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
         <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
     </p:commandLink>

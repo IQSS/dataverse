@@ -508,7 +508,7 @@
                      jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
                                     and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
                                     and !DatasetPage.isHasTabular()}">
-                    <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                    <p:commandLink rendered="#{!(DatasetPage.guestbookAndTermsPopupRequired)}"
                                     styleClass="btn btn-default btn-download"
                                     disabled="#{false and DatasetPage.lockedFromDownload}"
                                     update="@form"
@@ -516,7 +516,7 @@
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                     </p:commandLink>
                     <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                    <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                    <p:commandLink rendered="#{DatasetPage.guestbookAndTermsPopupRequired}"
                                     styleClass="btn btn-default btn-download"
                                     disabled="#{false and DatasetPage.lockedFromDownload}"
                                     action="#{DatasetPage.validateFilesForDownload(true, false)}"
@@ -533,14 +533,14 @@
                         </button>
                         <ul jsf:id="downloadDropdownOptions" class="dropdown-menu multi-level pull-right text-left" role="menu">
                             <li >
-                                <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                                <p:commandLink rendered="#{!(DatasetPage.guestbookAndTermsPopupRequired)}"
                                                 disabled="#{false and DatasetPage.lockedFromDownload}"
                                                 update="@form"
                                                 actionListener="#{DatasetPage.validateFilesForDownload(false, true)}">
                                     #{bundle.downloadOriginal}
                                 </p:commandLink>
                                 <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                                <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                                <p:commandLink rendered="#{DatasetPage.guestbookAndTermsPopupRequired}"
                                                 disabled="#{false and DatasetPage.lockedFromDownload}"
                                                 action="#{DatasetPage.validateFilesForDownload(true, true)}"
                                                 update="@form" oncomplete="">
@@ -548,14 +548,14 @@
                                 </p:commandLink>
                             </li>
                             <li> <!--jsf:rendered="# {DatasetPage.isTabularDataSelected()}"-->
-                                <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                                <p:commandLink rendered="#{!(DatasetPage.guestbookAndTermsPopupRequired)}"
                                                 disabled="#{false and DatasetPage.lockedFromDownload}"
                                                 update="@form"
                                                 actionListener="#{DatasetPage.validateFilesForDownload(false, false)}">
                                     #{bundle.downloadArchival}
                                 </p:commandLink>
                                 <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                                <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                                <p:commandLink rendered="#{DatasetPage.guestbookAndTermsPopupRequired}"
                                                 disabled="#{false and DatasetPage.lockedFromDownload}"
                                                 action="#{DatasetPage.validateFilesForDownload(true, false)}"
                                                 update="@form" oncomplete="">
@@ -597,8 +597,7 @@
                 <ui:include src="file-download-button-fragment.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                     <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
-                    <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
-                    <ui:param name="requestAccessPopupRequired" value="#{DatasetPage.requestAccessPopupRequired}"/>
+                    <ui:param name="guestbookAndTermsPopupRequired" value="#{DatasetPage.guestbookAndTermsPopupRequired}"/>
                     <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}"/>
                     <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}"/>
                     <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
