@@ -764,6 +764,13 @@ public class Dataset extends DvObjectContainer {
         return null;
     }
 
+    public boolean hasEnabledGuestbook(){
+        Guestbook gb = this.getGuestbook();
+        
+        return ( gb != null && gb.isEnabled());
+    }
+    
+    
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
