@@ -368,7 +368,7 @@
                         <span class="file-thumbnail-preview-img" jsf:rendered="#{!empty fileMetadata.dataFile.id and DatasetPage.isThumbnailAvailable(fileMetadata)}"
                               data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
 
-                            <img src="#{DatasetPage.getDataFileThumbnailAsBase64(fileMetadata)}" />  
+                            <img src="#{DatasetPage.getDataFileThumbnailAsBase64(fileMetadata)}" alt="#{fileMetadata.label}"/>
                         </span>
 
                         <!-- Default Icon -->
@@ -376,7 +376,7 @@
 
                         <!-- the "temp preview" is for new, not yet saved files; these should never appear on this page - as we now have the editfilespage for that, correct? -->
                         <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.storageIdentifier and dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType)}">
-                            <p:graphicImage value="/api/access/tempPreview/#{fileMetadata.dataFile.storageIdentifier}?mimetype=#{fileMetadata.dataFile.contentType}"/>
+                            <img src="/api/access/tempPreview/#{fileMetadata.dataFile.storageIdentifier}?mimetype=#{fileMetadata.dataFile.contentType}" alt="#{fileMetadata.label}"/>
                             <h:outputText id="imgPreview" value="#{bundle['preview']}" styleClass="bg-info text-info text-center show"/>
                         </ui:fragment>
 
