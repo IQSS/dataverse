@@ -11,6 +11,7 @@ body {
 }
 body.widget-view {margin-bottom:54px;}
 body .ui-widget {font-size: inherit;}
+body .ui-widget .ui-widget-content {background: none;}
 .ui-widget-content a {color: #337AB7;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #23527C;}
 
@@ -25,7 +26,7 @@ body .ui-widget {font-size: inherit;}
 .bg-muted {background:#f5f5f5;}
 .text-dataverse, .text-brand {color:#C55B28;}
 .text-dataset {color:#31708F;}
-.text-file {color:#777777;}
+.text-file {color:black;}
 
 #navbarFixed {margin-bottom:0;}
 .navbar-fixed-top, .navbar-fixed-bottom {
@@ -376,8 +377,8 @@ form.btn-form {display:inline-block;}
 
 td.col-file-action span.ingest-warning, .button-block span.ingest-warning {margin-left:.5em;}
 
-.btn.btn-default.btn-access {background-color: #fff;background-image:none;}
-.btn.btn-default.btn-access:focus, .btn.btn-default.btn-access:hover,.btn.btn-default.btn-access:active {background-color: #e6e6e6;background-image:none;}
+.btn.btn-default.btn-access {background-color:#fff; background-image:none; border-radius:35px; height: 70px; width: 70px;}
+.btn.btn-default.btn-access:focus, .btn.btn-default.btn-access:hover,.btn.btn-default.btn-access:active {background-image:none;}
 .col-manage-action .button-block button, .col-manage-action .button-block a.btn, .col-manage-action .button-block input.btn, 
 .col-manage-action .button-block div.btn-group, .col-manage-action .button-block span.btn.ui-state-disabled, 
 .button-block div.btn-group div.btn-group, 
@@ -416,11 +417,23 @@ div.field-add-delete a.btn.nolabel-field-btn {margin-top:0;}
 #metadataFieldOptions div.checkbox.child-field {padding-left:18px;}
 
 /* -------- SEARCH -------- */
-div.panelSearchForm {margin-bottom: 15px;}
-div.panelSearchForm input.search-input {margin-right:1em; padding:4px; display: inline-block; vertical-align: middle; width: auto;}
+div.panelSearchForm {margin-bottom: 30px;}
+div.panelSearchForm input.search-input {
+  margin: auto;
+  padding: 4px;
+  vertical-align: middle;
+  display: block;
+  color: rgba(0, 0, 0, 0.5);
+  display: inline-block;
+  font-size: 25px;
+  background: transparent;
+  width: auto;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2), inset 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+}
+div.panelSearchForm input.search-input::placeholder {color: rgba(0, 0, 0, 0.3);}
 a[id$='advsearchlink'] {margin-left:1em;}
 
-#search-row-panel {padding: 15px 0;}
+#search-row-panel {padding: 45px 0;}
 #dv-sidebar {}
 #dv-main {}
 #dv-main.nofacets {width:100%;float:none;}
@@ -508,7 +521,7 @@ div[id$='facetCategoryList'] > div > ul > li {border-bottom:1px solid #DDD; marg
 div[id$='facetCategoryList'] div li div {padding:4px 0px;}
 div[id$='facetCategoryList'] div li div.ui-datalist-empty-message {padding:4px 0px; font-style:italic; color:#AAA;}
 div[id$='facetCategoryList'] div.ui-datalist, div[id$='facetCategoryList'] div.ui-datalist div.ui-datalist-content {padding-top:0;}
-.facetCategoryName {font-weight:bold;}
+.facetCategoryName {display: block; margin-bottom: 5px;}
 
 .facetCategoryName, .facetLink {
 -ms-word-break: break-all;
@@ -975,3 +988,34 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
 }
 
 .ui-chkbox .ui-chkbox-label {display:inline; vertical-align:bottom;}
+
+#search-row-panel-backdrop {
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  left: 0;
+  background-color: #f7f7f9;
+  margin: 0;
+}
+
+#filter-title {
+  font-weight: 700;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #DDD;
+  padding-bottom: 5px;
+  display: block;
+}
+
+.glyphicon-search {font-size:18px;}
+.searchbutton {
+  position: absolute;
+  top: 13px;
+  right: 20.5vw;
+}
+.advsearchlink {
+  margin: 10px auto;
+  text-align: left;
+  display: block;
+  width: 540px;
+  color: inherit;
+}

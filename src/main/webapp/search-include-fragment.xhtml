@@ -11,15 +11,15 @@
 
     <!-- Search Form + Add Data Button -->
     <div class="row panelSearchForm" jsf:rendered="#{!SearchIncludeFragment.solrIsDown}">
-        <div class="#{widgetWrapper.widgetView ? 'col-sm-12' : 'col-sm-8'}">
+        <div class="col-sm-12">
             <h:form>
                 <p:inputText id="searchBasic" styleClass="search-input" size="40" value="#{SearchIncludeFragment.query}" onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
                 <p:watermark for="searchBasic" value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.search.input.watermark'] : bundle['dataverse.search.input.watermark']}"/>
-                <p:commandLink id="searchbutton" styleClass="btn btn-default" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage)}">
-                    <span class="glyphicon glyphicon-search"/> #{bundle['dataverse.search.btn.find']}
+                <p:commandLink id="searchbutton" styleClass="searchbutton" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage)}">
+                    <span class="glyphicon glyphicon-search"/>
                 </p:commandLink>
                 <p:remoteCommand name="submitsearch" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage)}"/>
-                <h:outputLink id="advsearchlink" value="#{widgetWrapper.wrapURL('/search/advanced.xhtml')}">
+                <h:outputLink id="advsearchlink" styleClass="advsearchlink" value="#{widgetWrapper.wrapURL('/search/advanced.xhtml')}">
                     <f:param name="dataverseIdentifier" value="#{SearchIncludeFragment.dataverse.alias}"/>
                     <h:outputText value="#{bundle['dataverse.search.advancedSearch']}"/>
                     <!--<f:param name="q" value="#{SearchIncludeFragment.query}" disable="#{empty SearchIncludeFragment.query}"/>-->
@@ -69,8 +69,10 @@
     </div>
 
     <!-- Search Results / SOLR IS UP -->
+    <div id="search-row-panel-backdrop"></div>
     <div id="search-row-panel" class="row row-offcanvas row-offcanvas-left" jsf:rendered="#{!SearchIncludeFragment.solrIsDown}">
         <div id="dv-sidebar" class="col-sm-4 col-md-3 sidebar-offcanvas">
+            <span id="filter-title">Filters</span>
             <!--TYPE FACET (DATAVERSES, DATASETS, FILES)-->
             <h:form id="facetType">
                 <!-- QDRCustom- Don't show collections -->
