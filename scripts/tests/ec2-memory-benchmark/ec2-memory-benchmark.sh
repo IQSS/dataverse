@@ -43,6 +43,19 @@ then
     exit 1;
 fi
 
+# ... and the EC2 instance id:
+
+EC2_INSTANCE_ID=`grep "^aws ec2 terminate" create-instance.log | head -1 | sed 's/^.*ids //'`
+
+if [ ${EC2_INSTANCE_ID}"x" = "x" ]
+then
+    echo "Failed to spin up a sample-data branch!"
+    echo "(Failed to obtain the EC2 id of the instance)"
+    echo "Consult the log file (create-instance.log) for more details."
+    exit 1;
+fi
+
+
 # download the benchmark script to be run on the newly-spun instance: 
 # (?)
 
@@ -73,3 +86,9 @@ echo "Raw data output (with GC status and jmap listing of all the instantiated D
 echo "where N is 100 and 10, for dataverse and dataset pages respectively):"
 echo "  dataverse page: ${EC2_HTTP_LOCATION}/memory-benchmark-raw-dataverse.txt"
 echo "  dataset page:   ${EC2_HTTP_LOCATION}/memory-benchmark-raw-dataset.txt"
+
+echo 
+echo "Please do not forget to TERMINATE THE INSTANCE once you have downloaded all the results above,"
+echo "with the following command:"
+echo "aws ec2 terminate-instances --instance-ids ${EC2_INSTANCE_ID}"
+echo

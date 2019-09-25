@@ -34,7 +34,7 @@ yum -y install gnuplot >/dev/null
 
 GPLOT=gplot-1.11/gplot.pl; export GPLOT
 GPLOTDIST=https://pilotfiber.dl.sourceforge.net/project/gplot/gplot/gplot-1.11.tar.gz; export GPLOTDIST
-(cd /tmp; curl ${GPLOTDIST} 2>/dev/null | tar xzf - ${GPLOT} >dev/null)
+(cd /tmp; curl ${GPLOTDIST} 2>/dev/null | tar xzf - ${GPLOT} >/dev/null)
 
 
 # Bombard the application with some GET requests. 
