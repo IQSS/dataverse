@@ -356,7 +356,7 @@ Accessibility Testing
 Accessibility Policy
 ~~~~~~~~~~~~~~~~~~~~
 
-Dataverse aims to improve the user experience for those with disabilities, and will follow the recommendations of the `Harvard University Digital Accessibility Policy <https://accessibility.huit.harvard.edu/digital-accessibility-policy>`__,  which use the Worldwide Web Consortium’s Web Content Accessibility Guidelines version 2.1, Level AA Conformance (WCAG 2.1 Level AA) as the standard.
+Dataverse aims to improve the user experience for those with disabilities, and are in the process of following the recommendations of the `Harvard University Digital Accessibility Policy <https://accessibility.huit.harvard.edu/digital-accessibility-policy>`__,  which use the Worldwide Web Consortium’s Web Content Accessibility Guidelines version 2.1, Level AA Conformance (WCAG 2.1 Level AA) as the standard.
 
 To report an accessibility issue with Dataverse, you can create a new issue in our GitHub repo at: https://github.com/IQSS/dataverse/issues/
 
