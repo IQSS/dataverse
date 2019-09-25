@@ -56,13 +56,12 @@
     <h:body styleClass="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
         <f:loadBundle basename="propertyFiles.Bundle" var="bundle"/>
 	<a href="#content" class="sr-only">#{bundle['body.skip']}</a>                
-        <!-- Comment out custom header in favor of using Drupal's header on iframe -->
-        <!-- <ui:include src="dataverse_header.xhtml"> -->
-        <!--     <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/> -->
-        <!--     <ui:param name="showDataverseHeader" value="#{showDataverseHeader != null ? showDataverseHeader : true}"/> -->
-        <!--     <ui:param name="showMessagePanel" value="#{showMessagePanel != null ? showMessagePanel : true}"/> -->
-        <!--     <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : navigationWrapper.redirectPage}"/> -->
-        <!-- </ui:include> -->
+        <ui:include src="dataverse_header.xhtml">
+            <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
+            <ui:param name="showDataverseHeader" value="#{showDataverseHeader != null ? showDataverseHeader : true}"/>
+            <ui:param name="showMessagePanel" value="#{showMessagePanel != null ? showMessagePanel : true}"/>
+            <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : navigationWrapper.redirectPage}"/>
+        </ui:include>
         <div class="container" id="content">
             <ui:insert name="body">#{bundle.defaultBody}</ui:insert>
         </div>

@@ -208,12 +208,12 @@ span.glyphicon-question-sign.tooltip-icon:hover {color: #337AB7 !important;}
 }
 
 /* -------- HEADER -------- */
-#dataverse-header-block {padding-top:50px;}
+#dataverse-header-block {padding-top:50px; display: none;}
 body.widget-view #dataverse-header-block {padding-top:0px;}
 #dataverseHeader {margin:0 auto;}
 /* #dataverseHeader .dataverseHeaderBlock {display:table-row;} */
 /* #dataverseHeader .dataverseHeaderCell {display:table-cell;} */
-#dataverseHeader .dataverseHeaderLogo {padding-right:1em; text-align:center;}
+#dataverseHeader .dataverseHeaderLogo {padding-right:1em; text-align:center; display: none;}
 #dataverseHeader .dataverseHeaderLogo img {max-width:940px; max-height:120px;}
 #dataverseHeader .dataverseHeaderCell.dataverseHeaderLogo img {max-width:100px; max-height:100px;}
 #dataverseHeader .dataverseHeaderName {padding:2em 1em 2em 0em;}
@@ -471,7 +471,7 @@ div.panelSearchForm input.search-input::placeholder {color: rgba(0, 0, 0, 0.3);}
 
 /*#resultsCountPaginatorBlock {overflow:hidden;}*/
 #resultsCountPaginatorBlock div.results-count {padding:6px 12px; font-weight:bold;}
-#resultsCountPaginatorBlock div.results-sort-pagination {}
+#resultsCountPaginatorBlock div.results-sort-pagination {margin-top: 50px;}
 #resultsCountPaginatorBlock .pagination {margin:0;}
 
 span.search-term-match {font-weight: bold;}
@@ -486,16 +486,16 @@ span.search-term-match {font-weight: bold;}
 [id$='resultsTable'] span.label {vertical-align:text-bottom; line-height: normal; margin-left:.5em;}
 [id$='resultsTable'] div.file-tags-block span.label:first-of-type {margin-left:0;}
 [id$="resultsTable"] div.file-tags-block span.label {display:inline-block;}
-[id$='resultsTable'] .resultDatasetCitationBlock {display:block;margin:4px 0 .5em 60px;padding:4px;}
+[id$='resultsTable'] .resultDatasetCitationBlock {display:block;margin:4px 0 .5em 120px;padding:4px;}
 [id$='resultsTable'] .resultDatasetCitationBlock span.search-term-match {font-weight: normal;}
 [id$='resultsTable'] div.card-title-icon-block span[class^='icon'],
 [id$='resultsTable'] div.card-title-icon-block span[class^='glyphicon'] {font-size:1.3em; margin-left:3px;}
 [id$='resultsTable'] div.card-title-icon-block span[class$='lock'] {font-size:inherit; margin-left:0;}
 [id$='resultsTable'] div.card-title-icon-block span[class^='glyphicon'] {margin-top:3px;}
 [id$='resultsTable'] div.card-title-icon-block span.label {vertical-align:15%}
-[id$='resultsTable'] div.card-preview-icon-block {width:48px; float:left; margin:4px 12px 6px 0;}
+[id$='resultsTable'] div.card-preview-icon-block {width:110px; position: absolute; float:left; margin:4px 10px 6px 0;}
 [id$='resultsTable'] div.card-preview-icon-block a {display:block; height:48px; line-height:48px;}
-[id$='resultsTable'] div.card-preview-icon-block img {vertical-align:middle;}
+[id$='resultsTable'] div.card-preview-icon-block img {vertical-align:middle; width: 90px;}
 [id$='resultsTable'] div.card-preview-icon-block span[class^='icon'],
 [id$='resultsTable'] div.card-preview-icon-block span[class^='glyphicon'] {font-size:2.8em;}
 
@@ -628,7 +628,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #title {font-size:1.5em;font-weight:bold;}
 #author, #contact {display:block; margin-bottom:.5em;}
 .citation-block {/*-- margin-bottom:.5em; padding-right:0; --*/}
-.bg-citation {background:#ECF6FB;}
+.bg-citation {background:#DFDFE7; border-color: #DFDFE7;}
 .bg-citation-file {background:#f5f5f5; border: 1px solid #DDD;}
 div.alert-info.bg-citation, div.alert-danger.bg-danger {padding-top:4px; padding-bottom:4px; border-radius:0; color:#333;}
 .citation-block > div.alert-info.bg-citation, .citation-block > div.alert-danger.bg-danger {padding-top:0; padding-bottom:0;}
@@ -991,7 +991,7 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
 
 #search-row-panel-backdrop {
   width: 100vw;
-  height: 85%;
+  height: 100%;
   position: absolute;
   left: 0;
   background-color: #f7f7f9;
@@ -1006,7 +1006,7 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
   display: block;
 }
 
-.glyphicon-search {font-size:18px;}
+.glyphicon-search {font-size:18px; color: #979797;}
 .searchbutton {
   position: absolute;
   top: 13px;
@@ -1017,7 +1017,7 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
   text-align: left;
   display: block;
   width: 540px;
-  color: inherit;
+  color: #979797;
 }
 
 .add-data-plus-wrapper {
@@ -1050,4 +1050,14 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
   box-shadow: none;
   font-size: 15px;
   color: #337ab7;
+}
+
+.card-title-icon-block {
+  font-weight: bolder;
+  font-size: 18px;
+}
+
+/* Shared class for Result Text Spacing */
+.datasetResultText {
+  margin: 5px 5px 5px 120px;
 }
