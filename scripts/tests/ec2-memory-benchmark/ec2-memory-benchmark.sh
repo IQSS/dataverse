@@ -52,9 +52,17 @@ scp -i ${EC2_SSH_KEY} -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/
 
 # run the remote script: 
 
-ssh -i ${EC2_SSH_KEY} -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' -o 'ConnectTimeout=14400' ${EC2_SSH_DEST} 'sudo /tmp/ec2-memory-benchmark-remote.sh'
+echo "Proceeding to run the benchmark script on the newly created instance at ${EC2_SSH_DEST}."
 
-# check the exit code of the command above here!
+ssh -i ${EC2_SSH_KEY} -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' -o 'ConnectTimeout=14400' ${EC2_SSH_DEST} "sudo /tmp/ec2-memory-benchmark-remote.sh ${EC2_HTTP_LOCATION}"
+
+if [ $? != 0 ]
+then
+    echo "Something went wrong."
+    echo "An attempt to run the benchmark test on the remote instance failed with a non-zero return code."
+    echo "See the error messages above for more information, and/or open a GitHub issue with the Dataverse project."
+    exit 1;
+fi
 
 echo "Memory benchmark test complete!" 
 echo 

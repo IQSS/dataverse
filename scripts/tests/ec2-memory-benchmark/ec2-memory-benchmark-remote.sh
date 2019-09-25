@@ -1,10 +1,19 @@
 #!/bin/sh
+EC2_HTTP_LOCATION=$1
+if [ -z "${EC2_HTTP_LOCATION}" ]
+then
+    EC2_HTTP_LOCATION="<EC2 INSTANCE HTTP ADDRESS>"
+fi
 
 DATAVERSE_APP_DIR=/usr/local/glassfish4/glassfish/domains/domain1/applications/dataverse; export DATAVERSE_APP_DIR
 
 # restart glassfish: 
 
+echo "Restarting Glassfish..."
+
 systemctl restart glassfish
+
+echo "done."
 
 # obtain the pid of the running glassfish process:
 
@@ -25,7 +34,7 @@ yum -y install gnuplot >/dev/null
 
 GPLOT=gplot-1.11/gplot.pl; export GPLOT
 GPLOTDIST=https://pilotfiber.dl.sourceforge.net/project/gplot/gplot/gplot-1.11.tar.gz; export GPLOTDIST
-(cd /tmp; curl ${GPLOTDIST} 2>/dev/null | tar xvzf - ${GPLOT})
+(cd /tmp; curl ${GPLOTDIST} 2>/dev/null | tar xzf - ${GPLOT} >dev/null)
 
 
 # Bombard the application with some GET requests. 
@@ -39,6 +48,9 @@ GPLOTDIST=https://pilotfiber.dl.sourceforge.net/project/gplot/gplot/gplot-1.11.t
 
 for page in dataverse dataset
 do
+    echo "Beginning the load test of the ${page} page."
+    echo "You can monitor the progress of the test by checking the output at ${EC2_HTTP_LOCATION}/memory-benchmark-raw-${page}.txt"
+
     date > ${DATAVERSE_APP_DIR}/memory-benchmark-raw-${page}.txt
 
     if [ $page = "dataverse" ]
@@ -61,6 +73,12 @@ do
 	    exit 1
 	fi
     fi
+
+    echo "The basic test of ${repeat_inner} page loads, followed by a snapshot of the "
+    echo "heap space and the GC status, will be repeated ${repeat_outer} times total"
+    echo "(This means that once the test completes, the output file above will contain the ${repeat_outer} entries total;"
+    echo "so looking at the timestamps in the output should give you an idea how long it's going to take to finish)"
+    echo 
 
     for ((i = 0; i < ${repeat_outer}; i++))
     do
@@ -110,6 +128,8 @@ do
 	echo 
     done >> $DATAVERSE_APP_DIR/memory-benchmark-raw-${page}.txt
 
+    echo "Done!"
+
     # Create simple plots of page GETs vs. memory utilisation: 
 
     if [ $page = "dataverse" ] 
@@ -124,15 +144,22 @@ do
 
     grep '^  *[0-9][0-9]*\.[0-9]' ${DATAVERSE_APP_DIR}/memory-benchmark-raw-${page}.txt | awk '{print (NR*'${multiplier}'),$4}' > /tmp/${page}.xhtml
 
+    echo "Generated the data file for plotting the graph of page GETs vs. oldgen memory utilization."
+    echo "It is available for download here: ${EC2_HTTP_LOCATION}/plot-${page}.dat"
+
     if [ -f /tmp/${GPLOT} ]
     then
 	/tmp/${GPLOT} -type png -outfile ${DATAVERSE_APP_DIR}/benchmark-${page}.png -xlabel "${xlabel}" -ylabel 'oldgen (%, 2GB total)' -title 'Memory Utilisation, default GC' /tmp/${page}.xhtml
+	echo "Generated the plot for the ${page} page..."
+	echo "Available here: ${EC2_HTTP_LOCATION}/benchmark-${page}.png"
     else
-	echo "Skipping generating a plot, since gplotpl is not installed"
-	echo "You can still download the raw data, and generate plots locally"
+	echo "(Skipping generating a plot, since gplotpl is not installed;"
+	echo "You can still download the raw data, and generate plots locally)"
     fi
 
     /bin/mv /tmp/${page}.xhtml ${DATAVERSE_APP_DIR}/plot-${page}.dat
+
+    echo
 done
 
 
