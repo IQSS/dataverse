@@ -107,10 +107,16 @@ public class DataversePage implements java.io.Serializable {
     @Inject PermissionsWrapper permissionsWrapper;
 
     private Dataverse dataverse = new Dataverse();
+    
+    /**
+     * View parameters
+     */
+    private Long id = null;
+    private String alias = null;
+    private Long ownerId = null;
     private EditMode editMode;
     private LinkMode linkMode;
-
-    private Long ownerId;
+    
     private DualListModel<DatasetFieldType> facets = new DualListModel<>(new ArrayList<>(), new ArrayList<>());
     private DualListModel<Dataverse> featuredDataverses = new DualListModel<>(new ArrayList<>(), new ArrayList<>());
     private List<Dataverse> dataversesForLinking;
@@ -247,6 +253,12 @@ public class DataversePage implements java.io.Serializable {
     public void setDataverse(Dataverse dataverse) {
         this.dataverse = dataverse;
     }
+    
+    public Long getId() { return this.id; }
+    public void setId(Long id) { this.id = id; }
+    
+    public String getAlias() { return this.alias; }
+    public void setAlias(String alias) { this.alias = alias; }
 
     public EditMode getEditMode() {
         return editMode;
@@ -266,12 +278,13 @@ public class DataversePage implements java.io.Serializable {
 
     public String init() {
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
-
-        if (dataverse.getAlias() != null || dataverse.getId() != null || ownerId == null) {// view mode for a dataverse
-            if (dataverse.getAlias() != null) {
-                dataverse = dataverseService.findByAlias(dataverse.getAlias());
-            } else if (dataverse.getId() != null) {
-                dataverse = dataverseService.find(dataverse.getId());
+    
+        // TODO: all these parameters should be validated to be matching names (regex) or null
+        if (this.getAlias() != null || this.getId() != null || this.getOwnerId() == null) {// view mode for a dataverse
+            if (this.getAlias() != null) {
+                dataverse = dataverseService.findByAlias(this.getAlias());
+            } else if (this.getId() != null) {
+                dataverse = dataverseService.find(this.getId());
             } else {
                 try {
                     dataverse = dataverseService.findRootDataverse();
