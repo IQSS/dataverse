@@ -39,7 +39,7 @@ To edit your dataverse, navigate to your dataverse's landing page and select the
 where you will be presented with the following editing options: 
 
 - :ref:`General Information <general-information>`: edit name, identifier, category, contact email, affiliation, description, Metadata Elements, and facets for your dataverse
-- :ref:`Theme <theme>`: upload a logo for your dataverse, add a link to your department or personal website, add a custom footer image and select colors for your dataverse in order to brand it
+- :ref:`Theme <theme>`: upload a logo for your dataverse, add a link to your department or personal website, add a custom footer image, and select colors for your dataverse in order to brand it
 - :ref:`Widgets <dataverse-widgets>`: get code to add to your website to have your dataverse display on it
 - :ref:`Permissions <dataverse-permissions>`: give Dataverse users permissions to your dataverse, i.e.-can edit datasets, and see which users already have which permissions for your dataverse
 - :ref:`Dataset Templates <dataset-templates>`: these are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in
