@@ -39,6 +39,7 @@
         See https://github.com/jacoco/jacoco/issues/772 for discussion of how the XML changed.
         -->
         <jacoco.version>0.8.1</jacoco.version>
+        <omnifaces.version>2.7.1</omnifaces.version>
     </properties>
     <!--Maven checks for dependendies from these repos in the order shown in the pom.xml
         This isn't well documented and seems to change between maven versions -MAD 4.9.4 -->
@@ -292,7 +293,7 @@
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
-            <version>1.7</version> <!-- Or 1.8-SNAPSHOT -->
+            <version>${omnifaces.version}</version> <!-- Or 1.8-SNAPSHOT -->
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
