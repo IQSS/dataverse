@@ -208,7 +208,8 @@ span.glyphicon-question-sign.tooltip-icon:hover {color: #337AB7 !important;}
 }
 
 /* -------- HEADER -------- */
-#dataverse-header-block {padding-top:50px; display: none;}
+#dataverse-header-block {padding-top:50px;}
+nav {display: none;}
 body.widget-view #dataverse-header-block {padding-top:0px;}
 #dataverseHeader {margin:0 auto;}
 /* #dataverseHeader .dataverseHeaderBlock {display:table-row;} */
@@ -471,7 +472,7 @@ div.panelSearchForm input.search-input::placeholder {color: rgba(0, 0, 0, 0.3);}
 
 /*#resultsCountPaginatorBlock {overflow:hidden;}*/
 #resultsCountPaginatorBlock div.results-count {padding:6px 12px; font-weight:bold;}
-#resultsCountPaginatorBlock div.results-sort-pagination {margin-top: 50px;}
+#resultsCountPaginatorBlock div.results-sort-pagination div.btn-group {margin-right: 96px;}
 #resultsCountPaginatorBlock .pagination {margin:0;}
 
 span.search-term-match {font-weight: bold;}
