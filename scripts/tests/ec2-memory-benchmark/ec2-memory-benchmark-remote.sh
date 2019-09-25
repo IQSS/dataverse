@@ -65,7 +65,7 @@ do
 	# we'll use Gary King's dataset for the page test;
 	# let's find its id:
 	
-	dataset_id=`curl http://localhost:8080/api/dataverses/king/contents | jq '.data[0].id'`
+	dataset_id=`curl http://localhost:8080/api/dataverses/king/contents 2>/dev/null | jq '.data[0].id'`
 
 	if [[ ${dataset_id}"x" = "x" || ${dataset_id} = "null" ]]
 	then
