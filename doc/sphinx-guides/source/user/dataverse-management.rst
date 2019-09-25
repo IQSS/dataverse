@@ -64,14 +64,13 @@ Theme
 The Theme features provides you with a way to customize the look of your dataverse. You can:
 
 - Inherit the theme from the parent dataverse. This option is helpful if you'd like consistency across several dataverses that all share the same parent.
-- Add or update a logo image, which will appear at the top of your dataverse
-- Add or update a footer image, which will appear at at the bottom of your dataverse
-- Update the colors of the background, links, and text within your dataverse 
-- 
+- Add or update a logo image, which will appear at the top of your dataverse.
+- Add or update a footer image, which will appear at at the bottom of your dataverse.
+- Change the colors of the background, links, and text within your dataverse.
+- Add or update the tagline for your dataverse, which can provide more information about your organization, journal, institution, etc.
+- Add a URL for a website that will be accessed when visitors click the tagline text.
 
-Supported image types are JPEG, TIFF, or PNG and should be no larger than 500 KB. The maximum display size for an image file in a dataverse's theme is 940 pixels wide by 120 pixels high. 
-
-Additionally, you can select the colors for the header of your dataverse and the text that appears in your dataverse. You can also add a link to your personal website, the website for your organization or institution, your department, journal, etc.
+Supported image types for logo images and footer images are JPEG, TIFF, or PNG and should be no larger than 500 KB. The maximum display size for an image file in a dataverse's theme is 940 pixels wide by 120 pixels high. 
 
 .. _dataverse-widgets:
 
