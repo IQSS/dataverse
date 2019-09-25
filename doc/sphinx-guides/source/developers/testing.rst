@@ -365,7 +365,7 @@ Accessibility Tools
 
 Our development process will incorporate automated testing provided by tools like `SiteImprove <https://siteimprove.com/en-us/accessibility/>`__ and `Accessibility Management Platform (AMP) <https://www.levelaccess.com/solutions/software/amp/>`__ from the Level Access, to run accessibility reports for the application.
 
-Developers who contribute front-end UI code are responsible for understand the requirements of this standard and the tools and methods for securing conformance with it.
+Developers who contribute front-end UI code are responsible for understanding the requirements of this standard and the tools and methods for securing conformance with it.
 
 There are browser developer tools such as the `Wave toolbar <https://wave.webaim.org/extension/>`__ by WebAIM (available for Chrome, Firefox) and the `Siteimprove Accessibility Checker <https://siteimprove.com/en-us/core-platform/integrations/browser-extensions/>`__  (available for Chrome, Firefox) that will generate reports for a single page. It is required that developers utilize these tools to catch any accessibility issues with pages or features that are being added to the application UI.
 
