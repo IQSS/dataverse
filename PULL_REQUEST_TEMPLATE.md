@@ -1,6 +1,8 @@
 ## New Contributors
 
-Welcome! New contributors should at least glance at [CONTRIBUTING.md](/CONTRIBUTING.md), especially the section on pull requests where we encourage you to reach out to other developers before you start coding. Also, please note that we measure code coverage and prefer you write unit tests. Pull requests can still be reviewed without tests or completion of the checklist outlined below. Thanks!
+Welcome! New contributors should at least glance at [CONTRIBUTING.md](/CONTRIBUTING.md), especially the section on pull requests where we encourage you to reach out to other developers before you start coding. Also, please note that we measure code coverage and prefer you write unit tests. Pull requests can still be reviewed without tests or completion of the checklist outlined below. Note that we use the "closes" syntax below to trigger Github's automation to close the corresponding issue once the pull request is merged.
+
+Thanks for your contribution to Dataverse!
 
 ## Related Issues
 
