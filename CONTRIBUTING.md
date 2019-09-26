@@ -48,7 +48,7 @@ The source for the documentation at http://guides.dataverse.org/en/latest/ is in
 
 ## Code/Pull Requests
 
-We love code contributions. Developers are not limited to the main Dataverse code in this git repo. You can help with API client libraries in your favorite language that are mentioned in the [API Guide][] or create a new library. You can help work on configuration management code that's mentioned in the [Installation Guide][]. The Installation Guide also covers a new concept called "external tools" that allows developers to create their own tools that are available from within an installation of Dataverse.
+We love code contributions. Developers are not limited to the main Dataverse code in this git repo. You can help with API client libraries in your favorite language that are mentioned in the [API Guide][] or create a new library. You can help work on configuration management code that's mentioned in the [Installation Guide][]. The Installation Guide also covers a relatively new concept called "external tools" that allows developers to create their own tools that are available from within an installation of Dataverse.
 
 [API Guide]: http://guides.dataverse.org/en/latest/api
 [Installation Guide]: http://guides.dataverse.org/en/latest/installation
@@ -64,4 +64,4 @@ After making your pull request, your goal should be to help it advance through o
 [dataverse-dev Google Group]: https://groups.google.com/group/dataverse-dev
 [IRC]: http://chat.dataverse.org
 [community contributors]: https://docs.google.com/spreadsheets/d/1o9DD-MQ0WkrYaEFTD5rF_NtyL8aUISgURsAXSL7Budk/edit?usp=sharing
-[dev efforts]: https://groups.google.com/d/msg/dataverse-community/X2diSWYll0w/ikp1TGcfBgAJ
+[dev efforts]: https://github.com/orgs/IQSS/projects/2#column-5298405
