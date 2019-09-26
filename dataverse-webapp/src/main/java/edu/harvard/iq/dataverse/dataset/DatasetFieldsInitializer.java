@@ -12,7 +12,6 @@ import org.apache.commons.collections4.SetUtils;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -103,37 +102,38 @@ public class DatasetFieldsInitializer {
         return metadataBlocks;
     }
 
-    // -------------------- PRIVATE --------------------
-    
     /***
-    *
-    * Note: Updated to retrieve DataverseFieldTypeInputLevel objects in single query
-    *
-    */
-   private void updateDatasetFieldIncludeFlag(List<DatasetField> datasetFields, Dataverse metadataBlocksDataverse) {
-       
-       List<DatasetField> flatDatasetFields = DatasetFieldUtil.getFlatDatasetFields(datasetFields);
-       List<Long> datasetFieldTypeIds = new ArrayList<>();
-       
-       for (DatasetField dsf: flatDatasetFields) {
-           datasetFieldTypeIds.add(dsf.getDatasetFieldType().getId());
-       }
-       
-       List<Long> fieldTypeIdsToHide = dataverseFieldTypeInputLevelService
-               .findByDataverseIdAndDatasetFieldTypeIdList(metadataBlocksDataverse.getId(), datasetFieldTypeIds).stream()
-               .filter(inputLevel -> !inputLevel.isInclude())
-               .map(inputLevel -> inputLevel.getDatasetFieldType().getId())
-               .collect(Collectors.toList());
-       
-       
-       for (DatasetField dsf: flatDatasetFields) {
-           dsf.setInclude(true);
-           if (fieldTypeIdsToHide.contains(dsf.getDatasetFieldType().getId())) {
-               dsf.setInclude(false);
-           }
-       }
-   }
-    
+     *
+     * Note: Updated to retrieve DataverseFieldTypeInputLevel objects in single query
+     *
+     */
+    public List<DatasetField> updateDatasetFieldIncludeFlag(List<DatasetField> datasetFields, Dataverse metadataBlocksDataverse) {
+
+        List<DatasetField> flatDatasetFields = DatasetFieldUtil.getFlatDatasetFields(datasetFields);
+        List<Long> datasetFieldTypeIds = new ArrayList<>();
+
+        for (DatasetField dsf : flatDatasetFields) {
+            datasetFieldTypeIds.add(dsf.getDatasetFieldType().getId());
+        }
+
+        List<Long> fieldTypeIdsToHide = dataverseFieldTypeInputLevelService
+                .findByDataverseIdAndDatasetFieldTypeIdList(metadataBlocksDataverse.getId(), datasetFieldTypeIds).stream()
+                .filter(inputLevel -> !inputLevel.isInclude())
+                .map(inputLevel -> inputLevel.getDatasetFieldType().getId())
+                .collect(Collectors.toList());
+
+
+        for (DatasetField dsf : flatDatasetFields) {
+            dsf.setInclude(true);
+            if (fieldTypeIdsToHide.contains(dsf.getDatasetFieldType().getId())) {
+                dsf.setInclude(false);
+            }
+        }
+
+        return flatDatasetFields;
+    }
+
+    // -------------------- PRIVATE --------------------
     
     // TODO: clean up init methods and get them to work, cascading all the way down.
     // right now, only work for one level of compound objects
