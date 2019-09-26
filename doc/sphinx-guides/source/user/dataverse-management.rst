@@ -66,7 +66,7 @@ The Theme features provides you with a way to customize the look of your dataver
 - Inherit the theme from the parent dataverse. This option is helpful if you'd like consistency across several dataverses that all share the same parent.
 - Add or update a logo image, which will appear at the top of your dataverse.
 - Add or update a footer image, which will appear at at the bottom of your dataverse.
-- Change the colors of the background, links, and text within your dataverse.
+- Change the colors of the background, links, and text within the header of your dataverse.
 - Add or update the tagline for your dataverse, which can provide more information about your organization, journal, institution, etc.
 - Add a URL for a website that will be accessed when visitors click the tagline text.
 
