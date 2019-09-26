@@ -8,7 +8,7 @@ We aren't just looking for developers. There are many ways to contribute to Data
 
 Your idea or feature request might already be captured in the Dataverse [issue tracker] on GitHub but if not, the best way to bring it to the community's attention is by posting on the [dataverse-community Google Group][] or bringing it up on a [Community Call][]. You're also welcome make some noise in the [#dataverse IRC channel][] (which is [logged][]) or cram your idea into 280 characters and mention [@dataverseorg][] on Twitter. To discuss your idea privately, please email it to support@dataverse.org
 
-There's a chance your idea is already on our roadmap, which is available at http://dataverse.org/goals-roadmap-and-releases
+There's a chance your idea is already on our roadmap, which is available at https://www.iq.harvard.edu/roadmap-dataverse-project
 
 [#dataverse IRC channel]: http://chat.dataverse.org
 [logged]: http://irclog.iq.harvard.edu/dataverse/today
