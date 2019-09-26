@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataversePage;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
@@ -80,6 +81,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
     ThumbnailServiceWrapper thumbnailServiceWrapper;
     @Inject
     WidgetWrapper widgetWrapper;  
+    @Inject
+    DataversePage dataversePage;
     @EJB
     SystemConfig systemConfig;
 
@@ -446,6 +449,16 @@ public class SearchIncludeFragment implements java.io.Serializable {
             }
             
             setDisplayCardValues();
+            
+            dataversePage.setQuery(query);
+            dataversePage.setFacetCategoryList(facetCategoryList);
+            dataversePage.setFilterQueries(filterQueries);
+            dataversePage.setSearchResultsCount(searchResultsCount);
+            dataversePage.setSelectedTypesString(selectedTypesString);
+            dataversePage.setSortField(sortField);
+            dataversePage.setSortOrder(sortField);
+            dataversePage.setSearchFieldType(searchFieldType);
+            dataversePage.setSearchFieldSubtree(searchFieldSubtree);
 
         } else {
             // if SOLR is down:
