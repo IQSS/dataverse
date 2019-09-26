@@ -84,7 +84,7 @@ Make a Pull Request
 
 Make a pull request to get approval to merge your changes into the develop branch. Feedback on the pull request template we use is welcome!
 
-Here's an example of a pull request for issue #3728: https://github.com/IQSS/dataverse/pull/3827
+Here's an example of a pull request for issue #3827: https://github.com/IQSS/dataverse/pull/3827
 
 Make Sure Your Pull Request Has Been Advanced to Code Review
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
