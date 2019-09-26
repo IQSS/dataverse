@@ -11,7 +11,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
+//import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,8 +19,8 @@ import java.io.RandomAccessFile;
 import java.nio.channels.Channel;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.methods.GetMethod;
+//import org.apache.commons.httpclient.Header;
+//import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -34,7 +34,7 @@ public class StorageIOTest {
     @Test
     public void testGetChannel() throws IOException {
         assertEquals(null, instance.getChannel());
-        Channel c = new RandomAccessFile("src/main/java/Bundle.properties", "r").getChannel();
+        Channel c = new RandomAccessFile("src/main/java/propertyFiles/Bundle.properties", "r").getChannel();
         instance.setChannel(c);
         assertEquals(c, instance.getChannel());
     }
@@ -89,12 +89,12 @@ public class StorageIOTest {
         assertEquals(req, instance.getRequest());
     }
 
-    @Test
+    /*@Test
     public void testStatus() {
         assertEquals(0, instance.getStatus());
         instance.setStatus(1);
         assertEquals(1, instance.getStatus());
-    }
+    }*/
 
     @Test
     public void testSize() {
@@ -163,6 +163,7 @@ public class StorageIOTest {
         assertEquals("Swift", instance.getSwiftContainerName());
     }
 
+    /*
     @Test
     public void testHTTPMethod() {
         assertEquals(null, instance.getHTTPMethod());
@@ -196,7 +197,7 @@ public class StorageIOTest {
         assertEquals(false, instance.isHttpAccess());
         instance.setIsHttpAccess(true);
         assertEquals(true, instance.isHttpAccess());
-    }
+    }*/
 
     @Test
     public void testDownloadSupported() {

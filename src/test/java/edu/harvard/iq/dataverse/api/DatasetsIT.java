@@ -7,6 +7,7 @@ import com.jayway.restassured.response.Response;
 import java.util.logging.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Ignore;
 import com.jayway.restassured.path.json.JsonPath;
 
 import java.util.List;
@@ -31,6 +32,7 @@ import com.jayway.restassured.parsing.Parser;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.path.xml.XmlPath;
 import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
+import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -119,7 +121,58 @@ public class DatasetsIT {
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
+        
+        // Now, let's allow anyone with a Dataverse account (any "random user") 
+        // to create datasets in this dataverse: 
+        
+        Response grantRole = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR, AuthenticatedUsers.get().getIdentifier(), apiToken);
+        grantRole.prettyPrint();
+        assertEquals(OK.getStatusCode(), grantRole.getStatusCode());
+        
+        // Create another random user: 
+        
+        Response createRandomUser = UtilIT.createRandomUser();
+        createRandomUser.prettyPrint();
+        String randomUsername = UtilIT.getUsernameFromResponse(createRandomUser);
+        String randomUserApiToken = UtilIT.getApiTokenFromResponse(createRandomUser);
+        
+        // This random user should be able to create a dataset in the dataverse 
+        // above, because we've set it up so, right? - Not exactly: the dataverse
+        // hasn't been published yet! So if this random user tries to create 
+        // a dataset now, it should fail: 
+        /* - this test removed because the perms for create dataset have been reverted
+        createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, randomUserApiToken);
+        createDatasetResponse.prettyPrint();
+        assertEquals(UNAUTHORIZED.getStatusCode(), createDatasetResponse.getStatusCode());
+        */
+        // Now, let's publish this dataverse...
+        
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        assertEquals(OK.getStatusCode(), publishDataverse.getStatusCode());
+        
+        // throw in a short sleep, just in case:
+        try {
+            Thread.sleep(1000l);
+        } catch (InterruptedException iex) {}
+        
+        // ... And now that it's published, try to create a dataset again, 
+        // as the "random", not specifically authorized user: 
+        // (this time around, it should work!)
+        
+        createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, randomUserApiToken);
+        createDatasetResponse.prettyPrint();
+        datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
+        datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // OK, let's delete this dataset as well, and then delete the dataverse...
+        
+        deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+        
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         deleteDataverseResponse.prettyPrint();
         assertEquals(200, deleteDataverseResponse.getStatusCode());
@@ -281,10 +334,18 @@ public class DatasetsIT {
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
         Response attemptToPublishZeroDotOne = UtilIT.publishDatasetViaNativeApiDeprecated(datasetPersistentId, "minor", apiToken);
+        logger.info("Attempting to publish a minor (\"zero-dot-one\") version");
         attemptToPublishZeroDotOne.prettyPrint();
         attemptToPublishZeroDotOne.then().assertThat()
                 .body("message", equalTo("Cannot publish as minor version. Re-try as major release."))
                 .statusCode(403);
+        
+        logger.info("Attempting to publish a major version");
+        
+        // 3 second sleep, to allow the indexing to finish:
+        try {
+            Thread.sleep(3000l);
+        } catch (InterruptedException iex) {}
 
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
@@ -387,6 +448,7 @@ public class DatasetsIT {
      * This test requires the root dataverse to be published to pass.
      */
     @Test
+    @Ignore
     public void testExport() {
 
         Response createUser = UtilIT.createRandomUser();
@@ -421,6 +483,13 @@ public class DatasetsIT {
                 .body("message", equalTo("Cannot publish as minor version. Re-try as major release."))
                 .statusCode(403);
 
+        logger.info("In testExport; attempting to publish, as major version");
+        
+        // 3 second sleep, to allow the indexing to finish: 
+        try {
+            Thread.sleep(3000l);
+        } catch (InterruptedException iex) {}
+        
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
 
@@ -545,6 +614,11 @@ public class DatasetsIT {
         setToExcludeEmailFromExport.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        // 3 second sleep, to allow the indexing to finish:
+        try {
+            Thread.sleep(3000l);
+        } catch (InterruptedException iex) {}
+        
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
 
@@ -640,6 +714,11 @@ public class DatasetsIT {
         String numericPart = identifier.replace("FK2/", ""); //remove shoulder from identifier
         assertTrue(StringUtils.isNumeric(numericPart));
 
+        try {
+            Thread.sleep(3000l);
+        } catch (Exception ex) {logger.warning("failed to execute sleep 3 sec.");}
+
+        
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
@@ -1622,6 +1701,7 @@ public class DatasetsIT {
      * This test requires the root dataverse to be published to pass.
      */
     @Test
+    @Ignore
     public void testUpdatePIDMetadataAPI() {
 
         Response createUser = UtilIT.createRandomUser();
@@ -1650,6 +1730,10 @@ public class DatasetsIT {
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
 
+        try {
+            Thread.sleep(3000l);
+        } catch (InterruptedException iex){}
+        
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
 

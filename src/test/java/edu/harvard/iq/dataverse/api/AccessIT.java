@@ -8,26 +8,25 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.util.zip.ZipInputStream;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import java.util.zip.ZipEntry;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import org.hamcrest.collection.IsMapContaining;
 import static junit.framework.Assert.assertEquals;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 
 /**
  *
@@ -63,6 +62,21 @@ public class AccessIT {
     public static int tabFile1SizeOriginal = 279;
     public static int tabFile1SizeConverted = 4;
     public static int tabFile1SizeConvertedWithVarHeader = 9; 
+    
+    private static String testZipFileWithFolders = "scripts/api/data/zip/test.zip";
+    // these are the files inside the test zip file above:
+    private static String testFileFromZipUploadWithFolders1 = "file1.txt"; // this file sits at the top level of the zip archive, no folders...
+    private static String testFileFromZipUploadWithFolders2 = "folder1/file11.txt";
+    private static String testFileFromZipUploadWithFolders3 = "folder2/file22.txt";
+    
+    private static int testFileFromZipUploadWithFoldersSize1 = 26; 
+    private static int testFileFromZipUploadWithFoldersSize2 = 27; 
+    private static int testFileFromZipUploadWithFoldersSize3 = 27; 
+    
+    private static String testFileFromZipUploadWithFoldersChecksum1 = "8f326944be21361ad8219bc3269bc9eb";
+    private static String testFileFromZipUploadWithFoldersChecksum2 = "0fe4efd85229bad6e587fd3f1a6c8e05";
+    private static String testFileFromZipUploadWithFoldersChecksum3 = "00433ccb20111f9d40f0e5ab6fa8396f";
+
     
     @BeforeClass
     public static void setUp() throws InterruptedException {
@@ -118,7 +132,7 @@ public class AccessIT {
         restrictResponse.then().assertThat()
         //        .body("data.message", equalTo("File stata13-auto.tab restricted."))
                 .statusCode(OK.getStatusCode());
-        
+                
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
         
@@ -131,7 +145,7 @@ public class AccessIT {
         Thread.sleep(1000); //Added because tests are failing during setup, test is probably going too fast. Especially between first and second file
         Response tab4AddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), tab4PathToFile, apiToken);
         tabFile4IdUnpublished = JsonPath.from(tab4AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        
+                        
     }
     
     @AfterClass
@@ -367,7 +381,13 @@ public class AccessIT {
             ZipEntry entry;
             while((entry = zStream.getNextEntry())!=null)
             {
-                String name = new File(entry.getName()).getName(); //to get name without path
+                if (entry.isDirectory()) {
+                    // Dataverse zip bundles can contain folder entries!
+                    // (we just skip them)
+                    continue;
+                }
+
+                String name = entry.getName(); 
 //                String s = String.format("Entry: %s len %d added %TD",
 //                                entry.getName(), entry.getSize(),
 //                                new Date(entry.getTime()));
@@ -416,6 +436,11 @@ public class AccessIT {
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetIdNew = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        
+        basicFileName = "004.txt";
+        String basicPathToFile = "scripts/search/data/replace_test/" + basicFileName;
+        Response basicAddResponse = UtilIT.uploadFileViaNative(datasetIdNew.toString(), basicPathToFile, apiToken);
+        basicFileId = JsonPath.from(basicAddResponse.body().asString()).getInt("data.files[0].dataFile.id");
 
         String tabFile3NameRestrictedNew = "stata13-auto-withstrls.dta";
         String tab3PathToFile = "scripts/search/data/tabular/" + tabFile3NameRestrictedNew;
@@ -466,6 +491,15 @@ public class AccessIT {
         //grant file access
         Response grantFileAccessResponse = UtilIT.grantFileAccess(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
         assertEquals(200, grantFileAccessResponse.getStatusCode());
+        
+        //if you make a request while you have been granted access you should get a command exception
+        requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
+        assertEquals(400, requestFileAccessResponse.getStatusCode());
+        
+        //if you make a request of a public file you should also get a command exception
+        requestFileAccessResponse = UtilIT.requestFileAccess(basicFileId.toString(), apiTokenRando);
+        assertEquals(400, requestFileAccessResponse.getStatusCode());
+        
 
         //Now should be able to download
         randoDownload = UtilIT.downloadFile(tabFile3IdRestrictedNew, apiTokenRando);
@@ -479,5 +513,86 @@ public class AccessIT {
         assertEquals(400, listAccessRequestResponse.getStatusCode());
     }
 
+    // This is a round trip test of uploading a zipped archive, with some folder
+    // structure, then downloading the resulting multiple files as a multi-file
+    // zipped bundle - that should have the folder hierarchy preserved. 
+    @Test
+    public void testZipUploadAndDownload() throws IOException {
+        // sleep for a couple of sec. - there may still be a tab. ingest in progress:
+        try {Thread.sleep(3000);}catch(Exception ex){}
+        System.out.println("Testing round trip zip upload-and-download");
+        // Upload the zip file that has a mix of files with and without folders:
+        Response uploadZipResponse = UtilIT.uploadFileViaNative(datasetId.toString(), testZipFileWithFolders, apiToken);
+        String responseBodyAsString = uploadZipResponse.body().asString();
+        assertEquals(OK.getStatusCode(), uploadZipResponse.getStatusCode());        
+        
+        JsonPath responseBodyAsJson = JsonPath.from(responseBodyAsString);
+        
+        Integer fileId1 = responseBodyAsJson.getInt("data.files[0].dataFile.id");
+        Integer fileId2 = responseBodyAsJson.getInt("data.files[1].dataFile.id");
+        Integer fileId3 = responseBodyAsJson.getInt("data.files[2].dataFile.id");
+        
+        assertNotNull(fileId1);
+        assertNotNull(fileId2);
+        assertNotNull(fileId3);
+        
+        String uploadedFileName1 = responseBodyAsJson.getString("data.files[0].dataFile.filename");
+        assertEquals(uploadedFileName1, testFileFromZipUploadWithFolders1);
+        
+        String uploadedFileName2 = responseBodyAsJson.getString("data.files[1].dataFile.filename");
+        assertEquals(uploadedFileName2, testFileFromZipUploadWithFolders2.substring(testFileFromZipUploadWithFolders2.lastIndexOf('/')+1));
+        
+        String uploadedFileName3 = responseBodyAsJson.getString("data.files[2].dataFile.filename");
+        assertEquals(uploadedFileName3, testFileFromZipUploadWithFolders3.substring(testFileFromZipUploadWithFolders3.lastIndexOf('/')+1));
+        
+        int uploadedFileSize1 = responseBodyAsJson.getInt("data.files[0].dataFile.filesize");
+        assertEquals(testFileFromZipUploadWithFoldersSize1, uploadedFileSize1);
+        
+        int uploadedFileSize2 = responseBodyAsJson.getInt("data.files[1].dataFile.filesize");
+        assertEquals(testFileFromZipUploadWithFoldersSize2, uploadedFileSize2);
+        
+        int uploadedFileSize3 = responseBodyAsJson.getInt("data.files[2].dataFile.filesize");
+        assertEquals(testFileFromZipUploadWithFoldersSize3, uploadedFileSize3);
+        
+        System.out.println("Successfully uploaded the zip file; all files added to the dataset.");
+        
+        // Try to download the 3 files as a zip bundle: 
+        
+        Response downloadAsZipResponse = UtilIT.downloadFiles(new Integer[]{fileId1, fileId2, fileId3}, apiToken);
+        assertEquals(OK.getStatusCode(), downloadAsZipResponse.getStatusCode());
+        HashMap<String,ByteArrayOutputStream> unzippedFiles = readZipResponse(downloadAsZipResponse.getBody().asInputStream());
+        
+        // Check that we did in fact get 3 zipped files (pluse the manifest file):
+        assertEquals(4, unzippedFiles.size()); 
+        
+        System.out.println("Successfully downloaded the 3 test files as a zip bundle.");
+        
+        // Check that the zipped bundle contains the 3 files requested, with the folder names: 
+        
+        assertThat(unzippedFiles, IsMapContaining.hasKey(testFileFromZipUploadWithFolders1));
+        assertThat(unzippedFiles, IsMapContaining.hasKey(testFileFromZipUploadWithFolders2));
+        assertThat(unzippedFiles, IsMapContaining.hasKey(testFileFromZipUploadWithFolders3));
+        
+        System.out.println("File names and folders are properly preserved in the downloaded zip bundle.");
+        
+        // ... and check the file sizes: 
+        
+        assertEquals(testFileFromZipUploadWithFoldersSize1, unzippedFiles.get(testFileFromZipUploadWithFolders1).size());
+        assertEquals(testFileFromZipUploadWithFoldersSize2, unzippedFiles.get(testFileFromZipUploadWithFolders2).size());
+        assertEquals(testFileFromZipUploadWithFoldersSize3, unzippedFiles.get(testFileFromZipUploadWithFolders3).size());
+        
+        System.out.println("File sizes are correct in the download zip bundle.");
+        
+        // And finally, check the md5 checksums of the unzipped file streams: 
+        
+        assertEquals(testFileFromZipUploadWithFoldersChecksum1, FileUtil.calculateChecksum(unzippedFiles.get(testFileFromZipUploadWithFolders1).toByteArray(), DataFile.ChecksumType.MD5));
+        assertEquals(testFileFromZipUploadWithFoldersChecksum2, FileUtil.calculateChecksum(unzippedFiles.get(testFileFromZipUploadWithFolders2).toByteArray(), DataFile.ChecksumType.MD5)); 
+        assertEquals(testFileFromZipUploadWithFoldersChecksum3, FileUtil.calculateChecksum(unzippedFiles.get(testFileFromZipUploadWithFolders3).toByteArray(), DataFile.ChecksumType.MD5));
+        
+        System.out.println("MD5 checksums of the unzipped file streams are correct.");
+        
+        System.out.println("Zip upload-and-download round trip test: success!");
+        
+    }
 
 }

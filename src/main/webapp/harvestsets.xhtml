@@ -12,6 +12,7 @@
     <h:body>
         <f:metadata>
             <f:viewParam name="dataverseId" value="#{dataverseServiceBean.findRootDataverse().id}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{harvestingSetsPage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverse.id), bundle['dashboard.title'])}"/>   
@@ -41,7 +42,6 @@
                     <p:fragment id="serviceDisabled" rendered="#{!harvestingSetsPage.harvestingServerEnabled}">
                         <div>
                             <p class="help-block">
-                                <span class="glyphicon glyphicon-info-sign"/>&#160;
                                 <h:outputText value="#{bundle['harvestserver.service.disabled.msg']}"/>
                             </p>
                         </div>
@@ -49,12 +49,12 @@
                     </ui:remove>
                 </h:form>
                 
-                <h:form id="harvestingSetsForm" rendered="#{true}">
+                <h:form id="harvestingSetsForm">
                     <p:fragment id="emptySetsTable" rendered="#{!harvestingSetsPage.hasNamedOAISets or !harvestingSetsPage.harvestingServerEnabled}">
                         <!-- we DON'T want to show the "add set" button until the service is enabled! -->
                         <div class="row" jsf:rendered="#{!harvestingSetsPage.hasNamedOAISets and harvestingSetsPage.harvestingServerEnabled}">
                             <div class="col-sm-12 text-right">
-                                <p:commandLink type="button" id="addSetEmpty" styleClass="btn btn-default margin-bottom"
+                                <p:commandLink id="addSetEmpty" styleClass="btn btn-default margin-bottom"
                                                actionListener="#{harvestingSetsPage.initNewSet}"
                                                update=":harvestingSetsForm:newOAISetDialog"
                                                oncomplete="PF('newOAISetForm').show();handleResizeDialog('newOAISetDialog');bind_bsui_components();">
@@ -108,7 +108,7 @@
                                 </div>
                                 <div class="col-sm-6 text-right">
                                     <div id="datatable_length" class="dataTables_length">                                        
-                                        <p:commandLink type="button" id="addSet" styleClass="btn btn-default"
+                                        <p:commandLink id="addSet" styleClass="btn btn-default"
                                                        actionListener="#{harvestingSetsPage.initNewSet}"
                                                        update=":harvestingSetsForm:newOAISetDialog"
                                                        oncomplete="PF('newOAISetForm').show();handleResizeDialog('newOAISetDialog');bind_bsui_components();">
@@ -147,14 +147,14 @@
                             <div class="button-block">
                                 <div class="btn-group" role="group">
                                     <!-- TODO: a confirmation dialog? - "sure you want to run export now?" -->
-                                    <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    disabled="#{oaiSet.updateInProgress or oaiSet.deleteInProgress}"
                                                    action="#{harvestingSetsPage.startSetExport(oaiSet)}"
                                                    update=":harvestingSetsForm  :messagePanel :harvestingSetsForm:setsTable"
                                                    title="#{bundle['harvestserver.tab.header.action.btn.export']}">
                                         <span class="glyphicon glyphicon-play no-text"></span>
                                     </p:commandLink>
-                                    <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    disabled="#{oaiSet.updateInProgress or oaiSet.deleteInProgress}"
                                                    action="#{harvestingSetsPage.editSet(oaiSet)}"
                                                    oncomplete="PF('newOAISetForm').show();handleResizeDialog('newOAISetDialog');bind_bsui_components();"
@@ -162,7 +162,7 @@
                                                    title="#{bundle['harvestserver.tab.header.action.btn.edit']}">
                                         <span class="glyphicon glyphicon-pencil no-text"></span>
                                     </p:commandLink>
-                                    <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    disabled="#{oaiSet.defaultSet or oaiSet.updateInProgress or oaiSet.deleteInProgress}"
                                                    action="#{harvestingSetsPage.setSelectedSet(oaiSet)}"
                                                    oncomplete="PF('deleteConfirmation').show();bind_bsui_components();"
@@ -178,14 +178,14 @@
                     <!-- confirmation dialog for deleting a set: -->
                     <p:dialog id="deleteConfirmation" header="#{bundle['harvestserver.tab.header.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="help-block">
-                            <span class="glyphicon glyphicon-warning-sign text-danger"/> 
-                            <h:outputFormat styleClass="text-danger" value=" #{bundle['harvestserver.tab.header.action.btn.delete.dialog.tip']}">
+                            <span class="glyphicon glyphicon-warning-sign text-warning"/> 
+                            <h:outputFormat styleClass="text-warning" value=" #{bundle['harvestserver.tab.header.action.btn.delete.dialog.tip']}">
                                 <f:param value="#{harvestingSetsPage.getSelectedSet().spec}"/>
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{harvestingSetsPage.deleteSet()}" update=":harvestingSetsForm :messagePanel" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" type="button" update=":harvestingSetsForm"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{harvestingSetsPage.deleteSet()}" update=":harvestingSetsForm :messagePanel"/>
+                            <p:commandButton styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" type="button" update=":harvestingSetsForm"/>
                         </div>
                     </p:dialog>
 
@@ -197,14 +197,15 @@
                         <p:fragment id="newOAISetDialogContent">
                             <p:focus context="newOAISetDialogContent"/>
                             <p class="help-block">
-                                <span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{bundle['harvestserver.newSetDialog.help']}"/>
+                                <h:outputText value="#{bundle['harvestserver.newSetDialog.help']}"/>
                             </p>
                             <div class="form-horizontal">
                                 <div class="form-group">
                                     <label for="setquery" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestserver.newSetDialog.setquery.tip']}">
-                                            #{bundle['harvestserver.newSetDialog.setquery']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{!harvestingSetsPage.setQueryValidated}" title="#{bundle.requiredField}"/>
-                                        </span>
+                                        #{bundle['harvestserver.newSetDialog.setquery']} 
+                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{!harvestingSetsPage.setQueryValidated}" title="#{bundle.requiredField}"/>
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestserver.newSetDialog.setquery.tip']}"></span>
                                     </label>
                                     <div class="col-sm-8">
                                         <p:inputText id="setquery" styleClass="form-control"
@@ -231,9 +232,7 @@
                                 <!-- the set spec is not editable in "edit existing set" mode; so we just show it here as a label: -->
                                 <div class="form-group" jsf:rendered="#{harvestingSetsPage.editMode}">
                                     <label for="setspec" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestserver.newSetDialog.setspec.tip']}">
-                                            #{bundle['harvestserver.newSetDialog.setspec']}
-                                        </span>
+                                        #{bundle['harvestserver.newSetDialog.setspec']}
                                     </label>
                                     <div class="col-sm-8">
                                         <p class="form-control-static" jsf:rendered="#{!harvestingSetsPage.selectedSet.defaultSet}"><h:outputText rendered="#{!harvestingSetsPage.selectedSet.defaultSet}" value="#{harvestingSetsPage.newSetSpec}"/></p>
@@ -243,18 +242,15 @@
                                 
                                 <div class="form-group" jsf:rendered="#{!harvestingSetsPage.setQueryValidated}">
                                     <div class="col-sm-8 col-sm-offset-3 button-block">
-                                        <p:commandLink type="button" 
-                                                         id="validateSetQueryBtn"
+                                        <p:commandLink id="validateSetQueryBtn"
                                                          styleClass="btn btn-default"
                                                          oncomplete="PF('newOAISetForm').show();bind_bsui_components();"
                                                          update=":harvestingSetsForm:newOAISetDialog"
                                                          action="#{harvestingSetsPage.validateSetQuery()}">
                                             <span class="glyphicon glyphicon-menu-right"/> #{bundle.next}
                                         </p:commandLink>
-                                        <button type="button" 
-                                                onclick="PF('newOAISetForm').hide()" 
-                                                class="btn btn-default" 
-                                                value="#{bundle.cancel}">
+                                        <button class="btn btn-link" 
+                                                onclick="PF('newOAISetForm').hide()" type="button">
                                             #{bundle.cancel}
                                         </button>
                                     </div>
@@ -266,9 +262,10 @@
                                     <!-- the set spec is only editable in "create" mode; in the "edit existing set" mode the set spec name is shown as a label in the first step popup. -->
                                     <div class="form-group" jsf:rendered="#{harvestingSetsPage.createMode}">
                                         <label for="setspec" class="col-sm-3 control-label">
-                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestserver.newSetDialog.setspec.tip']}">
-                                                #{bundle['harvestserver.newSetDialog.setspec']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingSetsPage.setQueryValidated}" title="#{bundle.requiredField}"/>
-                                            </span>
+                                            #{bundle['harvestserver.newSetDialog.setspec']} 
+                                            <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingSetsPage.setQueryValidated}" title="#{bundle.requiredField}"/>
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestserver.newSetDialog.setspec.tip']}"></span>
                                         </label>
                                         <div class="col-sm-8">
                                             <p:inputText id="setspec" styleClass="form-control"
@@ -281,9 +278,10 @@
                                     
                                     <div class="form-group">
                                         <label for="setdescription" class="col-sm-3 control-label">
-                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestserver.newSetDialog.setdescription.tip']}">
-                                                #{bundle['harvestserver.newSetDialog.setdescription']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingSetsPage.setSpecValidated}" title="#{bundle.requiredField}"/>
-                                            </span>
+                                            #{bundle['harvestserver.newSetDialog.setdescription']} 
+                                            <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingSetsPage.setSpecValidated}" title="#{bundle.requiredField}"/>
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestserver.newSetDialog.setdescription.tip']}"></span>
                                         </label>
                                         <div class="col-sm-8">
                                             <p:inputText id="setdescription" styleClass="form-control"
@@ -295,15 +293,14 @@
                                     <div class="form-group">
                                         <div class="col-sm-6 col-sm-offset-3 button-block">
                                             <!-- note that there are 2 different buttons rendered for "create" and "save"! -->
-                                            <p:commandLink type="button"
-                                                        id="backToQuery"
+                                            <p:commandLink id="backToQuery"
                                                         styleClass="btn btn-default"
                                                         update=":harvestingSetsForm:newOAISetDialog"
                                                         oncomplete="PF('newOAISetForm').show();bind_bsui_components();"
                                                         action="#{harvestingSetsPage.backToQuery()}">
                                             <span class="glyphicon glyphicon-menu-left"/> #{bundle.previous}
                                             </p:commandLink>
-                                            <p:commandLink type="button" styleClass="btn btn-default"
+                                            <p:commandLink styleClass="btn btn-default"
                                                            rendered="#{harvestingSetsPage.createMode and harvestingSetsPage.setQueryValidated}"
                                                            value="#{bundle['harvestserver.newSetDialog.btn.create']}"
                                                            update="newOAISetDialogContent :messagePanel :harvestingSetsForm setsTable emptySetsTable"
@@ -311,13 +308,15 @@
                                                            oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newOAISetForm').hide(); else PF('newOAISetForm').show();bind_bsui_components();">
                                                 <f:param name="DO_VALIDATION" value="true"/>
                                             </p:commandLink>
-                                            <p:commandLink type="button" styleClass="btn btn-default"
+                                            <p:commandLink styleClass="btn btn-default"
                                                            rendered="#{harvestingSetsPage.editMode and harvestingSetsPage.setQueryValidated}"
                                                            value="#{bundle['harvestserver.viewEditDialog.btn.save']}"
                                                            update="newOAISetDialogContent :messagePanel :harvestingSetsForm setsTable emptySetsTable"
                                                            actionListener="#{harvestingSetsPage.saveSet}"
                                                            oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newOAISetForm').hide(); else PF('newOAISetForm').show();bind_bsui_components();"/>
-                                            <button type="button" jsf:rendered="#{harvestingSetsPage.setQueryValidated}" class="btn btn-default" onclick="PF('newOAISetForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
+                                            <button class="btn btn-link" jsf:rendered="#{harvestingSetsPage.setQueryValidated}" onclick="PF('newOAISetForm').hide()" type="button">
+                                                #{bundle.cancel}
+                                            </button>
                                         </div>
                                     </div>
                                 </fieldset>
@@ -325,10 +324,12 @@
                         </p:fragment>
                     </p:dialog>
                 </h:form>
-                <script type="text/javascript">
+                <script>
+                    //<![CDATA[
                     function toggleServerStatus() {
                         $('button[id$="toggleServer"]').trigger('click');
                     }
+                    //]]>
                 </script>    
             </ui:define>
         </ui:composition>

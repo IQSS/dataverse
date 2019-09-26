@@ -96,22 +96,23 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(AuthenticatedUser authenticatedUser) {
-        return jsonObjectBuilder()
-                .add("id", authenticatedUser.getId())
-                .add("identifier", authenticatedUser.getIdentifier())
-                .add("displayName", authenticatedUser.getDisplayInfo().getTitle())
-                .add("firstName", authenticatedUser.getFirstName())
-                .add("lastName", authenticatedUser.getLastName())
-                .add("email", authenticatedUser.getEmail())
-                .add("superuser", authenticatedUser.isSuperuser())
-                .add("affiliation", authenticatedUser.getAffiliation())
-                .add("position", authenticatedUser.getPosition())
-                .add("persistentUserId", authenticatedUser.getAuthenticatedUserLookup().getPersistentUserId())
-                .add("emailLastConfirmed", authenticatedUser.getEmailConfirmed())
-                .add("createdTime", authenticatedUser.getCreatedTime())
-                .add("lastLoginTime", authenticatedUser.getLastLoginTime())
-                .add("lastApiUseTime", authenticatedUser.getLastApiUseTime())
-                .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
+        NullSafeJsonBuilder builder = jsonObjectBuilder()
+            .add("id", authenticatedUser.getId())
+            .add("identifier", authenticatedUser.getIdentifier())
+            .add("displayName", authenticatedUser.getDisplayInfo().getTitle())
+            .add("firstName", authenticatedUser.getFirstName())
+            .add("lastName", authenticatedUser.getLastName())
+            .add("email", authenticatedUser.getEmail())
+            .add("superuser", authenticatedUser.isSuperuser())
+            .add("affiliation", authenticatedUser.getAffiliation())
+            .add("position", authenticatedUser.getPosition())
+            .add("persistentUserId", authenticatedUser.getAuthenticatedUserLookup().getPersistentUserId())
+            .add("emailLastConfirmed", authenticatedUser.getEmailConfirmed())
+            .add("createdTime", authenticatedUser.getCreatedTime())
+            .add("lastLoginTime", authenticatedUser.getLastLoginTime())
+            .add("lastApiUseTime", authenticatedUser.getLastApiUseTime())
+            .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
+        return builder;
     }
     
     public static JsonObjectBuilder json(RoleAssignment ra) {
@@ -221,22 +222,30 @@ public class JsonPrinter {
                 arr.add( jsonObjectBuilder().add("stepType", stp.getStepType())
                                    .add("provider", stp.getProviderId())
                                    .add("parameters", mapToObject(stp.getStepParameters()))
-                                   .add("requiredSettings", mapToObject(stp.getStepParameters())) );
+                                   .add("requiredSettings", mapToObject(stp.getStepSettings())) );
             }
             bld.add("steps", arr );
         }
         
         return bld;
     }
-
+    
     public static JsonObjectBuilder json(Dataverse dv) {
+        return json(dv, false);
+    }
+
+    //TODO: Once we upgrade to Java EE 8 we can remove objects from the builder, and this email removal can be done in a better place.
+    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dv.getId())
                 .add("alias", dv.getAlias())
                 .add("name", dv.getName())
-                .add("affiliation", dv.getAffiliation())
-                .add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()))
-                .add("permissionRoot", dv.isPermissionRoot())
+                .add("affiliation", dv.getAffiliation());
+        if(!hideEmail) { 
+            bld.add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()));
+        }
+        
+        bld.add("permissionRoot", dv.isPermissionRoot())
                 .add("description", dv.getDescription())
                 .add("dataverseType", dv.getDataverseType().name());
         if (dv.getOwner() != null) {
@@ -244,9 +253,6 @@ public class JsonPrinter {
         }
         if (dv.getCreateDate() != null) {
             bld.add("creationDate", Util.getDateTimeFormat().format(dv.getCreateDate()));
-        }
-        if (dv.getCreator() != null) {
-            bld.add("creator", JsonPrinter.json(dv.getCreator()));
         }
         if (dv.getDataverseTheme() != null) {
             bld.add("theme", JsonPrinter.json(dv.getDataverseTheme()));
@@ -256,13 +262,16 @@ public class JsonPrinter {
     }
 
     public static JsonArrayBuilder json(List<DataverseContact> dataverseContacts) {
-        return dataverseContacts.stream()
-                .map( dc -> jsonObjectBuilder()
-                        .add("displayOrder", dc.getDisplayOrder())
-                        .add("contactEmail", dc.getContactEmail())
-                ).collect( toJsonArray() );
+        JsonArrayBuilder jsonArrayOfContacts = Json.createArrayBuilder();
+        for (DataverseContact dataverseContact : dataverseContacts) {
+            NullSafeJsonBuilder contactJsonObject = NullSafeJsonBuilder.jsonObjectBuilder();
+            contactJsonObject.add("displayOrder", dataverseContact.getDisplayOrder());
+            contactJsonObject.add("contactEmail", dataverseContact.getContactEmail());
+            jsonArrayOfContacts.add(contactJsonObject);
+        }
+        return jsonArrayOfContacts;
     }
-    
+
     public static JsonObjectBuilder json( DataverseTheme theme ) {
         final NullSafeJsonBuilder baseObject = jsonObjectBuilder()
                 .add("id", theme.getId() )
@@ -331,7 +340,8 @@ public class JsonPrinter {
                 .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus() != null ? dsv.getTermsOfUseAndAccess().getAvailabilityStatus() : null)
                 .add("contactForAccess", dsv.getTermsOfUseAndAccess().getContactForAccess() != null ? dsv.getTermsOfUseAndAccess().getContactForAccess() : null)
                 .add("sizeOfCollection", dsv.getTermsOfUseAndAccess().getSizeOfCollection() != null ? dsv.getTermsOfUseAndAccess().getSizeOfCollection() : null)
-                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion() != null ? dsv.getTermsOfUseAndAccess().getStudyCompletion() : null);
+                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion() != null ? dsv.getTermsOfUseAndAccess().getStudyCompletion() : null)
+                .add("fileAccessRequest", dsv.getTermsOfUseAndAccess().isFileAccessRequest());
 
         bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields()));
 
@@ -592,6 +602,7 @@ public class JsonPrinter {
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
                 .add("tabularTags", getTabularFileTags(df))
+                .add("creationDate",  df.getCreateDateFormattedYYYYMMDD())
                 ;
     }
     

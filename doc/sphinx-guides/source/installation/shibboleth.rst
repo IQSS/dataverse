@@ -57,7 +57,7 @@ If you are running el6 (RHEL/CentOS 6):
 Install Shibboleth Via Yum
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``yum install shibboleth-2.6.1 shibboleth-embedded-ds-2.6.1``
+``yum install shibboleth``
 
 Configure Glassfish
 -------------------
@@ -195,6 +195,13 @@ attribute-map.xml
 ~~~~~~~~~~~~~~~~~
 
 By default, some attributes ``/etc/shibboleth/attribute-map.xml`` are commented out. Edit the file to enable them so that all the require attributes come through. You can download a :download:`sample attribute-map.xml file <../_static/installation/files/etc/shibboleth/attribute-map.xml>`.
+
+Shibboleth and ADFS
+~~~~~~~~~~~~~~~~~~~
+With appropriate configuration, Dataverse and Shibboleth can make use of "single sign on" using Active Directory.
+This requires configuring ``shibd`` and ``httpd`` to load appropriate libraries, and insuring that the attribute mapping matches those provided.
+Example configuration files for :download:`shibboleth2.xml <../_static/installation/files/etc/shibboleth/shibboleth2_adfs.xml>` and :download:`attribute-map.xml <../_static/installation/files/etc/shibboleth/attribute-map_adfs.xml>` may be helpful.
+Note that your ADFS server hostname goes in the file referenced under "MetadataProvider" in your shibboleth2.xml file.
 
 Disable or Reconfigure SELinux
 ------------------------------
@@ -382,6 +389,8 @@ If you are running in "remote and local" mode and have existing local users that
 - Log in with your Shibboleth account.
 - If the email address associated with your local account matches the email address asserted by the Identity Provider (IdP), you will be prompted for the password of your local account and asked to confirm the conversion of your account. You're done! Browse around to ensure you see all the data you expect to see. Permissions have been preserved. 
 - If the email address asserted by the Identity Provider (IdP) does not match the email address of any local user, you will be prompted to create a new account. If you were expecting account conversion, you should decline creating a new Shibboleth account, log back in to your local account, and let Support know the email on file for your local account. Support may ask you to change your email address for your local account to the one that is being asserted by the Identity Provider. Someone with access to the Glassfish logs will see this email address there.
+
+.. _converting-shibboleth-users-to-local:
 
 Converting Shibboleth Users to Local
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

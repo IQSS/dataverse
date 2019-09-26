@@ -23,6 +23,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -115,22 +116,17 @@ public class DOIDataCiteRegisterService {
         return retString;
     }
 
-    public String deactivateIdentifier(String identifier, HashMap<String, String> metadata, DvObject dvObject) {
+    public String deactivateIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) {
         String retString = "";
-        DOIDataCiteRegisterCache rc = findByDOI(identifier);
-        try {
-            DataCiteRESTfullClient client = getClient();
-            if (rc != null) {
-                rc.setStatus("unavailable");
-                retString = client.inactiveDataset(identifier.substring(identifier.indexOf(":") + 1));
-            }
-        } catch (IOException io) {
 
-        }
+            String metadataString = getMetadataForDeactivateIdentifier(identifier, metadata, dvObject);
+            retString = client.postMetadata(metadataString);
+            retString = client.inactiveDataset(identifier.substring(identifier.indexOf(":") + 1));
+
         return retString;
     }
-
-    public static String getMetadataFromDvObject(String identifier, Map<String, String> metadata, DvObject dvObject) {
+    
+        public static String getMetadataFromDvObject(String identifier, Map<String, String> metadata, DvObject dvObject) {
 
         Dataset dataset = null;
 
@@ -145,12 +141,18 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));
         metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
         if (dvObject.isInstanceofDataset()) {
-            metadataTemplate.setDescription(dataset.getLatestVersion().getDescriptionPlainText());
+            String description = dataset.getLatestVersion().getDescriptionPlainText();
+            if (description.isEmpty() || description.equals(DatasetField.NA_VALUE)) {
+                description = AbstractGlobalIdServiceBean.UNAVAILABLE;
+            }
+            metadataTemplate.setDescription(description);
         }
         if (dvObject.isInstanceofDataFile()) {
             DataFile df = (DataFile) dvObject;
-            String fileDescription = df.getDescription();
-            metadataTemplate.setDescription(fileDescription == null ? "" : fileDescription);
+            //Note: File metadata is not escaped like dataset metadata is, so adding an xml escape here.
+            //This could/should be removed if the datafile methods add escaping
+            String fileDescription = StringEscapeUtils.escapeXml(df.getDescription());
+            metadataTemplate.setDescription(fileDescription == null ? AbstractGlobalIdServiceBean.UNAVAILABLE : fileDescription);
             String datasetPid = df.getOwner().getGlobalId().asString();
             metadataTemplate.setDatasetIdentifier(datasetPid);
         } else {
@@ -159,11 +161,46 @@ public class DOIDataCiteRegisterService {
 
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
-        metadataTemplate.setTitle(dvObject.getDisplayName());
-        String producerString = dataset.getLatestVersion().getRootDataverseNameforCitation();
-        if (producerString.isEmpty()) {
-            producerString = ":unav";
+        String title = dvObject.getCurrentName();
+        if(dvObject.isInstanceofDataFile()) {
+            //Note file title is not currently escaped the way the dataset title is, so adding it here.
+            title = StringEscapeUtils.escapeXml(title);
         }
+        
+        if (title.isEmpty() || title.equals(DatasetField.NA_VALUE)) {
+            title = AbstractGlobalIdServiceBean.UNAVAILABLE;
+        }
+        
+        metadataTemplate.setTitle(title);
+        String producerString = dataset.getLatestVersion().getRootDataverseNameforCitation();
+        if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {
+            producerString = AbstractGlobalIdServiceBean.UNAVAILABLE;
+        }
+        metadataTemplate.setPublisher(producerString);
+        metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
+
+        String xmlMetadata = metadataTemplate.generateXML(dvObject);
+        logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
+        return xmlMetadata;
+    }
+
+    public static String getMetadataForDeactivateIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) {
+
+        DataCiteMetadataTemplate metadataTemplate = new DataCiteMetadataTemplate();
+        metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
+        metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));
+
+        metadataTemplate.setDescription(AbstractGlobalIdServiceBean.UNAVAILABLE);
+
+        String title =metadata.get("datacite.title");
+        
+        System.out.print("Map metadata title: "+ metadata.get("datacite.title"));
+        
+        metadataTemplate.setAuthors(null);
+        
+        metadataTemplate.setTitle(title);
+        String producerString = AbstractGlobalIdServiceBean.UNAVAILABLE;
+
         metadataTemplate.setPublisher(producerString);
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
 
@@ -262,6 +299,8 @@ public class DOIDataCiteRegisterService {
             DOIDataCiteRegisterCache rc = findByDOI(identifier);
             if (rc != null) {
                 metadata.put("_status", rc.getStatus());
+            } else {
+                metadata.put("_status", "public");
             }
         } catch (RuntimeException e) {
             logger.log(Level.INFO, identifier, e);
@@ -401,47 +440,59 @@ class DataCiteMetadataTemplate {
                 .replace("${publisher}", this.publisher)
                 .replace("${publisherYear}", publisherYearFinal)
                 .replace("${description}", this.description);
+        
         StringBuilder creatorsElement = new StringBuilder();
-        for (DatasetAuthor author : authors) {
-            creatorsElement.append("<creator><creatorName>");
-            creatorsElement.append(author.getName().getDisplayValue());
-            creatorsElement.append("</creatorName>");
+        if (authors!= null && !authors.isEmpty()) {
+            for (DatasetAuthor author : authors) {
+                creatorsElement.append("<creator><creatorName>");
+                creatorsElement.append(author.getName().getDisplayValue());
+                creatorsElement.append("</creatorName>");
 
-            if (author.getIdType() != null && author.getIdValue() != null && !author.getIdType().isEmpty() && !author.getIdValue().isEmpty() && author.getAffiliation() != null && !author.getAffiliation().getDisplayValue().isEmpty()) {
+                if (author.getIdType() != null && author.getIdValue() != null && !author.getIdType().isEmpty() && !author.getIdValue().isEmpty() && author.getAffiliation() != null && !author.getAffiliation().getDisplayValue().isEmpty()) {
 
-                if (author.getIdType().equals("ORCID")) {
-                    creatorsElement.append("<nameIdentifier schemeURI=\"https://orcid.org/\" nameIdentifierScheme=\"ORCID\">" + author.getIdValue() + "</nameIdentifier>");
+                    if (author.getIdType().equals("ORCID")) {
+                        creatorsElement.append("<nameIdentifier schemeURI=\"https://orcid.org/\" nameIdentifierScheme=\"ORCID\">" + author.getIdValue() + "</nameIdentifier>");
+                    }
+                    if (author.getIdType().equals("ISNI")) {
+                        creatorsElement.append("<nameIdentifier schemeURI=\"http://isni.org/isni/\" nameIdentifierScheme=\"ISNI\">" + author.getIdValue() + "</nameIdentifier>");
+                    }
+                    if (author.getIdType().equals("LCNA")) {
+                        creatorsElement.append("<nameIdentifier schemeURI=\"http://id.loc.gov/authorities/names/\" nameIdentifierScheme=\"LCNA\">" + author.getIdValue() + "</nameIdentifier>");
+                    }
                 }
-                if (author.getIdType().equals("ISNI")) {
-                    creatorsElement.append("<nameIdentifier schemeURI=\"http://isni.org/isni/\" nameIdentifierScheme=\"ISNI\">" + author.getIdValue() + "</nameIdentifier>");
+                if (author.getAffiliation() != null && !author.getAffiliation().getDisplayValue().isEmpty()) {
+                    creatorsElement.append("<affiliation>" + author.getAffiliation().getDisplayValue() + "</affiliation>");
                 }
-                if (author.getIdType().equals("LCNA")) {
-                    creatorsElement.append("<nameIdentifier schemeURI=\"http://id.loc.gov/authorities/names/\" nameIdentifierScheme=\"LCNA\">" + author.getIdValue() + "</nameIdentifier>");
-                }
+                creatorsElement.append("</creator>");
             }
-            if (author.getAffiliation() != null && !author.getAffiliation().getDisplayValue().isEmpty()) {
-                creatorsElement.append("<affiliation>" + author.getAffiliation().getDisplayValue() + "</affiliation>");
-            }
-            creatorsElement.append("</creator>");
+
+        } else {
+            creatorsElement.append("<creator><creatorName>").append(AbstractGlobalIdServiceBean.UNAVAILABLE).append("</creatorName></creator>");
         }
+
         xmlMetadata = xmlMetadata.replace("${creators}", creatorsElement.toString());
 
         StringBuilder contributorsElement = new StringBuilder();
-        for (String[] contact : this.getContacts()) {
-            if (!contact[0].isEmpty()) {
-                contributorsElement.append("<contributor contributorType=\"ContactPerson\"><contributorName>" + contact[0] + "</contributorName>");
-                if (!contact[1].isEmpty()) {
-                    contributorsElement.append("<affiliation>" + contact[1] + "</affiliation>");
+        if (this.getContacts() != null) {
+            for (String[] contact : this.getContacts()) {
+                if (!contact[0].isEmpty()) {
+                    contributorsElement.append("<contributor contributorType=\"ContactPerson\"><contributorName>" + contact[0] + "</contributorName>");
+                    if (!contact[1].isEmpty()) {
+                        contributorsElement.append("<affiliation>" + contact[1] + "</affiliation>");
+                    }
+                    contributorsElement.append("</contributor>");
+                }
+            }
+        }
+
+        if (this.getProducers() != null) {
+            for (String[] producer : this.getProducers()) {
+                contributorsElement.append("<contributor contributorType=\"Producer\"><contributorName>" + producer[0] + "</contributorName>");
+                if (!producer[1].isEmpty()) {
+                    contributorsElement.append("<affiliation>" + producer[1] + "</affiliation>");
                 }
                 contributorsElement.append("</contributor>");
             }
-        }
-        for (String[] producer : this.getProducers()) {
-            contributorsElement.append("<contributor contributorType=\"Producer\"><contributorName>" + producer[0] + "</contributorName>");
-            if (!producer[1].isEmpty()) {
-                contributorsElement.append("<affiliation>" + producer[1] + "</affiliation>");
-            }
-            contributorsElement.append("</contributor>");
         }
 
         String relIdentifiers = generateRelatedIdentifiers(dvObject);

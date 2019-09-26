@@ -7,7 +7,7 @@
     -->
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.10-tdl</version>
+    <version>4.16-tdl</version>
     <packaging>war</packaging>
 
     <name>dataverse</name>
@@ -37,7 +37,13 @@
         <junit.vintage.version>5.3.1</junit.vintage.version>
         <junit.platform.version>1.3.1</junit.platform.version>
         <mockito.version>2.22.0</mockito.version>
-        <jacoco.version>0.8.2</jacoco.version>
+        <flyway.version>5.2.4</flyway.version>
+        <jhove.version>1.20.1</jhove.version>
+        <!--
+        Jacoco 0.8.2 seems to break Netbeans code coverage integration so we'll use 0.8.1 instead.
+        See https://github.com/jacoco/jacoco/issues/772 for discussion of how the XML changed.
+        -->
+        <jacoco.version>0.8.1</jacoco.version>
     </properties>
 
     <!--Maven checks for dependendies from these repos in the order shown in the pom.xml
@@ -130,11 +136,19 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
             <version>${junit.vintage.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
@@ -246,6 +260,11 @@
             <version>0.3m</version>
         </dependency>
         <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>${flyway.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>16.0.1</version>
@@ -296,7 +315,7 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
-            <version>7.3.0</version>
+            <version>7.3.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -322,7 +341,7 @@
         <dependency>
             <groupId>net.handle</groupId>
             <artifactId>handle</artifactId>
-            <version>2006-06-16-generated</version>
+            <version>8.1.1</version>
         </dependency>
         <!-- UNF v5 (buggy), (temporarily) added for testing ingest against DVN v3  - L.A. -->
         <dependency>
@@ -365,19 +384,19 @@
             <version>4.0.0</version>
         </dependency>
         <dependency>
-            <groupId>edu.harvard.hul.ois.jhove</groupId>
-            <artifactId>jhove</artifactId>
-            <version>1.11.0</version>
+            <groupId>org.openpreservation.jhove</groupId>
+            <artifactId>jhove-core</artifactId>
+            <version>${jhove.version}</version>
         </dependency>
         <dependency>
-            <groupId>edu.harvard.hul.ois.jhove</groupId>
-            <artifactId>jhove-module</artifactId>
-            <version>1.11.0</version>
+            <groupId>org.openpreservation.jhove</groupId>
+            <artifactId>jhove-modules</artifactId>
+            <version>${jhove.version}</version>
         </dependency>
         <dependency>
-            <groupId>edu.harvard.hul.ois.jhove</groupId>
-            <artifactId>jhove-handler</artifactId>
-            <version>1.11.0</version>
+            <groupId>org.openpreservation.jhove</groupId>
+            <artifactId>jhove-ext-modules</artifactId>
+            <version>${jhove.version}</version>
         </dependency>
         <!-- JAI (Java Advanced Imaging) jars: -->
         <dependency>
@@ -404,7 +423,7 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.8.3</version>
+            <version>1.11.3</version>
         </dependency>
         <dependency>
             <groupId>com.jayway.restassured</groupId>
@@ -537,11 +556,62 @@
             <artifactId>unirest-java</artifactId>
             <version>1.4.9</version>
         </dependency>
+        <!-- BagIt export -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.18</version>
+        </dependency>
+        <dependency>
+            <groupId>org.duracloud</groupId>
+            <artifactId>common</artifactId>
+            <version>4.4.6</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>log4j-over-slf4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.duracloud</groupId>
+            <artifactId>storeclient</artifactId>
+            <version>4.4.6</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>log4j-over-slf4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.amazonaws</groupId>
+                    <artifactId>aws-java-sdk-sqs</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>commons-cli</groupId>
+            <artifactId>commons-cli</artifactId>
+            <version>1.2</version>
+        </dependency>
         <!--  Full text indexing -->
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers</artifactId>
-            <version>1.19</version>
+            <version>1.22</version>
+        </dependency>
+        <!-- Named Entity Recognition -->
+        <dependency>
+            <groupId>org.apache.opennlp</groupId>
+            <artifactId>opennlp-tools</artifactId>
+            <version>1.9.1</version>
         </dependency>
     </dependencies>
 
@@ -567,6 +637,7 @@
                 <directory>src/main/java</directory>
                 <includes>
                     <include>*.properties</include>
+                    <include>**/*.properties</include>
                     <include>**/mime.types</include>
                     <include>**/*.R</include>
                 </includes>
@@ -574,7 +645,10 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
+                    <include>**/*.sql</include>
                     <include>**/*.xml</include>
+                    <include>**/firstNames/*.*</include>
+                    <include>**/*.xsl</include>
                 </includes>
             </resource>
         </resources>

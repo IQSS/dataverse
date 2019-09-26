@@ -176,6 +176,8 @@ public class DataCiteRESTfullClient implements Closeable {
      * @return
      */
     public String postMetadata(String metadata) {
+        System.out.println("postMetadata url: " + this.url + "/metadata");
+        
         HttpPost httpPost = new HttpPost(this.url + "/metadata");
         httpPost.setHeader("Content-Type", "application/xml;charset=UTF-8");
         try {
@@ -221,7 +223,7 @@ public class DataCiteRESTfullClient implements Closeable {
 
     public static void main(String[] args) throws Exception {
         String doi = "10.5072/DVN/274533";
-        DataCiteRESTfullClient client = new DataCiteRESTfullClient("https://mds.test.datacite.org", "DATACITE.HARVARD", "DVNapitest");
+        DataCiteRESTfullClient client = new DataCiteRESTfullClient("https://mds.test.datacite.org", "DATACITE_TEST_USERNAME", "DATACITE_TEST_PASSWORD");
 //		System.out.println(client.getUrl(doi));
 //		System.out.println(client.getMetadata(doi));
 //        System.out.println(client.postMetadata(readAndClose("C:/Users/luopc/Desktop/datacite.xml", "utf-8")));

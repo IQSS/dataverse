@@ -96,25 +96,6 @@ public class StringUtil {
                  (c >= '0') && (c <= '9') );
     }
 
-    public static String truncateString(String originalString, int maxLength) {
-        maxLength = Math.max( 0, maxLength);
-        String finalString = originalString;
-        if (finalString != null && finalString.length() > maxLength) {
-            String regexp = "[A-Za-z0-9][\\p{Space}]";
-            Pattern pattern = Pattern.compile(regexp);
-            String startParsedString = finalString.substring(0, maxLength);
-            String endParsedString = finalString.substring(maxLength, finalString.length());
-            Matcher matcher = pattern.matcher(endParsedString);
-            boolean found = matcher.find();
-            if (found) {
-                endParsedString = endParsedString.substring(0, matcher.end());
-                finalString = startParsedString + endParsedString + "<span class='dvn_threedots'>...</span>";
-            }
-        }
-        
-        return finalString;             
-    } 
-
     public static String html2text(String html) {
         if (html == null) {
             return null;
@@ -179,6 +160,36 @@ public class StringUtil {
             throw new RuntimeException(ex);
         }
     }
+    
+    public static String sanitizeFileDirectory(String value) {
+        return sanitizeFileDirectory(value, false);
+    }
+    
+    public static String sanitizeFileDirectory(String value, boolean aggressively){        
+        // Replace all the combinations of slashes and backslashes with one single 
+        // backslash:
+        value = value.replaceAll("[\\\\/][\\\\/]*", "/");
+
+        if (aggressively) {
+            value = value.replaceAll("[^A-Za-z0-9_ ./\\-]+", ".");
+            value = value.replaceAll("\\.\\.+", ".");
+        }
+        
+        // Strip any leading or trailing slashes, whitespaces, '-' or '.':
+        while (value.startsWith("/") || value.startsWith("-") || value.startsWith(".") || value.startsWith(" ")){
+            value = value.substring(1);
+        }
+        while (value.endsWith("/") || value.endsWith("-") || value.endsWith(".") || value.endsWith(" ")){
+            value = value.substring(0, value.length() - 1);
+        }
+        
+        if ("".equals(value)) {
+            return null;
+        }
+        
+        return value;
+    }
+    
     
     private static SecretKeySpec generateKeyFromString(final String secKey) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         byte[] key = (secKey).getBytes("UTF-8");

@@ -9,11 +9,15 @@ RUN yum install -y jq lsof awscli
 COPY dv /tmp/dv
 COPY testdata/schema.xml /tmp/dv
 COPY testdata/solrconfig.xml /tmp/dv
+
+# ITs need files
+COPY testdata/sushi_sample_logs.json /tmp/
+
 # IPv6 and localhost appears to be related to some of the intermittant connection issues
 COPY disableipv6.conf /etc/sysctl.d/
 RUN rm /etc/httpd/conf/*
 COPY httpd.conf /etc/httpd/conf 
-RUN cd /opt ; tar zxf /tmp/dv/deps/solr-7.3.0dv.tgz 
+RUN cd /opt ; tar zxf /tmp/dv/deps/solr-7.3.1dv.tgz 
 RUN cd /opt ; tar zxf /tmp/dv/deps/glassfish4dv.tgz
 
 # this copy of domain.xml is the result of running `asadmin set server.monitoring-service.module-monitoring-levels.jvm=LOW` on a default glassfish installation (aka - enable the glassfish REST monitir endpoint for the jvm`
@@ -24,9 +28,9 @@ RUN sudo -u postgres /usr/pgsql-9.6/bin/initdb -D /var/lib/pgsql/data
 
 # copy configuration related files
 RUN cp /tmp/dv/pg_hba.conf /var/lib/pgsql/data/
-RUN cp -r /opt/solr-7.3.0/server/solr/configsets/_default /opt/solr-7.3.0/server/solr/collection1
-RUN cp /tmp/dv/schema.xml /opt/solr-7.3.0/server/solr/collection1/conf/schema.xml
-RUN cp /tmp/dv/solrconfig.xml /opt/solr-7.3.0/server/solr/collection1/conf/solrconfig.xml
+RUN cp -r /opt/solr-7.3.1/server/solr/configsets/_default /opt/solr-7.3.1/server/solr/collection1
+RUN cp /tmp/dv/schema.xml /opt/solr-7.3.1/server/solr/collection1/conf/schema.xml
+RUN cp /tmp/dv/solrconfig.xml /opt/solr-7.3.1/server/solr/collection1/conf/solrconfig.xml
 
 # skipping glassfish user and solr user (run both as root)
 
@@ -60,7 +64,8 @@ WORKDIR /opt/dv
 
 # need to take DOI provider info from build args as of ec377d2a4e27424db8815c55ce544deee48fc5e0
 # Default to EZID; use built-args to switch to DataCite (or potentially handles)
-ARG DoiProvider=EZID
+#ARG DoiProvider=EZID
+ARG DoiProvider=FAKE
 ARG doi_baseurl=https://ezid.cdlib.org
 ARG doi_username=apitest
 ARG doi_password=apitest

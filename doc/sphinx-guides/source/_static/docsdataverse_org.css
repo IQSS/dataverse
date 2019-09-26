@@ -96,6 +96,12 @@ div.code-example .color-swatch {
     margin: 0 5px;
     border-radius: 3px
 }
+div.code-example .messagePanel .glyphicon {
+    font-size: 1.5em;
+    vertical-align: bottom;
+}
+div.code-example span.glyphicon-question-sign.tooltip-icon {color: #99bcdb !important;}
+div.code-example span.glyphicon-question-sign.tooltip-icon:hover {color: #337AB7 !important;}
 
 #breadcrumbNavBlock {margin-top:.5em;}
 #breadcrumbNavBlock .breadcrumbBlock {float:left; position:relative;}
@@ -109,3 +115,7 @@ div.form-group .glyphicon.glyphicon-asterisk {font-size: .5em; vertical-align: t
 /* #sidebar.bs-sidenav.affix {
 	position: static;
 } REMOVED STATIC ToC */
+
+pre {
+    white-space: pre-wrap;
+}

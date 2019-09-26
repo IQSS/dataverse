@@ -178,6 +178,11 @@ public class SearchFields {
      * Indexed as text_en so it's searchable by lower case etc.
      */
     public static final String FILE_TAG_SEARCHABLE = "fileTags";
+    
+    /**
+     * Internal boolean indicating that the file has been deleted in the draft version.
+     */
+    public static final String FILE_DELETED = "fileDeleted";
     /*
      * (tabular) Data Tags are indexed as a string, since we are only planning to
      * use these in facet-like, exact searches:
@@ -205,10 +210,7 @@ public class SearchFields {
     // PUBLICATION_YEAR used to be called PUBLICATION_DATE.
     public static final String PUBLICATION_YEAR = "publicationDate";
     public static final String RELEASE_OR_CREATE_DATE = "dateSort"; 
-    /**
-     * i.e. "Mar 17, 2015"
-     */
-    public static final String RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT = "dateFriendly";
+
 
     public static final String DEFINITION_POINT = "definitionPointDocId";
     public static final String DEFINITION_POINT_DVOBJECT_ID = "definitionPointDvObjectId";

@@ -599,14 +599,14 @@ Once you have enabled a new metadata block you should be able to see the new fie
 
 See the :doc:`/installation/prerequisites/` section of the Installation Guide for a suggested location on disk for the Solr schema file.
 
-Please note that if you are going to make a pull request updating ``conf/solr/7.3.0/schema.xml`` with fields you have added, you should first load all the custom metadata blocks in ``scripts/api/data/metadatablocks`` (including ones you don't care about) to create a complete list of fields.
+Please note that if you are going to make a pull request updating ``conf/solr/7.3.1/schema.xml`` with fields you have added, you should first load all the custom metadata blocks in ``scripts/api/data/metadatablocks`` (including ones you don't care about) to create a complete list of fields.
 
 Reloading a Metadata Block
 --------------------------
 
 As mentioned above, changes to metadata blocks that ship with Dataverse will be made over time to improve them and release notes will sometimes instruct you to reload an existing metadata block. The syntax for reloading is the same as reloading. Here's an example with the "citation" metadata block:
 
-``curl http://localhost:8080/api/admin/datasetfield/load -H "Content-type: text/tab-separated-values" -X POST --upload-file --upload-file citation.tsv``
+``curl http://localhost:8080/api/admin/datasetfield/load -H "Content-type: text/tab-separated-values" -X POST --upload-file citation.tsv``
 
 Great care must be taken when reloading a metadata block. Matching is done on field names (or identifiers and then names in the case of controlled vocabulary values) so it's easy to accidentally create duplicate fields.
 

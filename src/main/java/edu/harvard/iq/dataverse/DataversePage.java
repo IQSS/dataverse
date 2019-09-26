@@ -47,7 +47,6 @@ import javax.faces.model.SelectItem;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.PrimeFaces;
-import org.primefaces.context.RequestContext;
 import org.primefaces.event.TransferEvent;
 
 /**
@@ -560,7 +559,7 @@ public class DataversePage implements java.io.Serializable {
 
     public String save() {
         List<DataverseFieldTypeInputLevel> listDFTIL = new ArrayList<>();
-        if (editMode != null && editMode.equals(EditMode.INFO)) {
+        if (editMode != null && ( editMode.equals(EditMode.INFO) || editMode.equals(EditMode.CREATE))) {
 
             List<MetadataBlock> selectedBlocks = new ArrayList<>();
             if (dataverse.isMetadataBlockRoot()) {

@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -31,6 +32,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.util.EnumSet;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
@@ -38,6 +40,7 @@ import javax.ejb.EJBContext;
 import javax.ejb.EJBException;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
+import static javax.ejb.TransactionAttributeType.SUPPORTS;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.validation.ConstraintViolation;
@@ -173,6 +176,12 @@ public class EjbDataverseEngine {
     @EJB
     FileDownloadServiceBean fileDownloadService;
     
+    @EJB
+    ConfirmEmailServiceBean confirmEmailService;
+    
+    @EJB
+    EjbDataverseEngineInner innerEngine;
+    
     
     @Resource
     EJBContext ejbCtxt;
@@ -183,11 +192,19 @@ public class EjbDataverseEngine {
     public <R> R submitInNewTransaction(Command<R> aCommand) throws CommandException {
         return submit(aCommand);
     }
+    
+    private DvObject getRetType(Object r){
 
+        return (DvObject) r;
+       
+    }
+
+
+    @TransactionAttribute(SUPPORTS)
     public <R> R submit(Command<R> aCommand) throws CommandException {
         
         final ActionLogRecord logRec = new ActionLogRecord(ActionLogRecord.ActionType.Command, aCommand.getClass().getCanonicalName());
-        
+
         try {
             logRec.setUserIdentifier( aCommand.getRequest().getUser().getIdentifier() );
             
@@ -229,7 +246,22 @@ public class EjbDataverseEngine {
                 }
             }
             try {
-                return aCommand.execute(getContext());
+                if (getContext().getCommandsCalled() == null){
+                    getContext().beginCommandSequence();
+                }
+                getContext().addCommand(aCommand);
+                //This list of commands is held by the outermost command's context
+                //to be run on completeCommand method when the outermost command is completed
+                Stack<Command> previouslyCalled = getContext().getCommandsCalled();
+                R r = innerEngine.submit(aCommand, getContext());   
+                if (getContext().getCommandsCalled().empty() && !previouslyCalled.empty()){
+                    for (Command c: previouslyCalled){
+                        getContext().getCommandsCalled().add(c);
+                    }
+                }
+                //This runs the onSuccess Methods for all commands in the stack when the outermost command completes
+                this.completeCommand(aCommand, r, getContext().getCommandsCalled());
+                return r;
                 
             } catch ( EJBException ejbe ) {
                 throw new CommandException("Command " + aCommand.toString() + " failed: " + ejbe.getMessage(), ejbe.getCausedByException(), aCommand);
@@ -263,19 +295,60 @@ public class EjbDataverseEngine {
             throw re;
             
         } finally {
-            if ( logRec.getActionResult() == null ) {
-                logRec.setActionResult( ActionLogRecord.Result.OK );
+            //when we get here we need to wipe out the command list so that
+            //failed commands don't have their onSuccess methods run.
+            getContext().cancelCommandSequence();
+            if (logRec.getActionResult() == null) {
+                logRec.setActionResult(ActionLogRecord.Result.OK);
             } else {
-                ejbCtxt.setRollbackOnly();
+                try{
+                     ejbCtxt.setRollbackOnly();
+                } catch (IllegalStateException isEx){
+                    //Not in a transaction nothing to rollback
+                }                  
             }
-            logRec.setEndTime( new java.util.Date() );
+            logRec.setEndTime(new java.util.Date());
             logSvc.log(logRec);
         }
     }
+    
+    protected void completeCommand(Command command, Object r, Stack<Command> called) {
+        
+        if (called.isEmpty()){
+            return;
+        }
+        
+        Command test = called.get(0);
+        if (!test.equals(command)) {
+            //if it's not the first command on the stack it must be an "inner" command
+            //and we don't want to run its onSuccess until all commands have comepleted successfully
+            return;
+        }
+        
+        for (Command commandLoop : called) {
+           commandLoop.onSuccess(ctxt, r);
+        }
+        
+    }
+    
 
     public CommandContext getContext() {
         if (ctxt == null) {
             ctxt = new CommandContext() {
+                
+                public Stack<Command> commandsCalled;
+                
+                @Override
+                public void addCommand (Command command){
+                    commandsCalled.push(command);
+                }
+                
+                
+                @Override
+                public Stack<Command> getCommandsCalled(){
+                    return commandsCalled;
+                }
+                
                 
                 @Override
                 public DatasetServiceBean datasets() {
@@ -479,6 +552,32 @@ public class EjbDataverseEngine {
                 @Override
                 public FileDownloadServiceBean fileDownload() {
                     return fileDownloadService;
+                }
+                
+                @Override
+                public ConfirmEmailServiceBean confirmEmail() {
+                    return confirmEmailService;
+                }
+                
+                @Override
+                public ActionLogServiceBean actionLog() {
+                    return logSvc;
+                }
+
+                @Override
+                public void beginCommandSequence() {
+                    this.commandsCalled = new Stack();
+                }
+
+                @Override
+                public boolean completeCommandSequence(Command command) {
+                    this.commandsCalled.clear();
+                    return true;
+                }
+
+                @Override
+                public void cancelCommandSequence() {
+                    this.commandsCalled = new Stack();
                 }
 
             };

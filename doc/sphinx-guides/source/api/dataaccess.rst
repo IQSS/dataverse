@@ -69,7 +69,9 @@ Multiple File ("bundle") download
 
 Returns the files listed, zipped. 
 
-.. note:: If files requested cannot be provided, a 207 status code will be returned indicating that the result was a mixed success.
+.. note:: If the request can only be completed partially - if only *some* of the requested files can be served (because of the permissions and/or size restrictions), the file MANIFEST.TXT included in the zipped bundle will have entries specifying the reasons the missing files could not be downloaded. IN THE FUTURE the API will return a 207 status code to indicate that the result was a partial success. (As of writing this - v.4.11 - this hasn't been implemented yet)
+
+.. note:: If any of the datafiles have the ``DirectoryLabel`` attributes in the corresponding ``FileMetadata`` entries, these will be added as folders to the Zip archive, and the files will be placed in them accordingly. 
 
 Parameters: 
 ~~~~~~~~~~~
@@ -84,12 +86,12 @@ original        "Saved Original", the proprietary (SPSS, Stata, R, etc.) file fr
 ==============  ===========
 
 
-"All Formats" bundled access for Tabular Files. 
------------------------------------------------
+"All Formats" bundled download for Tabular Files. 
+-------------------------------------------------
 
 ``/api/access/datafile/bundle/$id``
 
-This is convenience packaging method is available for tabular data files. 
+This is a convenience packaging method available for tabular data files. 
 It returns a zipped bundle that contains the data in the following formats: 
 
 * Tab-delimited;
@@ -98,9 +100,18 @@ It returns a zipped bundle that contains the data in the following formats:
 * Data (Variable) metadata record, in DDI XML;
 * File citation, in Endnote and RIS formats. 
 
+
 Parameters: 
 ~~~~~~~~~~~
-none.
+
+``fileMetadataId``
+
+==============  ===========
+Value           Description
+==============  ===========
+ID              Exports file with specific file metadata ``ID``.
+==============  ===========
+
 
 Data Variable Metadata Access
 -----------------------------
@@ -174,6 +185,19 @@ Example:
          </var>
       </dataDscr>
    </codeBook>
+
+
+Parameters: 
+~~~~~~~~~~~
+
+``fileMetadataId``
+
+==============  ===========
+Value           Description
+==============  ===========
+ID              Exports file with specific file metadata ``ID``. For example for data file with id 6 and file metadata id 2: ``curl 'http://localhost:8080/api/access/datafile/6/metadata/ddi?fileMetadataId=2'``
+==============  ===========
+
 
 More information on DDI is available in the :doc:`/user/tabulardataingest/ingestprocess` section of the User Guide.
 

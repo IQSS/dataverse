@@ -13,11 +13,15 @@ import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import javax.mail.internet.InternetAddress;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  *
@@ -138,6 +142,10 @@ public class SettingsWrapper implements java.io.Serializable {
         return guidesBaseUrl;
     }
 
+    public String getGuidesVersion() {
+        return systemConfig.getGuidesVersion();
+    }
+
     public boolean isPublicInstall(){
         return systemConfig.isPublicInstall();
     }
@@ -194,6 +202,62 @@ public class SettingsWrapper implements java.io.Serializable {
     public Boolean isHasDropBoxKey() {
 
         return !getDropBoxKey().isEmpty();
+    }
+    
+    // Language Locales Configuration: 
+    
+    // Map from locale to display name eg     en -> English
+    private Map<String, String> configuredLocales;
+    
+    public boolean isLocalesConfigured() {
+        if (configuredLocales == null) {
+            initLocaleSettings();
+        }
+        return configuredLocales.size() > 1;
+    }
+
+    public Map<String, String> getConfiguredLocales() {
+        if (configuredLocales == null) {
+            initLocaleSettings(); 
+        }
+        return configuredLocales;
+    }
+    
+    private void initLocaleSettings() {
+        
+        configuredLocales = new LinkedHashMap<>();
+        
+        try {
+            JSONArray entries = new JSONArray(getValueForKey(SettingsServiceBean.Key.Languages, "[]"));
+            for (Object obj : entries) {
+                JSONObject entry = (JSONObject) obj;
+                String locale = entry.getString("locale");
+                String title = entry.getString("title");
+
+                configuredLocales.put(locale, title);
+            }
+        } catch (JSONException e) {
+            //e.printStackTrace();
+            // do we want to know? - probably not
+        }
+    }
+
+    public boolean isMakeDataCountEnabled(){
+        String logPath = systemConfig.getMDCLogPath();
+        if (logPath != null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean isDoiInstallation() {
+        String protocol = getValueForKey(SettingsServiceBean.Key.Protocol);
+        if ("doi".equals(protocol)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }

@@ -60,6 +60,10 @@ Refactoring Code to Make It Unit-Testable
 
 Existing code is not necessarily written in a way that lends itself to easy testing. Generally speaking, it is difficult to write unit tests for both JSF "backing" beans (which end in ``Page.java``) and "service" beans (which end in ``Service.java``) because they require the database to be running in order to test them. If service beans can be exercised via API they can be tested with integration tests (described below) but a good technique for making the logic testable it to move code to "util beans" (which end in ``Util.java``) that operate on Plain Old Java Objects (POJOs). ``PrivateUrlUtil.java`` is a good example of moving logic from ``PrivateUrlServiceBean.java`` to a "util" bean to make the code testable.
 
+Parameterized Tests and JUnit Theories
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Often times you will want to test a method multiple times with similar values. In order to avoid test bloat (writing a test for every data combination), JUnit offers Data-driven unit tests with ``Parameterized.class`` and ``Theories.class``. This allows a test to be run for each set of defined data values. For reference, take a look at issue https://github.com/IQSS/dataverse/issues/5619 .
+
 Observing Changes to Code Coverage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -220,6 +224,17 @@ One way of generating load is by downloading many files. You can download :downl
 
 The script requires a file called ``files.txt`` to operate and database IDs for the files you want to download should each be on their own line.
 
+Continuous Integration
+~~~~~~~~~~~~~~~~~~~~~~
+
+The Dataverse Project currently makes use of two Continuous Integration platforms, Travis and Jenkins.
+
+Travis builds are configured via :download:`.travis.yml <../../../../.travis.yml>` and a `GitHub webhook <https://docs.travis-ci.com/user/notifications/#configuring-webhook-notifications>`; build output is viewable at https://travis-ci.org/IQSS/dataverse/builds
+
+Our Jenkins config is a work in progress and may be viewed at https://github.com/IQSS/dataverse-jenkins/ A corresponding GitHub webhook is required. Build output is viewable at https://jenkins.dataverse.org/
+
+As always, pull requests to improve our continuous integration configurations are welcome.
+
 The Phoenix Server
 ------------------
 
@@ -261,7 +276,7 @@ Future Work on Unit Tests
 Future Work on Integration Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Automate testing of the Python client: https://github.com/IQSS/dataverse-client-python/issues/10
+- Automate testing of dataverse-client-python: https://github.com/IQSS/dataverse-client-python/issues/10
 - Work with @leeper on testing the R client: https://github.com/IQSS/dataverse-client-r
 - Review and attempt to implement "API Test Checklist" from @kcondon at https://docs.google.com/document/d/199Oq1YwQ4pYCguaeW48bIN28QAitSk63NbPYxJHCCAE/edit?usp=sharing
 - Attempt to use @openscholar approach for running integration tests using Travis https://github.com/openscholar/openscholar/blob/SCHOLAR-3.x/.travis.yml (probably requires using Ubuntu rather than CentOS)

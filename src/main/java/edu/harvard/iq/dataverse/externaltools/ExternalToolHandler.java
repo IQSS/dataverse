@@ -1,6 +1,9 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -24,8 +27,10 @@ public class ExternalToolHandler {
 
     private final ExternalTool externalTool;
     private final DataFile dataFile;
+    private final Dataset dataset;
+    private final FileMetadata fileMetadata;
 
-    private final ApiToken apiToken;
+    private ApiToken apiToken;
 
     /**
      * @param externalTool The database entity.
@@ -33,7 +38,7 @@ public class ExternalToolHandler {
      * @param apiToken The apiToken can be null because "explore" tools can be
      * used anonymously.
      */
-    public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken) {
+    public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken, FileMetadata fileMetadata) {
         this.externalTool = externalTool;
         if (dataFile == null) {
             String error = "A DataFile is required.";
@@ -42,10 +47,16 @@ public class ExternalToolHandler {
         }
         this.dataFile = dataFile;
         this.apiToken = apiToken;
+        dataset = getDataFile().getFileMetadata().getDatasetVersion().getDataset();
+        this.fileMetadata = fileMetadata;
     }
 
     public DataFile getDataFile() {
         return dataFile;
+    }
+
+    public FileMetadata getFileMetadata() {
+        return fileMetadata;
     }
 
     public ApiToken getApiToken() {
@@ -67,7 +78,7 @@ public class ExternalToolHandler {
                 String value = queryParam.getString(key);
                 String param = getQueryParam(key, value);
                 if (param != null && !param.isEmpty()) {
-                    params.add(getQueryParam(key, value));
+                    params.add(param);
                 }
             });
         });
@@ -90,6 +101,22 @@ public class ExternalToolHandler {
                     return key + "=" + apiTokenString;
                 }
                 break;
+            case DATASET_ID:
+                return key + "=" + dataset.getId();
+            case DATASET_VERSION:
+                String version = null;
+                if (getApiToken() != null) {
+                    version = dataset.getLatestVersion().getFriendlyVersionNumber();
+                } else {
+                    version = dataset.getLatestVersionForCopy().getFriendlyVersionNumber();
+                }
+                if (("DRAFT").equals(version)) {
+                    version = ":draft"; // send the token needed in api calls that can be substituted for a numeric
+                                        // version.
+                }
+                return key + "=" + version;
+            case FILE_METADATA_ID:
+                return key + "=" + fileMetadata.getId();
             default:
                 break;
         }
@@ -102,6 +129,10 @@ public class ExternalToolHandler {
 
     public ExternalTool getExternalTool() {
         return externalTool;
+    }
+
+    public void setApiToken(ApiToken apiToken) {
+        this.apiToken = apiToken;
     }
 
 }

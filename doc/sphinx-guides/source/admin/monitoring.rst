@@ -58,7 +58,11 @@ HTTP traffic can be monitored from the client side, the server side, or both.
 Monitoring HTTP Traffic from the Client Side
 ++++++++++++++++++++++++++++++++++++++++++++
 
-HTTP traffic for web clients that have cookies enabled (most browsers) can be tracked by Google Analytics and Piwik (renamed to "Matomo") as explained in the :doc:`/installation/config` section of the Installation Guide under ``:GoogleAnalyticsCode`` and ``:PiwikAnalyticsId``, respectively. You could also embed additional client side monitoring solutions by using a custom footer (``:FooterCustomizationFile``), which is described on the same page.
+HTTP traffic for web clients that have cookies enabled (most browsers) can be tracked by Google Analytics (https://www.google.com/analytics/) and Matomo (formerly "Piwik"; https://matomo.org/) as explained in the :ref:`Web-Analytics-Code` section of the Installation Guide.
+
+To track analytics beyond pageviews, style classes have been added for end user action buttons, which include:
+
+``btn-compute``, ``btn-contact``, ``btn-download``, ``btn-explore``, ``btn-export``, ``btn-preview``, ``btn-request``, ``btn-share``
 
 Monitoring HTTP Traffic from the Server Side
 +++++++++++++++++++++++++++++++++++++++++++++
@@ -98,6 +102,16 @@ actionlogrecord
 ---------------
 
 There is a database table called ``actionlogrecord`` that captures events that may be of interest. See https://github.com/IQSS/dataverse/issues/2729 for more discussion around this table.
+
+Edit Draft Versions Logging
+---------------------------
+
+Changes made to draft versions of datasets are logged in a folder called logs/edit-drafts. See https://github.com/IQSS/dataverse/issues/5145 for more information on this logging.
+
+Solr Indexing Failures Logging
+------------------------------
+
+Failures occurring during the indexing of dataverses and datasets are logged in a folder called logs/process-failures. This logging will include instructions for manually re-running the failed processes. It may be advantageous to set up a automatic job to monitor new entries into this log folder so that indexes could be re-run.
 
 EJB Timers
 ----------

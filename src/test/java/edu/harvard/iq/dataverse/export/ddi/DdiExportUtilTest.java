@@ -1,12 +1,23 @@
 package edu.harvard.iq.dataverse.export.ddi;
 
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.xml.html.HtmlPrinter;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+
+import javax.json.JsonObject;
+
+import static org.junit.Assert.*;
 
 public class DdiExportUtilTest {
 
@@ -51,6 +62,22 @@ public class DdiExportUtilTest {
         if (filesMinimallySupported) {
             assertEquals(datasetAsDdi, result);
         }
+    }
+
+    @Test
+    public void testDatasetHtmlDDI() throws Exception {
+        File fileXML = new File("src/test/resources/xml/dct_codebook.xml");
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        DdiExportUtil.datasetHtmlDDI( new FileInputStream(fileXML), byteArrayOutputStream);
+        assertNotNull(byteArrayOutputStream);
+        assertNotEquals("",byteArrayOutputStream.toString());
+        String datasetAsDdiHtml = HtmlPrinter.prettyPrint(byteArrayOutputStream.toString());
+
+        File htmlFile = new File("src/test/resources/html/dct_codebook.html");
+        String sampleHtml = HtmlPrinter.prettyPrint(new String(Files.readAllBytes(Paths.get(htmlFile.getAbsolutePath()))));
+        assertEquals(sampleHtml,datasetAsDdiHtml);
+
     }
 
 }

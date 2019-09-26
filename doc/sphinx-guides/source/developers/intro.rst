@@ -34,7 +34,7 @@ For the Dataverse development roadmap, please see https://dataverse.org/goals-ro
 Kanban Board
 ------------
 
-You can get a sense of what's currently in flight (in dev, in QA, etc.) by looking at https://waffle.io/IQSS/dataverse
+You can get a sense of what's currently in flight (in dev, in QA, etc.) by looking at https://github.com/orgs/IQSS/projects/2
 
 Issue Tracker
 -------------
@@ -56,7 +56,8 @@ As a developer, you also may be interested in these projects related to Datavers
 - External Tools - add additional features to Dataverse: See the :doc:`/installation/external-tools` section of the Installation Guide.
 - Dataverse API client libraries - use Dataverse APIs from various languages: :doc:`/api/client-libraries`
 - DVUploader - a stand-alone command-line Java application that uses the Dataverse API to support upload of files from local disk to a Dataset: https://github.com/IQSS/dataverse-uploader 
-- Miniverse - expose metrics from a Dataverse database: https://github.com/IQSS/miniverse
+- dataverse-sample-data - populate your Dataverse installation with sample data: https://github.com/IQSS/dataverse-sample-data
+- dataverse-metrics - aggregate and visualize metrics for installations of Dataverse around the world: https://github.com/IQSS/dataverse-metrics
 - Configuration management scripts - Ansible, Puppet, etc.: See "Advanced Installation" in the :doc:`/installation/prep` section of the Installation Guide.
 - :doc:`/developers/unf/index` (Java) -  a Universal Numerical Fingerprint: https://github.com/IQSS/UNF
 - GeoConnect (Python) - create a map by uploading files to Dataverse: https://github.com/IQSS/geoconnect

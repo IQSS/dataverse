@@ -8,22 +8,29 @@
       xmlns:o="http://omnifaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:c="http://java.sun.com/jsp/jstl/core"
-      lang="#{dataverseLocaleBean.localeCode}"
-      xml:lang="#{dataverseLocaleBean.localeCode}">
-    <f:view locale="#{dataverseLocaleBean.localeCode}">
+      lang="#{dataverseSession.localeCode}"
+      xml:lang="#{dataverseSession.localeCode}">
+    <f:view locale="#{dataverseSession.localeCode}">
     <h:head>
 	<o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <f:facet name="first">
+            <o:resourceInclude path="/CustomizationFilesServlet?customFileType=analytics" />
             <title><h:outputText value="#{pageTitle}"/></title>
 	    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-            <ui:remove><!-- We might want dc_meta_header or jsonld_header at the file level some day.--></ui:remove>
-	    <ui:insert name="dc_meta_header"></ui:insert>
-	    <ui:insert name="jsonld_header"></ui:insert>
             <meta name="viewport" content="width=device-width, initial-scale=1"/>
             <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-            <meta name="description" content="#{MarkupChecker:stripAllTags(DataversePage.dataverse.description)}"/>
+	    <ui:insert name="meta_header"></ui:insert>
+            <ui:insert name="dc_meta_header"></ui:insert>
+	    <ui:insert name="og_header"></ui:insert>
+	    <ui:insert name="jsonld_header"></ui:insert>
         </f:facet>
-        <link type="image/png" rel="icon" href="#{resource['images/favicondataverse.png']}" />
+        <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/fav/apple-touch-icon.png']}"/>
+        <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/fav/favicon-32x32.png']}"/>
+        <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/fav/favicon-16x16.png']}"/>
+        <link rel="manifest" href="#{resource['images/fav/site.webmanifest']}"/>
+        <link rel="mask-icon" href="#{resource['images/fav/safari-pinned-tab.svg']}" color="#da532c"/>
+        <meta name="msapplication-TileColor" content="#da532c"/>
+        <meta name="theme-color" content="#ffffff"/>
         <link type="image/png" rel="image_src" href="#{resource['images/dataverseproject.png']}" />
         <link type="text/css" rel="stylesheet" href="#{resource['bs/css/bootstrap.min.css']}?version=#{systemConfig.getVersion()}" />
         <link type="text/css" rel="stylesheet" href="#{resource['bs/css/bootstrap-theme.min.css']}?version=#{systemConfig.getVersion()}" />
@@ -46,7 +53,7 @@
         </ui:fragment>
     </h:head>
     <h:body styleClass="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
-        <f:loadBundle basename="Bundle" var="bundle"/>
+        <f:loadBundle basename="propertyFiles.Bundle" var="bundle"/>
 	<a href="#content" class="sr-only">#{bundle['body.skip']}</a>                
         <ui:include src="dataverse_header.xhtml">
             <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
@@ -70,25 +77,16 @@
                 <!-- DO NOTHING -->
             </f:facet>
         </p:ajaxStatus>
-        <ui:include src="contactFormFragment.xhtml">
-        </ui:include>
-        <p:dialog id="statusInfo" styleClass="smallPopUp" header="#{settingsWrapper.get(':StatusMessageHeader')}" widgetVar="statusInfo" modal="true">
-            <p><h:outputText value="#{settingsWrapper.get(':StatusMessageText')}" escape="false"/></p>
-            <div class="button-block">
-                <button type="button" onclick="PF('statusInfo').hide()" class="btn btn-default" value="#{bundle.close}">
-                    #{bundle.close}
-                </button>
-            </div>
-        </p:dialog>
-        <script type="text/javascript" defer="defer" src="#{resource['bs/js/bootstrap.min.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/ie-compat.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>  
-        <script type="text/javascript" defer="defer" src="#{resource['js/clipboard.min.js']}?version=#{systemConfig.getVersion()}"></script>          
+        <ui:include src="contactFormFragment.xhtml"></ui:include>
+        <script defer="defer" src="#{resource['bs/js/bootstrap.min.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script defer="defer" src="#{resource['js/ie-compat.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script defer="defer" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script defer="defer" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>  
+        <script defer="defer" src="#{resource['js/clipboard.min.js']}?version=#{systemConfig.getVersion()}"></script>          
         <ui:fragment rendered="#{systemConfig.isShibPassiveLoginEnabled()}">
-            <script type="text/javascript" language="javascript" src="#{resource['js/shib/isPassive.js']}"></script>
+            <script defer="defer" src="#{resource['js/shib/isPassive.js']}"></script>
         </ui:fragment>
         <script>
             //<![CDATA[
@@ -109,12 +107,8 @@
                 // Rebind bootstrap UI components
                 bind_bsui_components();
             });
-
-            
             //]]>
         </script>
-        <ui:include src="google-analytics-snippet.xhtml"></ui:include>
-        <ui:include src="piwik-analytics-snippet.xhtml"></ui:include>
     </h:body>
     </f:view>
 </html>

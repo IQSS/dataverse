@@ -16,7 +16,7 @@ Data Capture Module (DCM) is an experimental component that allows users to uplo
 Install a DCM
 ~~~~~~~~~~~~~
 
-Installation instructions can be found at https://github.com/sbgrid/data-capture-module . Note that a shared filesystem (posix or AWS S3) between Dataverse and your DCM is required. You cannot use a DCM with Swift at this point in time.
+Installation instructions can be found at https://github.com/sbgrid/data-capture-module/blob/master/doc/installation.md. Note that shared storage (posix or AWS S3) between Dataverse and your DCM is required. You cannot use a DCM with Swift at this point in time.
 
 .. FIXME: Explain what ``dataverse.files.dcm-s3-bucket-name`` is for and what it has to do with ``dataverse.files.s3-bucket-name``.
 
@@ -57,31 +57,8 @@ Here's the syntax for sending the JSON.
 Steps to set up a DCM mock for Development
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Install Flask.
+See instructions at https://github.com/sbgrid/data-capture-module/blob/master/doc/mock.md
 
-Download and run the mock. You will be cloning the https://github.com/sbgrid/data-capture-module repo.
-
-- ``git clone git://github.com/sbgrid/data-capture-module.git``
-- ``cd data-capture-module/api``
-- ``./dev_mock.sh``
-
-If you see an error about not having Flask installed, install it as explained below.
-
-On Mac, you can install Flask with:
-
-- ``mkvirtualenv mockdcm``
-- ``pip install -r requirements-mock.txt``
-
-On Ubuntu/Debian, you can install Flask with:
-
-- ``sudo apt install python-pip`` (will install python as well)
-- ``pip install flask``
-
-Once you have Flask installed, try running the dev mock script again:
-
-- ``./dev_mock.sh``
-
-This should spin up the DCM mock on port 5000.
 
 Add Dataverse settings to use mock (same as using DCM, noted above):
 
@@ -95,6 +72,8 @@ At this point you should be able to download a placeholder rsync script. Dataver
 - ``cd /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
 - ``echo "hello" > file1.txt``
 - ``shasum file1.txt > files.sha``
+
+
 
 Now the files are in place and you need to send JSON to Dataverse with a success or failure message as described above. Make a copy of ``doc/sphinx-guides/source/_static/installation/files/root/big-data-support/checksumValidationSuccess.json`` and put the identifier in place such as "X1METO" under "uploadFolder"). Then use curl as described above to send the JSON.
 
@@ -113,35 +92,17 @@ If you need a fully operating DCM client for development purposes, these steps w
 Docker Image Set-up
 ^^^^^^^^^^^^^^^^^^^
 
+See https://github.com/IQSS/dataverse/blob/develop/conf/docker-dcm/readme.md
+
 - Install docker if you do not have it
-- Follow these steps (extracted from ``docker-aio/readme.md`` & ``docker-dcm/readme.txt``) :
-
-  - ``cd conf/docker-aio`` and run ``./0prep_deps.sh`` to create Glassfish and Solr tarballs in conf/docker-aio/dv/deps.
-  - Run ``./1prep.sh``
-  - Build the docker image: ``docker build -t dv0 -f c7.dockerfile .``
-  - ``cd ../docker-dcm`` and run ``./0prep.sh``
-  - Build dcm/dv0dcm images with docker-compose: ``docker-compose -f docker-compose.yml build``
-  - Start containers: ``docker-compose -f docker-compose.yml up -d``
-  - Wait for container to show "healthy" (aka - ``docker ps``), then wait another 5 minutes (even though it shows healthy, glassfish is still standing itself up). Then run Dataverse app installation: ``docker exec -it dvsrv /opt/dv/install.bash``
-  - Configure Dataverse application to use DCM (run from outside the container): ``docker exec -it dvsrv /opt/dv/configure_dcm.sh``
-  - The Dataverse installation is accessible at ``http://localhost:8084``.
-  - You may need to change the DoiProvider inside dvsrv (ezid does not work):
-
-    - ``curl -X DELETE -d EZID "localhost:8080/api/admin/settings/:DoiProvider"``
-    - ``curl -X PUT -d DataCite "localhost:8080/api/admin/settings/:DoiProvider"``
-    - Also change the doi.baseUrlString, doi.username, doi.password
       
 Optional steps for setting up the S3 Docker DCM Variant
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Before: the default bucket for DCM to hold files in S3 is named test-dcm. It is coded into `post_upload_s3.bash` (line 30). Change to a different bucket if needed.
-- Add AWS bucket info to dcmsrv
 
-  - You need a credentials files in ~/.aws
-
-    - ``mkdir ~/.aws``
-    - ``yum install nano`` (or use a different editor below)
-    - ``nano ~/.aws/credentials`` and add these contents with your keys:
+  - Add AWS bucket info to dcmsrv
+    - Add AWS credentials to ``~/.aws/credentials``
 
       - ``[default]``
       - ``aws_access_key_id =``
@@ -156,16 +117,13 @@ Optional steps for setting up the S3 Docker DCM Variant
     - ``./asadmin create-jvm-options "\-Ddataverse.files.storage-driver-id=s3"``
 
   - Add AWS bucket info to Dataverse
-
-    - ``mkdir ~/.aws``
-    - ``yum install nano`` (or use a different editor below)
-    - ``nano ~/.aws/credentials`` and add these contents with your keys:
-
+    - Add AWS credentials to ``~/.aws/credentials``
+    
       - ``[default]``
       - ``aws_access_key_id =``
       - ``aws_secret_access_key =``
 
-    - Also: ``nano ~/.aws/config`` to create a region file. Add these contents:
+    - Also: set region in ``~/.aws/config`` to create a region file. Add these contents:
 
       - ``[default]``
       - ``region = us-east-1``
@@ -188,30 +146,26 @@ Using the DCM Docker Containers
 For using these commands, you will need to connect to the shell prompt inside various containers (e.g. ``docker exec -it dvsrv /bin/bash``)
 
 - Create a dataset and download rsync upload script
-- Upload script to dcm_client (if needed, you can probably do all the actions for create/download inside dcm_client)
 
-  - ``docker cp ~/Downloads/upload-FK2_NN49YM.bash dcm_client:/tmp``
+  - connect to client container: ``docker exec -it dcm_client bash``
+  - create dataset: ``cd /mnt ; ./create.bash`` ; this will echo the database ID to stdout
+  - download transfer script: ``./get_transfer.bash $database_id_from_create_script``
+  - execute the transfer script: ``bash ./upload-${database_id_from-create_script}.bash`` , and follow instructions from script.
 
-- Create a folder of files to upload (files can be empty)
 - Run script
 
-  - e.g. ``bash ./upload-FK2_NN49YM.bash``
+  - e.g. ``bash ./upload-3.bash`` (``3`` being the database id from earlier commands in this example).
 
 - Manually run post upload script on dcmsrv
 
-  - for posix implementation: ``bash ./opt/dcm/scn/post_upload.bash``
-  - for S3 implementation: ``bash ./opt/dcm/scn/post_upload_s3.bash``
+  - for posix implementation: ``docker exec -it dcmsrv /opt/dcm/scn/post_upload.bash``
+  - for S3 implementation: ``docker exec -it dcmsrv /opt/dcm/scn/post_upload_s3.bash``
 
 Additional DCM docker development tips
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - You can completely blow away all the docker images with these commands (including non DCM ones!)
-
-  - ``docker stop dvsrv``
-  - ``docker stop dcm_client``
-  - ``docker stop dcmsrv``
-  - ``docker rm $(docker ps -a -q)``
-  - ``docker rmi $(docker images -q)``
+  - ``docker-compose -f docmer-compose.yml down -v``
 
 - There are a few logs to tail
 
@@ -219,18 +173,30 @@ Additional DCM docker development tips
   - dcmsrv : ``tail -n 2000 -f /var/log/lighttpd/breakage.log``
   - dcmsrv : ``tail -n 2000 -f /var/log/lighttpd/access.log``
 
-- Note that by default the docker container will stop running if the process it is following is turned off. For example flask with dcmsrv. You can get around this by having the script being followed never close (e.g. sleep infinity) https://stackoverflow.com/questions/31870222/how-can-i-keep-container-running-on-kubernetes
 - You may have to restart the glassfish domain occasionally to deal with memory filling up. If deployment is getting reallllllly slow, its a good time.
 
 Repository Storage Abstraction Layer (RSAL)
 -------------------------------------------
+
+Steps to set up a DCM via Docker for Development
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+See https://github.com/IQSS/dataverse/blob/develop/conf/docker-dcm/readme.md
+
+Using the RSAL Docker Containers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Create a dataset (either with the procedure mentioned in DCM Docker Containers, or another process)
+- Publish the dataset (from the client container): ``cd /mnt; ./publish_major.bash ${database_id}``
+- Run the RSAL component of the workflow (from the host): ``docker exec -it rsalsrv /opt/rsal/scn/pub.py``
+- If desired, from the client container you can download the dataset following the instructions in the dataset access section of the dataset page.
 
 Configuring the RSAL Mock
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Info for configuring the RSAL Mock: https://github.com/sbgrid/rsal/tree/master/mocks
 
-Also, to configure Dataverse to use the new workflow you must do the following (see also the section below on workflows):
+Also, to configure Dataverse to use the new workflow you must do the following (see also the :doc:`workflows` section):
 
 1. Configure the RSAL URL:
 
@@ -301,98 +267,4 @@ In the GUI, this is called "Local Access". It's where you can compute on files o
 
 ``curl http://localhost:8080/api/admin/settings/:LocalDataAccessPath -X PUT -d "/programs/datagrid"``
 
-Workflows
----------
 
-Dataverse can perform two sequences of actions when datasets are published: one prior to publishing (marked by a ``PrePublishDataset`` trigger), and one after the publication has succeeded (``PostPublishDataset``). The pre-publish workflow is useful for having an external system prepare a dataset for being publicly accessed (a possibly lengthy activity that requires moving files around, uploading videos to a streaming server, etc.), or to start an approval process. A post-publish workflow might be used for sending notifications about the newly published dataset.
-
-Workflow steps are created using *step providers*. Dataverse ships with an internal step provider that offers some basic functionality, and with the ability to load 3rd party step providers. This allows installations to implement functionality they need without changing the Dataverse source code.
-
-Steps can be internal (say, writing some data to the log) or external. External steps involve Dataverse sending a request to an external system, and waiting for the system to reply. The wait period is arbitrary, and so allows the external system unbounded operation time. This is useful, e.g., for steps that require human intervension, such as manual approval of a dataset publication.
-
-The external system reports the step result back to dataverse, by sending a HTTP ``POST`` command to ``api/workflows/{invocation-id}``. The body of the request is passed to the paused step for further processing.
-
-If a step in a workflow fails, Dataverse make an effort to roll back all the steps that preceeded it. Some actions, such as writing to the log, cannot be rolled back. If such an action has a public external effect (e.g. send an EMail to a mailing list) it is advisable to put it in the post-release workflow.
-
-.. tip::
-  For invoking external systems using a REST api, Dataverse's internal step
-  provider offers a step for sending and receiving customizable HTTP requests.
-  It's called *http/sr*, and is detailed below.
-
-Administration
-~~~~~~~~~~~~~~
-
-A Dataverse instance stores a set of workflows in its database. Workflows can be managed using the ``api/admin/workflows/`` endpoints of the :doc:`/api/native-api`. Sample workflow files are available in ``scripts/api/data/workflows``.
-
-At the moment, defining a workflow for each trigger is done for the entire instance, using the endpoint ``api/admin/workflows/default/«trigger type»``.
-
-In order to prevent unauthorized resuming of workflows, Dataverse maintains a "white list" of IP addresses from which resume requests are honored. This list is maintained using the ``/api/admin/workflows/ip-whitelist`` endpoint of the :doc:`/api/native-api`. By default, Dataverse honors resume requests from localhost only (``127.0.0.1;::1``), so set-ups that use a single server work with no additional configuration.
-
-
-Available Steps
-~~~~~~~~~~~~~~~
-
-Dataverse has an internal step provider, whose id is ``:internal``. It offers the following steps:
-
-log
-^^^
-
-A step that writes data about the current workflow invocation to the instance log. It also writes the messages in its ``parameters`` map.
-
-.. code:: json
-
-  {
-     "provider":":internal",
-     "stepType":"log",
-     "parameters": {
-         "aMessage": "message content",
-         "anotherMessage": "message content, too"
-     }
-  }
-
-
-pause
-^^^^^
-
-A step that pauses the workflow. The workflow is paused until a POST request is sent to ``/api/workflows/{invocation-id}``.
-
-.. code:: json
-
-  {
-      "provider":":internal",
-      "stepType":"pause"
-  }
-
-
-http/sr
-^^^^^^^
-
-A step that sends a HTTP request to an external system, and then waits for a response. The response has to match a regular expression specified in the step parameters. The url, content type, and message body can use data from the workflow context, using a simple markup language. This step has specific parameters for rollback.
-
-.. code:: json
-
-  {
-    "provider":":internal",
-    "stepType":"http/sr",
-    "parameters": {
-        "url":"http://localhost:5050/dump/${invocationId}",
-        "method":"POST",
-        "contentType":"text/plain",
-        "body":"START RELEASE ${dataset.id} as ${dataset.displayName}",
-        "expectedResponse":"OK.*",
-        "rollbackUrl":"http://localhost:5050/dump/${invocationId}",
-        "rollbackMethod":"DELETE ${dataset.id}"
-    }
-  }
-
-Available variables are:
-
-* ``invocationId``
-* ``dataset.id``
-* ``dataset.identifier``
-* ``dataset.globalId``
-* ``dataset.displayName``
-* ``dataset.citation``
-* ``minorVersion``
-* ``majorVersion``
-* ``releaseStatus``

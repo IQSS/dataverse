@@ -21,20 +21,20 @@
                     <f:viewParam name="ownerId" value="#{GuestbookPage.ownerId}"/>
                     <f:viewParam name="sourceId" value="#{GuestbookPage.sourceId}"/>
                     <f:viewParam name="editMode" value="#{GuestbookPage.editMode}"/>
+                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{GuestbookPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(GuestbookPage.dataverse, (GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : GuestbookPage.guestbook.name))}"/>
                 </f:metadata>
 
                 <h:form id="guestbookForm">
+                    <p:focus context="guestbookForm"/>
                     <!-- Header / Button Panel -->
                     <ui:fragment rendered="#{empty GuestbookPage.editMode}">
                         <!-- View mode -->
                         <div class="row form-horizontal">
                             <div class="col-xs-6 form-group">
                                 <label class="col-sm-3 control-label" for="guestbookNameStatic">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.guestbook.name.tip']}">
-                                        #{bundle['dataset.manageGuestbooks.guestbook.name']}
-                                    </span>
+                                    #{bundle['dataset.manageGuestbooks.guestbook.name']}
                                 </label>
                                 <div class="col-sm-9">
                                     <p class="form-control-static">
@@ -49,9 +49,10 @@
                     <div class="form-horizontal" jsf:rendered="#{!empty GuestbookPage.editMode}">
                         <div class="form-group">
                             <label class="col-sm-3 control-label" for="guestbookName">
-                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.guestbook.name.tip']}">
-                                    #{bundle['dataset.manageGuestbooks.guestbook.name']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span>
-                                </span>
+                                #{bundle['dataset.manageGuestbooks.guestbook.name']} 
+                                <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span>
+                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.manageGuestbooks.guestbook.name.tip']}"></span>
                             </label>
                             <div class="col-sm-6">
                                 <p:inputText id="guestbookName" styleClass="form-control" value="#{GuestbookPage.guestbook.name}"/>
@@ -184,19 +185,16 @@
                             </div>
                         </div>
                     </div>
-
                     <!-- Create/Save Dataset Button Panel -->
                     <div class="button-block" jsf:rendered="#{!empty GuestbookPage.editMode}">
-                        <h:commandButton type="submit" action="#{GuestbookPage.save()}" class="btn btn-default"
+                        <h:commandButton type="submit" action="#{GuestbookPage.save()}" styleClass="btn btn-default"
                                          value="#{GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : bundle.saveChanges}">
                             <f:param name="SKIP_VALIDATION" value="true"/>
                         </h:commandButton>
-                        <h:button class="btn btn-default" value="#{bundle.cancel}" outcome="/manage-guestbooks.xhtml?dataverseId=#{GuestbookPage.dataverse.id}" />
+                        <h:button class="btn btn-link" value="#{bundle.cancel}" outcome="/manage-guestbooks.xhtml?dataverseId=#{GuestbookPage.dataverse.id}"/>
                     </div>
-
                 </h:form>
             </ui:define>
         </ui:composition>
     </h:body>
 </html>
-

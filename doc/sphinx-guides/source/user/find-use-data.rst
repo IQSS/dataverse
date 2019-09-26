@@ -14,7 +14,7 @@ A user can search within a specific dataverse for the dataverses, datasets, and 
 
 Basic Search
 ------------
-You can search the entire contents of the Dataverse installation, including dataverses, datasets, and files. You can access the search through the search bar on the homepage, or by clicking the magnifying glass icon in the header of every page. The search bar accepts search terms, queries, or exact phrases (in quotations).
+You can search the entire contents of the Dataverse installation, including dataverses, datasets, and files. You can access the search by clicking the "Search" button in the header of every page. The search bar accepts search terms, queries, or exact phrases (in quotations).
 
 Sorting and Viewing Search Results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -42,7 +42,7 @@ out more about what each field searches, hover over the field name for a detaile
 Browsing Dataverse
 ------------------
 
-In Dataverse, browsing is the default view when a user hasn't begun a search on the homepage or on a specific dataverse's page.  When browsing, only dataverses and datasets appear in the results list and the results can be sorted by Name (A-Z or Z-A) and by Newest or Oldest.
+In Dataverse, browsing is the default view when a user hasn't begun a search on the root dataverse page or on a specific dataverse's page.  When browsing, only dataverses and datasets appear in the results list and the results can be sorted by Name (A-Z or Z-A) and by Newest or Oldest. You can toggle the "Files" facet on the left to include files in the results list.
 
 Saved Search
 ------------
@@ -64,6 +64,24 @@ View Files
 
 Files in Dataverse each have their own page that can be reached through the search results or through the Files table on their parent dataset's page. The dataset page and file page offer much the same functionality in terms of viewing and editing files, with a few small exceptions. The file page includes the file's persistent identifier (DOI or handle), which can be found under the Metadata tab. Also, the file page's Versions tab gives you a version history that is more focused on the individual file rather than the dataset as a whole. 
 
+File Search within Datasets
+---------------------------
+
+Datasets containing multiple files offer a file search function. On the Dataset page, under the Files tab, you'll see a search bar you can use to locate an individual file. It searches within the filename and file description. Performing a search will filter the file table to list only files matching your search. After you perform a search, if you'd like to return to the full list of files, just perform an empty search. 
+
+Under the search bar, you'll see file search facets you can use to filter the dataset's files by file type, access level, and file tags (see the example below). 
+
+|image-file-search-facets|
+
+(To provide these search facets, we rely on the Solr search engine. Only the latest published version and any draft version of each dataset are indexed in Solr. Because of that, facets cannot be offered for older versions of a dataset.)
+
+Tree View
+---------
+
+Files can be organized in one or more folders (directories) within a dataset. If the folder structure is defined, the Dataset Page will present an option for switching between the traditional table view, and the tree-like view showing folder and file hierarchy, as in the example below: 
+
+|image-file-tree-view|
+
 Cite Data
 ---------
 
@@ -74,7 +92,7 @@ You can find the citation for the dataset at the top of the dataset page in a bl
 Download Files
 --------------
 
-Within the Files tab on a dataset page, you can download the files in that dataset. To download more than one file at a time, select the files you would like to download and then click the Download button above the files. The selected files will download in zip format.
+Within the Files tab on a dataset page, you can download the files in that dataset. To download more than one file at a time, select the files you would like to download and then click the Download button above the files. The selected files will download in .zip format that preserves any folder structure that the dataset owner had set up.
 
 You may also download a file from its file page by clicking the Download button in the upper right corner of the page, or by :ref:`url_download` under the Metadata tab on the lower half of the page.
 
@@ -121,7 +139,7 @@ rsync is typically used for synchronizing files and directories between two diff
 
 rsync-enabled Dataverse installations offer a new file download process that differs from traditional browser-based downloading. Instead of multiple files, each dataset uploaded via rsync contains a single "Dataverse Package". When you download this package you will receive a folder that contains all files from the dataset, arranged in the exact folder structure in which they were originally uploaded.
 
-In a dataset containing a Dataverse Package, at the bottom of the dataset page, under the **Data Access** tab, instead of a download button you will find the information you need in order to download the Dataverse Package using rsync. If the data is locally available to you (on a shared drive, for example) then you can find it at the folder path under **Local Access**. Otherwise, to download the Dataverse Package you will have to use one of the rsync commands under **Download Access**. There may be multiple commands listed, each corresponding to a different mirror that hosts the Dataverse Package. Go outside your browser and open a terminal (AKA command line) window on your computer. Use the terminal to run the command that corresponds with the mirror of your choice. It's usually best to choose the mirror that is geographically closest to you. Running this command will initiate the download process.
+In a dataset containing a Dataverse Package, the information to download and/or access is in two places. You can find it on the **dataset page** under the **Files** tab, and on the **file page** under the **Data Access** tab. If the data is locally available to you (on a shared drive, for example) you will find the folder path to access the data locally. To download, use one of the rsync commands provided. There may be multiple commands, each corresponding to a different mirror that hosts the Dataverse Package. Go outside your browser and open a terminal (AKA command line) window on your computer. Use the terminal to run the command that corresponds with the mirror of your choice. It’s usually best to choose the mirror that is geographically closest to you. Running this command will initiate the download process.
 
 After you've downloaded the Dataverse Package, you may want to double-check that your download went perfectly. Under **Verify Data**, you'll find a command that you can run in your terminal that will initiate a checksum to ensure that the data you downloaded matches the data in Dataverse precisely. This way, you can ensure the integrity of the data you're working with. 
 
@@ -129,3 +147,9 @@ Explore Data
 ------------
 
 Please see the :doc:`/user/data-exploration/index`.
+
+.. |image-file-tree-view| image:: ./img/file-tree-view.png
+   :class: img-responsive
+.. |image-file-search-facets| image:: ./img/file-search-facets.png
+   :class: img-responsive
+

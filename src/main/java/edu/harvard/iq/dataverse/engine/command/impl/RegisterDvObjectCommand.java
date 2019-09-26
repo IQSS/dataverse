@@ -14,6 +14,9 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
+import java.io.IOException;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  *
@@ -132,8 +135,16 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
         if (this.migrateHandle) {
             //Only continue if you can successfully migrate the handle
             boolean doNormalSolrDocCleanUp = true;
-            ctxt.index().indexDataset((Dataset) target, doNormalSolrDocCleanUp);
-            ctxt.solrIndex().indexPermissionsForOneDvObject((Dataset) target);
+            Dataset dataset = (Dataset) target;
+            try {
+                ctxt.index().indexDataset(dataset, doNormalSolrDocCleanUp);
+                ctxt.solrIndex().indexPermissionsForOneDvObject( dataset);
+            } catch (IOException | SolrServerException e) {
+                String failureLogText = "Post migrate handle dataset indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+                failureLogText += "\r\n" + e.getLocalizedMessage();
+                LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, dataset);
+
+            }
         }
     }
     

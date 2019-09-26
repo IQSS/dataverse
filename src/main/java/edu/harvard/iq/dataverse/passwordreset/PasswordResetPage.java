@@ -24,6 +24,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.faces.component.UIComponent;
@@ -56,6 +57,9 @@ public class PasswordResetPage implements java.io.Serializable {
     @EJB
     PasswordValidatorServiceBean passwordValidatorService;
     
+    @EJB
+    SystemConfig systemConfig;
+
     /**
      * The unique string used to look up a user and continue the password reset
      * process.
@@ -113,7 +117,7 @@ public class PasswordResetPage implements java.io.Serializable {
             PasswordResetData passwordResetData = passwordResetInitResponse.getPasswordResetData();
             if (passwordResetData != null) {
                 BuiltinUser foundUser = passwordResetData.getBuiltinUser();
-                passwordResetUrl = passwordResetInitResponse.getResetUrl();
+                passwordResetUrl = passwordResetInitResponse.getResetUrl(systemConfig.getDataverseSiteUrl());
                 actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "passwordResetSent")
                             .setInfo("Email Address: " + emailAddress) );
             } else {
@@ -124,7 +128,8 @@ public class PasswordResetPage implements java.io.Serializable {
                  */
                 logger.log(Level.INFO, "Couldn''t find single account using {0}", emailAddress);
             }
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetInitiated"), ""));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetInitiated"), 
+                    BundleUtil.getStringFromBundle("passwdReset.successSubmit.tip", Arrays.asList(emailAddress))));
         } catch (PasswordResetException ex) {
             /**
              * @todo do we really need a special exception for this??

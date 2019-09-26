@@ -12,6 +12,7 @@
     <h:body>
         <f:metadata>
             <f:viewParam name="dataverseId" value="#{dataverseServiceBean.findRootDataverse().id}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{DashboardUsersPage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverse.id), bundle['dashboard.title'])}"/> 
@@ -23,6 +24,7 @@
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
                 <h:form id="dashboardUsersForm">
+                    <p:focus for="searchFiles"/>
                     <div jsf:id="userssHeaderBlock" class="row">
                         <div class="col-xs-6">
                             <div class="input-group">
@@ -69,8 +71,7 @@
                             <p:commandButton id="removeRolesButton" 
                                             rendered="#{!empty user.roles}" 
                                             value="#{bundle['dashboard.list_users.tbl_header.roles.removeAll']}" 
-                                            styleClass="btn btn-default" 
-                                            type="button">
+                                            styleClass="btn btn-default">
                                 <p:ajax event="click" 
                                         oncomplete="PF('removeRolesConfirm').show();"
                                         process="@this" 
@@ -89,6 +90,7 @@
                         </p:column>
                     </p:dataTable>
                     <p:dialog styleClass="smallPopUp" id="toggleSuperuserConfirmation" header="#{bundle['dashboard.list_users.toggleSuperuser']}" widgetVar="toggleSuperuserConfirmation" modal="true" closable="false">
+                        <p:focus context="toggleSuperuserConfirmation"/>
                         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/>
                             <h:outputFormat value=" #{bundle['dashboard.list_users.toggleSuperuser.confirmationText.add']} " rendered="#{DashboardUsersPage.selectedUserDetached.superuser}">
                                 <f:param value="#{DashboardUsersPage.selectedUserDetached.userIdentifier}"/>
@@ -98,15 +100,17 @@
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dashboard.list_users.toggleSuperuser.confirm']}" action="#{DashboardUsersPage.saveSuperuserStatus()}" update="userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle['cancel']}" action="#{DashboardUsersPage.cancelSuperuserStatusChange()}"  update=":dashboardUsersForm:userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.yes}" action="#{DashboardUsersPage.saveSuperuserStatus()}" update="userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
+                            <p:commandButton styleClass="btn btn-link" value="#{bundle.no}" action="#{DashboardUsersPage.cancelSuperuserStatusChange()}" update=":dashboardUsersForm:userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
                         </div>
                     </p:dialog>
-                    <p:dialog id="removeRolesConfirm" header="#{bundle['dashboard.list_users.tbl_header.roles.removeAll.header']}" widgetVar="removeRolesConfirm">
+                    <p:dialog id="removeRolesConfirm" header="#{bundle['dashboard.list_users.tbl_header.roles.removeAll.header']}" widgetVar="removeRolesConfirm" modal="true" closable="false">
                         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{DashboardUsersPage.confirmRemoveRolesMessage}</p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.yes}" update="userTable,:messagePanel" oncomplete="PF('removeRolesConfirm').hide();" action="#{DashboardUsersPage.removeUserRoles()}" />
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.no}" onclick="PF('removeRolesConfirm').hide();" type="button" />
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.yes}" update="userTable,:messagePanel" oncomplete="PF('removeRolesConfirm').hide();" action="#{DashboardUsersPage.removeUserRoles()}"/>
+                            <button class="btn btn-link" onclick="PF('removeRolesConfirm').hide()" type="button">
+                                #{bundle.no}
+                            </button>
                         </div>
                     </p:dialog>
                 </h:form>

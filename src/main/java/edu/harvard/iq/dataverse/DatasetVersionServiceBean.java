@@ -5,13 +5,19 @@ import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import static edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordJobListener.SEP;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +35,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import org.apache.commons.lang.StringUtils;
+import org.apache.solr.client.solrj.SolrServerException;
     
 /**
  *
@@ -39,6 +46,8 @@ import org.apache.commons.lang.StringUtils;
 public class DatasetVersionServiceBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetVersionServiceBean.class.getCanonicalName());
+
+    private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
     @EJB
     DatasetServiceBean datasetService;
@@ -99,7 +108,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 if (DatasetVersionServiceBean.this.isVersionAskingForDraft(this.requestedVersion)){
                     userMsg = BundleUtil.getStringFromBundle("file.viewDiffDialog.msg.draftNotFound");
                 }else{
-                    userMsg = BundleUtil.getStringFromBundle("file.viewDiffDialog.msg.versionNotFound", Arrays.asList(this.requestedVersion));
+                    userMsg = BundleUtil.getStringFromBundle("file.viewDiffDialog.msg.versionNotFound", Arrays.asList(MarkupChecker.escapeHtml(this.requestedVersion)));
                 }
                 
                 if (DatasetVersionServiceBean.this.isVersionAskingForDraft(this.actualVersion)){
@@ -146,7 +155,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     }
 
     public DatasetVersion findByFriendlyVersionNumber(Long datasetId, String friendlyVersionNumber) {
-        //FIXME: this logic doesn't work
         Long majorVersionNumber = null;
         Long minorVersionNumber = null;
 
@@ -163,7 +171,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         } catch (NumberFormatException n) {
             return null;
         }
-
         if (minorVersionNumber != null) {
             String queryStr = "SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber and v.minorVersionNumber= :minorVersionNumber";
             DatasetVersion foundDatasetVersion = null;
@@ -178,17 +185,13 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 // DO nothing, just return null.
             }
             return foundDatasetVersion;
-
         }
-        
+
         if (majorVersionNumber == null && minorVersionNumber == null) {
-
             return null;
-
         }
 
         if (majorVersionNumber != null && minorVersionNumber == null) {
-
             try {
                 TypedQuery<DatasetVersion> typedQuery = em.createQuery("SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber", DatasetVersion.class);
                 typedQuery.setParameter("datasetId", datasetId);
@@ -204,18 +207,16 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                         }
                     }
                 }
-
                 return retVal;
-
             } catch (javax.persistence.NoResultException e) {
                 logger.warning("no ds version found: " + datasetId + " " + friendlyVersionNumber);
                 // DO nothing, just return null.
             }
 
         }
-
         return null;
     }
+
     
     /** 
      *   Parse a Persistent Id and return as 3 strings.        
@@ -314,7 +315,15 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             }
         }
         return contNames;
-    }   
+    } 
+    
+    public List<DatasetVersionUser> getDatasetVersionUsersByAuthenticatedUser(AuthenticatedUser user){
+        
+        TypedQuery<DatasetVersionUser> typedQuery = em.createQuery("SELECT u from DatasetVersionUser u where u.authenticatedUser.id = :authenticatedUserId", DatasetVersionUser.class);
+                typedQuery.setParameter("authenticatedUserId", user.getId());
+                return typedQuery.getResultList();        
+
+    }
 
     /**
      * Query to return the last Released DatasetVersion by Persistent ID
@@ -796,6 +805,19 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         }
     }
     
+    public void writeEditVersionLog(DatasetVersionDifference dvd, AuthenticatedUser au) {
+
+        String logDir = System.getProperty("com.sun.aas.instanceRoot") + SEP + "logs" + SEP + "edit-drafts" + SEP;
+        String identifier = dvd.getOriginalVersion().getDataset().getIdentifier();
+        identifier = identifier.substring(identifier.indexOf("/") + 1);
+        String datasetId = dvd.getOriginalVersion().getDataset().getId().toString();
+        String summary = au.getFirstName() + " " + au.getLastName() + " (" + au.getIdentifier() + ") updated " + dvd.getEditSummaryForLog();
+        String logTimestamp = logFormatter.format(new Date());
+        String fileName = "/edit-draft-" + datasetId + "-" + identifier + "-" + logTimestamp + ".txt";
+        LoggingUtil.saveLogFile(summary, logDir, fileName);
+        
+    }
+    
     public void populateDatasetSearchCard(SolrSearchResult solrSearchResult) {
         Long dataverseId = Long.parseLong(solrSearchResult.getParent().get("id"));
         Long datasetVersionId = solrSearchResult.getDatasetVersionId();
@@ -1073,8 +1095,13 @@ w
 
         // reindexing the dataset, to make sure the new UNF is in SOLR:
         boolean doNormalSolrDocCleanUp = true;
-        Future<String> indexingResult = indexService.indexDataset(datasetVersion.getDataset(), doNormalSolrDocCleanUp);
-        
+        try {
+            Future<String> indexingResult = indexService.indexDataset(datasetVersion.getDataset(), doNormalSolrDocCleanUp);
+        } catch (IOException | SolrServerException e) {    
+            String failureLogText = "Post UNF update indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + datasetVersion.getDataset().getId().toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText,  datasetVersion.getDataset());
+        }
         return info;
     }
     

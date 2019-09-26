@@ -53,7 +53,13 @@ Fork https://github.com/IQSS/dataverse and then clone your fork like this:
 Build the Dataverse War File
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Launch Netbeans and click "File" and then "Open Project". Navigate to where you put the Dataverse code and double-click "dataverse" to open the project. Click "Run" in the menu and then "Build Project (dataverse)". The first time you build the war file, it will take a few minutes while dependencies are downloaded from Maven Central. Feel free to move on to other steps but check back for "BUILD SUCCESS" at the end.
+To build the Dataverse war file using versions of Netbeans newer than 8.2 requires some setup because Java EE support is not enabled by default. An alternative is to build the war file with Maven, which is explained below.
+
+Launch Netbeans and click "File" and then "Open Project". Navigate to where you put the Dataverse code and double-click "dataverse" to open the project.
+
+If you are using Netbeans 8.2, Java EE support should "just work" but if you are using a newer version of Netbeans, you will see "dataverse (broken)". If you see "broken", click "Tools", "Plugins", and "Installed". Check the box next to "Java Web and EE" and click "Activate". Let Netbeans install all the dependencies. You will observe that the green "Active" checkmark does not appear next to "Java Web and EE". Restart Netbeans.
+
+In Netbeans, select "dataverse" under Projects and click "Run" in the menu and then "Build Project (dataverse)". The first time you build the war file, it will take a few minutes while dependencies are downloaded from Maven Central. Feel free to move on to other steps but check back for "BUILD SUCCESS" at the end.
 
 If you installed Maven instead of Netbeans, run ``mvn package``.
 
@@ -86,6 +92,19 @@ To install Glassfish, run the following commands:
 
 ``sudo chown -R $USER /usr/local/glassfish4``
 
+Test Glassfish Startup Time on Mac
+++++++++++++++++++++++++++++++++++
+
+``cd /usr/local/glassfish4/glassfish/bin``
+
+``./asadmin start-domain``
+
+``grep "startup time" /usr/local/glassfish4/glassfish/domains/domain1/logs/server.log``
+
+If you are seeing startup times in the 30 second range (31,584ms for "Felix" for example) please be aware that startup time can be greatly reduced (to less than 1.5 seconds in our testing) if you make a small edit to your ``/etc/hosts`` file as described at https://stackoverflow.com/questions/39636792/jvm-takes-a-long-time-to-resolve-ip-address-for-localhost/39698914#39698914 and https://thoeni.io/post/macos-sierra-java/
+
+Look for a line that says ``127.0.0.1 localhost`` and add a space followed by the output of ``hostname`` which should be something like ``foobar.local`` depending on the name of your Mac. For example, the line would say ``127.0.0.1 localhost foobar.local`` if your Mac's name is "foobar".
+
 Install PostgreSQL
 ~~~~~~~~~~~~~~~~~~
 
@@ -112,7 +131,7 @@ On Linux, you should just install PostgreSQL from your package manager without w
 Install Solr
 ~~~~~~~~~~~~
 
-`Solr <http://lucene.apache.org/solr/>`_ 7.3.0 is required.
+`Solr <http://lucene.apache.org/solr/>`_ 7.3.1 is required.
 
 To install Solr, execute the following commands:
 
@@ -122,23 +141,23 @@ To install Solr, execute the following commands:
 
 ``cd /usr/local/solr``
 
-``curl -O http://archive.apache.org/dist/lucene/solr/7.3.0/solr-7.3.0.tgz``
+``curl -O http://archive.apache.org/dist/lucene/solr/7.3.1/solr-7.3.1.tgz``
 
-``tar xvfz solr-7.3.0.tgz``
+``tar xvfz solr-7.3.1.tgz``
 
-``cd solr-7.3.0/server/solr``
+``cd solr-7.3.1/server/solr``
 
 ``cp -r configsets/_default collection1``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.3.0/schema.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.3.1/schema.xml``
 
 ``mv schema.xml collection1/conf``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.3.0/solrconfig.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.3.1/solrconfig.xml``
 
 ``mv solrconfig.xml collection1/conf/solrconfig.xml``
 
-``cd /usr/local/solr/solr-7.3.0``
+``cd /usr/local/solr/solr-7.3.1``
 
 ``bin/solr start``
 
@@ -172,6 +191,8 @@ Configure Your Development Environment for Publishing
 Run the following command:
 
 ``curl http://localhost:8080/api/admin/settings/:DoiProvider -X PUT -d FAKE``
+
+This will disable DOI registration by using a fake (in-code) DOI provider. Please note that this feature is only available in version >= 4.10 and that at present, the UI will give no indication that the DOIs thus minted are fake.
 
 Next Steps
 ----------

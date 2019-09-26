@@ -12,10 +12,15 @@ import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.FileDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+import edu.harvard.iq.dataverse.datavariable.VariableRange;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
-import edu.harvard.iq.dataverse.datavariable.VariableRange;
+import edu.harvard.iq.dataverse.datavariable.VarGroup;
+import edu.harvard.iq.dataverse.datavariable.CategoryMetadata;
+
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.LEVEL_FILE;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_TAG;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_UNF;
@@ -31,22 +36,44 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.json.JsonObject;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.w3c.dom.Document;
+import org.w3c.dom.DOMException;
+
+// For write operation
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 public class DdiExportUtil {
 
     private static final Logger logger = Logger.getLogger(DdiExportUtil.class.getCanonicalName());
+
+    @EJB
+    VariableServiceBean variableService;
     
     public static final String NOTE_TYPE_CONTENTTYPE = "DATAVERSE:CONTENTTYPE";
     public static final String NOTE_SUBJECT_CONTENTTYPE = "Content/MIME Type";
@@ -1238,7 +1265,7 @@ public class DdiExportUtil {
     // plus, the structure of file-level metadata is currently being re-designed, 
     // so we probably should not invest any time into it right now). -- L.A. 4.5
     
-    private static void createDataDscr(XMLStreamWriter xmlw, DatasetVersion datasetVersion) throws XMLStreamException {
+    public static void createDataDscr(XMLStreamWriter xmlw, DatasetVersion datasetVersion) throws XMLStreamException {
 
         if (datasetVersion.getFileMetadatas() == null || datasetVersion.getFileMetadatas().isEmpty()) {
             return;
@@ -1256,11 +1283,14 @@ public class DdiExportUtil {
                     xmlw.writeStartElement("dataDscr");
                     tabularData = true;
                 }
+                for (VarGroup varGrp : fileMetadata.getVarGroups()) {
+                    createVarGroupDDI(xmlw, varGrp);
+                }
 
                 List<DataVariable> vars = dataFile.getDataTable().getDataVariables();
 
                 for (DataVariable var : vars) {
-                    createVarDDI(xmlw, var);
+                    createVarDDI(xmlw, var, fileMetadata);
                 }
             }
         }
@@ -1269,11 +1299,40 @@ public class DdiExportUtil {
             xmlw.writeEndElement(); // dataDscr
         }
     }
+    private static void createVarGroupDDI(XMLStreamWriter xmlw, VarGroup varGrp) throws XMLStreamException {
+        xmlw.writeStartElement("varGrp");
+        writeAttribute(xmlw, "ID", "VG" + varGrp.getId().toString());
+        String vars = "";
+        Set<DataVariable> varsInGroup = varGrp.getVarsInGroup();
+        for (DataVariable var : varsInGroup) {
+            vars = vars + " v" + var.getId();
+        }
+        vars = vars.trim();
+        writeAttribute(xmlw, "var", vars );
+
+
+        if (!StringUtilisEmpty(varGrp.getLabel())) {
+            xmlw.writeStartElement("labl");
+            xmlw.writeCharacters(varGrp.getLabel());
+            xmlw.writeEndElement(); // group label (labl)
+        }
+
+        xmlw.writeEndElement(); //varGrp
+    }
     
-    private static void createVarDDI(XMLStreamWriter xmlw, DataVariable dv) throws XMLStreamException {
+    private static void createVarDDI(XMLStreamWriter xmlw, DataVariable dv, FileMetadata fileMetadata) throws XMLStreamException {
         xmlw.writeStartElement("var");
         writeAttribute(xmlw, "ID", "v" + dv.getId().toString());
         writeAttribute(xmlw, "name", dv.getName());
+
+        VariableMetadata vm = null;
+        for (VariableMetadata vmIter : dv.getVariableMetadatas()) {
+            FileMetadata fm = vmIter.getFileMetadata();
+            if (fm != null && fm.equals(fileMetadata) ){
+                vm = vmIter;
+                break;
+            }
+        }
 
         if (dv.getNumberOfDecimalPoints() != null) {
             writeAttribute(xmlw, "dcml", dv.getNumberOfDecimalPoints().toString());
@@ -1287,6 +1346,15 @@ public class DdiExportUtil {
             String interval = dv.getIntervalLabel();
             if (interval != null) {
                 writeAttribute(xmlw, "intrvl", interval);
+            }
+        }
+
+        if (vm != null) {
+            if (vm.isIsweightvar()) {
+                writeAttribute(xmlw, "wgt", "wgt");
+            }
+            if (vm.isWeighted() && vm.getWeightvariable() != null) {
+                writeAttribute(xmlw, "wgt-var", "v"+vm.getWeightvariable().getId().toString());
             }
         }
 
@@ -1305,10 +1373,15 @@ public class DdiExportUtil {
         writeAttribute(xmlw, "fileid", "f" + dv.getDataTable().getDataFile().getId().toString());
 
         // labl
-        if (!StringUtilisEmpty(dv.getLabel())) {
+        if ((vm == null || StringUtilisEmpty(vm.getLabel())) && !StringUtilisEmpty(dv.getLabel())) {
             xmlw.writeStartElement("labl");
             writeAttribute(xmlw, "level", "variable");
             xmlw.writeCharacters(dv.getLabel());
+            xmlw.writeEndElement(); //labl
+        } else if (vm != null && !StringUtilisEmpty(vm.getLabel())) {
+            xmlw.writeStartElement("labl");
+            writeAttribute(xmlw, "level", "variable");
+            xmlw.writeCharacters(vm.getLabel());
             xmlw.writeEndElement(); //labl
         }
 
@@ -1346,10 +1419,12 @@ public class DdiExportUtil {
         }
 
         //universe
-        if (!StringUtilisEmpty(dv.getUniverse())) {
-            xmlw.writeStartElement("universe");
-            xmlw.writeCharacters(dv.getUniverse());
-            xmlw.writeEndElement(); //universe
+        if (vm != null) {
+            if (!StringUtilisEmpty(vm.getUniverse())) {
+                xmlw.writeStartElement("universe");
+                xmlw.writeCharacters(vm.getUniverse());
+                xmlw.writeEndElement(); //universe
+            }
         }
 
         //sum stats
@@ -1397,8 +1472,23 @@ public class DdiExportUtil {
                 xmlw.writeEndElement(); //catStat
             }
 
+            //catStat weighted freq
+            if (vm != null && vm.isWeighted()) {
+                for (CategoryMetadata cm : vm.getCategoriesMetadata()) {
+                    if (cm.getCategory().getValue().equals(cat.getValue())) {
+                        xmlw.writeStartElement("catStat");
+                        writeAttribute(xmlw, "wgtd", "wgtd");
+                        writeAttribute(xmlw, "type", "freq");
+                        xmlw.writeCharacters(cm.getWfreq().toString());
+                        xmlw.writeEndElement(); //catStat
+                        break;
+                    }
+                }
+            }
+
             xmlw.writeEndElement(); //catgry
         }
+
 
         // varFormat
         xmlw.writeEmptyElement("varFormat");
@@ -1421,6 +1511,36 @@ public class DdiExportUtil {
             writeAttribute(xmlw, "type", "Dataverse:UNF");
             xmlw.writeCharacters(dv.getUnf());
             xmlw.writeEndElement(); //notes
+        }
+
+        if (vm != null) {
+            if (!StringUtilisEmpty(vm.getNotes())) {
+                xmlw.writeStartElement("notes");
+                xmlw.writeCData(vm.getNotes());
+                xmlw.writeEndElement(); //notes CDATA
+            }
+        }
+
+        if (vm != null) {
+            if (!StringUtilisEmpty(vm.getLiteralquestion()) || !StringUtilisEmpty(vm.getInterviewinstruction()) || !StringUtilisEmpty(vm.getPostquestion())) {
+                xmlw.writeStartElement("qstn");
+                if (!StringUtilisEmpty(vm.getLiteralquestion())) {
+                    xmlw.writeStartElement("qstnLit");
+                    xmlw.writeCharacters(vm.getLiteralquestion());
+                    xmlw.writeEndElement(); // qstnLit
+                }
+                if (!StringUtilisEmpty(vm.getInterviewinstruction())) {
+                    xmlw.writeStartElement("ivuInstr");
+                    xmlw.writeCharacters(vm.getInterviewinstruction());
+                    xmlw.writeEndElement(); //ivuInstr
+                }
+                if (!StringUtilisEmpty(vm.getPostquestion())) {
+                    xmlw.writeStartElement("postQTxt");
+                    xmlw.writeCharacters(vm.getPostquestion());
+                    xmlw.writeEndElement(); //ivuInstr
+                }
+                xmlw.writeEndElement(); //qstn
+            }
         }
 
         xmlw.writeEndElement(); //var
@@ -1510,6 +1630,46 @@ public class DdiExportUtil {
         }
 
         return true;
+    }
+
+    public static void datasetHtmlDDI(InputStream datafile, OutputStream outputStream) throws XMLStreamException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+
+        try {
+            Document document;
+            InputStream  styleSheetInput = DdiExportUtil.class.getClassLoader().getResourceAsStream("edu/harvard/iq/dataverse/codebook2-0.xsl");
+
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            document = builder.parse(datafile);
+
+            // Use a Transformer for output
+            TransformerFactory tFactory = TransformerFactory.newInstance();
+            StreamSource stylesource = new StreamSource(styleSheetInput);
+            Transformer transformer = tFactory.newTransformer(stylesource);
+
+            DOMSource source = new DOMSource(document);
+            StreamResult result = new StreamResult(outputStream);
+            transformer.transform(source, result);
+        } catch (TransformerConfigurationException tce) {
+            // Error generated by the parser
+            logger.severe("Transformer Factory error" + "   " + tce.getMessage());
+        } catch (TransformerException te) {
+            // Error generated by the parser
+            logger.severe("Transformation error" + "   " + te.getMessage());
+
+        } catch (SAXException sxe) {
+            // Error generated by this application
+            // (or a parser-initialization error)
+            logger.severe("SAX error " + sxe.getMessage());
+
+        } catch (ParserConfigurationException pce) {
+            // Parser with specified options can't be built
+            logger.severe("Parser configuration error " + pce.getMessage());
+        } catch (IOException ioe) {
+            // I/O error
+            logger.info("I/O error " + ioe.getMessage());
+        }
+
     }
 
 }

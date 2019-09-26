@@ -232,7 +232,7 @@
 
             <!--toggle sidebar button-->
             <p class="visible-xs-block">
-              <button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas"><i class="glyphicon glyphicon-chevron-left"></i> Filter Results</button>
+              <button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas"><i class="glyphicon glyphicon-chevron-left"></i> #{bundle['dataverse.results.btn.filterResults']}</button>
             </p>
 
             <!-- Message for zero results -->
@@ -556,7 +556,7 @@
                         </ui:repeat>
 
                         <div jsf:rendered="#{result.harvested and !empty result.harvestingDescription}" class="text-muted small margin-top-half">
-                            <span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{result.harvestingDescription}"/>
+                            <h:outputText value="#{result.harvestingDescription}"/>
                         </div>
                     </div>
                     <!--FILE CARDS-->
@@ -581,7 +581,7 @@
                         <div class="card-preview-icon-block text-center">
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? (result.harvested ? result.fileDatasetUrl : result.fileUrl) : widgetWrapper.wrapURL(result.harvested ? result.fileDatasetUrl : result.fileUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
                                 <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}"/>
-                                <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
+                                <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(result.entity)} text-muted h1"
                                       jsf:rendered="#{empty result.imageUrl}"/>
                             </a>
                         </div>
@@ -653,32 +653,31 @@
                          actionListener="#{SearchIncludeFragment.setDisplayCardValues()}" />
     </h:form>
 
-    <p:dialog header="#{bundle['dataverse.results.dialog.addDataGuest.header']}" widgetVar="addData_popup" modal="true">
+    <p:dialog id="addDataGuest" header="#{bundle['dataverse.results.dialog.addDataGuest.header']}" widgetVar="addData_popup" modal="true">
         <p class="help-block">
-            <span class="glyphicon glyphicon-warning-sign text-danger"/>
-            <h:outputFormat styleClass="text-danger" value="#{dataverseHeaderFragment.signupAllowed ? bundle['dataverse.results.dialog.addDataGuest.msg.signup'] : bundle['dataverse.results.dialog.addDataGuest.msg']}" escape="false">
-                <f:param value="#{navigationWrapper.redirectPage}"/>
-                <f:param value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}"/>
-            </h:outputFormat>
+            <h:outputText value="#{dataverseHeaderFragment.signupAllowed ? bundle['dataverse.results.dialog.addDataGuest.msg.signup'] : bundle['dataverse.results.dialog.addDataGuest.msg']}" escape="false"></h:outputText>
         </p>
         <div class="button-block">
-            <button type="button" onclick="PF('addData_popup').hide()" class="btn btn-default" value="#{bundle.close}">
-                #{bundle.close}
-            </button>
+            <ui:fragment rendered="#{dataverseHeaderFragment.signupAllowed}">
+                <a class="btn btn-default" href="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}" title="#{bundle['dataverse.results.dialog.addDataGuest.signup.title']}">#{bundle['signup']}</a>
+            </ui:fragment>
+            <a class="btn btn-default" href="/loginpage.xhtml#{navigationWrapper.redirectPage}" title="#{bundle['dataverse.results.dialog.addDataGuest.login.title']}">#{bundle['login']}</a>
         </div>
     </p:dialog>
-    <script type="text/javascript">
+    <script>
+        <ui:remove>
+        // For postLoad() see: https://github.com/IQSS/dataverse/issues/2004
+        </ui:remove>
+        //<![CDATA[
         $(document).ready(function () {
             // Calls the p:remoteCommand postLoad.
             // Posted at end of fragment to work correctly with Account information
-            <ui:remove>
-            // See: https://github.com/IQSS/dataverse/issues/2004
-            </ui:remove>
             postLoad();
 
             $('[data-toggle=offcanvas]').click(function() {
                 $('.row-offcanvas').toggleClass('active', 200);
             });
         });
+        //]]>
     </script>
 </ui:composition>
