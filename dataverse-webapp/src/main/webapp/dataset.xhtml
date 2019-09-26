@@ -44,9 +44,9 @@
             <meta property="og:title" content="#{DatasetPage.title}"/>
             <meta property="og:type" content="article"/>
             <meta property="og:url"
-                  content="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}"/>
+                  content="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}"/>
             <meta property="og:image"
-                  content="#{DatasetPage.dataverseSiteUrl.concat(resource['images/favicondataverse.png'])}"/>
+                  content="#{systemConfig.dataverseSiteUrl.concat(resource['images/favicondataverse.png'])}"/>
             <meta property="og:site_name" content="#{DatasetPage.publisher}"/>
             <meta property="og:description"
                   content="#{(DatasetPage.description.length()>150 ? DatasetPage.description.substring(0,147).concat('...'): DatasetPage.description)}"/>
@@ -67,13 +67,13 @@
                 <f:viewParam name="versionId" value="#{DatasetPage.versionId}"/>
                 <f:viewParam name="persistentId" value="#{DatasetPage.persistentId}"/>
                 <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
-                <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
+                <f:viewAction action="#{DatasetPage.init}" />
+                <f:viewAction action="#{datasetFilesTab.init(DatasetPage.workingVersion)}" />
+                <f:viewAction action="#{DatasetMetadataTab.init(DatasetPage.workingVersion, DatasetPage.locked)}"/>
                 <f:viewAction action="#{DatasetGuestbookTab.init(DatasetPage.dataset)}"/>
-                <f:viewAction
-                        action="#{DatasetMetadataTab.init(DatasetPage.dataset, DatasetPage.locked)}"/>
-                <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetPage.dataset)}"/>
                 <f:viewAction action="#{datasetVersionsTab.init(DatasetPage.dataset)}"/>
                 <f:viewAction action="#{datasetDeaccessionDialog.init(DatasetPage.dataset)}"/>
+                <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetPage.dataset)}"/>
             </f:metadata>
             <h:form id="datasetForm">
                 <!-- Header / Button Panel -->
@@ -322,7 +322,7 @@
                                 <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
 
                                 <div id="sharrre-widget"
-                                     data-url="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}"
+                                     data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}"
                                      data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
 
                                 <div class="button-block">
@@ -599,9 +599,7 @@
 
                         <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned or
                                                               (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset())}">
-                            <ui:include src="filesFragment.xhtml">
-                                <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
-                            </ui:include>
+                            <ui:include src="filesFragment.xhtml" />
                         </p:tab>
 
                         <!-- 4.2.1: the 3 tabs below - metadata, terms and versions: these account for ~100 queries total -->
@@ -628,41 +626,6 @@
                 <p:blockUI block="datasetForm" widgetVar="blockDatasetForm"/>
 
                 <!-- Popups -->
-                <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}"
-                          widgetVar="downloadInvalid" modal="true">
-                    <p class="text-danger"><span
-                            class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noValidSelectedFilesForDownload']}
-                    </p>
-                    <div class="button-block">
-                        <p:commandButton value="#{bundle.close}" onclick="PF('downloadInvalid').hide();" type="button"/>
-                    </div>
-                </p:dialog>
-                <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}"
-                          widgetVar="downloadMixed" modal="true">
-                    <p class="text-danger"><span
-                            class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.mixedSelectedFilesForDownload']}
-                    </p>
-                    <table>
-                        <ui:repeat var="resFile" value="#{DatasetPage.selectedNonDownloadableFiles}">
-                            <tr>
-                                <td>#{resFile.label}</td>
-                            </tr>
-                        </ui:repeat>
-                    </table>
-                    <div class="button-block">
-                        <p class="help-block">#{bundle['dataset.downloadUnrestricted']}</p>
-                        <ui:fragment rendered="#{!DatasetPage.downloadPopupRequired}">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()"
-                                             action="#{DatasetPage.startMultipleFileDownload()}"/>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{DatasetPage.downloadPopupRequired and !settingsWrapper.rsyncDownload}">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()"
-                                             action="#{DatasetPage.openDownloadPopupForMultipleFileDownload()}"
-                                             update="@form"/>
-                        </ui:fragment>
-                        <p:commandButton value="#{bundle.cancel}" onclick="PF('downloadMixed').hide();" type="button"/>
-                    </div>
-                </p:dialog>
                 <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDialog.header']}"
                           widgetVar="deleteConfirmation" modal="true">
                     <p class="text-warning"><span
@@ -759,300 +722,7 @@
                                          type="button"/>
                     </div>
                 </p:dialog>
-                <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}"
-                          widgetVar="deleteSelectedFileConfirmation" modal="true">
-                    <p class="text-warning"><span
-                            class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.multiple.immediate']}
-                    </p>
-                    <ui:fragment rendered="#{DatasetPage.dataset.released}">
-                        <p class="text-warning"><span
-                                class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}
-                        </p>
-                    </ui:fragment>
-                    <div class="button-block">
-                        <p:commandButton value="#{bundle['file.delete']}"
-                                         onclick="PF('deleteSelectedFileConfirmation').hide()"
-                                         action="#{DatasetPage.deleteFilesAndSave()}"/>
-                        <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteSelectedFileConfirmation').hide();
-                                    PF('blockDatasetForm').hide();" type="button"/>
-                    </div>
-                </p:dialog>
 
-                <p:dialog id="selectFilesForDownload" styleClass="smallPopUp"
-                          header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDownload"
-                          modal="true">
-                    <p class="text-danger"><span
-                            class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForDownload']}
-                    </p>
-                    <div class="button-block">
-                        <p:commandButton value="#{bundle.close}"
-                                         onclick="PF('selectFilesForDownload').hide();PF('blockDatasetForm').hide();"/>
-                    </div>
-                </p:dialog>
-
-                <p:dialog id="selectFilesForRequestAccess" styleClass="smallPopUp"
-                          header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForRequestAccess"
-                          modal="true">
-                    <p class="text-danger"><span
-                            class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForRequestAccess']}
-                    </p>
-                    <div class="button-block">
-                        <p:commandButton value="#{bundle.close}" onclick="PF('selectFilesForRequestAccess').hide();
-                                    PF('blockDatasetForm').hide();"/>
-                    </div>
-                </p:dialog>
-
-                <p:dialog id="selectFilesForDelete" styleClass="smallPopUp"
-                          header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDelete"
-                          modal="true">
-                    <p class="text-danger"><span
-                            class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForDelete']}
-                    </p>
-                    <div class="button-block">
-                        <p:commandButton value="#{bundle.close}"
-                                         onclick="PF('selectFilesForDelete').hide();PF('blockDatasetForm').hide();"/>
-                    </div>
-                </p:dialog>
-
-                <p:dialog id="selectFilesForUnRestrict" styleClass="smallPopUp"
-                          header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForUnRestrict"
-                          modal="true">
-                    <p class="text-danger"><span
-                            class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForUnRestrict']}
-                    </p>
-                    <div class="button-block">
-                        <p:commandButton value="#{bundle.close}"
-                                         onclick="PF('selectFilesForUnRestrict').hide();PF('blockDatasetForm').hide();"/>
-                    </div>
-                </p:dialog>
-
-                <p:dialog id="selectFilesForEditMetadata" styleClass="smallPopUp"
-                          header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForEditMetadata"
-                          modal="true">
-                    <p class="text-danger"><span
-                            class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForMetadataEdit']}
-                    </p>
-                    <div class="button-block">
-                        <p:commandButton value="#{bundle.close}"
-                                         onclick="PF('selectFilesForEditMetadata').hide();PF('blockDatasetForm').hide();"/>
-                    </div>
-                </p:dialog>
-
-                <p:dialog id="selectFilesForEditLicense" styleClass="smallPopUp"
-                          header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForEditLicense"
-                          modal="true">
-                    <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> Nic nie zaznaczono</p>
-                    <div class="button-block">
-                        <p:commandButton value="#{bundle.close}"
-                                         onclick="PF('selectFilesForEditLicense').hide();PF('blockDatasetForm').hide();"/>
-                    </div>
-                </p:dialog>
-
-                <p:dialog id="selectFilesForEditTags" styleClass="smallPopUp"
-                          header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForEditTags"
-                          modal="true">
-                    <p class="text-danger"><span
-                            class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForMetadataEdit']}
-                    </p>
-                    <div class="button-block">
-                        <p:commandButton value="#{bundle.close}"
-                                         onclick="PF('selectFilesForEditTags').hide();PF('blockDatasetForm').hide();"/>
-                    </div>
-                </p:dialog>
-
-                <p:remoteCommand name="refreshTagsCommand" action="#{DatasetPage.refreshTagsPopUp()}"
-                                 update=":datasetForm:fileTagsPopup"
-                                 oncomplete="PF('fileTagsPopup').show();"/>
-
-                <p:dialog id="fileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}"
-                          widgetVar="fileTagsPopup" modal="true">
-                    <p class="help-block">#{bundle['file.editTagsDialog.tip']}</p>
-                    <div class="form-horizontal" jsf:rendered="#{!(empty DatasetPage.selectedFiles)}">
-                        <div class="form-group text-left">
-                            <label for="selectedTagsList" class="col-sm-4 control-label">
-                                #{bundle['file.editTagsDialog.selectedTags']}
-                            </label>
-                            <div class="col-sm-8">
-                                <p:outputPanel id="selectedTagsList" style="padding-top:.5em;">
-                                    <h:outputText value="#{bundle['file.editTagsDialog.selectedTags.none']}"
-                                                  rendered="#{(empty DatasetPage.selectedTags) and (empty DatasetPage.selectedTabFileTags)}"/>
-
-                                    <ui:repeat value="#{DatasetPage.selectedTags}" var="tags"
-                                               rendered="#{!empty DatasetPage.selectedTags}">
-                                        <h:outputText value="#{tags}" styleClass="label label-default"
-                                                      style="margin-right:.5em;display:inline-block;"/>
-                                    </ui:repeat>
-                                    <ui:repeat value="#{DatasetPage.selectedTabFileTags}" var="tags"
-                                               rendered="#{!empty DatasetPage.selectedTabFileTags}">
-                                        <h:outputText value="#{tags}" styleClass="label label-info"
-                                                      style="margin-right:.5em;display:inline-block;"/>
-                                    </ui:repeat>
-                                </p:outputPanel>
-                            </div>
-                        </div>
-                        <div class="form-group text-left">
-                            <label for="fileTagsMenuDS" class="col-sm-4 control-label">
-                                #{bundle['file.editTagsDialog.select']}
-                            </label>
-                            <div class="col-sm-8">
-                                <p:selectCheckboxMenu id="fileTagsMenuDS" styleClass="form-control"
-                                                      value="#{DatasetPage.selectedTags}" label="#{bundle.select}">
-
-                                    <p:ajax event="toggleSelect" listener="#{DatasetPage.handleSelection}"
-                                            update="selectedTagsList"/>
-                                    <p:ajax event="change" listener="#{DatasetPage.handleSelection}"
-                                            update="selectedTagsList"/>
-
-                                    <f:selectItems value="#{DatasetPage.categoriesByName}"/>
-                                </p:selectCheckboxMenu>
-                                <p:message for="fileTagsMenuDS" display="text"/>
-                            </div>
-                        </div>
-                        <div class="form-group text-left">
-                            <label for="fileTagAddNewDS" class="col-sm-4 control-label">
-                                #{bundle['file.editTagsDialog.add']}
-                            </label>
-                            <div class="col-sm-8">
-                                <div class="row form-inline">
-                                    <div class="col-sm-12">
-                                        <p class="help-block">#{bundle['file.editTagsDialog.add.tip']}</p>
-                                        <p:inputText id="fileTagAddNewDS" styleClass="form-control"
-                                                     type="text" value="#{DatasetPage.newCategoryName}"
-                                                     placeholder="#{bundle['file.editTagsDialog.newName']}"
-                                                     onkeypress="if (event.keyCode == 13) {
-                                                                     return false;
-                                                                 }"/>
-                                        <p:commandLink styleClass="btn btn-default" style="margin-left:.5em;"
-                                                       value="#{bundle.apply}" action="#{DatasetPage.saveNewCategory}"
-                                                       update="selectedTagsList, fileTagAddNewDS, fileTagsMenuDS"/>
-                                    </div>
-                                </div>
-                                <p:message for="fileTagAddNewDS" display="text"/>
-                            </div>
-                        </div>
-                        <div class="form-group text-left" jsf:rendered="#{DatasetPage.tabularDataSelected}">
-                            <label for="tabularDataTagsDSPage" class="col-sm-4 control-label">
-                                #{bundle['file.tabularDataTags']}
-                            </label>
-                            <div class="col-sm-8">
-                                <p class="help-block">#{bundle['file.tabularDataTags.tip']}</p>
-                                <p:selectCheckboxMenu id="tabularDataTagsDSPage" styleClass="form-control"
-                                                      value="#{DatasetPage.selectedTabFileTags}"
-                                                      label="#{bundle.select}"
-                                                      filter="false">
-
-                                    <p:ajax event="toggleSelect" listener="#{DatasetPage.handleSelection}"
-                                            update="selectedTagsList"/>
-                                    <p:ajax event="change" listener="#{DatasetPage.handleSelection}"
-                                            update="selectedTagsList"/>
-
-                                    <f:selectItems value="#{DatasetPage.tabFileTags}"/>
-                                </p:selectCheckboxMenu>
-                                <p:message for="tabularDataTagsDSPage" display="text"/>
-                            </div>
-                        </div>
-                        <div class="form-group text-left">
-                            <label class="col-sm-4 control-label">
-                                #{bundle['dataset.removeUnusedFileTags.label']}
-                            </label>
-                            <div class="col-sm-8">
-                                <p class="help-block">#{bundle['dataset.removeUnusedFileTags.tip']}</p>
-                                <p:selectBooleanCheckbox id="removeUnused"
-                                                         itemLabel="#{bundle['dataset.removeUnusedFileTags.check']}"
-                                                         value="#{DatasetPage.removeUnusedTags}"
-                                                         widgetVar="removeUnused"/>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="button-block">
-                        <p:commandButton styleClass="btn btn-default" id="fileTagsPopupSaveButton"
-                                         value="#{bundle.saveChanges}" oncomplete="PF('fileTagsPopup').hide()"
-                                         update=":datasetForm:tabView:filesTable, :datasetForm"
-                                         action="#{DatasetPage.saveFileTagsAndCategories()}"/>
-                        <p:commandButton styleClass="btn btn-default" id="fileTagsPopupCancelButton"
-                                         value="#{bundle.cancel}"
-                                         onclick="PF('fileTagsPopup').hide();PF('blockDatasetForm').hide();"/>
-                    </div>
-                </p:dialog>
-                <!-- Request Access Sign Up/Log In Button -->
-                <p:dialog header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup" modal="true">
-                    <p class="help-block">
-                        <span class="glyphicon glyphicon-warning-sign text-danger"/>&#160;
-                        <h:outputFormat styleClass="text-danger"
-                                        value="#{dataverseHeaderFragment.signupAllowed ? bundle['file.requestAccess.dialog.msg.signup'] : bundle['file.requestAccess.dialog.msg']}"
-                                        escape="false">
-                            <f:param value="#{navigationWrapper.redirectPage}"/>
-                            <f:param value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}"/>
-                            <f:param value="#{widgetWrapper.widgetView ? '_blank' : '_self'}"/>
-                        </h:outputFormat>
-                    </p>
-                    <div class="button-block">
-                        <p:commandButton value="#{bundle.close}" onclick="PF('accessSignUpLogIn_popup').hide();
-                                    PF('blockDatasetForm').hide();"/>
-                    </div>
-                </p:dialog>
-                <!-- END: Request Access Sign Up/Log In Button -->
-
-                <dv:termsOfUseDialog id="editTermsOfUseDialog" widgetVar="editTermsOfUseDialog"
-                                     action="#{DatasetPage.saveTermsOfUse(editTermsOfUseDialog.termsOfUseForm)}"
-                                     update=""/>
-
-                <p:dialog header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}"
-                          widgetVar="configureToolPopup" modal="true"
-                          id="configureToolPopup" styleClass="smallPopUp">
-
-                    <ui:include src="file-configure-popup-fragment.xhtml">
-                        <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
-                    </ui:include>
-
-                </p:dialog>
-
-                <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}"
-                          widgetVar="downloadPopup" modal="true">
-                    <o:importFunctions type="edu.harvard.iq.dataverse.common.MarkupChecker"/>
-                    <ui:include src="file-download-popup-fragment.xhtml">
-                        <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
-                        <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
-                        <ui:param name="guestbookResponse" value="#{DatasetPage.fileDownloadHelper.guestbookResponse}"
-                                  rendered="#{!settingsWrapper.rsyncDownload}"/>
-                        <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
-                        <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
-                    </ui:include>
-                </p:dialog>
-                <p:dialog id="downloadPackagePopup" styleClass="smallPopUp" header="#{bundle['packageDownload.title']}"
-                          widgetVar="downloadPackagePopup" modal="true">
-                    <o:importFunctions type="edu.harvard.iq.dataverse.common.MarkupChecker"/>
-                    <ui:include src="package-download-popup-fragment.xhtml">
-                        <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
-                        <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
-                        <ui:param name="guestbookResponse" value="#{DatasetPage.fileDownloadHelper.guestbookResponse}"
-                                  rendered="#{!settingsWrapper.rsyncDownload}"/>
-                        <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
-                        <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
-                    </ui:include>
-                </p:dialog>
-
-                <p:dialog id="requestAccessPopup" styleClass="largePopUp" header="#{bundle['file.requestAccess']}"
-                          widgetVar="requestAccessPopup" modal="true">
-                    <o:importFunctions type="edu.harvard.iq.dataverse.common.MarkupChecker"/>
-                    <ui:include src="file-request-access-popup-fragment.xhtml">
-                        <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
-                        <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
-                        <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
-                    </ui:include>
-
-                </p:dialog>
-
-                <p:dialog id="downloadDataSubsetPopup" styleClass="smallPopUp"
-                          header="#{bundle['file.download.subset.header']}" widgetVar="downloadDataSubsetPopup"
-                          modal="true">
-                    <div class="form-inline clearfix"
-                         jsf:rendered="#{!(empty DatasetPage.guestbookResponse.dataFile) and DatasetPage.guestbookResponse.dataFile.tabularData}">
-                        <ui:include src="/subset/gui_subset.xhtml">
-                            <ui:param name="dataFile" value="#{DatasetPage.guestbookResponse.dataFile}"/>
-                        </ui:include>
-                    </div>
-                </p:dialog>
                 <p:dialog id="linkDatasetForm" styleClass="largePopUp" header="#{bundle['dataset.link']}"
                           widgetVar="linkDatasetForm" modal="true">
                     <div class="form-horizontal">
@@ -1330,55 +1000,6 @@
                     } else {
                         PF('sendBackToContributor').hide();
                         returnToAuthorCommand();
-                    }
-                }
-
-                function testFilesSelectedForTags() {
-                    var count = PF('filesTable').getSelectedRowsCount();
-                    if (count === 0) {
-                        PF('selectFilesForEditTags').show();
-                    } else {
-                        refreshTagsCommand();
-                    }
-                }
-
-                function testFilesSelectedForDelete() {
-                    var count = PF('filesTable').getSelectedRowsCount();
-                    if (count === 0) {
-                        PF('selectFilesForDelete').show();
-                    } else {
-                        PF('deleteSelectedFileConfirmation').show();
-                    }
-                }
-
-                function testFilesSelectedForEditMetadata() {
-                    var count = PF('filesTable').getSelectedRowsCount();
-                    if (count === 0) {
-                        PF('selectFilesForEditMetadata').show();
-                    } //else {
-                    // I commented out the code below; if there's
-                    // 1 or more file selected, I don't want this
-                    // method to activate the p:remoteCommand that
-                    // issues the redirect to the edit page (or
-                    // do anything else for that matter). Doing
-                    // it this way was, for some reason, causing
-                    // this page to still try to render (??), in
-                    // some partial, half-baked state - with no
-                    // workingVersion present, etc. - that resulted
-                    // in some NULL pointers in the logs... So,
-                    // instead, the redirect will be done by the
-                    // direct action= attribute in the original
-                    // commandButton. -- L.A. 4.2.1
-                    //openEditFilesPageCommand();
-                    //}
-                }
-
-                function testFilesSelectedForEditLicense() {
-                    var count = PF('filesTable').getSelectedRowsCount();
-                    if (count === 0) {
-                        PF('selectFilesForEditLicense').show();
-                    } else {
-                        PF('editTermsOfUseDialog').show();
                     }
                 }
 

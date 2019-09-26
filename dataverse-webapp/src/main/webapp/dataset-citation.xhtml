@@ -28,17 +28,17 @@
                         </button>
                         <ul class="dropdown-menu pull-right text-left" role="menu">
                             <li>
-                                <a jsf:id="endNoteLink" jsf:action="#{DatasetPage.fileDownloadService.downloadDatasetCitationXML(DatasetPage.dataset)}" >
+                                <a jsf:id="endNoteLink" jsf:action="#{fileDownloadService.downloadDatasetCitationXML(DatasetPage.dataset)}" >
                                     #{bundle['dataset.cite.downloadBtn.xml']}
                                 </a>
                             </li>
                             <li>
-                                <a jsf:id="risLink" jsf:actionListener="#{DatasetPage.fileDownloadService.downloadDatasetCitationRIS(DatasetPage.dataset)}">
+                                <a jsf:id="risLink" jsf:actionListener="#{fileDownloadService.downloadDatasetCitationRIS(DatasetPage.dataset)}">
                                     #{bundle['dataset.cite.downloadBtn.ris']}
                                 </a>
                             </li>
                             <li>
-                                <a jsf:id="bibLink" jsf:actionListener="#{DatasetPage.fileDownloadService.downloadDatasetCitationBibtex(DatasetPage.dataset)}" target="_blank">
+                                <a jsf:id="bibLink" jsf:actionListener="#{fileDownloadService.downloadDatasetCitationBibtex(DatasetPage.dataset)}" target="_blank">
                                     #{bundle['dataset.cite.downloadBtn.bib']}
                                 </a>
                             </li>

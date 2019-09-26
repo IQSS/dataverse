@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldUtil;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.Tuple;
@@ -73,12 +74,12 @@ public class DatasetMetadataTab implements Serializable {
 
     // -------------------- LOGIC --------------------
 
-    public void init(Dataset dataset,
+    public void init(DatasetVersion datasetVersion,
                      boolean isDatasetLocked) {
-        this.dataset = dataset;
+        this.dataset = datasetVersion.getDataset();
         this.isDatasetLocked = isDatasetLocked;
         
-        List<DatasetField> datasetFields = datasetFieldsInitializer.prepareDatasetFieldsForView(dataset.getLatestVersion().getDatasetFields());
+        List<DatasetField> datasetFields = datasetFieldsInitializer.prepareDatasetFieldsForView(datasetVersion.getDatasetFields());
         this.metadataBlocks = DatasetFieldUtil.groupByBlock(datasetFields);
     }
 
