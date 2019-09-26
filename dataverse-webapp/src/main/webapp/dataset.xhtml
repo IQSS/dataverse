@@ -680,13 +680,11 @@
                             </div>
                         </div>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default"
-                                             value="#{bundle['dataset.privateurl.createPrivateUrl']}"
+                            <p:commandButton value="#{bundle['dataset.privateurl.createPrivateUrl']}"
                                              action="#{DatasetPage.createPrivateUrl()}"
                                              update="privateUrlPanel,:messagePanel"
                                              rendered="#{empty(DatasetPage.privateUrl)}"/>
-                            <p:commandButton styleClass="btn btn-default"
-                                             value="#{bundle['dataset.privateurl.disablePrivateUrl']}"
+                            <p:commandButton value="#{bundle['dataset.privateurl.disablePrivateUrl']}"
                                              action="#{DatasetPage.setPrivateUrlJustCreatedToFalse()}"
                                              onclick="PF('privateUrlConfirmation').hide();PF('disablePrivateUrlConfirmation').show()"
                                              rendered="#{!empty(DatasetPage.privateUrl)}" update="privateUrlPanel"/>
@@ -712,12 +710,11 @@
                             class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.privateurl.disableConfirmationText']}
                     </p>
                     <div class="button-block">
-                        <p:commandButton styleClass="btn btn-default"
-                                         value="#{bundle['dataset.privateurl.disablePrivateUrlConfirm']}"
+                        <p:commandButton value="#{bundle['dataset.privateurl.disablePrivateUrlConfirm']}"
                                          action="#{DatasetPage.disablePrivateUrl()}"
                                          update="privateUrlPanel,:messagePanel"
                                          onclick="PF('disablePrivateUrlConfirmation').hide();"/>
-                        <p:commandButton styleClass="btn btn-default" value="#{bundle.cancel}"
+                        <p:commandButton value="#{bundle.cancel}"
                                          onclick="PF('disablePrivateUrlConfirmation').hide();PF('privateUrlConfirmation').show();"
                                          type="button"/>
                     </div>

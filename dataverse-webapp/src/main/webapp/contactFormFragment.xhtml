@@ -70,7 +70,7 @@
                 </div>
                 <!-- send | cancel buttons -->
                 <div class="button-block">
-                    <p:commandLink styleClass="btn btn-default" value="#{bundle['contact.send']}"
+                    <p:commandLink styleClass="btn btn-default btn-access" value="#{bundle['contact.send']}"
                                     update="@form" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('contactForm').hide();" actionListener="#{sendFeedbackDialog.sendMessage}">
                         <f:param name="DO_VALIDATION" value="true"/>
                     </p:commandLink>
