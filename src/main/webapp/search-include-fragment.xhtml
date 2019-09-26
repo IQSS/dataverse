@@ -433,16 +433,18 @@
                             </h:outputLink>
                         </div>
 
-                        <h:outputText value="#{result.dateToDisplayOnCard}" styleClass="text-muted" style="margin-right:.5em;"/>
+                        <div>
+                            <h:outputText value="#{result.dateToDisplayOnCard}" styleClass="text-muted" style="margin-right:.5em;"/>
 
-                        <c:set var="dvParentUrl" value="/dataverse/#{result.dataverseParentAlias}"/>
-                        <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentUrl : widgetWrapper.wrapURL(dvParentUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
-                            <h:outputText value="#{result.parent.get('name')}"/>
-                        </h:outputLink>
+                            <c:set var="dvParentUrl" value="/dataverse/#{result.dataverseParentAlias}"/>
+                            <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentUrl : widgetWrapper.wrapURL(dvParentUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
+                                <h:outputText value="#{result.parent.get('name')}"/>
+                            </h:outputLink>
 
-                        <hr style="margin:.5em;border:0;"/>
+                            <hr style="margin:.5em;border:0;"/>
 
-                        <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+                            <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+                        </div>
 
                         <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
                                    rendered="#{result.descriptionSnippets.size() gt 0}">
@@ -469,7 +471,7 @@
                     </div>
                     <!--DATASET CARDS-->
                     <div class="datasetResult clearfix" jsf:rendered="#{result.type == 'datasets'}">
-                        <div class="card-title-icon-block datasetResultText">
+                        <div class="card-title-icon-block">
                             <span class="glyphicon glyphicon-link text-info pull-right" title="#{bundle.linked}" jsf:rendered="#{!SearchIncludeFragment.rootDv and !result.isInTree}"/>
                             <span class="glyphicon glyphicon-new-window text-info pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
                             <!-- <span class="icon-dataset text-info pull-right" title="#{bundle.dataset}"/> -->
@@ -484,28 +486,30 @@
                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{result.deaccessionedState}"/>
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                         </div>
-                        <div class="card-preview-icon-block text-center datasetResultText">
+                        <div class="card-preview-icon-block text-center">
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">                               
                                 <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}"/>                               
                                 <span class="icon-dataset" jsf:rendered="#{empty result.imageUrl}"/>
                             </a>
                         </div>
 
-                        <h:outputText styleClass="text-muted datasetResultText" value="#{result.dateToDisplayOnCard}"/>
+                        <div>
+                            <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard}"/>
 
-                        <h:outputText styleClass="text-muted datasetResultText" value=" - " rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}"/>
+                            <h:outputText styleClass="text-muted" value=" - " rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}"/>
+                        </div>
                         
                         <c:set var="dvParentAlias" value="/dataverse/#{result.dataverseAlias}"/>
                         <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentAlias : widgetWrapper.wrapURL(dvParentAlias)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
                             <h:outputText value="#{result.parent.get('name')}"/>
                         </h:outputLink>
 
-                        <div class="datasetResultText resultDatasetCitationBlock #{result.deaccessionedState ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
+                        <div class="resultDatasetCitationBlock #{result.deaccessionedState ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
                             <h:outputText value="#{result.citationHtml != null ? result.citationHtml : result.citation}" escape="false"/>
                         </div>
-                        
-                        <div class="datasetResultText">
-                          <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+
+                        <div>
+                            <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
                         </div>
 
                         <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
@@ -589,7 +593,9 @@
                             </ui:repeat>
                         </div>
 
-                        <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+                        <div>
+                            <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+                        </div>
 
                         <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
                                    rendered="#{result.descriptionSnippets.size() gt 0}">
