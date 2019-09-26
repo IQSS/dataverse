@@ -7,12 +7,12 @@
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:c="http://java.sun.com/jsp/jstl/core"
                 xmlns:o="http://omnifaces.org/ui"
-                xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+>
 
     <!--@elvariable id="dataverse" type="edu.harvard.iq.dataverse.persistence.dataverse.Dataverse"-->
 
     <o:resourceInclude path="/CustomizationFilesServlet?customFileType=header" rendered="#{!widgetWrapper.widgetView}"/>
-    
+
     <div id="dataverse-header-block">
         <!-- Navbar Panel -->
         <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}" role="navigation">
@@ -23,7 +23,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
-                    </button>                       
+                    </button>
                     <a href="/">
                         <ui:fragment rendered="#{empty settingsWrapper.getSettingValue(':LogoCustomizationFile')}">
                             <span class="navbar-brand" tabindex="1"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
@@ -128,7 +128,7 @@
                                 </h:outputLink>
                             </li>
                         </ui:fragment>
-                        
+
                         <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                             <li class="dropdown accountName">
                                 <a href="#" id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown" role="menu" aria-haspopup="true" aria-expanded="false">
@@ -323,16 +323,17 @@
             </div>
         </ui:remove>
 
-        
 
-        
         <!-- Message Panel -->
         <p:fragment id="messagePanel" rendered="#{showMessagePanel}">
             <div class="container messagePanel">
                 <ui:remove>
                     <!--change this to <h:messages id="messages"/> to see otherwise hidden errors such as `Conversion Error setting value 'foo.jpg' for 'null Converter'`-->
                 </ui:remove>
-                <iqbs:messages id="messages" collapsible="true" />
+
+                <p:messages globalOnly="true" closable="true">
+                    <p:autoUpdate/>
+                </p:messages>
             </div>
         </p:fragment>
     </div>

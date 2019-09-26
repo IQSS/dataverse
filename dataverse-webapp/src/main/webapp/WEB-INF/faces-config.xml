@@ -10,6 +10,7 @@
         </resource-bundle>
         <resource-handler>org.omnifaces.resourcehandler.UnmappedResourceHandler</resource-handler>
     </application>
+    
     <render-kit>
         <renderer>
             <component-family>org.primefaces.component</component-family>
@@ -20,5 +21,9 @@
     <validator>
         <validator-id>requiredCheckboxValidator</validator-id>
         <validator-class>edu.harvard.iq.dataverse.util.RequiredCheckboxValidator</validator-class>
-    </validator>    
+    </validator>
+    <factory>
+        <exception-handler-factory>edu.harvard.iq.dataverse.error.FallbackExceptionHandlerFactory
+        </exception-handler-factory>
+    </factory>
 </faces-config>
