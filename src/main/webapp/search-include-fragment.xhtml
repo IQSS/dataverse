@@ -42,7 +42,8 @@
                                      or permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse))}">
                     <div class="btn-group">
                         <button type="button" class="add-data-plus-wrapper dropdown-toggle" data-toggle="dropdown">
-                          <span>#{bundle['dataverse.results.btn.addData']}</span> <span class="caret"></span>
+                          <div></div>
+                          <span>#{bundle['dataverse.results.btn.addData']}</span>
                         </button>
                         <ul class="dropdown-menu pull-right text-left" role="menu">
                             <ui:fragment rendered="#{permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse) }">
