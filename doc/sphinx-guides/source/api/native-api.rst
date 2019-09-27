@@ -1598,6 +1598,19 @@ Dataset Integrity
 Recalculate the UNF value of a dataset version, if it's missing, by supplying the dataset version database id::
 
   POST http://$SERVER/api/admin/datasets/integrity/{datasetVersionId}/fixmissingunf
+  
+Datafile Integrity
+~~~~~~~~~~~~~~~~~~
+
+Recalculate the check sum value value of a datafile, by supplying the file's database id and an algorithm::
+
+  POST http://$SERVER/api/admin/computeDataFileHashValue/{fileId}/algorithm/{alg}
+  
+Validate an existing check sum value against one newly calculated from the saved file 
+
+  POST http://$SERVER/api/admin/validateDataFileHashValue/{fileId}
+  
+These are only available to super users.
 
 .. _dataset-validation-api:
 
