@@ -41,8 +41,8 @@
                         rendered="#{dataverseSession.user.authenticated and (permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse)
                                      or permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse))}">
                     <div class="btn-group">
-                        <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
-                            <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.results.btn.addData']} <span class="caret"></span>
+                        <button type="button" class="add-data-plus-wrapper dropdown-toggle" data-toggle="dropdown">
+                          <span>#{bundle['dataverse.results.btn.addData']}</span> <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu pull-right text-left" role="menu">
                             <ui:fragment rendered="#{permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse) }">
