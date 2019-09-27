@@ -3,29 +3,26 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import static java.lang.Thread.sleep;
 import java.util.ArrayList;
 import java.util.List;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import org.junit.Test;
 import org.junit.BeforeClass;
 import java.util.UUID;
-import javax.validation.constraints.AssertTrue;
+
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Ignore;
 
 public class AdminIT {
@@ -511,7 +508,87 @@ public class AdminIT {
         Response deleteSuperuser = UtilIT.deleteUser(username);
         assertEquals(200, deleteSuperuser.getStatusCode());
     }
-    
+
+    @Test
+    public void testRecalculateDataFileHash() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = JsonPath.from(createDataverse.body().asString()).getString("data.alias");
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String pathToFile = "scripts/search/data/tabular/50by1000.dta";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+
+        Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        UtilIT.makeSuperUser(superuserUsername);
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + origFileId, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", superuserApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        //Bad file id         
+        Response tryIt = UtilIT.computeDataFileHashValue("BadFileId", DataFile.ChecksumType.MD5.toString(), superuserApiToken);
+
+        tryIt.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo("Could not find file with the id: BadFileId"))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        //Bad Algorithm
+        tryIt = UtilIT.computeDataFileHashValue(origFileId.toString(), "Blank", superuserApiToken);
+
+        tryIt.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo("Unknown algorithm: Blank"))
+                .statusCode(BAD_REQUEST.getStatusCode());
+        
+        //Not a Super user
+        tryIt = UtilIT.computeDataFileHashValue(origFileId.toString(), DataFile.ChecksumType.MD5.toString(), apiToken);
+
+        tryIt.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo("must be superuser"))
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
+
+        tryIt = UtilIT.computeDataFileHashValue(origFileId.toString(), DataFile.ChecksumType.MD5.toString(), superuserApiToken);
+        tryIt.prettyPrint();
+
+        tryIt.then().assertThat()
+                .body("data.message", equalTo("Datafile rehashing complete. " + origFileId.toString() + "  successfully rehashed. New hash value is: 003b8c67fbdfa6df31c0e43e65b93f0e"))
+                .statusCode(OK.getStatusCode());
+
+        Response validationResponse = UtilIT.validateDataFileHashValue(origFileId.toString(), superuserApiToken);
+        validationResponse.prettyPrint();
+        validationResponse.then().assertThat()
+                .body("data.message", equalTo("Datafile validation complete for " + origFileId.toString() + ". The hash value is: 003b8c67fbdfa6df31c0e43e65b93f0e"))
+                .statusCode(OK.getStatusCode());
+
+        //  String checkSumVal = 
+        Response pubdv = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        Response publishDSViaNative = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDSViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+    }
     
     @Test
     @Ignore

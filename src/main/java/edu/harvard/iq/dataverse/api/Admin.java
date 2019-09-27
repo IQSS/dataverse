@@ -1248,7 +1248,7 @@ public class Admin extends AbstractApiBean {
             List<String> args = Arrays.asList(id,e.getMessage());
             return badRequest(BundleUtil.getStringFromBundle("admin.api.migrateHDL.failureWithException", args));
         }
-        System.out.print("before the return ok...");
+        
         return ok(BundleUtil.getStringFromBundle("admin.api.migrateHDL.success"));
     }
 
@@ -1432,7 +1432,7 @@ public class Admin extends AbstractApiBean {
 		return ok("Datafile rehashing complete." + successes + " of  " + rehashed + " files successfully rehashed.");
 	}
         
-    @GET
+    @POST
     @Path("/computeDataFileHashValue/{fileId}/algorithm/{alg}")
     public Response computeDataFileHashValue(@PathParam("fileId") String fileId, @PathParam("alg") String alg) {
 
@@ -1461,37 +1461,102 @@ public class Admin extends AbstractApiBean {
         try {
             cType = DataFile.ChecksumType.fromString(alg);
         } catch (IllegalArgumentException iae) {
+            return error(Status.BAD_REQUEST, "Unknown algorithm: " + alg);
+        }
+
+        String newChecksum = "";
+
+        InputStream in = null;
+        try {
+
+            StorageIO<DataFile> storage = fileToUpdate.getStorageIO();
+            storage.open(DataAccessOption.READ_ACCESS);
+            if (!fileToUpdate.isTabularData()) {
+                in = storage.getInputStream();
+            } else {
+                in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+            }
+            if (in == null) {
+                return error(Status.NOT_FOUND, "Could not retrieve file with the id: " + fileId);
+            }
+            newChecksum = FileUtil.calculateChecksum(in, cType);
+            fileToUpdate.setChecksumType(cType);
+            fileToUpdate.setChecksumValue(newChecksum);
+
+        } catch (Exception e) {
+            logger.warning("Unexpected Exception: " + e.getMessage());
+
+        } finally {
+            IOUtils.closeQuietly(in);
+        }
+
+        return ok("Datafile rehashing complete. " + fileId + "  successfully rehashed. New hash value is: " + newChecksum);
+    }
+    
+    @POST
+    @Path("/validateDataFileHashValue/{fileId}")
+    public Response validateDataFileHashValue(@PathParam("fileId") String fileId) {
+
+        try {
+            User u = findAuthenticatedUserOrDie();
+            if (!u.isSuperuser()) {
+                return error(Status.UNAUTHORIZED, "must be superuser");
+            }
+        } catch (WrappedResponse e1) {
+            return error(Status.UNAUTHORIZED, "api key required");
+        }
+
+        DataFile fileToValidate = null;
+        try {
+            fileToValidate = findDataFileOrDie(fileId);
+        } catch (WrappedResponse r) {
+            logger.info("Could not find file with the id: " + fileId);
+            return error(Status.BAD_REQUEST, "Could not find file with the id: " + fileId);
+        }
+
+        if (fileToValidate.isHarvested()) {
+            return error(Status.BAD_REQUEST, "File with the id: " + fileId + " is harvested.");
+        }
+
+        DataFile.ChecksumType cType = null;
+        try {
+            String checkSumTypeFromDataFile = fileToValidate.getChecksumType().toString();
+            cType = DataFile.ChecksumType.fromString(checkSumTypeFromDataFile);
+        } catch (IllegalArgumentException iae) {
             return error(Status.BAD_REQUEST, "Unknown algorithm");
         }
 
-        for (DataFile df : fileService.findAll()) {
-            InputStream in = null;
-            try {
+        String currentChecksum = fileToValidate.getChecksumValue();
+        String calculatedChecksum = "";
+        InputStream in = null;
+        try {
 
-                StorageIO<DataFile> storage = df.getStorageIO();
-                storage.open(DataAccessOption.READ_ACCESS);
-                if (!df.isTabularData()) {
-                    in = storage.getInputStream();
-                } else {
-                    in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-                }
-                if (in == null) {
-                    return error(Status.NOT_FOUND, "Could not retrieve file with the id: " + fileId);
-                }
-                String newChecksum = FileUtil.calculateChecksum(in, cType);
-                df.setChecksumType(cType);
-                df.setChecksumValue(newChecksum);
-
-            } catch (Exception e) {
-                logger.warning("Unexpected Exception: " + e.getMessage());
-
-            } finally {
-                IOUtils.closeQuietly(in);
-
+            StorageIO<DataFile> storage = fileToValidate.getStorageIO();
+            storage.open(DataAccessOption.READ_ACCESS);
+            if (!fileToValidate.isTabularData()) {
+                in = storage.getInputStream();
+            } else {
+                in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
             }
+            if (in == null) {
+                return error(Status.NOT_FOUND, "Could not retrieve file with the id: " + fileId);
+            }
+            calculatedChecksum = FileUtil.calculateChecksum(in, cType);
+
+        } catch (Exception e) {
+            logger.warning("Unexpected Exception: " + e.getMessage());
+            return error(Status.BAD_REQUEST, "Checksum Validation Unexpected Exception: " + e.getMessage());
+        } finally {
+            IOUtils.closeQuietly(in);
+
         }
 
-        return ok("Datafile rehashing complete. " + fileId + "  successfully rehashed.");
+        if (currentChecksum.equals(calculatedChecksum)) {
+            return ok("Datafile validation complete for " + fileId + ". The hash value is: " + calculatedChecksum);
+        } else {
+            return error(Status.EXPECTATION_FAILED, "Datafile validation failed for " + fileId + ". The saved hash value is: " + currentChecksum + " while the recalculated hash value for the stored file is: " + calculatedChecksum);
+        }
+
     }
 
     @GET
