@@ -67,7 +67,7 @@ Upload the following artifacts to the draft release you created:
 
 - war file (``mvn package`` from Jenkins)
 - installer (``cd scripts/installer && make``)
-- other files as needed, such as an updated Solr schema
+- other files as needed, such as updated Solr schema and config files
 
 Publish Release
 ---------------
