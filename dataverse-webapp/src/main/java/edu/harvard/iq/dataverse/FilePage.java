@@ -202,7 +202,8 @@ public class FilePage implements java.io.Serializable {
             }
 
             this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
-
+            this.dataset = fileMetadata.getDataFile().getOwner();
+            
             // Find external tools based on their type, the file content type, and whether
             // ingest has created a derived file for that type
             // Currently, tabular data files are the only type of derived file created, so
@@ -685,9 +686,6 @@ public class FilePage implements java.io.Serializable {
         Since it must must work when you are on prior versions of the dataset 
         it must accrue all replacement files that may have been created
         */
-        if (null == dataset) {
-            dataset = fileMetadata.getDataFile().getOwner();
-        }
 
         DataFile dataFileToTest = fileMetadata.getDataFile();
 
@@ -747,10 +745,6 @@ public class FilePage implements java.io.Serializable {
      * For all other locks edit should be locked for all editors.
      */
     public boolean isLockedFromEdits() {
-        if (null == dataset) {
-            dataset = fileMetadata.getDataFile().getOwner();
-        }
-
         if (null == lockedFromEditsVar) {
             try {
                 permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest()));
@@ -763,9 +757,6 @@ public class FilePage implements java.io.Serializable {
     }
 
     public boolean isLockedFromDownload() {
-        if (null == dataset) {
-            dataset = fileMetadata.getDataFile().getOwner();
-        }
         if (null == lockedFromDownloadVar) {
             try {
                 permissionService.checkDownloadFileLock(dataset, dvRequestService.getDataverseRequest(), new CreateNewDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
