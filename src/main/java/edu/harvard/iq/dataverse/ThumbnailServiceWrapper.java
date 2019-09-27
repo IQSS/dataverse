@@ -33,8 +33,8 @@ import org.apache.commons.io.IOUtils;
  *
  * @author Leonid Andreev
  */
-//@ViewScoped
-@RequestScoped
+@ViewScoped
+//@RequestScoped
 @Named
 public class ThumbnailServiceWrapper implements java.io.Serializable  {
     @Inject

@@ -49,8 +49,8 @@ import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 
-//@ViewScoped
-@RequestScoped
+@ViewScoped
+//@RequestScoped
 @Named("SearchIncludeFragment")
 public class SearchIncludeFragment implements java.io.Serializable {
 
