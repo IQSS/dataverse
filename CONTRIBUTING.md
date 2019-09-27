@@ -29,6 +29,8 @@ If there is no pre-existing issue or it has been closed, please click on the "Ne
 
 If you do not receive a reply to your new issue or comment in a timely manner, please email support@dataverse.org with a link to the issue.
 
+We are aware of the new issue templates described at https://help.github.com/articles/about-issue-and-pull-request-templates but haven't converted over yet.
+
 ### Writing an Issue
 
 For the subject of an issue, please start it by writing the feature or functionality it relates to, i.e. "Create Account:..." or "Dataset Page:...". In the body of the issue, please outline the issue you are reporting with as much detail as possible. In order for the Dataverse development team to best respond to the issue, we need as much information about the issue as you can provide. Include steps to reproduce bugs. Indicate which version you're using, which is shown at the bottom of the page. We love screenshots!
