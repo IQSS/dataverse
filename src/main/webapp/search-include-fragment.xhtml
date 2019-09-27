@@ -458,7 +458,7 @@
                         </div>
                         <div class="card-preview-icon-block text-center">
                             <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
-                                <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}" alt="#{bundle['alt.logo']}">
+                                <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}" alt="#{result.name} #{bundle['alt.logo']}">
                                     <f:param value="#{result.name}"/>
                                 </h:graphicImage>
                                 <span class="icon-dataverse text-brand" jsf:rendered="#{empty result.imageUrl}"/>
