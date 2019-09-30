@@ -110,7 +110,7 @@ Reserved Words
 
     ``{datasetPid}``             depends     The Persistent ID (DOI or Handle) of the dataset. For example, ``doi:10.7910/DVN/TJCLKP``. This reseved word is **required for dataset level tools** unless you use ``{datasetId}`` instead.
 
-    ``{datasetVersion}``         optional    The friendly version number ( or \:draft ) of the dataset version the tool is being launched from. For example, ``1.0`` or ``:draft``.
+    ``{datasetVersion}``         optional    The friendly version number ( or \:draft ) of the dataset version the file level tool is being launched from. For example, ``1.0`` or ``:draft``.
     ===========================  ==========  ===========
 
 Using Example Manifests to Get Started
