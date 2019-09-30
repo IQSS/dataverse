@@ -246,7 +246,7 @@
                       <div id="fileImageTitle" class="row">
                         <div class="col-xs-12">
                             <div class="row">
-                                <div id="file-title-block" class="col-xs-12 margin-bottom-half">
+                                <div id="file-title-block" class="col-xs-12 margin-bottom-half col-md-offset-3">
                                     <!-- Restricted File Icon -->
                                     <span class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{FilePage.fileMetadata.restricted and !(fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}" />
                                     <span class="icon-unlock text-success" jsf:rendered="#{FilePage.fileMetadata.restricted  and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }" />
@@ -274,7 +274,7 @@
                                                 <div class="col-sm-12">
                                                     <h:outputFormat styleClass="h5" value="#{bundle['file.citation.datafile']}" escape="false" />
                                                 </div>
-                                                <div class="col-sm-12 citation-block">
+                                                <div class="col-sm-12 citation-block col-md-offset-3">
                                                      <div class="col-sm-12 #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation bg-citation-file'}">
                                                         <div class="row">
                                                             <div class="col-sm-12 citation">
@@ -325,7 +325,7 @@
                                                     </p>
                                                     <h:outputFormat styleClass="h5" value="#{bundle['file.citation.dataset']}" escape="false" />
                                                 </div>
-                                                <div class="col-sm-12 citation-block no-margin-bottom">
+                                                <div class="col-sm-12 citation-block no-margin-bottom col-md-offset-3">
                                                     <div class="col-sm-12 #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
                                                         <div class="row">
                                                             <div class="col-sm-12 citation">

@@ -626,7 +626,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #datasetVersionBlock span.label {vertical-align:text-top; line-height:normal; margin-left: .5em;}
 #title-label-block span:first-of-type {margin-left:0 !important;}
 
-#title {font-size:1.5em;font-weight:bold;}
+#title {font-size:2em;font-weight:bold;}
 #author, #contact {display:block; margin-bottom:.5em;}
 .citation-block {/*-- margin-bottom:.5em; padding-right:0; --*/}
 .bg-citation {background:#DFDFE7; border-color: #DFDFE7;}
@@ -1064,3 +1064,12 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
   margin-left: 120px;
 }
 
+.metadata-container {
+  border-bottom: solid 2px rgba(0, 0, 0, 0.1);
+}
+
+.metadata-container > .form-group {
+  margin: 10px 0px;
+  padding: 5px 0px;
+  border-top: solid 2px rgba(0, 0, 0, 0.1);
+}
