@@ -336,7 +336,7 @@ public class ExternalToolServiceBeanTest {
             System.out.println(ex.getMessage());
         }
         assertNotNull(externalTool);
-        assertNull(externalTool.getContentType());
+        assertEquals("text/tab-separated-values", externalTool.getContentType());
     }
 
     @Test

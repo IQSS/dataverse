@@ -76,7 +76,7 @@ Terminology
 
     toolUrl                      The **base URL** of the tool before query parameters are added.
 
-    contentType                  File level tools operate on a specific **file type** (content type or MIME type). Dataset level tools do not use contentType.
+    contentType                  Dataset level tools do not use contentType. File level tools operate on a specific **file type** (content type or MIME type). For example, if your tool is for PDFs, use "application/pdf" as the contentType. If you leave out a contentType for file level tools, "text/tab-separated-values" will be used but you should not rely on this behavior as it may be removed in the future.
 
     toolParameters               **Query parameters** are supported and described below.
 
