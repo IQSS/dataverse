@@ -6,6 +6,7 @@
       xmlns:c="http://java.sun.com/jsp/jstl/core"
       xmlns:p="http://primefaces.org/ui"
       xmlns:o="http://omnifaces.org/ui"
+      xmlns:of="http://omnifaces.org/functions"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
     <h:head>
     </h:head>
@@ -538,7 +539,7 @@
                                                 <div style="vertical-align:middle;">
                                                     <c:set var="dvFeatUrl" value="/dataverse/#{dv.alias}"/>
                                                     <a href="#{widgetWrapper.wrapURL(dvFeatUrl)}" title="#{dv.name}">
-                                                        <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{dv.name} #{bundle['alt.logo']}" jsf:rendered="#{!empty dv.dataverseTheme.logo}"/>
+                                                        <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{of:format1(bundle['alt.logo'], dv.name)}" jsf:rendered="#{!empty dv.dataverseTheme.logo}"/>
                                                         <span class="icon-dataverse" jsf:rendered="#{empty dv.dataverseTheme.logo}"></span>
                                                     </a>
                                                     <a href="#{widgetWrapper.wrapURL(dvFeatUrl)}" title="#{dv.name}">

@@ -4,6 +4,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:o="http://omnifaces.org/ui"
+      xmlns:of="http://omnifaces.org/functions"
       xmlns:p="http://primefaces.org/ui"
       xmlns:fn="http://java.sun.com/jsp/jstl/functions"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
@@ -164,7 +165,7 @@
                                 <div class="form-group text-left">
                                     <div class="col-sm-12">
                                         <h:outputLink styleClass="btn btn-default" value="#{OAuth2Page.linkFor(LoginPage.authProvider.id, LoginPage.redirectPage)}">
-                                            <h:graphicImage rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value="/resources/images/orcid_16x16.png" height="16" width="16" alt="#{bundle['auth.providers.title.orcid']} #{bundle['alt.logo']}"/>
+                                            <h:graphicImage rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value="/resources/images/orcid_16x16.png" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], bundle['auth.providers.title.orcid'])}"/>
 					    <h:outputFormat rendered="#{not fn:contains(LoginPage.authProvider.id, 'orcid')}" value="#{LoginPage.getLoginButtonText()}"/>
 					    <h:outputFormat rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value="#{bundle['login.button.orcid']}"/>
                                         </h:outputLink>
