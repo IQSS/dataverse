@@ -112,8 +112,10 @@ For details on how to configure this integration, look for "DuraCloud/Chronopoli
 Future Integrations
 -------------------
 
-The `Dataverse roadmap <https://dataverse.org/goals-roadmap-and-releases>`_ is a good place to see integrations that the core Dataverse team is working on.
+The `Dataverse roadmap <https://www.iq.harvard.edu/roadmap-dataverse-project>`_ is a good place to see integrations that the core Dataverse team is working on.
 
-The `Dev Efforts by the Dataverse Community <https://docs.google.com/spreadsheets/d/1pl9U0_CtWQ3oz6ZllvSHeyB0EG1M_vZEC_aZ7hREnhE/edit?usp=sharing>`_ spreadsheet is the best way to track integrations that are being worked on by the Dataverse community.
+The `Community Dev <https://github.com/orgs/IQSS/projects/2#column-5298405>`_ column of our project board is a good way to track integrations that are being worked on by the Dataverse community but many are not listed and if you have an idea for an integration, please ask on the `dataverse-community <https://groups.google.com/forum/#!forum/dataverse-community>`_ mailing list if someone is already working on it.
+
+Many integrations take the form of "external tools". See the :doc:`external-tools` section for details. External tool makers should check out the :doc:`/api/external-tools` section of the API Guide.
 
 Please help us keep this page up to date making a pull request! To get started, see the :doc:`/developers/documentation` section of the Developer Guide.
