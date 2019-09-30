@@ -1056,7 +1056,6 @@ public class DataversePage implements java.io.Serializable {
             numFacets = incrementNum;
         }
         numberOfFacets.put(name, numFacets + incrementNum);
-        logger.info("set the number of facets to " + (numFacets + incrementNum));
     }
     
     private String query;
