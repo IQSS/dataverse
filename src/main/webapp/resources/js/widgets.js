@@ -32,7 +32,7 @@ function parseQueryString(queryString) {
 
 if (!window.jQuery) {
   // Path to jquery.js file, eg. Google hosted version
-  document.write('<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>');
+  document.write('<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>');
 }
 
 if(params.widget === 'search') {

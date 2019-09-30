@@ -23,7 +23,7 @@ public class BundleUtil {
     }
 
     public static String getStringFromBundle(String key, List<String> arguments) {
-        ResourceBundle bundle = getResourceBundle(defaultBundleFile , null);
+        ResourceBundle bundle = getResourceBundle(defaultBundleFile );
         if (bundle == null) {
             return null;
         }
@@ -146,7 +146,7 @@ public class BundleUtil {
         return getStringFromBundleNoMissingCheck(key, null, bundle);
     }
 
-    private static Locale getDefaultLocale() {
+    public static Locale getDefaultLocale() {
         String localeEnvVar = System.getenv().get("LANG");
         if (localeEnvVar != null) {
             if (localeEnvVar.indexOf('.') > 0) {

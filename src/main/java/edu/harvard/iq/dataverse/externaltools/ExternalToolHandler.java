@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -33,6 +34,8 @@ public class ExternalToolHandler {
     private ApiToken apiToken;
 
     /**
+     * File level tool
+     *
      * @param externalTool The database entity.
      * @param dataFile Required.
      * @param apiToken The apiToken can be null because "explore" tools can be
@@ -45,10 +48,36 @@ public class ExternalToolHandler {
             logger.warning("Error in ExternalToolHandler constructor: " + error);
             throw new IllegalArgumentException(error);
         }
+        if (fileMetadata == null) {
+            String error = "A FileMetadata is required.";
+            logger.warning("Error in ExternalToolHandler constructor: " + error);
+            throw new IllegalArgumentException(error);
+        }
         this.dataFile = dataFile;
         this.apiToken = apiToken;
-        dataset = getDataFile().getFileMetadata().getDatasetVersion().getDataset();
         this.fileMetadata = fileMetadata;
+        dataset = fileMetadata.getDatasetVersion().getDataset();
+    }
+
+    /**
+     * Dataset level tool
+     *
+     * @param externalTool The database entity.
+     * @param dataset Required.
+     * @param apiToken The apiToken can be null because "explore" tools can be
+     * used anonymously.
+     */
+    public ExternalToolHandler(ExternalTool externalTool, Dataset dataset, ApiToken apiToken) {
+        this.externalTool = externalTool;
+        if (dataset == null) {
+            String error = "A Dataset is required.";
+            logger.warning("Error in ExternalToolHandler constructor: " + error);
+            throw new IllegalArgumentException(error);
+        }
+        this.dataset = dataset;
+        this.apiToken = apiToken;
+        this.dataFile = null;
+        this.fileMetadata = null;
     }
 
     public DataFile getDataFile() {
@@ -89,8 +118,14 @@ public class ExternalToolHandler {
         ReservedWord reservedWord = ReservedWord.fromString(value);
         switch (reservedWord) {
             case FILE_ID:
-                // getDataFile is never null because of the constructor
+                // getDataFile is never null for file tools because of the constructor
                 return key + "=" + getDataFile().getId();
+            case FILE_PID:
+                GlobalId filePid = getDataFile().getGlobalId();
+                if (filePid != null) {
+                    return key + "=" + getDataFile().getGlobalId();
+                }
+                break;
             case SITE_URL:
                 return key + "=" + SystemConfig.getDataverseSiteUrlStatic();
             case API_TOKEN:
@@ -103,20 +138,28 @@ public class ExternalToolHandler {
                 break;
             case DATASET_ID:
                 return key + "=" + dataset.getId();
+            case DATASET_PID:
+                return key + "=" + dataset.getGlobalId().asString();
             case DATASET_VERSION:
-                String version = null;
-                if (getApiToken() != null) {
-                    version = dataset.getLatestVersion().getFriendlyVersionNumber();
-                } else {
-                    version = dataset.getLatestVersionForCopy().getFriendlyVersionNumber();
+                String versionString = null;
+                if(fileMetadata!=null) { //true for file case
+                    versionString = fileMetadata.getDatasetVersion().getFriendlyVersionNumber();
+                } else { //Dataset case - return the latest visible version (unless/until the dataset case allows specifying a version)
+                    if (getApiToken() != null) {
+                        versionString = dataset.getLatestVersion().getFriendlyVersionNumber();
+                    } else {
+                        versionString = dataset.getLatestVersionForCopy().getFriendlyVersionNumber();
+                    }
                 }
-                if (("DRAFT").equals(version)) {
-                    version = ":draft"; // send the token needed in api calls that can be substituted for a numeric
-                                        // version.
+                if (("DRAFT").equals(versionString)) {
+                    versionString = ":draft"; // send the token needed in api calls that can be substituted for a numeric
+                                              // version.
                 }
-                return key + "=" + version;
+                return key + "=" + versionString;
             case FILE_METADATA_ID:
-                return key + "=" + fileMetadata.getId();
+                if(fileMetadata!=null) { //true for file case
+                    return key + "=" + fileMetadata.getId();
+                }
             default:
                 break;
         }

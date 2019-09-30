@@ -18,6 +18,10 @@
             <ui:param name="pageTitle" value="#{FilePage.fileMetadata.dataFile.displayName} - #{FilePage.file.owner.owner.displayName}"/>
             <ui:param name="dataverse" value="#{FilePage.file.owner.owner}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
+            <ui:define name="meta_header">
+            <meta name="description" content="#{FilePage.fileMetadata.description}"/>
+            </ui:define>
+            <ui:remove><!-- We might want dc_meta_header/og_header/jsonld_header at the file level some day.--></ui:remove>
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="fileId" value="#{FilePage.fileId}"/>
@@ -627,14 +631,6 @@
                             <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                             <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                         </ui:include>
-                    </p:dialog>
-                    <p:dialog id="downloadDataSubsetPopup" styleClass="smallPopUp" header="#{bundle['file.download.subset.header']}" widgetVar="downloadDataSubsetPopup"
-                               modal="true">
-                        <div class="form-inline clearfix" jsf:rendered="#{!(empty FilePage.fileMetadata) and FilePage.fileMetadata.dataFile.tabularData}">
-                            <ui:include src="/subset/gui_subset.xhtml">
-                                <ui:param name="dataFile" value="#{FilePage.fileMetadata.dataFile}"/>
-                             </ui:include>
-                        </div>
                     </p:dialog>
                     <p:dialog id="downloadPackagePopup" styleClass="smallPopUp" header="#{bundle['packageDownload.title']}" widgetVar="downloadPackagePopup" modal="true">
                          <ui:include src="package-download-popup-fragment.xhtml">
