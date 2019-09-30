@@ -46,12 +46,19 @@ The "develop" branch should be merged into "master" before tagging. See also the
 Write Release Notes
 -------------------
 
-Create a draft release at https://github.com/IQSS/dataverse/releases/new
+Developers should express the need for an addition to release notes by creating a file in ``/doc/release-notes`` containing the name of the issue they're working on. The name of the branch could be used for the filename with ".md" appended (release notes are written in Markdown) such as ``5053-apis-custom-homepage.md``. 
 
-- The "tag version" and "title" should be the number of the milestone with a "v" in front (i.e. v4.6.2).
-- For the description, follow previous examples at https://github.com/IQSS/dataverse/releases
+At or near release time:
 
-Please note that the current process involves copying and pasting a running Google doc into release notes but we are conducting an experiment whereby developers can express the need for an addition to release notes by creating a file in ``/doc/release-notes`` containing the name of the issue they're working on. Perhaps the name of the branch could be used for the filename with ".md" appended (release notes are written in Markdown) such as ``5053-apis-custom-homepage.md``. To avoid accumulating many stale files over time, when a release is cut these files should probably be removed with ``git rm``.
+- Create an issue in Github to track the work of creating release notes for the upcoming release
+- Create a branch, add a .md file for the release (ex. 4.16 Release Notes) in ``/doc/release-notes`` and write the release notes, making sure to pull content from the issue-specific release notes mentioned above
+- Delete the previously-created, issue-specific release notes as the content is added to the main release notes file
+- Take the release notes .md through the regular Code Review and QA process
+- Create a draft release at https://github.com/IQSS/dataverse/releases/new
+- The "tag version" and "title" should be the number of the milestone with a "v" in front (i.e. v4.16).
+- Copy in the content from the .md file
+- For the description, follow post-4.16 examples at https://github.com/IQSS/dataverse/releases
+
 
 Make Artifacts Available for Download
 -------------------------------------
@@ -60,7 +67,7 @@ Upload the following artifacts to the draft release you created:
 
 - war file (``mvn package`` from Jenkins)
 - installer (``cd scripts/installer && make``)
-- other files as needed, such as an updated Solr schema
+- other files as needed, such as updated Solr schema and config files
 
 Publish Release
 ---------------
