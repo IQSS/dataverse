@@ -329,14 +329,14 @@ public class ExternalToolServiceBeanTest {
                 .build());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
-        ExternalTool externalTool = null;
+        Exception expectedException = null;
         try {
-            externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
+            ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+            expectedException = ex;
         }
-        assertNotNull(externalTool);
-        assertNull(externalTool.getContentType());
+        assertNotNull(expectedException);
+        assertEquals(expectedException.getMessage(), "contentType is required.");
     }
 
     @Test
