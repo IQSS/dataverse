@@ -545,38 +545,54 @@ public class AdminIT {
         assertTrue("Failed test if Ingest Lock exceeds max duration " + origFileId, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", superuserApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
 
         //Bad file id         
-        Response tryIt = UtilIT.computeDataFileHashValue("BadFileId", DataFile.ChecksumType.MD5.toString(), superuserApiToken);
+        Response computeDataFileHashResponse = UtilIT.computeDataFileHashValue("BadFileId", DataFile.ChecksumType.MD5.toString(), superuserApiToken);
 
-        tryIt.then().assertThat()
+        computeDataFileHashResponse.then().assertThat()
                 .body("status", equalTo("ERROR"))
                 .body("message", equalTo("Could not find file with the id: BadFileId"))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         //Bad Algorithm
-        tryIt = UtilIT.computeDataFileHashValue(origFileId.toString(), "Blank", superuserApiToken);
+        computeDataFileHashResponse = UtilIT.computeDataFileHashValue(origFileId.toString(), "Blank", superuserApiToken);
 
-        tryIt.then().assertThat()
+        computeDataFileHashResponse.then().assertThat()
                 .body("status", equalTo("ERROR"))
                 .body("message", equalTo("Unknown algorithm: Blank"))
                 .statusCode(BAD_REQUEST.getStatusCode());
         
         //Not a Super user
-        tryIt = UtilIT.computeDataFileHashValue(origFileId.toString(), DataFile.ChecksumType.MD5.toString(), apiToken);
+        computeDataFileHashResponse = UtilIT.computeDataFileHashValue(origFileId.toString(), DataFile.ChecksumType.MD5.toString(), apiToken);
 
-        tryIt.then().assertThat()
+        computeDataFileHashResponse.then().assertThat()
                 .body("status", equalTo("ERROR"))
                 .body("message", equalTo("must be superuser"))
                 .statusCode(UNAUTHORIZED.getStatusCode());
 
 
-        tryIt = UtilIT.computeDataFileHashValue(origFileId.toString(), DataFile.ChecksumType.MD5.toString(), superuserApiToken);
-        tryIt.prettyPrint();
+        computeDataFileHashResponse = UtilIT.computeDataFileHashValue(origFileId.toString(), DataFile.ChecksumType.MD5.toString(), superuserApiToken);
+        computeDataFileHashResponse.prettyPrint();
 
-        tryIt.then().assertThat()
+        computeDataFileHashResponse.then().assertThat()
                 .body("data.message", equalTo("Datafile rehashing complete. " + origFileId.toString() + "  successfully rehashed. New hash value is: 003b8c67fbdfa6df31c0e43e65b93f0e"))
                 .statusCode(OK.getStatusCode());
+        
+        //Not a Super user
+        Response validationResponse = UtilIT.validateDataFileHashValue(origFileId.toString(), apiToken);
 
-        Response validationResponse = UtilIT.validateDataFileHashValue(origFileId.toString(), superuserApiToken);
+        validationResponse.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo("must be superuser"))
+                .statusCode(UNAUTHORIZED.getStatusCode());
+        
+        //Bad File Id
+        validationResponse = UtilIT.validateDataFileHashValue("BadFileId", superuserApiToken);
+
+        validationResponse.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo("Could not find file with the id: BadFileId"))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        validationResponse = UtilIT.validateDataFileHashValue(origFileId.toString(), superuserApiToken);
         validationResponse.prettyPrint();
         validationResponse.then().assertThat()
                 .body("data.message", equalTo("Datafile validation complete for " + origFileId.toString() + ". The hash value is: 003b8c67fbdfa6df31c0e43e65b93f0e"))
