@@ -31,7 +31,7 @@ We make use of a variety of Java EE technologies such as JPA, JAX-RS, JMS, and J
 Roadmap
 -------
 
-For the Dataverse development roadmap, please see https://dataverse.org/goals-roadmap-and-releases
+For the Dataverse development roadmap, please see https://www.iq.harvard.edu/roadmap-dataverse-project
 
 Kanban Board
 ------------
