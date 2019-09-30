@@ -2,14 +2,14 @@ package edu.harvard.iq.dataverse.error;
 
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import io.vavr.control.Try;
 
 import javax.faces.FacesException;
-import javax.faces.application.NavigationHandler;
 import javax.faces.context.ExceptionHandler;
 import javax.faces.context.ExceptionHandlerWrapper;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ExceptionQueuedEvent;
-import javax.faces.event.ExceptionQueuedEventContext;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,20 +39,15 @@ public class FallbackExceptionHandler extends ExceptionHandlerWrapper {
         final Iterator<ExceptionQueuedEvent> queue = getUnhandledExceptionQueuedEvents().iterator();
 
         if (queue.hasNext()) {
-
             FacesContext facesContext = FacesContext.getCurrentInstance();
 
             if (facesContext.getPartialViewContext().isAjaxRequest()) {
                 JsfHelper.addErrorMessage(null, BundleUtil.getStringFromBundle("error.general.message"), "");
             } else {
-                NavigationHandler nav = facesContext.getApplication().getNavigationHandler();
-                nav.handleNavigation(facesContext, null, "/500");
+                Try.run(() -> facesContext.getExternalContext()
+                        .responseSendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, null))
+                        .onFailure(throwable -> logger.log(Level.SEVERE, throwable.getMessage(), throwable));
             }
-
-            ExceptionQueuedEventContext exceptionContext = queue.next().getContext();
-            Throwable exception = exceptionContext.getException();
-
-            logger.log(Level.SEVERE, exception.getMessage(), exception);
         }
 
         while (queue.hasNext()) {
