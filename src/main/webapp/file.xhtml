@@ -417,6 +417,7 @@
                       </div>
                     </p:fragment>
                     <div id="contentTabs">
+                        <div id="file-row-panel-backdrop"></div>
                         <!-- Metadata -->
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{FilePage.selectedTabIndex}">
                             <p:ajax event="tabChange" listener="#{FilePage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
