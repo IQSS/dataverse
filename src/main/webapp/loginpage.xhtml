@@ -111,14 +111,16 @@
                                             <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                             <f:param value="#{systemConfig.guidesVersion}"/>
                                         </h:outputFormat>
-                                        <h:outputText value="#{bundle['login.institution.support.beforeLink']} " />
-                                        <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                                        </p:commandLink>
-                                        <h:outputText value=" #{bundle['login.institution.support.afterLink']}" escape="false"/>
+                                        <h:outputFormat value="#{bundle['login.institution.support.blurbwithLink']}" escape="false">
+                                            <o:param>
+                                                <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                                </p:commandLink>                               
+                                            </o:param>
+                                        </h:outputFormat>
                                     </p>
                                 </h:form>
 
@@ -198,6 +200,10 @@
                                     </p>
                                 </div>
                             </div>
+                            
+                            <!--<div id="signUpLink">
+                                <p class="help-block margin-top"><a href="#">Sign up for a Dataverse account</a>.</p>
+                            </div>-->
                         </div>
                     </div>
                 </div>
