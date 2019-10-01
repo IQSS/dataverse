@@ -326,7 +326,7 @@ public class DatasetPage implements java.io.Serializable {
     }
             
     public String getTermsGuestbookPopupAction(){
-        return this.termsGuestbookPopupAction;
+        return termsGuestbookPopupAction;
     }
     
     // TODO: Consider renaming "configureTools" to "fileConfigureTools".
