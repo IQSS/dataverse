@@ -230,7 +230,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          if (!valid) {
              JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
          } else {
-             requestContext.execute("PF('downloadPopup').hide()");
+             requestContext.execute("PF('guestbookAndTermsPopup').hide()");
              guestbookResponse.setDownloadtype("Download");
 
              // Note that this method is only ever called from the file-download-popup - 
@@ -258,7 +258,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          if (!valid) {
 
          } else {
-             requestContext.execute("PF('downloadPopup').hide()"); 
+             requestContext.execute("PF('guestbookAndTermsPopup').hide()"); 
              requestContext.execute("PF('downloadDataSubsetPopup').show()");
              guestbookResponse.setDownloadtype("Subset");
              fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
@@ -305,7 +305,7 @@ public class FileDownloadHelper implements java.io.Serializable {
              return;
          }
          fileDownloadService.explore(guestbookResponse, fmd, externalTool);
-         requestContext.execute("PF('downloadPopup').hide()");
+         requestContext.execute("PF('guestbookAndTermsPopup').hide()");
     }
      
     public void writeGuestbookAndLaunchPackagePopup(GuestbookResponse guestbookResponse) {
@@ -315,7 +315,7 @@ public class FileDownloadHelper implements java.io.Serializable {
         if (!valid) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
         } else {
-            requestContext.execute("PF('downloadPopup').hide()");
+            requestContext.execute("PF('guestbookAndTermsPopup').hide()");
             requestContext.execute("PF('downloadPackagePopup').show()");
             requestContext.execute("handleResizeDialog('downloadPackagePopup')");
 
@@ -330,6 +330,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          if (!valid) {
              JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
          } else {
+             requestContext.execute("PF('guestbookAndTermsPopup').hide()");
              fileDownloadService.writeGuestbookResponseAndRequestAccess(guestbookResponse);
          }
 
@@ -346,7 +347,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          } 
         guestbookResponse.setDownloadtype("WorldMap");
         String retVal = fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fmd);
-        requestContext.execute("PF('downloadPopup').hide()"); 
+        requestContext.execute("PF('guestbookAndTermsPopup').hide()"); 
         return retVal;
     }
   
