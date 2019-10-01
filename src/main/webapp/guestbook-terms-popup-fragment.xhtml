@@ -192,7 +192,7 @@
             
         <div class="button-block" jsf:rendered="#{DatasetPage.termsGuestbookPopupAction == bundle['file.requestAccess'] }">
             <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle['file.requestAccess']}"
-                    actionListener="##{fileDownloadHelper.writeGuestbookResponseAndRequestAccess()}"                          
+                    actionListener="##{fileDownloadHelper.writeGuestbookResponseAndRequestAccess(guestbookResponse)}"                          
                     update="@([id$=Messages])"
                     oncomplete="if (!args || (args &amp;&amp; !args.validationFailed)){PF('guestbookAndTermsPopup').hide();window.location.replace(window.location.href);}">
                     <f:param name="DO_GB_VALIDATION" value="true"/>
