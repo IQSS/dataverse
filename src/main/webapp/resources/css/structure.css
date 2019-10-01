@@ -13,6 +13,7 @@ body .ui-widget {font-size: inherit;}
 body .ui-widget .ui-widget-content {background: none;}
 .ui-widget-content a {color: #337AB7;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #23527C;}
+.ui-tabs.ui-widget-content .ui-tabs-nav li a {color: #333;}
 
 /* -------- TEMPLATE -------- */
 .panelgridHeaderTable {width:100%;}
@@ -345,6 +346,7 @@ form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.
 form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.ui-widget td {border:0;}
 form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal div.form-group {vertical-align: middle;}
 .form-horizontal .text-left .control-label {text-align:left;}
+.control-label {font-size: 16px;}
 
 input.metadata-blocks-default[type="checkbox"], input.facets-blocks-default[type="checkbox"] {margin: 4px 6px 0 0;}
 div.checkbox input.metadata-blocks-default[type="checkbox"] {margin-left:-20px;}
@@ -920,7 +922,7 @@ div.ui-selectcheckboxmenu-panel, div.ui-selectonemenu-panel, div.ui-autocomplete
 .ui-selectonemenu-list, .ui-selectcheckboxmenu-list, div.tooltip, div.popover {z-index:100002 !important;}
 
 /* Overwrite Primefaces */
-.ui-tabs.ui-widget-content .ui-tabs-nav li.ui-tabs-selected a {color: #555555;}
+.ui-tabs.ui-widget-content .ui-tabs-nav li.ui-tabs-selected a {color: #0088CC; border-bottom: 3px solid;}
 button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14px;}
 div.ui-widget-overlay {background:#ccc; opacity:.6;}
 .ui-confirm-dialog-severity {margin-top:3px;}
@@ -999,6 +1001,15 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
   margin: 0;
 }
 
+#file-row-panel-backdrop {
+  background: #f7f7f9;
+  position: absolute;
+  left: calc(-50vw + 50%);
+  width: 100vw;
+  height: 100%;
+  z-index: -1;
+}
+
 #filter-title {
   font-weight: 700;
   margin-bottom: 15px;
@@ -1064,12 +1075,20 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
   margin-left: 120px;
 }
 
-.metadata-container {
+.metadata-container > .form-group:last-child {
   border-bottom: solid 2px rgba(0, 0, 0, 0.1);
+  margin-bottom: 60px;
 }
 
 .metadata-container > .form-group {
   margin: 10px 0px;
   padding: 5px 0px;
   border-top: solid 2px rgba(0, 0, 0, 0.1);
+}
+
+ul > li {
+  border:none !important;
+  font-size: 21px;
+  font-family: 'AntoniaH2Heavy';
+  font-weight: bold;
 }
