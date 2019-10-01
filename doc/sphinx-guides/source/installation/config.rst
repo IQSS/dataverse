@@ -622,6 +622,8 @@ How to Help Translate Dataverse Into Your Language
 
 Please join the `dataverse-internationalization-wg`_ mailing list and contribute to https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs to help translate Dataverse into various languages!
 
+Some external tools are also ready to be translated, especially if they are using the ``{localCode}`` reserved word in their tool manifest. For details, see the :doc:`/api/external-tools` section of the API Guide.
+
 .. _dataverse-internationalization-wg: https://groups.google.com/forum/#!forum/dataverse-internationalization-wg
 
 .. _Web-Analytics-Code:
