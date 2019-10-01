@@ -1008,6 +1008,7 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
   width: 100vw;
   height: 100%;
   z-index: -1;
+  border-top: 2px solid rgba(0, 0, 0, 0.1);
 }
 
 #filter-title {
@@ -1092,3 +1093,5 @@ ul > li {
   font-family: 'AntoniaH2Heavy';
   font-weight: bold;
 }
+
+.ui-tabs.ui-tabs-top .ui-tabs-nav.ui-widget-header {border-width: 0;}
