@@ -222,7 +222,7 @@ body.widget-view #dataverse-header-block {padding-top:0px;}
 #dataverseHeader .dataverseHeaderLink {padding-left:2em;}
 
 /* -------- FOOTER -------- */
-#dataverseFooter {margin:0 auto;}
+#dataverseFooter {margin-top:15px;}
 /*#dataverseFooter .dataverseFooterLogo {padding-right:1em; text-align:center;}*/
 #dataverseFooter .dataverseFooterLogo img {max-width:940px; max-height:120px;}
 
