@@ -299,12 +299,12 @@
                                                                           and fileMetadata.dataFile.owner.fileAccessRequest 
                                                                           and !(fileDownloadHelper.canDownloadFile(fileMetadata))
                                                                           and guestbookAndTermsPopupRequired}"
-                   actionListener="#{guestbookResponseService.modifyDatafile(guestbookResponse, fileMetadata) }"
                    process="@this"
                    actionListener="#{fileDownloadHelper.addFileForRequestAccess(fileMetadata.dataFile)}"
                    onclick="PF('guestbookAndTermsPopup').show()"
                    id="guestbookAndTermsPopupButton"
                    disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
+                   <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle['file.requestAccess'])}"/>
         <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
     </p:commandLink>
     <p:commandLink styleClass="btn btn-default btn-request" rendered="#{!fileDownloadHelper.session.user.authenticated 
