@@ -364,7 +364,10 @@ public class Access extends AbstractApiBean {
                 break;
             } else {
                 // Service unknown/not supported/bad arguments, etc.:
-                // TODO: throw new ServiceUnavailableException(); 
+                // checkIfServiceSupportedAndSetConverter checks that the query params set in match a service available for this file type, so one could return 
+                // a ServiceNotAvailableException. However, since the returns are all files of some sort, it seems reasonable, and more standard, to just return
+                // a NotFoundException.
+                throw new NotFoundException();
             }
         }
                 
