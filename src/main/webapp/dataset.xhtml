@@ -372,7 +372,7 @@
                         </div>
                         
                         <div id="datasetVersionBlock" class="col-sm-12">
-                            <div id="title-block" class="row margin-bottom-half" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
+                            <div id="title-block" class="row margin-bottom-half col-md-offset-3" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
                                 <div class="col-xs-1 vcenter title-preview-icon-block">
                                     <img src="#{DatasetPage.thumbnailString}" jsf:rendered="#{!empty DatasetPage.thumbnailString}"/>
                                     <span class="icon-dataset" jsf:rendered="#{empty DatasetPage.thumbnailString}"/>
@@ -403,7 +403,7 @@
                                 </ui:fragment>
                                 <!-- END: CITATION BLOCK -->
                                 <div id="deaccession-reason-block" class="bg-danger" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
-                                    <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
+                                    <!-- <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5> -->
                                     <p>#{DatasetPage.workingVersion.versionNote}</p>
                                     <ui:fragment rendered="#{!empty DatasetPage.workingVersion.archiveNote}">
                                         <p>#{bundle['dataset.beAccessedAt']} <a href="#{DatasetPage.workingVersion.archiveNote}" target="_blank">#{DatasetPage.workingVersion.archiveNote}</a></p>
