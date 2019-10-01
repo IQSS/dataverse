@@ -382,32 +382,32 @@
                                             </div>
                                         </div>
                                         <div class="col-sm-3">
-                                            <!-- Metrics -->
-                                            <div id="metrics-block" jsf:rendered="#{!(widgetWrapper.widgetView or FilePage.fileMetadata.dataFile.filePackage or FilePage.fileMetadata.datasetVersion.deaccessioned)}">
-                                                <div id="metrics-heading">
-                                                    #{bundle['metrics.file.title']}
-                                                    <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
-                                                            data-original-title="#{settingsWrapper.makeDataCountEnabled ? bundle['metrics.file.tip.makedatacount'] : bundle['metrics.file.tip.default']}"></span>
-                                                </div>
-                                                <div id="metrics-body">
-                                                    <!-- Classic downloads -->
-                                                    <div class="metrics-count-block" jsf:rendered="#{!settingsWrapper.makeDataCountEnabled}">
-                                                        <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
-                                                            <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/>
-                                                        </h:outputFormat>
-                                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                              data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.file.downloads.tip']}"></span>
-                                                    </div>
-                                                    <!-- Make Data Count downloads -->
-                                                    <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountEnabled}">
-                                                        <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
-                                                            <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/>
-                                                        </h:outputFormat>
-                                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                                data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.file.downloads.tip']}"></span>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <!-- Metrics: Commented out for Schema Designs -->
+                                            <!-- <div id="metrics-block" jsf:rendered="#{!(widgetWrapper.widgetView or FilePage.fileMetadata.dataFile.filePackage or FilePage.fileMetadata.datasetVersion.deaccessioned)}"> -->
+                                            <!--     <div id="metrics-heading"> -->
+                                            <!--         #{bundle['metrics.file.title']} -->
+                                            <!--         <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top"  -->
+                                            <!--                 data-original-title="#{settingsWrapper.makeDataCountEnabled ? bundle['metrics.file.tip.makedatacount'] : bundle['metrics.file.tip.default']}"></span> -->
+                                            <!--     </div> -->
+                                            <!--     <div id="metrics-body"> -->
+                                            <!--         [> Classic downloads <] -->
+                                            <!--         <div class="metrics-count-block" jsf:rendered="#{!settingsWrapper.makeDataCountEnabled}"> -->
+                                            <!--             <h:outputFormat value="{0} #{bundle['metrics.downloads']}"> -->
+                                            <!--                 <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/> -->
+                                            <!--             </h:outputFormat> -->
+                                            <!--             <span class="glyphicon glyphicon-question-sign tooltip-icon" -->
+                                            <!--                   data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.file.downloads.tip']}"></span> -->
+                                            <!--         </div> -->
+                                            <!--         [> Make Data Count downloads <] -->
+                                            <!--         <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountEnabled}"> -->
+                                            <!--             <h:outputFormat value="{0} #{bundle['metrics.downloads']}"> -->
+                                            <!--                 <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/> -->
+                                            <!--             </h:outputFormat> -->
+                                            <!--             <span class="glyphicon glyphicon-question-sign tooltip-icon" -->
+                                            <!--                     data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.file.downloads.tip']}"></span> -->
+                                            <!--         </div> -->
+                                            <!--     </div> -->
+                                            <!-- </div> -->
                                             <!-- END: Metrics -->
                                         </div>
                                     </div>
