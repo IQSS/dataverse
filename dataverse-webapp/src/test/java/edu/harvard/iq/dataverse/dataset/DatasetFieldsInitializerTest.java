@@ -194,16 +194,18 @@ public class DatasetFieldsInitializerTest {
         dataset.setOwner(dataverse);
         DatasetVersion datasetVersion = new DatasetVersion();
         List<DatasetField> datasetFields = prepareTestData(dataset, datasetVersion);
+        Optional<Long> titleField = retrieveTitleField(datasetFields);
 
         Mockito.when(dataverseFieldTypeInputLevelService.findByDataverseIdAndDatasetFieldTypeIdList(any(), any()))
-                .thenReturn(prepareHiddenFields(Lists.newArrayList(2L)));
+                .thenReturn(prepareHiddenFields(Lists.newArrayList(titleField.get())));
 
         //when
         List<DatasetField> updatedDsf = datasetFieldsInitializer.updateDatasetFieldIncludeFlag(datasetFields, dataverse);
 
         Optional<DatasetField> titleDsf = updatedDsf.stream()
-                .filter(datasetField -> datasetField.getDatasetFieldType().getName().equals("title")
-                        && datasetField.getDatasetFieldType().getId().equals(2L)).findAny();
+                .filter(datasetField -> datasetField.getDatasetFieldType().getName().equals("title"))
+                .findAny();
+
         //then
         Assert.assertEquals(3, updatedDsf.stream().filter(DatasetField::isInclude).count());
         Assert.assertTrue(titleDsf.isPresent());
@@ -211,6 +213,13 @@ public class DatasetFieldsInitializerTest {
     }
 
     // -------------------- PRIVATE --------------------
+
+    private Optional<Long> retrieveTitleField(List<DatasetField> datasetFields) {
+        return datasetFields.stream()
+                .filter(datasetField -> datasetField.getDatasetFieldType().getName().equals("title"))
+                .map(datasetField -> datasetField.getDatasetFieldType().getId())
+                .findAny();
+    }
 
     private List<DatasetField> prepareTestData(Dataset dataset, DatasetVersion datasetVersion) {
         datasetVersion.setDataset(dataset);

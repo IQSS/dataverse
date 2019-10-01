@@ -113,10 +113,7 @@ public class ReplaceFileHandler implements Serializable {
             ingestService.recalculateDatasetVersionUNF(editableDatasetDraft);
         }
 
-        if (fileToBeReplaced.getRootDataFileId().equals(DataFile.ROOT_DATAFILE_ID_DEFAULT)) {
-            fileToBeReplaced.setRootDataFileId(fileToBeReplaced.getId());
-            datafileService.save(fileToBeReplaced);
-        }
+        updateRootAndPreviousDataFileId(fileToBeReplaced, newFile);
 
         updateDataset(dataset, dvRequestService.getDataverseRequest(), originalDataset);
 
@@ -139,6 +136,17 @@ public class ReplaceFileHandler implements Serializable {
 
         return Try.of(() -> commandEngine.submit(updateCmd))
                 .getOrElseThrow(throwable -> new RuntimeException(throwable));
+    }
+
+    private void updateRootAndPreviousDataFileId(DataFile fileToBeReplaced, DataFile newFile) {
+
+        if (fileToBeReplaced.getRootDataFileId().equals(DataFile.ROOT_DATAFILE_ID_DEFAULT)) {
+            fileToBeReplaced.setRootDataFileId(fileToBeReplaced.getId());
+            datafileService.save(fileToBeReplaced);
+        }
+
+        newFile.setPreviousDataFileId(fileToBeReplaced.getId());
+        newFile.setRootDataFileId(fileToBeReplaced.getRootDataFileId());
     }
 
     private Optional<DataFile> getNewDatafile(DatasetVersion datasetVersion, DataFile fileToBeSaved) {
