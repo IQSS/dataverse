@@ -32,6 +32,7 @@ public class ExternalToolHandler {
     private final FileMetadata fileMetadata;
 
     private ApiToken apiToken;
+    private String localeCode;
 
     /**
      * File level tool
@@ -41,7 +42,7 @@ public class ExternalToolHandler {
      * @param apiToken The apiToken can be null because "explore" tools can be
      * used anonymously.
      */
-    public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken, FileMetadata fileMetadata) {
+    public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken, FileMetadata fileMetadata, String localeCode) {
         this.externalTool = externalTool;
         if (dataFile == null) {
             String error = "A DataFile is required.";
@@ -57,6 +58,7 @@ public class ExternalToolHandler {
         this.apiToken = apiToken;
         this.fileMetadata = fileMetadata;
         dataset = fileMetadata.getDatasetVersion().getDataset();
+        this.localeCode = localeCode;
     }
 
     /**
@@ -67,7 +69,7 @@ public class ExternalToolHandler {
      * @param apiToken The apiToken can be null because "explore" tools can be
      * used anonymously.
      */
-    public ExternalToolHandler(ExternalTool externalTool, Dataset dataset, ApiToken apiToken) {
+    public ExternalToolHandler(ExternalTool externalTool, Dataset dataset, ApiToken apiToken, String localeCode) {
         this.externalTool = externalTool;
         if (dataset == null) {
             String error = "A Dataset is required.";
@@ -78,6 +80,7 @@ public class ExternalToolHandler {
         this.apiToken = apiToken;
         this.dataFile = null;
         this.fileMetadata = null;
+        this.localeCode = localeCode;
     }
 
     public DataFile getDataFile() {
@@ -90,6 +93,10 @@ public class ExternalToolHandler {
 
     public ApiToken getApiToken() {
         return apiToken;
+    }
+
+    public String getLocaleCode() {
+        return localeCode;
     }
 
     // TODO: rename to handleRequest() to someday handle sending headers as well as query parameters.
@@ -160,6 +167,8 @@ public class ExternalToolHandler {
                 if(fileMetadata!=null) { //true for file case
                     return key + "=" + fileMetadata.getId();
                 }
+            case LOCALE_CODE:
+                return key + "=" + getLocaleCode();
             default:
                 break;
         }
