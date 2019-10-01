@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -63,6 +64,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
     @EJB
     AuthenticationServiceBean authService;
+    @EJB
+    MailServiceBean mailService;
     
     @Inject
     DataverseSession session;
@@ -83,6 +86,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse){ 
         writeGuestbookAndStartBatchDownload(guestbookResponse, false);
     }
+    
+    
     
     public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse, Boolean doNotSaveGuestbookRecord){
         if (guestbookResponse == null || guestbookResponse.getSelectedFileIds() == null) {
@@ -148,11 +153,41 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             return;
         }
         writeGuestbookResponseRecord(guestbookResponse);
+       
         
-        redirectToDownloadAPI(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId());
-        logger.fine("issued file download redirect for datafile "+guestbookResponse.getDataFile().getId());
     }
 
+    public void writeGuestbookResponseAndRequestAccess(GuestbookResponse guestbookResponse){
+        if (guestbookResponse == null || guestbookResponse.getSelectedFileIds() == null) {
+            return;
+        }
+        
+        List <DataFile> selectedDataFiles = new ArrayList<>(); //always make sure it's at least an empty List
+                
+        if(guestbookResponse.getDataFile() != null ){
+            selectedDataFiles.add(guestbookResponse.getDataFile());
+        }else{    
+            selectedDataFiles = datafileService.findAllCheapAndEasy(guestbookResponse.getSelectedFileIds());
+        }
+        
+        int countRequestAccessSuccess = 0;
+        
+        for(DataFile dataFile : selectedDataFiles){
+            guestbookResponse.setDataFile(dataFile);
+            writeGuestbookResponseRecordForRequestAccess(guestbookResponse);
+            if(requestAccess(dataFile,guestbookResponse)){
+                countRequestAccessSuccess++;
+            }
+        }
+        
+        if(countRequestAccessSuccess > 0){
+            DataFile firstDataFile = selectedDataFiles.get(0);
+            sendRequestFileAccessNotification(firstDataFile.getOwner(), firstDataFile.getId(), (AuthenticatedUser) session.getUser());
+        }
+     
+    }
+    
+    
     public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
         if(!fileMetadata.getDatasetVersion().isDraft()){           
             guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
@@ -179,6 +214,19 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             //if an error occurs here then download won't happen no need for response recs...
         }
     }
+    
+    public void writeGuestbookResponseRecordForRequestAccess(GuestbookResponse guestbookResponse) {
+        try {
+            CreateGuestbookResponseCommand cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, guestbookResponse.getDataset());
+            commandEngine.submit(cmd);
+         
+        } catch (CommandException e) {
+            //if an error occurs here then download won't happen no need for response recs...
+            logger.info("Failed to writeGuestbookResponseRecord for RequestAccess");
+        }
+        
+    }
+    
     
     // The "guestBookRecord(s)AlreadyWritten" parameter in the 2 methods 
     // below (redirectToBatchDownloadAPI() and redirectToDownloadAPI(), for the 
@@ -473,11 +521,58 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         return false;
     }    
     
+    public boolean requestAccess(DataFile dataFile, GuestbookResponse gbr){
+        boolean accessRequested = false;
+        if (dvRequestService.getDataverseRequest().getAuthenticatedUser() == null){
+            return accessRequested;
+        }
+       
+        List<AuthenticatedUser> fARs = dataFile.getFileAccessRequesters();
+      
+        if(fARs.isEmpty() || (!fARs.isEmpty() && !fARs.contains((AuthenticatedUser)session.getUser()))){
+            try {
+                commandEngine.submit(new RequestAccessCommand(dvRequestService.getDataverseRequest(), dataFile, gbr));                        
+                accessRequested = true;
+            } catch (CommandException ex) {
+                logger.info("Unable to request access for file id " + dataFile.getId() + ". Exception: " + ex);
+            }
+        } 
+        
+        return accessRequested;
+    }
+    
     public void sendRequestFileAccessNotification(Dataset dataset, Long fileId, AuthenticatedUser requestor) {
         permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream().forEach((au) -> {
             userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor);
         });
 
     }    
+    
+    public void sendRequestFileAccessNotification(Dataset dataset, Long fileId, GuestbookResponse gb){
+        Timestamp ts = new Timestamp(new Date().getTime()); 
+        UserNotification un = null;
+        
+        //String appendMsgText = (gb == null)?("") : this.getGuestbookAppendEmailDetails(gb);
+        String appendMsgText = "";
+        
+        //first send a notification for all the Users that have ManageDatasetPermissions a notification that a user has requested accedd    
+        List<AuthenticatedUser> mngDsPermUsers = permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset);
+        
+        for (AuthenticatedUser au : mngDsPermUsers){
+            un = userNotificationService.sendUserNotification(au, ts, UserNotification.Type.REQUESTFILEACCESS, fileId);
+            
+            if(un != null){
+                
+               boolean mailed = mailService.sendNotificationEmail(un, appendMsgText, (AuthenticatedUser)session.getUser());
+               if(mailed){
+                   un.setEmailed(true);
+                   userNotificationService.save(un);
+               }    
+            }
+        }
+
+        //send the user that requested access a notification that they requested the access
+        userNotificationService.sendNotification((AuthenticatedUser) session.getUser(), ts, UserNotification.Type.REQUESTEDFILEACCESS, fileId);
+    }
     
 }

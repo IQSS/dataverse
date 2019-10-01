@@ -339,6 +339,19 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
     }
 
+    
+    public List<DataFile> findAllCheapAndEasy(String fileIdsAsString){ 
+        //assumption is that the fileIds are separated by ','
+        ArrayList <DataFile> dataFilesFound = new ArrayList<>();
+        String[] fileIds = fileIdsAsString.split(",");
+        DataFile df = this.findCheapAndEasy(Long.parseLong(fileIds[0]));
+        if(df != null){
+            dataFilesFound.add(df);
+        }
+        
+        return dataFilesFound;
+    }
+            
     public DataFile findCheapAndEasy(Long id) {
         DataFile dataFile;
 

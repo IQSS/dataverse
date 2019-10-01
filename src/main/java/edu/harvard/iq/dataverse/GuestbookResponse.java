@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import javax.persistence.*;
 
 /**
@@ -59,11 +60,14 @@ public class GuestbookResponse implements Serializable {
 
     @OneToOne(cascade=CascadeType.ALL,mappedBy="guestbookResponse",fetch = FetchType.LAZY, optional = false)
     private FileDownload fileDownload;
+    
+    @OneToMany(mappedBy="guestbookResponse",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private Set<FileAccessRequest> fileAccessRequests;
      
     @OneToMany(mappedBy="guestbookResponse",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval=true)
     @OrderBy ("id")
     private List<CustomQuestionResponse> customQuestionResponses;
-
+    
     private String name;
     private String email;
     private String institution;

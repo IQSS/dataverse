@@ -6,6 +6,8 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.GuestbookResponse;
+import edu.harvard.iq.dataverse.FileAccessRequest;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -24,6 +26,7 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
     
     private final DataFile file;
     private final AuthenticatedUser requester;
+    private final FileAccessRequest fileAccessRequest;
     private final Boolean sendNotification;
 
 
@@ -32,6 +35,7 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
         super(dvRequest, file);        
         this.file = file;        
         this.requester = (AuthenticatedUser) dvRequest.getUser();
+        this.fileAccessRequest = new FileAccessRequest(file,requester);
         this.sendNotification = false;
     }
     
@@ -40,9 +44,28 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
         super(dvRequest, file);        
         this.file = file;        
         this.requester = (AuthenticatedUser) dvRequest.getUser();
+        this.fileAccessRequest = new FileAccessRequest(file,requester);
         this.sendNotification = sendNotification;
     }
 
+    public RequestAccessCommand(DataverseRequest dvRequest, DataFile file, GuestbookResponse gbr) {
+        // for data file check permission on owning dataset
+        super(dvRequest, file);        
+        this.file = file;        
+        this.requester = (AuthenticatedUser) dvRequest.getUser();
+        this.fileAccessRequest = new FileAccessRequest(file,requester,gbr);
+        this.sendNotification = false;
+    }
+    
+    public RequestAccessCommand(DataverseRequest dvRequest, DataFile file, GuestbookResponse gbr, Boolean sendNotification) {
+        // for data file check permission on owning dataset
+        super(dvRequest, file);        
+        this.file = file;
+        this.requester = (AuthenticatedUser) dvRequest.getUser();
+        this.fileAccessRequest = new FileAccessRequest(file,requester,gbr);
+        this.sendNotification = sendNotification;
+    }
+    
     @Override
     public DataFile execute(CommandContext ctxt) throws CommandException {
 
@@ -55,7 +78,9 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
             throw new CommandException(BundleUtil.getStringFromBundle("file.requestAccess.notAllowed.alreadyHasDownloadPermisssion"), this);
         }
 
+        file.getFileAccessRequests().add(fileAccessRequest);
         file.getFileAccessRequesters().add(requester);
+
         if (sendNotification) {
             ctxt.fileDownload().sendRequestFileAccessNotification(this.file.getOwner(), this.file.getId(), requester);
         }

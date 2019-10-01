@@ -323,6 +323,19 @@ public class FileDownloadHelper implements java.io.Serializable {
         }
     }
 
+    public void writeGuestbookResponseAndRequestAccess(GuestbookResponse guestbookResponse) {
+         RequestContext requestContext = RequestContext.getCurrentInstance();
+         boolean valid = validateGuestbookResponse(guestbookResponse);
+
+         if (!valid) {
+             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
+         } else {
+             fileDownloadService.writeGuestbookResponseAndRequestAccess(guestbookResponse);
+         }
+
+     }
+    
+    
     public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
         
         RequestContext requestContext = RequestContext.getCurrentInstance();
@@ -336,8 +349,7 @@ public class FileDownloadHelper implements java.io.Serializable {
         requestContext.execute("PF('downloadPopup').hide()"); 
         return retVal;
     }
-
-        
+  
     private List<DataFile> filesForRequestAccess;
 
     public List<DataFile> getFilesForRequestAccess() {
@@ -462,8 +474,8 @@ public class FileDownloadHelper implements java.io.Serializable {
         // when there's only one file for the access request and there's no pop-up
         processRequestAccess(file, true);        
     }
-
-     public void requestAccessMultiple(List<DataFile> files) {
+  
+    public void requestAccessMultiple(List<DataFile> files) {
          //need to verify that a valid request was made before 
          //sending the notification - if at least one is valid send the notification
          boolean succeeded = false;
@@ -482,7 +494,7 @@ public class FileDownloadHelper implements java.io.Serializable {
              fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId(), (AuthenticatedUser) session.getUser());
          }
      }
-    
+     
      public void requestAccessIndirect() {
          //Called when there are multiple files and no popup
          // or there's a popup with sigular or multiple files
@@ -498,6 +510,13 @@ public class FileDownloadHelper implements java.io.Serializable {
          if (fileDownloadService.requestAccess(file.getId())) {
              // update the local file object so that the page properly updates
              file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
+             
+             //write the guestbookResponse if there is an enabled guestbook
+             GuestbookResponse gbr = this.getGuestbookResponse(); //can we be sure this is the correct guestbookResponse?? - can it get out of sync??
+             if( gbr != null && gbr.getGuestbook().isEnabled() ){
+                 fileDownloadService.writeGuestbookResponseRecordForRequestAccess(gbr); 
+             }
+             
              // create notification if necessary
              if (sendNotification) {
                  fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId(), (AuthenticatedUser) session.getUser());

@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.nio.file.Path;
@@ -210,6 +211,18 @@ public class DataFile extends DvObject implements Comparable {
 
     public void setGuestbookResponses(List<GuestbookResponse> guestbookResponses) {
         this.guestbookResponses = guestbookResponses;
+    }
+    
+    @OneToMany(mappedBy="dataFile",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private Set<FileAccessRequest> fileAccessRequests;
+    
+    public Set<FileAccessRequest> getFileAccessRequests(){
+        logger.info("DataFile.getFileAccessRequests()");
+        return fileAccessRequests;
+    }
+      
+    public void setFileAccessRequests(Set<FileAccessRequest> fARs){
+        this.fileAccessRequests = fARs;
     }
     
     private char ingestStatus = INGEST_STATUS_NONE; 
@@ -673,13 +686,14 @@ public class DataFile extends DvObject implements Comparable {
         return null; 
     }
     
-
+    /*
     @ManyToMany
     @JoinTable(name = "fileaccessrequests",
     joinColumns = @JoinColumn(name = "datafile_id"),
     inverseJoinColumns = @JoinColumn(name = "authenticated_user_id"))
+    */
     private List<AuthenticatedUser> fileAccessRequesters;
-
+    
     public List<AuthenticatedUser> getFileAccessRequesters() {
         return fileAccessRequesters;
     }
@@ -687,6 +701,8 @@ public class DataFile extends DvObject implements Comparable {
     public void setFileAccessRequesters(List<AuthenticatedUser> fileAccessRequesters) {
         this.fileAccessRequesters = fileAccessRequesters;
     }
+    
+    
     
     public boolean isHarvested() {
         

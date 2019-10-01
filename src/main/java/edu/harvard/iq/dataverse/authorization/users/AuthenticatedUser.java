@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.authorization.users;
 import edu.harvard.iq.dataverse.Cart;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.ValidateEmail;
+import edu.harvard.iq.dataverse.FileAccessRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
@@ -13,6 +14,7 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Set;
 import java.util.Objects;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -134,6 +136,19 @@ public class AuthenticatedUser implements User, Serializable {
     public void setDatasetLocks(List<DatasetLock> datasetLocks) {
         this.datasetLocks = datasetLocks;
     }
+    
+    /*for many to many fileAccessRequests*/
+    @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private Set<FileAccessRequest> fileAccessRequests;
+    
+    public Set<FileAccessRequest> getFileAccessRequests() {
+        return fileAccessRequests;
+    }
+
+    public void setFileAccessRequests(Set<FileAccessRequest> fARs) {
+        this.fileAccessRequests = fARs;
+    }
+    /***/
     
     @Override
     public AuthenticatedUserDisplayInfo getDisplayInfo() {

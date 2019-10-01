@@ -316,6 +316,19 @@ public class DatasetPage implements java.io.Serializable {
         this.showIngestSuccess = showIngestSuccess;
     }
         
+    private String termsGuestbookPopupAction = "";
+
+    public void setTermsGuestbookPopupAction(String popupAction){
+        if(popupAction != null && popupAction.length() > 0){
+            this.termsGuestbookPopupAction = popupAction;
+        }
+        
+    }
+            
+    public String getTermsGuestbookPopupAction(){
+        return this.termsGuestbookPopupAction;
+    }
+    
     // TODO: Consider renaming "configureTools" to "fileConfigureTools".
     List<ExternalTool> configureTools = new ArrayList<>();
     // TODO: Consider renaming "exploreTools" to "fileExploreTools".

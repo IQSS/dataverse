@@ -108,4 +108,26 @@ public class UserNotificationServiceBean {
             save(userNotification);
         }
     }
+    
+    /**
+     * Returns a UserNotification that was sent to a dataverseUser.
+     * Sends ONLY the UserNotification (no email is sent via this method).
+     * All parameters are assumed to be valid, non-null objects.
+     * 
+     * @param dataverseUser - the AuthenticatedUser to whom the notification is to be sent
+     * @param sendDate - the time and date the notification was sent.
+     * @param type - the type of notification to be sent (see UserNotification for the different types)
+     * @param objectId -  the ID of the Dataverse object (Dataverse, Dataset, etc.) that the notification pertains to 
+     * @return The UserNotification that was sent to the dataverseUser
+     */
+    
+    public UserNotification sendUserNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId) {
+        UserNotification userNotification = new UserNotification();
+        userNotification.setUser(dataverseUser);
+        userNotification.setSendDate(sendDate);
+        userNotification.setType(type);
+        userNotification.setObjectId(objectId);
+        this.save(userNotification);
+        return userNotification;
+    }
 }
