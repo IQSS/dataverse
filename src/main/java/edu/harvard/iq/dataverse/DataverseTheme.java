@@ -44,7 +44,6 @@ public class DataverseTheme implements Serializable {
 
     @Enumerated(EnumType.STRING)
     private ImageFormat logoFormat;
-    private ImageFormat logoFooterFormat;
 
     public enum Alignment {
         LEFT, CENTER, RIGHT
@@ -72,14 +71,6 @@ public class DataverseTheme implements Serializable {
 
     public void setLogoFormat(ImageFormat logoFormat) {
         this.logoFormat = logoFormat;
-    }
-
-    public ImageFormat getLogoFooterFormat() {
-        return logoFooterFormat;
-    }
-
-    public void setLogoFooterFormat(ImageFormat logoFooterFormat) {
-        this.logoFooterFormat = logoFooterFormat;
     }
 
     public Alignment getLogoAlignment() {

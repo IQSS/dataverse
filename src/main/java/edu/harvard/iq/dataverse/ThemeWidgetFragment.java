@@ -240,10 +240,6 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             logger.throwing("ThemeWidgetFragment", "handleImageFileUpload", e);
             throw new RuntimeException("Error uploading logo file", e); // improve error handling
         }
-        // If needed, set the default values for the logo
-        if (editDv.getDataverseTheme().getLogoFooterFormat()==null) {
-            editDv.getDataverseTheme().setLogoFooterFormat(DataverseTheme.ImageFormat.SQUARE);
-        }
         logger.finer("end handelImageFileUpload");
     }
 

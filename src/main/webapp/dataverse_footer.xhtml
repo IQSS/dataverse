@@ -6,26 +6,18 @@
                 xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:c="http://java.sun.com/jsp/jstl/core"
-                xmlns:o="http://omnifaces.org/ui"     
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:of="http://omnifaces.org/functions"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
+    <div id="dataverseFooter" jsf:rendered="#{!widgetWrapper.widgetView and !dataverseHeaderFragment.isRootDataverseThemeDisabled(dataverse) and !empty dataverse.dataverseTheme.logoFooter}">
+        <div class="dataverseFooterLogo" style="text-align:#{!empty dataverse.dataverseTheme.logoFooterAlignment ? dataverse.dataverseTheme.logoFooterAlignment : 'center'};background:##{!empty dataverse.dataverseTheme.logoFooterBackgroundColor ? dataverse.dataverseTheme.logoFooterBackgroundColor : 'FFFFFF'};">
+            <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logoFooter}" alt="#{of:format1(bundle['alt.logo'], dataverse.name)}"/>
+        </div>
+    </div>
     <div id="footer" class="#{widgetView ? 'widget-view' : ''}">
         <div class="container">
             <div class="row">
-                <div id="dataverseFooter" class="container bg-muted"
-                     style="background:##{!empty dataverse.dataverseTheme.backgroundColor ? dataverse.dataverseTheme.backgroundColor : 'FFFFFF'};"
-                     jsf:rendered="#{!widgetWrapper.widgetView and !dataverseHeaderFragment.isRootDataverseThemeDisabled(dataverse)}">
-                    <o:importFunctions type="org.apache.commons.lang.StringEscapeUtils"/>
-                    <div class="dataverseFooterLogo" style="text-align:#{!empty dataverse.dataverseTheme.logoFooterAlignment ? dataverse.dataverseTheme.logoFooterAlignment : 'center'};background:##{!empty dataverse.dataverseTheme.logoFooterBackgroundColor ? dataverse.dataverseTheme.logoFooterBackgroundColor : 'FFFFFF'};"
-                         jsf:rendered="#{!empty dataverse.dataverseTheme.logoFooter and dataverse.dataverseTheme.logoFooterFormat == 'RECTANGLE'}">
-                        <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logoFooter}" alt="#{dataverse.name}"/>
-                    </div>
-                    <div class="dataverseFooterBlock">
-                        <div class="dataverseFooterCell dataverseFooterLogo" jsf:rendered="#{!empty dataverse.dataverseTheme.logoFooter and dataverse.dataverseTheme.logoFooterFormat == 'SQUARE'}">
-                            <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logoFooter}" alt="#{dataverse.name}"/>
-                        </div>
-                    </div>
-                </div>
                 <div class="col-sm-8 small" jsf:rendered="#{!widgetView}">
                     <p>
                         <h:outputText value="#{systemConfig.footerCopyrightAndYear}#{settingsWrapper.get(':FooterCopyright')}" escape="false"/> <ui:fragment rendered="#{!empty settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}">&#160;|&#160; <h:outputLink value="#{settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}" target="_blank">#{bundle['footer.privacyPolicy']}</h:outputLink></ui:fragment>
