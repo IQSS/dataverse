@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.dataset.tab;
 
+import com.google.common.base.Strings;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
@@ -27,8 +28,8 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFileTag;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
-import edu.harvard.iq.dataverse.persistence.datafile.license.TermsOfUseForm;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
+import edu.harvard.iq.dataverse.persistence.datafile.license.TermsOfUseForm;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
@@ -52,7 +53,6 @@ import javax.inject.Named;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolation;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -348,7 +348,11 @@ public class DatasetFilesTab implements Serializable {
 
     public void selectAllFiles() {
         logger.fine("selectAllFiles called");
-        selectedFiles = workingVersion.getFileMetadatas();
+        if(fileLabelSearchTerm.isEmpty()) {
+            selectedFiles = workingVersion.getFileMetadatas();
+        } else {
+            selectedFiles = fileMetadatasSearch;
+        }
     }
 
     public void clearSelection() {
@@ -817,8 +821,15 @@ public class DatasetFilesTab implements Serializable {
         }
         return lockedFromEditsVar;
     }
+
+    public boolean isAllFilesSelected() {
+        return selectedFiles.size() >= allCurrentFilesCount();
+    }
     
     // -------------------- PRIVATE --------------------
+    private Integer allCurrentFilesCount() {
+        return Strings.isNullOrEmpty(fileLabelSearchTerm) ? workingVersion.getFileMetadatas().size() : fileMetadatasSearch.size();
+    }
 
     private List<FileMetadata> selectFileMetadatasForDisplay(String searchTerm) {
         Set<Long> searchResultsIdSet = null;
