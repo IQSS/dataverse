@@ -211,7 +211,7 @@ The script above will run until you stop it, and will output something like:
     	472:           160          24320  edu.harvard.iq.dataverse.Dataset
     	674:            60           9600  edu.harvard.iq.dataverse.DataFile
     	S0     S1     E      O      P     YGC     YGCT    FGC    FGCT     GCT   
-    	0.00 100.00  35.32  20.15      �      7    2.145     0    0.000    2.145
+    	0.00 100.00  35.32  20.15      ?      7    2.145     0    0.000    2.145
 	Total     108808814     5909776392
 	Wed Aug 14 23:13:42 EDT 2019
 
@@ -219,7 +219,7 @@ The script above will run until you stop it, and will output something like:
 	338:           320          48640  edu.harvard.iq.dataverse.Dataset
 	524:           120          19200  edu.harvard.iq.dataverse.DataFile
 	S0     S1     E      O      P     YGC     YGCT    FGC    FGCT     GCT   
-	0.00 100.00  31.69  45.11      �      9    3.693     0    0.000    3.693
+	0.00 100.00  31.69  45.11      ?      9    3.693     0    0.000    3.693
 	Total     167998691     9080163904
 	Wed Aug 14 23:14:59 EDT 2019
 
@@ -227,7 +227,7 @@ The script above will run until you stop it, and will output something like:
 	272:           480          72960  edu.harvard.iq.dataverse.Dataset
 	442:           180          28800  edu.harvard.iq.dataverse.DataFile
 	S0     S1     E      O      P     YGC     YGCT    FGC    FGCT     GCT   
-	0.00 100.00  28.05  69.94      �     11    5.001     0    0.000    5.001
+	0.00 100.00  28.05  69.94      ?     11    5.001     0    0.000    5.001
 	Total     226826706    12230221352
 	Wed Aug 14 23:16:16 EDT 2019
 
@@ -244,7 +244,7 @@ First, look at the numbers in the jmap output. In the example above, you can imm
 	337:           372          59520  edu.harvard.iq.dataverse.DataFile
 	Total     277937182    15052367360
 	S0     S1     E      O      P     YGC     YGCT    FGC    FGCT     GCT   
-	0.00 100.00  77.66  88.15      �     17    8.734     0    0.000    8.734
+	0.00 100.00  77.66  88.15      ?     17    8.734     0    0.000    8.734
 	Wed Aug 14 23:20:05 EDT 2019
 
 	265:           551         110200  edu.harvard.iq.dataverse.Dataverse
@@ -252,7 +252,7 @@ First, look at the numbers in the jmap output. In the example above, you can imm
 	310:           450          72000  edu.harvard.iq.dataverse.DataFile
 	Total     142023031     8274454456
 	S0     S1     E      O      P     YGC     YGCT    FGC    FGCT     GCT   
-	0.00 100.00  71.95  20.12      �     22   25.034     1    4.455   29.489
+	0.00 100.00  71.95  20.12      ?     22   25.034     1    4.455   29.489
 	Wed Aug 14 23:21:40 EDT 2019
 
 We can see that the first ``FGC`` resulted in reducing the ``"O"`` by almost 7GB, from 15GB down to 8GB (from 88% to 20% full). The number of Dataset classes has not budged at all - it has grown by the same 160 objects as before (very suspicious!). To complicate matters, ``FGC`` does not **guarantee** to free everything that can be freed - it will balance how much the system needs memory vs. how much it is willing to spend in terms of CPU cycles performing GC (remember, the application freezes while ``FGC`` is running!). So you should not assume that the "20% full" number above means that you have 20% of your stack already wasted and unrecoverable. Instead, look for the next **minium** value of ``"O"``; then for the next, etc. Now compare these consecutive miniums. With the above test (this is an output of a real experiment, a particularly memory-hungry feature added to the dataverse page), the minimums sequence (of old. gen. usage, in %) was looking as follows: 
