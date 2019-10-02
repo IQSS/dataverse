@@ -167,8 +167,8 @@
                                     <div class="col-sm-12">
                                         <h:outputLink styleClass="btn btn-default" value="#{OAuth2Page.linkFor(LoginPage.authProvider.id, LoginPage.redirectPage)}">
                                             <h:graphicImage rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value="/resources/images/orcid_16x16.png" height="16" width="16"/>
-					    <h:outputFormat rendered="#{not fn:contains(LoginPage.authProvider.id, 'orcid')}" value="#{LoginPage.getLoginButtonText()}"/>
-					    <h:outputFormat rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value="#{bundle['login.button.orcid']}"/>
+					    <h:outputText rendered="#{not fn:contains(LoginPage.authProvider.id, 'orcid')}" value="#{LoginPage.getLoginButtonText()}"/>
+					    <h:outputText rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value=" #{bundle['login.button.orcid']}"/>
                                         </h:outputLink>
                                         <ui:fragment rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}">
                                             <p class="help-block small" style="margin-top:1em;">
@@ -201,9 +201,13 @@
                                 </div>
                             </div>
                             
-                            <!--<div id="signUpLink">
-                                <p class="help-block margin-top"><a href="#">Sign up for a Dataverse account</a>.</p>
-                            </div>-->
+                            <div id="signUpLink">
+                                <p class="help-block margin-top">
+                                    <h:outputFormat value="#{bundle['login.signup.blurb']}">
+                                        <f:param value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}"/>
+                                    </h:outputFormat>
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
