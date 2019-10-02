@@ -46,19 +46,19 @@
                 <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
                     <input style="margin-left:0;" name="dvobject_types" id="id_cbox_dv_dataverse" type="checkbox" value="Dataverse" checked="checked" />
                     <label class="facetTypeLabel">
-                        <a class="mydata_dvobject_label"><i class="icon-dataverse text-icon-inline"></i><span class="facetTypeDataverse">#{bundle['dataverse.results.types.dataverses']}</span> <span id="id_dataverses_count"></span></a>
+                        <a class="mydata_dvobject_label"><span class="icon-dataverse text-icon-inline"></span><span class="facetTypeDataverse">#{bundle['dataverse.results.types.dataverses']}</span> <span id="id_dataverses_count"></span></a>
                     </label>
                 </div>
                 <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
                     <input style="margin-left:0;" name="dvobject_types" id="id_cbox_dv_dataset" type="checkbox" value="Dataset" checked="checked" />
                     <label class="facetTypeLabel">
-                        <a class="mydata_dvobject_label"><i class="icon-dataset text-icon-inline"></i><span class="facetTypeDataset">#{bundle['dataverse.results.types.datasets']}</span> <span id="id_datasets_count"></span></a>
+                        <a class="mydata_dvobject_label"><span class="icon-dataset text-icon-inline"></span><span class="facetTypeDataset">#{bundle['dataverse.results.types.datasets']}</span> <span id="id_datasets_count"></span></a>
                     </label>
                 </div>
                 <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
                     <input style="margin-left:0;" name="dvobject_types" id="id_cbox_dv_file" type="checkbox" value="DataFile" />
                     <label class="facetTypeLabel">
-                        <a class="mydata_dvobject_label"><i class="icon-file text-icon-inline"></i><span class="facetTypeFile">#{bundle['dataverse.results.types.files']}</span> <span id="id_files_count"></span></a>
+                        <a class="mydata_dvobject_label"><span class="icon-file text-icon-inline"></span><span class="facetTypeFile">#{bundle['dataverse.results.types.files']}</span> <span id="id_files_count"></span></a>
                     </label>
                 </div>
             </div>
@@ -107,15 +107,34 @@
         <!-- end: workspace column -->
     </div><!-- end row -->
     <script src="#{resource['js/nunjucks.js']}?version=#{systemConfig.getVersion()}"></script>
-    <script> 
+    <script>
         <ui:remove>This variable is needed by mydata.js to make the ajax call</ui:remove>
+        //<![CDATA[
         var RETRIEVE_DATA_API_PATH = '#{MyDataPage.retrieveDataFullAPIPath}';
+        //]]>
     </script>
-    <script src="#{resource['js/mydata.js']}?version=#{systemConfig.getVersion()}b"></script>
-    <script>            
-          $(document).ready(function() {
-             init_mydata_page(); // source: mydata.js 
-           });
+    <script src="#{resource['js/mydata.js']}?version=#{systemConfig.getVersion()}"></script>
+    <script>
+        //<![CDATA[
+        // bundle text variables
+        var mydataresult = '#{bundle['mydata.result']}';
+        var mydataresults = '#{bundle['mydata.results']}';
+        var mydataviewnext = '#{bundle['mydata.viewnext']}';
+        var mydatamore = '#{bundle['mydata.more']}';
+        var draft = '#{bundle['Draft']}';
+        var inreview = '#{bundle['In Review']}';
+        var unpublished = '#{bundle['Unpublished']}';
+        var published = '#{bundle['Published']}';
+        var deaccessioned = '#{bundle['Deaccessioned']}';
+        var mydatato = '#{bundle['to']}';
+        var mydataof = '#{bundle['of']}';
+            
+        $(document).ready(function() {
+              
+            init_mydata_page(); // source: mydata.js
+            
+        });
+        //]]>
     </script>
 </div><!-- end panel body -->
 </div><!-- end panel -->

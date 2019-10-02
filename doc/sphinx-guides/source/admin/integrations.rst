@@ -49,14 +49,14 @@ Data Explorer
 
 Data Explorer is a GUI which lists the variables in a tabular data file allowing searching, charting and cross tabulation analysis. 
 
-For installation instructions, see the :doc:`/installation/external-tools` section of the Installation Guide.
+For installation instructions, see the :doc:`external-tools` section.
 
 TwoRavens/Zelig
 +++++++++++++++
 
 TwoRavens is a web application for tabular data exploration and statistical analysis with Zelig.
 
-For installation instructions, see the :doc:`/installation/external-tools` section of the Installation Guide.
+For installation instructions, see the :doc:`external-tools` section.
 
 WorldMap
 ++++++++
@@ -75,7 +75,7 @@ Whole Tale
 
 `Whole Tale <https://wholetale.org>`_  enables researchers to analyze data using popular tools including Jupyter and RStudio with the ultimate goal of supporting publishing of reproducible research packages. Users can
 `import data from Dataverse
-<https://wholetale.readthedocs.io/en/stable/users_guide/manage.html>`_ via identifier (e.g., DOI, URI, etc) or through the External Tools integration.  For installation instructions, see the :doc:`/installation/external-tools` section of this Installation Guide or the `Integration <https://wholetale.readthedocs.io/en/stable/users_guide/integration.html#dataverse-external-tools>`_ section of the Whole Tale User Guide.
+<https://wholetale.readthedocs.io/en/stable/users_guide/manage.html>`_ via identifier (e.g., DOI, URI, etc) or through the External Tools integration.  For installation instructions, see the :doc:`external-tools` section or the `Integration <https://wholetale.readthedocs.io/en/stable/users_guide/integration.html#dataverse-external-tools>`_ section of the Whole Tale User Guide.
 
 Discoverability
 ---------------
@@ -112,8 +112,10 @@ For details on how to configure this integration, look for "DuraCloud/Chronopoli
 Future Integrations
 -------------------
 
-The `Dataverse roadmap <https://dataverse.org/goals-roadmap-and-releases>`_ is a good place to see integrations that the core Dataverse team is working on.
+The `Dataverse roadmap <https://www.iq.harvard.edu/roadmap-dataverse-project>`_ is a good place to see integrations that the core Dataverse team is working on.
 
-The `Dev Efforts by the Dataverse Community <https://docs.google.com/spreadsheets/d/1pl9U0_CtWQ3oz6ZllvSHeyB0EG1M_vZEC_aZ7hREnhE/edit?usp=sharing>`_ spreadsheet is the best way to track integrations that are being worked on by the Dataverse community.
+The `Community Dev <https://github.com/orgs/IQSS/projects/2#column-5298405>`_ column of our project board is a good way to track integrations that are being worked on by the Dataverse community but many are not listed and if you have an idea for an integration, please ask on the `dataverse-community <https://groups.google.com/forum/#!forum/dataverse-community>`_ mailing list if someone is already working on it.
+
+Many integrations take the form of "external tools". See the :doc:`external-tools` section for details. External tool makers should check out the :doc:`/api/external-tools` section of the API Guide.
 
 Please help us keep this page up to date making a pull request! To get started, see the :doc:`/developers/documentation` section of the Developer Guide.

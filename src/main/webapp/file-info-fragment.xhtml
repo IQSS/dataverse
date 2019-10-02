@@ -14,10 +14,10 @@
         <div id="fileInfoInclude-filesTable" class="col-sm-12 row">
             <div class="pull-left col-file-thumb">
                 <div class="thumbnail-block text-center">  
-                    <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{!EditDatafilesPage.isThumbnailAvailable(fileMetadata)}"/>
+                    <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{!EditDatafilesPage.isThumbnailAvailable(fileMetadata)}"/>
                     <span class="file-thumbnail-preview-img" jsf:rendered="#{EditDatafilesPage.isThumbnailAvailable(fileMetadata)}"
-                          data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
-                        <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
+                          data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;#{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
+                        <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true" alt="#{fileMetadata.label}"/>
                     </span>
                     <!-- Restricted File Icon -->
                     <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(fileMetadata)}">                  

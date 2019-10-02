@@ -7,12 +7,7 @@ Metadata Export
 Automatic Exports
 -----------------
 
-Publishing a dataset automatically starts a metadata export job, that will run in the background, asynchronously. Once completed, it will make the dataset metadata exported and cached in all the supported formats:
-
-- Dublin Core
-- Data Documentation Initiative (DDI)
-- Schema.org JSON-LD
-- native JSON (Dataverse-specific)
+Publishing a dataset automatically starts a metadata export job, that will run in the background, asynchronously. Once completed, it will make the dataset metadata exported and cached in all the supported formats listed under :ref:`Supported Metadata Export Formats <metadata-export-formats>` in the :doc:`/user/dataset-management` section of the User Guide.
 
 A scheduled timer job that runs nightly will attempt to export any published datasets that for whatever reason haven't been exported yet. This timer is activated automatically on the deployment, or restart, of the application. So, again, no need to start or configure it manually. (See the "Application Timers" section of this guide for more information)
 
@@ -21,9 +16,9 @@ Batch exports through the API
 
 In addition to the automated exports, a Dataverse admin can start a batch job through the API. The following 2 API calls are provided: 
 
-/api/admin/metadata/exportAll
+``curl http://localhost:8080/api/admin/metadata/exportAll``
 
-/api/admin/metadata/reExportAll
+``curl http://localhost:8080/api/admin/metadata/reExportAll``
 
 The former will attempt to export all the published, local (non-harvested) datasets that haven't been exported yet. 
 The latter will *force* a re-export of every published, local dataset, regardless of whether it has already been exported or not. 

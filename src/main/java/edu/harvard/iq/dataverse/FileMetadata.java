@@ -2,9 +2,13 @@ package edu.harvard.iq.dataverse;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -21,18 +25,31 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
+import javax.persistence.CascadeType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.Version;
 
+import edu.harvard.iq.dataverse.datavariable.CategoryMetadata;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.VarGroup;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.util.DateUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
+import java.util.HashSet;
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import org.hibernate.validator.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
@@ -55,11 +72,13 @@ public class FileMetadata implements Serializable {
     @Column( nullable=false )
     private String label = "";
     
-    @Pattern(regexp="|[^/\\\\]|^[^/\\\\]+.*[^/\\\\]+$",
-            message = "{directoryname.illegalCharacters}")
+    
+    @ValidateDataFileDirectoryName(message = "{directoryname.illegalCharacters}")
     @Expose
     @Column ( nullable=true )
+
     private String directoryLabel;
+    @Expose
     @Column(columnDefinition = "TEXT")
     private String description = "";
     
@@ -86,8 +105,12 @@ public class FileMetadata implements Serializable {
      * represented in the GUI as text box the user can type into. The other type
      * is based on PROV-JSON from the W3C.
      */
+    @Expose
     @Column(columnDefinition = "TEXT", nullable = true, name="prov_freeform")
     private String provFreeForm;
+
+    @OneToMany (mappedBy="fileMetadata", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    private Collection<VariableMetadata> variableMetadatas;
         
     /**
      * Creates a copy of {@code this}, with identical business logic fields.
@@ -115,11 +138,22 @@ public class FileMetadata implements Serializable {
         this.label = label;
     }
 
+    public FileMetadata() {
+        variableMetadatas = new ArrayList<VariableMetadata>();
+        varGroups = new ArrayList<VarGroup>();
+    }
+
     public String getDirectoryLabel() {
         return directoryLabel;
     }
 
     public void setDirectoryLabel(String directoryLabel) {
+        //Strip off beginning and ending \ // - .
+        // and replace any sequences/combinations of / and \ with a single /
+        if (directoryLabel != null) {
+            directoryLabel = StringUtil.sanitizeFileDirectory(directoryLabel);
+        }
+
         this.directoryLabel = directoryLabel;
     }
 
@@ -139,11 +173,29 @@ public class FileMetadata implements Serializable {
         this.restricted = restricted;
     }
 
+    @OneToMany(mappedBy="fileMetadata", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    private List<VarGroup> varGroups;
 
+    public Collection<VariableMetadata> getVariableMetadatas() {
+        return variableMetadatas;
+    }
 
-    /* 
+    public List<VarGroup> getVarGroups() {
+        return varGroups;
+    }
+
+    public void setVariableMetadatas(Collection<VariableMetadata> variableMetadatas) {
+        this.variableMetadatas = variableMetadatas;
+    }
+
+    public void setVarGroups(List<VarGroup> varGroups) {
+        this.varGroups = varGroups;
+    }
+
+    /*
      * File Categories to which this version of the DataFile belongs: 
      */
+    @SerializedName("categories") //Used for OptionalFileParams serialization
     @ManyToMany
     @JoinTable(indexes = {@Index(columnList="filecategories_id"),@Index(columnList="filemetadatas_id")})
     @OrderBy("name")
@@ -494,6 +546,17 @@ public class FileMetadata implements Serializable {
         } else if (other.getDescription() != null) {
             return false;
         }
+        List<String> categoryNames =this.getCategoriesByName();
+        List<String> otherCategoryNames =other.getCategoriesByName();
+        if(!categoryNames.isEmpty()) {
+            categoryNames.sort(null);
+            otherCategoryNames.sort(null);
+            if (!categoryNames.equals(otherCategoryNames)) {
+                return false;
+            }
+        } else if(!otherCategoryNames.isEmpty()) {
+            return false;
+        }
         
         return true;
     }
@@ -511,6 +574,30 @@ public class FileMetadata implements Serializable {
         }
     };
     
+    public static final Comparator<FileMetadata> compareByLabelAndFolder = new Comparator<FileMetadata>() {
+        @Override
+        public int compare(FileMetadata o1, FileMetadata o2) {
+            String folder1 = o1.getDirectoryLabel() == null ? "" : o1.getDirectoryLabel().toUpperCase();
+            String folder2 = o2.getDirectoryLabel() == null ? "" : o2.getDirectoryLabel().toUpperCase();
+            
+            
+            // We want to the files w/ no folders appear *after* all the folders
+            // on the sorted list:
+            if ("".equals(folder1) && !"".equals(folder2)) {
+                return 1;
+            }
+            
+            if ("".equals(folder2) && !"".equals(folder1)) {
+                return -1;
+            }
+            
+            int comp = folder1.compareTo(folder2); 
+            if (comp != 0) {
+                return comp;
+            }
+            return o1.getLabel().toUpperCase().compareTo(o2.getLabel().toUpperCase());
+        }
+    };
     
     
     public String toPrettyJSON(){
@@ -538,20 +625,38 @@ public class FileMetadata implements Serializable {
 
     
     public JsonObject asGsonObject(boolean prettyPrint){
-
         
         GsonBuilder builder;
         if (prettyPrint){  // Add pretty printing
             builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting();
-        }else{
+        } else {
             builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation();                        
         }
         
-        builder.serializeNulls();   // correctly capture nulls
         Gson gson = builder.create();
-
-        // serialize this object
+        
         JsonElement jsonObj = gson.toJsonTree(this);
+        
+        //Add categories without the "name"
+        List<String> cats = this.getCategoriesByName();
+        JsonArray jsonCats = new JsonArray();
+        for(String t : cats) {
+            jsonCats.add(new JsonPrimitive(t));
+        }
+        if(jsonCats.size() > 0) {
+            jsonObj.getAsJsonObject().add(OptionalFileParams.CATEGORIES_ATTR_NAME, jsonCats);
+        }
+        
+        //Add tags without the "name"
+        List<String> tags = this.getDataFile().getTagLabels();
+        JsonArray jsonTags = new JsonArray();
+        for(String t : tags) {
+            jsonTags.add(new JsonPrimitive(t));
+        }
+        if(jsonTags.size() > 0) {
+            jsonObj.getAsJsonObject().add(OptionalFileParams.FILE_DATA_TAGS_ATTR_NAME, jsonTags);
+        }
+
         jsonObj.getAsJsonObject().addProperty("id", this.getId());
         
         return jsonObj.getAsJsonObject();
@@ -563,6 +668,95 @@ public class FileMetadata implements Serializable {
 
     public void setProvFreeForm(String provFreeForm) {
         this.provFreeForm = provFreeForm;
+    }
+
+    public void copyVariableMetadata(Collection<VariableMetadata> vml) {
+
+        if (variableMetadatas == null) {
+            variableMetadatas = new ArrayList<VariableMetadata>();
+        }
+
+        for (VariableMetadata vm : vml) {
+            VariableMetadata vmNew = null;
+            boolean flagNew = true;
+            for (VariableMetadata vmThis: variableMetadatas) {
+                if (vmThis.getDataVariable().getId().equals(vm.getDataVariable().getId())) {
+                    vmNew = vmThis;
+                    flagNew = false;
+                    break;
+                }
+            }
+            if (flagNew) {
+                vmNew = new VariableMetadata(vm.getDataVariable(), this);
+            }
+            vmNew.setIsweightvar(vm.isIsweightvar());
+            vmNew.setWeighted(vm.isWeighted());
+            vmNew.setWeightvariable(vm.getWeightvariable());
+            vmNew.setInterviewinstruction(vm.getInterviewinstruction());
+            vmNew.setLabel(vm.getLabel());
+            vmNew.setLiteralquestion(vm.getLiteralquestion());
+            vmNew.setNotes(vm.getNotes());
+            vmNew.setUniverse(vm.getUniverse());
+            vmNew.setPostquestion(vm.getPostquestion());
+
+            Collection<CategoryMetadata> cms = vm.getCategoriesMetadata();
+            if (flagNew) {
+                for (CategoryMetadata cm : cms) {
+                    CategoryMetadata cmNew = new CategoryMetadata(vmNew, cm.getCategory());
+                    cmNew.setWfreq(cm.getWfreq());
+                    vmNew.getCategoriesMetadata().add(cmNew);
+                }
+                variableMetadatas.add(vmNew);
+            } else {
+                Collection<CategoryMetadata> cmlThis = vm.getCategoriesMetadata();
+                for (CategoryMetadata cm : cms) {
+                    for (CategoryMetadata cmThis : cmlThis) {
+                        if (cm.getCategory().getId().equals(cmThis.getCategory().getId())) {
+                            cmThis.setWfreq(cm.getWfreq());
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+
+    public void copyVarGroups(Collection<VarGroup> vgl) {
+        if (varGroups != null) {
+            varGroups.clear();
+        }
+
+        for (VarGroup vg : vgl) {
+            VarGroup vgNew = new VarGroup(this);
+            for (DataVariable dv : vg.getVarsInGroup()) {
+                vgNew.getVarsInGroup().add(dv);
+            }
+            vgNew.setLabel(vg.getLabel());
+            if (varGroups == null) {
+                varGroups = new ArrayList<VarGroup>();
+            }
+            varGroups.add(vgNew);
+        }
+
+    }
+    
+    public Set<ConstraintViolation> validate() {
+        Set<ConstraintViolation> returnSet = new HashSet<>();
+
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        Set<ConstraintViolation<FileMetadata>> constraintViolations = validator.validate(this);
+        if (constraintViolations.size() > 0) {
+            // currently only support one message
+            ConstraintViolation<FileMetadata> violation = constraintViolations.iterator().next();
+            String message = "Constraint violation found in FileMetadata. "
+                    + violation.getMessage() + " "
+                    + "The invalid value is \"" + violation.getInvalidValue().toString() + "\".";
+            logger.info(message);
+            returnSet.add(violation);
+        }
+
+        return returnSet;
     }
     
 }

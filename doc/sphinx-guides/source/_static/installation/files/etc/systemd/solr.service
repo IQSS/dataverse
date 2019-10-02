@@ -9,6 +9,7 @@ WorkingDirectory = /usr/local/solr/solr-7.3.1
 ExecStart = /usr/local/solr/solr-7.3.1/bin/solr start -m 1g
 ExecStop = /usr/local/solr/solr-7.3.1/bin/solr stop
 LimitNOFILE=65000
+LimitNPROC=65000
 Restart=on-failure
 
 [Install]

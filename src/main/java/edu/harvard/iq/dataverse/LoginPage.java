@@ -160,10 +160,7 @@ public class LoginPage implements java.io.Serializable {
             logger.info("Credential list is null!");
             return null;
         }
-        for ( FilledCredential fc : filledCredentialsList ) {
-            if(fc.getValue()==null || fc.getValue().isEmpty()){
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("login."+fc.getCredential().getKey()));
-            }
+        for ( FilledCredential fc : filledCredentialsList ) {       
             authReq.putCredential(fc.getCredential().getKey(), fc.getValue());
         }
         authReq.setIpAddress( dvRequestService.getDataverseRequest().getSourceAddress() );
@@ -171,6 +168,7 @@ public class LoginPage implements java.io.Serializable {
             AuthenticatedUser r = authSvc.getUpdateAuthenticatedUser(credentialsAuthProviderId, authReq);
             logger.log(Level.FINE, "User authenticated: {0}", r.getEmail());
             session.setUser(r);
+            session.configureSessionTimeout();
             
             if ("dataverse.xhtml".equals(redirectPage)) {
                 redirectPage = redirectToRoot();

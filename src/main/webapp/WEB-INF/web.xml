@@ -48,6 +48,14 @@
         <param-name>javax.faces.FACELETS_SKIP_COMMENTS</param-name>
         <param-value>true</param-value>
     </context-param>
+    <context-param>
+        <param-name>javax.faces.FACELETS_BUFFER_SIZE</param-name>
+        <param-value>102400</param-value>
+    </context-param>
+    <context-param>
+        <param-name>javax.faces.FACELETS_REFRESH_PERIOD</param-name>
+        <param-value>-1</param-value>
+    </context-param>
     <!-- JSF mapping -->
     <filter>
         <filter-name>Router</filter-name>
@@ -131,8 +139,15 @@
     </servlet-mapping>
 
     <session-config>
+        <!-- This is the DEFAULT HttpSession timeout, in minutes. -->
+        <!-- In practice, it will only apply to ANONYMOUS user sessions -->
+        <!-- For logged in users, the session timeout is set explicitly -->
+        <!-- in the application code, to the value that is configurable -->
+        <!-- (LoginSessionTimeout in the settings table), with the -->
+        <!-- default value of 8 hours. -->
+        
         <session-timeout>
-            1440
+            10
         </session-timeout>
         <!-- Uncomment the line below to disble `;jsessionid=` in URLs -->
 	<!-- tracking-mode>COOKIE</tracking-mode -->
@@ -161,6 +176,10 @@
     <mime-mapping>
         <extension>svg</extension>
         <mime-type>image/svg+xml</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>webmanifest</extension>
+        <mime-type>application/manifest+json</mime-type>
     </mime-mapping>
     <!-- BEGIN Data Deposit API (SWORD v2) -->
     <!-- See also SwordConfigurationImpl for how deprecation warnings are configured -->

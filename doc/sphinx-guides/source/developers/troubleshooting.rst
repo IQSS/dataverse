@@ -14,7 +14,7 @@ For unknown reasons, Netbeans will sometimes change the following line under ``s
 
 ``<context-root>/</context-root>``
 
-Sometimes Netbeans will change ``/`` to ``/dataverse``. Sometimes it will delete the line entirely. Either way, you will see very strange behavior when attempting to click around Dataverse in a browser. The home page will load but icons will be missing. Any other page will fail to load entirely and you'll see a Glassfish error.
+Sometimes Netbeans will change ``/`` to ``/dataverse``. Sometimes it will delete the line entirely. Either way, you will see very strange behavior when attempting to click around Dataverse in a browser. The homepage will load but icons will be missing. Any other page will fail to load entirely and you'll see a Glassfish error.
 
 The solution is to put the file back to how it was before Netbeans touched it. If anyone knows of an open Netbeans bug about this, please let us know.
 
@@ -92,7 +92,7 @@ If you have an old copy of the database and old Solr data and want to start fres
 - drop your old database
 - clear out your existing Solr index: ``scripts/search/clear``
 - run the installer script above - it will create the db, deploy the app, populate the db with reference data and run all the scripts that create the domain metadata fields. You no longer need to perform these steps separately.
-- confirm you are using the latest Dataverse-specific Solr schema.xml
+- confirm you are using the latest Dataverse-specific Solr schema.xml and included XML files (schema_dv_cmb_[copies|fields].xml)
 - confirm http://localhost:8080 is up
 - If you want to set some dataset-specific facets, go to the root dataverse (or any dataverse; the selections can be inherited) and click "General Information" and make choices under "Select Facets". There is a ticket to automate this: https://github.com/IQSS/dataverse/issues/619
 

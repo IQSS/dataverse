@@ -14,13 +14,6 @@ We'll try to get you up and running as quickly as possible, but we thought you m
 Choose Your Own Installation Adventure
 --------------------------------------
 
-NDS Labs Workbench (for Testing Only)
-+++++++++++++++++++++++++++++++++++++
-
-The National Data Service (NDS) is community-driven effort guided by the National Data Service Consortium. NDS Labs has packaged Dataverse as `one of many data management tools <https://github.com/nds-org/ndslabs-specs>`_ that can be quickly deployed for evaluation purposes in their tool based on Kubernetes called NDS Labs Workbench. To get started, visit http://www.nationaldataservice.org/projects/labs.html .
-
-Please note that the version of Dataverse in NDS Labs Workbench may lag behind the latest release. Craig Willis from NDS Labs did an excellent job of adding Dataverse 4 to NDS Labs Workbench and the Dataverse team hopes to some day take over the creation of Docker images so the latest version of Dataverse can be evaluated in the workbench.
-
 Vagrant (for Testing Only)
 ++++++++++++++++++++++++++
 
@@ -77,7 +70,8 @@ Optional Components
 
 There are a number of optional components you may choose to install or configure, including:
 
-- R, rApache, Zelig, and TwoRavens: :doc:`/user/data-exploration/tworavens` describes the feature and :doc:`r-rapache-tworavens` describes how to install these components. :doc:`external-tools` explains how third-party tools like TwoRavens can be added to Dataverse.
+- External Tools: Third party tools for data exploration can be added to Dataverse by following the instructions in the :doc:`/admin/external-tools` section of the Admin Guide.
+- R, rApache, Zelig, and TwoRavens: :doc:`/user/data-exploration/tworavens` describes the feature and :doc:`r-rapache-tworavens` describes how to install these components. :doc:`/admin/external-tools` explains how third-party tools like TwoRavens can be added to Dataverse.
 - Dropbox integration :ref:`dataverse.dropbox.key`: for uploading files from the Dropbox API.
 - Apache: a web server that can "reverse proxy" Glassfish applications and rewrite HTTP traffic.
 - Shibboleth: an authentication system described in :doc:`shibboleth`. Its use with Dataverse requires Apache.

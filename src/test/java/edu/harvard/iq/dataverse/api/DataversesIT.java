@@ -2,23 +2,30 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.OK;
 import javax.ws.rs.core.Response.Status;
+import static javax.ws.rs.core.Response.Status.OK;
+import static junit.framework.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
+import org.junit.AfterClass;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class DataversesIT {
@@ -28,6 +35,11 @@ public class DataversesIT {
     @BeforeClass
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+    }
+    
+    @AfterClass
+    public static void afterClass() {
+        Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
     }
 
     @Test
@@ -140,6 +152,91 @@ public class DataversesIT {
                 .statusCode(INTERNAL_SERVER_ERROR.getStatusCode());
     }
 
+    //Ensure that email is not returned when the ExcludeEmailFromExport setting is set
+    @Test 
+    public void testReturnEmail() throws FileNotFoundException {        
+        
+        Response setToExcludeEmailFromExport = UtilIT.setSetting(SettingsServiceBean.Key.ExcludeEmailFromExport, "true");
+        setToExcludeEmailFromExport.then().assertThat()
+            .statusCode(OK.getStatusCode());
+        
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String dataverseAlias = UtilIT.getRandomDvAlias();
+        String emailAddressOfFirstDataverseContact = dataverseAlias + "@mailinator.com";
+        JsonObjectBuilder jsonToCreateDataverse = Json.createObjectBuilder()
+                .add("name", dataverseAlias)
+                .add("alias", dataverseAlias)
+                .add("dataverseContacts", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("contactEmail", emailAddressOfFirstDataverseContact)
+                        )
+                );
+        ;
+
+        Response createDataverseResponse = UtilIT.createDataverse(jsonToCreateDataverse.build(), apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode())
+                .body("data.alias", equalTo(dataverseAlias))
+                .body("data.name", equalTo(dataverseAlias))
+                .body("data.dataverseContacts[0].displayOrder", equalTo(0))
+                .body("data.dataverseContacts[0].contactEmail", equalTo(emailAddressOfFirstDataverseContact))
+                .body("data.permissionRoot", equalTo(true))
+                .body("data.dataverseType", equalTo("UNCATEGORIZED"));
+        
+        Response exportDataverseAsJson = UtilIT.exportDataverse(dataverseAlias, apiToken);
+        exportDataverseAsJson.prettyPrint();
+        exportDataverseAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        exportDataverseAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.alias", equalTo(dataverseAlias))
+                .body("data.name", equalTo(dataverseAlias))
+                .body("data.dataverseContacts", equalTo(null))
+                .body("data.permissionRoot", equalTo(true))
+                .body("data.dataverseType", equalTo("UNCATEGORIZED"));
+
+        RestAssured.unregisterParser("text/plain");
+
+        List dataverseEmailNotAllowed = with(exportDataverseAsJson.body().asString())
+                .getJsonObject("data.dataverseContacts");
+        assertNull(dataverseEmailNotAllowed);
+        
+        Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
+        removeExcludeEmail.then().assertThat()
+                .statusCode(200);
+        
+        Response exportDataverseAsJson2 = UtilIT.exportDataverse(dataverseAlias, apiToken);
+        exportDataverseAsJson2.prettyPrint();
+        exportDataverseAsJson2.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        exportDataverseAsJson2.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.alias", equalTo(dataverseAlias))
+                .body("data.name", equalTo(dataverseAlias))
+                .body("data.dataverseContacts[0].displayOrder", equalTo(0))
+                .body("data.dataverseContacts[0].contactEmail", equalTo(emailAddressOfFirstDataverseContact))
+                .body("data.permissionRoot", equalTo(true))
+                .body("data.dataverseType", equalTo("UNCATEGORIZED"));
+        
+        RestAssured.unregisterParser("text/plain");
+        List dataverseEmailAllowed = with(exportDataverseAsJson2.body().asString())
+                .getJsonObject("data.dataverseContacts");
+        assertNotNull(dataverseEmailAllowed);
+        
+        Response deleteDataverse2 = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverse2.prettyPrint();
+        deleteDataverse2.then().assertThat().statusCode(OK.getStatusCode());        
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+    }
     
     /**
      * Test the Dataverse page error message and link 

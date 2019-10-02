@@ -34,7 +34,7 @@ Add Glassfish 4.1 as a Server in Netbeans
 
 Dataverse only works with a specific version of Glassfish (see https://github.com/IQSS/dataverse/issues/2628 ) so you need to make sure Netbeans is deploying to that version rather than a newer version of Glassfish that may have come bundled with Netbeans.
 
-Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Glassfish Server" and set the installation location to ``/usr/local/glassfish4``. The default are fine so you can click "Next" and "Finish". To avoid confusing, click "Remove Server" on the newer version of Glassfish that came bundled with Glassfish.
+Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Glassfish Server" and set the installation location to ``/usr/local/glassfish4``. The default are fine so you can click "Next" and "Finish". If you are running Netbeans 8.2 and there is already a bundled version of Glassfish, you should probably remove it because (again) you need a specific version of Glassfish (4.1 as of this writing).
 
 Please note that if you are on a Mac, Netbeans may be unable to start Glassfish due to proxy settings in Netbeans. Go to the "General" tab in Netbeans preferences and click "Test connection" to see if you are affected. If you get a green checkmark, you're all set. If you get a red exclamation mark, change "Proxy Settings" to "No Proxy" and retest. A more complicated answer having to do with changing network settings is available at https://discussions.apple.com/thread/7680039?answerId=30715103022#30715103022 and the bug is also described at https://netbeans.org/bugzilla/show_bug.cgi?id=268076
 
@@ -44,6 +44,8 @@ Ensure that Dataverse Will Be Deployed to Glassfish 4.1
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Click "Window" and then "Projects". Click "File" and then "Project Properties (dataverse)". Click "Run" and change "Server" from "No Server Selected" to your installation of Glassfish 4.1. Click OK.
+
+.. _custom_build_num_script:
 
 Make a Small Change to the Code
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -127,6 +129,9 @@ By default, Glassfish reports analytics information. The administration guide su
 Solr
 ----
 
+.. TODO: This section should be moved into a dedicated guide about Solr for developers. It should be extended with
+         information about the way Solr is used within Dataverse, ideally explaining concepts and links to upstream docs.
+
 Once some dataverses, datasets, and files have been created and indexed, you can experiment with searches directly from Solr at http://localhost:8983/solr/#/collection1/query and look at the JSON output of searches, such as this wildcard search: http://localhost:8983/solr/collection1/select?q=*%3A*&wt=json&indent=true . You can also get JSON output of static fields Solr knows about: http://localhost:8983/solr/collection1/schema/fields
 
 You can simply double-click "start.jar" rather that running ``java -jar start.jar`` from the command line. Figuring out how to stop Solr after double-clicking it is an exercise for the reader.
@@ -149,6 +154,23 @@ Git on Mac
 ~~~~~~~~~~
 
 On a Mac, you won't have git installed unless you have "Command Line Developer Tools" installed but running ``git clone`` for the first time will prompt you to install them.
+
+Automation of Custom Build Number on Webpage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can create symbolic links from ``.git/hooks/post-checkout`` and ``.git/hooks/post-commit`` to ``scripts/installer/custom-build-number-hook``
+to let Git automatically update ``src/main/java/BuildNumber.properties`` for you. This will result in showing branch name and
+commit id in your test deployment webpages on the bottom right corner next to the version.
+
+When you prefer manual updates, there is another script, see above: :ref:`custom_build_num_script`.
+
+Sample Data
+-----------
+
+You may want to populate your **non-production** installation(s) of Dataverse with sample data. You have a couple options:
+
+- Code in https://github.com/IQSS/dataverse-sample-data (recommended). This set of sample data includes several common data types, data subsetted from production datasets in dataverse.harvard.edu, datasets with file hierarchy, and more.
+- Scripts called from ``scripts/deploy/phoenix.dataverse.org/post``.
 
 ----
 

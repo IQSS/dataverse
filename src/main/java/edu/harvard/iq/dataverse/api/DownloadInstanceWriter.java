@@ -27,6 +27,8 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URI;
@@ -35,6 +37,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.faces.context.FacesContext;
+import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.RedirectionException;
 
@@ -44,6 +48,9 @@ import javax.ws.rs.RedirectionException;
  */
 @Provider
 public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstance> {
+    
+    @Inject
+    MakeDataCountLoggingServiceBean mdcLogService;
     
     private static final Logger logger = Logger.getLogger(DownloadInstanceWriter.class.getCanonicalName());
 
@@ -237,7 +244,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
                         }
                         
-                        logger.info("Data Access API: direct S3 url: "+redirect_url_str);
+                        logger.fine("Data Access API: direct S3 url: "+redirect_url_str);
                         URI redirect_uri; 
 
                         try {
@@ -253,13 +260,15 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     logger.fine("writing guestbook response, for an S3 download redirect.");
                                     Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
                                     di.getCommand().submit(cmd);
+                                    MakeDataCountEntry entry = new MakeDataCountEntry(di.getRequestUriInfo(), di.getRequestHttpHeaders(), di.getDataverseRequestService(), di.getGbr().getDataFile());
+                                    mdcLogService.logEntry(entry);
                                 } catch (CommandException e) {
                                 }
                             }
                             
                             // finally, issue the redirect:
                             Response response = Response.seeOther(redirect_uri).build();
-                            logger.info("Issuing redirect to the file location on S3.");
+                            logger.fine("Issuing redirect to the file location on S3.");
                             throw new RedirectionException(response);
                         }
                         throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
@@ -342,6 +351,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             logger.fine("writing guestbook response.");
                             Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
                             di.getCommand().submit(cmd);
+                            MakeDataCountEntry entry = new MakeDataCountEntry(di.getRequestUriInfo(), di.getRequestHttpHeaders(), di.getDataverseRequestService(), di.getGbr().getDataFile());
+                            mdcLogService.logEntry(entry);
                         } catch (CommandException e) {}
                     } else {
                         logger.fine("not writing guestbook response");

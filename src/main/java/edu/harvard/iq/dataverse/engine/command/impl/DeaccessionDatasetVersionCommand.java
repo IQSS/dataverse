@@ -21,11 +21,10 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.ResourceBundle;
 import java.util.logging.Logger;
-import java.util.logging.Level;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
+import java.util.concurrent.Future;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  *
@@ -74,7 +73,6 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
         DatasetVersion managed = ctxt.em().merge(theVersion);
         
         boolean doNormalSolrDocCleanUp = true;
-        ctxt.index().indexDataset(managed.getDataset(), doNormalSolrDocCleanUp);
 
         
         ExportService instance = ExportService.getInstance(ctxt.settings());
@@ -101,5 +99,23 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
 
         return managed;
     }
-    
+
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        boolean retVal = true;
+        DatasetVersion version = (DatasetVersion) r;
+        Dataset dataset = version.getDataset();
+
+        try {
+            ctxt.index().indexDataset(dataset, true);
+            Future<String> indexString = ctxt.index().indexDataset(dataset, true);
+        } catch (IOException | SolrServerException e) {
+            String failureLogText = "Post-publication indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, dataset);
+            retVal = false;
+        }
+        return retVal;
+    }
+
 }

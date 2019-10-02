@@ -109,8 +109,10 @@ public class SearchIT {
         Response grantUser2AccessOnDataset = UtilIT.grantRoleOnDataverse(dataverseAlias, roleToAssign, "@" + username2, apiToken1);
         grantUser2AccessOnDataset.prettyPrint();
         assertEquals(200, grantUser2AccessOnDataset.getStatusCode());
-        sleep(500l);
 
+        String searchPart = "id:dataset_" + datasetId1 + "_draft";        
+        assertTrue("Failed test if search exceeds max duration " + searchPart , UtilIT.sleepForSearch(searchPart, apiToken2, "", UtilIT.MAXIMUM_INGEST_LOCK_DURATION)); 
+        
         Response shouldBeVisibleToUser2 = UtilIT.search("id:dataset_" + datasetId1 + "_draft", apiToken2);
         shouldBeVisibleToUser2.prettyPrint();
         shouldBeVisibleToUser2.then().assertThat()
@@ -657,7 +659,7 @@ public class SearchIT {
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         publishDataverse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-
+        
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken);
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -751,9 +753,63 @@ public class SearchIT {
         searchPublishedSubtreeWDS2.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
-        
-        
                 
+    }
+    
+    //If this test fails it'll fail inconsistently as it tests underlying async role code
+    //Hopefully it will not fail as we fixed the issue in https://github.com/IQSS/dataverse/issues/3471
+    @Test
+    public void testCuratorCardDataversePopulation() throws InterruptedException {
+        Response setSearchApiNonPublicAllowed = UtilIT.setSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed, "true");
+        setSearchApiNonPublicAllowed.prettyPrint();
+        setSearchApiNonPublicAllowed.then().assertThat()
+                .statusCode(200);
+        
+        Response createSuperUser = UtilIT.createRandomUser();
+        createSuperUser.prettyPrint();
+        assertEquals(200, createSuperUser.getStatusCode());
+        String usernameSuper = UtilIT.getUsernameFromResponse(createSuperUser);
+        String apiTokenSuper = UtilIT.getApiTokenFromResponse(createSuperUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(usernameSuper);
+        assertEquals(200, makeSuperUser.getStatusCode());
+        
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String parentDataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(parentDataverseAlias, apiToken);
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        String subDataverseAlias = "dv" + UtilIT.getRandomIdentifier();
+        Response createSubDataverseResponse = UtilIT.createSubDataverse(subDataverseAlias, null, apiTokenSuper, parentDataverseAlias);
+        createSubDataverseResponse.prettyPrint();
+        //UtilIT.getAliasFromResponse(createSubDataverseResponse);
+        
+        Response grantRoleOnDataverseResponse = UtilIT.grantRoleOnDataverse(subDataverseAlias, "curator", "@" + username, apiTokenSuper); 
+        grantRoleOnDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+                
+        String searchPart = "*"; 
+        
+        Response searchPublishedSubtreeSuper = UtilIT.search(searchPart, apiTokenSuper, "&subtree="+parentDataverseAlias);
+        assertTrue("Failed test if search exceeds max duration " + searchPart , UtilIT.sleepForSearch(searchPart, apiToken, "&subtree="+parentDataverseAlias, UtilIT.MAXIMUM_INGEST_LOCK_DURATION)); 
+        searchPublishedSubtreeSuper.prettyPrint();
+        searchPublishedSubtreeSuper.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1));
+        
+        Response searchPublishedSubtreeCurator = UtilIT.search(searchPart, apiToken, "&subtree="+parentDataverseAlias);
+        searchPublishedSubtreeCurator.prettyPrint();
+        searchPublishedSubtreeCurator.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1));
+        
     }
     
     @Test

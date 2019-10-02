@@ -728,6 +728,9 @@ public class PermissionServiceBean {
             if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
             }
+            if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+            }
         }
     }
 

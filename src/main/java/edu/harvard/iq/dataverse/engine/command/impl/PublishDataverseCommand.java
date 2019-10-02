@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.search.IndexResponse;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Future;
 
 @RequiredPermissions(Permission.PublishDataverse)
 public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
@@ -53,16 +54,16 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
         dataverse.setPublicationDate(new Timestamp(new Date().getTime()));
         dataverse.setReleaseUser((AuthenticatedUser) getUser());
         Dataverse savedDataverse = ctxt.dataverses().save(dataverse);
-        /**
-         * @todo consider also
-         * ctxt.solrIndex().indexPermissionsOnSelfAndChildren(savedDataverse.getId());
-         */
-        /**
-         * @todo what should we do with the indexRespose?
-         */
-        IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(savedDataverse);
+        
         return savedDataverse;
 
+    }
+    
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        Dataverse ret = (Dataverse) r;
+        ctxt.solrIndex().indexPermissionsOnSelfAndChildren(ret.getId());
+        return true;
     }
 
 }

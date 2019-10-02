@@ -3,12 +3,14 @@
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:jsf="http://xmlns.jcp.org/jsf"
     xmlns:p="http://primefaces.org/ui"
-    xmlns:o="http://omnifaces.org/ui">
+    xmlns:o="http://omnifaces.org/ui"
+    xmlns:of="http://omnifaces.org/functions">
     <!-- Theme and Widgets Edit Tabs -->
-        <p:tabView  rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">
+        <p:tabView id="themeWidgetsTabView" rendered="#{themeWidgetFragment.editDv!=null}" widgetVar="content">
             <p:tab id="themeTab" title="#{bundle['dataverse.theme.title']}" rendered="#{not settingsWrapper.rootDataverseThemeDisabled or themeWidgetFragment.editDv.owner != null}">
                 <p:fragment>
                     <p:autoUpdate/>
+                    <p:focus for="themeRoot"/>
                     <!-- Dataverse Theme Panel -->
                     <div class="row form-horizontal">
                         <div class="form-group" jsf:rendered="#{themeWidgetFragment.editDv.owner!=null}">
@@ -43,8 +45,8 @@
                                 <p:panelGrid rendered="#{not empty themeWidgetFragment.editDv.dataverseTheme.logo}" columns="2" styleClass="noBorders" columnClasses="text-center,uploadNewLogo">
                                     <p:column>
                                         <p>
-                                            <img jsf:rendered="#{themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/temp/#{themeWidgetFragment.tempDirName}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{themeWidgetFragment.editDv.name}"/>
-                                            <img jsf:rendered="#{not themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/#{themeWidgetFragment.editDv.id}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{themeWidgetFragment.editDv.name}"/>
+                                            <img jsf:rendered="#{themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/temp/#{themeWidgetFragment.tempDirName}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{of:format1(bundle['alt.logo'], themeWidgetFragment.editDv.name)}"/>
+                                            <img jsf:rendered="#{not themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/#{themeWidgetFragment.editDv.id}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{of:format1(bundle['alt.logo'], themeWidgetFragment.editDv.name)}"/>
                                         </p>
                                         <p:commandButton update=":themeWidgetsForm:themeWidgetsTabView" value="#{bundle.remove}" action="#{themeWidgetFragment.removeLogo()}" oncomplete="bind_bsui_components();"/>
                                     </p:column>                              
@@ -182,13 +184,13 @@
                 </p:fragment>
                 <div class="button-block">
                     <p:commandButton class="btn btn-default" value="#{bundle.saveChanges}" update=":#{p:resolveClientId('messagePanel', view)}, :themeWidgetsForm" action="#{themeWidgetFragment.save()}" oncomplete="bind_bsui_components();"/>
-                    <p:commandButton class="btn btn-default" action="#{themeWidgetFragment.cancel()}" immediate="true" id="themeCancel" value="#{bundle.cancel}"/>
+                    <p:commandButton id="themeCancel" class="btn btn-link" value="#{bundle.cancel}" action="#{themeWidgetFragment.cancel()}" immediate="true"/>
                 </div>
             </p:tab>
             <p:tab id="themeTabDisabled" title="#{bundle['dataverse.theme.title']}" rendered="#{themeWidgetFragment.editDv.owner == null and settingsWrapper.rootDataverseThemeDisabled}">
                 <div>#{bundle['dataverse.theme.disabled']}</div>
                 <div class="button-block">
-                    <p:commandButton class="btn btn-default" action="#{themeWidgetFragment.cancel()}" immediate="true" id="themeTabDisabledDone" value="#{bundle.done}"/>
+                    <p:commandButton id="themeTabDisabledDone" class="btn btn-default" value="#{bundle.done}" action="#{themeWidgetFragment.cancel()}" immediate="true"/>
                 </div>
             </p:tab>
             <p:tab id="widgetsTab" title="#{bundle['dataverse.widgets.title']}">
@@ -245,7 +247,7 @@
                         <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?alias=#{themeWidgetFragment.editDv.alias}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widgetScope=#{themeWidgetFragment.editDv.alias}&amp;amp;widget=iframe&amp;amp;heightPx=500&quot;&gt;&lt;/script&gt;</textarea>
                     </div>
                     <div class="button-block">
-                        <p:commandButton class="btn btn-default" action="#{themeWidgetFragment.cancel()}" immediate="true" id="widgetsDone" value="#{bundle.done}"/>
+                        <p:commandButton id="widgetsDone" class="btn btn-default" value="#{bundle.done}" action="#{themeWidgetFragment.cancel()}" immediate="true"/>
                     </div>
                 </ui:fragment>
             </p:tab>

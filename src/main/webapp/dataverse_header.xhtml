@@ -7,6 +7,7 @@
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:c="http://java.sun.com/jsp/jstl/core"
                 xmlns:o="http://omnifaces.org/ui"
+                xmlns:of="http://omnifaces.org/functions"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
     <o:resourceInclude path="/CustomizationFilesServlet?customFileType=header" rendered="#{!widgetWrapper.widgetView}"/>
@@ -24,10 +25,10 @@
                     </button>                       
                     <a href="/">
                         <ui:fragment rendered="#{empty settingsWrapper.get(':LogoCustomizationFile')}">
-                            <span class="navbar-brand" tabindex="1"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
+                            <span class="navbar-brand" tabindex="1"><span id="icon-dataverse" class="icon-dataverse"></span> #{bundle.dataverse}</span>
                         </ui:fragment>
                         <h:graphicImage rendered="#{!empty settingsWrapper.get(':LogoCustomizationFile')}"
-                            url="#{settingsWrapper.get(':LogoCustomizationFile')}" styleClass="navbar-brand custom-logo"/>
+                            url="#{settingsWrapper.get(':LogoCustomizationFile')}" styleClass="navbar-brand custom-logo" alt="#{of:format1(bundle['alt.homepage'], dataverseServiceBean.findRootDataverse().name)}"/>
                     </a>
                 </div>
                 <div class="collapse navbar-collapse" id="topNavBar">
@@ -193,8 +194,7 @@
         <o:form class="form-inline">
             <div id="status-alert" class="bg-warning" jsf:rendered="#{!empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader') and !dataverseSession.isStatusDismissed()}">
                 <div class="alert alert-dismissible container text-warning">
-                    <p:commandButton class="close" id="closeButton" actionListener="#{dataverseSession.setStatusDismissed(true)}" update="@form" value="&#215;" />
-<!--                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&#215;</span></button>-->
+                    <p:commandButton class="close" id="closeButton" actionListener="#{dataverseSession.setStatusDismissed(true)}" update="@form" value="&#215;"/>
                     <h:outputText styleClass="highlightBold" value="#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}"/>
                     <h:outputText rendered="#{!empty settingsWrapper.get(':StatusMessageText')}" value=" – #{settingsWrapper.get(':StatusMessageText')}" escape="false"/>
                 </div>
@@ -209,11 +209,11 @@
             <!-- FIXME: Rather than hard-coding "FFFFFF", get it from the backend (ThemeWidgetFragment.DEFAULT_LOGO_BACKGROUND_COLOR). -->
             <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.dataverseTheme.logoAlignment ? dataverse.dataverseTheme.logoAlignment : 'center'};background:##{!empty dataverse.dataverseTheme.logoBackgroundColor ? dataverse.dataverseTheme.logoBackgroundColor : 'FFFFFF'};"
                  jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'RECTANGLE'}">
-                <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name}"/>
+                <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{of:format1(bundle['alt.logo'], dataverse.name)}"/>
             </div>
             <div class="dataverseHeaderBlock">
                 <div class="dataverseHeaderCell dataverseHeaderLogo" jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'SQUARE'}">
-                    <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name}"/>
+                    <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{of:format1(bundle['alt.logo'], dataverse.name)}"/>
                 </div>
                 <div class="dataverseHeaderCell dataverseHeaderName" jsf:rendered="#{!empty dataverse.name}">
                     <a href="/dataverse/#{dataverse.alias}" class="dataverseHeaderDataverseName" style="color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};">#{dataverse.name}</a>

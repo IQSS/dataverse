@@ -5,7 +5,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
-      xmlns:o="http://omnifaces.org/ui">
+      xmlns:o="http://omnifaces.org/ui"
+      xmlns:of="http://omnifaces.org/functions">
     <h:head>
     </h:head>
 
@@ -17,13 +18,15 @@
             <ui:param name="loginRedirectPage" value="dataverseuser.xhtml"/>
             <ui:define name="body">
                 <script>
-                window.onpageshow = function(event) {
-                    if (event.persisted) {
-                        window.location.reload();
-                    }
-                };
+                    //<![CDATA[
+                    window.onpageshow = function(event) {
+                        if (event.persisted) {
+                            window.location.reload();
+                        }
+                    };
+                    //]]>
                 </script>
-                <f:loadBundle basename="Bundle" var="bundle"/>
+                <f:loadBundle basename="propertyFiles.Bundle" var="bundle"/>
                 <f:metadata>
                     <f:event type="preRenderView" listener="#{facesContext.externalContext.response.setHeader('Cache-Control', 'no-cache, no-store')}"/>
                     <f:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
@@ -34,6 +37,7 @@
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
                 </f:metadata>
                 <h:form id="dataverseUserForm">
+
                     <p:focus context="dataverseUserForm"/>
                     <div class="clearfix" jsf:rendered="#{empty DataverseUserPage.editMode}">
                         <div class="btn-group pull-right" jsf:rendered="#{DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
@@ -84,7 +88,7 @@
                                             </ui:fragment>
                                             <ui:fragment rendered="#{item.theObject != null}">
                                                 <ui:fragment rendered="#{item.type == 'CREATEACC'}">
-                                                    <i class="icon-dataverse text-icon-inline text-muted"></i>
+                                                    <span class="icon-dataverse text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.welcome']}" escape="false">
                                                         <o:param>
                                                             <h:outputText value="#{dataverseServiceBean.findRootDataverse().name}"/>
@@ -98,7 +102,7 @@
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'CREATEDV'}">
-                                                    <i class="icon-dataverse text-icon-inline text-muted"></i>
+                                                    <span class="icon-dataverse text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.createDataverse']}" escape="false">
                                                         <o:param>
                                                             <a href="/dataverse/#{item.theObject.getAlias()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
@@ -112,7 +116,7 @@
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'CREATEDS'}">
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.createDataset']}" escape="false">
                                                         <o:param>
                                                             <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
@@ -126,7 +130,7 @@
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'SUBMITTEDDS'}">
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.wasSubmittedForReview']}" escape="false">
                                                         <o:param>
                                                             <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
@@ -146,7 +150,7 @@
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'RETURNEDDS'}">
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.wasReturnedByReviewer']}" escape="false">
                                                         <o:param>
                                                             <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
@@ -163,7 +167,7 @@
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'PUBLISHEDDS'}">
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.wasPublished']}" escape="false">
                                                         <o:param>
                                                             <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
@@ -174,7 +178,7 @@
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'REQUESTFILEACCESS'}">
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.requestFileAccess']}" escape="false">
                                                         <o:param>
                                                             <a href="/permissions-manage-files.xhtml?id=#{item.theObject.id}" title="#{item.theObject.displayName}">#{item.theObject.displayName}</a>
@@ -188,7 +192,7 @@
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'GRANTFILEACCESS'}">
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.grantFileAccess']}" escape="false">
                                                         <o:param>
                                                             <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}" title="#{item.theObject.displayName}">#{item.theObject.displayName}</a>
@@ -196,7 +200,7 @@
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'REJECTFILEACCESS'}">
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.rejectFileAccess']}" escape="false">
                                                         <o:param>
                                                             <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}" title="#{item.theObject.displayName}">#{item.theObject.displayName}</a>
@@ -204,7 +208,7 @@
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'MAPLAYERUPDATED'}">
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.worldMap.added']}" escape="false">
                                                         <o:param>
                                                             <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
@@ -212,7 +216,7 @@
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'MAPLAYERDELETEFAILED'}">
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.maplayer.deletefailed']}" escape="false">
                                                         <o:param value="#{item.theObject.getLabel()}"/>
                                                         <o:param>
@@ -222,7 +226,7 @@
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'ASSIGNROLE'}">
                                                     <ui:fragment rendered="#{item.theObject.isInstanceofDataverse()}">
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.access.granted.dataverse']}" escape="false">
                                                         <o:param value="#{item.roleString}"/>
                                                         <o:param>
@@ -236,7 +240,7 @@
                                                     </ui:fragment>
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{item.theObject.isInstanceofDataset()}">
-                                                        <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                        <span class="icon-dataset text-icon-inline text-muted"></span>
                                                         <h:outputFormat value="#{bundle['notification.access.granted.dataset']}" escape="false">
                                                             <o:param value="#{item.roleString}"/>
                                                             <o:param>
@@ -252,7 +256,7 @@
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{item.theObject.isInstanceofDataFile()}">
                                                     <f:param value="#{item.roleString}"/>
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.access.granted.datafile']}" escape="false">
                                                             <o:param value="#{item.roleString}"/>
                                                             <o:param>
@@ -264,7 +268,7 @@
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'REVOKEROLE'}">
                                                     <ui:fragment rendered="#{item.theObject.isInstanceofDataverse()}">
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.access.revoked.dataverse']}" escape="false">
                                                             <o:param>
                                                                 <a href="/dataverse/#{item.theObject.getAlias()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
@@ -273,7 +277,7 @@
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{item.theObject.isInstanceofDataset()}">
                                                     <f:param value="#{item.roleString}"/>
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.access.revoked.dataset']}" escape="false">
                                                         <o:param>
                                                                 <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
@@ -282,7 +286,7 @@
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{item.theObject.isInstanceofDataFile()}">
                                                     <f:param value="#{item.roleString}"/>
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.access.revoked.datafile']}" escape="false">
                                                         <o:param>
                                                               <a href="/dataset.xhtml?persistentId=#{item.theObject.getOwner().getGlobalId()}" title="#{item.theObject.getOwner().getDisplayName()}">#{item.theObject.getOwner().getDisplayName()}</a>
@@ -296,26 +300,32 @@
                                                     a more type-safe approach would be to use the "Type" enum in UserNotification.
                                                     Also, isInstanceofDataset() should be checked, probably.
                                                     -->
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.checksumfail']}" escape="false">
                                                         <f:param value="#{item.theObject.getGlobalId()}"/>
                                                         <f:param value="#{item.theObject.getDisplayName()}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'FILESYSTEMIMPORT'}">
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.import.filesystem']}" escape="false">
                                                         <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
                                                         <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'CHECKSUMIMPORT'}">
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.import.checksum']}" escape="false">
                                                         <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
                                                         <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'APIGENERATED'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.email.apiTokenGenerated.subject']}" escape="false">
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+
                                             </ui:fragment>
                                             <h:outputText value="#{item.localeSendDate}" styleClass="text-muted small"/>
                                         </div>
@@ -423,7 +433,7 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <p class="form-control-static">
-                                            <h:graphicImage value="#{DataverseUserPage.userAuthProvider.logo}" height="16" width="16"/>&#160;
+                                            <h:graphicImage value="#{DataverseUserPage.userAuthProvider.logo}" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], DataverseUserPage.userAuthProvider.persistentIdName)}"/>&#160;
                                             <h:outputLink value="#{DataverseUserPage.userAuthProvider.persistentIdUrlPrefix}#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}" title="#{DataverseUserPage.userAuthProvider.persistentIdName}" target="_blank">
                                                 <h:outputText value="#{DataverseUserPage.userAuthProvider.persistentIdUrlPrefix}#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}"/>
                                             </h:outputLink>
@@ -464,6 +474,7 @@
                             </div>
                             <!--Script removes "hidden" class from div containing API token to stop javascript browser exploits-->
                             <script>
+                                //<![CDATA[
                                 $(document).ready(function() {
                                     $("div#apiToken").removeClass("hidden");
                                 });
@@ -471,10 +482,12 @@
                                 $(window).on("beforeunload", function() {
                                     $("div#apiToken").addClass("hidden");
                                 });
+                                //]]>
                             </script>
                             <div>
                                 <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
-                                    #{ApiTokenPage.checkForApiToken() ? bundle['apitoken.regenerateBtn'] : bundle['apitoken.generateBtn']}                                </button>
+                                    #{ApiTokenPage.checkForApiToken() ? bundle['apitoken.regenerateBtn'] : bundle['apitoken.generateBtn']}
+                                </button>
                             </div>
                         </p:tab>
                         <ui:remove>
@@ -603,7 +616,7 @@
                                     </label>
                                     <div class="col-sm-4">
                                         <p class="form-control-static">
-                                            <h:graphicImage value="#{DataverseUserPage.userAuthProvider.logo}" height="16" width="16"/>&#160;
+                                            <h:graphicImage value="#{DataverseUserPage.userAuthProvider.logo}" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], DataverseUserPage.userAuthProvider.persistentIdName)}"/>&#160;
                                             <h:outputLink value="#{DataverseUserPage.userAuthProvider.persistentIdUrlPrefix}#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}" title="#{DataverseUserPage.userAuthProvider.persistentIdName}" target="_blank">
                                                 <h:outputText value="#{DataverseUserPage.userAuthProvider.persistentIdUrlPrefix}#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}"/>
                                             </h:outputLink>
@@ -642,10 +655,10 @@
                                     <div class="col-sm-12 button-block">
                                         <p:commandButton id="save" styleClass="btn btn-default"
                                                          value="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn']:bundle.saveChanges}"
-                                                         action="#{DataverseUserPage.save}" update="@form,:messagePanel,:userDisplayInfoTitle" />
-                                        <p:commandButton id="cancel" styleClass="btn btn-default" value="#{bundle.cancel}"
+                                                         action="#{DataverseUserPage.save}" update="@form,:messagePanel,:userDisplayInfoTitle"/>
+                                        <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}"
                                                          action="#{DataverseUserPage.cancel}" process="@this" update="@form">
-                                            <p:resetInput target="@form" />
+                                            <p:resetInput target="@form"/>
                                         </p:commandButton>
                                     </div>
                                 </div>
@@ -655,5 +668,6 @@
                 </h:form>
             </ui:define>
         </ui:composition>
+
     </h:body>
 </html>

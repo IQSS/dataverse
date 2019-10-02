@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -14,9 +15,11 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  *
@@ -38,7 +41,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         ctxt.permissions().checkEditDatasetLock(doomed, getRequest(), this);
         doomed = ctxt.em().find(Dataset.class, doomed.getId());
-        // if you are deleting a dataset that only has 1 draft, we are actually destroying the dataset
+        // if you are deleting a dataset that only has 1 version, we are actually destroying the dataset
         if (doomed.getVersions().size() == 1) {
             ctxt.engine().submit(new DestroyDatasetCommand(doomed, getRequest()));
         } else {
@@ -93,7 +96,14 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                     }
                 }
                 boolean doNormalSolrDocCleanUp = true;
-                ctxt.index().indexDataset(doomed, doNormalSolrDocCleanUp);
+                try {
+                    ctxt.index().indexDataset(doomed, doNormalSolrDocCleanUp);
+                } catch (IOException | SolrServerException e) {
+                    String failureLogText = "Post delete version indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + doomed.getId().toString();
+                    failureLogText += "\r\n" + e.getLocalizedMessage();
+                    LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, doomed);
+                }
+
                 return;
             }
 

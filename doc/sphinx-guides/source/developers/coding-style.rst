@@ -89,10 +89,17 @@ Generally speaking you should use ``fine`` for everything that you don't want to
 
 When adding logging, do not simply add ``System.out.println()`` lines because the logging level cannot be controlled.
 
-Avoid Hard-Coding Strings
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Avoid Hard-Coding Strings (Use Constants)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Special strings should be defined as public constants. For example, ``DatasetFieldConstant.java`` contains a field for "title" and it's used in many places in the code (try "Find Usages" in Netbeans). This is better than writing the string "title" in all those places.
+
+Avoid Hard-Coding User-Facing Messaging in English
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There is an ongoing effort to translate Dataverse into various languages. Look for "lang" or "languages" in the :doc:`/installation/config` section of the Installation Guide for details if you'd like to help or play around with this feature.
+
+The translation effort is hampered if you hard code user-facing messages in English in the Java code. Put English strings in ``Bundle.properties`` and use ``BundleUtil`` to pull them out. This is especially important for messages that appear in the UI. We are aware that the API has many, many hard coded English strings in it. If you touch a method in the API and notice English strings, you are strongly encouraged to use that opportunity to move the English to ``Bundle.properties``.
 
 Type Safety
 ~~~~~~~~~~~

@@ -48,7 +48,6 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-import edu.harvard.iq.dataverse.validation.BeanValidationServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import java.io.StringReader;
 import java.net.URI;
@@ -194,9 +193,6 @@ public abstract class AbstractApiBean {
 
     @EJB
     protected ActionLogServiceBean actionLogSvc;
-
-    @EJB
-    protected BeanValidationServiceBean beanValidationSvc;
 
     @EJB
     protected SavedSearchServiceBean savedSearchSvc;
@@ -559,9 +555,22 @@ public abstract class AbstractApiBean {
             throw new WrappedResponse( ex, forbidden(ex.getMessage() ) );
         } catch (PermissionException ex) {
             /**
-             * @todo Is there any harm in exposing ex.getLocalizedMessage()?
+             * TODO Is there any harm in exposing ex.getLocalizedMessage()?
              * There's valuable information in there that can help people reason
-             * about permissions!
+             * about permissions! The formatting of the error would need to be
+             * cleaned up but here's an example the helpful information:
+             *
+             * "User :guest is not permitted to perform requested action.Can't
+             * execute command
+             * edu.harvard.iq.dataverse.engine.command.impl.MoveDatasetCommand@50b150d9,
+             * because request [DataverseRequest user:[GuestUser
+             * :guest]@127.0.0.1] is missing permissions [AddDataset,
+             * PublishDataset] on Object mra"
+             *
+             * Right now, the error that's visible via API (and via GUI
+             * sometimes?) doesn't have much information in it:
+             *
+             * "User @jsmith is not permitted to perform requested action."
              */
             throw new WrappedResponse(error(Response.Status.UNAUTHORIZED,
                                                     "User " + cmd.getRequest().getUser().getIdentifier() + " is not permitted to perform requested action.") );
@@ -728,11 +737,6 @@ public abstract class AbstractApiBean {
                         .add( "message", msg ).build()
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
-
-   protected Response allowCors( Response r ) {
-       r.getHeaders().add("Access-Control-Allow-Origin", "*");
-       return r;
-   }
 }
 
 class LazyRef<T> {
