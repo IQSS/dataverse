@@ -49,6 +49,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import javax.validation.constraints.Size;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -1141,10 +1142,17 @@ public class DatasetVersion implements Serializable {
                             relatedPublication.setText(citation);
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationURL)) {
-                            // Prevent href and target=_blank from getting into Schema.org JSON-LD output.
-                            subField.getDatasetFieldType().setDisplayFormat("#VALUE");
-                            String url = subField.getDisplayValue();
-                            relatedPublication.setUrl(url);
+                            // We have to avoid using subField.getDisplayValue() here - because the DisplayFormatType 
+                            // for this url is likely set up so that the display value is automatically turned into a
+                            // clickable HTML HREF block, which we don't want to end in our Schema.org JSON-LD output.
+                            // So we want to use the raw value of the field instead, with 
+                            // minimal HTML sanitation, just in case (this would be done on all URLs in getDisplayValue()).
+                            String url = subField.getValue();
+                            if (StringUtils.isBlank(url) || DatasetField.NA_VALUE.equals(url)) {
+                                relatedPublication.setUrl("");
+                            } else {
+                                relatedPublication.setUrl(MarkupChecker.sanitizeBasicHTML(url));
+                            }
                         }
                     }
                     relatedPublications.add(relatedPublication);
