@@ -40,7 +40,6 @@ import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -74,7 +73,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -135,15 +133,10 @@ public class EditDatafilesPage implements java.io.Serializable {
     SettingsWrapper settingsWrapper;
 
     @Inject
-    private TermsOfUseFactory termsOfUseFactory;
-    @Inject
     private TermsOfUseFormMapper termsOfUseFormMapper;
 
     @Inject
     private TermsOfUseSelectItemsFactory termsOfUseSelectItemsFactory;
-
-
-    private final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
     private Dataset dataset = new Dataset();
 
@@ -160,7 +153,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     private DatasetVersion workingVersion;
     private DatasetVersion clone;
     private String dropBoxSelection = "";
-    private String displayCitation;
     private boolean datasetUpdateRequired = false;
     private boolean tabularDataTagsUpdated = false;
 
@@ -170,9 +162,6 @@ public class EditDatafilesPage implements java.io.Serializable {
 
 
     private boolean saveEnabled = false;
-
-    // Used to store results of permissions checks
-    private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
 
     private Long maxFileUploadSizeInBytes = null;
     private Long multipleUploadFilesLimit = null;
@@ -255,24 +244,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     public boolean isScrollable() {
         return !(fileMetadatas == null || fileMetadatas.size() <= NUMBER_OF_SCROLL_ROWS + 1);
     }
-
-    public String getScrollHeightPercentage() {
-        int perc;
-        if (fileMetadatas == null || fileMetadatas.size() < NUMBER_OF_SCROLL_ROWS) {
-            perc = 100;
-        } else {
-            perc = NUMBER_OF_SCROLL_ROWS * 100 / fileMetadatas.size();
-        }
-
-        if (perc == 0) {
-            perc = 1;
-        } else if (perc > 100) {
-            perc = 100;
-        }
-
-        logger.fine("scroll height percentage: " + perc);
-        return perc + "%";
-    }
     
     /*
         Any settings, such as the upload size limits, should be saved locally - 
@@ -307,37 +278,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         return this.multipleUploadFilesLimit;
     }
 
-    /**
-     * Check Dataset related permissions
-     *
-     * @param permissionToCheck
-     * @return
-     */
-    public boolean doesSessionUserHaveDataSetPermission(Permission permissionToCheck) {
-        if (permissionToCheck == null) {
-            return false;
-        }
-
-        String permName = permissionToCheck.getHumanName();
-
-        // Has this check already been done? 
-        // 
-        if (this.datasetPermissionMap.containsKey(permName)) {
-            // Yes, return previous answer
-            return this.datasetPermissionMap.get(permName);
-        }
-
-        // Check the permission
-        //
-        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), this.dataset).has(permissionToCheck);
-
-        // Save the permission
-        this.datasetPermissionMap.put(permName, hasPermission);
-
-        // return true/false
-        return hasPermission;
-    }
-
     public void reset() {
         // ?
     }
@@ -352,15 +292,6 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public void setPersistentId(String persistentId) {
         this.persistentId = persistentId;
-    }
-
-    public String getDisplayCitation() {
-        //displayCitation = dataset.getCitation(false, workingVersion);
-        return displayCitation;
-    }
-
-    public void setDisplayCitation(String displayCitation) {
-        this.displayCitation = displayCitation;
     }
 
     public String getDropBoxSelection() {
@@ -551,32 +482,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
 
-    private void msg(String s) {
-        System.out.println(s);
-    }
-
-    /**
-     * For single file replacement, load the file to replace
-     *
-     * @return
-     */
-    private DataFile loadFileToReplace() {
-
-        Map<String, String> params = FacesContext.getCurrentInstance().
-                getExternalContext().getRequestParameterMap();
-
-        if (params.containsKey("fid")) {
-            String fid = params.get("fid");
-            if ((!fid.isEmpty()) && (StringUtils.isNumeric(fid))) {
-                selectedFileIdsList.add(Long.parseLong(fid));
-                return datafileService.find(Long.parseLong(fid));
-            }
-        }
-        return null;
-
-    } // loadFileToReplace
-
-    private List<FileMetadata> selectedFiles; // = new ArrayList<>();
+    private List<FileMetadata> selectedFiles;
 
     public List<FileMetadata> getSelectedFiles() {
         return selectedFiles;
@@ -586,16 +492,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.selectedFiles = selectedFiles;
     }
 
-    private boolean selectAllFiles;
-
-    public boolean isSelectAllFiles() {
-        return selectAllFiles;
-    }
-
-    public void setSelectAllFiles(boolean selectAllFiles) {
-        this.selectAllFiles = selectAllFiles;
-    }
-
     public String getVersionString() {
         return versionString;
     }
@@ -603,47 +499,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void setVersionString(String versionString) {
         this.versionString = versionString;
     }
-
-    public void toggleSelectedFiles() {
-        this.selectedFiles = new ArrayList<>();
-        if (this.selectAllFiles) {
-            if (mode == FileEditMode.CREATE) {
-                for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-                    this.selectedFiles.add(fmd);
-                }
-            } else {
-                for (FileMetadata fmd : fileMetadatas) {
-                    this.selectedFiles.add(fmd);
-                }
-            }
-        }
-    }
-
-    public String getSelectedFilesIdsString() {
-        String downloadIdString = "";
-        for (FileMetadata fmd : this.selectedFiles) {
-            if (!StringUtil.isEmpty(downloadIdString)) {
-                downloadIdString += ",";
-            }
-            downloadIdString += fmd.getDataFile().getId();
-        }
-        return downloadIdString;
-
-    }
-
-    /*
-    public void updateFileCounts(){
-        
-        setSelectedUnrestrictedFiles(new ArrayList<FileMetadata>());
-        setSelectedRestrictedFiles(new ArrayList<FileMetadata>());
-        for (FileMetadata fmd : this.selectedFiles){
-            if(fmd.isRestricted()){
-                getSelectedRestrictedFiles().add(fmd);
-            } else {
-                getSelectedUnrestrictedFiles().add(fmd);
-            }
-        }
-    }*/
 
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
 
@@ -798,21 +653,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public String save() {
-        
-        
-        /*
-        // Validate
-        Set<ConstraintViolation> constraintViolations = workingVersion.validate();
-        if (!constraintViolations.isEmpty()) {
-             //JsfHelper.addFlashMessage(getBundleString("dataset.message.validationError"));
-            logger.fine("Constraint violation detected on SAVE: "+constraintViolations.toString());
-             JH.addMessage(FacesMessage.SEVERITY_ERROR, getBundleString("dataset.message.validationError"));
-             
-            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
-            return "";
-        }
-        }*/
-
         // Once all the filemetadatas pass the validation, we'll only allow the user 
         // to try to save once; (this it to prevent them from creating multiple
         // DRAFT versions, if the page gets stuck in that state where it 
@@ -866,9 +706,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             for (DataFile addedFile : filesAdded) {
                 fileMetadatas.add(addedFile.getFileMetadata());
             }
-            filesAdded = null;
         }
-        //boolean newDraftVersion = false;    
 
         Boolean provJsonChanges = false;
 
@@ -1192,15 +1030,6 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     }
 
-    private String returnToFileLandingPageAfterReplace(DataFile newFile) {
-
-        if (newFile == null) {
-            throw new NullPointerException("newFile cannot be null!");
-        }
-        //Long datasetVersionId = newFile.getOwner().getLatestVersion().getId();
-        return "/file.xhtml?fileId=" + newFile.getId() + "&version=DRAFT&faces-redirect=true";
-    }
-
 
     public String cancel() {
         uploadInProgress = false;
@@ -1222,45 +1051,11 @@ public class EditDatafilesPage implements java.io.Serializable {
         return returnToDatasetOnly();
     }
 
-    
-    /* deprecated; super inefficient, when called repeatedly on a long list 
-       of files! 
-       leaving the code here, commented out, for illustration purposes. -- 4.6
-    public boolean isDuplicate(FileMetadata fileMetadata) {
-        Map<String, Integer> MD5Map = new HashMap<String, Integer>();
-        // TODO: 
-        // think of a way to do this that doesn't involve populating this 
-        // map for every file on the page? 
-        // may not be that much of a problem, if we paginate and never display 
-        // more than a certain number of files... Still, needs to be revisited
-        // before the final 4.0. 
-        // -- L.A. 4.0
-        // make a "defensive copy" to avoid java.util.ConcurrentModificationException from being thrown
-        // when uploading 100+ files
-        List<FileMetadata> wvCopy = new ArrayList<>(workingVersion.getFileMetadatas());
-        Iterator<FileMetadata> fmIt = wvCopy.iterator();
-        while (fmIt.hasNext()) {
-            FileMetadata fm = fmIt.next();
-            String md5 = fm.getDataFile().getChecksumValue();
-            if (md5 != null) {
-                if (MD5Map.get(md5) != null) {
-                    MD5Map.put(md5, MD5Map.get(md5).intValue() + 1);
-                } else {
-                    MD5Map.put(md5, 1);
-                }
-            }
-        }
-        return MD5Map.get(thisMd5) != null && MD5Map.get(thisMd5).intValue() > 1;
-    }*/
-
     private HttpClient getClient() {
-        // TODO: 
-        // cache the http client? -- L.A. 4.0 alpha
         return new HttpClient();
     }
 
     public boolean allowMultipleFileUpload() {
-
         return true;
     }
 
@@ -1294,7 +1089,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         // Make http call, download the file: 
         // -----------------------------------------------------------
         int status = 0;
-        //InputStream dropBoxStream = null;
 
         try {
             status = getClient().executeMethod(dropBoxMethod);
@@ -1308,7 +1102,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         logger.log(Level.WARNING, "Failed to get DropBox InputStream for file: {0}", fileLink);
         return null;
-    } // end: getDropBoxInputStream
+    }
 
 
     /**
@@ -1429,15 +1223,6 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // -----------------------------------------------------------
                 uploadWarningMessage = processUploadedFileList(datafiles);
                 logger.fine("Warning message during upload: " + uploadWarningMessage);
-                /*if (warningMessage != null){
-                     logger.fine("trying to send faces message to " + event.getComponent().getClientId());
-                     FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
-                     if (uploadWarningMessage == null) {
-                         uploadWarningMessage = warningMessage;
-                     } else {
-                         uploadWarningMessage = uploadWarningMessage.concat("; "+warningMessage);
-                     }
-                }*/
             }
             if (!uploadInProgress) {
                 logger.warning("Upload in progress cancelled");
@@ -1454,15 +1239,6 @@ public class EditDatafilesPage implements java.io.Serializable {
                 uploadWarningMessage = localWarningMessage.concat("; " + uploadWarningMessage);
             }
         }
-    }
-
-    public void uploadStarted() {
-        // uploadStarted() is triggered by PrimeFaces <p:upload onStart=... when an upload is 
-        // started. It will be called *once*, even if it is a multiple file upload 
-        // (either through drag-and-drop or select menu). 
-        logger.fine("upload started");
-
-        uploadInProgress = true;
     }
 
 
@@ -1655,10 +1431,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         } catch (IOException ioex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
             return;
-        } /*catch (FileExceedsMaxSizeException ex) {
-            logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ex.getMessage());
-            return;
-        }*/
+        }
 
         // -----------------------------------------------------------
         // These raw datafiles are then post-processed, in order to drop any files 
@@ -1762,40 +1535,6 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // in this batch (as in, a bunch of drag-and-dropped files) have finished. 
                 //fileMetadatas.add(dataFile.getFileMetadata());
             }
-
-            /*
-             preserved old, pre 4.6 code - mainly as an illustration of how we used to do this. 
-            
-            if (!isDuplicate(dataFile.getFileMetadata())) {
-                newFiles.add(dataFile);        // looks good
-                fileMetadatas.add(dataFile.getFileMetadata());
-            } else {
-                if (duplicateFileNames == null) {
-                    duplicateFileNames = dataFile.getFileMetadata().getLabel();
-                } else {
-                    duplicateFileNames = duplicateFileNames.concat(", " + dataFile.getFileMetadata().getLabel());
-                    multipleDupes = true;
-                }
-                // remove the file from the dataset (since createDataFiles has already linked
-                // it to the dataset!
-                // first, through the filemetadata list, then through tht datafiles list:
-                Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
-                while (fmIt.hasNext()) {
-                    FileMetadata fm = fmIt.next();
-                    if (fm.getId() == null && dataFile.getStorageIdentifier().equals(fm.getDataFile().getStorageIdentifier())) {
-                        fmIt.remove();
-                        break;
-                    }
-                }
-                Iterator<DataFile> dfIt = dataset.getFiles().iterator();
-                while (dfIt.hasNext()) {
-                    DataFile dfn = dfIt.next();
-                    if (dfn.getId() == null && dataFile.getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
-                        dfIt.remove();
-                        break;
-                    }
-                }
-            } */
         }
 
         // -----------------------------------------------------------
@@ -1992,31 +1731,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     // Methods for edit functions that are performed on one file at a time, 
     // in popups that block the rest of the page:
 
-    private FileMetadata fileMetadataSelected = null;
-
-    public void setFileMetadataSelected(FileMetadata fm) {
-        setFileMetadataSelected(fm, null);
-    }
-
-    public void setFileMetadataSelected(FileMetadata fm, String guestbook) {
-
-        fileMetadataSelected = fm;
-        logger.log(Level.FINE, "set the file for the advanced options popup ({0})", fileMetadataSelected.getLabel());
-    }
-
-    public FileMetadata getFileMetadataSelected() {
-        if (fileMetadataSelected != null) {
-            logger.log(Level.FINE, "returning file metadata for the advanced options popup ({0})", fileMetadataSelected.getLabel());
-        } else {
-            logger.fine("file metadata for the advanced options popup is null.");
-        }
-        return fileMetadataSelected;
-    }
-
-    public void clearFileMetadataSelected() {
-        fileMetadataSelected = null;
-    }
-
     public boolean isDesignatedDatasetThumbnail(FileMetadata fileMetadata) {
         if (fileMetadata != null) {
             if (fileMetadata.getDataFile() != null) {
@@ -2048,10 +1762,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         fileMetadataSelectedForThumbnailPopup = fm;
         alreadyDesignatedAsDatasetThumbnail = getUseAsDatasetThumbnail();
 
-    }
-
-    public FileMetadata getFileMetadataSelectedForThumbnailPopup() {
-        return fileMetadataSelectedForThumbnailPopup;
     }
 
     public void clearFileMetadataSelectedForThumbnailPopup() {
@@ -2174,14 +1884,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     private List<String> tabFileTagsByName;
-
-    public List<String> getTabFileTagsByName() {
-        return tabFileTagsByName;
-    }
-
-    public void setTabFileTagsByName(List<String> tabFileTagsByName) {
-        this.tabFileTagsByName = tabFileTagsByName;
-    }
 
     private void refreshTabFileTagsByName() {
         tabFileTagsByName = new ArrayList<>();
