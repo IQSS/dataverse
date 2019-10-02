@@ -1143,8 +1143,8 @@ public class DatasetVersion implements Serializable {
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationURL)) {
                             // We have to avoid using subField.getDisplayValue() here - because the DisplayFormatType 
-                            // for this url is likely set up so that the display value is automatically turned into a
-                            // clickable HTML HREF block, which we don't want to end in our Schema.org JSON-LD output.
+                            // for this url metadata field is likely set up so that the display value is automatically 
+                            // turned into a clickable HTML HREF block, which we don't want to end in our Schema.org JSON-LD output.
                             // So we want to use the raw value of the field instead, with 
                             // minimal HTML sanitation, just in case (this would be done on all URLs in getDisplayValue()).
                             String url = subField.getValue();
