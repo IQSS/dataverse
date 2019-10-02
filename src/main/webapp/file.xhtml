@@ -366,37 +366,50 @@
                                     <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                                 </ui:include>
                             </p:tab>
-                            
-                            
-                             <p:tab id="previewTab" title="Preview" rendered="#{true}">
-                                
+
+
+                            <p:tab id="previewTab" title="Preview" rendered="#{true}">
+
                                 <!-- Preview -->
                                 <div id="file-preview-icon-block" jsf:rendered="#{empty worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink()}">
                                     <div id="border-block" style="border:0;">
                                         <div id="preview-square">
                                             <ui:fragment rendered="#{!FilePage.isThumbnailAvailable(FilePage.fileMetadata)}">
                                                 <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(FilePage.fileMetadata.dataFile)} text-muted"/>
+                                                <!-- Restricted File Icon -->
+                                                <div class="file-icon-restricted-block" jsf:rendered="#{FilePage.fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(fileMetadata)}">                  
+                                                    <span class="glyphicon glyphicon-lock text-danger"/>
+                                                </div>
+                                                <div class="file-icon-restricted-block" jsf:rendered="#{FilePage.fileMetadata.restricted and fileDownloadHelper.canDownloadFile(fileMetadata) }">
+                                                    <span class="icon-unlock text-success"/>
+                                                </div>
                                             </ui:fragment>
-                                            
+
                                             <p:graphicImage styleClass="img-responsive" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" 
                                                             alt="#{bundle['file.metadata.preview.alt']} #{FilePage.fileMetadata.label}" rendered="#{FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
-                                            
+
                                             <!-- #file-preview-icon-block > #border-block > #preview-square PADDING-BOTTOM: 100% -->
-                                        
                                         </div>
                                     </div>
                                 </div>
-                                
                                 <div id="preview-tool-block" jsf:rendered="#{!empty worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink()}">
 
                                     <!-- TODO: CONFIG SETTING/FILE TYPE RENDER LOGIC -->
                                     <!-- TODO: MAINTAIN WORLDMAP FUNCTIONALITY -->
-                                    
+
                                     <!-- TODO: NOFRAMES -->
-                                    
-                                    <ui:fragment rendered="#{true}">
-                                        
-                                        <!-- TODO: DETERMINE IF NECESSARY, BAD RENDER LOGIC worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata) -->
+                                    <ui:fragment rendered="#{!worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(FilePage.fileMetadata)}">
+
+
+                                        <p:graphicImage styleClass="img-responsive" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" 
+                                                        alt="#{bundle['file.metadata.preview.alt']} #{FilePage.fileMetadata.label}" rendered="#{FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/> 
+                                        <div class="file-icon-restricted-block" >                  
+                                            <span class="glyphicon glyphicon-lock text-danger"/>
+                                        </div>
+
+                                    </ui:fragment>
+
+                                    <ui:fragment rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(FilePage.fileMetadata)}">
 
                                         <div class="margin-bottom">
                                             <!-- TODO: DETERMINE IF NECESSARY, REMOVED WORLDMAP LOGO TO BE CONSISTENT WITH OTHER EXTERNAL TOOL
@@ -404,22 +417,22 @@
                                             -->
                                             <a href="#{worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getLayerLink()}" class="btn btn-default" target="_blank" rel="noopener" title="#{bundle['file.metaData.viewOnWorldMap']}"><span class="glyphicon glyphicon-equalizer"/> #{bundle['file.metaData.viewOnWorldMap']}</a>
                                         </div>
-                                        
+
                                         <div class="preview-frame-block">
-                                            
+
                                             <!-- TODO: ROLE, TITLE ATTRIBUTES -->
                                             <!-- TODO: RESPONSIVE HEIGHT, WIDTH -->
                                             <!-- TODO: MIXED CONTENT -->
                                             <!-- TODO: LAZY LOAD, DEFER SCRIPTS -->
-                                            
+
                                             <iframe id="id_iframe_map" role="presentation" title="External File Preview Tool" height="500" width="100%" src="#{worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink()}"></iframe>
                                         </div>
 
                                     </ui:fragment>
-                                    
-                                    
+
+
                                 </div>
-                                
+
                             </p:tab>
                             
                             
