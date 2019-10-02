@@ -204,7 +204,7 @@
                             
                             <div id="signUpLink">
                                 <p class="help-block margin-top">
-                                    <h:outputFormat value="#{bundle['login.signup.blurb']}">
+                                    <h:outputFormat value="#{bundle['login.signup.blurb']}" escape="false">
                                         <f:param value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}"/>
                                     </h:outputFormat>
                                 </p>
