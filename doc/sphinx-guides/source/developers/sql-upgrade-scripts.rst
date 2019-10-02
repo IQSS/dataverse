@@ -26,7 +26,7 @@ How to Create a SQL Upgrade Script
 
 We assume you have already read the :doc:`version-control` section and have been keeping your feature branch up to date with the "develop" branch.
 
-Create a new file called something like ``V4.11.0.1__5565-sanitize-directory-labels.sql`` in the ``src/main/resources/db/migration`` directory. Use a version like "4.11.0.1" in the example above where the previously released version was 4.11, ensuring that the version number is unique.  For the "description" you should the name of your branch, which should include the GitHub issue you are working on, as in the example above. To read more about Flyway file naming conventions, see https://flywaydb.org/documentation/migrations#naming
+Create a new file called something like ``V4.11.0.1__5565-sanitize-directory-labels.sql`` in the ``src/main/resources/db/migration`` directory. Use a version like "4.11.0.1" in the example above where the previously released version was 4.11, ensuring that the version number is unique. Note that this is not the version that you expect the code changes to be included in (4.12 in this example). For the "description" you should the name of your branch, which should include the GitHub issue you are working on, as in the example above. To read more about Flyway file naming conventions, see https://flywaydb.org/documentation/migrations#naming
 
 The SQL migration script you wrote will be part of the war file and executed when the war file is deployed. To see a history of Flyway database migrations that have been applied, look at the ``flyway_schema_history`` table.
 
