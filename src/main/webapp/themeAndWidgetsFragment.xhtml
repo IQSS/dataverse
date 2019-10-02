@@ -66,8 +66,8 @@
                                         </label>
                                         <div>
                                             <p:selectOneRadio id="logoFormat" value="#{themeWidgetFragment.editDv.dataverseTheme.logoFormat}">
-                                                <f:selectItem itemLabel="#{bundle['dataverse.theme.logo.format.selectTab.square2']}" itemValue="SQUARE"/>
-                                                <f:selectItem itemLabel="#{bundle['dataverse.theme.logo.format.selectTab.rectangle2']}" itemValue="RECTANGLE"/>
+                                                <f:selectItem itemLabel="#{bundle['dataverse.theme.logo.format.selectTab.square']}" itemValue="SQUARE"/>
+                                                <f:selectItem itemLabel="#{bundle['dataverse.theme.logo.format.selectTab.rectangle']}" itemValue="RECTANGLE"/>
                                                 <p:ajax update="@widgetVar(content)" oncomplete="bind_bsui_components();" />
                                             </p:selectOneRadio>
                                             <p:message for="logoFormat" display="text"/>
@@ -82,9 +82,9 @@
                                             </label>
                                             <div>
                                                 <p:selectOneMenu id="logoAlignment" styleClass="form-control" value="#{themeWidgetFragment.editDv.dataverseTheme.logoAlignment}">
-                                                    <f:selectItem id="left" itemLabel="#{bundle['dataverse.theme.logo.alignment.selectTab.left2']}" itemValue="LEFT" />
-                                                    <f:selectItem id="center" itemLabel="#{bundle['dataverse.theme.logo.alignment.selectTab.center2']}" itemValue="CENTER" />
-                                                    <f:selectItem id="right" itemLabel="#{bundle['dataverse.theme.logo.alignment.selectTab.right2']}" itemValue="RIGHT" />
+                                                    <f:selectItem id="left" itemLabel="#{bundle['dataverse.theme.logo.alignment.selectTab.left']}" itemValue="LEFT" />
+                                                    <f:selectItem id="center" itemLabel="#{bundle['dataverse.theme.logo.alignment.selectTab.center']}" itemValue="CENTER" />
+                                                    <f:selectItem id="right" itemLabel="#{bundle['dataverse.theme.logo.alignment.selectTab.right']}" itemValue="RIGHT" />
                                                 </p:selectOneMenu>
                                                 <p:message for="logoAlignment" display="text"/>
                                             </div>
@@ -212,9 +212,9 @@
                                             </label>
                                             <div>
                                                 <p:selectOneMenu id="logoFooterAlignment" styleClass="form-control" value="#{themeWidgetFragment.editDv.dataverseTheme.logoFooterAlignment}">
-                                                    <f:selectItem itemLabel="#{bundle['dataverse.theme.logo.alignment.selectTab.left2']}" itemValue="LEFT" />
-                                                    <f:selectItem  itemLabel="#{bundle['dataverse.theme.logo.alignment.selectTab.center2']}" itemValue="CENTER" />
-                                                    <f:selectItem itemLabel="#{bundle['dataverse.theme.logo.alignment.selectTab.right2']}" itemValue="RIGHT" />
+                                                    <f:selectItem itemLabel="#{bundle['dataverse.theme.logo.alignment.selectTab.left']}" itemValue="LEFT" />
+                                                    <f:selectItem  itemLabel="#{bundle['dataverse.theme.logo.alignment.selectTab.center']}" itemValue="CENTER" />
+                                                    <f:selectItem itemLabel="#{bundle['dataverse.theme.logo.alignment.selectTab.right']}" itemValue="RIGHT" />
                                                 </p:selectOneMenu>
                                                 <p:message for="logoFooterAlignment" display="text"/>
                                             </div>
