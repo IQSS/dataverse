@@ -5221,7 +5221,7 @@ public class DatasetPage implements java.io.Serializable {
         if (user instanceof AuthenticatedUser) {
             apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
         }
-        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataset, apiToken);
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataset, apiToken, session.getLocaleCode());
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
         logger.fine("Exploring with " + toolUrl);
         PrimeFaces.current().executeScript("window.open('"+toolUrl + "', target='_blank');");
