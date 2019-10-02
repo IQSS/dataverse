@@ -104,3 +104,12 @@ dataLocation
 Specifies whether the metric should query ``local`` data, ``remote`` data (e.g. harvested), or ``all`` data when getting results. Only works for dataset metrics.
 
 Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/?dataLocation=remote``
+
+Activity
+--------
+
+The following script will report the following for published dataverses, datasets, and files: dtype, name, owner, downloaded, published
+
+:download:`activity.sql <../_static/api/activity.sql>`
+
+TODO: add as an API.
