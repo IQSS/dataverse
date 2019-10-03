@@ -425,7 +425,7 @@ public class SettingsServiceBean {
         
         /** Make Data Count Logging and Display */
         MDCLogPath, 
-        DisplayMDCStats,
+        DisplayMDCMetrics,
 
         /**
          * Allow CORS flag (true or false). It is true by default
