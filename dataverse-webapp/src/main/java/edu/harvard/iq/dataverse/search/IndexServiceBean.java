@@ -55,6 +55,7 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.IOException;
@@ -111,6 +112,8 @@ public class IndexServiceBean {
     SettingsServiceBean settingsService;
     @EJB
     private SolrFieldFactory solrFieldFactory;
+    @Inject
+    private SolrClient solrServer;
 
     public static final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
@@ -130,26 +133,10 @@ public class IndexServiceBean {
     public static final String HARVESTED = "Harvested";
     private String rootDataverseName;
     private Dataverse rootDataverseCached;
-    private SolrClient solrServer;
 
     @PostConstruct
     public void init() {
-        String urlString = "http://" + settingsService.getValueForKey(Key.SolrHostColonPort) + "/solr/collection1";
-        solrServer = new HttpSolrClient.Builder(urlString).build();
-
         rootDataverseName = findRootDataverseCached().getName();
-    }
-
-    @PreDestroy
-    public void close() {
-        if (solrServer != null) {
-            try {
-                solrServer.close();
-            } catch (IOException e) {
-                logger.warning("Solr closing error: " + e);
-            }
-            solrServer = null;
-        }
     }
 
     @TransactionAttribute(REQUIRES_NEW)

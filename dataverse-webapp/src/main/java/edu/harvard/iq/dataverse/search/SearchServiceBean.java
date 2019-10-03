@@ -40,6 +40,7 @@ import javax.ejb.EJB;
 import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionRolledbackLocalException;
+import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -87,26 +88,8 @@ public class SearchServiceBean {
     SystemConfig systemConfig;
     @EJB
     private SolrFieldFactory solrFieldFactory;
-
+    @Inject
     private SolrClient solrServer;
-
-    @PostConstruct
-    public void init() {
-        String urlString = "http://" + settingsService.getValueForKey(Key.SolrHostColonPort) + "/solr/collection1";
-        solrServer = new HttpSolrClient.Builder(urlString).build();
-    }
-
-    @PreDestroy
-    public void close() {
-        if (solrServer != null) {
-            try {
-                solrServer.close();
-            } catch (IOException e) {
-                logger.warning("Solr closing error: " + e);
-            }
-            solrServer = null;
-        }
-    }
 
     /**
      * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing

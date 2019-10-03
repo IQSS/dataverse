@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.dataverse;
 
-import com.google.api.client.util.Lists;
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
@@ -11,22 +11,23 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
-import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import io.vavr.control.Either;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrDocument;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.primefaces.model.DualListModel;
+import org.testcontainers.containers.GenericContainer;
 
 import javax.annotation.Resource;
-import javax.ejb.AsyncResult;
 import javax.ejb.EJBTransactionRolledbackException;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -37,14 +38,17 @@ import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
+
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.harvard.iq.dataverse.search.DvObjectsSolrAssert.assertDataversePermSolrDocument;
+import static edu.harvard.iq.dataverse.search.DvObjectsSolrAssert.assertDataverseSolrDocument;
 import static org.awaitility.Awaitility.await;
-import static org.mockito.Mockito.when;
 
 @RunWith(Arquillian.class)
 public class DataverseSaverIT extends WebappArquillianDeployment {
@@ -58,9 +62,6 @@ public class DataverseSaverIT extends WebappArquillianDeployment {
     @Inject
     private DataverseSaver dataverseSaver;
 
-    @Mock
-    private IndexServiceBean indexServiceBean;
-
     @Inject
     private DataverseSession dataverseSession;
 
@@ -69,21 +70,22 @@ public class DataverseSaverIT extends WebappArquillianDeployment {
 
     @Inject
     private StartupFlywayMigrator startupFlywayMigrator;
+    
+    @Inject
+    private SolrClient solrClient;
 
     @Before
-    public void init() {
-        MockitoAnnotations.initMocks(this);
+    public void init() throws SolrServerException, IOException {
         FacesContextMocker.mockServletRequest();
-
-        when(indexServiceBean.indexDataverse(Mockito.any(Dataverse.class)))
-                .thenReturn(new AsyncResult<>("NICE"));
+        solrClient.deleteByQuery("*:*");
+        solrClient.commit();
     }
 
     @Test
-    public void saveNewDataverse_ShouldSuccessfullySave() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    public void saveNewDataverse_ShouldSuccessfullySave() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException, SolrServerException, IOException {
         //given
         transaction.begin();
-        createSessionUser();
+        long userId = createSessionUser();
 
         Dataverse dataverse = prepareDataverse();
 
@@ -99,14 +101,23 @@ public class DataverseSaverIT extends WebappArquillianDeployment {
                 .atMost(Duration.ofSeconds(3L))
                 .until(() -> smtpServer.mailBox().stream()
                         .anyMatch(emailModel -> emailModel.getSubject().contains("Your dataverse has been created")));
-
+        
+        
+        SolrDocument dataverseSolrDoc = solrClient.getById("dataverse_" + savedDataverse.get().getId());
+        assertDataverseSolrDocument(dataverseSolrDoc, savedDataverse.get().getId(), "FIRSTDATAVERSE", "NICE DATAVERSE");
+        
+        SolrDocument dataversePermSolrDoc = solrClient.getById("dataverse_" + savedDataverse.get().getId() + "_permission");
+        assertDataversePermSolrDocument(dataversePermSolrDoc, savedDataverse.get().getId(), Lists.newArrayList(userId));
+        
         cleanupDatabase();
     }
 
-    private void createSessionUser() {
+    private long createSessionUser() {
         AuthenticatedUser user = createUser();
         em.persist(user);
+        em.flush();
         dataverseSession.setUser(user);
+        return user.getId();
     }
 
     @Test

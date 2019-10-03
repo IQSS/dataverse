@@ -22,6 +22,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import java.io.IOException;
@@ -55,30 +56,11 @@ public class SolrIndexServiceBean {
     DataverseRoleServiceBean rolesSvc;
     @EJB
     IndexServiceBean indexService;
+    @Inject
+    private SolrClient solrServer;
 
     public static String numRowsClearedByClearAllIndexTimes = "numRowsClearedByClearAllIndexTimes";
     public static String messageString = "message";
-    private SolrClient solrServer;
-
-    @PostConstruct
-    public void init() {
-        String urlString = "http://" + settingsService.getValueForKey(Key.SolrHostColonPort) + "/solr/collection1";
-        solrServer = new HttpSolrClient.Builder(urlString).build();
-
-    }
-
-    @PreDestroy
-    public void close() {
-        if (solrServer != null) {
-            try {
-                solrServer.close();
-            } catch (IOException e) {
-                logger.warning("Solr closing error: " + e);
-            }
-
-            solrServer = null;
-        }
-    }
 
     /**
      * @deprecated Now that MyData has shipped in 4.1 we have no plans to change

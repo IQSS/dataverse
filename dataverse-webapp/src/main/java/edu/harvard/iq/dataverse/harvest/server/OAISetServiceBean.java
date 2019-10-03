@@ -22,6 +22,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.File;
@@ -54,6 +55,9 @@ public class OAISetServiceBean implements java.io.Serializable {
 
     @EJB
     DatasetServiceBean datasetService;
+    
+    @Inject
+    SolrClient solrServer;
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean");
 
@@ -132,18 +136,6 @@ public class OAISetServiceBean implements java.io.Serializable {
 
     public OAISet findById(Long id) {
         return em.find(OAISet.class, id);
-    }
-
-    private SolrClient solrServer = null;
-
-    private SolrClient getSolrServer() {
-        if (solrServer == null) {
-        }
-        String urlString = "http://" + settingsService.getValueForKey(Key.SolrHostColonPort) + "/solr/collection1";
-        solrServer = new HttpSolrClient.Builder(urlString).build();
-
-        return solrServer;
-
     }
 
     @Asynchronous
@@ -278,7 +270,7 @@ public class OAISetServiceBean implements java.io.Serializable {
 
         QueryResponse queryResponse = null;
         try {
-            queryResponse = getSolrServer().query(solrQuery);
+            queryResponse = solrServer.query(solrQuery);
         } catch (RemoteSolrException ex) {
             String messageFromSolr = ex.getLocalizedMessage();
             String error = "Search Syntax Error: ";

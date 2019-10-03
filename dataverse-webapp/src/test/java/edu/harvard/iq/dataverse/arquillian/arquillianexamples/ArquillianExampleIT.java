@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 import javax.ejb.EJB;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+
 import java.util.List;
 
 @RunWith(Arquillian.class)

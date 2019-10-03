@@ -37,8 +37,8 @@
         <duracloud.version>4.4.6</duracloud.version>
 
         <junit.version>4.12</junit.version>
-        <junit.jupiter.version>5.3.1</junit.jupiter.version>
-        <junit.vintage.version>5.3.1</junit.vintage.version>
+        <junit.jupiter.version>5.5.2</junit.jupiter.version>
+        <junit.vintage.version>5.5.2</junit.vintage.version>
         <junit.platform.version>1.3.1</junit.platform.version>
         <junit.test.plugin.version>3.0.0-M1</junit.test.plugin.version>
         <mockito.version>2.22.0</mockito.version>
