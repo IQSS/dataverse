@@ -26,7 +26,7 @@ using the approach tested in #6035 (bombarding the system with GETs on
 select pages, then taking snapshots of the allocated classes on the
 heap and the garbage collection stats; see the issue for more info).
 
-In the curret implementation we are testing the two most used pages -
+In the current implementation we are testing the two most used pages -
 dataverse and dataset. Once (and if) it completes, the script will
 provide links to the produced output (downloadable from the EC2
 instance).
