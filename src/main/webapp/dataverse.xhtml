@@ -6,6 +6,7 @@
       xmlns:c="http://java.sun.com/jsp/jstl/core"
       xmlns:p="http://primefaces.org/ui"
       xmlns:o="http://omnifaces.org/ui"
+      xmlns:of="http://omnifaces.org/functions"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
     <h:head>
     </h:head>
@@ -43,6 +44,8 @@
                     <f:viewParam name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                     <f:viewParam name="page" value="#{SearchIncludeFragment.page}"/>
                     <f:viewParam name="debug" value="#{SearchIncludeFragment.debug}"/>
+                    <f:viewParam name="adjustFacetName" value="#{SearchIncludeFragment.adjustFacetName}"/>
+                    <f:viewParam name="adjustFacetNumber" value="#{SearchIncludeFragment.adjustFacetNumber}"/>
                     <f:viewAction action="#{SearchIncludeFragment.search()}" />
                 </f:metadata>
 
@@ -401,7 +404,7 @@
                                             <li>
                                                 <div id="dataverse-info-dropdown">
                                                     <div class="dataverse-info-logo-icon">
-                                                        <i class="icon-dataverse text-brand"></i>
+                                                        <span class="icon-dataverse text-brand"></span>
                                                     </div>
                                                     <div class="dataverse-info-general">
                                                         <div><h:outputText value="#{DataversePage.dataverse.name}" styleClass="highlightBold"/> <h:outputText value=" (#{DataversePage.dataverse.affiliation})" styleClass="text-muted" rendered="#{!empty DataversePage.dataverse.affiliation}"/></div>
@@ -526,7 +529,6 @@
                                 </div>
                                 <div class="clearfix"/>
                             </ui:fragment>
-
                             <!-- Featured Dataverses Carousel -->
                             <div id="carouselBlocksWrapper" jsf:rendered="#{!empty DataversePage.carouselFeaturedDataverses}">
                                 <div id="featuredDataversesBlock">
@@ -538,21 +540,10 @@
                                             <div class="item">
                                                 <div style="vertical-align:middle;">
                                                     <c:set var="dvFeatUrl" value="/dataverse/#{dv.alias}"/>
-                                                    <ui:fragment rendered="#{empty dv.dataverseTheme.logo}">
-                                                        <a href="#{widgetWrapper.wrapURL(dvFeatUrl)}" title="#{dv.name}">
-                                                            <i class="icon-dataverse"></i>
-                                                        </a>
-                                                    </ui:fragment>
-                                                    <ui:fragment rendered="#{!empty dv.dataverseTheme.logo and dv.dataverseTheme.logoFormat == 'SQUARE'}">
-                                                        <a href="#{widgetWrapper.wrapURL(dvFeatUrl)}" title="#{dv.name}">
-                                                            <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{dv.name}"/>
-                                                        </a>
-                                                    </ui:fragment>
-                                                    <ui:fragment rendered="#{!empty dv.dataverseTheme.logo and dv.dataverseTheme.logoFormat == 'RECTANGLE'}">
-                                                        <a href="#{widgetWrapper.wrapURL(dvFeatUrl)}" title="#{dv.name}">
-                                                            <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{dv.name}"/>
-                                                        </a>
-                                                    </ui:fragment>
+                                                    <a href="#{widgetWrapper.wrapURL(dvFeatUrl)}" title="#{dv.name}">
+                                                        <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{of:format1(bundle['alt.logo'], dv.name)}" jsf:rendered="#{!empty dv.dataverseTheme.logo}"/>
+                                                        <span class="icon-dataverse" jsf:rendered="#{empty dv.dataverseTheme.logo}"></span>
+                                                    </a>
                                                     <a href="#{widgetWrapper.wrapURL(dvFeatUrl)}" title="#{dv.name}">
                                                         <h:outputText value="#{dv.name}"/>
                                                     </a>

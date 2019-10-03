@@ -167,7 +167,7 @@ API Token
 What APIs Are and Why They Are Useful
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-API stands for "Application Programming Interface" and Dataverse APIs allow you to take advantage of integrations with other software that may have been set up by admins of your installation of Dataverse. See the :doc:`/admin/integrations` section of the Admin Guide and the :doc:`/installation/external-tools` section of the Installation Guide for examples of software that is commonly integrated with Dataverse.
+API stands for "Application Programming Interface" and Dataverse APIs allow you to take advantage of integrations with other software that may have been set up by admins of your installation of Dataverse. See the :doc:`/admin/external-tools` and :doc:`/admin/integrations` sections of the Admin Guide for examples of software that is commonly integrated with Dataverse.
 
 Additionally, if you are willing to write a little code (or find someone to write it for you), APIs provide a way to automate parts of your workflow. See the  :doc:`/api/getting-started` section of the API Guide for details.
 

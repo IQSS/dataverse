@@ -40,7 +40,7 @@
                                     <div id="thumbnailPreview" class="col-sm-2 text-center">
                                         <p>
                                             <span class="icon-dataset text-info" style="font-size: 2.8em;" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail == null}"/>
-                                            <h:graphicImage value="#{DatasetWidgetsPage.datasetThumbnail.base64image}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null}"/>
+                                            <h:graphicImage value="#{DatasetWidgetsPage.datasetThumbnail.base64image}" alt="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.alt']}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null}"/>
                                         </p>
                                         <span class="text-muted" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail == null}"><em>#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.default']}</em></span>
                                         <p:commandButton update="@form" value="#{bundle.remove}" action="#{DatasetWidgetsPage.flagDatasetThumbnailForRemoval()}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null and DatasetWidgetsPage.datasetThumbnail.fromDataFile != true}" oncomplete="bind_bsui_components();"/>

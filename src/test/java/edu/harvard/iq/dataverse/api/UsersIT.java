@@ -5,6 +5,9 @@ import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
+import static edu.harvard.iq.dataverse.api.AccessIT.datasetId;
+import static edu.harvard.iq.dataverse.api.AccessIT.tabFile3NameRestricted;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +23,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -155,18 +159,13 @@ public class UsersIT {
 
         String tabFile3NameRestrictedNew = "stata13-auto-withstrls.dta";
         String tab3PathToFile = "scripts/search/data/tabular/" + tabFile3NameRestrictedNew;
-        try {
-            Thread.sleep(1000); //Added because tests are failing during setup, test is probably going too fast. Especially between first and second file
-        } catch (InterruptedException ex) {
-            Logger.getLogger(UsersIT.class.getName()).log(Level.SEVERE, null, ex);
-        }
+
         Response tab3AddResponse = UtilIT.uploadFileViaNative(datasetIdNew.toString(), tab3PathToFile, superuserApiToken);
         Integer tabFile3IdRestrictedNew = JsonPath.from(tab3AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        try {
-            Thread.sleep(3000); //Dataverse needs more time...
-        } catch (InterruptedException ex) {
-            Logger.getLogger(UsersIT.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        
+        //Sleep while dataset locked for ingest
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + tabFile3NameRestrictedNew , UtilIT.sleepForLock(datasetIdNew.longValue(), "Ingest", superuserApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
         Response restrictResponse = UtilIT.restrictFile(tabFile3IdRestrictedNew.toString(), true, superuserApiToken);
         restrictResponse.prettyPrint();
         restrictResponse.then().assertThat()
