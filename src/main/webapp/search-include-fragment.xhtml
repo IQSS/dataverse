@@ -505,7 +505,7 @@
                             <h:outputText value="#{result.parent.get('name')}"/>
                         </h:outputLink>
 
-                        <div class="resultDatasetCitationBlock #{result.deaccessionedState ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
+                        <div class="resultDatasetCitationBlock #{result.deaccessionedState ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation bg-citation-file'}">
                             <h:outputText value="#{result.citationHtml != null ? result.citationHtml : result.citation}" escape="false"/>
                         </div>
 

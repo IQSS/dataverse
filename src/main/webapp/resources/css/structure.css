@@ -1106,3 +1106,9 @@ ul > li {
 
 .panel {box-shadow: none; -webkit-box-shadow: none;}
 
+.btn-default, .btn-default:active, .btn-default:hover {
+  background: #4b74ff;
+  color: #FFF;
+  border-radius: 2px;
+}
+
