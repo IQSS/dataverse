@@ -1068,7 +1068,7 @@ public class SystemConfig {
     }
     
     public boolean isMakeDataCountDisplayEnabled() {
-        boolean safeDefaultIfKeyNotFound = true; //Backward compatible
+        boolean safeDefaultIfKeyNotFound = (getMDCLogPath()!=null); //Backward compatible
         return settingsService.isTrueForKey(SettingsServiceBean.Key.DisplayMDCStats, safeDefaultIfKeyNotFound);
     
     }
