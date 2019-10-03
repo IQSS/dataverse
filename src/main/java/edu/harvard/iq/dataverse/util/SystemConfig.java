@@ -1066,4 +1066,10 @@ public class SystemConfig {
         String mDCLogPath = settingsService.getValueForKey(SettingsServiceBean.Key.MDCLogPath, null);
         return mDCLogPath;
     }
+    
+    public boolean isMakeDataCountDisplayEnabled() {
+        boolean safeDefaultIfKeyNotFound = true; //Backward compatible
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.DisplayMDCStats, safeDefaultIfKeyNotFound);
+    
+    }
 }
