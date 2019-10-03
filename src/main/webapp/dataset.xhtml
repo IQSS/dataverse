@@ -980,7 +980,7 @@
                         </div>
                         <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.detailDataByBlock)}">
                             <ui:repeat value="#{DatasetPage.datasetVersionDifference.detailDataByBlock}" var="block">
-                                <div class="panel panel-default">
+                                <div class="panel">
                                     <div class="panel-heading text-info">
                                         <h:outputText value="#{block.get(0)[0].datasetFieldType.metadataBlock.localeDisplayName}" />
                                     </div>
@@ -1000,7 +1000,7 @@
                                 </div>
                             </ui:repeat>
                         </ui:fragment>
-                        <div class="panel panel-default" jsf:rendered="#{!empty(DatasetPage.datasetVersionDifference.fileNote)}">
+                        <div class="panel" jsf:rendered="#{!empty(DatasetPage.datasetVersionDifference.fileNote)}">
                             <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
                             <div class="panel-heading text-info">
                                 <h:outputText id="outputTextAddedRemoved" value="#{bundle['file.viewDiffDialog.files.header']}"/>
@@ -1081,7 +1081,7 @@
                                 </p:column>
                             </p:dataTable>
                         </div>
-                        <div class="panel panel-default" jsf:rendered="#{!empty(DatasetPage.datasetVersionDifference.changedTermsAccess)}">
+                        <div class="panel" jsf:rendered="#{!empty(DatasetPage.datasetVersionDifference.changedTermsAccess)}">
                             <div class="panel-heading text-info">
                                 <h:outputText id="outputTextTOU" value="#{bundle['dataset.versionDifferences.termsOfUseAccess']}"/>
                             </div>

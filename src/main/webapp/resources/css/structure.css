@@ -1095,3 +1095,14 @@ ul > li {
 }
 
 .ui-tabs.ui-tabs-top .ui-tabs-nav.ui-widget-header {border-width: 0;}
+
+.panel-heading {display: none;}
+
+.panel-body > * {
+  border-top: 2px solid rgba(0, 0, 0, 0.1);
+  font-family: 'AntoniaH2Heavy';
+  padding-top: 10px;
+}
+
+.panel {box-shadow: none; -webkit-box-shadow: none;}
+
