@@ -243,7 +243,8 @@ public class ExternalTool implements Serializable {
         // datasetPid is the DOI or Handle
         DATASET_PID("datasetPid"),
         DATASET_VERSION("datasetVersion"),
-        FILE_METADATA_ID("fileMetadataId");
+        FILE_METADATA_ID("fileMetadataId"),
+        LOCALE_CODE("localeCode");
 
         private final String text;
         private final String START = "{";
