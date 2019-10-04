@@ -398,7 +398,7 @@ public class UserServiceBean {
         String sharedSearchClause = "";
         
         if (!searchTerm.isEmpty()) {
-            sharedSearchClause = " AND " + getSharedSearchClause();
+            sharedSearchClause = " AND " + getSharedSearchClause(searchTerm);
         }
         
         
@@ -423,7 +423,6 @@ public class UserServiceBean {
         logger.log(Level.FINE, "getUserCount: {0}", qstr);
 
         Query nativeQuery = em.createNativeQuery(qstr);
-        nativeQuery.setParameter("searchTerm", searchTerm + "%");
        
         return nativeQuery.getResultList();
 
@@ -436,14 +435,25 @@ public class UserServiceBean {
      * 
      * @return 
      */
-    private String getSharedSearchClause(){
+    
+    private String getSharedSearchClause(String searchTerm){
+        String[] searchTermTokens = searchTerm.replaceAll("['\"]", "").split("[ ,][ ,]*");
         
-        String searchClause = " (u.useridentifier ILIKE #searchTerm";
-        searchClause += " OR u.firstname ILIKE #searchTerm";
-        searchClause += " OR u.lastname ILIKE #searchTerm"; 
-        searchClause += " OR u.email ILIKE #searchTerm)"; 
+        String searchClause = "(";
         
-        return searchClause;
+        for (int i = 0; i < searchTermTokens.length; i++) {
+            if (i > 0) {
+                searchClause += " AND ";
+            }
+            searchClause += "(u.useridentifier ILIKE '" + searchTermTokens[i] + "%'";
+            searchClause += " OR u.firstname ILIKE '" + searchTermTokens[i] + "%'";
+            searchClause += " OR u.lastname ILIKE '" + searchTermTokens[i] + "%'"; 
+            searchClause += " OR u.affiliation ILIKE '" + searchTermTokens[i] + "%'";
+            searchClause += " OR u.affiliation ILIKE '% " + searchTermTokens[i] + "%'";
+            searchClause += " OR u.email ILIKE '" + searchTermTokens[i] + "%')"; 
+        }
+        
+        return searchClause + ")";
     }
     
     
@@ -488,7 +498,7 @@ public class UserServiceBean {
         String sharedSearchClause = "";
         
         if (!searchTerm.isEmpty()) {
-            sharedSearchClause = " AND " + getSharedSearchClause();
+            sharedSearchClause = " AND " + getSharedSearchClause(searchTerm);
         }
         
         String qstr = "SELECT count(u.id)";
@@ -502,7 +512,6 @@ public class UserServiceBean {
         qstr += ";";
                
         Query nativeQuery = em.createNativeQuery(qstr);
-        nativeQuery.setParameter("searchTerm", searchTerm + "%");
         
         return (Long)nativeQuery.getSingleResult();
 
