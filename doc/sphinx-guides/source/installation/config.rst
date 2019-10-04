@@ -1773,7 +1773,7 @@ Sets the path where the raw Make Data Count logs are stored before being process
 :DisplayMDCMetrics
 ++++++++++++++++++
 
-``:DisplayMDCMetrics`` can be set to false to disable display of MDC metrics (e.g. to enable collection of MDC metrics for some period prior to completing the set-up of Counter and performing the other steps described in the :doc:`/admin/make-data-count` section of the Admin Guide.
+``:DisplayMDCMetrics`` can be set to false to disable display of MDC metrics (e.g. to enable collection of MDC metrics for some period prior to completing the set-up of Counter and performing the other steps described in the :doc:`/admin/make-data-count` section of the Admin Guide).
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:DisplayMDCMetrics``
 
