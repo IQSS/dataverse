@@ -7,7 +7,7 @@ RUN yum install -y jq lsof awscli
 
 # copy and unpack dependencies (solr, glassfish)
 COPY dv /tmp/dv
-COPY testdata/schema.xml /tmp/dv
+COPY testdata/schema*.xml /tmp/dv/
 COPY testdata/solrconfig.xml /tmp/dv
 
 # ITs need files
@@ -30,7 +30,7 @@ RUN sudo -u postgres /usr/pgsql-9.6/bin/initdb -D /var/lib/pgsql/data
 RUN cp /tmp/dv/pg_hba.conf /var/lib/pgsql/data/
 RUN cp /tmp/dv/postgresql.conf /var/lib/pgsql/data/
 RUN cp -r /opt/solr-7.3.1/server/solr/configsets/_default /opt/solr-7.3.1/server/solr/collection1
-RUN cp /tmp/dv/schema.xml /opt/solr-7.3.1/server/solr/collection1/conf/schema.xml
+RUN cp /tmp/dv/schema*.xml /opt/solr-7.3.1/server/solr/collection1/conf/
 RUN cp /tmp/dv/solrconfig.xml /opt/solr-7.3.1/server/solr/collection1/conf/solrconfig.xml
 
 # skipping glassfish user and solr user (run both as root)
@@ -59,6 +59,7 @@ COPY dv/install/ /opt/dv/
 COPY install.bash /opt/dv/
 COPY entrypoint.bash /opt/dv/
 COPY testdata /opt/dv/testdata
+COPY testdata/updateSchemaMDB.sh /opt/dv/testdata/
 COPY testscripts/* /opt/dv/testdata/
 COPY setupIT.bash /opt/dv
 WORKDIR /opt/dv

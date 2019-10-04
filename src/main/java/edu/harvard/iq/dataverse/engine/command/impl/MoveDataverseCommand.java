@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -19,12 +20,14 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  * A command to move a {@link Dataverse} between two {@link Dataverse}s.
@@ -295,10 +298,18 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         ctxt.indexBatch().indexDataverseRecursively(moved);
         
         //REindex datasets linked to moved dv
-        if (moved.getDatasetLinkingDataverses() != null &&  !moved.getDatasetLinkingDataverses().isEmpty()) {
+        if (moved.getDatasetLinkingDataverses() != null && !moved.getDatasetLinkingDataverses().isEmpty()) {
             for (DatasetLinkingDataverse dld : moved.getDatasetLinkingDataverses()) {
                 Dataset linkedDS = ctxt.datasets().find(dld.getDataset().getId());
-                ctxt.index().indexDataset(linkedDS, true);
+                try {
+                    ctxt.index().indexDataset(linkedDS, true);
+                } catch (IOException | SolrServerException e) {
+                    String failureLogText = "Post move dataverse dataset indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + linkedDS.getId().toString();
+                    failureLogText += "\r\n" + e.getLocalizedMessage();
+                    LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, linkedDS);
+
+                }
+
             }
         }
     }

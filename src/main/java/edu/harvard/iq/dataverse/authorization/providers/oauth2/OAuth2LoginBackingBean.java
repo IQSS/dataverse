@@ -102,6 +102,8 @@ public class OAuth2LoginBackingBean implements Serializable {
             } else {
                 // login the user and redirect to HOME of intended page (if any).
                 session.setUser(dvUser);
+                session.configureSessionTimeout();
+                
                 final OAuth2TokenData tokenData = oauthUser.getTokenData();
                 tokenData.setUser(dvUser);
                 tokenData.setOauthProviderId(idp.getId());

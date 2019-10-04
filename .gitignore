@@ -61,3 +61,4 @@ scripts/installer/default.config
 tests/node_modules
 tests/package-lock.json
 .factorypath
+venv

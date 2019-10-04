@@ -14,6 +14,8 @@ This guide is intended primarily for developers who want to work on the main Dat
 
 To get started, you'll want to set up your :doc:`dev-environment` and make sure you understand the branching strategy described in the :doc:`version-control` section and how to make a pull request. :doc:`testing` is expected. Opinions about :doc:`coding-style` are welcome!
 
+.. _getting-help-developers:
+
 Getting Help
 ------------
 
@@ -29,7 +31,7 @@ We make use of a variety of Java EE technologies such as JPA, JAX-RS, JMS, and J
 Roadmap
 -------
 
-For the Dataverse development roadmap, please see https://dataverse.org/goals-roadmap-and-releases
+For the Dataverse development roadmap, please see https://www.iq.harvard.edu/roadmap-dataverse-project
 
 Kanban Board
 ------------
@@ -53,9 +55,10 @@ Related Projects
 
 As a developer, you also may be interested in these projects related to Dataverse:
 
-- External Tools - add additional features to Dataverse: See the :doc:`/installation/external-tools` section of the Installation Guide.
+- External Tools - add additional features to Dataverse without modifying the core: :doc:`/api/external-tools`
 - Dataverse API client libraries - use Dataverse APIs from various languages: :doc:`/api/client-libraries`
 - DVUploader - a stand-alone command-line Java application that uses the Dataverse API to support upload of files from local disk to a Dataset: https://github.com/IQSS/dataverse-uploader 
+- dataverse-sample-data - populate your Dataverse installation with sample data: https://github.com/IQSS/dataverse-sample-data
 - dataverse-metrics - aggregate and visualize metrics for installations of Dataverse around the world: https://github.com/IQSS/dataverse-metrics
 - Configuration management scripts - Ansible, Puppet, etc.: See "Advanced Installation" in the :doc:`/installation/prep` section of the Installation Guide.
 - :doc:`/developers/unf/index` (Java) -  a Universal Numerical Fingerprint: https://github.com/IQSS/UNF
