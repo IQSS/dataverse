@@ -264,6 +264,12 @@ public class SettingsWrapper implements java.io.Serializable {
             return false;
         }
     }
+    
+    public boolean isMakeDataCountDisplayEnabled() {
+        boolean safeDefaultIfKeyNotFound = (getValueForKey(SettingsServiceBean.Key.MDCLogPath)!=null); //Backward compatible
+        return isTrueForKey(SettingsServiceBean.Key.DisplayMDCMetrics, safeDefaultIfKeyNotFound);
+    
+    }
 
 }
 
