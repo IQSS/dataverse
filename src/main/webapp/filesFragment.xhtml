@@ -100,7 +100,7 @@
                 <div class="col-xs-5">
                     <!-- FILE SEARCH -->
                     <div class="input-group" jsf:rendered="#{DatasetPage.workingVersion.fileMetadatas.size() gt 1}">
-                        <p:inputText id="searchFiles" styleClass="form-control" value="#{DatasetPage.fileLabelSearchTerm}" widgetVar="inputSearchTerm"
+                        <p:inputText id="searchFiles" styleClass="form-control advsearchlink" value="#{DatasetPage.fileLabelSearchTerm}" widgetVar="inputSearchTerm"
                                      onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
                         <p:watermark for="searchFiles" value="#{bundle['file.search.placeholder']}"/>
                         <h:inputHidden id="showAccessPopup" value="#{DatasetPage.showAccessPopup}"/>
@@ -108,7 +108,7 @@
                         
                         <span class="input-group-btn">
                             <p:commandLink styleClass="btn btn-default" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
-                                <span class="glyphicon glyphicon-search"></span> #{bundle['dataverse.search.btn.find']}
+                                <span class="glyphicon glyphicon-search searchbutton"></span>
                             </p:commandLink>
                         </span>
                     </div>

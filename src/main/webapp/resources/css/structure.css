@@ -536,7 +536,7 @@ div[id$='facetCategoryList'] div.ui-datalist, div[id$='facetCategoryList'] div.u
 -webkit-hyphens: auto;
    -moz-hyphens: auto;
         hyphens: auto;}
-a.facetLink {text-decoration:none; font-size:90%;}
+a.facetLink {text-decoration:none; font-size:16px;}
 a.facetLink.facetSelected, a.facetTypeLink.facetSelected {font-weight:bold;}
 a.facetLink.facetSelected span.glyphicon-remove {vertical-align:text-top; margin-top:1px; margin-left:.25em;}
 
@@ -704,6 +704,7 @@ table.ui-picklist div.ui-picklist-filter-container {padding-bottom:5px;}
 .select-scroll-block table.ui-selectmanycheckbox label {margin-left:5px; margin-top:0; font-weight:normal;}
 
 #contentTabs .ui-tabs .ui-tabs-panel {padding-left:0; padding-right:0;}
+#contentTabs {position: relative;}
 
 div.panel-heading[data-toggle="collapse"] {cursor: pointer; cursor: hand;}
 div.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
@@ -1005,6 +1006,7 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
   background: #f7f7f9;
   position: absolute;
   left: calc(-50vw + 50%);
+  top: 42px;
   width: 100vw;
   height: 100%;
   z-index: -1;
@@ -1104,9 +1106,9 @@ ul > li {
   padding-top: 10px;
 }
 
-.panel {box-shadow: none; -webkit-box-shadow: none;}
+.panel {box-shadow: none; -webkit-box-shadow: none; background: #f7f7f9;}
 
-.btn-default, .btn-default:active, .btn-default:hover {
+.btn-default, .btn-default:active, .btn-default:hover, .btn-default:focus {
   background: #4b74ff;
   color: #FFF;
   border-radius: 2px;
