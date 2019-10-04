@@ -13,6 +13,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-sm-8 small" jsf:rendered="#{!widgetView}">
+                <p class='footertext'>
                         <h:outputText value="#{systemConfig.footerCopyrightAndYear}#{settingsWrapper.get(':FooterCopyright')}" escape="false"/> <ui:fragment rendered="#{!empty settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}">&#160;|&#160; <h:outputLink value="#{settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}" target="_blank">#{bundle['footer.privacyPolicy']}</h:outputLink></ui:fragment>
                     </p>
                 </div>
