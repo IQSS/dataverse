@@ -997,7 +997,7 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
   width: 100vw;
   height: 100%;
   position: absolute;
-  left: 0;
+  left: calc(-50vw + 50%);
   background-color: #f7f7f9;
   margin: 0;
 }
@@ -1012,6 +1012,8 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
   z-index: -1;
   border-top: 2px solid rgba(0, 0, 0, 0.1);
 }
+
+#searchResults {position: relative;}
 
 #filter-title {
   font-weight: 700;
@@ -1113,4 +1115,23 @@ ul > li {
   color: #FFF !important; /* TODO: Find ui-widget CSS rules and take out their color so important is not needed here */
   border-radius: 2px;
 }
+
+/* Pagination Icon URLs and Styles*/
+
+.results-sort-pagination {
+  margin-top: 25px;
+}
+
+.pagination > li > a.skip {
+  height: 44px;
+  width: 40px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.pagination > li > a.skip.top {background-image: url(/resources/images/skip_icon.svg);}
+.pagination > li > a.skip.back {background-image: url(/resources/images/arrow_icon.svg);}
+.pagination > li > a.skip.next {background-image: url(/resources/images/arrow_icon.svg); transform: scaleX(-1);}
+.pagination > li > a.skip.bottom {background-image: url(/resources/images/skip_icon.svg); transform: scaleX(-1);}
 
