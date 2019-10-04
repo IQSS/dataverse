@@ -7,8 +7,8 @@
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
     
-    <div class="#{widgetWrapper.widgetView ? 'col-sm-12' : 'col-sm-9'} citation-block">
-        <div class="col-sm-12 #{DatasetPage.workingVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
+    <div class="#{widgetWrapper.widgetView ? 'col-sm-12' : 'col-sm-9'} citation-block col-md-offset-3">
+        <div class="col-sm-12 #{DatasetPage.workingVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation bg-citation-file'}">
             <div class="row ">
                 <div class="col-sm-12 citation">
                     <span class="citation-select" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">

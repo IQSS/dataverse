@@ -264,7 +264,7 @@
                                             </div>
 
                                             <div id="metadataFieldOptionsPanel-Block" jsf:rendered="#{mdb.showDatasetFieldTypes}">
-                                                <div class="panel panel-default">
+                                                <div class="panel">
                                                     <div id="metadataFieldOptionsPanel-Body" class="panel-body">
                                                         <table id="metadataFieldOptions" class="table table-striped">
                                                             <tbody>
@@ -499,22 +499,22 @@
                                 </div>
                             </p:dialog>
                             <!-- END: Email/Link/Share Button Group -->
-                            <!-- Metrics for Root Dataverse -->
-                            <div id="metrics-block" class="col-xs-3" jsf:rendered="#{DataversePage.isRootDataverse() and !settingsWrapper.rsyncOnly}">
-                                <div id="metrics-label" class="col-xs-4 small text-center">
-                                    <h:outputLink value="#{systemConfig.metricsUrl}" target="_blank" title="#{bundle['metrics.title.tip']}" rendered="#{systemConfig.metricsUrl != null}">
-                                        <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
-                                    </h:outputLink>
-                                    <ui:fragment rendered="#{systemConfig.metricsUrl == null}">
-                                        <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
-                                    </ui:fragment>
-                                </div>
-                                <div id="metrics-content" class="col-xs-8 small text-center">
-                                    <h:outputFormat styleClass="metrics-downloads" value="{0} #{bundle['metrics.downloads']}">
-                                        <f:param value="#{guestbookResponseServiceBean.getCountOfAllGuestbookResponses()}"/>
-                                    </h:outputFormat>
-                                </div>
-                            </div>
+                            <!-- Metrics for Root Dataverse: Commented out for Redesign -->
+                            <!-- <div id="metrics-block" class="col-xs-3" jsf:rendered="#{DataversePage.isRootDataverse() and !settingsWrapper.rsyncOnly}"> -->
+                            <!--     <div id="metrics-label" class="col-xs-4 small text-center"> -->
+                            <!--         <h:outputLink value="#{systemConfig.metricsUrl}" target="_blank" title="#{bundle['metrics.title.tip']}" rendered="#{systemConfig.metricsUrl != null}"> -->
+                            <!--             <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']} -->
+                            <!--         </h:outputLink> -->
+                            <!--         <ui:fragment rendered="#{systemConfig.metricsUrl == null}"> -->
+                            <!--             <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']} -->
+                            <!--         </ui:fragment> -->
+                            <!--     </div> -->
+                            <!--     <div id="metrics-content" class="col-xs-8 small text-center"> -->
+                            <!--         <h:outputFormat styleClass="metrics-downloads" value="{0} #{bundle['metrics.downloads']}"> -->
+                            <!--             <f:param value="#{guestbookResponseServiceBean.getCountOfAllGuestbookResponses()}"/> -->
+                            <!--         </h:outputFormat> -->
+                            <!--     </div> -->
+                            <!-- </div> -->
                             <!-- END: Metrics for Root Dataverse-->
                         </div>
 

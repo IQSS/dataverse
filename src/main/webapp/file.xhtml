@@ -246,7 +246,7 @@
                       <div id="fileImageTitle" class="row">
                         <div class="col-xs-12">
                             <div class="row">
-                                <div id="file-title-block" class="col-xs-12 margin-bottom-half">
+                                <div id="file-title-block" class="col-xs-12 margin-bottom-half col-md-offset-3">
                                     <!-- Restricted File Icon -->
                                     <span class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{FilePage.fileMetadata.restricted and !(fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}" />
                                     <span class="icon-unlock text-success" jsf:rendered="#{FilePage.fileMetadata.restricted  and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }" />
@@ -274,7 +274,7 @@
                                                 <div class="col-sm-12">
                                                     <h:outputFormat styleClass="h5" value="#{bundle['file.citation.datafile']}" escape="false" />
                                                 </div>
-                                                <div class="col-sm-12 citation-block">
+                                                <div class="col-sm-12 citation-block col-md-offset-3">
                                                      <div class="col-sm-12 #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation bg-citation-file'}">
                                                         <div class="row">
                                                             <div class="col-sm-12 citation">
@@ -325,8 +325,8 @@
                                                     </p>
                                                     <h:outputFormat styleClass="h5" value="#{bundle['file.citation.dataset']}" escape="false" />
                                                 </div>
-                                                <div class="col-sm-12 citation-block no-margin-bottom">
-                                                    <div class="col-sm-12 #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
+                                                <div class="col-sm-12 citation-block no-margin-bottom col-md-offset-3">
+                                                    <div class="col-sm-12 #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation bg-citation-file'}">
                                                         <div class="row">
                                                             <div class="col-sm-12 citation">
                                                                 <span class="citation-select" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
@@ -382,32 +382,33 @@
                                             </div>
                                         </div>
                                         <div class="col-sm-3">
-                                            <!-- Metrics -->
-                                            <div id="metrics-block" jsf:rendered="#{!(widgetWrapper.widgetView or FilePage.fileMetadata.dataFile.filePackage or FilePage.fileMetadata.datasetVersion.deaccessioned)}">
-                                                <div id="metrics-heading">
-                                                    #{bundle['metrics.file.title']}
-                                                    <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
-                                                            data-original-title="#{settingsWrapper.makeDataCountDisplayEnabled ? bundle['metrics.file.tip.makedatacount'] : bundle['metrics.file.tip.default']}"></span>
-                                                </div>
-                                                <div id="metrics-body">
-                                                    <!-- Classic downloads -->
-                                                    <div class="metrics-count-block" jsf:rendered="#{!settingsWrapper.makeDataCountDisplayEnabled}">
-                                                        <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
-                                                            <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/>
-                                                        </h:outputFormat>
-                                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                              data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.file.downloads.tip']}"></span>
-                                                    </div>
-                                                    <!-- Make Data Count downloads -->
-                                                    <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountDisplayEnabled}">
-                                                        <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
-                                                            <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/>
-                                                        </h:outputFormat>
-                                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                                data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.file.downloads.tip']}"></span>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <!-- Metrics: Commented out for Schema Designs -->
+                                            <!-- <div id="metrics-block" jsf:rendered="#{!(widgetWrapper.widgetView or FilePage.fileMetadata.dataFile.filePackage or FilePage.fileMetadata.datasetVersion.deaccessioned)}"> -->
+                                            <!--     <div id="metrics-heading"> -->
+                                            <!--         #{bundle['metrics.file.title']} -->
+                                            <!--         <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top"  -->
+                                            <!--                 data-original-title="#{settingsWrapper.makeDataCountDisplayEnabled ? bundle['metrics.file.tip.makedatacount'] : bundle['metrics.file.tip.default']}"></span> -->
+                                            <!--     </div> -->
+                                            <!--     <div id="metrics-body"> -->
+                                            <!--         [> Classic downloads <] -->
+                                            <!--         <div class="metrics-count-block" jsf:rendered="#{!settingsWrapper.makeDataCountDisplayEnabled}"> -->
+                                            <!--             <h:outputFormat value="{0} #{bundle['metrics.downloads']}"> -->
+                                            <!--                 <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/> -->
+                                            <!--             </h:outputFormat> -->
+                                            <!--             <span class="glyphicon glyphicon-question-sign tooltip-icon" -->
+                                            <!--                   data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.file.downloads.tip']}"></span> -->
+                                            <!--         </div> -->
+                                            <!--         [> Make Data Count downloads <] -->
+                                            <!--         <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountDisplayEnabled}"> -->
+                                            <!--             <h:outputFormat value="{0} #{bundle['metrics.downloads']}"> -->
+                                            <!--                 <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/> -->
+                                            <!--             </h:outputFormat> -->
+                                            <!--             <span class="glyphicon glyphicon-question-sign tooltip-icon" -->
+                                            <!--                     data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.file.downloads.tip']}"></span> -->
+                                            <!--         </div> -->
+                                            <!--     </div> -->
+                                            <!-- </div> -->
+
                                             <!-- END: Metrics -->
                                         </div>
                                     </div>
@@ -417,6 +418,7 @@
                       </div>
                     </p:fragment>
                     <div id="contentTabs">
+                        <div id="file-row-panel-backdrop"></div>
                         <!-- Metadata -->
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{FilePage.selectedTabIndex}">
                             <p:ajax event="tabChange" listener="#{FilePage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
@@ -469,7 +471,7 @@
                                 </div>
                                 <!-- END: Add + Edit Metadata Button -->
                                 
-                                <div class="panel panel-default">
+                                <div class="panel">
                                     <div data-toggle="collapse" data-target="#panelCollapseFMD" class="panel-heading text-info">
                                         #{bundle['file.metadataTab.fileMetadata.header']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
                                     </div>
