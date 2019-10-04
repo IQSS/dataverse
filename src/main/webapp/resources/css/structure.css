@@ -51,7 +51,7 @@ body .ui-widget .ui-widget-content {background: none;}
 #status-alert {margin-top:0; margin-bottom:0;}
 #status-alert div.alert {border:0; box-shadow:none;}
 
-#footer {position:absolute; bottom:0; margin-top:3em; padding-bottom:100px; width:100%; height:60px; color:#808080;}
+#footer {margin-top:3em; padding-bottom:100px; width:100%; height:60px; color:#808080;}
 #footer.widget-view {position:fixed; left:0; bottom:0; margin:0; padding:4px 0 0 0; min-height:44px; background:#fff;}
 #footer .poweredbylogo {text-align:right;}
 #footer .poweredbylogo span {font-size:.85em;margin-right:.3em;}
@@ -379,7 +379,7 @@ form.btn-form {display:inline-block;}
 
 td.col-file-action span.ingest-warning, .button-block span.ingest-warning {margin-left:.5em;}
 
-.btn.btn-default.btn-access {background-color:#fff; background-image:none; border-radius:35px; height: 70px; width: 70px;}
+.btn.btn-default.btn-access {background-image:none;}
 .btn.btn-default.btn-access:focus, .btn.btn-default.btn-access:hover,.btn.btn-default.btn-access:active {background-image:none;}
 .col-manage-action .button-block button, .col-manage-action .button-block a.btn, .col-manage-action .button-block input.btn, 
 .col-manage-action .button-block div.btn-group, .col-manage-action .button-block span.btn.ui-state-disabled, 
@@ -1120,6 +1120,10 @@ ul > li {
 
 .results-sort-pagination {
   margin-top: 25px;
+}
+
+.pagination > li > a {
+  background-color: #f7f7f9;
 }
 
 .pagination > li > a.skip {
