@@ -387,11 +387,11 @@
                                             <!--     <div id="metrics-heading"> -->
                                             <!--         #{bundle['metrics.file.title']} -->
                                             <!--         <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top"  -->
-                                            <!--                 data-original-title="#{settingsWrapper.makeDataCountEnabled ? bundle['metrics.file.tip.makedatacount'] : bundle['metrics.file.tip.default']}"></span> -->
+                                            <!--                 data-original-title="#{settingsWrapper.makeDataCountDisplayEnabled ? bundle['metrics.file.tip.makedatacount'] : bundle['metrics.file.tip.default']}"></span> -->
                                             <!--     </div> -->
                                             <!--     <div id="metrics-body"> -->
                                             <!--         [> Classic downloads <] -->
-                                            <!--         <div class="metrics-count-block" jsf:rendered="#{!settingsWrapper.makeDataCountEnabled}"> -->
+                                            <!--         <div class="metrics-count-block" jsf:rendered="#{!settingsWrapper.makeDataCountDisplayEnabled}"> -->
                                             <!--             <h:outputFormat value="{0} #{bundle['metrics.downloads']}"> -->
                                             <!--                 <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/> -->
                                             <!--             </h:outputFormat> -->
@@ -399,7 +399,7 @@
                                             <!--                   data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.file.downloads.tip']}"></span> -->
                                             <!--         </div> -->
                                             <!--         [> Make Data Count downloads <] -->
-                                            <!--         <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountEnabled}"> -->
+                                            <!--         <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountDisplayEnabled}"> -->
                                             <!--             <h:outputFormat value="{0} #{bundle['metrics.downloads']}"> -->
                                             <!--                 <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/> -->
                                             <!--             </h:outputFormat> -->
@@ -408,6 +408,7 @@
                                             <!--         </div> -->
                                             <!--     </div> -->
                                             <!-- </div> -->
+
                                             <!-- END: Metrics -->
                                         </div>
                                     </div>

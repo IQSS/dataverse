@@ -423,7 +423,9 @@ public class SettingsServiceBean {
         /** Base Url of this Dataverse Site */
         QDRDataverseBaseURL,
         
-        MDCLogPath,
+        /** Make Data Count Logging and Display */
+        MDCLogPath, 
+        DisplayMDCMetrics,
 
         /**
          * Allow CORS flag (true or false). It is true by default

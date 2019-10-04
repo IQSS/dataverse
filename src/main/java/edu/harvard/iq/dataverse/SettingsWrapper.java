@@ -256,15 +256,6 @@ public class SettingsWrapper implements java.io.Serializable {
         return !getHypothesisKey().isEmpty();
     }
 
-    public boolean isMakeDataCountEnabled(){
-        String logPath = systemConfig.getMDCLogPath();
-        if (logPath != null) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     public boolean isDoiInstallation() {
         String protocol = getValueForKey(SettingsServiceBean.Key.Protocol);
         if ("doi".equals(protocol)) {
@@ -272,6 +263,12 @@ public class SettingsWrapper implements java.io.Serializable {
         } else {
             return false;
         }
+    }
+    
+    public boolean isMakeDataCountDisplayEnabled() {
+        boolean safeDefaultIfKeyNotFound = (getValueForKey(SettingsServiceBean.Key.MDCLogPath)!=null); //Backward compatible
+        return isTrueForKey(SettingsServiceBean.Key.DisplayMDCMetrics, safeDefaultIfKeyNotFound);
+    
     }
 
 }
