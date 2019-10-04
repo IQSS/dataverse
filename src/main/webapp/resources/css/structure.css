@@ -1110,7 +1110,7 @@ ul > li {
 
 .btn-default, .btn-default:active, .btn-default:hover, .btn-default:focus {
   background: #4b74ff;
-  color: #FFF;
+  color: #FFF !important; /* TODO: Find ui-widget CSS rules and take out their color so important is not needed here */
   border-radius: 2px;
 }
 
