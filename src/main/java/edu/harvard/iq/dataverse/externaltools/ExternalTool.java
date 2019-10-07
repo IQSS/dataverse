@@ -76,6 +76,10 @@ public class ExternalTool implements Serializable {
      */
     @Column(nullable = true, columnDefinition = "TEXT")
     private String contentType;
+    
+    @Column(nullable = true)
+    private boolean hasPreviewMode;    
+
 
     /**
      * This default constructor is only here to prevent this error at
@@ -212,7 +216,15 @@ public class ExternalTool implements Serializable {
     public void setContentType(String contentType) {
         this.contentType = contentType;
     }
+    
+    public boolean getHasPreviewMode() {
+        return hasPreviewMode;
+    }
 
+    public void setHasPreviewMode(boolean hasPreviewMode) {
+        this.hasPreviewMode = hasPreviewMode;
+    }
+    
     public JsonObjectBuilder toJson() {
         JsonObjectBuilder jab = Json.createObjectBuilder();
         jab.add("id", getId());

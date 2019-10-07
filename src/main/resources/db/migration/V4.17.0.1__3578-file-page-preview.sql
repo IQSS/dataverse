@@ -1,0 +1,3 @@
+ALTER TABLE externalTool
+ADD COLUMN IF NOT EXISTS hasPreviewMode BOOLEAN;
+
