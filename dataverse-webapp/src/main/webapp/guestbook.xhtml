@@ -133,7 +133,7 @@
                                                         </div>
                                                         <div class="col-sm-4 field-add-delete">
                                                             <p:commandLink
-                                                                    styleClass="btn btn-default btn-sm bootstrap-button-tooltip nolabel-field-btn"
+                                                                    styleClass="btn btn-default btn-access btn-sm bootstrap-button-tooltip nolabel-field-btn"
                                                                     title="#{bundle.add}"
                                                                     update=":guestbookForm:customQuestions"
 
@@ -141,7 +141,7 @@
                                                                 <span class="glyphicon glyphicon-plus no-text"/>
                                                             </p:commandLink>
                                                             <p:commandLink
-                                                                    styleClass="btn btn-default btn-sm bootstrap-button-tooltip nolabel-field-btn"
+                                                                    styleClass="btn btn-default btn-access btn-sm bootstrap-button-tooltip nolabel-field-btn"
                                                                     title="#{bundle.delete}"
                                                                     rendered="#{cq.customQuestionValues.size() > 1}"
                                                                     update=":guestbookForm:customQuestions"
@@ -162,14 +162,14 @@
                                         </div>
                                         <div class="col-sm-3 field-add-delete">
                                             <p:commandLink
-                                                    styleClass="btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn"
+                                                    styleClass="btn btn-default btn-access btn-sm bootstrap-button-tooltip compound-field-btn"
                                                     title="#{bundle.add}" update=":guestbookForm:customQuestions"
 
                                                     actionListener="#{GuestbookPage.addCustomQuestion(valCount.index + 1 )}">
                                                 <span class="glyphicon glyphicon-plus no-text"/>
                                             </p:commandLink>
                                             <p:commandLink
-                                                    styleClass="btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn"
+                                                    styleClass="btn btn-default btn-access btn-sm bootstrap-button-tooltip compound-field-btn"
                                                     rendered="#{GuestbookPage.guestbook.customQuestions.size() > 1}"
                                                     title="#{bundle.delete}" update=":guestbookForm:customQuestions"
 
@@ -186,9 +186,9 @@
 
                 <!-- Create/Save Guestbook Button Panel -->
                 <div class="button-block">
-                    <h:commandButton type="submit" action="#{GuestbookPage.save()}" class="btn btn-default"
+                    <h:commandButton type="submit" action="#{GuestbookPage.save()}" class="btn btn-default btn-access"
                                      value="#{GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : bundle.saveChanges}" />
-                    <h:button class="btn btn-default" value="#{bundle.cancel}"
+                    <h:button class="btn btn-default btn-access" value="#{bundle.cancel}"
                               outcome="/manage-guestbooks.xhtml?dataverseId=#{GuestbookPage.dataverse.id}"/>
                 </div>
 

@@ -31,8 +31,10 @@
                 <!-- Edit editMode -->
                 <div class="button-block form-top">
                     <p:commandButton id="saveTop" value="#{bundle.saveChanges}"
+                                     class="btn btn-default btn-access"
                                      onclick="checkNewlyRestricted();PF('lockSelectGuestbookForm').show();"  />
                     <p:commandButton id="cancelTop" value="#{bundle.cancel}"
+                                     class="btn btn-default btn-access"
                                      action="#{selectGuestbookPage.cancel}" />
                 </div>
                 <!-- END Header / Button Panel -->
@@ -64,6 +66,7 @@
 
                                             <ui:fragment rendered="#{!empty selectGuestbookPage.availableGuestbooks}">
                                                 <p:commandButton value="#{bundle['file.dataFilesTab.terms.list.guestbook.clearBtn']}"
+                                                                 styleClass="btn btn-default btn-access"
                                                                  rendered="#{!empty selectGuestbookPage.dataset.guestbook}"
                                                                  update="guestbookTable" process="@this" actionListener="#{selectGuestbookPage.reset}"/>
                                                 <p:dataTable id="guestbookTable" styleClass="headerless-table margin-top"
@@ -77,7 +80,7 @@
                                                         <p class="form-control-static pull-left">
                                                             <h:outputText value="#{guestbook.name}" />
                                                         </p>
-                                                        <p:commandLink type="button" styleClass="btn btn-default pull-right"
+                                                        <p:commandLink type="button" styleClass="btn btn-default btn-access pull-right"
                                                                        value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
                                                                        action="#{selectGuestbookPage.viewSelectedGuestbook(guestbook)}"
                                                                        update=":selectGuestbookForm"
@@ -102,7 +105,7 @@
                         <ui:param name="guestbook" value="#{selectGuestbookPage.selectedGuestbook}" />
                     </ui:include>
                     <div class="button-block">
-                        <button type="button" onclick="PF('viewGuestbook').hide()" class="btn btn-default" value="#{bundle.close}">
+                        <button type="button" onclick="PF('viewGuestbook').hide()" class="btn btn-default btn-access" value="#{bundle.close}">
                             #{bundle.close}
                         </button>
                     </div>
@@ -113,12 +116,15 @@
                 <div class="button-block">
                     <p:commandButton tabindex="1000" id="save"
                                      value="#{bundle.saveChanges}"
+                                     class="btn btn-default btn-access"
                                      onclick="checkNewlyRestricted();PF('lockSelectGuestbookForm').show();" />
                     <p:commandButton tabindex="1000" id="cancel"
                                      value="#{bundle.cancel}"
+                                     class="btn btn-default btn-access"
                                      action="#{selectGuestbookPage.cancel}" />
                     <p:commandButton value="Direct" id="datasetSave"
-                                     style="display:none"
+                                     class="btn btn-default btn-access"
+                                     style="display:none;"
                                      update=":selectGuestbookForm,:messagePanel"
                                      oncomplete="$(document).scrollTop(0);"
                                      action="#{selectGuestbookPage.save}" />

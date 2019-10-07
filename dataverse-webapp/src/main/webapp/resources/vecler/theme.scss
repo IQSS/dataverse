@@ -8,7 +8,7 @@ $border-radius: 7px;
 
 /* Colors */
 
-$dialog-text-color: #4a4a4a;
+$main-text-color: #4a4a4a;
 $gray-border-color: #e8e8e8;
 
 /* RepOD color scheme */
@@ -104,6 +104,7 @@ $ajax_spinner_filter: hue-rotate(170deg) saturate(2);
 body {
 	font-family: $font-main;
 	font-size: 15px;
+	color: $main-text-color;
 }
 
 .text-brand {
@@ -122,10 +123,6 @@ body {
 	&:active {
 		box-shadow: inset 0 3px 5px rgba(0,0,0,.125);
 	}
-}
-
-@mixin btn-access-hover {
-	
 }
 
 .btn {
@@ -158,17 +155,64 @@ body {
 }
 
 .alert {
+	color: #043e58;
+
 	&.alert-info {
-		background: #e8f3ff
+		background: #e8f3ff;
+		border-color: #c5e0eb;
 	}
 	&.alert-success {
 		background: #e8faec;
+		border-color: #c1ddc8;
 	}
 	&.alert-danger {
 		background: #feecee;
+		border-color: #ecabb1;
 	}
 	&.alert-warning {
 		background: #fff7dc;
+		border-color: #f0d16f;
+	}
+}
+
+.ui-messages {
+	box-shadow: inset 0 1px 0 rgba(255,255,255,.15),0 1px 1px rgba(0,0,0,.075);
+
+	.ui-messages-info {
+		padding: 20px 23px;
+		background: #f2f8fa;
+		border-color: #c5e0eb;
+		border-radius: $border-radius;
+		color: $main-text-color;
+	
+		.ui-icon {
+			background-image: url($primefaces_main);
+		}
+	}
+
+	.ui-messages-info-icon, .ui-messages-warn-icon, .ui-messages-error-icon, .ui-messages-fatal-icon {
+		margin-top: -5px;
+		background: none;
+		font-family: "Glyphicons Halflings";
+		font-size: 22px;
+		color: $icon-color;
+	}
+
+	.ui-messages-info-icon::before {
+		content: "\e086";
+	}
+	.ui-messages-warn-icon::before {
+		content: "\e101";
+	}
+	.ui-messages-error-icon::before {
+		content: "\e083";
+	}
+	.ui-messages-fatal-icon::before {
+		content: "\e090";
+	}
+
+	.ui-messages-info-summary, .ui-messages-warn-summary, .ui-messages-error-summary, .ui-messages-fatal-summary, .ui-message-info-summary, .ui-message-warn-summary, .ui-message-error-summary, .ui-message-fatal-summary {
+		font-weight: normal;
 	}
 }
 
@@ -213,6 +257,75 @@ input, textarea {
 	}
 }
 
+#breadcrumbNavBlock .breadcrumbActive {
+	color: $main-text-color;
+}
+
+.form-horizontal .control-label {
+	padding-top: 5px;
+	color: $main-text-color;
+}
+
+.checkbox, .radio, #resultsCountPaginatorBlock {
+	label {
+		padding-left: 30px;
+		line-height: 27px;
+
+		input {
+			&[type=checkbox], &[type=radio] {
+				margin-left: -30px;
+			}
+		}
+	}
+}
+
+.field-add-delete {
+	margin-left: -1.5em;
+
+	.btn span.glyphicon.no-text {
+		margin: 0 1em;
+	}
+}
+
+/* Labels */
+
+.label {
+	padding: 3px 5px;
+	border-radius: 5px;
+	font-size: 11px;
+	font-weight: normal;
+	text-transform: uppercase;
+	
+	&.label-primary {
+		background: #0086bc;
+		border: 1px solid #0086bc;
+	}
+	&.label-warning {
+		background: #fff;
+		border: 1px solid $main-color;
+	
+		color: #4a4a4a;
+	}
+	&.label-danger {
+		background: #c53635;
+		border: 1px solid #c53635;
+	
+		color: #fff;
+	}
+	&.label-success {
+		background: #00a500;
+		border: 1px solid #00a500;
+	
+		color: #fff;
+	}
+	&.label-default {
+		background: #fff;
+		border: 1px solid $main-color;
+	
+		color: #4a4a4a;
+	}
+}
+
 /* Autocomplete */
 
 @mixin rounded-table-top {
@@ -252,7 +365,7 @@ input, textarea {
 		&.ui-widget-content {
 			tr {
 				border: none;
-				color: $dialog-text-color;
+				color: $main-text-color;
 
 				&:first-child {
 					td {
@@ -290,7 +403,7 @@ input, textarea {
 
 	table, .ui-autocomplete-table {
 		border-collapse: separate;
-		color: $dialog-text-color;
+		color: $main-text-color;
 
 		thead {
 			th, th.ui-state-default {
@@ -311,6 +424,10 @@ input, textarea {
 
 		thead#datasetForm\:tabView\:filesTable_head,
 		thead#datasetForm\:filesTable_head  {
+			tr {
+				background: none;
+			}
+
 			th, th.ui-state-default {
 				text-align: right;
 			}
@@ -364,7 +481,7 @@ input, textarea {
 	}
 
 	.text-muted {
-		color: $dialog-text-color;
+		color: $main-text-color;
 	}
 
 	.col-xs-12.bg-warning {
@@ -385,6 +502,11 @@ tr.ui-state-highlight, .ui-widget-content tr.ui-state-highlight, .ui-widget-head
 	}
 }
 
+tr.ui-state-hover, .ui-widget-content tr.ui-state-hover {
+	background: none;
+	color: $main-text-color;
+}
+
 #datasetForm\:tabView\:versionsTable {
 	th, td {
 		&:not(:last-child) {
@@ -395,6 +517,10 @@ tr.ui-state-highlight, .ui-widget-content tr.ui-state-highlight, .ui-widget-head
 
 tr.ui-state-highlight a:not(.btn), .ui-widget-content tr.ui-state-highlight a:not(.btn) {
 	@include link-color;
+}
+
+.ui-datatable-tablewrapper .col-manage-action .button-block div.btn-group {
+	margin: 0 5px 0 1px;
 }
 
 /* AJAX loading spinner */
@@ -466,7 +592,7 @@ div.panelSearchForm input.search-input {
 
 #metrics-block.col-xs-3 {
 	border: none;
-	color: $dialog-text-color;
+	color: $main-text-color;
 }
 
 #metrics-label {
@@ -663,7 +789,7 @@ div[id$="facetCategoryList"] div li div.ui-widget {
 
 	div.results-count {
 		font-weight: normal;
-		color: $dialog-text-color;
+		color: $main-text-color;
 	}
 }
 
@@ -693,7 +819,7 @@ div.alert-info.bg-citation {
 	border-radius: $border-radius;
 	background-color: $search-result-desc-color;
 
-	color: $dialog-text-color;
+	color: $main-text-color;
 }
 
 table[id$="resultsTable"] {
@@ -736,51 +862,12 @@ table[id$="resultsTable"] {
 	span.label {
 		position: relative;
 		top: -8px;
-		border-radius: 5px;
 		line-height: 12px;
 	}
 }
 
 .card-title-icon-block {
 	margin-top: -2px;
-}
-
-.card-title-icon-block, #datasetForm, #dataverseHeader, .ui-dialog {
-	.label {
-		padding: 3px 5px;
-		font-size: 11px;
-		font-weight: normal;
-		text-transform: uppercase;
-		
-		&.label-primary {
-			background: #0086bc;
-			border: 1px solid #0086bc;
-		}
-		&.label-warning {
-			background: #fff;
-			border: 1px solid $main-color;
-		
-			color: #4a4a4a;
-		}
-		&.label-danger {
-			background: #c53635;
-			border: 1px solid #c53635;
-		
-			color: #fff;
-		}
-		&.label-success {
-			background: #00a500;
-			border: 1px solid #00a500;
-		
-			color: #fff;
-		}
-		&.label-default {
-			background: #fff;
-			border: 1px solid $main-color;
-		
-			color: #4a4a4a;
-		}
-	}
 }
 
 div[id$="filesTable"] .ui-paginator {
@@ -820,7 +907,7 @@ div[id$="filesTable"] .ui-paginator {
 	background: #fff;
 	
 	.ui-dialog-titlebar {
-		color: $dialog-text-color;
+		color: $main-text-color;
 		border-bottom: 1px solid $gray-border-color;
 
 		.ui-dialog-title {
@@ -835,7 +922,7 @@ div[id$="filesTable"] .ui-paginator {
 
 	.ui-dialog-content, .help-block {
 		font-size: 15px;
-		color: $dialog-text-color;
+		color: $main-text-color;
 	}
 
 	.ui-dialog-content {
