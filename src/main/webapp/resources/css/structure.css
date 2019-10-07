@@ -39,6 +39,18 @@ body .ui-widget {font-size: inherit;}
 #navbarFixed form.navbar-form-link a.ui-commandlink, #navbarFixed ul.navbar-nav li.dropdown span.dropdown-toggle {display:block; padding:15px; color: #777;}
 #navbarFixed form.navbar-form-link a.ui-commandlink:hover, #navbarFixed form.navbar-form-link a.ui-commandlink:focus,
 #navbarFixed ul.navbar-nav li.dropdown span.dropdown-toggle:hover, #navbarFixed ul.navbar-nav li.dropdown span.dropdown-toggle:focus {color: #262626; text-decoration: none;}
+#navbarFixed .dropdown-menu.navbar-search {padding:12px; min-width:350px;}
+#navbarFixed .dropdown-menu.navbar-language a.language-menu-link {display: block; clear: both; padding: 3px 20px; font-weight: 400; line-height: 1.42857143; color: rgb(51, 51, 51); white-space: nowrap; text-decoration: none;}
+#navbarFixed .dropdown-menu.navbar-language a.language-menu-link:hover,
+#navbarFixed .dropdown-menu.navbar-language a.language-menu-link:focus {color: #262626;text-decoration: none;background-color: #f5f5f5;}
+#navbarFixed .dropdown-menu.navbar-language .active a.language-menu-link,
+#navbarFixed .dropdown-menu.navbar-language .active a.language-menu-link:hover,
+#navbarFixed .dropdown-menu.navbar-language .active a.language-menu-link:focus {/*color: #fff;text-decoration: none;background-color: #337ab7;outline: 0;*/}
+#navbarFixed .dropdown-menu.navbar-language .disabled a.language-menu-link,
+#navbarFixed .dropdown-menu.navbar-language .disabled a.language-menu-link:hover,
+#navbarFixed .dropdown-menu.navbar-language .disabled a.language-menu-link:focus {color: #777777;}
+#navbarFixed .dropdown-menu.navbar-language .disabled a.language-menu-link:hover,
+#navbarFixed .dropdown-menu.navbar-language .disabled a.language-menu-link:focus {text-decoration: none; cursor: not-allowed; background-color: transparent; background-image: none; filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);}
 #navbarFixed #navbar-search-toggle, #navbarFixed #dataverseSupportLink, #navbarFixed #lnk_header_account_dropdown {cursor: pointer; cursor: hand;}
 #navbarFixed .dropdown.accountName #lnk_header_account_dropdown span.glyphicon {margin-right:8px;}
 #navbarFixed .dropdown.accountName .label.label-danger {margin-left:.5em; line-height:normal; vertical-align:text-top;}
