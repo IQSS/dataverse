@@ -1046,5 +1046,4 @@ public class SystemConfig {
         String mDCLogPath = settingsService.getValueForKey(SettingsServiceBean.Key.MDCLogPath, null);
         return mDCLogPath;
     }
-    
 }
