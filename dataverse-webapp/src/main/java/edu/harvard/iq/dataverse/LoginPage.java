@@ -7,7 +7,6 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
@@ -32,8 +31,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
  * @author xyang
@@ -81,12 +78,6 @@ public class LoginPage implements java.io.Serializable {
 
     @EJB
     DataverseServiceBean dataverseService;
-
-    @EJB
-    BuiltinUserServiceBean dataverseUserService;
-
-    @EJB
-    UserServiceBean userService;
 
     @EJB
     AuthenticationServiceBean authSvc;
@@ -147,10 +138,6 @@ public class LoginPage implements java.io.Serializable {
         return (CredentialsAuthenticationProvider) authSvc.getAuthenticationProvider(getCredentialsAuthProviderId());
     }
 
-    public boolean validatePassword(String username, String password) {
-        return false;
-    }
-
     public String login() {
 
         AuthenticationRequest authReq = new AuthenticationRequest();
@@ -160,9 +147,6 @@ public class LoginPage implements java.io.Serializable {
             return null;
         }
         for (FilledCredential fc : filledCredentialsList) {
-            if (fc.getValue() == null || fc.getValue().isEmpty()) {
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("login." + fc.getCredential().getKey()));
-            }
             authReq.putCredential(fc.getCredential().getKey(), fc.getValue());
         }
         authReq.setIpAddress(dvRequestService.getDataverseRequest().getSourceAddress());
