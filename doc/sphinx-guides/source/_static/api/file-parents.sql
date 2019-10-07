@@ -34,11 +34,13 @@ select
     level3dv.id as dataverse_level_3_id,
     level3dv.alias as dataverse_level_3_alias,
     level3dv.name as dataverse_level_3_friendly_name,
+    -- Separate multiple subjects with a delimeter.
+    string_agg(cvv.strvalue, ';') AS subjects,
     -- File publication date.
     dvo.publicationdate as file_publication_date,
     -- Dataset publication date.
     dsv.releasetime as dataset_publication_date
-from filemetadata fmd, datasetversion dsv, datasetfieldvalue dsfv, datasetfield dsf, dvobject dvo, dataverse level1dv, dataset, tree
+from filemetadata fmd, datasetversion dsv, datasetfieldvalue dsfv, datasetfield dsf, datasetfield dsfsub, datasetfield_controlledvocabularyvalue dsfcvv, controlledvocabularyvalue cvv, dvobject dvo, dataverse level1dv, dataset, tree
 left outer join dataverse level2dv on tree.id_path[2] = level2dv.id
 left outer join dataverse level3dv on tree.id_path[3] = level3dv.id
 where fmd.datasetversion_id = dsv.id
@@ -49,6 +51,15 @@ and dsv.id = dsf.datasetversion_id
 and dsf.id = dsfv.datasetfield_id
 and fmd.datafile_id = dvo.id
 and dsf.datasetfieldtype_id=1
+-- We added dsfsub and dsfcvv to get subjects.
+and dsfsub.datasetversion_id = dsv.id
+-- For dev databases, "subject" is 20.
+and dsfsub.datasetfieldtype_id=20
+-- For Harvard's database, "subject" is 19.
+--and dsfsub.datasetfieldtype_id=19
+and dsfsub.id = dsfcvv.datasetfield_id
+and cvv.datasetfieldtype_id = dsfsub.datasetfieldtype_id
+and dsfcvv.controlledvocabularyvalues_id = cvv.id
 -- Make sure the dataset is published.
 and dsv.releasetime is not NULL
 -- Make sure the file is published.
@@ -64,4 +75,20 @@ where versionstate='RELEASED'
 and dataset.harvestingclient_id is null
 group by dataset_id))
 -- ... done getting the latest published version of the dataset.
+GROUP BY
+-- Group by all the fields above *except* subject for the string_agg above.
+fileid,
+filename,
+dataset_name,
+dataverse_level_1_id,
+dataverse_level_1_alias,
+dataverse_level_1_friendly_name,
+dataverse_level_2_id,
+dataverse_level_2_alias,
+dataverse_level_2_friendly_name,
+dataverse_level_3_id,
+dataverse_level_3_alias,
+dataverse_level_3_friendly_name,
+file_publication_date,
+dataset_publication_date
 order by file_publication_date desc;
