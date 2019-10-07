@@ -37,8 +37,9 @@ public class ExternalToolHandlerTest {
         ApiToken nullApiToken = null;
         FileMetadata nullFileMetadata = null;
         Exception expectedException1 = null;
+        String nullLocaleCode = null;
         try {
-            ExternalToolHandler externalToolHandler1 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken, nullFileMetadata);
+            ExternalToolHandler externalToolHandler1 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken, nullFileMetadata, nullLocaleCode);
         } catch (Exception ex) {
             expectedException1 = ex;
         }
@@ -56,7 +57,7 @@ public class ExternalToolHandlerTest {
         DataFile dataFile = new DataFile();
         dataFile.setId(42l);
         try {
-            ExternalToolHandler externalToolHandler1 = new ExternalToolHandler(externalTool, dataFile, nullApiToken, nullFileMetadata);
+            ExternalToolHandler externalToolHandler1 = new ExternalToolHandler(externalTool, dataFile, nullApiToken, nullFileMetadata, nullLocaleCode);
         } catch (Exception ex) {
             expectedException1 = ex;
         }
@@ -77,7 +78,7 @@ public class ExternalToolHandlerTest {
                 .build().toString());
         Exception expectedException2 = null;
         try {
-            ExternalToolHandler externalToolHandler2 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken, nullFileMetadata);
+            ExternalToolHandler externalToolHandler2 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken, nullFileMetadata, nullLocaleCode);
         } catch (Exception ex) {
             expectedException2 = ex;
         }
@@ -106,7 +107,7 @@ public class ExternalToolHandlerTest {
         dataFile.setFileMetadatas(fmdl);
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
-        ExternalToolHandler externalToolHandler3 = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd);
+        ExternalToolHandler externalToolHandler3 = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, nullLocaleCode);
         String result3 = externalToolHandler3.getQueryParametersForUrl();
         System.out.println("result3: " + result3);
         assertEquals("?key1=42&key2=7196b5ce-f200-4286-8809-03ffdbc255d7", result3);
@@ -126,7 +127,7 @@ public class ExternalToolHandlerTest {
                         )
                 )
                 .build().toString());
-        ExternalToolHandler externalToolHandler6 = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd);
+        ExternalToolHandler externalToolHandler6 = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, nullLocaleCode);
         String result6 = externalToolHandler6.getQueryParametersForUrl();
         System.out.println("result6: " + result6);
         assertEquals("?key1=42&key2=7196b5ce-f200-4286-8809-03ffdbc255d7&key3=2", result6);
@@ -142,10 +143,32 @@ public class ExternalToolHandlerTest {
                         )
                 )
                 .build().toString());
-        ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, nullApiToken, fmd);
+        ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, nullApiToken, fmd, nullLocaleCode);
         String result4 = externalToolHandler4.getQueryParametersForUrl();
         System.out.println("result4: " + result4);
         assertEquals("?key1=42", result4);
+
+        //localeCode test
+        externalTool.setToolParameters(Json.createObjectBuilder()
+                .add("queryParameters", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("key1", "{fileId}")
+                        )
+                        .add(Json.createObjectBuilder()
+                                .add("key2", "{apiToken}")
+                        )
+                        .add(Json.createObjectBuilder()
+                                .add("key3", "{fileMetadataId}")
+                        )
+                        .add(Json.createObjectBuilder()
+                                .add("key4", "{localeCode}")
+                        )
+                )
+                .build().toString());
+        ExternalToolHandler externalToolHandler7 = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, "en");
+        String result7 = externalToolHandler7.getQueryParametersForUrl();
+        System.out.println("result7: " + result7);
+        assertEquals("?key1=42&key2=7196b5ce-f200-4286-8809-03ffdbc255d7&key3=2&key4=en", result7);
 
         // Two query parameters, attempt to use a reserved word that doesn't exist.
         externalTool.setToolParameters(Json.createObjectBuilder()
@@ -160,7 +183,7 @@ public class ExternalToolHandlerTest {
                 .build().toString());
         Exception expectedException = null;
         try {
-            ExternalToolHandler externalToolHandler5 = new ExternalToolHandler(externalTool, dataFile, nullApiToken, fmd);
+            ExternalToolHandler externalToolHandler5 = new ExternalToolHandler(externalTool, dataFile, nullApiToken, fmd, nullLocaleCode);
             String result5 = externalToolHandler5.getQueryParametersForUrl();
             System.out.println("result5: " + result5);
         } catch (Exception ex) {

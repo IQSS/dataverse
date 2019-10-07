@@ -35,8 +35,6 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import static com.jayway.restassured.RestAssured.given;
-import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
-import static edu.harvard.iq.dataverse.api.AccessIT.datasetId;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -151,14 +149,30 @@ public class UtilIT {
     }
     
     public static Response migrateDatasetIdentifierFromHDLToPId(String datasetIdentifier, String apiToken) {
-        System.out.print(datasetIdentifier);
         Response response = given()
                 .body(datasetIdentifier)
                 .contentType(ContentType.JSON)
                 .post("/api/admin/" + datasetIdentifier + "/reregisterHDLToPID?key=" + apiToken);
         return response;
     }
+    
 
+    public static Response computeDataFileHashValue(String fileId, String alg, String apiToken) {
+        Response response = given()
+                .body(fileId)
+                .contentType(ContentType.JSON)
+                .post("/api/admin/computeDataFileHashValue/" + fileId + "/algorithm/" + alg + "?key=" + apiToken);
+        return response;
+    }
+    
+    public static Response validateDataFileHashValue(String fileId,  String apiToken) {
+        Response response = given()
+                .body(fileId)
+                .contentType(ContentType.JSON)
+                .post("/api/admin/validateDataFileHashValue/" + fileId + "?key=" + apiToken);
+        return response;
+    }
+    
     private static String getAuthenticatedUserAsJsonString(String persistentUserId, String firstName, String lastName, String authenticationProviderId, String identifier) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add("authenticationProviderId", authenticationProviderId);
@@ -433,6 +447,7 @@ public class UtilIT {
                 .put("/api/datasets/:persistentId/editMetadata/?persistentId=" + persistentId);
         return response;
     }
+    
     
     static Response deleteDatasetMetadataViaNative(String persistentId, String pathToJsonFile, String apiToken) {
         String jsonIn = getDatasetJson(pathToJsonFile);

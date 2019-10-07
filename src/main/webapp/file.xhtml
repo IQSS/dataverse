@@ -486,7 +486,7 @@
                                                         <div id="preview-square">
                                                             <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(FilePage.fileMetadata.dataFile)} text-muted" jsf:rendered="#{!FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
                                                             <p:graphicImage styleClass="img-responsive" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" 
-                                                                            alt="#{bundle['file.metadata.preview.alt']} #{FilePage.fileMetadata.label}" rendered="#{FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
+                                                                            alt="#{FilePage.fileMetadata.label}" rendered="#{FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
                                                         </div>
                                                     </div>
                                                 </div>

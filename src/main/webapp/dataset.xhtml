@@ -357,24 +357,13 @@
                                     <span class="glyphicon glyphicon-share"/> #{bundle['share']}
                                 </p:commandLink>
                             </div>
-                            <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true" rendered="#{!DatasetPage.workingVersion.deaccessioned}">
-                                <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
-
-                                <div id="sharrre-widget" data-url="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
-
-                                <div class="button-block">
-                                    <button class="btn btn-default" onclick="PF('shareDialog').hide()" type="button">
-                                        #{bundle.close}
-                                    </button>
-                                </div>
-                            </p:dialog>
                             <!-- END: Contact/Share Button Group -->
                         </div>
                         
                         <div id="datasetVersionBlock" class="col-sm-12">
                             <div id="title-block" class="row margin-bottom-half col-md-offset-3" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
                                 <div class="col-xs-1 vcenter title-preview-icon-block">
-                                    <img src="#{DatasetPage.thumbnailString}" jsf:rendered="#{!empty DatasetPage.thumbnailString}"/>
+                                    <img src="#{DatasetPage.thumbnailString}" jsf:rendered="#{!empty DatasetPage.thumbnailString}" alt="#{DatasetPage.datasetVersionUI.title.value}"/>
                                     <span class="icon-dataset" jsf:rendered="#{empty DatasetPage.thumbnailString}"/>
                                 </div>
                                 <div class="col-xs-11 vcenter">
@@ -403,7 +392,7 @@
                                 </ui:fragment>
                                 <!-- END: CITATION BLOCK -->
                                 <div id="deaccession-reason-block" class="bg-danger" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
-                                    <!-- <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5> -->
+                                    <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
                                     <p>#{DatasetPage.workingVersion.versionNote}</p>
                                     <ui:fragment rendered="#{!empty DatasetPage.workingVersion.archiveNote}">
                                         <p>#{bundle['dataset.beAccessedAt']} <a href="#{DatasetPage.workingVersion.archiveNote}" target="_blank">#{DatasetPage.workingVersion.archiveNote}</a></p>
@@ -453,33 +442,6 @@
                                 <!--             <span class="glyphicon glyphicon-question-sign tooltip-icon" -->
                                 <!--                     data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.citations.tip']}"></span> -->
                                 <!--          -->
-                                <!--             <p:dialog id="citationsDialog" styleClass="smallPopUp" header="#{bundle['metrics.citations.dialog.header']}" widgetVar="citationsDialog" modal="true"> -->
-                                <!--                 <p class="help-block"> -->
-                                <!--                     <h:outputFormat value="#{bundle['metrics.citations.dialog.help']}" escape="false"> -->
-                                <!--                         <f:param value="#{systemConfig.guidesBaseUrl}"/> -->
-                                <!--                         <f:param value="#{systemConfig.guidesVersion}"/> -->
-                                <!--                     </h:outputFormat> -->
-                                <!--                 </p> -->
-                                <!--                  -->
-                                <!--                 <div id="citations-list-block"> -->
-                                <!--                     <div jsf:rendered="#{empty datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}"> -->
-                                <!--                         #{bundle['metrics.citations.dialog.empty']} -->
-                                <!--                     </div> -->
-                                <!--                     <ui:fragment rendered="#{!empty datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}"> -->
-                                <!--                         <ul> -->
-                                <!--                             <ui:repeat value="#{datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}" var="citation"> -->
-                                <!--                                 <li><a href="#{citation.citedByUrl}" target="_blank">#{citation.citedByUrl}</a></li> -->
-                                <!--                             </ui:repeat> -->
-                                <!--                         </ul> -->
-                                <!--                     </ui:fragment> -->
-                                <!--                 </div> -->
-                                <!--  -->
-                                <!--                 <div class="button-block"> -->
-                                <!--                     <button class="btn btn-default" onclick="PF('citationsDialog').hide()" type="button"> -->
-                                <!--                         #{bundle.close} -->
-                                <!--                     </button> -->
-                                <!--                 </div> -->
-                                <!--             </p:dialog> -->
                                 <!--         </div> -->
                                 <!--     </div> -->
                                 <!-- </div> -->
@@ -487,7 +449,7 @@
                             </div>
                             
                             <!-- BEGIN: DATASET SUMMARY -->
-                            <div id="dataset-summary-metadata" class="row" style="background-color:lightgoldenrodyellow;background:none;"
+                            <div id="dataset-summary-metadata" class="row"
                                  jsf:rendered="#{!widgetWrapper.widgetView and !DatasetPage.workingVersion.deaccessioned and 
                                                    ( !empty DatasetPage.datasetVersionUI.descriptionDisplay
                                                  or !empty DatasetPage.datasetVersionUI.keywordDisplay
@@ -495,45 +457,46 @@
                                                  or !empty DatasetPage.datasetVersionUI.relPublicationCitation
                                                  or !empty DatasetPage.datasetVersionUI.notes.value  ) and !empty DatasetPage.datasetSummaryFields }">
                                 <div class="col-sm-12 metadata-container">
+                                    <table class="metadata">
+                                        <tbody>
                                     <ui:repeat value="#{DatasetPage.datasetSummaryFields}" var="dsf">
-                                        
-                                        <div id="keywords" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.keywordDisplay and dsf.datasetFieldType.id==DatasetPage.datasetVersionUI.keyword.datasetFieldType.id}">
-                                            <label class="col-sm-3 control-label">
+                                                <tr id="keywords" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.keywordDisplay and dsf.datasetFieldType.id==DatasetPage.datasetVersionUI.keyword.datasetFieldType.id}">
+                                                    <th scope="row">
                                                 #{bundle['dataset.keywordDisplay.title']}
                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.localeDescription}"></span>
-                                            </label>
-                                            <div class="col-sm-9">#{DatasetPage.datasetVersionUI.keywordDisplay}</div>
-                                        </div>
-                                        <div id="publication" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.relPublicationCitation and dsf.datasetFieldType.name=='publication'}">
-                                            <label class="col-sm-3 control-label">
+                                                    </th>
+                                                    <td>#{DatasetPage.datasetVersionUI.keywordDisplay}</td>
+                                                </tr>
+                                                <tr id="publication" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.relPublicationCitation and dsf.datasetFieldType.name=='publication'}">
+                                                    <th scope="row">
                                                 #{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).title}
                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).description}"></span>
-                                            </label>
-                                            <div class="col-sm-9">
+                                                    </th>
+                                                    <td>
                                                 <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.relPublicationCitation)}" escape="false"/>
-                                                <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" title="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank">#{DatasetPage.datasetVersionUI.relPublicationId}</a>
-                                            </div>
-                                        </div>
-                                     
-                                        <div class="form-group" jsf:rendered="#{dsf.datasetFieldType.name!='publication' and dsf.datasetFieldType.name!='keyword'  }">
-                                            <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
+                                                        <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" title="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank" rel="noopener">#{DatasetPage.datasetVersionUI.relPublicationId}</a>
+                                                    </td>
+                                                </tr>
+                                                <tr id="#{dsf.datasetFieldType.name}" jsf:rendered="#{dsf.datasetFieldType.name!='publication' and dsf.datasetFieldType.name!='keyword'}">
+                                                    <th scope="row">
                                                 #{dsf.datasetFieldType.localeTitle}
                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
-                                            </label>
+                                                    </th>
+                                                    <td>
                                             <!-- Primitive datasetFields -->
-                                            <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.primitive}">
+                                                        <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">
                                                 <h:outputText value="#{dsf.displayValue}" rendered="#{!dsf.datasetFieldType.allowMultiples}"
                                                               escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
                                                 <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples}">
                                                     <h:outputText value="#{loop.first?'':'; '}#{ value }"
                                                                   escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
                                                 </ui:repeat>
-                                            </div>
+                                                        </ui:fragment>
                                             <!-- Compound datasetFields -->
-                                            <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.compound}">
+                                                        <ui:fragment rendered="#{dsf.datasetFieldType.compound}">
                                                 <ui:fragment rendered="#{dsf.datasetFieldType.name == 'datasetContact'}">
                                                     <p class="help-block">
                                                         <h:outputText value="#{bundle['dataset.contact.tip']}"/>
@@ -548,9 +511,12 @@
                                                     </ui:repeat>
                                                     </div>
                                                 </ui:repeat>
-                                            </div>
-                                        </div>
+                                                        </ui:fragment>
+                                                    </td>
+                                                </tr>
                                     </ui:repeat>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                             <!-- END: DATASET SUMMARY -->
@@ -631,8 +597,7 @@
                     <!-- View/Tabs infoMode -->
                     <!-- Tabs -->
                     <div id="contentTabs" jsf:rendered="#{DatasetPage.editMode != 'INFO'}">
-                      <div id="file-row-panel-backdrop"></div>
-
+                    <div id="file-row-panel-backdrop"></div>
                         <p:fragment id="pageRefreshFragment"> <!-- rendered="_{empty DatasetPage.editMode}" -->
                             <h:inputHidden value="#{DatasetPage.lockedForAnyReason}" id="datasetLockedForAnyReasonVariable" />
                             <h:inputHidden value="#{DatasetPage.stateChanged}" id="datasetStateChangedVariable" />
@@ -649,10 +614,7 @@
                                 //]]>
                             </script>
                         </p:fragment>
-
-                        <ui:fragment id="uploadFilesOnCreateTab" rendered="#{!DatasetPage.workingVersion.deaccessioned and                          
-                                                                             (DatasetPage.editMode == 'CREATE')}">
-
+                        <ui:fragment id="uploadFilesOnCreateTab" rendered="#{!DatasetPage.workingVersion.deaccessioned and (DatasetPage.editMode == 'CREATE')}">
                                 <ui:include src="editFilesFragment.xhtml">
                                     <ui:param name="datasetPage" value="true"/>
                                     <ui:param name="editDatafilesPage" value="false"/>                                   
@@ -753,6 +715,40 @@
                     <p:blockUI block="datasetForm" widgetVar="blockDatasetForm"/>
 
                     <!-- Popups -->
+                    <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true" rendered="#{!DatasetPage.workingVersion.deaccessioned}">
+                        <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
+                        <div id="sharrre-widget" data-url="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
+                        <div class="button-block">
+                            <button class="btn btn-default" onclick="PF('shareDialog').hide()" type="button">
+                                #{bundle.close}
+                            </button>
+                        </div>
+                    </p:dialog>
+                    <p:dialog id="citationsDialog" styleClass="smallPopUp" header="#{bundle['metrics.citations.dialog.header']}" widgetVar="citationsDialog" modal="true">
+                        <p class="help-block">
+                            <h:outputFormat value="#{bundle['metrics.citations.dialog.help']}" escape="false">
+                                <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                <f:param value="#{systemConfig.guidesVersion}"/>
+                            </h:outputFormat>
+                        </p>
+                        <div id="citations-list-block">
+                            <div jsf:rendered="#{empty datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}">
+                                #{bundle['metrics.citations.dialog.empty']}
+                            </div>
+                            <ui:fragment rendered="#{!empty datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}">
+                                <ul>
+                                    <ui:repeat value="#{datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}" var="citation">
+                                        <li><a href="#{citation.citedByUrl}" target="_blank">#{citation.citedByUrl}</a></li>
+                                    </ui:repeat>
+                                </ul>
+                            </ui:fragment>
+                        </div>
+                        <div class="button-block">
+                            <button class="btn btn-default" onclick="PF('citationsDialog').hide()" type="button">
+                                #{bundle.close}
+                            </button>
+                        </div>
+                    </p:dialog>
                     <p:dialog id="downloadInvalid" styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadInvalid" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noValidSelectedFilesForDownload']}</p>
                         <ui:fragment rendered="#{DatasetPage.dataset.fileAccessRequest}">
@@ -1001,11 +997,9 @@
                             </ui:repeat>
                         </ui:fragment>
                         <div class="panel" jsf:rendered="#{!empty(DatasetPage.datasetVersionDifference.fileNote)}">
-                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
-                            <div class="panel-heading text-info">
+                            <div class="panel-heading text-info" jsf:rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
                                 <h:outputText id="outputTextAddedRemoved" value="#{bundle['file.viewDiffDialog.files.header']}"/>
                             </div>
-                            </ui:fragment>
                             <p:dataTable id="diffFilesDataTable" styleClass="dvnDifferanceTable"  value="#{DatasetPage.datasetVersionDifference.datasetFilesDiffList}" var="fileDiff"
                                          rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
                                 <p:column styleClass="versionValue">
@@ -1038,14 +1032,6 @@
                                     &#160;
                                 </p:column>
                             </p:dataTable>
-                            <ui:remove>
-                            <!-- To:DO REMOVED SECOND FILES TABLE HEADER, UI CLEAN UP NEEDED IN FILE VERSIONS BRANCH -->
-                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesReplacementList)}">
-                            <div class="panel-heading text-info" >
-                                <h:outputText id="outputTextReplaced" value="#{bundle['file.viewDiffDialog.files.header']}"/>
-                            </div>
-                            </ui:fragment>
-                            </ui:remove>
                             <p:dataTable id="replacemetFilesDataTable" style="border-top:1px solid #ddd;" styleClass="dvnDifferanceTable" value="#{DatasetPage.datasetVersionDifference.datasetFilesReplacementList}" var="fileReplace"
                                          rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesReplacementList)}">
                                 <p:column styleClass="versionValue">
