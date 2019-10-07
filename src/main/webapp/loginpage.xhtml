@@ -112,14 +112,16 @@
                                             <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                             <f:param value="#{systemConfig.guidesVersion}"/>
                                         </h:outputFormat>
-                                        <h:outputText value="#{bundle['login.institution.support.beforeLink']} " />
-                                        <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                                        </p:commandLink>
-                                        <h:outputText value=" #{bundle['login.institution.support.afterLink']}" escape="false"/>
+                                        <h:outputFormat value="#{bundle['login.institution.support.blurbwithLink']}" escape="false">
+                                            <o:param>
+                                                <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                                </p:commandLink>                               
+                                            </o:param>
+                                        </h:outputFormat>
                                     </p>
                                 </h:form>
 
@@ -166,8 +168,8 @@
                                     <div class="col-sm-12">
                                         <h:outputLink styleClass="btn btn-default" value="#{OAuth2Page.linkFor(LoginPage.authProvider.id, LoginPage.redirectPage)}">
                                             <h:graphicImage rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value="/resources/images/orcid_16x16.png" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], bundle['auth.providers.title.orcid'])}"/>
-					    <h:outputFormat rendered="#{not fn:contains(LoginPage.authProvider.id, 'orcid')}" value="#{LoginPage.getLoginButtonText()}"/>
-					    <h:outputFormat rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value="#{bundle['login.button.orcid']}"/>
+					    <h:outputText rendered="#{not fn:contains(LoginPage.authProvider.id, 'orcid')}" value="#{LoginPage.getLoginButtonText()}"/>
+					    <h:outputText rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value=" #{bundle['login.button.orcid']}"/>
                                         </h:outputLink>
                                         <ui:fragment rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}">
                                             <p class="help-block small" style="margin-top:1em;">
@@ -198,6 +200,14 @@
                                         </h:outputFormat>
                                     </p>
                                 </div>
+                            </div>
+                            
+                            <div id="signUpLink">
+                                <p class="help-block margin-top">
+                                    <h:outputFormat value="#{bundle['login.signup.blurb']}" escape="false">
+                                        <f:param value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}"/>
+                                    </h:outputFormat>
+                                </p>
                             </div>
                         </div>
                     </div>
