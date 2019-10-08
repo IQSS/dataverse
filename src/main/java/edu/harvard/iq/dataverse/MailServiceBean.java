@@ -114,6 +114,11 @@ public class MailServiceBean implements java.io.Serializable {
     private Session session;
 
     public boolean sendSystemEmail(String to, String subject, String messageText) {
+        return sendSystemEmail(to, subject, messageText, false);
+    }
+
+    public boolean sendSystemEmail(String to, String subject, String messageText, boolean isHtmlContent) {
+
 
         boolean sent = false;
         String rootDataverseName = dataverseService.findRootDataverse().getName();
@@ -136,7 +141,12 @@ public class MailServiceBean implements java.io.Serializable {
                 }
                 msg.setRecipients(Message.RecipientType.TO, recipients);
                 msg.setSubject(subject, charset);
-                msg.setText(body, charset);
+                if (isHtmlContent) {
+                    msg.setText(body, charset, "html");
+                } else {
+                    msg.setText(body, charset);
+                }
+
                 try {
                     Transport.send(msg, recipients);
                     sent = true;
@@ -215,11 +225,15 @@ public class MailServiceBean implements java.io.Serializable {
     
     
     public Boolean sendNotificationEmail(UserNotification notification, String comment) {
-        return sendNotificationEmail(notification, comment, null);
+        return sendNotificationEmail(notification, comment, null, false);
     }
-    
-    
-    public Boolean sendNotificationEmail(UserNotification notification, String comment, AuthenticatedUser requestor){  
+
+    public Boolean sendNotificationEmail(UserNotification notification, String comment, boolean isHtmlContent) {
+        return sendNotificationEmail(notification, comment, null, isHtmlContent);
+    }
+
+
+    public Boolean sendNotificationEmail(UserNotification notification, String comment, AuthenticatedUser requestor, boolean isHtmlContent){
 
         boolean retval = false;
         String emailAddress = getUserEmailAddress(notification);
@@ -230,7 +244,7 @@ public class MailServiceBean implements java.io.Serializable {
                String rootDataverseName = dataverseService.findRootDataverse().getName();
                String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, rootDataverseName, objectOfNotification);
                if (!(messageText.isEmpty() || subjectText.isEmpty())){
-                    retval = sendSystemEmail(emailAddress, subjectText, messageText); 
+                   retval = sendSystemEmail(emailAddress, subjectText, messageText, isHtmlContent);
                } else {
                    logger.warning("Skipping " + notification.getType() +  " notification, because couldn't get valid message");
                }
@@ -530,6 +544,18 @@ public class MailServiceBean implements java.io.Serializable {
                 String message = BundleUtil.getStringFromBundle("notification.email.apiTokenGenerated", Arrays.asList(
                         userNotification.getUser().getFirstName(), userNotification.getUser().getFirstName() ));
                 return message;
+
+            case INGESTCOMPLETED:
+                dataset = (Dataset) targetObject;
+
+                String ingestedCompletedMessage = messageText + BundleUtil.getStringFromBundle("notification.ingest.completed", Arrays.asList(
+                        systemConfig.getDataverseSiteUrl(),
+                        dataset.getGlobalIdString(),
+                        dataset.getDisplayName(),
+                        comment
+                ));
+
+                return ingestedCompletedMessage;
         }
         
         return "";
@@ -572,6 +598,8 @@ public class MailServiceBean implements java.io.Serializable {
                 return versionService.find(userNotification.getObjectId());
             case APIGENERATED:
                 return userNotification.getUser();
+            case INGESTCOMPLETED:
+                return datasetService.find(userNotification.getObjectId());
 
         }
         return null;
