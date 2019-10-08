@@ -798,10 +798,22 @@ public class Datasets extends AbstractApiBean {
                     if (dsf.getDatasetFieldType().equals(updateField.getDatasetFieldType())) {
                         found = true;
                         if (dsf.isEmpty() || dsf.getDatasetFieldType().isAllowMultiples() || replaceData) {
+                            List priorCVV = new ArrayList<>();
+                            String cvvDisplay = "";
+
+                            if (updateField.getDatasetFieldType().isControlledVocabulary()) {
+                                cvvDisplay = dsf.getDisplayValue();
+                                for (ControlledVocabularyValue cvvOld : dsf.getControlledVocabularyValues()) {
+                                    priorCVV.add(cvvOld);
+                                }
+                            }
+
                             if (replaceData) {
                                 if (dsf.getDatasetFieldType().isAllowMultiples()) {
                                     dsf.setDatasetFieldCompoundValues(new ArrayList<DatasetFieldCompoundValue>());
                                     dsf.setDatasetFieldValues(new ArrayList<DatasetFieldValue>());
+                                    dsf.setControlledVocabularyValues(new ArrayList<>());
+                                    priorCVV.clear();
                                     dsf.getControlledVocabularyValues().clear();
                                 } else {
                                     dsf.setSingleValue("");
@@ -811,10 +823,11 @@ public class Datasets extends AbstractApiBean {
                             if (updateField.getDatasetFieldType().isControlledVocabulary()) {
                                 if (dsf.getDatasetFieldType().isAllowMultiples()) {
                                     for (ControlledVocabularyValue cvv : updateField.getControlledVocabularyValues()) {
-                                        if (!dsf.getDisplayValue().contains(cvv.getStrValue())) {
-                                            dsf.getControlledVocabularyValues().add(cvv);
+                                        if (!cvvDisplay.contains(cvv.getStrValue())) {
+                                            priorCVV.add(cvv);
                                         }
                                     }
+                                    dsf.setControlledVocabularyValues(priorCVV);
                                 } else {
                                     dsf.setSingleControlledVocabularyValue(updateField.getSingleControlledVocabularyValue());
                                 }

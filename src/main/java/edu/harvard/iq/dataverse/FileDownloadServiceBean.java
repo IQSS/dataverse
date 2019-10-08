@@ -240,25 +240,25 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         ApiToken apiToken = null;
         User user = session.getUser();
         DatasetVersion version = fmd.getDatasetVersion();
-        if(version.isDraft()||(fmd.getDataFile().isRestricted())) {
-        if (user instanceof AuthenticatedUser) {
-            AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
-            apiToken = authService.findApiTokenByUser(authenticatedUser);
-            if ((apiToken == null) || (apiToken.getExpireTime().before(new Date()))) {
-                apiToken = authService.generateApiTokenForUser(authenticatedUser);
+        if (version.isDraft() || (fmd.getDataFile().isRestricted())) {
+            if (user instanceof AuthenticatedUser) {
+                AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
+                apiToken = authService.findApiTokenByUser(authenticatedUser);
+                if ((apiToken == null) || (apiToken.getExpireTime().before(new Date()))) {
+                    apiToken = authService.generateApiTokenForUser(authenticatedUser);
+                }
             }
-        }
         }
         DataFile dataFile = null;
         if (fmd != null) {
             dataFile = fmd.getDataFile();
-
         } else {
             if (guestbookResponse != null) {
                 dataFile = guestbookResponse.getDataFile();
             }
         }
-        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd);
+        String localeCode = session.getLocaleCode();
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, localeCode);
         // Back when we only had TwoRavens, the downloadType was always "Explore". Now we persist the name of the tool (i.e. "TwoRavens", "Data Explorer", etc.)
         guestbookResponse.setDownloadtype(externalTool.getDisplayName());
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();

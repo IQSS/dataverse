@@ -350,6 +350,25 @@ We haven't thought much about a good way to publicly list the "IT" classes that 
 
 .. literalinclude:: ../../../../conf/docker-aio/run-test-suite.sh
 
+Accessibility Testing
+---------------------
+
+Accessibility Policy
+~~~~~~~~~~~~~~~~~~~~
+
+Dataverse aims to improve the user experience for those with disabilities, and are in the process of following the recommendations of the `Harvard University Digital Accessibility Policy <https://accessibility.huit.harvard.edu/digital-accessibility-policy>`__,  which use the Worldwide Web Consortium’s Web Content Accessibility Guidelines version 2.1, Level AA Conformance (WCAG 2.1 Level AA) as the standard.
+
+To report an accessibility issue with Dataverse, you can create a new issue in our GitHub repo at: https://github.com/IQSS/dataverse/issues/
+
+Accessibility Tools
+~~~~~~~~~~~~~~~~~~~
+
+Our development process will incorporate automated testing provided by tools like `SiteImprove <https://siteimprove.com/en-us/accessibility/>`__ and `Accessibility Management Platform (AMP) <https://www.levelaccess.com/solutions/software/amp/>`__ from Level Access, to run accessibility reports for the application.
+
+Developers who contribute front-end UI code are responsible for understanding the requirements of this standard and the tools and methods for securing conformance with it.
+
+There are browser developer tools such as the `Wave toolbar <https://wave.webaim.org/extension/>`__ by WebAIM (available for Chrome, Firefox) and the `Siteimprove Accessibility Checker <https://siteimprove.com/en-us/core-platform/integrations/browser-extensions/>`__  (available for Chrome, Firefox) that will generate reports for a single page. It is required that developers utilize these tools to catch any accessibility issues with pages or features that are being added to the application UI.
+
 Future Work
 -----------
 
@@ -391,6 +410,11 @@ Future Work on Load/Performance Testing
 - Clean up and copy stress tests code, config, and docs into main repo from https://github.com/IQSS/dataverse-helper-scripts/tree/master/src/stress_tests
 - Marcel Duran created a command-line wrapper for the WebPagetest API that can be used to test performance in your continuous integration pipeline (TAP, Jenkins, Travis-CI, etc): https://github.com/marcelduran/webpagetest-api/wiki/Test-Specs#jenkins-integration
 - Create top-down checklist, building off the "API Test Coverage" spreadsheet at https://github.com/IQSS/dataverse/issues/3358#issuecomment-256400776
+
+Future Work on Accessibility Testing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Using https://github.com/IQSS/dataverse-ansible and hooks available from accessibily testing tools, automate the running of accessibility tools on PRs so that developers will receive quicker feedback on proposed code changes that reduce the accessibility of the application. 
 
 ----
 
