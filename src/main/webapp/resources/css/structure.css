@@ -993,6 +993,10 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
 
 /* Schema Dataverse Additional Classes */
 
+div.container {
+  overflow: visible;
+}
+
 #search-row-panel-backdrop {
   width: 100vw;
   height: 100%;

@@ -107,8 +107,8 @@
                         <p:remoteCommand name="submitsearch" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
                         
                         <span class="input-group-btn">
-                            <p:commandLink styleClass="btn btn-default" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
-                                <span class="glyphicon glyphicon-search searchbutton"></span>
+                            <p:commandLink styleClass="btn btn-default searchbutton" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
+                                <span class="glyphicon glyphicon-search"></span>
                             </p:commandLink>
                         </span>
                     </div>
