@@ -91,20 +91,21 @@
                                 </div>
                             </div>
                             <div class="col-md-6 form-group" jsf:rendered="#{DataversePage.ownerId != null}">
-                                <label class="control-label" for="hostDataverse">
+                                <label class="control-label" for="#{DataversePage.editMode == 'CREATE' ? 'hostDataverse' : ''}">
                                     #{bundle.hostDataverse}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.host.title']}"></span>
                                 </label>
                                 <div class="form-col-container">
-                                    <p class="form-control-static">#{DataversePage.dataverse.getOwner().name}</p>
-                                    <h:inputHidden value="#{DataversePage.ownerId}" id="hostDataverse" />
-                                    <ui:remove><!-- removed for beta -->
-                                        <p:selectOneMenu id="hostDataverse" value="#{DataversePage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
-                                            <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"
-                                                           itemDisabled="#{dv eq DataversePage.dataverse or dv.owners.contains(DataversePage.dataverse)}" />
-                                        </p:selectOneMenu>
-                                    </ui:remove>
+                                    <ui:fragment rendered="#{DataversePage.editMode == 'INFO'}">
+                                        <p class="form-control-static">#{DataversePage.dataverse.getOwner().name}</p>
+                                        <h:inputHidden value="#{DataversePage.ownerId}" id="hostDataverseStatic"/>
+                                    </ui:fragment>
+                                    <p:selectOneMenu id="hostDataverse" rendered="#{DataversePage.editMode == 'CREATE'}"
+                                                     value="#{DataversePage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
+                                        <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"
+                                                       itemDisabled="#{dv eq DataversePage.dataverse or dv.owners.contains(DataversePage.dataverse)}"/>
+                                    </p:selectOneMenu>
                                 </div>
                             </div>
                         </div>

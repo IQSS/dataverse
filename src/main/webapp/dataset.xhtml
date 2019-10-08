@@ -503,28 +503,29 @@
                     <ui:fragment rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                         <p:focus context="datasetForm"/>
                         <div class="form-group">
-                            <label for="select_HostDataverse" class="col-sm-2 control-label">
+                            <label for="#{DatasetPage.editMode == 'CREATE' ? 'select_HostDataverse' : ''}" class="col-md-3 control-label">
                                 #{bundle.hostDataverse}
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.host.title']}"></span>
                             </label>
-                            <div class="col-sm-10">
-                                <h:outputText styleClass="highlightBold" value="#{DatasetPage.dataset.owner.name}"/>
-                                <h:inputHidden value="#{DatasetPage.ownerId}" id="select_HostDataverse" />
-                                <ui:remove><!-- removed for beta -->
-                                    <p:selectOneMenu id="select_HostDataverse" value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
-                                        <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"/>
-                                    </p:selectOneMenu>
-                                </ui:remove>
+                            <div class="col-md-7">
+                                <ui:fragment rendered="#{DatasetPage.editMode == 'METADATA'}">
+                                    <p class="form-control-static">#{DatasetPage.dataset.owner.name}</p>
+                                    <h:inputHidden value="#{DatasetPage.ownerId}" id="select_HostDataverseStatic"/>
+                                </ui:fragment>
+                                <p:selectOneMenu id="select_HostDataverse" rendered="#{DatasetPage.editMode == 'CREATE'}"
+                                                 value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
+                                    <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"/>
+                                </p:selectOneMenu>
                             </div>
                         </div>
                         <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataverseTemplates and DatasetPage.editMode == 'CREATE'}">
-                            <label for="select_DatasetTemplate" class="col-sm-2 control-label">
+                            <label for="select_DatasetTemplate" class="col-md-3 control-label">
                                 #{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate']}
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate.title']}"></span>
                             </label>
-                            <div class="col-sm-6">
+                            <div class="col-md-7">
                                 <p class="help-block">
                                     #{bundle['dataset.template.tip']}
                                 </p>
