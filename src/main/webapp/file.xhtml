@@ -429,9 +429,17 @@
                                         </div>
 
                                     </ui:fragment>
-
+                                    
 
                                 </div>
+                                
+                                <ui:fragment rendered="#{FilePage.toolsWithPreviews.size()> 0}">                                        
+
+                                    <ui:repeat value="#{FilePage.toolsWithPreviews}" var="tool" rendered="#{true}">
+                                        <li><a target="_blank" href="#{FilePage.preview(tool)}">#{tool.displayName}</a></li>
+                                    </ui:repeat>
+
+                                </ui:fragment>
 
                             </p:tab>
                             

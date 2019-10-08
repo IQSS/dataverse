@@ -9,6 +9,9 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersion
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -22,6 +25,7 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
@@ -45,6 +49,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.validation.ConstraintViolation;
+import org.primefaces.PrimeFaces;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
 
@@ -71,6 +76,7 @@ public class FilePage implements java.io.Serializable {
     private String persistentId;
     private List<ExternalTool> configureTools;
     private List<ExternalTool> exploreTools;
+    private List<ExternalTool> toolsWithPreviews;
 
     @EJB
     DataFileServiceBean datafileService;
@@ -208,7 +214,8 @@ public class FilePage implements java.io.Serializable {
             }
             configureTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.CONFIGURE, contentType);
             exploreTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.EXPLORE, contentType);
-
+            toolsWithPreviews  = externalToolService.findFileToolsByTypeContentTypeAndAvailablePreview(ExternalTool.Type.EXPLORE, contentType);
+            
         } else {
 
             return permissionsWrapper.notFound();
@@ -886,6 +893,21 @@ public class FilePage implements java.io.Serializable {
 
     public List<ExternalTool> getExploreTools() {
         return exploreTools;
+    }
+    
+    public List<ExternalTool> getToolsWithPreviews() {
+        return toolsWithPreviews;
+    }
+    
+    public String preview(ExternalTool externalTool) {
+        ApiToken apiToken = null;
+        User user = session.getUser();
+        if (user instanceof AuthenticatedUser) {
+            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+        }
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, file, apiToken, file.getFileMetadata(), session.getLocaleCode());
+        String toolUrl = externalToolHandler.getToolUrlForPreviewMode();
+        return toolUrl;
     }
     
     //Provenance fragment bean calls this to show error dialogs after popup failure

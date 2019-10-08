@@ -52,7 +52,8 @@ public class ExternalToolServiceBean {
      */
     public List<ExternalTool> findDatasetToolsByType(Type type) {
         String nullContentType = null;
-        return findByScopeTypeAndContentType(ExternalTool.Scope.DATASET, type, nullContentType);
+        String nullPreviewAvailable = null;
+        return findByScopeTypeAndContentType(ExternalTool.Scope.DATASET, type, nullContentType, nullPreviewAvailable);
     }
 
     /**
@@ -61,7 +62,8 @@ public class ExternalToolServiceBean {
      */
     public List<ExternalTool> findFileToolsByType(Type type) {
         String nullContentType = null;
-        return findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, nullContentType);
+        String nullPreviewAvailable = null;
+        return findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, nullContentType, nullPreviewAvailable);
     }
 
     /**
@@ -70,7 +72,18 @@ public class ExternalToolServiceBean {
      * @return A list of tools or an empty list.
      */
     public List<ExternalTool> findFileToolsByTypeAndContentType(Type type, String contentType) {
-        return findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, contentType);
+        String nullPreviewAvailable = null;
+        return findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, contentType, nullPreviewAvailable);
+    }
+    
+    /**
+     * @param type explore or configure
+     * @param contentType file content type (MIME type)
+     * @return A list of tools or an empty list.
+     */
+    public List<ExternalTool> findFileToolsByTypeContentTypeAndAvailablePreview(Type type, String contentType) {
+        String previewAvailable = "true";
+        return findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, contentType, previewAvailable);
     }
 
     /**
@@ -79,13 +92,17 @@ public class ExternalToolServiceBean {
      * @param contentType file content type (MIME type)
      * @return A list of tools or an empty list.
      */
-    private List<ExternalTool> findByScopeTypeAndContentType(Scope scope, Type type, String contentType) {
+    private List<ExternalTool> findByScopeTypeAndContentType(Scope scope, Type type, String contentType, String previewAvailable) {
         List<ExternalTool> externalTools = new ArrayList<>();
         String contentTypeClause = "";
         if (contentType != null) {
             contentTypeClause = "AND o.contentType = :contentType";
         }
-        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.scope = :scope AND o.type = :type " + contentTypeClause, ExternalTool.class);
+        String previewAvailableClause = "";
+        if (previewAvailable != null) {
+            previewAvailableClause = " AND o.hasPreviewMode = 'true'";
+        }
+        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.scope = :scope AND o.type = :type " + contentTypeClause + previewAvailableClause, ExternalTool.class);
         typedQuery.setParameter("scope", scope);
         typedQuery.setParameter("type", type);
         if (contentType != null) {
