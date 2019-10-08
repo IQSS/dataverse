@@ -5,6 +5,7 @@
      xmlns:c="http://java.sun.com/jsp/jstl/core"
      xmlns:p="http://primefaces.org/ui"
      xmlns:o="http://omnifaces.org/ui"
+     xmlns:of="http://omnifaces.org/functions"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <c:set var="page" value="/dataverse/#{DataversePage.dataverse.alias}"/>
@@ -429,9 +430,7 @@
                         </div>
                         <div class="card-preview-icon-block text-center">
                             <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
-                                <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}" alt="#{result.name} #{bundle['alt.logo']}">
-                                    <f:param value="#{result.name}"/>
-                                </h:graphicImage>
+                                <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}" alt="#{of:format1(bundle['alt.logo'], result.name)}"/>
                                 <span class="icon-dataverse text-brand" jsf:rendered="#{empty result.imageUrl}"/>
                             </h:outputLink>
                         </div>

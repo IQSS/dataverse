@@ -6,7 +6,8 @@
                 xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:c="http://java.sun.com/jsp/jstl/core"
-                xmlns:o="http://omnifaces.org/ui"     
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:of="http://omnifaces.org/functions"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
     <div id="dataverseFooter" jsf:rendered="#{!widgetWrapper.widgetView and !dataverseHeaderFragment.isRootDataverseThemeDisabled(dataverse) and !empty dataverse.dataverseTheme.logoFooter}">
@@ -45,7 +46,7 @@
                 <div class="#{widgetView ? 'col-xs-5' : 'col-sm-4'} text-right">
                     <div class="poweredbylogo">
                         <span>#{bundle['footer.poweredby']}</span>
-                        <a href="http://dataverse.org/" title="#{bundle['footer.dataverseProject']}" target="_blank"><img src="/resources/images/dataverse_project_logo.svg" width="118" height="40" onerror="this.src='/resources/images/dataverseproject_logo.png'" alt="#{bundle['footer.dataverseProject']} #{bundle['alt.logo']}"/></a>
+                        <a href="http://dataverse.org/" title="#{bundle['footer.dataverseProject']}" target="_blank"><img src="/resources/images/dataverse_project_logo.svg" width="118" height="40" onerror="this.src='/resources/images/dataverseproject_logo.png'" alt="#{of:format1(bundle['alt.logo'], bundle['footer.dataverseProject'])}"/></a>
                         <h:outputText class="version" value="v. #{systemConfig.getVersion(true)}" rendered="#{!widgetView}"/>
                     </div>
                 </div>
