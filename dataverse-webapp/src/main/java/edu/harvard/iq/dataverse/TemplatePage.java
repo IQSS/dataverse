@@ -113,37 +113,44 @@ public class TemplatePage implements java.io.Serializable {
 
     public String init() {
 
-        dataverse = dataverseService.find(ownerId);
-        if (dataverse == null) {
-            return permissionsWrapper.notFound();
-        }
-        if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
-            return permissionsWrapper.notAuthorized();
-        }
-        if (templateId != null) { // edit existing template
+        if (isEditingTemplate()) {
             editMode = TemplatePage.EditMode.METADATA;
             template = templateService.find(templateId);
-            template.setDataverse(dataverse);
+
+            dataverse = template.getDataverse();
+
+            if (dataverse == null) {
+                return permissionsWrapper.notFound();
+            }
+
+            if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
+                return permissionsWrapper.notAuthorized();
+            }
 
             List<DatasetField> dsfForEdit = datasetFieldsInitializer.prepareDatasetFieldsForEdit(template.getDatasetFields(), dataverse.getMetadataBlockRootDataverse());
             template.setDatasetFields(dsfForEdit);
             mdbForEdit = datasetFieldsInitializer.groupAndUpdateEmptyAndRequiredFlag(dsfForEdit);
 
             if (template.getTermsOfUseAndAccess() == null) {
-                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-                terms.setTemplate(template);
-                terms.setLicense(TermsOfUseAndAccess.License.CC0);
-                template.setTermsOfUseAndAccess(terms);
+                template.setTermsOfUseAndAccess(prepareTermsOfUseAndAccess(template));
             }
 
-        } else if (ownerId != null) {
+
+        } else if (isCreatingTemplate()) {
+            dataverse = dataverseService.find(ownerId);
+
+            if (dataverse == null) {
+                return permissionsWrapper.notFound();
+            }
+
+            if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
+                return permissionsWrapper.notAuthorized();
+            }
 
             editMode = TemplatePage.EditMode.CREATE;
             template = new Template(this.dataverse);
-            TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-            terms.setTemplate(template);
-            terms.setLicense(TermsOfUseAndAccess.License.CC0);
-            template.setTermsOfUseAndAccess(terms);
+
+            template.setTermsOfUseAndAccess(prepareTermsOfUseAndAccess(template));
 
             List<DatasetField> datasetFields = datasetFieldsInitializer.prepareDatasetFieldsForEdit(template.getDatasetFields(), dataverse.getMetadataBlockRootDataverse());
             template.setDatasetFields(datasetFields);
@@ -151,7 +158,8 @@ public class TemplatePage implements java.io.Serializable {
         } else {
             throw new RuntimeException("On Template page without id or ownerid."); // improve error handling
         }
-        return null;
+
+        return StringUtils.EMPTY;
     }
 
     public String save() {
@@ -180,6 +188,21 @@ public class TemplatePage implements java.io.Serializable {
         
 
         return "/manage-templates.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";
+    }
+
+    private TermsOfUseAndAccess prepareTermsOfUseAndAccess(Template template) {
+        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        terms.setTemplate(template);
+        terms.setLicense(TermsOfUseAndAccess.License.CC0);
+        return terms;
+    }
+
+    private boolean isEditingTemplate() {
+        return templateId != null;
+    }
+
+    private boolean isCreatingTemplate() {
+        return ownerId != null;
     }
 
 }
