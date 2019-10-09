@@ -32,6 +32,7 @@ public class ExternalToolHandler {
     private final FileMetadata fileMetadata;
 
     private ApiToken apiToken;
+    private String localeCode;
 
     /**
      * File level tool
@@ -41,17 +42,23 @@ public class ExternalToolHandler {
      * @param apiToken The apiToken can be null because "explore" tools can be
      * used anonymously.
      */
-    public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken, FileMetadata fileMetadata) {
+    public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken, FileMetadata fileMetadata, String localeCode) {
         this.externalTool = externalTool;
         if (dataFile == null) {
             String error = "A DataFile is required.";
             logger.warning("Error in ExternalToolHandler constructor: " + error);
             throw new IllegalArgumentException(error);
         }
+        if (fileMetadata == null) {
+            String error = "A FileMetadata is required.";
+            logger.warning("Error in ExternalToolHandler constructor: " + error);
+            throw new IllegalArgumentException(error);
+        }
         this.dataFile = dataFile;
         this.apiToken = apiToken;
-        dataset = getDataFile().getFileMetadata().getDatasetVersion().getDataset();
         this.fileMetadata = fileMetadata;
+        dataset = fileMetadata.getDatasetVersion().getDataset();
+        this.localeCode = localeCode;
     }
 
     /**
@@ -62,7 +69,7 @@ public class ExternalToolHandler {
      * @param apiToken The apiToken can be null because "explore" tools can be
      * used anonymously.
      */
-    public ExternalToolHandler(ExternalTool externalTool, Dataset dataset, ApiToken apiToken) {
+    public ExternalToolHandler(ExternalTool externalTool, Dataset dataset, ApiToken apiToken, String localeCode) {
         this.externalTool = externalTool;
         if (dataset == null) {
             String error = "A Dataset is required.";
@@ -73,6 +80,7 @@ public class ExternalToolHandler {
         this.apiToken = apiToken;
         this.dataFile = null;
         this.fileMetadata = null;
+        this.localeCode = localeCode;
     }
 
     public DataFile getDataFile() {
@@ -85,6 +93,10 @@ public class ExternalToolHandler {
 
     public ApiToken getApiToken() {
         return apiToken;
+    }
+
+    public String getLocaleCode() {
+        return localeCode;
     }
 
     // TODO: rename to handleRequest() to someday handle sending headers as well as query parameters.
@@ -136,18 +148,27 @@ public class ExternalToolHandler {
             case DATASET_PID:
                 return key + "=" + dataset.getGlobalId().asString();
             case DATASET_VERSION:
-                String version = null;
-                if (getApiToken() != null) {
-                    version = dataset.getLatestVersion().getFriendlyVersionNumber();
-                } else {
-                    version = dataset.getLatestVersionForCopy().getFriendlyVersionNumber();
+                String versionString = null;
+                if(fileMetadata!=null) { //true for file case
+                    versionString = fileMetadata.getDatasetVersion().getFriendlyVersionNumber();
+                } else { //Dataset case - return the latest visible version (unless/until the dataset case allows specifying a version)
+                    if (getApiToken() != null) {
+                        versionString = dataset.getLatestVersion().getFriendlyVersionNumber();
+                    } else {
+                        versionString = dataset.getLatestVersionForCopy().getFriendlyVersionNumber();
+                    }
                 }
-                if (("DRAFT").equals(version)) {
-                    version = ":draft"; // send the token needed in api calls that can be substituted for a numeric version.
+                if (("DRAFT").equals(versionString)) {
+                    versionString = ":draft"; // send the token needed in api calls that can be substituted for a numeric
+                                              // version.
                 }
-                return key + "=" + version;
+                return key + "=" + versionString;
             case FILE_METADATA_ID:
-                return key + "=" + fileMetadata.getId();
+                if(fileMetadata!=null) { //true for file case
+                    return key + "=" + fileMetadata.getId();
+                }
+            case LOCALE_CODE:
+                return key + "=" + getLocaleCode();
             default:
                 break;
         }

@@ -197,15 +197,86 @@ To see the full list of tests used by the Docker option mentioned above, see :do
 
 Measuring Coverage of Integration Tests
 ---------------------------------------
-Measuring the code coverage of integration tests with jacoco requires several steps:
 
-- Instrument the WAR file. Using an approach similar to :download:`this script <../_static/util/instrument_war_jacoco.bash>` is probably preferable to instrumenting the WAR directly (at least until the ``nu.xom.UnicodeUtil.decompose`` method too large exceptions get sorted).
-- Deploy the WAR file to a glassfish server with ``jacocoagent.jar`` in ``glassfish4/glassfish/lib/``
-- Run integration tests as usual
-- Use ``glassfish4/glassfish/domains/domain1/config/jacoco.exec`` to generate a report: ``java -jar ${JACOCO_HOME}/jacococli.jar report --classfiles ${DV_REPO}/target/classes --sourcefiles ${DV_REPO}/src/main/java --html ${DV_REPO}/target/coverage-it/ jacoco.exec``
+Measuring the code coverage of integration tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/glassfish4" as the Glassfish directory and "glassfish" as the Glassfish Unix user.
 
-The same approach could be used to measure code paths exercised in normal use (by substituting the "run integration tests" step).
-There is obvious potential to improve automation of this process.
+Add jacocoagent.jar to Glassfish
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In order to get code coverage reports out of Glassfish we'll be adding jacocoagent.jar to the Glassfish "lib" directory.
+
+First, we need to download Jacoco. Look in pom.xml to determine which version of Jacoco we are using. As of this writing we are using 0.8.1 so in the example below we download the Jacoco zip from https://github.com/jacoco/jacoco/releases/tag/v0.8.1
+
+Note that we are running the following commands as the user "glassfish". In short, we stop Glassfish, add the Jacoco jar file, and start up Glassfish again.
+
+.. code-block:: bash
+
+  su - glassfish
+  cd /home/glassfish
+  mkdir -p local/jacoco-0.8.1
+  cd local/jacoco-0.8.1
+  wget https://github.com/jacoco/jacoco/releases/download/v0.8.1/jacoco-0.8.1.zip
+  unzip jacoco-0.8.1.zip
+  /usr/local/glassfish4/bin/asadmin stop-domain
+  cp /home/glassfish/local/jacoco-0.8.1/lib/jacocoagent.jar /usr/local/glassfish4/glassfish/lib
+  /usr/local/glassfish4/bin/asadmin start-domain
+
+Add jacococli.jar to the WAR File
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As the "glassfish" user download :download:`instrument_war_jacoco.bash <../_static/util/instrument_war_jacoco.bash>` (or skip ahead to the "git clone" step to get the script that way) and give it two arguments:
+
+- path to your pristine WAR file
+- path to the new WAR file the script will create with jacococli.jar in it
+
+.. code-block:: bash
+
+  ./instrument_war_jacoco.bash dataverse.war dataverse-jacoco.war
+
+Deploy the Instrumented WAR File
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Please note that you'll want to undeploy the old WAR file first, if necessary.
+
+Run this as the "glassfish" user.
+
+.. code-block:: bash
+
+  /usr/local/glassfish4/bin/asadmin deploy dataverse-jacoco.war
+
+Note that after deployment the file "/usr/local/glassfish4/glassfish/domains/domain1/config/jacoco.exec" exists and is empty.
+
+Run Integration Tests
+~~~~~~~~~~~~~~~~~~~~~
+
+Note that even though you see "docker-aio" in the command below, we assume you are not necessarily running the test suite within Docker. (Some day we'll probably move this script to another directory.) For this reason, we pass the URL with the normal port (8080) that Glassfish runs on to the ``run-test-suite.sh`` script.
+
+Note that "/usr/local/glassfish4/glassfish/domains/domain1/config/jacoco.exec" will become non-empty after you stop and start Glassfish. You must stop and start Glassfish before every run of the integration test suite.
+
+.. code-block:: bash
+
+  /usr/local/glassfish4/bin/asadmin stop-domain
+  /usr/local/glassfish4/bin/asadmin start-domain
+  git clone https://github.com/IQSS/dataverse.git
+  cd dataverse
+  conf/docker-aio/run-test-suite.sh http://localhost:8080
+
+(As an aside, you are not limited to API tests for the purposes of learning which code paths are being executed. You could click around the GUI, for example. Jacoco doesn't know or care how you exercise the application.)
+
+Create Code Coverage Report
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Run these commands as the "glassfish" user. The ``cd dataverse`` means that you should change to the directory where you cloned the "dataverse" git repo.
+
+.. code-block:: bash
+
+  cd dataverse
+  java -jar /home/glassfish/local/jacoco-0.8.1/lib/jacococli.jar report --classfiles target/classes --sourcefiles src/main/java --html target/coverage-it/ /usr/local/glassfish4/glassfish/domains/domain1/config/jacoco.exec
+
+Read Code Coverage Report
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+target/coverage-it/index.html is the place to start reading the code coverage report you just created.
 
 Load/Performance Testing
 ------------------------
@@ -279,6 +350,25 @@ We haven't thought much about a good way to publicly list the "IT" classes that 
 
 .. literalinclude:: ../../../../conf/docker-aio/run-test-suite.sh
 
+Accessibility Testing
+---------------------
+
+Accessibility Policy
+~~~~~~~~~~~~~~~~~~~~
+
+Dataverse aims to improve the user experience for those with disabilities, and are in the process of following the recommendations of the `Harvard University Digital Accessibility Policy <https://accessibility.huit.harvard.edu/digital-accessibility-policy>`__,  which use the Worldwide Web Consortium’s Web Content Accessibility Guidelines version 2.1, Level AA Conformance (WCAG 2.1 Level AA) as the standard.
+
+To report an accessibility issue with Dataverse, you can create a new issue in our GitHub repo at: https://github.com/IQSS/dataverse/issues/
+
+Accessibility Tools
+~~~~~~~~~~~~~~~~~~~
+
+Our development process will incorporate automated testing provided by tools like `SiteImprove <https://siteimprove.com/en-us/accessibility/>`__ and `Accessibility Management Platform (AMP) <https://www.levelaccess.com/solutions/software/amp/>`__ from Level Access, to run accessibility reports for the application.
+
+Developers who contribute front-end UI code are responsible for understanding the requirements of this standard and the tools and methods for securing conformance with it.
+
+There are browser developer tools such as the `Wave toolbar <https://wave.webaim.org/extension/>`__ by WebAIM (available for Chrome, Firefox) and the `Siteimprove Accessibility Checker <https://siteimprove.com/en-us/core-platform/integrations/browser-extensions/>`__  (available for Chrome, Firefox) that will generate reports for a single page. It is required that developers utilize these tools to catch any accessibility issues with pages or features that are being added to the application UI.
+
 Future Work
 -----------
 
@@ -320,6 +410,11 @@ Future Work on Load/Performance Testing
 - Clean up and copy stress tests code, config, and docs into main repo from https://github.com/IQSS/dataverse-helper-scripts/tree/master/src/stress_tests
 - Marcel Duran created a command-line wrapper for the WebPagetest API that can be used to test performance in your continuous integration pipeline (TAP, Jenkins, Travis-CI, etc): https://github.com/marcelduran/webpagetest-api/wiki/Test-Specs#jenkins-integration
 - Create top-down checklist, building off the "API Test Coverage" spreadsheet at https://github.com/IQSS/dataverse/issues/3358#issuecomment-256400776
+
+Future Work on Accessibility Testing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Using https://github.com/IQSS/dataverse-ansible and hooks available from accessibily testing tools, automate the running of accessibility tools on PRs so that developers will receive quicker feedback on proposed code changes that reduce the accessibility of the application. 
 
 ----
 
