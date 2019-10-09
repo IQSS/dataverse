@@ -51,7 +51,7 @@ body .ui-widget .ui-widget-content {background: none;}
 #status-alert {margin-top:0; margin-bottom:0;}
 #status-alert div.alert {border:0; box-shadow:none;}
 
-#footer {margin-top:3em; padding-bottom:100px; width:100%; height:60px; color:#808080;}
+#footer {margin-top:3em; padding-bottom:100px; width:123%; height:60px; color:#808080; position: absolute;}
 #footer.widget-view {position:fixed; left:0; bottom:0; margin:0; padding:4px 0 0 0; min-height:44px; background:#fff;}
 #footer .poweredbylogo {text-align:right;}
 #footer .poweredbylogo span {font-size:.85em;margin-right:.3em;}
@@ -661,7 +661,7 @@ div.form-col-container div.form-col-container {padding-left:0;}
 div.form-group .ui-selectonemenu {display:block;}
 div.form-col-container.edit-compound-field div.form-col-container {margin-bottom:.5em;}
 
-div.panel-group div.panel {margin-bottom:1em;}
+div.panel-group div.panel {margin-bottom:1em; border: none;}
 div.panel div.panel-body div.form-group {overflow: hidden;}
 div.edit-field div.ui-message {margin:6px 0;}
 .metadata-container table.metadata {border-collapse:separate;margin:0 4px;}
@@ -1053,6 +1053,12 @@ div.container {
   color: #979797;
 }
 
+.searchbutton-file {
+  position: absolute;
+  top: 8px;
+  right: 2.5vw;
+}
+
 .add-data-plus-wrapper {
   background: none;
   border: none;
@@ -1144,10 +1150,11 @@ ul > li {
 
 .pagination > li > a.skip {
   height: 44px;
-  width: 40px;
+  width: 44px;
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
+  border: none;
 }
 
 .pagination > li > a.skip.top {background-image: url(/resources/images/skip_icon.svg);}
