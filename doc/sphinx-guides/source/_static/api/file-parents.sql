@@ -42,6 +42,8 @@ select
     level3dv.name as dataverse_level_3_friendly_name,
     -- Separate multiple subjects with a delimeter.
     string_agg(cvv.strvalue, ';') AS subjects,
+    -- File creation date.
+    dvo.createdate as file_creation_date,
     -- File publication date.
     dvo.publicationdate as file_publication_date,
     -- Dataset publication date.
@@ -77,6 +79,10 @@ and dvo.publicationdate is not NULL
 -- Get the latest published version of the dataset...
 and dsv.id = maxversion.id
 -- ... done getting the latest published version of the dataset.
+-- Uncomment the 3 lines below to show only 2018 data.
+--and ( dvo.createdate BETWEEN '2018-01-01' AND '2018-12-31'
+--or dvo.publicationdate BETWEEN '2018-01-01' AND '2018-12-31'
+--or dsv.releasetime  BETWEEN '2018-01-01' AND '2018-12-31' )
 GROUP BY
 -- Group by all the fields above *except* subject for the string_agg above.
 fileid,
