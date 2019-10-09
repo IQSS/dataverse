@@ -237,6 +237,7 @@ public class ExternalToolsIT {
         job.add("type", "explore");
         job.add("scope", "file");
         job.add("toolUrl", "http://awesometool.com");
+        job.add("contentType", "application/pdf");
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()
@@ -281,6 +282,7 @@ public class ExternalToolsIT {
         job.add("type", "explore");
         job.add("scope", "file");
         job.add("toolUrl", "http://awesometool.com");
+        job.add("contentType", "application/pdf");
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()

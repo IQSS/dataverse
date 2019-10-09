@@ -401,10 +401,10 @@ public class SettingsServiceBean {
          * inheritance. "*" means inherit assignments for all roles
          */
         InheritParentRoleAssignments,
-        /*
-        *
-        */
-        MDCLogPath,
+        
+        /** Make Data Count Logging and Display */
+        MDCLogPath, 
+        DisplayMDCMetrics,
 
         /**
          * Allow CORS flag (true or false). It is true by default
