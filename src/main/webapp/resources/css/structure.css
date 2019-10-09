@@ -1016,6 +1016,7 @@ div.container {
   left: calc(-50vw + 50%);
   background-color: #f7f7f9;
   margin: 0;
+  z-index: -1;
 }
 
 #file-row-panel-backdrop {
