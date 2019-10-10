@@ -433,7 +433,7 @@
 
                                 </div>
                                 
-                                <ui:fragment rendered="#{FilePage.toolsWithPreviews.size()> 0 and fileDownloadHelper.canDownloadFile(fileMetadata)}">                                        
+                                <ui:fragment rendered="#{FilePage.toolsWithPreviews.size()> 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">                                        
 
                                     <ui:repeat value="#{FilePage.toolsWithPreviews}" var="tool" rendered="#{true}">
                                         #{tool.displayName}
