@@ -131,6 +131,8 @@ public class Template implements Serializable {
             terms.setLicense(TermsOfUseAndAccess.defaultLicense);
         }
         newTemplate.setTermsOfUseAndAccess(terms);
+        newTemplate.setDataverse(dataverse);
+
         return newTemplate;
     }
 

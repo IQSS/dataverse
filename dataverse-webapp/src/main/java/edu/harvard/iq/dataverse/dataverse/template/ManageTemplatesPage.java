@@ -147,7 +147,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
         }
 
         JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("template.clone"));
-        return "/template.xhtml?id=" + cloneTemplate.get().getId() + "&ownerId=" + dataverse.getId() + "&faces-redirect=true";
+        return "/template.xhtml?id=" + cloneTemplate.get().getId() + "&faces-redirect=true";
     }
 
     public void deleteTemplate() {

@@ -112,7 +112,6 @@
                                                           fileUploadListener="#{ReplaceDatafilesPage.handleFileUpload}"
                                                           update="@form"
                                                           label="#{bundle['file.selectToAddBtn']}"
-                                                          oncomplete="uploadFinished(PF('fileUploadWidget'));"
                                                           onstart="#{ReplaceDatafilesPage.uploadStarted()}"
                                                           onerror="uploadFailure();"
                                                           sizeLimit="#{settingsWrapper.getEnumSettingValue(settingEnum.MaxFileUploadSizeInBytes)}"
@@ -145,7 +144,6 @@
                                                          value="#{ReplaceDatafilesPage.dropBoxSelection}"/>
                                             <p:commandButton id="dropBoxButton"
                                                              actionListener="#{ReplaceDatafilesPage.handleDropBoxUpload}"
-                                                             oncomplete="javascript:dropBoxUploadFinished();"
                                                              update="@none" style="display:none;"/>
                                             <p:commandButton id="dropBoxUserButton"
                                                              disabled="#{ReplaceDatafilesPage.fileToBeSaved != null}"
@@ -156,13 +154,6 @@
                                         </div>
 
                                         <p:message for="fileUpload" id="uploadMessage" display="text"/>
-
-                                        <p:commandButton id="AllUploadsFinished"
-                                                         update=":replaceFileForm:filesTable, :messagePanel"
-                                                         style="display:none"/>
-                                        <p:commandButton id="dropBoxUploadFinished"
-                                                         update=":replaceFileForm:filesTable, :messagePanel"
-                                                         style="display:none"/>
 
 
                                     </div>
@@ -572,23 +563,8 @@
                         }
                     }
 
-                    function dropBoxUploadFinished(fileupload) {
-                        $('button[id$="dropBoxUploadFinished"]').trigger('click');
-                    }
-
                     function uploadWidgetDropRemoveMsg() {
                         $('div[id$="fileUpload"] div.ui-fileupload-content div#dragdropMsg').remove();
-                    }
-
-                    function uploadFinished(fileupload) {
-                        if (fileupload.files.length === 0) {
-                            $('button[id$="AllUploadsFinished"]').trigger('click');
-                            //stop observer when we're done
-                            if (observer != null) {
-                                observer.disconnect();
-                                observer = null;
-                            }
-                        }
                     }
 
                     function openDropboxChooser() {

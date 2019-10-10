@@ -116,7 +116,7 @@ public class TemplatePage implements java.io.Serializable {
 
         if (isEditingTemplate()) {
             editMode = TemplatePage.EditMode.METADATA;
-            template = templateService.find(templateId);
+            template = templateDao.find(templateId);
 
             dataverse = template.getDataverse();
 
