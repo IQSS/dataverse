@@ -371,7 +371,7 @@
                             <p:tab id="previewTab" title="Preview" rendered="#{true}">
 
                                 <!-- Preview -->
-                                <div id="file-preview-icon-block" jsf:rendered="#{empty worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink()}">
+                                <div id="file-preview-icon-block" jsf:rendered="#{empty worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink() and FilePage.toolsWithPreviews.size() == 0 }">
                                     <div id="border-block" style="border:0;">
                                         <div id="preview-square">
                                             <ui:fragment rendered="#{!FilePage.isThumbnailAvailable(FilePage.fileMetadata)}">
@@ -433,10 +433,21 @@
 
                                 </div>
                                 
-                                <ui:fragment rendered="#{FilePage.toolsWithPreviews.size()> 0}">                                        
+                                <ui:fragment rendered="#{FilePage.toolsWithPreviews.size()> 0 and fileDownloadHelper.canDownloadFile(fileMetadata)}">                                        
 
                                     <ui:repeat value="#{FilePage.toolsWithPreviews}" var="tool" rendered="#{true}">
-                                        <li><a target="_blank" href="#{FilePage.preview(tool)}">#{tool.displayName}</a></li>
+                                        #{tool.displayName}
+                                        
+                                        <div class="preview-frame-block">
+
+                                            <!-- TODO: ROLE, TITLE ATTRIBUTES -->
+                                            <!-- TODO: RESPONSIVE HEIGHT, WIDTH -->
+                                            <!-- TODO: MIXED CONTENT -->
+                                            <!-- TODO: LAZY LOAD, DEFER SCRIPTS -->
+
+                                            <iframe role="presentation" title="External File Preview Tool" height="500" width="100%" src="#{FilePage.preview(tool)}"></iframe>
+                                        </div>
+                                        
                                     </ui:repeat>
 
                                 </ui:fragment>
