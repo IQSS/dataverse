@@ -14,9 +14,10 @@ public class ExternalToolTest {
         String displayName = "myDisplayName";
         String description = "myDescription";
         ExternalTool.Type type = ExternalTool.Type.EXPLORE;
+        ExternalTool.Scope scope = ExternalTool.Scope.FILE;
         String toolUrl = "http://example.com";
         String toolParameters = "{}";
-        ExternalTool externalTool = new ExternalTool(displayName, description, type, toolUrl, toolParameters, DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        ExternalTool externalTool = new ExternalTool(displayName, description, type, scope, toolUrl, toolParameters, DataFileServiceBean.MIME_TYPE_TSV_ALT);
         externalTool.setId(42l);
         JsonObject jsonObject = externalTool.toJson().build();
         System.out.println("result: " + jsonObject);
