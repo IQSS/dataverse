@@ -7,6 +7,7 @@
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:c="http://java.sun.com/jsp/jstl/core"
                 xmlns:o="http://omnifaces.org/ui"
+                xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs"
 >
 
     <!--@elvariable id="dataverse" type="edu.harvard.iq.dataverse.persistence.dataverse.Dataverse"-->
@@ -331,6 +332,7 @@
                     <!--change this to <h:messages id="messages"/> to see otherwise hidden errors such as `Conversion Error setting value 'foo.jpg' for 'null Converter'`-->
                 </ui:remove>
 
+                <iqbs:messages id="messages" collapsible="true" />
                 <p:messages globalOnly="true" closable="true">
                     <p:autoUpdate/>
                 </p:messages>
