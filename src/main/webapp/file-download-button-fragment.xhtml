@@ -300,8 +300,9 @@
                                                                           and !(fileDownloadHelper.canDownloadFile(fileMetadata))
                                                                           and guestbookAndTermsPopupRequired}"
                    process="@this"
-                   actionListener="#{fileDownloadHelper.addFileForRequestAccess(fileMetadata.dataFile)}"
-                   onclick="PF('guestbookAndTermsPopup').show()"
+                   actionListener="#{guestbookResponse.setDataFile(fileMetadata.dataFile)}"
+                   update="@widgetVar(guestbookAndTermsPopup)"
+                   oncomplete="PF('guestbookAndTermsPopup').show()"
                    id="guestbookAndTermsPopupButton"
                    disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
                    <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle['file.requestAccess'])}"/>
