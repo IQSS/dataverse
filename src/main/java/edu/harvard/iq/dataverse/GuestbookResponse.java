@@ -61,7 +61,7 @@ public class GuestbookResponse implements Serializable {
     @OneToOne(cascade=CascadeType.ALL,mappedBy="guestbookResponse",fetch = FetchType.LAZY, optional = false)
     private FileDownload fileDownload;
     
-    @OneToMany(mappedBy="guestbookResponse",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToOne(mappedBy="guestbookResponse",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Set<FileAccessRequest> fileAccessRequests;
      
     @OneToMany(mappedBy="guestbookResponse",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval=true)
@@ -71,7 +71,7 @@ public class GuestbookResponse implements Serializable {
     private String name;
     private String email;
     private String institution;
-    private String position;
+    private String position; 
     
         
     @Temporal(value = TemporalType.TIMESTAMP)

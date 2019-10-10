@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 
 /**
@@ -32,7 +33,7 @@ public class FileAccessRequest implements Serializable{
     @JoinColumn(name = "authenticated_user_id")
     private AuthenticatedUser user;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "guestbookresponse_id")
     private GuestbookResponse guestbookResponse;
     
