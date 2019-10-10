@@ -158,15 +158,17 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
 
     public void writeGuestbookResponseAndRequestAccess(GuestbookResponse guestbookResponse){
-        if (guestbookResponse == null || guestbookResponse.getSelectedFileIds() == null) {
+        if (guestbookResponse == null || ( guestbookResponse.getDataFile() == null && guestbookResponse.getSelectedFileIds() == null) ) {
             return;
         }
         
         List <DataFile> selectedDataFiles = new ArrayList<>(); //always make sure it's at least an empty List
                 
-        if(guestbookResponse.getDataFile() != null ){
+        if(guestbookResponse.getDataFile() != null ){ //one file 'selected' by 'Request Access' button click
             selectedDataFiles.add(guestbookResponse.getDataFile());
-        }else{    
+        }
+        
+        if(guestbookResponse.getSelectedFileIds() != null && !guestbookResponse.getSelectedFileIds().isEmpty()) { //multiple selected through multi-select REquest Access button   
             selectedDataFiles = datafileService.findAllCheapAndEasy(guestbookResponse.getSelectedFileIds());
         }
         
