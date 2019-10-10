@@ -311,7 +311,7 @@ public class Dataverse extends DvObjectContainer {
         this.savedSearches = savedSearches;
     }
 
-    @OneToMany(mappedBy = "dataverse", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
+    @OneToMany(mappedBy = "dataverse", cascade = {CascadeType.MERGE, CascadeType.REMOVE}, orphanRemoval = true)
     private List<Template> templates;
 
     @OneToMany(mappedBy = "dataverse", cascade = {CascadeType.MERGE, CascadeType.REMOVE})

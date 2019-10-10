@@ -1,5 +1,6 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.dataverse.template;
 
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataset.Template;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -8,6 +9,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.logging.Logger;
@@ -16,7 +18,7 @@ import java.util.logging.Logger;
  * @author skraffmiller
  */
 @Stateless
-public class TemplateServiceBean {
+public class TemplateDao {
 
     private static final Logger logger = Logger.getLogger(DatasetServiceBean.class.getCanonicalName());
     @EJB
@@ -29,15 +31,16 @@ public class TemplateServiceBean {
         return em.find(Template.class, pk);
     }
 
-    public Template save(Template template) {
-        /*
-                if (template.getId() == null) {
-            em.persist(template);
-            return template;
-        } else {
-            return em.merge(template);
-        } */
+    public Template merge(Template template) {
         return em.merge(template);
+    }
+
+    public void flush() {
+        em.flush();
+    }
+
+    public void remove(Template template) {
+        em.remove(template);
     }
 
     public Template findByDeafultTemplateOwnerId(Long ownerId) {
@@ -49,6 +52,14 @@ public class TemplateServiceBean {
     public List<Dataverse> findDataversesByDefaultTemplateId(Long defaultTemplateId) {
         TypedQuery<Dataverse> query = em.createQuery("select object(o) from Dataverse as o where o.defaultTemplate.id =:defaultTemplateId order by o.name", Dataverse.class);
         query.setParameter("defaultTemplateId", defaultTemplateId);
+        return query.getResultList();
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> findDataverseNamesByDefaultTemplateId(long defaultTemplateId) {
+        Query query = em.createNativeQuery("select dv.name from Dataverse as dv where dv.defaulttemplate_id = ? order by dv.name");
+        query.setParameter(1, defaultTemplateId);
+
         return query.getResultList();
     }
 

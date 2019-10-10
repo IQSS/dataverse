@@ -17,7 +17,6 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -107,28 +106,6 @@ public class Template implements Serializable {
 
     public List<DatasetField> getDatasetFields() {
         return datasetFields;
-    }
-
-    @Transient
-    private boolean isDefaultForDataverse;
-
-    public boolean isIsDefaultForDataverse() {
-        return isDefaultForDataverse;
-    }
-
-    public void setIsDefaultForDataverse(boolean isDefaultForDataverse) {
-        this.isDefaultForDataverse = isDefaultForDataverse;
-    }
-
-    @Transient
-    private List<Dataverse> dataversesHasAsDefault;
-
-    public List<Dataverse> getDataversesHasAsDefault() {
-        return dataversesHasAsDefault;
-    }
-
-    public void setDataversesHasAsDefault(List<Dataverse> dataversesHasAsDefault) {
-        this.dataversesHasAsDefault = dataversesHasAsDefault;
     }
 
     public Dataverse getDataverse() {

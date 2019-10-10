@@ -13,4 +13,8 @@ public class GenericDao {
     public <T> T find(long id, Class<T> type) {
         return em.find(type, id);
     }
+
+    public <T> T merge(T entity) {
+        return em.merge(entity);
+    }
 }

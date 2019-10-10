@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetFieldsInitializer;
+import edu.harvard.iq.dataverse.dataverse.template.TemplateDao;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateTemplateCommand;
@@ -37,7 +38,7 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 public class TemplatePage implements java.io.Serializable {
 
     @EJB
-    TemplateServiceBean templateService;
+    TemplateDao templateDao;
 
     @EJB
     DataverseServiceBean dataverseService;

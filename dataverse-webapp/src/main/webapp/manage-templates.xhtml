@@ -22,11 +22,13 @@
                 <h:form id="manageTemplatesForm">
                     <div class="form-group clearfix">
                         <ui:fragment rendered="#{manageTemplatesPage.dataverse.owner ne null and manageTemplatesPage.inheritTemplatesAllowed}">
-                            <label for="templateRoot" class="normal-text">
-                                <h:selectBooleanCheckbox id="templateRoot" value="#{manageTemplatesPage.inheritTemplatesValue}">
+                            <label for="templateRoot" class="normal-text" style="width: 25%">
+                                <p:selectBooleanCheckbox id="templateRoot"
+                                                         value="#{manageTemplatesPage.inheritTemplatesValue}">
                                     <p:ajax update="@form" listener="#{manageTemplatesPage.updateTemplatesRoot}" />
-                                </h:selectBooleanCheckbox>
-                                <h:outputFormat value="#{bundle['dataset.manageTemplates.select.txt']}">
+                                </p:selectBooleanCheckbox>
+                                <h:outputFormat value="#{bundle['dataset.manageTemplates.select.txt']}"
+                                                style="padding-left: 2%">
                                     <f:param value="#{manageTemplatesPage.dataverse.templateRootDataverseName}"/>
                                 </h:outputFormat>
                             </label>
@@ -40,7 +42,8 @@
                         </div>
                     </div>
                     <div>
-                        <div id="no-templates-message" class="panel panel-default" jsf:rendered="#{empty manageTemplatesPage.templates}">
+                        <div id="no-templates-message" class="panel panel-default"
+                             jsf:rendered="#{empty manageTemplatesPage.templatesForView}">
                             <div class="panel-body">
                                 <span class="help-block h3">#{bundle['dataset.manageTemplates.noTemplates.why.header']}</span>
                                 <ul>
@@ -64,8 +67,9 @@
                                 </p>
                             </div>
                         </div>
-                        <p:dataTable id="allTemplates" styleClass="manageTable" var="template" value="#{manageTemplatesPage.templates}" widgetVar="allTemplates"
-                                     rendered="#{!empty manageTemplatesPage.templates}">
+                        <p:dataTable id="allTemplates" styleClass="manageTable" var="template"
+                                     value="#{manageTemplatesPage.templatesForView}" widgetVar="allTemplates"
+                                     rendered="#{!empty manageTemplatesPage.templatesForView}">
                             <p:column width="30%" sortBy="#{template.name}" headerText="#{bundle['dataset.manageTemplates.tab.header.templte']}">
                                 <h:outputText value="#{template.name}" />
                             </p:column>
@@ -92,7 +96,7 @@
                                 <p:commandLink type="button" styleClass="btn btn-default"
                                                value="#{bundle['dataset.manageTemplates.tab.action.btn.default']}"
                                                rendered="#{manageTemplatesPage.dataverse.defaultTemplate == template}"
-                                               actionListener="#{manageTemplatesPage.unselectDefault(template)}"
+                                               actionListener="#{manageTemplatesPage.unselectDefault()}"
                                                update="@form,:messagePanel"
                                                oncomplete="bind_tooltip_popover();">
                                     <span class="glyphicon glyphicon-eye-open"/>
@@ -143,14 +147,16 @@
                         <p class="help-block">
                             <span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> &#160;<h:outputText value="#{bundle['dataset.manageTemplates.tab.action.btn.delete.dialog.tip']}" /></span>
                         </p>
-                        <ui:fragment rendered="#{manageTemplatesPage.selectedTemplate.isDefaultForDataverse}">
+                        <ui:fragment
+                                rendered="#{manageTemplatesPage.dataverse.defaultTemplate.equals(manageTemplatesPage.selectedTemplate)}">
                             <p>
                                 <h:outputText value="#{bundle['dataset.manageTemplates.delete.usedAsDefault']}" />
                             </p>
                             <ul>
-                                <ui:repeat value="#{manageTemplatesPage.selectedTemplate.dataversesHasAsDefault}" var="dv">
+                                <ui:repeat value="#{manageTemplatesPage.retrieveDataverseNamesWithDefaultTemplate()}"
+                                           var="dataverseName">
                                     <li>
-                                        <h:outputText value="#{dv.displayName}"/>
+                                        <h:outputText value="#{dataverseName}"/>
                                     </li>
                                 </ui:repeat>
                             </ul>
