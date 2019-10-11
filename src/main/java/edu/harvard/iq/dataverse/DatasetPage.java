@@ -4741,7 +4741,7 @@ public class DatasetPage implements java.io.Serializable {
             for (FileMetadata fmd : selectedFiles){
                  fileDownloadHelper.addMultipleFilesForRequestAccess(fmd.getDataFile());
             }
-            if (isRequestAccessPopupRequired()) {
+            if (isGuestbookAndTermsPopupRequired()) {
                 RequestContext requestContext = RequestContext.getCurrentInstance();                
                 requestContext.execute("PF('requestAccessPopup').show()");               
                 return "";
