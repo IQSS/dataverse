@@ -1,1 +1,1 @@
-test test with GH credentials
+tweak webhook settings
