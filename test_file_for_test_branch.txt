@@ -1,1 +1,1 @@
-tweak webhook settings
+rename jenkins repo
