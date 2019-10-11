@@ -75,6 +75,8 @@ Terminology
     type                         Whether the external tool is an **explore** tool or a **configure** tool. Configure tools require an API token because they make changes to data files (files within datasets). Configure tools are currently not supported at the dataset level (no "Configure" button appears in the GUI for datasets).
 
     toolUrl                      The **base URL** of the tool before query parameters are added.
+    
+    hasPreviewMode               A boolean that when true indicates the tool has a preview mode.
 
     contentType                  File level tools operate on a specific **file type** (content type or MIME type such as "application/pdf") and this must be specified. Dataset level tools do not use contentType.
 
