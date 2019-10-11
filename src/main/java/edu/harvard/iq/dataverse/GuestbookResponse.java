@@ -62,7 +62,7 @@ public class GuestbookResponse implements Serializable {
     private FileDownload fileDownload;
     
     @OneToOne(mappedBy="guestbookResponse",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private Set<FileAccessRequest> fileAccessRequests;
+    private FileAccessRequest fileAccessRequest;
      
     @OneToMany(mappedBy="guestbookResponse",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval=true)
     @OrderBy ("id")
@@ -242,6 +242,13 @@ public class GuestbookResponse implements Serializable {
         this.fileDownload = fDownload;
     }
     
+    public FileAccessRequest getFileAccessRequest(){
+        return fileAccessRequest;
+    }
+    
+    public void setFileAccessRequest(FileAccessRequest fAR){
+        this.fileAccessRequest = fAR;
+    }
     
     public Dataset getDataset() {
         return dataset;
