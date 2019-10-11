@@ -366,7 +366,7 @@ public class ShibUtil {
                 shibValues.add(attr + ": " + attrObject.toString());
             }
         }
-        logger.fine("shib values: " + shibValues);
+        logger.info("shib values: " + shibValues);
     }
 
 }
