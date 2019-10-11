@@ -368,7 +368,7 @@
                             </p:tab>
 
 
-                            <p:tab id="previewTab" title="Preview" rendered="#{true}">
+                            <p:tab id="previewTab" title="Preview" rendered="#{fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) or (empty worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink() and FilePage.toolsWithPreviews.size() == 0) }">
 
                                 <!-- Preview -->
                                 <div id="file-preview-icon-block" jsf:rendered="#{empty worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink() and FilePage.toolsWithPreviews.size() == 0 }">
