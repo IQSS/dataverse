@@ -14,7 +14,6 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Set;
 import java.util.Objects;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -139,13 +138,13 @@ public class AuthenticatedUser implements User, Serializable {
     
     /*for many to many fileAccessRequests*/
     @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private Set<FileAccessRequest> fileAccessRequests;
+    private List<FileAccessRequest> fileAccessRequests;
     
-    public Set<FileAccessRequest> getFileAccessRequests() {
+    public List<FileAccessRequest> getFileAccessRequests() {
         return fileAccessRequests;
     }
 
-    public void setFileAccessRequests(Set<FileAccessRequest> fARs) {
+    public void setFileAccessRequests(List<FileAccessRequest> fARs) {
         this.fileAccessRequests = fARs;
     }
     /***/
