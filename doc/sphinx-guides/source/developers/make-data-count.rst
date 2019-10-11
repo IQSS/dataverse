@@ -88,6 +88,8 @@ To get the ``REPORT_ID``, look at the logs generated in ``/usr/local/counter-pro
 
 To read more about the Make Data Count api, see https://github.com/datacite/sashimi
 
+You can compare the MDC metrics display with Dataverse's original by toggling the ``:DisplayMDCMetrics`` setting (true by default to display MDC metrics).
+
 Resources
 ---------
 
