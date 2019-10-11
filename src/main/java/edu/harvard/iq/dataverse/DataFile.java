@@ -20,7 +20,6 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.nio.file.Path;
@@ -28,6 +27,7 @@ import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -214,14 +214,14 @@ public class DataFile extends DvObject implements Comparable {
     }
     
     @OneToMany(mappedBy="dataFile",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private Set<FileAccessRequest> fileAccessRequests;
+    private List<FileAccessRequest> fileAccessRequests;
     
-    public Set<FileAccessRequest> getFileAccessRequests(){
+    public List<FileAccessRequest> getFileAccessRequests(){
         logger.info("DataFile.getFileAccessRequests()");
         return fileAccessRequests;
     }
       
-    public void setFileAccessRequests(Set<FileAccessRequest> fARs){
+    public void setFileAccessRequests(List<FileAccessRequest> fARs){
         this.fileAccessRequests = fARs;
     }
     
@@ -232,13 +232,13 @@ public class DataFile extends DvObject implements Comparable {
 
     public DataFile() {
         this.fileMetadatas = new ArrayList<>();
+        this.fileAccessRequests = new ArrayList<>();
         initFileReplaceAttributes();
     }    
 
     public DataFile(String contentType) {
+        this(); //calls DataFile() constructor
         this.contentType = contentType;
-        this.fileMetadatas = new ArrayList<>();
-        initFileReplaceAttributes();
     }
     
     
