@@ -4743,7 +4743,7 @@ public class DatasetPage implements java.io.Serializable {
             }
             if (isGuestbookAndTermsPopupRequired()) {
                 RequestContext requestContext = RequestContext.getCurrentInstance();                
-                requestContext.execute("PF('requestAccessPopup').show()");               
+                requestContext.execute("PF('guestbookAndTermsPopup').show()");               
                 return "";
             } else {
                 //No popup required
