@@ -619,13 +619,7 @@
         <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-storage</artifactId>
-      <version>1.86.0</version>
-        <exclusions>
-            <exclusion>
-                <groupId>io.opencensus</groupId>
-                <artifactId>opencensus-api</artifactId>
-            </exclusion>
-        </exclusions>
+      <version>1.96.0</version>
     </dependency>
     </dependencies>
     <build>
