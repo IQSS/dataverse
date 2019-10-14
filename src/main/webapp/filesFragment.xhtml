@@ -566,8 +566,10 @@
 
                 <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired}"
                                 styleClass="btn btn-default btn-request"                                   
-                                update="@form" action="#{DatasetPage.requestAccessMultipleFiles()}"
+                                update="@form" 
+                                action="#{DatasetPage.requestAccessMultipleFiles()}"
                                 disabled="#{DatasetPage.locked}">
+                    <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle['file.requestAccess'])}"/>
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
                 <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiSignUpButtonRequired}"
