@@ -25,16 +25,16 @@ public class FileAccessRequest implements Serializable{
     @GeneratedValue
     private Long id;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "datafile_id")
+    @ManyToOne
+    @JoinColumn(nullable=false)
     private DataFile dataFile;
     
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "authenticated_user_id")
+    @ManyToOne
+    @JoinColumn(nullable=false)
     private AuthenticatedUser user;
 
-    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
-    @JoinColumn(name = "guestbookresponse_id", nullable=true)
+    @OneToOne
+    @JoinColumn(nullable=true)
     private GuestbookResponse guestbookResponse;
     
     public FileAccessRequest(){
