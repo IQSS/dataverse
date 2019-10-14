@@ -556,6 +556,17 @@ public class MailServiceBean implements java.io.Serializable {
                 ));
 
                 return ingestedCompletedMessage;
+            case INGESTCOMPLETEDWITHERRORS:
+                dataset = (Dataset) targetObject;
+
+                String ingestedCompletedWithErrorsMessage = messageText + BundleUtil.getStringFromBundle("notification.ingest.completedwitherrors", Arrays.asList(
+                        systemConfig.getDataverseSiteUrl(),
+                        dataset.getGlobalIdString(),
+                        dataset.getDisplayName(),
+                        comment
+                ));
+
+                return ingestedCompletedWithErrorsMessage;
         }
         
         return "";
@@ -599,6 +610,7 @@ public class MailServiceBean implements java.io.Serializable {
             case APIGENERATED:
                 return userNotification.getUser();
             case INGESTCOMPLETED:
+            case INGESTCOMPLETEDWITHERRORS:
                 return datasetService.find(userNotification.getObjectId());
 
         }

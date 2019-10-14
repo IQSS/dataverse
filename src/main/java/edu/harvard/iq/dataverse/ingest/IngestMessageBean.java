@@ -74,6 +74,8 @@ public class IngestMessageBean implements MessageListener {
             Iterator iter = ingestMessage.getFileIds().iterator();
             datafile_id = null;
 
+            boolean ingestWithErrors = false;
+
             StringBuilder sbIngestedFiles = new StringBuilder();
             sbIngestedFiles.append("<ul>");
             
@@ -84,13 +86,15 @@ public class IngestMessageBean implements MessageListener {
                 try {
 
                     DataFile datafile = datafileService.find(datafile_id);
-                    sbIngestedFiles.append(String.format("<li>%s</li>", datafile.getCurrentName()));
 
                     if (ingestService.ingestAsTabular(datafile_id)) {
                         //Thread.sleep(10000);
                         logger.fine("Finished ingest job;");
+                        sbIngestedFiles.append(String.format("<li>%s</li>", datafile.getCurrentName()));
                     } else {
                         logger.warning("Error occurred during ingest job for file id " + datafile_id + "!");
+                        sbIngestedFiles.append(String.format("<li>%s (Error)</li>", datafile.getCurrentName()));
+                        ingestWithErrors = true;
                     }
 
                 } catch (Exception ex) {
@@ -105,6 +109,8 @@ public class IngestMessageBean implements MessageListener {
                         logger.fine("looking up datafile for id " + datafile_id);
                         DataFile datafile = datafileService.find(datafile_id);
                         if (datafile != null) {
+
+                            ingestWithErrors = true;
 
                             sbIngestedFiles.append(String.format("<li>%s (Error)</li>", datafile.getCurrentName()));
 
@@ -155,7 +161,7 @@ public class IngestMessageBean implements MessageListener {
             userNotificationService.sendNotification(
                     authenticatedUser,
                     Timestamp.from(Instant.now()),
-                    UserNotification.Type.INGESTCOMPLETED,
+                    !ingestWithErrors ? UserNotification.Type.INGESTCOMPLETED : UserNotification.Type.INGESTCOMPLETEDWITHERRORS,
                     objectId,
                     sbIngestedFiles.toString(),
                     true

@@ -515,6 +515,7 @@ public class DataverseUserPage implements java.io.Serializable {
                     break;
 
                 case INGESTCOMPLETED:
+                case INGESTCOMPLETEDWITHERRORS:
                     userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
                     break;
             }
