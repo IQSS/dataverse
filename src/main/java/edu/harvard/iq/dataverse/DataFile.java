@@ -232,7 +232,6 @@ public class DataFile extends DvObject implements Comparable {
 
     public DataFile() {
         this.fileMetadatas = new ArrayList<>();
-        this.fileAccessRequests = new ArrayList<>();
         initFileReplaceAttributes();
     }    
 
