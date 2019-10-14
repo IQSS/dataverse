@@ -33,8 +33,8 @@ public class FileAccessRequest implements Serializable{
     @JoinColumn(name = "authenticated_user_id")
     private AuthenticatedUser user;
 
-    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "guestbookresponse_id")
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
+    @JoinColumn(name = "guestbookresponse_id", nullable=true)
     private GuestbookResponse guestbookResponse;
     
     public FileAccessRequest(){
@@ -47,9 +47,16 @@ public class FileAccessRequest implements Serializable{
     }
     
     public FileAccessRequest(DataFile df, AuthenticatedUser au, GuestbookResponse gbr){
-        setDataFile(df);
-        setRequester(au);
+        this(df,au);
         setGuestbookResponse(gbr);
+    }
+    
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
     
     public DataFile getDataFile(){
