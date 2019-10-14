@@ -150,6 +150,27 @@ public class DataFileServiceBean implements java.io.Serializable {
         
     }*/
     
+    public List<DataFile> findAll(List<Long> fileIds){
+        List<DataFile> dataFiles = new ArrayList<>();
+         
+         for (Long fileId : fileIds){
+             dataFiles.add(find(fileId));
+         }
+    
+        return dataFiles;
+    }
+     
+    public List<DataFile> findAll(String fileIdsAsString){
+        ArrayList<Long> dataFileIds = new ArrayList<>();
+        
+        String[] fileIds = fileIdsAsString.split(",");
+        for (String fId : fileIds){
+            dataFileIds.add(Long.parseLong(fId));
+        }
+        
+        return findAll(dataFileIds);
+    }
+    
     public DataFile findByGlobalId(String globalId) {
             return (DataFile) dvObjectService.findByGlobalId(globalId, DataFile.DATAFILE_DTYPE_STRING);
     }
