@@ -31,7 +31,7 @@ public class FileAccessRequest implements Serializable{
     
     @ManyToOne
     @JoinColumn(nullable=false)
-    private AuthenticatedUser user;
+    private AuthenticatedUser authenticatedUser;
 
     @OneToOne
     @JoinColumn(nullable=true)
@@ -68,11 +68,11 @@ public class FileAccessRequest implements Serializable{
     }
     
     public AuthenticatedUser getRequester(){
-        return user;
+        return authenticatedUser;
     }
     
     public void setRequester(AuthenticatedUser au){
-        this.user = au;
+        this.authenticatedUser = au;
     }
     
     public GuestbookResponse getGuestbookResponse(){
