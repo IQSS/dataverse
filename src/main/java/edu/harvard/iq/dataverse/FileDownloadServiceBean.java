@@ -165,7 +165,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         List <DataFile> selectedDataFiles = new ArrayList<>(); //always make sure it's at least an empty List
                 
         if(guestbookResponse.getDataFile() != null ){ //one file 'selected' by 'Request Access' button click
-            selectedDataFiles.add(guestbookResponse.getDataFile());
+            selectedDataFiles.add(datafileService.find(guestbookResponse.getDataFile().getId())); //don't want the findCheapAndEasy
         }
         
         if(guestbookResponse.getSelectedFileIds() != null && !guestbookResponse.getSelectedFileIds().isEmpty()) { //multiple selected through multi-select REquest Access button   
