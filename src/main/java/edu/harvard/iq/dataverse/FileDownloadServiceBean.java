@@ -169,7 +169,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
         
         if(guestbookResponse.getSelectedFileIds() != null && !guestbookResponse.getSelectedFileIds().isEmpty()) { //multiple selected through multi-select REquest Access button   
-            selectedDataFiles = datafileService.findAllCheapAndEasy(guestbookResponse.getSelectedFileIds());
+            selectedDataFiles = datafileService.findAll(guestbookResponse.getSelectedFileIds());
         }
         
         int countRequestAccessSuccess = 0;
