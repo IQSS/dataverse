@@ -434,27 +434,28 @@
                                 </div>
                                 <!-- Add external tools as an inner tab with buttons to full tool-->
                                 <div>
-                                <ui:fragment rendered="#{FilePage.toolsWithPreviews.size()> 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">                                        
-                                    <p:tabView value="#{FilePage.toolsWithPreviews}" var="tool">
-                                        <p:tab title="#{tool.displayName}" >
-                                            <h:commandButton rendered="#{!downloadPopupRequired}" value="#{tool.displayName}" 
-                                                             type="submit"
-                                                             styleClass="#{(FilePage.fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
-                                                             disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                                                             action="#{FilePage.fileDownloadService.explore(FilePage.guestbookResponse, FilePage.fileMetadata, tool )}">
-                                            </h:commandButton>
-                                            <p:commandButton rendered="#{downloadPopupRequired}" value="#{tool.displayName}"
-                                                             action="#{FilePage.guestbookResponseService.modifyDatafileAndFormat(FilePage.guestbookResponse, FilePage.fileMetadata, 'externalTool', tool)}"
-                                                             disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                                                             type="submit"
-                                                             process="@this"
-                                                             update="@widgetVar(downloadPopup)"
-                                                             oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                                            </p:commandButton>
-                                            <iframe role="presentation" title="External File Preview Tool" height="500" width="100%" src="#{FilePage.preview(tool)}"></iframe>                                          
-                                        </p:tab>
-                                    </p:tabView>
-                                </ui:fragment>
+                                    <ui:fragment rendered="#{FilePage.toolsWithPreviews.size()> 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">  
+                                        <h:outputText value="#{bundle['file.previewTab.externalTools.header']}"/>                                    
+                                        <p:tabView value="#{FilePage.toolsWithPreviews}" var="tool">
+                                            <p:tab title="#{tool.displayName}" >
+                                                <h:commandButton rendered="#{!downloadPopupRequired}" value="#{tool.displayName}" 
+                                                                 type="submit"
+                                                                 styleClass="#{(FilePage.fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
+                                                                 disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                                                 action="#{FilePage.fileDownloadService.explore(FilePage.guestbookResponse, FilePage.fileMetadata, tool )}">
+                                                </h:commandButton>
+                                                <p:commandButton rendered="#{downloadPopupRequired}" value="#{tool.displayName}"
+                                                                 action="#{FilePage.guestbookResponseService.modifyDatafileAndFormat(FilePage.guestbookResponse, FilePage.fileMetadata, 'externalTool', tool)}"
+                                                                 disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                                                 type="submit"
+                                                                 process="@this"
+                                                                 update="@widgetVar(downloadPopup)"
+                                                                 oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                                                </p:commandButton>
+                                                <iframe role="presentation" title="External File Preview Tool" height="500" width="100%" src="#{FilePage.preview(tool)}"></iframe>                                          
+                                            </p:tab>
+                                        </p:tabView>
+                                    </ui:fragment>
                                 </div>
                             </p:tab>
                             
