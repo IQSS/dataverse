@@ -12,6 +12,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import javax.persistence.GenerationType;
 
 /**
  *
@@ -21,8 +22,9 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 @Entity
 @Table(name = "fileaccessrequests") //having added the guestbookresponse_id column to fileaccessrequests
 public class FileAccessRequest implements Serializable{
+    private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
@@ -47,7 +49,8 @@ public class FileAccessRequest implements Serializable{
     }
     
     public FileAccessRequest(DataFile df, AuthenticatedUser au, GuestbookResponse gbr){
-        this(df,au);
+        setDataFile(df);
+        setRequester(au);
         setGuestbookResponse(gbr);
     }
     
