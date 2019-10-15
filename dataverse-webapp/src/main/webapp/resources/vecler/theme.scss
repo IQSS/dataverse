@@ -21,6 +21,7 @@ $search-result-desc-color: #f2f8fa;
 $table-row-hover: #e6eff2;
 $table-row-highlight: #fff5e0;
 $primefaces_main: "img/primefaces-main-repod.png";
+$dataverse-icon: "img/dataverse-icon-repod.svg";
 $ajax_spinner_filter: saturate(2);
 
 /* MX-RDR color scheme */
@@ -34,6 +35,7 @@ $search-result-desc-color: #fff4f4;
 $table-row-hover: #ffdddd;
 $table-row-highlight: #fff5e0;
 $primefaces_main: "img/primefaces-main-mxrdr.png";
+$dataverse-icon: "img/dataverse-icon-mxrdr.svg";
 $ajax_spinner_filter: hue-rotate(140deg) saturate(2);
 */
 
@@ -48,9 +50,9 @@ $search-result-desc-color: #fff5ea;
 $table-row-hover: #f7e8d8;
 $table-row-highlight: #ffd7af;
 $primefaces_main: "img/primefaces-main-rds.png";
+$dataverse-icon: "img/dataverse-icon-rds.svg";
 $ajax_spinner_filter: hue-rotate(170deg) saturate(2);
 */
-
 
 /**
 	Custom font
@@ -78,21 +80,12 @@ $ajax_spinner_filter: hue-rotate(170deg) saturate(2);
 	position: relative;
 }
 
-.icon-dataverse::after {
-	content: "\f200";
-	position: absolute;
-	top: 0;
-	left: 0;
-	display: block;
-	color: #a4a5a8;
-	z-index: -1;
-	line-height: 100%;
-	font-style: normal;
-	font-weight: normal;
-}
-
-.card-title-icon-block .icon-dataverse::after {
-	top: 2.2px;
+.icon-dataverse::before {
+	background: url($dataverse-icon);
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center center;
+	color: transparent;
 }
 
 
@@ -175,13 +168,12 @@ body {
 	}
 }
 
-.ui-messages {
+.ui-message, .ui-messages {
 	box-shadow: inset 0 1px 0 rgba(255,255,255,.15),0 1px 1px rgba(0,0,0,.075);
 
-	.ui-messages-info {
+	.ui-message-info, .ui-message-warn, .ui-message-error, .ui-message-fatal,
+	.ui-messages-info, .ui-messages-warn, .ui-messages-error, .ui-messages-fatal {
 		padding: 20px 23px;
-		background: #f2f8fa;
-		border-color: #c5e0eb;
 		border-radius: $border-radius;
 		color: $main-text-color;
 	
@@ -190,28 +182,46 @@ body {
 		}
 	}
 
+	.ui-message-info,
+	.ui-messages-info {
+		background: #f2f8fa;
+		border-color: #c5e0eb;
+		color: $main-text-color;
+	}
+
+	.ui-message-info-icon, .ui-message-warn-icon, .ui-message-error-icon, .ui-message-fatal-icon,
 	.ui-messages-info-icon, .ui-messages-warn-icon, .ui-messages-error-icon, .ui-messages-fatal-icon {
 		margin-top: -5px;
+		width: 24px;
+		height: 24px;
 		background: none;
 		font-family: "Glyphicons Halflings";
 		font-size: 22px;
-		color: $icon-color;
 	}
-
+	
+	.ui-message-info-icon::before,
 	.ui-messages-info-icon::before {
 		content: "\e086";
+		color: #2ba7df;
 	}
+	.ui-message-warn-icon::before,
 	.ui-messages-warn-icon::before {
 		content: "\e101";
+		color: #f6921e;
 	}
+	.ui-message-error-icon::before,
 	.ui-messages-error-icon::before {
 		content: "\e083";
+		color: #c63635;
 	}
+	.ui-message-fatal-icon::before
 	.ui-messages-fatal-icon::before {
 		content: "\e090";
+		color: #c63635;
 	}
 
-	.ui-messages-info-summary, .ui-messages-warn-summary, .ui-messages-error-summary, .ui-messages-fatal-summary, .ui-message-info-summary, .ui-message-warn-summary, .ui-message-error-summary, .ui-message-fatal-summary {
+	.ui-message-info-summary, .ui-message-warn-summary, .ui-message-error-summary, .ui-message-fatal-summary,
+	.ui-messages-info-summary, .ui-messages-warn-summary, .ui-messages-error-summary, .ui-messages-fatal-summary {
 		font-weight: normal;
 	}
 }
@@ -623,10 +633,16 @@ div.panelSearchForm input.search-input {
 
 /* Carousel */
 
-#featuredDataversesList .item .icon-dataverse {
-	top: 5px;
-	margin-left: 12px;
-	margin-right: 16px;
+#featuredDataversesList .item {
+	img {
+		margin: 0 15px;
+	}
+
+	.icon-dataverse {
+		top: 5px;
+		margin-left: 12px;
+		margin-right: 16px;
+	}
 }
 
 #featuredDataversesBlock div.customNavigation {
@@ -751,19 +767,33 @@ div.panelSearchForm input.search-input {
 }
 
 .facetTypeChBox.facetLink {
-	&::before {
-		content: "\e157";
-		position: absolute;
-		font-family: "Glyphicons Halflings";
-		font-size: 17px;
-		color: $icon-color;
-		background: #FFF;
-		z-index: 3;
+	.ui-chkbox-box {
+		position: relative; 
+
+		&::before {
+			content: "\e157";
+			position: absolute;
+			top: -7px;
+			left: -2px;
+
+			font-family: "Glyphicons Halflings";
+			font-size: 17px;
+			color: $icon-color;
+			background: #FFF;
+			z-index: 3;
+		}
+	
+		&.ui-state-disabled::before {
+			color: $main-text-color;
+		}
 	}
 
-	&.facetSelected::before {
-		content: "\e067";
-		font-size: 16px;
+	&.facetSelected {
+		font-weight: normal;
+
+		.ui-chkbox-box::before {
+			content: "\e067";
+		}
 	}
 }
 
@@ -827,11 +857,24 @@ table[id$="resultsTable"] {
 		margin-top: 6px;
 	}
 
-	div.card-title-icon-block span[class^="icon"] {
-		position: relative;
-		top: -10px;
-		margin-left: 9px;
-	}
+	div.card-title-icon-block {
+		margin-top: -2px;
+
+		span[class^="icon"], span[class^="glyphicon"] {
+			position: relative;
+			top: -10px;
+			margin-left: 8px;
+		}
+
+		span[class^="glyphicon"] {
+			margin-top: 4px;
+			font-size: 1em;
+		}
+
+		.text-brand, .text-info, .glyphicon.text-muted {
+			color: $icon-color;
+		}
+	} 
 
 	td  {
 		& > div {
@@ -864,10 +907,12 @@ table[id$="resultsTable"] {
 		top: -8px;
 		line-height: 12px;
 	}
-}
 
-.card-title-icon-block {
-	margin-top: -2px;
+	.file-tags-block {
+		position: relative;
+		top: 15px;
+		margin-bottom: 15px;
+	}
 }
 
 div[id$="filesTable"] .ui-paginator {
@@ -900,7 +945,7 @@ div[id$="filesTable"] .ui-paginator {
 }
 
 .ui-dialog.ui-widget-content {
-	min-height: 300px;
+	min-height: 200px;
 	border: none;
 	border-radius: $border-radius;
 	box-shadow: 0 5px 10px rgba(0,0,0,0.2);
@@ -978,6 +1023,13 @@ div[id$="filesTable"] .ui-paginator {
 		border-radius: $border-radius;
 		border: 1px solid $gray-border-color;
 		background: #fff;
+	}
+
+	.ui-message, .ui-messages {
+		&.ui-message-info, &.ui-message-error, &.ui-message-warn, &.ui-message-fatal {
+			margin: 10px 0;
+			padding: 10px;
+		}
 	}
 }
 
