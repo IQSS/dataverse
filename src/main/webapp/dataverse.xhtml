@@ -54,21 +54,21 @@
                         <!-- Edit Info Panel -->
                         <div class="row">
                             <div class="col-md-6 form-group">
-                                <label class="control-label" for="name">
+                                <h:outputLabel for="name" styleClass="control-label">
                                     #{bundle.dataverse} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.title']}"></span>
-                                </label>
+                                </h:outputLabel>
                                 <div class="form-col-container">
                                     <p:inputText id="name" styleClass="form-control" value="#{DataversePage.dataverse.name}"/>
                                 </div>
                             </div>
                             <div class="col-md-6 form-group">
-                                <label class="control-label" for="affiliation">
-                                    #{bundle.affiliation}
+                                <h:outputLabel for="affiliation" styleClass="control-label">
+                                    #{bundle.affiliation} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.affiliation.title']}"></span>
-                                </label>
+                                </h:outputLabel>
                                 <div class="form-col-container">
                                     <p:inputText id="affiliation" styleClass="form-control" value="#{DataversePage.dataverse.affiliation}"/>
                                     <p:message for="affiliation" display="text"/>
@@ -77,11 +77,11 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6 form-group">
-                                <label class="control-label" for="identifier">
+                                <h:outputLabel for="identifier" styleClass="control-label">
                                     #{bundle.identifier} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.identifier.title']}"></span>
-                                </label>
+                                </h:outputLabel>
                                 <div class="form-col-container">
                                     <div class="input-group">
                                         <div class="input-group-addon"><span class="small">#{systemConfig.dataverseSiteUrl}/dataverse/</span></div>
@@ -91,14 +91,14 @@
                                 </div>
                             </div>
                             <div class="col-md-6 form-group" jsf:rendered="#{DataversePage.ownerId != null}">
-                                <label class="control-label" for="#{DataversePage.editMode == 'CREATE' ? 'hostDataverse' : ''}">
+                                <h:outputLabel for="#{DataversePage.editMode == 'CREATE' ? 'hostDataverse' : 'hostDataverseStatic'}" styleClass="control-label">
                                     #{bundle.hostDataverse}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.host.title']}"></span>
-                                </label>
+                                </h:outputLabel>
                                 <div class="form-col-container">
                                     <ui:fragment rendered="#{DataversePage.editMode == 'INFO'}">
-                                        <p class="form-control-static">#{DataversePage.dataverse.getOwner().name}</p>
+                                        <p id="hostDataverseStatic" class="form-control-static">#{DataversePage.dataverse.getOwner().name}</p>
                                         <h:inputHidden value="#{DataversePage.ownerId}" id="hostDataverseStatic"/>
                                     </ui:fragment>
                                     <p:selectOneMenu id="hostDataverse" rendered="#{DataversePage.editMode == 'CREATE'}"
@@ -113,11 +113,11 @@
                             <div class="col-md-6 form-group">
                                 <div class="row">
                                     <div class="col-xs-12 form-group">
-                                        <label class="control-label" for="dataverseCategory">
+                                        <h:outputLabel for="dataverseCategory" styleClass="control-label">
                                             #{bundle['dataverse.category']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.category.title']}"></span>
-                                        </label>
+                                        </h:outputLabel>
                                         <div class="form-col-container">
                                             <h:selectOneMenu id="dataverseCategory" styleClass="form-control" value="#{DataversePage.dataverse.dataverseType}">
                                                 <f:selectItem id="dvSelect" itemLabel="#{bundle['dataverse.type.selectTab.top']}" itemValue="" />
@@ -137,11 +137,11 @@
                                     <div class="col-xs-12 form-group">
                                         <p:fragment>
                                             <p:autoUpdate/>
-                                            <label class="control-label" for="contactEmail">
+                                            <h:outputLabel for="contactEmail" styleClass="control-label">
                                                 #{bundle['dataverse.email']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.email.title']}"></span>
-                                            </label>
+                                            </h:outputLabel>
                                             <div class="form-col-container edit-compound-field">
                                                 <ui:repeat value="#{DataversePage.dataverse.dataverseContacts}" var="contacts" varStatus="valCount">
                                                     <div class="row col-xs-12 form-group">
@@ -175,11 +175,11 @@
                                 </div>
                             </div>
                             <div class="col-md-6 form-group">
-                                <label class="control-label" for="description">
+                                <h:outputLabel for="description" styleClass="control-label">
                                     #{bundle.description}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.description.title']}"></span>
-                                </label>
+                                </h:outputLabel>
                                 <div class="form-col-container">
                                     <p class="help-block">
                                         <h:outputFormat value="#{bundle.htmlAllowedMsg}" escape="false">
@@ -196,23 +196,23 @@
                         </div>
                         <hr class="margin-top-half margin-bottom-half"/>
                         <!-- Metadata Panel -->
-                        <p:panel styleClass="panelLayoutBlock" widgetVar="optionBlock" id="optionBlock">
+                        <p:panel id="optionBlock" styleClass="panelLayoutBlock padding-none margin-bottom-half" widgetVar="optionBlock">
                             <p:commandButton id="hiddenRefresh" value="back" style="display:none"
                                              actionListener="#{DataversePage.refresh}"
                                              update="@widgetVar(optionBlock)"/>
                             <div class="row">
-                                <div class="col-sm-12 form-group">
-                                    <label class="col-sm-3 control-label" for="mdbSelect">#{bundle['dataverse.metadataElements']}</label>
-                                    <div class="col-sm-9">
+                                <div class="col-sm-12 form-group padding-none">
+                                    <div class="col-md-3 control-label highlightBold">#{bundle['dataverse.metadataElements']}</div>
+                                    <div class="col-md-9">
                                         <p class="help-block">#{bundle['dataverse.metadataElements.tip']}</p>
-                                        <label class="metadata-blocks-default" for="metadataRoot" jsf:rendered="#{DataversePage.dataverse.owner != null}">
+                                        <h:outputLabel styleClass="metadata-blocks-default" for="metadataRoot" rendered="#{DataversePage.dataverse.owner != null}">
                                             <h:selectBooleanCheckbox id="metadataRoot" styleClass="metadata-blocks-default"
                                                                      value="#{DataversePage.inheritMetadataBlockFromParent}" onclick="updateMetadata(this);">
                                             </h:selectBooleanCheckbox>
                                             <h:outputFormat value="#{bundle['dataverse.metadataElements.from.tip']}">
                                                 <f:param value="#{DataversePage.dataverse.metadataRootDataverseName}"/>
                                             </h:outputFormat>
-                                        </label>
+                                        </h:outputLabel>
                                         <p:commandButton value="Direct" id="updateMetadataButton"
                                                          style="display:none"
                                                          update="@widgetVar(optionBlock)"
@@ -304,13 +304,13 @@
                             </div>
                         </p:panel>
                         <!-- Facets Panel -->
-                        <p:panel id="editFacets" styleClass="panelLayoutBlock" widgetVar="editFacets">
+                        <p:panel id="editFacets" styleClass="panelLayoutBlock padding-none" widgetVar="editFacets">
                             <div class="row">
-                                <div class="col-sm-12 form-group">
-                                    <label class="col-sm-3 control-label" for="facetPickListCreate">#{bundle['dataverse.facetPickList.text']}</label>
-                                    <div class="col-sm-9">
+                                <div class="col-sm-12 form-group padding-none">
+                                    <div class="col-md-3 control-label highlightBold">#{bundle['dataverse.facetPickList.text']}</div>
+                                    <div class="col-md-9">
                                         <p class="help-block">#{bundle['dataverse.facetPickList.tip']}</p>
-                                        <label class="metadata-blocks-default" for="facetsRoot" jsf:rendered="#{DataversePage.dataverse.owner != null}">
+                                        <h:outputLabel styleClass="metadata-blocks-default" for="facetsRoot" rendered="#{DataversePage.dataverse.owner != null}">
                                             <h:selectBooleanCheckbox id="facetsRoot" styleClass="facets-blocks-default"
                                                                      value="#{DataversePage.inheritFacetFromParent}">
                                                 <p:ajax update="editFacets" listener="#{DataversePage.toggleFacetRoot}"/>
@@ -318,7 +318,7 @@
                                             <h:outputFormat value="#{bundle['dataverse.facetPickList.facetsFromHost.text']}">
                                                 <f:param value="#{DataversePage.dataverse.facetRootDataverseName}"/>
                                             </h:outputFormat>
-                                        </label>
+                                        </h:outputLabel>
                                         <p:pickList id="facetPickListCreate" value="#{DataversePage.facets}" var="facet" converter="facetConverter"
                                                     itemLabel="#{facet.displayName}" itemValue="#{facet}"
                                                     disabled="#{!DataversePage.dataverse.facetRoot and DataversePage.dataverse.owner != null}"

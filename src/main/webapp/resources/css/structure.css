@@ -80,6 +80,8 @@ body .ui-widget {font-size: inherit;}
 .panelLayoutButtonBlock button {/*margin-right:2em;*/}
 
 .panelLayoutBlock > .ui-widget-content {border-bottom:1px solid #DDDDDD;}
+.panelLayoutBlock.ui-panel.padding-none > .ui-widget-content.ui-panel-content {padding:0;}
+
 .panelLayoutBlock.breadcrumbNavBlock > .ui-widget-content {border-bottom:0;}
 .panelLayoutTitleBlock > .ui-widget-content {border:0;}
 
