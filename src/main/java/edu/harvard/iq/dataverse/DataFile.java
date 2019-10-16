@@ -698,6 +698,12 @@ public class DataFile extends DvObject implements Comparable {
     private List<AuthenticatedUser> fileAccessRequesters;
     
     public List<AuthenticatedUser> getFileAccessRequesters() {
+        if(fileAccessRequesters == null){
+           this.fileAccessRequesters = new ArrayList<>();
+           for(FileAccessRequest far : fileAccessRequests){
+               fileAccessRequesters.add(far.getRequester());
+           }
+        }
         return fileAccessRequesters;
     }
 
