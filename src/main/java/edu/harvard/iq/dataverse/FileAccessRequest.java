@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import java.io.Serializable;
 import javax.persistence.CascadeType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.UniqueConstraint;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Index;
@@ -20,7 +21,9 @@ import javax.persistence.GenerationType;
  */
 
 @Entity
-@Table(name = "fileaccessrequests") //having added the guestbookresponse_id column to fileaccessrequests
+@Table(name = "fileaccessrequests", //having added the guestbookresponse_id column to fileaccessrequests
+    uniqueConstraints=@UniqueConstraint(columnNames={"datafile_id", "authenticated_user_id"}) //this may not make sense at some future point
+)
 public class FileAccessRequest implements Serializable{
     private static final long serialVersionUID = 1L;
     @Id
@@ -84,6 +87,26 @@ public class FileAccessRequest implements Serializable{
     
     public void setGuestbookResponse(GuestbookResponse gbr){
         this.guestbookResponse = gbr;
+    }
+    
+    @Override
+    public int hashCode() {
+        int hash = 0;
+        hash += (id != null ? id.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof FileAccessRequest)) {
+            return false;
+        }
+        FileAccessRequest other = (FileAccessRequest) object;
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
     }
     
     
