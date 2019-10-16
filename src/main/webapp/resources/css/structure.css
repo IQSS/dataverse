@@ -51,7 +51,7 @@ body .ui-widget .ui-widget-content {background: none;}
 #status-alert {margin-top:0; margin-bottom:0;}
 #status-alert div.alert {border:0; box-shadow:none;}
 
-#footer {position:absolute; bottom:0; margin-top:3em; padding-bottom:100px; width:100%; height:60px; color:#808080;}
+#footer {margin-top:3em; padding-bottom:100px; width:100%; height:60px; color:#808080; position: absolute; right: -180px;}
 #footer.widget-view {position:fixed; left:0; bottom:0; margin:0; padding:4px 0 0 0; min-height:44px; background:#fff;}
 #footer .poweredbylogo {text-align:right;}
 #footer .poweredbylogo span {font-size:.85em;margin-right:.3em;}
@@ -383,7 +383,7 @@ form.btn-form {display:inline-block;}
 
 td.col-file-action span.ingest-warning, .button-block span.ingest-warning {margin-left:.5em;}
 
-.btn.btn-default.btn-access {background-color:#fff; background-image:none; border-radius:35px; height: 70px; width: 70px;}
+.btn.btn-default.btn-access {background-image:none;}
 .btn.btn-default.btn-access:focus, .btn.btn-default.btn-access:hover,.btn.btn-default.btn-access:active {background-image:none;}
 .col-manage-action .button-block button, .col-manage-action .button-block a.btn, .col-manage-action .button-block input.btn, 
 .col-manage-action .button-block div.btn-group, .col-manage-action .button-block span.btn.ui-state-disabled, 
@@ -540,7 +540,7 @@ div[id$='facetCategoryList'] div.ui-datalist, div[id$='facetCategoryList'] div.u
 -webkit-hyphens: auto;
    -moz-hyphens: auto;
         hyphens: auto;}
-a.facetLink {text-decoration:none; font-size:90%;}
+a.facetLink {text-decoration:none; font-size:16px;}
 a.facetLink.facetSelected, a.facetTypeLink.facetSelected {font-weight:bold;}
 a.facetLink.facetSelected span.glyphicon-remove {vertical-align:text-top; margin-top:1px; margin-left:.25em;}
 
@@ -661,7 +661,7 @@ div.form-col-container div.form-col-container {padding-left:0;}
 div.form-group .ui-selectonemenu {display:block;}
 div.form-col-container.edit-compound-field div.form-col-container {margin-bottom:.5em;}
 
-div.panel-group div.panel {margin-bottom:1em;}
+div.panel-group div.panel {margin-bottom:1em; border: none;}
 div.panel div.panel-body div.form-group {overflow: hidden;}
 div.edit-field div.ui-message {margin:6px 0;}
 .metadata-container table.metadata {border-collapse:separate;margin:0 4px;}
@@ -716,6 +716,7 @@ table.ui-picklist div.ui-picklist-filter-container {padding-bottom:5px;}
 .select-scroll-block table.ui-selectmanycheckbox label {margin-left:5px; margin-top:0; font-weight:normal;}
 
 #contentTabs .ui-tabs .ui-tabs-panel {padding-left:0; padding-right:0;}
+#contentTabs {position: relative;}
 
 div.panel-heading[data-toggle="collapse"] {cursor: pointer; cursor: hand;}
 div.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
@@ -1004,24 +1005,32 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
 
 /* Schema Dataverse Additional Classes */
 
+div.container {
+  overflow: visible;
+}
+
 #search-row-panel-backdrop {
   width: 100vw;
   height: 100%;
   position: absolute;
-  left: 0;
+  left: calc(-50vw + 50%);
   background-color: #f7f7f9;
   margin: 0;
+  z-index: -1;
 }
 
 #file-row-panel-backdrop {
   background: #f7f7f9;
   position: absolute;
   left: calc(-50vw + 50%);
+  top: 42px;
   width: 100vw;
   height: 100%;
   z-index: -1;
   border-top: 2px solid rgba(0, 0, 0, 0.1);
 }
+
+#searchResults {position: relative;}
 
 #filter-title {
   font-weight: 700;
@@ -1043,6 +1052,12 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
   display: block;
   width: 540px;
   color: #979797;
+}
+
+.searchbutton-file {
+  position: absolute;
+  top: 8px;
+  right: 2.5vw;
 }
 
 .add-data-plus-wrapper {
@@ -1116,11 +1131,36 @@ ul > li {
   padding-top: 10px;
 }
 
-.panel {box-shadow: none; -webkit-box-shadow: none;}
+.panel {box-shadow: none; -webkit-box-shadow: none; background: #f7f7f9;}
 
-.btn-default, .btn-default:active, .btn-default:hover {
+.btn-default, .btn-default:active, .btn-default:hover, .btn-default:focus {
   background: #4b74ff;
-  color: #FFF;
+  color: #FFF !important; /* TODO: Find ui-widget CSS rules and take out their color so important is not needed here */
   border-radius: 2px;
+  text-shadow: none;
 }
+
+/* Pagination Icon URLs and Styles*/
+
+.results-sort-pagination {
+  margin-top: 25px;
+}
+
+.pagination > li > a {
+  background-color: #f7f7f9;
+}
+
+.pagination > li > a.skip {
+  height: 44px;
+  width: 44px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: none;
+}
+
+.pagination > li > a.skip.top {background-image: url(/resources/images/skip_icon.svg);}
+.pagination > li > a.skip.back {background-image: url(/resources/images/arrow_icon.svg);}
+.pagination > li > a.skip.next {background-image: url(/resources/images/arrow_icon.svg); transform: scaleX(-1);}
+.pagination > li > a.skip.bottom {background-image: url(/resources/images/skip_icon.svg); transform: scaleX(-1);}
 
