@@ -352,6 +352,17 @@ public class UsersIT {
                 .body("message", equalTo("username '" + uppercaseUsername + "' already exists"));
         ;
     }
+    
+    @Test
+    public void testAPITokenEndpoints(){
+        
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        assertEquals(200, createUser.getStatusCode());
+        String usernameOfUser = UtilIT.getUsernameFromResponse(createUser);
+        String userApiToken = UtilIT.getApiTokenFromResponse(createUser);
+        
+    }
 
     private Response convertUserFromBcryptToSha1(long idOfBcryptUserToConvert, String password) {
         JsonObjectBuilder data = Json.createObjectBuilder();

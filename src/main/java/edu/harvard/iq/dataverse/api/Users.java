@@ -6,12 +6,16 @@
 package edu.harvard.iq.dataverse.api;
 
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -98,4 +102,71 @@ public class Users extends AbstractApiBean {
         return ok("UserIdentifier changed from " + oldIdentifier + " to " + newIdentifier);
     }
     
+    @Path("token")
+    @DELETE
+    public Response deleteToken() {
+        User u;
+
+        try {
+            u = findUserOrDie();
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+        AuthenticatedUser au = authSvc.getAuthenticatedUserWithProvider(u.getIdentifier());
+        if (au == null) {
+            return notFound("Token for " + u.getIdentifier() + " not found.");
+        }
+        authSvc.removeApiToken(au);
+        return ok("Token for " + au.getUserIdentifier() + " deleted.");
+        
+    }
+    
+    @Path("token")
+    @GET
+    public Response getTokenExpirationDate() {
+        User u;
+
+        try {
+            u = findUserOrDie();
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+        AuthenticatedUser au = authSvc.getAuthenticatedUserWithProvider(u.getIdentifier());
+        if (au == null) {
+            return notFound("Token for " + u.getIdentifier() + " not found.");
+        }
+        
+        ApiToken token = authSvc.findApiToken(getRequestApiKey());
+        
+        return ok("Token for " + au.getUserIdentifier() + " expires on " + token.getExpireTime());
+        
+    }
+    
+    @Path("token/recreate")
+    @POST
+    public Response recreateToken() {
+        User u;
+
+        try {
+            u = findUserOrDie();
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+        AuthenticatedUser au = authSvc.getAuthenticatedUserWithProvider(u.getIdentifier());
+        if (au == null) {
+            return notFound("Token for " + u.getIdentifier() + " not found.");
+        }
+
+        ApiToken apiToken = authSvc.findApiTokenByUser(au);
+        if (apiToken != null) {
+            authSvc.removeApiToken(au);
+        }
+
+        ApiToken newToken = authSvc.generateApiTokenForUser(au);
+        authSvc.save(newToken);
+
+        return ok("New token for " + au.getUserIdentifier() + " is " + newToken.getTokenString());
+
+    }
+
 }
