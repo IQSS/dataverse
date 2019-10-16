@@ -47,6 +47,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -691,6 +692,9 @@ public class DataFile extends DvObject implements Comparable {
     joinColumns = @JoinColumn(name = "datafile_id"),
     inverseJoinColumns = @JoinColumn(name = "authenticated_user_id"))
     */
+    
+    //@OneToMany(mappedBy="dataFile",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @Transient
     private List<AuthenticatedUser> fileAccessRequesters;
     
     public List<AuthenticatedUser> getFileAccessRequesters() {
