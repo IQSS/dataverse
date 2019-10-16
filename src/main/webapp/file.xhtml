@@ -246,32 +246,31 @@
                       <div id="fileImageTitle" class="row">
                         <div class="col-xs-12">
                             <div class="row">
-                                <div id="file-title-block" class="col-xs-12 margin-bottom-half col-md-offset-3">
-                                    <!-- Restricted File Icon -->
-                                    <span class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{FilePage.fileMetadata.restricted and !(fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}" />
-                                    <span class="icon-unlock text-success" jsf:rendered="#{FilePage.fileMetadata.restricted  and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }" />
-
-                                    <!-- Title/Label -->
-                                    <h:outputText value="#{FilePage.fileMetadata.label}" styleClass="file-title-label"/>
-                                    
-                                    <div id="title-label-block" class="margin-top-half">
-                                        <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{FilePage.fileMetadata.datasetVersion.draft}"/>
-                                        <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>
-                                        <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}"/>   
-                                        <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}"/>
-                                        <!-- DATASET VERSION NUMBER -->
-                                        <h:outputText styleClass="label label-default" rendered="#{FilePage.fileMetadata.datasetVersion.released and !(FilePage.fileMetadata.datasetVersion.draft or FilePage.fileMetadata.datasetVersion.inReview)}"
-                                                      value="#{bundle['file.DatasetVersion']} #{FilePage.fileMetadata.datasetVersion.versionNumber}.#{FilePage.fileMetadata.datasetVersion.minorVersionNumber}" /> 
-                                        <h:outputText styleClass="label label-default" rendered="#{!FilePage.fileMetadata.datasetVersion.released and !(FilePage.fileMetadata.datasetVersion.draft or FilePage.fileMetadata.datasetVersion.inReview)}"
-                                                      value="#{bundle['file.DatasetVersion']} #{FilePage.fileMetadata.datasetVersion.versionState}"/>
-                                    </div>
-                                </div>
-                                
                                 <div class="col-xs-12">
                                     <div class="row">
                                         <div class="col-sm-9">
                                             <div class="row">
-                                                <div class="col-sm-12">
+                                                <div id="file-title-block" class="col-xs-12 margin-bottom-half col-md-offset-3">
+                                                    <!-- Restricted File Icon -->
+                                                    <span class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{FilePage.fileMetadata.restricted and !(fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}" />
+                                                    <span class="icon-unlock text-success" jsf:rendered="#{FilePage.fileMetadata.restricted  and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }" />
+
+                                                    <!-- Title/Label -->
+                                                    <h:outputText value="#{FilePage.fileMetadata.label}" styleClass="file-title-label"/>
+                                                    
+                                                    <div id="title-label-block" class="margin-top-half">
+                                                        <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{FilePage.fileMetadata.datasetVersion.draft}"/>
+                                                        <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>
+                                                        <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}"/>   
+                                                        <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}"/>
+                                                        <!-- DATASET VERSION NUMBER -->
+                                                        <h:outputText styleClass="label label-default" rendered="#{FilePage.fileMetadata.datasetVersion.released and !(FilePage.fileMetadata.datasetVersion.draft or FilePage.fileMetadata.datasetVersion.inReview)}"
+                                                                      value="#{bundle['file.DatasetVersion']} #{FilePage.fileMetadata.datasetVersion.versionNumber}.#{FilePage.fileMetadata.datasetVersion.minorVersionNumber}" /> 
+                                                        <h:outputText styleClass="label label-default" rendered="#{!FilePage.fileMetadata.datasetVersion.released and !(FilePage.fileMetadata.datasetVersion.draft or FilePage.fileMetadata.datasetVersion.inReview)}"
+                                                                      value="#{bundle['file.DatasetVersion']} #{FilePage.fileMetadata.datasetVersion.versionState}"/>
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-12 col-md-offset-3">
                                                     <h:outputFormat styleClass="h5" value="#{bundle['file.citation.datafile']}" escape="false" />
                                                 </div>
                                                 <div class="col-sm-12 citation-block col-md-offset-3">
@@ -317,7 +316,7 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="col-sm-12">
+                                                <div class="col-sm-12 col-md-offset-3">
                                                     <p class="help-block">
                                                         <h:outputFormat value="#{bundle['file.citation.notice']}" escape="false">
                                                             <o:param value="#{FilePage.fileMetadata.datasetVersion.dataset.displayName}"/>
@@ -370,7 +369,7 @@
                                                     </div>
                                                 </div>
 
-                                                <div id="deaccession-reason-block" class="col-xs-12" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}">
+                                                <div id="deaccession-reason-block" class="col-xs-12 col-md-offset-3" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                                     <div class="col-xs-12 bg-danger">
                                                         <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
                                                         <p>#{FilePage.fileMetadata.datasetVersion.versionNote}</p>

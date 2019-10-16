@@ -10,13 +10,13 @@
     <!-- PAGINATOR -->
         <ui:fragment rendered="#{SearchIncludeFragment.totalPages != 1}">
             <o:importFunctions type="java.lang.Math" />
-            <div class="results-sort-pagination results-bottom text-center">
+            <div class="results-sort-pagination results-bottom text-left">
             <!--<div class="pagination pull-right">-->
                 <ul class="pagination">
                     <!--should take you to page 1-->
                     <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
-                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
-                            <h:outputText value="&#171;"/>
+                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="skip top">
+                            <!-- <h:outputText value="&#171;"/> -->
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                             <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                 <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -28,8 +28,8 @@
                         </h:outputLink>
                     </li>
                     <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
-                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
-                            <h:outputText value="&lt; #{bundle.previous}"/>
+                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="skip back">
+                            <!-- <h:outputText value="&lt; #{bundle.previous}"/> -->
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                             <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                 <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -63,8 +63,8 @@
                         </li>
                     </c:forEach>
                     <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
-                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
-                            <h:outputText value="#{bundle.next} &gt;"/>
+                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="skip next">
+                            <!-- <h:outputText value="#{bundle.next} &gt;"/> -->
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                             <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                 <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -76,8 +76,8 @@
                         </h:outputLink>
                     </li>
                     <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
-                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
-                            <h:outputText value="&#187;"/>
+                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="skip bottom">
+                            <!-- <h:outputText value="&#187;"/> -->
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                             <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                 <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
