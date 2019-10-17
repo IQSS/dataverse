@@ -240,6 +240,12 @@ public class AuthenticationServiceBean {
         }
     }
     
+    public void removeApiToken(ApiToken token) {
+
+        em.remove(token);
+
+    }
+    
     public boolean isOrcidEnabled() {
         return oAuth2authenticationProviders.values().stream().anyMatch( s -> s.getId().toLowerCase().contains("orcid") );
     }

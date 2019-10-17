@@ -112,10 +112,19 @@ public class Users extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-        AuthenticatedUser au = authSvc.getAuthenticatedUserWithProvider(u.getIdentifier());
+        AuthenticatedUser au;        
+       
+        try{
+             au = (AuthenticatedUser) u; 
+        } catch (ClassCastException e){ 
+            //if we have a non-authentivated user we stop here.
+            return notFound("Token for " + u.getIdentifier() + " not found.");
+        }       
+       
         if (au == null) {
             return notFound("Token for " + u.getIdentifier() + " not found.");
         }
+        
         authSvc.removeApiToken(au);
         return ok("Token for " + au.getUserIdentifier() + " deleted.");
         
@@ -130,15 +139,15 @@ public class Users extends AbstractApiBean {
             u = findUserOrDie();
         } catch (WrappedResponse ex) {
             return ex.getResponse();
-        }
-        AuthenticatedUser au = authSvc.getAuthenticatedUserWithProvider(u.getIdentifier());
-        if (au == null) {
-            return notFound("Token for " + u.getIdentifier() + " not found.");
-        }
+        }      
         
         ApiToken token = authSvc.findApiToken(getRequestApiKey());
         
-        return ok("Token for " + au.getUserIdentifier() + " expires on " + token.getExpireTime());
+        if (token == null) {
+            return notFound("Token " + getRequestApiKey() + " not found.");
+        }
+        
+        return ok("Token " + getRequestApiKey() + " expires on " + token.getExpireTime());
         
     }
     
@@ -152,14 +161,22 @@ public class Users extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-        AuthenticatedUser au = authSvc.getAuthenticatedUserWithProvider(u.getIdentifier());
+        
+        AuthenticatedUser au;        
+        try{
+             au = (AuthenticatedUser) u; 
+        } catch (ClassCastException e){ 
+            //if we have a non-authentivated user we stop here.
+            return notFound("Token for " + u.getIdentifier() + " not found.");
+        }       
+       
         if (au == null) {
             return notFound("Token for " + u.getIdentifier() + " not found.");
         }
 
-        ApiToken apiToken = authSvc.findApiTokenByUser(au);
+        ApiToken apiToken = authSvc.findApiToken(getRequestApiKey());
         if (apiToken != null) {
-            authSvc.removeApiToken(au);
+            authSvc.removeApiToken(apiToken);
         }
 
         ApiToken newToken = authSvc.generateApiTokenForUser(au);
