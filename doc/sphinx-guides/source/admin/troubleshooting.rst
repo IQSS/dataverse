@@ -3,10 +3,34 @@
 Troubleshooting
 ===============
 
-This new (as of v.4.6) section of the Admin guide is for tips on how to diagnose and fix system problems. 
+Sometimes Dataverse users get into trouble. Sometimes Dataverse itself gets into trouble. If something has gone wrong, this section is for you.
 
 .. contents:: Contents:
 	:local:
+
+Using Dataverse APIs to Troubleshoot and Fix Problems
+-----------------------------------------------------
+
+See the :doc:`/api/intro` section of the API Guide for a high level overview of Dataverse APIs. Below are listed problems that support teams might encounter that can be handled via API (sometimes only via API).
+
+A Dataset Is Locked And Cannot Be Edited or Published
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It's normal for the ingest process described in the :doc:`/user/tabulardataingest/ingestprocess` section of the User Guide to take some time but if hours or days have passed and the dataset is still locked, you might want to inspect the locks and consider deleting some or all of them.
+
+See :doc:`dataverses-datasets`.
+
+Someone Created Spam Datasets and I Need to Delete Them
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Depending on how open your installation of Dataverse is to the general public creating datasets, you may sometimes need to deal with spam datasets.
+
+Look for "destroy" in the :doc:`/api/native-api` section of the API Guide.
+
+A User Needs Their Account to Be Converted From Institutional (Shibboleth), ORCID, Google, or GitHub to Something Else
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+See :ref:`converting-shibboleth-users-to-local` and :ref:`converting-oauth-users-to-local`.
 
 Glassfish
 ---------

@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
+import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
@@ -36,6 +37,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
@@ -559,7 +562,7 @@ public class DataversePage implements java.io.Serializable {
 
     public String save() {
         List<DataverseFieldTypeInputLevel> listDFTIL = new ArrayList<>();
-        if (editMode != null && editMode.equals(EditMode.INFO)) {
+        if (editMode != null && ( editMode.equals(EditMode.INFO) || editMode.equals(EditMode.CREATE))) {
 
             List<MetadataBlock> selectedBlocks = new ArrayList<>();
             if (dataverse.isMetadataBlockRoot()) {
@@ -1035,5 +1038,124 @@ public class DataversePage implements java.io.Serializable {
     private String returnRedirect(){
         return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";  
     }
+    
+    private Map<String, Integer> numberOfFacets = new HashMap<>();
+    
+    public int getNumberOfFacets(String name, int defaultValue) {
+        Integer numFacets = numberOfFacets.get(name);
+        if (numFacets == null) {
+            numberOfFacets.put(name, defaultValue);
+            numFacets = defaultValue;
+        }
+        return numFacets;
+    }
+    
+    public void incrementFacets(String name, int incrementNum) {
+        Integer numFacets = numberOfFacets.get(name);
+        if (numFacets == null) {
+            numFacets = incrementNum;
+        }
+        numberOfFacets.put(name, numFacets + incrementNum);
+    }
+    
+    private String query;
+    private List<String> filterQueries = new ArrayList<>();
+    private List<FacetCategory> facetCategoryList = new ArrayList<>();
+    private String selectedTypesString;
+    private String sortField;
+    private SearchIncludeFragment.SortOrder sortOrder;
+    private String searchFieldType = SearchFields.TYPE;
+    private String searchFieldSubtree = SearchFields.SUBTREE;
+    
+    public String getQuery() {
+        return query;
+    }
 
+    public void setQuery(String query) {
+        this.query = query;
+    }
+
+    public List<String> getFilterQueries() {
+        return filterQueries;
+    }
+
+    public void setFilterQueries(List<String> filterQueries) {
+        this.filterQueries = filterQueries;
+    }
+
+    public List<FacetCategory> getFacetCategoryList() {
+        return facetCategoryList;
+    }
+
+    public void setFacetCategoryList(List<FacetCategory> facetCategoryList) {
+        this.facetCategoryList = facetCategoryList;
+    }
+    
+    private int searchResultsCount = 0;
+    
+    public int getSearchResultsCount() {
+        return searchResultsCount;
+    }
+
+    public void setSearchResultsCount(int searchResultsCount) {
+        this.searchResultsCount = searchResultsCount;
+    }
+
+    public String getSelectedTypesString() {
+        return selectedTypesString;
+    }
+
+    public void setSelectedTypesString(String selectedTypesString) {
+        this.selectedTypesString = selectedTypesString;
+    }
+    
+    public String getSortField() {
+        return sortField;
+    }
+
+    public void setSortField(String sortField) {
+        this.sortField = sortField;
+    }
+
+    public String getSortOrder() {
+        if (sortOrder != null) {
+            return sortOrder.toString();
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Allow only valid values to be set.
+     *
+     * Rather than passing in a String and converting it to an enum in this
+     * method we could write a converter:
+     * http://stackoverflow.com/questions/8609378/jsf-2-0-view-parameters-to-pass-objects
+     */
+    public void setSortOrder(String sortOrderSupplied) {
+        if (sortOrderSupplied != null) {
+            if (sortOrderSupplied.equals(SearchIncludeFragment.SortOrder.asc.toString())) {
+                this.sortOrder = SearchIncludeFragment.SortOrder.asc;
+            }
+            if (sortOrderSupplied.equals(SearchIncludeFragment.SortOrder.desc.toString())) {
+                this.sortOrder = SearchIncludeFragment.SortOrder.desc;
+            }
+        }
+    }
+    
+    public String getSearchFieldType() {
+        return searchFieldType;
+    }
+
+    public void setSearchFieldType(String searchFieldType) {
+        this.searchFieldType = searchFieldType;
+    }
+
+    public String getSearchFieldSubtree() {
+        return searchFieldSubtree;
+    }
+
+    public void setSearchFieldSubtree(String searchFieldSubtree) {
+        this.searchFieldSubtree = searchFieldSubtree;
+    }
 }

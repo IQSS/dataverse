@@ -593,9 +593,30 @@ Running a curl command like "load" example above should make the new custom meta
 Updating the Solr Schema
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Once you have enabled a new metadata block you should be able to see the new fields in the GUI but before you can save the dataset, you must add additional fields to your Solr schema. You should run the following curl command to have Dataverse output the "field name" and "copyField" elements for all the metadata fields that have been loaded into Dataverse:
+Once you have enabled a new metadata block you should be able to see the new fields in the GUI but before you can save
+the dataset, you must add additional fields to your Solr schema.
+
+An API endpoint of Dataverse provides you with a generated set of all fields that need to be added to the Solr schema
+configuration, including any enabled metadata schemas:
 
 ``curl http://localhost:8080/api/admin/index/solr/schema``
+
+For convenience and automation you can download and consider running :download:`updateSchemaMDB.sh <../../../../conf/solr/7.3.1/updateSchemaMDB.sh>`. It uses the API endpoint above and writes schema files to the filesystem (so be sure to run it on the Solr server itself as the Unix user who owns the Solr files) and then triggers a Solr reload.
+
+By default, it will download from Dataverse at `http://localhost:8080` and reload Solr at `http://localhost:8983`.
+You may use the following environment variables with this script or mix'n'match with options:
+
+====================  ======  ===============================================  =========================================================
+Environment variable  Option  Description                                      Example
+====================  ======  ===============================================  =========================================================
+`DATAVERSE_URL`       `-d`    Provide the URL to your Dataverse installation   *http://localhost:8080*
+`SOLR_URL`            `-s`    Provide the URL to your Solr instance            *http://localhost:8983*
+`UNBLOCK_KEY`         `-u`    If your installation has a blocked admin API     *xyz* or */secrets/unblock.key*
+                              endpoint, you can provide either the key itself
+                              or a path to a keyfile
+`TARGET`              `-t`    Provide the config directory of your Solr core   */usr/local/solr/solr-7.3.1/server/solr/collection1/conf*
+                              "collection1"
+====================  ======  ===============================================  =========================================================
 
 See the :doc:`/installation/prerequisites/` section of the Installation Guide for a suggested location on disk for the Solr schema file.
 

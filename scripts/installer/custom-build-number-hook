@@ -1,0 +1,8 @@
+#!/bin/sh
+# Git changes workdir to root of repo per git documentation
+BRANCH_COMMIT=$(git rev-parse --abbrev-ref HEAD)-$(git log --oneline | head -1 | awk '{print $1}')
+echo "build.number=$BRANCH_COMMIT" > src/main/java/BuildNumber.properties
+
+# Based on https://stackoverflow.com/questions/25590267
+# $6 = previous branch, $8 is next branch
+#git reflog | awk 'NR==1{ print "build.number=" $8; exit }' > src/main/java/BuildNumber.properties

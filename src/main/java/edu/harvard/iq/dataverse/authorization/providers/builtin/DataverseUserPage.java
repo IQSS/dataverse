@@ -329,6 +329,7 @@ public class DataverseUserPage implements java.io.Serializable {
             // Authenticated user registered. Save the new bulitin, and log in.
             builtinUserService.save(builtinUser);
             session.setUser(au);
+            session.configureSessionTimeout();
             /**
              * @todo Move this to
              * AuthenticationServiceBean.createAuthenticatedUser
@@ -472,7 +473,9 @@ public class DataverseUserPage implements java.io.Serializable {
 
                 case REQUESTFILEACCESS:
                     DataFile file = fileService.find(userNotification.getObjectId());
-                    userNotification.setTheObject(file.getOwner());
+                    if (file != null) {
+                        userNotification.setTheObject(file.getOwner());
+                    }
                     break;
                 case GRANTFILEACCESS:
                 case REJECTFILEACCESS:

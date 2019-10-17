@@ -6,8 +6,10 @@ import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -99,6 +101,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewComman
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import java.util.Collections;
@@ -124,6 +127,7 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
+import edu.harvard.iq.dataverse.search.SolrClientService;
 import java.util.Comparator;
 import java.util.TimeZone;
 import javax.servlet.http.HttpServletRequest;
@@ -134,6 +138,7 @@ import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.primefaces.PrimeFaces;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
@@ -212,6 +217,8 @@ public class DatasetPage implements java.io.Serializable {
     PrivateUrlServiceBean privateUrlService;
     @EJB
     ExternalToolServiceBean externalToolService;
+    @EJB
+    SolrClientService solrClientService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -309,10 +316,15 @@ public class DatasetPage implements java.io.Serializable {
         this.showIngestSuccess = showIngestSuccess;
     }
         
+    // TODO: Consider renaming "configureTools" to "fileConfigureTools".
     List<ExternalTool> configureTools = new ArrayList<>();
+    // TODO: Consider renaming "exploreTools" to "fileExploreTools".
     List<ExternalTool> exploreTools = new ArrayList<>();
+    // TODO: Consider renaming "configureToolsByFileId" to "fileConfigureToolsByFileId".
     Map<Long, List<ExternalTool>> configureToolsByFileId = new HashMap<>();
+    // TODO: Consider renaming "exploreToolsByFileId" to "fileExploreToolsByFileId".
     Map<Long, List<ExternalTool>> exploreToolsByFileId = new HashMap<>();
+    private List<ExternalTool> datasetExploreTools;
     
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -725,7 +737,7 @@ public class DatasetPage implements java.io.Serializable {
         QueryResponse queryResponse = null;
         
         try {
-            queryResponse = getSolrServer().query(solrQuery);
+            queryResponse = solrClientService.getSolrClient().query(solrQuery);
         } catch (Exception ex) {
             logger.fine("Solr exception: " + ex.getLocalizedMessage());
             // solr maybe down/some error may have occurred... 
@@ -840,7 +852,7 @@ public class DatasetPage implements java.io.Serializable {
         Set<Long> resultIds = new HashSet<>();
         
         try {
-            queryResponse = getSolrServer().query(solrQuery);
+            queryResponse = solrClientService.getSolrClient().query(solrQuery);
         } catch (HttpSolrClient.RemoteSolrException ex) {
             logger.fine("Remote Solr Exception: " + ex.getLocalizedMessage());
             String msg = ex.getLocalizedMessage(); 
@@ -858,7 +870,7 @@ public class DatasetPage implements java.io.Serializable {
             logger.fine("Solr query (trying again): " + solrQuery);
 
             try {
-                queryResponse = getSolrServer().query(solrQuery);
+                queryResponse = solrClientService.getSolrClient().query(solrQuery);
             } catch (Exception ex) {
                 logger.warning("Caught a Solr exception (again!): " + ex.getLocalizedMessage());
                 return resultIds;
@@ -1911,7 +1923,7 @@ public class DatasetPage implements java.io.Serializable {
             } else if (!permissionService.on(dataset.getOwner()).has(Permission.AddDataset)) {
                 return permissionsWrapper.notAuthorized(); 
             }
-
+            
             dataverseTemplates.addAll(dataverseService.find(ownerId).getTemplates());
             if (!dataverseService.find(ownerId).isTemplateRoot()) {
                 dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());
@@ -2011,8 +2023,9 @@ public class DatasetPage implements java.io.Serializable {
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.unlocked.ingest.message"));
         }
         
-        configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
-        exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
+        configureTools = externalToolService.findFileToolsByType(ExternalTool.Type.CONFIGURE);
+        exploreTools = externalToolService.findFileToolsByType(ExternalTool.Type.EXPLORE);
+        datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
       
         
@@ -3473,7 +3486,7 @@ public class DatasetPage implements java.io.Serializable {
     private String returnToDatasetOnly(){
          dataset = datasetService.find(dataset.getId());
          editMode = null;         
-         return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString()  +  "&faces-redirect=true";       
+         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString() +  "&faces-redirect=true";    
     }
     
     private String returnToDraftVersion(){      
@@ -4828,6 +4841,25 @@ public class DatasetPage implements java.io.Serializable {
         privateUrlWasJustCreated = false;
     }
 
+    public boolean isShowLinkingPopup() {
+        return showLinkingPopup;
+    }
+
+    public void setShowLinkingPopup(boolean showLinkingPopup) {
+        this.showLinkingPopup = showLinkingPopup;
+    }    
+    
+    private boolean showLinkingPopup = false;
+    
+    //
+    
+    /*
+        public void setSelectedGroup(ExplicitGroup selectedGroup) {
+        setShowDeletePopup(true);
+        this.selectedGroup = selectedGroup;
+    }
+    */
+
     public void createPrivateUrl() {
         try {
             PrivateUrl createdPrivateUrl = commandEngine.submit(new CreatePrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
@@ -5030,6 +5062,10 @@ public class DatasetPage implements java.io.Serializable {
         return cachedTools;
     }
 
+    public List<ExternalTool> getDatasetExploreTools() {
+        return datasetExploreTools;
+    }
+
     Boolean thisLatestReleasedVersion = null;
     
     public boolean isThisLatestReleasedVersion() {
@@ -5131,13 +5167,7 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
     }
-    
-    private SolrClient solrServer = null;
-    
-    private SolrClient getSolrServer () {
-        return searchService.getSolrServer();       
-    }
-    
+
     private static Date getFileDateToCompare(FileMetadata fileMetadata) {
         DataFile datafile = fileMetadata.getDataFile();
 
@@ -5184,4 +5214,17 @@ public class DatasetPage implements java.io.Serializable {
             return type1.compareTo(type2);
         }
     };
+
+    public void explore(ExternalTool externalTool) {
+        ApiToken apiToken = null;
+        User user = session.getUser();
+        if (user instanceof AuthenticatedUser) {
+            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+        }
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataset, apiToken, session.getLocaleCode());
+        String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
+        logger.fine("Exploring with " + toolUrl);
+        PrimeFaces.current().executeScript("window.open('"+toolUrl + "', target='_blank');");
+    }
+
 }
