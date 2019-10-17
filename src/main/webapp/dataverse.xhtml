@@ -60,7 +60,7 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.title']}"></span>
                                 </h:outputLabel>
                                 <div class="form-col-container">
-                                    <p:inputText id="name" styleClass="form-control" value="#{DataversePage.dataverse.name}"/>
+                                    <p:inputText id="name" styleClass="form-control" value="#{DataversePage.dataverse.name}" required="true"/>
                                 </div>
                             </div>
                             <div class="col-md-6 form-group">
@@ -70,7 +70,7 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.affiliation.title']}"></span>
                                 </h:outputLabel>
                                 <div class="form-col-container">
-                                    <p:inputText id="affiliation" styleClass="form-control" value="#{DataversePage.dataverse.affiliation}"/>
+                                    <p:inputText id="affiliation" styleClass="form-control" value="#{DataversePage.dataverse.affiliation}" required="true"/>
                                     <p:message for="affiliation" display="text"/>
                                 </div>
                             </div>
@@ -85,7 +85,7 @@
                                 <div class="form-col-container">
                                     <div class="input-group">
                                         <div class="input-group-addon"><span class="small">#{systemConfig.dataverseSiteUrl}/dataverse/</span></div>
-                                        <p:inputText id="identifier" styleClass="form-control" validator="#{DataversePage.validateAlias}" value="#{DataversePage.dataverse.alias}"/>
+                                        <p:inputText id="identifier" styleClass="form-control" validator="#{DataversePage.validateAlias}" value="#{DataversePage.dataverse.alias}" required="true"/>
                                     </div>
                                     <p:message for="identifier" display="text"/>
                                 </div>
@@ -119,7 +119,7 @@
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.category.title']}"></span>
                                         </h:outputLabel>
                                         <div class="form-col-container">
-                                            <h:selectOneMenu id="dataverseCategory" styleClass="form-control" value="#{DataversePage.dataverse.dataverseType}">
+                                            <h:selectOneMenu id="dataverseCategory" styleClass="form-control" value="#{DataversePage.dataverse.dataverseType}" required="true">
                                                 <f:selectItem id="dvSelect" itemLabel="#{bundle['dataverse.type.selectTab.top']}" itemValue="" />
                                                 <f:selectItem id="dvDepartment" itemLabel="#{bundle['dataverse.type.selectTab.department']}" itemValue="DEPARTMENT" />
                                                 <f:selectItem id="dvJournals" itemLabel="#{bundle['dataverse.type.selectTab.journals']}" itemValue="JOURNALS" />
@@ -146,7 +146,7 @@
                                                 <ui:repeat value="#{DataversePage.dataverse.dataverseContacts}" var="contacts" varStatus="valCount">
                                                     <div class="row col-xs-12 form-group">
                                                         <div class="col-xs-9 form-col-container">
-                                                            <p:inputText id="contactEmail" styleClass="form-control" value="#{contacts.contactEmail}">
+                                                            <p:inputText id="contactEmail" styleClass="form-control" value="#{contacts.contactEmail}" required="true">
                                                                 <f:validateBean disabled="#{param['SKIP_VALIDATION']}"/>
                                                             </p:inputText>
                                                             <p:message for="contactEmail" display="text"/>
