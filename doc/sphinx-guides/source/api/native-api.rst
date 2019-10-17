@@ -279,6 +279,7 @@ To create a dataset, you must supply a JSON file that contains at least the foll
 
 - Title
 - Author
+- Contact
 - Description
 - Subject
 
