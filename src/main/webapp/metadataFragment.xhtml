@@ -128,6 +128,7 @@
                                                                 <ui:include src="datasetFieldForEditFragment.xhtml">
                                                                     <ui:param name="dsfv" value="#{dsfv}"/>
                                                                     <ui:param name="dsfvIndex" value="#{valCount.index}"/>
+                                                                    <ui:param name="required" value="#{dsf.required}"/>
                                                                 </ui:include>
                                                             </div>
                                                             <!-- Add / Remove buttons -->
@@ -152,13 +153,13 @@
                                                     </ui:repeat>
                                                     <ui:fragment rendered="#{dsf.datasetFieldType.controlledVocabulary}">
                                                         <p:selectOneMenu value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" styleClass="form-control primitive"
-                                                                         id="unique1" rendered="#{!dsf.datasetFieldType.allowMultiples}">
+                                                                         id="unique1" required="#{dsf.required}" rendered="#{!dsf.datasetFieldType.allowMultiples}">
                                                             <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
                                                             <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
                                                         </p:selectOneMenu>
                                                         <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{dsf.datasetFieldType.allowMultiples}">
                                                             <p:selectManyCheckbox value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" layout="pageDirection"
-                                                                                  id="unique2">
+                                                                                  id="unique2" required="#{dsf.required}">
                                                                 <f:selectItem itemLabel="#{bundle.select}" class="chkbox-label-margin" itemValue="" noSelectionOption="true"/>
                                                                 <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
                                                             </p:selectManyCheckbox>
@@ -203,18 +204,19 @@
                                                                 <ui:include src="datasetFieldForEditFragment.xhtml">
                                                                     <ui:param name="dsfv" value="#{subdsf.singleValue}"/>
                                                                     <ui:param name="dsfvIndex" value="0"/>
+                                                                    <ui:param name="required" value="#{subdsf.required}"/>
                                                                 </ui:include>
                                                             </ui:fragment>
                                                             <!-- MOVED SELECT ONE TO dataFieldForEdit -->
                                                             <div jsf:rendered="#{subdsf.datasetFieldType.controlledVocabulary}">
                                                                 <p:selectOneMenu value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;"
-                                                                                 rendered="#{!subdsf.datasetFieldType.allowMultiples}">
+                                                                                 required="#{subdsf.required}" rendered="#{!subdsf.datasetFieldType.allowMultiples}">
                                                                     <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
                                                                     <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
                                                                 </p:selectOneMenu>
                                                                 <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{subdsf.datasetFieldType.allowMultiples}">
                                                                     <p:selectManyCheckbox value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
-                                                                                          layout="pageDirection">
+                                                                                          required="#{subdsf.required}" layout="pageDirection">
                                                                         <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
                                                                     </p:selectManyCheckbox>
                                                                 </div>
