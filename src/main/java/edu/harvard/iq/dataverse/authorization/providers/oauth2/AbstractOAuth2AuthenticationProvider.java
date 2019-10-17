@@ -133,7 +133,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         if ( ( accessToken.getScope() != null && ! getScope().stream().allMatch(accessToken.getScope()::contains) ) ||
              ( accessToken.getScope() == null && ! getSpacedScope().isEmpty() ) ) {
             // We did not get the permissions on the scope(s) we need. Abort and inform the user.
-            throw new OAuth2Exception(200, BundleUtil.getStringFromBundle("auth.providers.orcid.insufficientScope"), "");
+            throw new OAuth2Exception(200, BundleUtil.getStringFromBundle("auth.providers.insufficientScope", Arrays.asList(this.getTitle())), "");
         }
         
         OAuthRequest request = new OAuthRequest(Verb.GET, getUserEndpoint(accessToken));
@@ -147,7 +147,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         if ( responseCode == 200 && body != null ) {
             return getUserRecord(body, accessToken, service);
         } else {
-            throw new OAuth2Exception(responseCode, body, "Error getting the user info record.");
+            throw new OAuth2Exception(responseCode, body, BundleUtil.getStringFromBundle("auth.providers.exception.userinfo", Arrays.asList(this.getTitle())));
         }
     }
     
