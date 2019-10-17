@@ -503,14 +503,14 @@
                     <ui:fragment rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                         <p:focus context="datasetForm"/>
                         <div class="form-group">
-                            <label for="#{DatasetPage.editMode == 'CREATE' ? 'select_HostDataverse' : ''}" class="col-md-3 control-label">
+                            <label jsf:for="#{DatasetPage.editMode == 'CREATE' ? 'select_HostDataverse' : 'select_HostDataverse_Static'}" class="col-md-3 control-label">
                                 #{bundle.hostDataverse}
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.host.title']}"></span>
                             </label>
                             <div class="col-md-7">
                                 <ui:fragment rendered="#{DatasetPage.editMode == 'METADATA'}">
-                                    <p class="form-control-static">#{DatasetPage.dataset.owner.name}</p>
+                                    <p jsf:id="select_HostDataverse_Static" class="form-control-static">#{DatasetPage.dataset.owner.name}</p>
                                     <h:inputHidden value="#{DatasetPage.ownerId}" id="select_HostDataverseStatic"/>
                                 </ui:fragment>
                                 <p:selectOneMenu id="select_HostDataverse" rendered="#{DatasetPage.editMode == 'CREATE'}"
@@ -520,7 +520,7 @@
                             </div>
                         </div>
                         <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataverseTemplates and DatasetPage.editMode == 'CREATE'}">
-                            <label for="select_DatasetTemplate" class="col-md-3 control-label">
+                            <label jsf:for="select_DatasetTemplate" class="col-md-3 control-label">
                                 #{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate']}
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate.title']}"></span>
