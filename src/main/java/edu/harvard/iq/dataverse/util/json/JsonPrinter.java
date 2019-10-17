@@ -324,7 +324,7 @@ public class JsonPrinter {
                 .add("lastUpdateTime", format(dsv.getLastUpdateTime()))
                 .add("releaseTime", format(dsv.getReleaseTime()))
                 .add("createTime", format(dsv.getCreateTime()))
-                .add("license", dsv.getTermsOfUseAndAccess().getLicense() != null ? dsv.getTermsOfUseAndAccess().getLicense().toString() : null)
+                .add("license", getLicense(dsv))
                 .add("termsOfUse", getLicenseInfo(dsv))
                 .add("confidentialityDeclaration", dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration() != null ? dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration() : null)
                 .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus() != null ? dsv.getTermsOfUseAndAccess().getAvailabilityStatus() : null)
@@ -385,11 +385,23 @@ public class JsonPrinter {
     
     private static String getLicenseInfo(DatasetVersion dsv) {
         if (dsv.getTermsOfUseAndAccess().getLicense() != null && dsv.getTermsOfUseAndAccess().getLicense().equals(TermsOfUseAndAccess.License.CC0)) {
-            return "CC0 Waiver";
+            return "CC BY Waiver";
         }
         return dsv.getTermsOfUseAndAccess().getTermsOfUse();
     }
 
+    private static String getLicense(DatasetVersion dsv) {
+        if (dsv.getTermsOfUseAndAccess().getLicense() != null) {
+            if (dsv.getTermsOfUseAndAccess().getLicense().equals(TermsOfUseAndAccess.License.CC0)) {
+                return "CC BY";
+            } else {
+                return dsv.getTermsOfUseAndAccess().getLicense().toString();
+            }
+        } else {
+        	return null;
+        }
+    }
+    
     /**
      * Export formats such as DDI require the citation to be included. See
      * https://github.com/IQSS/dataverse/issues/2579 for more on DDI export.

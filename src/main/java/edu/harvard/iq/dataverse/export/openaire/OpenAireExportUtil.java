@@ -1129,8 +1129,8 @@ public class OpenAireExportUtil {
         // check if getTermsOfUse() method starts with http://
         writeRightsHeader(xmlw, language);
         if (StringUtils.isNotBlank(datasetVersionDTO.getLicense())) {
-            if (StringUtils.containsIgnoreCase(datasetVersionDTO.getLicense(), "cc0")) {
-                xmlw.writeAttribute("rightsURI", "https://creativecommons.org/publicdomain/zero/1.0/");
+            if (StringUtils.containsIgnoreCase(datasetVersionDTO.getLicense(), "cc by")) {
+                xmlw.writeAttribute("rightsURI", "https://creativecommons.org/licenses/by/4.0/");
                 if (StringUtils.isNotBlank(datasetVersionDTO.getTermsOfUse())) {
                     xmlw.writeCharacters(datasetVersionDTO.getTermsOfUse());
                 }

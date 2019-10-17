@@ -904,8 +904,8 @@ public class OpenAireExportUtilTest {
         xmlw.close();
         Assert.assertEquals("<rightsList>"
                 + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\" />"
-                + "<rights rightsURI=\"https://creativecommons.org/publicdomain/zero/1.0/\">"
-                + "CC0 Waiver</rights></rightsList>",
+                + "<rights rightsURI=\"https://creativecommons.org/licenses/by/4.0/\">"
+                + "CC BY Waiver</rights></rightsList>",
                 sw.toString());
     }
 
