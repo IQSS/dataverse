@@ -3,6 +3,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
@@ -20,7 +21,10 @@
             <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
             <ui:param name="locked" value="#{DatasetPage.locked}"/>
 	    <ui:param name="showMessagePanel" value="#{true}"/>
-	    <ui:define name="dc_meta_header">
+	    <ui:define name="meta_header">
+            <meta name="description" content="#{DatasetPage.description}"/>
+            </ui:define>
+            <ui:define name="dc_meta_header">
 	    <meta name="DC.identifier" content="#{DatasetPage.persistentId}"/>
 	    <meta name="DC.type" content="Dataset"/>
 	    <meta name="DC.title" content="#{DatasetPage.title}"/>
@@ -75,7 +79,7 @@
                     <!-- Header / Button Panel -->
                     <!-- View editMode -->
                     <p:fragment id="topDatasetBlockFragment">
-                    <div id="topDatasetBlock" jsf:rendered="#{empty DatasetPage.editMode}">
+                    <div id="topDatasetBlock" class="row" jsf:rendered="#{empty DatasetPage.editMode}">
                         <div id="actionButtonBlock" class="button-block clearfix" jsf:rendered="#{!widgetWrapper.widgetView}">
                             <div class="btn-group pull-right" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
                                                                               and !DatasetPage.dataset.deaccessioned
@@ -130,6 +134,36 @@
                                     </ui:fragment>
                                 </ul>
                             </div>
+                            
+                            
+                            
+                            <div class="btn-group pull-right" jsf:rendered="#{!DatasetPage.dataset.deaccessioned}">
+                                <!-- Explore Button Group -->
+                                <ui:fragment rendered="#{DatasetPage.datasetExploreTools.size()==1}">
+                                    <button type="button" class="btn btn-default btn-explore" onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
+                                        <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
+                                    </button>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{DatasetPage.datasetExploreTools.size()>1}">
+                                    <button type="button" class="btn btn-default btn-explore dropdown-toggle" data-toggle="dropdown">
+                                        <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span class="caret"></span>
+                                    </button>
+                                </ui:fragment>
+
+                                <ul class="dropdown-menu pull-left text-left" role="menu">
+                                    <!-- Explore tool links -->
+                                    <ui:repeat var="tool" value="#{DatasetPage.datasetExploreTools}">
+                                        <li>
+                                            <h:commandLink action="#{DatasetPage.explore(tool)}">
+                                                <h:outputText value="#{tool.displayName}"/>
+                                            </h:commandLink>
+                                        </li>
+                                    </ui:repeat>
+                                </ul>
+                            </div>
+
+                            
+                            
                             <div class="btn-group pull-right" role="group">
                                 <!-- Edit/Publish Button Group -->
                                 <!-- Publish/Submit for Review/Return to Author Button Group -->
@@ -204,9 +238,10 @@
                                 <!-- END: Publish/Submit for Review/Return to Author Button Group -->
                                 
                                 <p:commandLink rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned and DatasetPage.dataset.released}"
-                                               styleClass="btn btn-default btn-access"                                              
+                                               styleClass="btn btn-default btn-access"   
+                                               action="#{DatasetPage.setShowLinkingPopup(true)}"
                                                oncomplete="PF('linkDatasetForm').show();bind_bsui_components();"
-                                               update="linkDatasetForm">
+                                               update="@form">
                                     <span class="glyphicon glyphicon-link"/> #{bundle['link']}
                                 </p:commandLink>
                                 
@@ -332,63 +367,132 @@
                                 </div>
                             </p:dialog>
                             <!-- END: Contact/Share Button Group -->
-
-                            <!-- Metrics -->
-                            <div id="metrics-block" class="col-xs-3" jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">
-                                <div id="metrics-label" class="col-xs-4 small text-center">
-                                    <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
-                                </div>
-                                <div id="metrics-content" class="col-xs-8 small text-center">
-                                    <h:outputFormat styleClass="metrics-downloads" value="{0} #{bundle['metrics.downloads']}">
-                                        <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
-                                    </h:outputFormat>
-                                </div>
-                            </div>
-                            <!-- END: Metrics -->
                         </div>
                         
-                        <div id="datasetVersionBlock" class="container-fluid">
-                            <div id="title-block" class="row" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
+                        <div id="datasetVersionBlock" class="col-sm-12">
+                            <div id="title-block" class="row margin-bottom-half" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
                                 <div class="col-xs-1 vcenter title-preview-icon-block">
-                                    <img src="#{DatasetPage.thumbnailString}" jsf:rendered="#{!empty DatasetPage.thumbnailString}"/>
+                                    <img src="#{DatasetPage.thumbnailString}" jsf:rendered="#{!empty DatasetPage.thumbnailString}" alt="#{DatasetPage.datasetVersionUI.title.value}"/>
                                     <span class="icon-dataset" jsf:rendered="#{empty DatasetPage.thumbnailString}"/>
                                 </div>
                                 <div class="col-xs-11 vcenter">
                                     <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
-                                    <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{DatasetPage.workingVersion.draft}"/>
-                                    <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{DatasetPage.workingVersion.inReview}"/>
-                                    <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
-                                    <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
-                                    <!-- DATASET VERSION NUMBER -->
-                                    <h:outputText styleClass="label label-default" rendered="#{DatasetPage.workingVersion.released and !(DatasetPage.workingVersion.draft or DatasetPage.workingVersion.inReview or DatasetPage.workingVersion.deaccessioned)}"
-                                                  value="#{bundle['file.DatasetVersion']} #{DatasetPage.workingVersion.versionNumber}.#{DatasetPage.workingVersion.minorVersionNumber}" /> 
-                                    <h:outputText styleClass="label label-default" rendered="#{!DatasetPage.workingVersion.released and !(DatasetPage.workingVersion.draft or DatasetPage.workingVersion.inReview or DatasetPage.workingVersion.deaccessioned)}"
-                                                  value="#{bundle['file.DatasetVersion']} #{DatasetPage.workingVersion.versionState}"/>
+                                    
+                                    <div id="title-label-block" class="margin-top-half">
+                                        <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{DatasetPage.workingVersion.draft}"/>
+                                        <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{DatasetPage.workingVersion.inReview}"/>
+                                        <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
+                                        <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
+                                        <!-- DATASET VERSION NUMBER -->
+                                        <h:outputText styleClass="label label-default" rendered="#{DatasetPage.workingVersion.released and !(DatasetPage.workingVersion.draft or DatasetPage.workingVersion.inReview or DatasetPage.workingVersion.deaccessioned)}"
+                                                      value="#{bundle['file.DatasetVersion']} #{DatasetPage.workingVersion.versionNumber}.#{DatasetPage.workingVersion.minorVersionNumber}" /> 
+                                        <h:outputText styleClass="label label-default" rendered="#{!DatasetPage.workingVersion.released and !(DatasetPage.workingVersion.draft or DatasetPage.workingVersion.inReview or DatasetPage.workingVersion.deaccessioned)}"
+                                                      value="#{bundle['file.DatasetVersion']} #{DatasetPage.workingVersion.versionState}"/>
+                                    </div>
                                 </div>
                             </div>
-                            <!-- CITATION BLOCK -->
-                            <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
-                                <ui:include src="dataset-citation.xhtml">
-                                    <ui:param name="datasetPage" value="true"/>
-                                </ui:include>
-                            </ui:fragment>
-                            <!-- END: CITATION BLOCK -->
-                            <div id="deaccession-reason-block" class="row bg-danger" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
-                                <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
-                                <p>#{DatasetPage.workingVersion.versionNote}</p>
-                                <ui:fragment rendered="#{!empty DatasetPage.workingVersion.archiveNote}">
-                                    <p>#{bundle['dataset.beAccessedAt']} <a href="#{DatasetPage.workingVersion.archiveNote}" target="_blank">#{DatasetPage.workingVersion.archiveNote}</a></p>
+                            
+                            <div class="row">
+                                <!-- CITATION BLOCK -->
+                                <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
+                                    <ui:include src="dataset-citation.xhtml">
+                                        <ui:param name="datasetPage" value="true"/>
+                                    </ui:include>
                                 </ui:fragment>
+                                <!-- END: CITATION BLOCK -->
+                                <div id="deaccession-reason-block" class="bg-danger" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
+                                    <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
+                                    <p>#{DatasetPage.workingVersion.versionNote}</p>
+                                    <ui:fragment rendered="#{!empty DatasetPage.workingVersion.archiveNote}">
+                                        <p>#{bundle['dataset.beAccessedAt']} <a href="#{DatasetPage.workingVersion.archiveNote}" target="_blank">#{DatasetPage.workingVersion.archiveNote}</a></p>
+                                    </ui:fragment>
+                                </div>
+                                
+                                <!-- Metrics -->
+                                <div id="metrics-block" class="col-sm-3" jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">
+                                    <div id="metrics-heading">
+                                        #{bundle['metrics.dataset.title']}
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
+                                                data-original-title="#{settingsWrapper.makeDataCountEnabled ? bundle['metrics.dataset.tip.makedatacount'] : bundle['metrics.dataset.tip.default']}"></span>
+                                    </div>
+                                    <div id="metrics-body">
+                                        <!-- Classic downloads -->
+                                        <div class="metrics-count-block" jsf:rendered="#{!settingsWrapper.makeDataCountEnabled}">
+                                            <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
+                                                <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
+                                            </h:outputFormat>
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                    data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.default.tip']}"></span>
+                                        </div>
+                                        <!-- Make Data Count views -->
+                                        <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountEnabled}">
+                                            <h:outputFormat value="{0} #{bundle['metrics.views']}">
+                                                <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getViewsTotal()}"/>
+                                            </h:outputFormat>
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                    data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.views.tip']}"></span>
+                                        </div>
+                                        <!-- Make Data Count downloads -->
+                                        <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountEnabled}">
+                                            <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
+                                                <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getDownloadsTotal()}"/>
+                                            </h:outputFormat>
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                    data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.makedatacount.tip']}"></span>
+                                        </div>
+                                        <!-- Make Data Count citations (DOIs only, not Handles) -->
+                                        <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountEnabled and settingsWrapper.doiInstallation}">
+                                            <p:commandLink oncomplete="PF('citationsDialog').show();">
+                                                <h:outputFormat value="{0} #{bundle['metrics.citations']}">
+                                                    <f:param value="#{fn:length(datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset))}"/>
+                                                </h:outputFormat>
+                                            </p:commandLink>
+                                            
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                    data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.citations.tip']}"></span>
+                                        
+                                            <p:dialog id="citationsDialog" styleClass="smallPopUp" header="#{bundle['metrics.citations.dialog.header']}" widgetVar="citationsDialog" modal="true">
+                                                <p class="help-block">
+                                                    <h:outputFormat value="#{bundle['metrics.citations.dialog.help']}" escape="false">
+                                                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                                        <f:param value="#{systemConfig.guidesVersion}"/>
+                                                    </h:outputFormat>
+                                                </p>
+                                                
+                                                <div id="citations-list-block">
+                                                    <div jsf:rendered="#{empty datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}">
+                                                        #{bundle['metrics.citations.dialog.empty']}
+                                                    </div>
+                                                    <ui:fragment rendered="#{!empty datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}">
+                                                        <ul>
+                                                            <ui:repeat value="#{datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset)}" var="citation">
+                                                                <li><a href="#{citation.citedByUrl}" target="_blank">#{citation.citedByUrl}</a></li>
+                                                            </ui:repeat>
+                                                        </ul>
+                                                    </ui:fragment>
+                                                </div>
+
+                                                <div class="button-block">
+                                                    <button class="btn btn-default" onclick="PF('citationsDialog').hide()" type="button">
+                                                        #{bundle.close}
+                                                    </button>
+                                                </div>
+                                            </p:dialog>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- END: Metrics -->
                             </div>
+                            
                             <!-- BEGIN: DATASET SUMMARY -->
-                            <div id="dataset-summary-metadata" class="row panel panel-default"
+                            <div id="dataset-summary-metadata" class="row" style="background-color:lightgoldenrodyellow;background:none;"
                                  jsf:rendered="#{!widgetWrapper.widgetView and !DatasetPage.workingVersion.deaccessioned and 
                                                    ( !empty DatasetPage.datasetVersionUI.descriptionDisplay
                                                  or !empty DatasetPage.datasetVersionUI.keywordDisplay
                                                  or !empty DatasetPage.datasetVersionUI.subject.value
                                                  or !empty DatasetPage.datasetVersionUI.relPublicationCitation
                                                  or !empty DatasetPage.datasetVersionUI.notes.value  ) and !empty DatasetPage.datasetSummaryFields }">
-                                <div class="panel-body metadata-panel-body">
+                                <div class="col-sm-12 metadata-container">
                                     <ui:repeat value="#{DatasetPage.datasetSummaryFields}" var="dsf">
                                         
                                         <div id="keywords" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.keywordDisplay and dsf.datasetFieldType.id==DatasetPage.datasetVersionUI.keyword.datasetFieldType.id}">
@@ -536,7 +640,8 @@
                             <!-- see the comment in the javascript below that explains what this button is for -->
                             <p:commandButton id="refreshButton" process="@this" widgetVar="refreshButton" update=":datasetForm:topDatasetBlockFragment,:datasetForm:tabView:filesTable" style="display:none"/>
                             
-                            <script type="text/javascript">
+                            <script>
+                                //<![CDATA[
                                 $(this).ready(function () {
                                     refreshIfStillLocked();
                                 });
@@ -579,6 +684,7 @@
                                         refreshAllLocksCommand();
                                     }, 10000);
                                 }
+                                //]]>
                             </script>
                         </p:fragment>
 
@@ -806,61 +912,64 @@
                             </button>
                         </div>
                     </p:dialog>
-                    <p:outputPanel autoUpdate="true">
-                        <p:dialog id="deaccessionBlock" rendered="#{DatasetPage.renderDeaccessionPopup}" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionBlock" modal="true" visible="#{facesContext.validationFailed}">
-                            <p:focus for="selectVersionChk"/>
-                            <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.tip']}</p>
-                            <div class="form-group" jsf:rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
-                                <label for="selectVersionChk">#{bundle['file.deaccessionDialog.reason.question1']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>                           
-                                <p:selectManyCheckbox id="selectVersionChk" value="#{DatasetPage.selectedDeaccessionVersions}" converter="datasetVersionConverter"
-                                                      layout="pageDirection" required="#{param['DO_DEACCESSION_VALIDATION']}" requiredMessage="#{bundle['file.deaccessionDialog.dialog.selectVersion.error']}" widgetVar="selectVersionChk">
-                                    <f:selectItems value="#{DatasetPage.releasedVersionTabList}" var="versionTab" itemLabel="#{bundle['file.deaccessionDialog.version']} #{versionTab.versionNumber}.#{versionTab.minorVersionNumber}, #{versionTab.versionDate}"  itemValue="#{versionTab}" />
-                                </p:selectManyCheckbox>
-                                <p:message for="selectVersionChk"/>
-                            </div>
-                            <div class="form-group">
-                                <label for="reasonOptions">#{bundle['file.deaccessionDialog.reason.question2']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
-                                <p:selectOneMenu widgetVar="reasonOptions" id="reasonOptions" styleClass="form-control" value="#{DatasetPage.deaccessionReasonRadio}" required="#{param['DO_DEACCESSION_VALIDATION']}" 
-                                                  binding="#{reasonRadio}" requiredMessage="#{bundle['file.deaccessionDialog.dialog.reason.error']}">
-                                    <f:selectItem itemLabel="#{bundle.select}" itemValue="#{null}" noSelectionOption="true" />
-                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.identifiable']}" itemValue="1" />
-                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.beRetracted']}" itemValue="2" />
-                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.beTransferred']}" itemValue="3" />
-                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.IRB']}" itemValue="4" />
-                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.legalIssue']}" itemValue="5" />
-                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.notValid']}" itemValue="6" />
-                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.other']}" itemValue="7" />
-                                </p:selectOneMenu>
-                                <p:message for="reasonOptions"/>
-                            </div>
-                            <div class="form-group">
-                                <label for="reasonForDeaccession">
+                    <p:fragment>
+                        <p:autoUpdate />
+                        <p:outputPanel>
+                            <p:dialog id="deaccessionBlock" rendered="#{DatasetPage.renderDeaccessionPopup}" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionBlock" modal="true" visible="#{facesContext.validationFailed}">
+                                <p:focus for="selectVersionChk"/>
+                                <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.tip']}</p>
+                                <div class="form-group" jsf:rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
+                                    <label for="selectVersionChk">#{bundle['file.deaccessionDialog.reason.question1']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>                           
+                                    <p:selectManyCheckbox id="selectVersionChk" value="#{DatasetPage.selectedDeaccessionVersions}" converter="datasetVersionConverter"
+                                                          layout="pageDirection" required="#{param['DO_DEACCESSION_VALIDATION']}" requiredMessage="#{bundle['file.deaccessionDialog.dialog.selectVersion.error']}" widgetVar="selectVersionChk">
+                                        <f:selectItems value="#{DatasetPage.releasedVersionTabList}" var="versionTab" itemLabel="#{bundle['file.deaccessionDialog.version']} #{versionTab.versionNumber}.#{versionTab.minorVersionNumber}, #{versionTab.versionDate}"  itemValue="#{versionTab}" />
+                                    </p:selectManyCheckbox>
+                                    <p:message for="selectVersionChk"/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="reasonOptions">#{bundle['file.deaccessionDialog.reason.question2']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
+                                    <p:selectOneMenu widgetVar="reasonOptions" id="reasonOptions" styleClass="form-control" value="#{DatasetPage.deaccessionReasonRadio}" required="#{param['DO_DEACCESSION_VALIDATION']}" 
+                                                     binding="#{reasonRadio}" requiredMessage="#{bundle['file.deaccessionDialog.dialog.reason.error']}">
+                                        <f:selectItem itemLabel="#{bundle.select}" itemValue="#{null}" noSelectionOption="true" />
+                                        <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.identifiable']}" itemValue="1" />
+                                        <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.beRetracted']}" itemValue="2" />
+                                        <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.beTransferred']}" itemValue="3" />
+                                        <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.IRB']}" itemValue="4" />
+                                        <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.legalIssue']}" itemValue="5" />
+                                        <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.notValid']}" itemValue="6" />
+                                        <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.other']}" itemValue="7" />
+                                    </p:selectOneMenu>
+                                    <p:message for="reasonOptions"/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="reasonForDeaccession">
                                     #{bundle['file.deaccessionDialog.enterInfo']}
-                                </label>
-                                <p:inputTextarea id="reasonForDeaccession" styleClass="form-control"  autoResize="false" rows="2" cols="40"                                           
-                                                 value="#{DatasetPage.deaccessionReasonText}" widgetVar="reasonForDeaccession" validator="#{DatasetPage.validateDeaccessionReason}"> 
-                                    <f:attribute name="reasonRadio" value="#{reasonRadio}" />
-                                </p:inputTextarea>
-                                <p:message for="reasonForDeaccession"/>
-                            </div>
-                            <div class="form-group">
-                                <label for="forwardURLForDeaccession">
+                                    </label>
+                                    <p:inputTextarea id="reasonForDeaccession" styleClass="form-control"  autoResize="false" rows="2" cols="40"                                           
+                                                     value="#{DatasetPage.deaccessionReasonText}" widgetVar="reasonForDeaccession" validator="#{DatasetPage.validateDeaccessionReason}"> 
+                                        <f:attribute name="reasonRadio" value="#{reasonRadio}" />
+                                    </p:inputTextarea>
+                                    <p:message for="reasonForDeaccession"/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="forwardURLForDeaccession">
                                     #{bundle['file.deaccessionDialog.leaveURL']}
-                                </label>
-                                <p:inputText id="forwardURLForDeaccession" styleClass="form-control" value="#{DatasetPage.deaccessionForwardURLFor}" widgetVar="forwardURLForDeaccession"
-                                             validator="#{DatasetPage.validateForwardURL}"/>
-                                <p:message for="forwardURLForDeaccession"/>
-                                <p:watermark for="forwardURLForDeaccession" value="#{bundle['file.deaccessionDialog.leaveURL.watermark']}" id="watermark" />
-                            </div>
-                            <div class="button-block">
-                                <p:commandButton styleClass="btn btn-default" value="#{bundle.deaccession}"  
-                                               oncomplete="if (args &amp;&amp; !args.validationFailed) PF('deaccessionConfirmation').show();">
-                                    <f:param name="DO_DEACCESSION_VALIDATION" value="true"/>
-                                </p:commandButton>
-                                <p:commandButton styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.setRenderDeaccessionPopup(false)}" onclick="PF('deaccessionBlock').hide();PF('blockDatasetForm').hide();" immediate="true"/>
-                            </div>
-                        </p:dialog>
-                    </p:outputPanel>
+                                    </label>
+                                    <p:inputText id="forwardURLForDeaccession" styleClass="form-control" value="#{DatasetPage.deaccessionForwardURLFor}" widgetVar="forwardURLForDeaccession"
+                                                 validator="#{DatasetPage.validateForwardURL}"/>
+                                    <p:message for="forwardURLForDeaccession"/>
+                                    <p:watermark for="forwardURLForDeaccession" value="#{bundle['file.deaccessionDialog.leaveURL.watermark']}" id="watermark" />
+                                </div>
+                                <div class="button-block">
+                                    <p:commandButton styleClass="btn btn-default" value="#{bundle.deaccession}"  
+                                                     oncomplete="if (args &amp;&amp; !args.validationFailed) PF('deaccessionConfirmation').show();">
+                                        <f:param name="DO_DEACCESSION_VALIDATION" value="true"/>
+                                    </p:commandButton>
+                                    <p:commandButton styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.setRenderDeaccessionPopup(false)}" onclick="PF('deaccessionBlock').hide();PF('blockDatasetForm').hide();" immediate="true"/>
+                                </div>
+                            </p:dialog>
+                        </p:outputPanel>
+                    </p:fragment>
                     <p:dialog id="deaccessionConfirmation" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionConfirmation" modal="true">
                         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.deaccession.tip']}</p>
                         <div class="button-block">
@@ -1247,15 +1356,7 @@
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                         </ui:include>
                     </p:dialog>
-                    <p:dialog id="downloadDataSubsetPopup" styleClass="smallPopUp" header="#{bundle['file.download.subset.header']}" widgetVar="downloadDataSubsetPopup"
-                              rendered="#{empty DatasetPage.editMode}" modal="true">
-                        <div class="form-inline clearfix" jsf:rendered="#{!(empty DatasetPage.guestbookResponse.dataFile) and DatasetPage.guestbookResponse.dataFile.tabularData}">
-                            <ui:include src="/subset/gui_subset.xhtml">
-                                <ui:param name="dataFile" value="#{DatasetPage.guestbookResponse.dataFile}"/>
-                            </ui:include>
-                        </div>
-                    </p:dialog>
-                    <p:dialog id="linkDatasetForm" styleClass="largePopUp" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true">
+                    <p:dialog id="linkDatasetForm" styleClass="largePopUp" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true" rendered="#{DatasetPage.showLinkingPopup}">
                         <p:focus for="dataverseLinkName"/>
                         <div class="form-horizontal">
                             <p class="help-block">
@@ -1547,7 +1648,8 @@
                     <p:remoteCommand name="returnToAuthorCommand" action="#{DatasetPage.sendBackToContributor}"/>                  
                     <!-- END: Publish/Submit for Review Dialogs -->
                 </h:form>
-                <script type="text/javascript">
+                <script>
+                    //<![CDATA[
                     $(document).ready(function () {
                         popoverHTML('#{bundle.htmlAllowedTitle}');
                     });
@@ -1625,6 +1727,7 @@
                     function updateHiddenReason(textArea) {
                         $('input[id$="hiddenReasonInput"]').val(textArea.value);
                     }
+                    //]]>
                 </script>
             </ui:define>
         </ui:composition>

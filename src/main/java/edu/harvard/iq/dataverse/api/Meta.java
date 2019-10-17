@@ -94,8 +94,6 @@ public class Meta {
 
         retValue = outStream.toString();
         
-        response.setHeader("Access-Control-Allow-Origin", "*");
-        
         return retValue; 
     }
     
@@ -142,8 +140,6 @@ public class Meta {
             throw new ServiceUnavailableException();
         }
 
-        response.setHeader("Access-Control-Allow-Origin", "*");
-
         return retValue;
     }
     
@@ -177,8 +173,6 @@ public class Meta {
             // metadata record requested. We simply return an empty string.
             throw new ServiceUnavailableException();
         }
-
-        response.setHeader("Access-Control-Allow-Origin", "*");
 
         return retValue;
     }

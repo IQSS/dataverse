@@ -54,6 +54,7 @@ import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -107,6 +108,8 @@ public class IndexServiceBean {
     DataverseLinkingServiceBean dvLinkingService;
     @EJB
     SettingsServiceBean settingsService;
+    @EJB
+    SolrClientService solrClientService;
 
     public static final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
@@ -147,15 +150,17 @@ public class IndexServiceBean {
             solrServer = null;
         }
     }
-
+    
     @TransactionAttribute(REQUIRES_NEW)
-    public Future<String> indexDataverseInNewTransaction(Dataverse dataverse) {
+    public Future<String> indexDataverseInNewTransaction(Dataverse dataverse) throws SolrServerException, IOException{
         return indexDataverse(dataverse);
     }
 
-    public Future<String> indexDataverse(Dataverse dataverse) {
+    public Future<String> indexDataverse(Dataverse dataverse) throws SolrServerException, IOException {
         logger.fine("indexDataverse called on dataverse id " + dataverse.getId() + "(" + dataverse.getAlias() + ")");
         if (dataverse.getId() == null) {
+            // TODO: Investigate the root cause of this "unable to index dataverse"
+            // error showing up in the logs. Try running the API test suite?
             String msg = "unable to index dataverse. id was null (alias: " + dataverse.getAlias() + ")";
             logger.info(msg);
             return new AsyncResult<>(msg);
@@ -254,7 +259,7 @@ public class IndexServiceBean {
         String status;
         try {
             if (dataverse.getId() != null) {
-                solrServer.add(docs);
+                solrClientService.getSolrClient().add(docs);
             } else {
                 logger.info("WARNING: indexing of a dataverse with no id attempted");
             }
@@ -264,7 +269,7 @@ public class IndexServiceBean {
             return new AsyncResult<>(status);
         }
         try {
-            solrServer.commit();
+            solrClientService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
             status = ex.toString();
             logger.info(status);
@@ -279,7 +284,7 @@ public class IndexServiceBean {
     }
 
     @TransactionAttribute(REQUIRES_NEW)
-    public Future<String> indexDatasetInNewTransaction(Long datasetId) { //Dataset dataset) {
+    public Future<String> indexDatasetInNewTransaction(Long datasetId) throws  SolrServerException, IOException{ //Dataset dataset) {
         boolean doNormalSolrDocCleanUp = false;
         Dataset dataset = em.find(Dataset.class, datasetId);
         // return indexDataset(dataset, doNormalSolrDocCleanUp);
@@ -289,18 +294,18 @@ public class IndexServiceBean {
     }
 
     @Asynchronous
-    public Future<String> asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
+    public Future<String> asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
         return indexDataset(dataset, doNormalSolrDocCleanUp);
     }
     
     @Asynchronous
-    public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) {
+    public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
         for(Dataset dataset : datasets) {
             indexDataset(dataset, true);
         }
     }
     
-    public Future<String> indexDvObject(DvObject objectIn){
+    public Future<String> indexDvObject(DvObject objectIn) throws  SolrServerException, IOException {
         
         if (objectIn.isInstanceofDataset() ){
             return (indexDataset((Dataset)objectIn, true));
@@ -311,7 +316,7 @@ public class IndexServiceBean {
         return null;
     }
     
-    public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
+    public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
         logger.fine("indexing dataset " + dataset.getId());
         /**
          * @todo should we use solrDocIdentifierDataset or
@@ -638,7 +643,7 @@ public class IndexServiceBean {
             return new AsyncResult<>(result);
         }
     }
-
+    
     private String deleteDraftFiles(List<String> solrDocIdsForDraftFilesToDelete) {
         String deleteDraftFilesResults = "";
         IndexResponse indexResponse = solrIndexService.deleteMultipleSolrIds(solrDocIdsForDraftFilesToDelete);
@@ -660,11 +665,11 @@ public class IndexServiceBean {
         return indexResponse;
     }
 
-    private String addOrUpdateDataset(IndexableDataset indexableDataset) {
+    private String addOrUpdateDataset(IndexableDataset indexableDataset) throws  SolrServerException, IOException {
         return addOrUpdateDataset(indexableDataset, null);
     }
     
-    private String addOrUpdateDataset(IndexableDataset indexableDataset, Set<Long> datafilesInDraftVersion) {
+    private String addOrUpdateDataset(IndexableDataset indexableDataset, Set<Long> datafilesInDraftVersion) throws  SolrServerException, IOException {
         IndexableDataset.DatasetState state = indexableDataset.getDatasetState();
         Dataset dataset = indexableDataset.getDatasetVersion().getDataset();
         logger.fine("adding or updating Solr document for dataset id " + dataset.getId());
@@ -1097,8 +1102,8 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, fileMetadata.getDataFile().getFriendlyType());
                     // For the file type facets, we have a property file that maps mime types
                     // to facet-friendly names; "application/fits" should become "FITS", etc.:
-                    datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, FileUtil.getFacetFileType(fileMetadata.getDataFile()));
-                    datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, FileUtil.getFacetFileType(fileMetadata.getDataFile()));
+                    datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, FileUtil.getIndexableFacetFileType(fileMetadata.getDataFile()));
+                    datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, FileUtil.getIndexableFacetFileType(fileMetadata.getDataFile()));
                     datafileSolrInputDocument.addField(SearchFields.FILE_SIZE_IN_BYTES, fileMetadata.getDataFile().getFilesize());
                     if (DataFile.ChecksumType.MD5.equals(fileMetadata.getDataFile().getChecksumType())) {
                         /**
@@ -1164,14 +1169,14 @@ public class IndexServiceBean {
         }
 
         try {
-            solrServer.add(docs);
+            solrClientService.getSolrClient().add(docs);
+            solrClientService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
-            return ex.toString();
-        }
-        try {
-            solrServer.commit();
-        } catch (SolrServerException | IOException ex) {
-            return ex.toString();
+            if (ex.getCause() instanceof SolrServerException) {
+                throw new SolrServerException(ex);
+            } else if (ex.getCause() instanceof IOException) {
+                throw new IOException(ex);
+            }
         }
 
         Long dsId = dataset.getId();
@@ -1304,12 +1309,12 @@ public class IndexServiceBean {
         logger.fine("deleting Solr document for dataverse " + doomed.getId());
         UpdateResponse updateResponse;
         try {
-            updateResponse = solrServer.deleteById(solrDocIdentifierDataverse + doomed.getId());
+            updateResponse = solrClientService.getSolrClient().deleteById(solrDocIdentifierDataverse + doomed.getId());
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
         try {
-            solrServer.commit();
+            solrClientService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
@@ -1329,12 +1334,12 @@ public class IndexServiceBean {
         logger.fine("deleting Solr document: " + doomed);
         UpdateResponse updateResponse;
         try {
-            updateResponse = solrServer.deleteById(doomed);
+            updateResponse = solrClientService.getSolrClient().deleteById(doomed);
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
         try {
-            solrServer.commit();
+            solrClientService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
@@ -1538,7 +1543,7 @@ public class IndexServiceBean {
         List<Long> dvObjectInSolrOnly = new ArrayList<>();
         QueryResponse queryResponse = null;
         try {
-            queryResponse = solrServer.query(solrQuery);
+            queryResponse = solrClientService.getSolrClient().query(solrQuery);
         } catch (SolrServerException | IOException ex) {
             throw new SearchException("Error searching Solr for " + type, ex);
         }
@@ -1572,7 +1577,7 @@ public class IndexServiceBean {
         List<String> dvObjectInSolrOnly = new ArrayList<>();
         QueryResponse queryResponse = null;
         try {
-            queryResponse = solrServer.query(solrQuery);
+            queryResponse = solrClientService.getSolrClient().query(solrQuery);
         } catch (SolrServerException | IOException ex) {
             throw new SearchException("Error searching Solr for dataset parent id " + parentDatasetId, ex);
         }

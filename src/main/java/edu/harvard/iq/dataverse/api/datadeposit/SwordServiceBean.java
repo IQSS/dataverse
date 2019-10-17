@@ -174,6 +174,11 @@ public class SwordServiceBean {
         if (StringUtils.isBlank(licenseProvided)) {
             throw new SwordError("License provided was blank.");
         }
+        if (licenseProvided != null && licenseProvided.equalsIgnoreCase("CC0")) {
+            throw new SwordError("Error parsing license: CC0 is not supported at the moment. Contact the support!");
+        } else if (licenseProvided != null && (licenseProvided.equalsIgnoreCase("CC BY") || licenseProvided.equalsIgnoreCase("CC-BY"))) {
+            licenseProvided = "CC0";
+        }
         TermsOfUseAndAccess.License licenseToSet;
         try {
             licenseToSet = TermsOfUseAndAccess.License.valueOf(licenseProvided);
@@ -189,15 +194,15 @@ public class SwordServiceBean {
         if (providedLicense.equals(TermsOfUseAndAccess.License.CC0)) {
             String existingTermsOfUse = datasetVersionToMutate.getTermsOfUseAndAccess().getTermsOfUse();
             if (existingTermsOfUse != null) {
-                throw new SwordError("Can not change license to \"" + DatasetVersion.License.CC0 + "\" due to existing Terms of Use (dcterms:rights): \"" + existingTermsOfUse + "\". You can specify a license of \"" + DatasetVersion.License.NONE + "\'.");
+                throw new SwordError("Can not change license to \"CC BY\" due to existing Terms of Use (dcterms:rights): \"" + existingTermsOfUse + "\". You can specify a license of \"" + DatasetVersion.License.NONE + "\'.");
             }
         }
         List<String> listOfRightsProvided = dcterms.get("rights");
         if (listOfRightsProvided != null) {
             int numRightsProvided = listOfRightsProvided.size();
-            if (providedLicense.equals(DatasetVersion.License.CC0)) {
+            if (providedLicense.equals(TermsOfUseAndAccess.License.CC0)) {
                 if (numRightsProvided > 0) {
-                    throw new SwordError("Terms of Use (dcterms:rights) can not be specified in combination with the license \"" + TermsOfUseAndAccess.License.CC0 + "\". A license of \"" + TermsOfUseAndAccess.License.NONE + "\" can be used instead.");
+                    throw new SwordError("Terms of Use (dcterms:rights) can not be specified in combination with the license \"CC BY\". A license of \"" + TermsOfUseAndAccess.License.NONE + "\" can be used instead.");
                 }
             } else {
                 if (numRightsProvided != 1) {

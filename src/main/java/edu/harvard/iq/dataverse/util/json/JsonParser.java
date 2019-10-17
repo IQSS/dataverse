@@ -337,9 +337,11 @@ public class JsonParser {
         }
     }
     
-    private License parseLicense(String inString) {
-        if (inString != null && inString.equalsIgnoreCase("CC0")) {
+    private License parseLicense(String inString) throws JsonParseException {
+        if (inString != null && (inString.equalsIgnoreCase("CC BY") || inString.equalsIgnoreCase("CC-BY"))) {
             return TermsOfUseAndAccess.License.CC0;
+        } else if (inString != null && inString.equalsIgnoreCase("CC0")) {
+        	throw new JsonParseException("Error parsing license: CC0 is not a valid license at the moment. Contact the support!");
         }
         return TermsOfUseAndAccess.License.NONE;       
     }

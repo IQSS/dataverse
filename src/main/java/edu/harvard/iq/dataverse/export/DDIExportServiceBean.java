@@ -307,7 +307,7 @@ public class DDIExportServiceBean {
 
         // labl
         if (checkField("labl", excludedFieldSet, includedFieldSet)) {
-            if (vmList.size() == 0 || StringUtilisEmpty(vmList.get(0).getLabel()) && !StringUtilisEmpty(dv.getLabel())) {
+            if ((vmList.size() == 0 || StringUtilisEmpty(vmList.get(0).getLabel())) && !StringUtilisEmpty(dv.getLabel())) {
                 xmlw.writeStartElement("labl");
                 writeAttribute(xmlw, "level", "variable");
                 xmlw.writeCharacters(dv.getLabel());

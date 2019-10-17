@@ -318,8 +318,8 @@ public class SchemaDotOrgExporterTest {
         assertEquals("2001-10-01/2015-11-15", json2.getJsonArray("temporalCoverage").getString(1));
         assertEquals(null, json2.getString("schemaVersion", null));
         assertEquals("Dataset", json2.getJsonObject("license").getString("@type"));
-        assertEquals("CC0", json2.getJsonObject("license").getString("text"));
-        assertEquals("https://creativecommons.org/publicdomain/zero/1.0/", json2.getJsonObject("license").getString("url"));
+        assertEquals("CC BY", json2.getJsonObject("license").getString("text"));
+        assertEquals("https://creativecommons.org/licenses/by/4.0/", json2.getJsonObject("license").getString("url"));
         assertEquals("DataCatalog", json2.getJsonObject("includedInDataCatalog").getString("@type"));
         assertEquals("LibraScholar", json2.getJsonObject("includedInDataCatalog").getString("name"));
         assertEquals("https://librascholar.org", json2.getJsonObject("includedInDataCatalog").getString("url"));
