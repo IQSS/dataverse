@@ -714,7 +714,29 @@ public class SearchIT {
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         publishDataverse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException ex) {
+            /**
+             * This sleep is here because dataverseAlias2 is showing with
+             * discoverableBy of group_public first and then overwritten by
+             * group_user224 (or whatever) later. This is backward from what we
+             * expect. We expect group_user224 to be in discoverableBy first
+             * while the dataverse is unpublished (only that users can see it)
+             * and then we want discoverableBy to change to group_public when
+             * the dataverse is published (everyone can see it).
+             *
+             * The theory on this bug, this timing issue, is that the indexing
+             * from "create" is being queued up and happens after the indexing
+             * from "publish".
+             *
+             * Please note that if you remove this sleep and run SearchIT in
+             * isolation, it passes. To exercise this bug you have to run
+             * multiple API tests at once such as SearchIT and DatasetsIT.
+             */
+        }
+
         Response publishDataverse2 = UtilIT.publishDataverseViaNativeApi(dataverseAlias2, apiToken);
         publishDataverse2.then().assertThat()
                 .statusCode(OK.getStatusCode());
