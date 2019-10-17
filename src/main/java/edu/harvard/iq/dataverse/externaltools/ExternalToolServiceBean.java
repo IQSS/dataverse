@@ -160,6 +160,9 @@ public class ExternalToolServiceBean {
         // Allow IllegalArgumentException to bubble up from ExternalTool.Type.fromString
         ExternalTool.Type type = ExternalTool.Type.fromString(typeUserInput);
         ExternalTool.Scope scope = ExternalTool.Scope.fromString(scopeUserInput);
+        if (scope.equals(Scope.FILE) && (contentType == null || contentType.isEmpty())) {
+            contentType = getRequiredTopLevelField(jsonObject, CONTENT_TYPE);
+        }
         String toolUrl = getRequiredTopLevelField(jsonObject, TOOL_URL);
         JsonObject toolParametersObj = jsonObject.getJsonObject(TOOL_PARAMETERS);
         JsonArray queryParams = toolParametersObj.getJsonArray("queryParameters");
