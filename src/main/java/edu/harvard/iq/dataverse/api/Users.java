@@ -116,7 +116,7 @@ public class Users extends AbstractApiBean {
         try{
              au = (AuthenticatedUser) u; 
         } catch (ClassCastException e){ 
-            //if we have a non-authentivated user we stop here.
+            //if we have a non-authenticated user we stop here.
             return notFound("Token for " + u.getIdentifier() + " not found.");
         }       
        
