@@ -6,6 +6,14 @@ $font-main: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
 $font-monospace: "Roboto Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
 $border-radius: 7px;
 
+/* Responsive breakpoints */
+$screen-md:	992px;
+$screen-md-min:	$screen-md;
+$screen-sm-max:	($screen-md-min - 1);
+$screen-sm: 768px;
+$screen-sm-min: $screen-sm;
+$screen-xs-max: ($screen-sm-min - 1);
+
 /* Colors */
 
 $main-text-color: #4a4a4a;
@@ -257,22 +265,7 @@ a,
 	}
 }
 
-code {
-	font-family: $font-monospace;
-}
-
-input, textarea {
-	&, &.ui-inputfield, .ui-widget-content &.ui-inputfield {
-		border: 1px solid $gray-border-color;
-	}
-}
-
 #breadcrumbNavBlock .breadcrumbActive {
-	color: $main-text-color;
-}
-
-.form-horizontal .control-label {
-	padding-top: 5px;
 	color: $main-text-color;
 }
 
@@ -289,12 +282,83 @@ input, textarea {
 	}
 }
 
-.field-add-delete {
-	margin-left: -1.5em;
+/* Forms */
+
+.ui-selectonemenu {
+	border: 1px solid #e8e8e8;
+
+	.ui-selectonemenu-label {
+		padding-left: 15px;
+		background: #fff;
+		box-shadow: none;
+	}
+
+	.ui-selectonemenu-trigger.ui-state-default {
+		width: 44px;
+		top: -1px;
+		right: -1px;
+		padding-bottom: 32px;
+		border: 1px solid $gray-border-color;
+		border-radius: 4px;
+		background: #fff;
+
+		&:hover {
+			background: $gray-border-color;
+		}
+
+		span.ui-icon.ui-icon-triangle-1-s {
+			width: 42px;
+			margin-top: 7px;
+			background: none;
+			text-align: center;
+
+			&::before {
+				content: "\e252";
+				position: absolute;
+				left: 0;
+				right: 0;
+				font-family: "Glyphicons Halflings";
+				font-size: 0.8em;
+				color: $icon-color;
+				text-indent: 0;
+			}
+		}
+	}
+}
+
+div.field-add-delete {
+	margin-left: -1.2em;
+
+	a.btn {
+		margin-right: 0.6em;
+	}
+
 
 	.btn span.glyphicon.no-text {
 		margin: 0 1em;
 	}
+
+	@media (max-width: $screen-sm-max) {
+		.btn span.glyphicon.no-text {
+			margin: 0 0.3em;
+		}
+	}
+}
+
+code {
+	font-family: $font-monospace;
+}
+
+input, textarea {
+	&, &.ui-inputfield, .ui-widget-content &.ui-inputfield {
+		border: 1px solid $gray-border-color;
+	}
+}
+
+.form-horizontal .control-label {
+	padding-top: 10px;
+	padding-bottom: 5px;
+	color: $main-text-color;
 }
 
 /* Labels */
@@ -416,6 +480,8 @@ input, textarea {
 		color: $main-text-color;
 
 		thead {
+			word-break: break-all;
+
 			th, th.ui-state-default {
 				padding: 14px 20px;
 				border-color: $gray-border-color;
@@ -933,6 +999,38 @@ div[id$="filesTable"] .ui-paginator {
 }
 
 /* Main page end */
+
+/* Guestbook */
+
+.form-horizontal #guestbookForm\:customQuestions > .form-group {
+	padding: 10px 15px 15px 15px;
+	border: 1px solid $gray-border-color;
+	border-radius: $border-radius;
+
+	.ui-selectonemenu .ui-selectonemenu-label {
+		background: none;
+	}
+
+	.col-xs-6.text-right  {
+		padding-top: 7px;
+		
+		label {
+			position: relative;
+			top: -3px;
+			margin-left: 8px;
+			font-weight: normal;
+		}
+	}
+
+	@media (max-width: $screen-xs-max) {
+		margin-left: 0;
+		margin-right: 0;
+	}
+
+	div.field-add-delete a.btn.compound-field-btn {
+		margin-top: 0;
+	}
+}
 
 /* Modal */
 

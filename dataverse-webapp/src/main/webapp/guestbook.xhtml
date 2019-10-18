@@ -91,47 +91,78 @@
                                            varStatus="valCount">
                                     <div class="form-group">
                                         <!-- Sub Fields -->
-                                        <div class="col-sm-9">
-                                            <div class="col-sm-3">
-                                                <label class="control-label" jsf:for="questionOptions">
-                                                    #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType']}
-                                                </label>
-                                                <div>
-                                                        <h:selectOneMenu id="questionOptions" styleClass="form-control" value="#{cq.questionType}">
-                                                            <f:selectItem
-                                                                    itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType.text']}"
-                                                                    itemValue="text"/>
-                                                            <f:selectItem
-                                                                    itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType.multiple']}"
-                                                                    itemValue="options"/>
-                                                            <p:ajax process="responseOptions" update="responseOptions" />
-                                                        </h:selectOneMenu>
+                                        <div class="col-9">
+                                            <div class="row">
+                                                <div class="col-xs-6">
+                                                    <label class="control-label" jsf:for="questionOptions">
+                                                        #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType']}
+                                                    </label>
+                                                    </div>
+                                                <div class="col-xs-6 text-right">
+                                                    <input type="checkbox" jsf:id="cqRequiredCb" jsf:value="#{cq.required}"/>
+                                                    <label jsf:for="cqRequiredCb">
+                                                        #{bundle.requiredField}
+                                                    </label>
                                                 </div>
                                             </div>
-                                            <div class="col-sm-9">
-                                                <label class="control-label" jsf:for="questionText">
-                                                    #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionText']}
-                                                </label>
-                                                <div>
-                                                        <p:inputText id="questionText" styleClass="form-control"
-                                                                     value="#{cq.questionString}" />
-                                                        <p:message for="questionText" display="text"/>
+                                            <div class="row">
+                                                <div class="col-xs-9">
+                                                    <p:selectOneMenu id="questionOptions" styleClass="form-control" value="#{cq.questionType}">
+                                                        <f:selectItem
+                                                                itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType.text']}"
+                                                                itemValue="text"/>
+                                                        <f:selectItem
+                                                                itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType.multiple']}"
+                                                                itemValue="options"/>
+                                                        <p:ajax process="responseOptions" update="responseOptions" />
+                                                    </p:selectOneMenu>
+                                                </div>
+                                                <div class="col-xs-3 field-add-delete">
+                                                    <p:commandLink
+                                                            styleClass="btn btn-default btn-access btn-sm bootstrap-button-tooltip compound-field-btn"
+                                                            title="#{bundle.add}" update=":guestbookForm:customQuestions"
+        
+                                                            actionListener="#{GuestbookPage.addCustomQuestion(valCount.index + 1 )}">
+                                                        <span class="glyphicon glyphicon-plus no-text"/>
+                                                    </p:commandLink>
+                                                    <p:commandLink
+                                                            styleClass="btn btn-default btn-access btn-sm bootstrap-button-tooltip compound-field-btn"
+                                                            rendered="#{GuestbookPage.guestbook.customQuestions.size() > 1}"
+                                                            title="#{bundle.delete}" update=":guestbookForm:customQuestions"
+        
+                                                            actionListener="#{GuestbookPage.removeCustomQuestion(valCount.index)}">
+                                                        <span class="glyphicon glyphicon-minus no-text"/>
+                                                    </p:commandLink>
                                                 </div>
                                             </div>
-                                            <h:panelGroup id="responseOptions" styleClass="col-sm-offset-3 col-sm-9 #{cq.questionType eq 'options' ? '' : 'hidden'}">
-                                                <label class="control-label">
-                                                    #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.responseOptions']}
-                                                </label>
+                                            <div class="row">
+                                                <div class="col-xs-12">
+                                                    <label class="control-label" jsf:for="questionText">
+                                                        #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionText']}
+                                                    </label>
+                                                    <div>
+                                                            <p:inputText id="questionText" styleClass="form-control"
+                                                                        value="#{cq.questionString}" />
+                                                            <p:message for="questionText" display="text"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <h:panelGroup id="responseOptions" styleClass="#{cq.questionType eq 'options' ? '' : 'hidden'}">
+                                                <div class="col-xs-offset-1 col-xs-8">
+                                                    <label class="control-label">
+                                                        #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.responseOptions']}
+                                                    </label>
+                                                </div>
                                                 <ui:repeat value="#{cq.customQuestionValues}" varStatus="resCount"
                                                            var="value">
                                                     <div class="form-group">
-                                                        <div class="col-sm-8">
+                                                        <div class="col-xs-offset-1 col-xs-8">
                                                             <p:inputText id="responseText" styleClass="form-control"
                                                                          value="#{value.valueString}" >
                                                             </p:inputText>
                                                             <p:message for="responseText" display="text"/>
                                                         </div>
-                                                        <div class="col-sm-4 field-add-delete">
+                                                        <div class="col-xs-3 field-add-delete">
                                                             <p:commandLink
                                                                     styleClass="btn btn-default btn-access btn-sm bootstrap-button-tooltip nolabel-field-btn"
                                                                     title="#{bundle.add}"
@@ -153,29 +184,6 @@
                                                     </div>
                                                 </ui:repeat>
                                             </h:panelGroup>
-                                            <div class="col-sm-9 checkbox">
-                                                <label jsf:for="cqRequiredCb">
-                                                    <input type="checkbox" jsf:id="cqRequiredCb"
-                                                           jsf:value="#{cq.required}"/> #{bundle.requiredField}
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-3 field-add-delete">
-                                            <p:commandLink
-                                                    styleClass="btn btn-default btn-access btn-sm bootstrap-button-tooltip compound-field-btn"
-                                                    title="#{bundle.add}" update=":guestbookForm:customQuestions"
-
-                                                    actionListener="#{GuestbookPage.addCustomQuestion(valCount.index + 1 )}">
-                                                <span class="glyphicon glyphicon-plus no-text"/>
-                                            </p:commandLink>
-                                            <p:commandLink
-                                                    styleClass="btn btn-default btn-access btn-sm bootstrap-button-tooltip compound-field-btn"
-                                                    rendered="#{GuestbookPage.guestbook.customQuestions.size() > 1}"
-                                                    title="#{bundle.delete}" update=":guestbookForm:customQuestions"
-
-                                                    actionListener="#{GuestbookPage.removeCustomQuestion(valCount.index)}">
-                                                <span class="glyphicon glyphicon-minus no-text"/>
-                                            </p:commandLink>
                                         </div>
                                     </div>
                                 </ui:repeat>
