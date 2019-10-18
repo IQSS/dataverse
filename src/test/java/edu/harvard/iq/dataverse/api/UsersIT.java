@@ -355,7 +355,7 @@ public class UsersIT {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         assertEquals(200, createUser.getStatusCode());
-        String usernameOfUser = UtilIT.getUsernameFromResponse(createUser);
+        
         String userApiToken = UtilIT.getApiTokenFromResponse(createUser);
 
         Response getExpiration = UtilIT.getTokenExpiration("BAD-TOKEN-692134794");

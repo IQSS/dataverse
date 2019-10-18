@@ -168,13 +168,15 @@ public class Users extends AbstractApiBean {
         } catch (ClassCastException e){ 
             //if we have a non-authentivated user we stop here.
             return notFound("Token for " + u.getIdentifier() + " not found.");
-        }       
-       
+        } 
+        
+        /* this null check is probably overkill*/
         if (au == null) {
             return notFound("Token for " + u.getIdentifier() + " not found.");
         }
 
         ApiToken apiToken = authSvc.findApiToken(getRequestApiKey());
+        
         if (apiToken != null) {
             authSvc.removeApiToken(apiToken);
         }
