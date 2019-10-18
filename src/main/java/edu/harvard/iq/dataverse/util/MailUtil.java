@@ -75,6 +75,10 @@ public class MailUtil {
                 return BundleUtil.getStringFromBundle("notification.email.verifyEmail.subject", rootDvNameAsList);
             case APIGENERATED:
                 return BundleUtil.getStringFromBundle("notification.email.apiTokenGenerated.subject",  rootDvNameAsList);
+            case INGESTCOMPLETED:
+                return BundleUtil.getStringFromBundle("notification.email.ingestCompleted.subject", rootDvNameAsList);
+            case INGESTCOMPLETEDWITHERRORS:
+                return BundleUtil.getStringFromBundle("notification.email.ingestCompletedWithErrors.subject", rootDvNameAsList);
         }
         return "";
     }
