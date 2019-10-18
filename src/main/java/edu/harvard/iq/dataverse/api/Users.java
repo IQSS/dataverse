@@ -6,7 +6,6 @@
 package edu.harvard.iq.dataverse.api;
 
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -175,11 +174,7 @@ public class Users extends AbstractApiBean {
             return notFound("Token for " + u.getIdentifier() + " not found.");
         }
 
-        ApiToken apiToken = authSvc.findApiToken(getRequestApiKey());
-        
-        if (apiToken != null) {
-            authSvc.removeApiToken(apiToken);
-        }
+        authSvc.removeApiToken(au);
 
         ApiToken newToken = authSvc.generateApiTokenForUser(au);
         authSvc.save(newToken);
