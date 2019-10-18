@@ -39,36 +39,11 @@
                 <h:form id="dataverseUserForm">
 
                     <p:focus context="dataverseUserForm"/>
-                    <div class="clearfix" jsf:rendered="#{empty DataverseUserPage.editMode}">
-                        <div class="btn-group pull-right" jsf:rendered="#{DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
-                            <button type="button" id="editAccount" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                <ui:fragment rendered="#{DataverseUserPage.accountDetailsEditable}">
-                                    <span class="glyphicon glyphicon-pencil"/> #{bundle['account.edit']}
-                                </ui:fragment>
-                                <ui:fragment rendered="#{! DataverseUserPage.accountDetailsEditable}">
-                                    #{bundle['account.info']}
-                                </ui:fragment>
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu pull-right text-left" role="menu">
-                                <ui:fragment rendered="#{DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
-                                    <li>
-                                        <p:commandLink id="editAccount" rendered="#{DataverseUserPage.accountDetailsEditable}"
-                                                       actionListener="#{DataverseUserPage.edit}" update="@form" oncomplete="javascript:bind_bsui_components();">
-                                            <h:outputText value="#{bundle['account.info']}" />
-                                        </p:commandLink>
-                                    </li>
-                                    <li>
-                                        <p:commandLink id="changePassword" rendered="#{DataverseUserPage.passwordEditable}" 
-                                                       actionListener="#{DataverseUserPage.changePassword}" update="@form" oncomplete="javascript:bind_bsui_components();">
-                                            <h:outputText value="#{bundle.passwd}" />
-                                        </p:commandLink>
-                                    </li>
-                                </ui:fragment>
-                            </ul>
-                        </div>
-                    </div>
-
+                    
+                    
+                    
+                    
+                    
                     <p:panel rendered="#{DataverseUserPage.editMode == 'FORGOT'}">
                         <h:outputText value="#{bundle['user.lostPasswdTip']}" />
                     </p:panel>
@@ -341,6 +316,39 @@
                             </div>
                         </p:tab>
                         <p:tab id="accountInfo" title="#{bundle['header.user.selectTab.accountInfo']}">
+                            
+                            
+                            <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{empty DataverseUserPage.editMode or DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
+                                <div class="btn-group">
+                                    <button type="button" id="editAccount" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                        <ui:fragment rendered="#{DataverseUserPage.accountDetailsEditable}">
+                                            <span class="glyphicon glyphicon-pencil"/> #{bundle['account.edit']}
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{! DataverseUserPage.accountDetailsEditable}">
+                                            #{bundle['account.info']}
+                                        </ui:fragment>
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu pull-right text-left" role="menu">
+                                        <ui:fragment rendered="#{DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
+                                            <li>
+                                                <p:commandLink id="editAccount" rendered="#{DataverseUserPage.accountDetailsEditable}"
+                                                               actionListener="#{DataverseUserPage.edit}" update="@form" oncomplete="javascript:bind_bsui_components();">
+                                                    <h:outputText value="#{bundle['account.info']}" />
+                                                </p:commandLink>
+                                            </li>
+                                            <li>
+                                                <p:commandLink id="changePassword" rendered="#{DataverseUserPage.passwordEditable}" 
+                                                               actionListener="#{DataverseUserPage.changePassword}" update="@form" oncomplete="javascript:bind_bsui_components();">
+                                                    <h:outputText value="#{bundle.passwd}" />
+                                                </p:commandLink>
+                                            </li>
+                                        </ui:fragment>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            
                             <div class="form-horizontal" jsf:rendered="#{!empty DataverseUserPage.currentUser}">
                                 <div class="form-group" jsf:rendered="#{not DataverseUserPage.accountDetailsEditable}">
                                     <div class="col-sm-12">
