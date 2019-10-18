@@ -51,7 +51,7 @@ body .ui-widget .ui-widget-content {background: none;}
 #status-alert {margin-top:0; margin-bottom:0;}
 #status-alert div.alert {border:0; box-shadow:none;}
 
-#footer {margin-top:3em; padding-bottom:100px; width:100%; height:60px; color:#808080; position: absolute; right: -180px;}
+#footer {margin-top:3em; padding-bottom:100px; height:60px; color:#808080; position: absolute; right: 50px;}
 #footer.widget-view {position:fixed; left:0; bottom:0; margin:0; padding:4px 0 0 0; min-height:44px; background:#fff;}
 #footer .poweredbylogo {text-align:right;}
 #footer .poweredbylogo span {font-size:.85em;margin-right:.3em;}
@@ -227,7 +227,8 @@ body.widget-view #dataverse-header-block {padding-top:0px;}
   color: #101010; 
 }
 
-#dataverseHeader .dataverseHeaderName .dataverseHeaderDataverseName:hover {text-decoration: none;} 
+#dataverseHeader .dataverseHeaderName .dataverseHeaderDataverseName:hover,
+#dataverseHeader .dataverseHeaderName .dataverseHeaderDataverseName:focus {text-decoration: none;} 
 #dataverseHeader .dataverseHeaderName span.label.label-unpublished {vertical-align:text-top; line-height: normal; margin-left:1em;}
 #dataverseHeader .dataverseHeaderTagline {padding-left:2em; font-size:1.3em;}
 #dataverseHeader .dataverseHeaderLink {padding-left:2em;}
@@ -1120,6 +1121,8 @@ ul > li {
   font-family: 'AntoniaH2Heavy';
   font-weight: bold;
 }
+
+th {background: none !important;}
 
 .ui-tabs.ui-tabs-top .ui-tabs-nav.ui-widget-header {border-width: 0;}
 
