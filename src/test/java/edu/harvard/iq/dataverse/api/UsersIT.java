@@ -362,7 +362,7 @@ public class UsersIT {
         getExpiration.prettyPrint();
         getExpiration.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode());
-
+        
         getExpiration = UtilIT.getTokenExpiration(userApiToken);
         getExpiration.prettyPrint();
         getExpiration.then().assertThat()
@@ -386,6 +386,37 @@ public class UsersIT {
         assertEquals(200, createUser.getStatusCode());
 
         String userApiTokenForDelete = UtilIT.getApiTokenFromResponse(createUser);
+        
+        /*
+        Add tests for Private URL
+        */
+        
+        createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        
+        Response createPrivateUrl = UtilIT.privateUrlCreate(datasetId, apiToken);
+        createPrivateUrl.prettyPrint();
+        assertEquals(OK.getStatusCode(), createPrivateUrl.getStatusCode());
+
+        Response shouldExist = UtilIT.privateUrlGet(datasetId, apiToken);
+        shouldExist.prettyPrint();
+        assertEquals(OK.getStatusCode(), shouldExist.getStatusCode());
+
+        String tokenForPrivateUrlUser = JsonPath.from(shouldExist.body().asString()).getString("data.token");
+        
+        getExpiration = UtilIT.getTokenExpiration(tokenForPrivateUrlUser);
+        getExpiration.prettyPrint();
+        getExpiration.then().assertThat()
+                .statusCode(NOT_FOUND.getStatusCode());
+
 
         Response deleteToken = UtilIT.deleteToken(userApiTokenForDelete);
         deleteToken.prettyPrint();

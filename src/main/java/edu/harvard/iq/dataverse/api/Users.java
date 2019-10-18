@@ -117,13 +117,9 @@ public class Users extends AbstractApiBean {
              au = (AuthenticatedUser) u; 
         } catch (ClassCastException e){ 
             //if we have a non-authenticated user we stop here.
-            return notFound("Token for " + u.getIdentifier() + " not found.");
+            return notFound("Token for " + u.getIdentifier() + " not eligible for deletion.");
         }       
        
-        if (au == null) {
-            return notFound("Token for " + u.getIdentifier() + " not found.");
-        }
-        
         authSvc.removeApiToken(au);
         return ok("Token for " + au.getUserIdentifier() + " deleted.");
         
@@ -133,7 +129,7 @@ public class Users extends AbstractApiBean {
     @GET
     public Response getTokenExpirationDate() {
         User u;
-
+        
         try {
             u = findUserOrDie();
         } catch (WrappedResponse ex) {
@@ -165,14 +161,10 @@ public class Users extends AbstractApiBean {
         try{
              au = (AuthenticatedUser) u; 
         } catch (ClassCastException e){ 
-            //if we have a non-authentivated user we stop here.
-            return notFound("Token for " + u.getIdentifier() + " not found.");
+            //if we have a non-authenticated user we stop here.
+            return notFound("Token for " + u.getIdentifier() + " is not eligible for recreation.");
         } 
         
-        /* this null check is probably overkill*/
-        if (au == null) {
-            return notFound("Token for " + u.getIdentifier() + " not found.");
-        }
 
         authSvc.removeApiToken(au);
 
