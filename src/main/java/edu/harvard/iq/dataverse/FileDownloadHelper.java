@@ -287,6 +287,15 @@ public class FileDownloadHelper implements java.io.Serializable {
           */
          if (externalTool == null) {
              externalTool = guestbookResponse.getExternalTool();
+         } 
+         if(fmd== null) {
+             DatasetVersion dv = guestbookResponse.getDatasetVersion();
+             for(FileMetadata fm: dv.getFileMetadatas()) {
+                 if(fm.getDataFile()==guestbookResponse.getDataFile()) {
+                     fmd=fm;
+                     break;
+                 }
+             }
          }
 
          RequestContext requestContext = RequestContext.getCurrentInstance();

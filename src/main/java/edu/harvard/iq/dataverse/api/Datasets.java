@@ -78,11 +78,8 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDvObjectPIDMetadataCommand;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitationsServiceBean;
@@ -98,26 +95,20 @@ import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import edu.harvard.iq.dataverse.util.DateUtil;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -771,7 +762,7 @@ public class Datasets extends AbstractApiBean {
             Dataset ds = findDatasetOrDie(id);
             JsonObject json = Json.createReader(rdr).readObject();
             DatasetVersion dsv = ds.getEditVersion();
-
+            
             List<DatasetField> fields = new LinkedList<>();
             DatasetField singleField = null; 
             
@@ -792,21 +783,33 @@ public class Datasets extends AbstractApiBean {
             }
 
             dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
-                
+
             //loop through the update fields     
             // and compare to the version fields  
             //if exist add/replace values
             //if not add entire dsf
             for (DatasetField updateField : fields) {
-            boolean found = false;            
-            for (DatasetField dsf : dsv.getDatasetFields()) {
+                boolean found = false;
+                for (DatasetField dsf : dsv.getDatasetFields()) {
                     if (dsf.getDatasetFieldType().equals(updateField.getDatasetFieldType())) {
                         found = true;
-                        if (dsf.isEmpty() || dsf.getDatasetFieldType().isAllowMultiples() || replaceData ) {
-                            if(replaceData){
-                                if(dsf.getDatasetFieldType().isAllowMultiples()){
-                                    dsf.setDatasetFieldCompoundValues(new ArrayList<DatasetFieldCompoundValue>());
-                                    dsf.setDatasetFieldValues(new ArrayList<DatasetFieldValue>());
+                        if (dsf.isEmpty() || dsf.getDatasetFieldType().isAllowMultiples() || replaceData) {
+                            List priorCVV = new ArrayList<>();
+                            String cvvDisplay = "";
+
+                            if (updateField.getDatasetFieldType().isControlledVocabulary()) {
+                                cvvDisplay = dsf.getDisplayValue();
+                                for (ControlledVocabularyValue cvvOld : dsf.getControlledVocabularyValues()) {
+                                    priorCVV.add(cvvOld);
+                                }
+                            }
+
+                            if (replaceData) {
+                                if (dsf.getDatasetFieldType().isAllowMultiples()) {
+                                    dsf.setDatasetFieldCompoundValues(new ArrayList<>());
+                                    dsf.setDatasetFieldValues(new ArrayList<>());
+                                    dsf.setControlledVocabularyValues(new ArrayList<>());
+                                    priorCVV.clear();
                                     dsf.getControlledVocabularyValues().clear();
                                 } else {
                                     dsf.setSingleValue("");
@@ -814,14 +817,15 @@ public class Datasets extends AbstractApiBean {
                                 }
                             }
                             if (updateField.getDatasetFieldType().isControlledVocabulary()) {
-                                if (dsf.getDatasetFieldType().isAllowMultiples()){
-                                for (ControlledVocabularyValue cvv : updateField.getControlledVocabularyValues()) {
-                                    if (!dsf.getDisplayValue().contains(cvv.getStrValue())) {
-                                        dsf.getControlledVocabularyValues().add(cvv);
+                                if (dsf.getDatasetFieldType().isAllowMultiples()) {
+                                    for (ControlledVocabularyValue cvv : updateField.getControlledVocabularyValues()) {
+                                        if (!cvvDisplay.contains(cvv.getStrValue())) {
+                                            priorCVV.add(cvv);
+                                        }
                                     }
-                                }
+                                    dsf.setControlledVocabularyValues(priorCVV);
                                 } else {
-                                   dsf.setSingleControlledVocabularyValue(updateField.getSingleControlledVocabularyValue()); 
+                                    dsf.setSingleControlledVocabularyValue(updateField.getSingleControlledVocabularyValue());
                                 }
                             } else {
                                 if (!updateField.getDatasetFieldType().isCompound()) {
@@ -841,33 +845,32 @@ public class Datasets extends AbstractApiBean {
                                             dfcv.setParentDatasetField(dsf);
                                             dsf.setDatasetVersion(dsv);
                                             dsf.getDatasetFieldCompoundValues().add(dfcv);
-
                                         }
                                     }
                                 }
                             }
                         } else {
                             if (!dsf.isEmpty() && !dsf.getDatasetFieldType().isAllowMultiples() || !replaceData) {
-                                return error(Response.Status.BAD_REQUEST, "You may not add data to a field that already has data and does not allow multiples. Use replace=true to replace existing data (" + dsf.getDatasetFieldType().getDisplayName() + ")" );
+                                return error(Response.Status.BAD_REQUEST, "You may not add data to a field that already has data and does not allow multiples. Use replace=true to replace existing data (" + dsf.getDatasetFieldType().getDisplayName() + ")");
                             }
                         }
                         break;
                     }
                 }
-                if(!found){
+                if (!found) {
                     updateField.setDatasetVersion(dsv);
                     dsv.getDatasetFields().add(updateField);
                 }
             }
             boolean updateDraft = ds.getLatestVersion().isDraft();
             DatasetVersion managedVersion;
-            
-            if ( updateDraft ) {
+
+            if (updateDraft) {
                 managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getEditVersion();
             } else {
                 managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
             }
-            
+
             return ok(json(managedVersion));
 
         } catch (JsonParseException ex) {

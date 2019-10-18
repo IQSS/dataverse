@@ -35,7 +35,7 @@ SWORD only supports a dozen or so operations. The Native API supports many more.
 To Operate on a Dataset Should I Use Its DOI (or Handle) or Its Database ID?
 ----------------------------------------------------------------------------
 
-It's fine to target a datasets using either its Persistent ID (PID such as DOI or Handle) or its database id.
+It is fine to target a datasets using either its Persistent ID (PID such as DOI or Handle) or its database id.
 
 Here's an example from :ref:`publish-dataset-api` of targeting a dataset using its DOI:
 
@@ -56,7 +56,7 @@ Where is the Comprehensive List of All API Functionality?
 
 There are so many Dataverse APIs that a single page in this guide would probably be overwhelming. See :ref:`list-of-dataverse-apis` for links to various pages.
 
-It's possible to get a complete list of API functionality in Swagger/OpenAPI format if you deploy Dataverse to Payara 5+. For details, see https://github.com/IQSS/dataverse/issues/5794
+It is possible to get a complete list of API functionality in Swagger/OpenAPI format if you deploy Dataverse to Payara 5+. For details, see https://github.com/IQSS/dataverse/issues/5794
 
 Is There a Changelog of API Functionality That Has Been Added Over Time?
 ------------------------------------------------------------------------
@@ -66,7 +66,7 @@ No, but there probably should be. If you have suggestions for how it should look
 .. _no-api:
 
 What Functionality is GUI Only and Not Available Via API
--------------------------------------------------------
+--------------------------------------------------------
 
 The following tasks cannot currently be automated via API because no API exists for them. The web interface should be used instead for these GUI-only features:
 
@@ -84,12 +84,12 @@ If you would like APIs for any of the features above, please open a GitHub issue
 
 You are also welcome to open an issue to add to the list above. Or you are welcome to make a pull request. Please see the :doc:`/developers/documentation` section of the Developer Guide for instructions.
 
-Why Aren't the Return Values (HTTP Status Codes) Documented?
-------------------------------------------------------------
+Why Are the Return Values (HTTP Status Codes) Not Documented?
+-------------------------------------------------------------
 
 They should be. Please consider making a pull request to help. The :doc:`/developers/documentation` section of the Developer Guide should help you get started. :ref:`create-dataverse-api` has an example you can follow or you can come up with a better way.
 
-What If My Question Isn't Answered Here?
-----------------------------------------
+What If My Question Is Not Answered Here?
+-----------------------------------------
 
 Please ask! For information on where to ask, please see :ref:`getting-help-with-apis`.
