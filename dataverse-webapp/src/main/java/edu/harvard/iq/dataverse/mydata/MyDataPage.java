@@ -48,8 +48,6 @@ public class MyDataPage implements java.io.Serializable {
     DvObjectServiceBean dvObjectServiceBean;
     @EJB
     SearchServiceBean searchService;
-    //    @EJB
-//    MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
     @Inject
     PermissionsWrapper permissionsWrapper;
 

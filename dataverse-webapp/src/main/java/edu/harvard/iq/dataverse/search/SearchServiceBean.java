@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
+import com.google.api.client.util.Lists;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
@@ -134,7 +135,10 @@ public class SearchServiceBean {
      * @return
      * @throws SearchException
      */
-    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage, boolean retrieveEntities) throws SearchException {
+    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query,
+                                    List<String> filterQueries, String sortField, String sortOrder, int paginationStart,
+                                    boolean onlyDatatRelatedToMe, int numResultsPerPage, boolean retrieveEntities)
+            throws SearchException {
 
         if (paginationStart < 0) {
             throw new IllegalArgumentException("paginationStart must be 0 or greater");
@@ -607,7 +611,7 @@ public class SearchServiceBean {
 
         List<FacetCategory> facetCategoryList = new ArrayList<>();
         List<FacetCategory> typeFacetCategories = new ArrayList<>();
-        boolean hidePublicationStatusFacet = true;
+        boolean hidePublicationStatusFacet = false;
         boolean draftsAvailable = false;
         boolean unpublishedAvailable = false;
         boolean deaccessionedAvailable = false;
@@ -933,6 +937,16 @@ public class SearchServiceBean {
 
     }
 
+    private List<String> updateFacetFieldsCounts(SolrDocumentList docs) {
+        List<String> facetsNames = new ArrayList<>();
+        for(SolrDocument doc : docs) {
+            facetsNames.add((String) doc.getFieldValue("dvObjectType"));
+            ArrayList pubStatuses = Lists.newArrayList(doc.getFieldValues("publicationStatus"));
+            facetsNames.addAll(pubStatuses);
+        }
+        return facetsNames;
+    }
+  
     public String getLocaleFacetName(String name) {
         return getLocaleFacetName(name, datasetFieldService.findAllOrderedByName());
     }
@@ -974,5 +988,4 @@ public class SearchServiceBean {
     private String toBundleNameFormat(String name) {
         return StringUtils.stripAccents(name.toLowerCase().replace(" ", "_"));
     }
-
 }

@@ -1,15 +1,19 @@
 package edu.harvard.iq.dataverse.search;
 
+import edu.harvard.iq.dataverse.mydata.RoleTagRetriever;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class SolrQueryResponse {
 
@@ -194,5 +198,4 @@ public class SolrQueryResponse {
     public SolrQuery getSolrQuery() {
         return solrQuery;
     }
-
 }

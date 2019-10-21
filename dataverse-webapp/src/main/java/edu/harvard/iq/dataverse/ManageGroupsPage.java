@@ -47,6 +47,7 @@ public class ManageGroupsPage implements java.io.Serializable {
     private PermissionsWrapper permissionsWrapper;
     private ManageGroupsCRUDService mgCrudService;
 
+
     private List<ExplicitGroup> explicitGroups;
     private Dataverse dataverse;
     private Long dataverseId;

@@ -1,12 +1,13 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:h="http://java.sun.com/jsf/html"
-     xmlns:f="http://java.sun.com/jsf/core"
-     xmlns:ui="http://java.sun.com/jsf/facelets"
-     xmlns:c="http://java.sun.com/jsp/jstl/core"
-     xmlns:p="http://primefaces.org/ui"
-     xmlns:o="http://omnifaces.org/ui"
-     xmlns:jsf="http://xmlns.jcp.org/jsf">
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf">
 
+    <c:set var="page" value="/dataverseuser.xhtml?selectTab=dataRelatedToMe"/>
 
     <div class="row">
         <div class="col-xs-12">
@@ -15,108 +16,669 @@
             </p>
         </div>
     </div>
-    
+
+
+<!-- start: panel -->
+
     <div class="row" id="my_data_filter_column2">
-        <div class="col-xs-7"  style="padding:10px 30px;">
-            <input type="text" size="40" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all search-input" name="mydata_search_term" id="mydata_search_term" placeholder="#{bundle['mydataFragment.search']}" />
-            
-            &#160; <a id="btn_find_my_data" class="btn btn-default"><span class="glyphicon glyphicon-search"></span>#{bundle['find']}</a>
-            <!-- &#160; <a target="_self" href="/dataverse/root/search" >Advanced Search </a> -->
+        <h:form>
+        <div class="#{widgetWrapper.widgetView ? 'col-sm-12' : 'col-sm-8'}">
+
+                <p:inputText id="searchBasic" styleClass="search-input"
+                             size="40"
+                             value="#{MyDataSearchFragment.query}"
+                             onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
+                <p:watermark for="searchBasic" value="#{bundle['mydataFragment.search']}"/>
+                <p:commandLink id="searchbutton" styleClass="btn btn-default" action="#{MyDataSearchFragment.searchRedirect(dataverseRedirectPage)}">
+                    <span class="glyphicon glyphicon-search"/> #{bundle['dataverse.search.btn.find']}
+                </p:commandLink>
         </div>
-        <ui:fragment rendered="#{MyDataPage.isSuperuser()}">
-        <div class="col-xs-4 pull-right text-right" style="margin-right:30px;margin-bottom:0;padding:8px 6px;background:none;">
+
+        <div class="col-xs-4 pull-right text-right #{widgetWrapper.widgetView ? 'col-sm-12' : 'col-sm-8'}"
+             jsf:rendered="#{MyDataSearchFragment.isSuperuser()}">
             #{bundle['mydataFragment.resultsByUserName']}
-            <input type="text" name="userIdentifier" id="userIdentifier" value="#{MyDataPage.getAuthUserIdentifier()}" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" />
-           
+                <p:inputText id="searchUserId"
+                             styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all"
+                             size="25"
+                             value="#{MyDataSearchFragment.searchUserId}"
+                             onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
+                <p:watermark for="searchUserId" value="#{MyDataSearchFragment.searchUserId}"/>
         </div>
-        </ui:fragment>
+            <p:remoteCommand name="submitsearch"
+                             action="#{MyDataSearchFragment.searchRedirect(dataverseRedirectPage)}"/>
+        </h:form>
     </div>
-<!-- start: panel --><div class="panel panel-default">
-<!-- start: panel body --><div class="panel-body clearfix">
-    
-    <!-- start: row -->
-    <div class="row">
-        <!-- start filter column -->
-        <div class="col-xs-3" id="my_data_filter_column">
-            <!--form id="mydata_filter_form" name="mydata_filter_form"-->
-            <input type="hidden" name="selected_page" id="selected_page" value="1" />
-                       
-            <!-- start dvobject checkboxes -->
-            <div id="div_dvobject_types" style="padding-bottom:10px;">
-                <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
-                    <input style="margin-left:0;" name="dvobject_types" id="id_cbox_dv_dataverse" type="checkbox" value="Dataverse" checked="checked" />
-                    <label class="facetTypeLabel">
-                        <a class="mydata_dvobject_label"><i class="icon-dataverse text-icon-inline"></i><span class="facetTypeDataverse">#{bundle['dataverse.results.types.dataverses']}</span> <span id="id_dataverses_count"></span></a>
-                    </label>
+<!-- start: panel body -->
+<div class="panel-body clearfix">
+
+    <!-- Search Results / SOLR IS UP -->
+    <div id="search-row-panel" class="row row-offcanvas row-offcanvas-left" >
+        <div id="dv-sidebar" class="col-sm-4 col-md-3 sidebar-offcanvas">
+            <!--TYPE FACET (DATAVERSES, DATASETS, FILES)-->
+            <h:form id="facetType">
+                <!--DATAVERSE TOGGLE-->
+                <div class="clearfix">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}"
+                                  styleClass="facetTypeChBox facetLink #{MyDataSearchFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}"
+                                  disabled="#{MyDataSearchFragment.getNewSelectedTypes('dataverses') == null}">
+                        <f:param name="q" value="#{MyDataSearchFragment.query}"/>
+                        <f:param name="types" value="#{MyDataSearchFragment.getNewSelectedTypes('dataverses')}"/>
+                        <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
+                        <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                        </c:forEach>
+                        <c:forEach items="#{MyDataSearchFragment.roleFilters}" var="clickedRoleFilter" varStatus="status">
+                            <f:param name="rf#{status.index}" value='#{clickedRoleFilter}'/>
+                        </c:forEach>
+                        <f:param name="page" value="1"/>
+                        <p:selectBooleanCheckbox
+                                value="#{MyDataSearchFragment.selectedTypesList.contains('dataverses') ? true : false}"
+                                disabled="#{MyDataSearchFragment.getNewSelectedTypes('dataverses') == null ? true : false}"/>
+                    </h:outputLink>
+                    <!--DATAVERSES ONLY-->
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{MyDataSearchFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}">
+                        <f:param name="q" value="#{MyDataSearchFragment.query}"/>
+                        <f:param name="types" value="dataverses"/>
+                        <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
+                        <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                        </c:forEach>
+                        <c:forEach items="#{MyDataSearchFragment.roleFilters}" var="clickedRoleFilter" varStatus="status">
+                            <f:param name="rf#{status.index}" value='#{clickedRoleFilter}'/>
+                        </c:forEach>
+                        <f:param name="page" value="1"/>
+
+                        <i class="icon-dataverse text-icon-inline"></i>
+
+                        <h:outputFormat styleClass="facetTypeDataverse"
+                                        value="#{bundle['dataverse.results.types.dataverses']} #{MyDataSearchFragment.selectedTypesList.contains('dataverses') ? '&#40;{0}&#41;': ''}">
+                            <f:param value="#{MyDataSearchFragment.facetCountDataverses != null ? MyDataSearchFragment.facetCountDataverses : 0}"/>
+                        </h:outputFormat>
+                    </h:outputLink>
                 </div>
-                <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
-                    <input style="margin-left:0;" name="dvobject_types" id="id_cbox_dv_dataset" type="checkbox" value="Dataset" checked="checked" />
-                    <label class="facetTypeLabel">
-                        <a class="mydata_dvobject_label"><i class="icon-dataset text-icon-inline"></i><span class="facetTypeDataset">#{bundle['dataverse.results.types.datasets']}</span> <span id="id_datasets_count"></span></a>
-                    </label>
+                <!--DATASETS TOGGLE-->
+                <div class="clearfix">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}"
+                                  styleClass="facetTypeChBox facetLink #{MyDataSearchFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}"
+                                  disabled="#{MyDataSearchFragment.getNewSelectedTypes('datasets') == null}">
+                        <f:param name="q" value="#{MyDataSearchFragment.query}"/>
+                        <f:param name="types" value="#{MyDataSearchFragment.getNewSelectedTypes('datasets')}"/>
+                        <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
+                        <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                        </c:forEach>
+                        <c:forEach items="#{MyDataSearchFragment.roleFilters}" var="clickedRoleFilter" varStatus="status">
+                            <f:param name="rf#{status.index}" value='#{clickedRoleFilter}'/>
+                        </c:forEach>
+                        <f:param name="page" value="1"/>
+                        <p:selectBooleanCheckbox
+                                value="#{MyDataSearchFragment.selectedTypesList.contains('datasets') ? true : false}"
+                                disabled="#{MyDataSearchFragment.getNewSelectedTypes('datasets') == null ? true : false}"/>
+                    </h:outputLink>
+                    <!--DATASETS ONLY-->
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{MyDataSearchFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}">
+                        <f:param name="q" value="#{MyDataSearchFragment.query}"/>
+                        <f:param name="types" value="datasets"/>
+                        <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
+                        <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                        </c:forEach>
+                        <c:forEach items="#{MyDataSearchFragment.roleFilters}" var="clickedRoleFilter" varStatus="status">
+                            <f:param name="rf#{status.index}" value='#{clickedRoleFilter}'/>
+                        </c:forEach>
+                        <f:param name="page" value="1"/>
+
+                        <i class="icon-dataset text-icon-inline"></i>
+
+                        <h:outputFormat styleClass="facetTypeDataset"
+                                        value="#{bundle['dataverse.results.types.datasets']} #{MyDataSearchFragment.selectedTypesList.contains('datasets') ? '&#40;{0}&#41;': ''}">
+                            <f:param value="#{MyDataSearchFragment.facetCountDatasets != null ? MyDataSearchFragment.facetCountDatasets : 0}"/>
+                        </h:outputFormat>
+                    </h:outputLink>
                 </div>
-                <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
-                    <input style="margin-left:0;" name="dvobject_types" id="id_cbox_dv_file" type="checkbox" value="DataFile" />
-                    <label class="facetTypeLabel">
-                        <a class="mydata_dvobject_label"><i class="icon-file text-icon-inline"></i><span class="facetTypeFile">#{bundle['dataverse.results.types.files']}</span> <span id="id_files_count"></span></a>
-                    </label>
+                <!--FILES TOGGLE-->
+                <div class="clearfix">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}"
+                                  styleClass="facetTypeChBox facetLink #{MyDataSearchFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}"
+                                  disabled="#{MyDataSearchFragment.getNewSelectedTypes('files') == null}">
+                        <f:param name="q" value="#{MyDataSearchFragment.query}"/>
+                        <f:param name="types" value="#{MyDataSearchFragment.getNewSelectedTypes('files')}"/>
+                        <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
+                        <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                        </c:forEach>
+                        <c:forEach items="#{MyDataSearchFragment.roleFilters}" var="clickedRoleFilter" varStatus="status">
+                            <f:param name="rf#{status.index}" value='#{clickedRoleFilter}'/>
+                        </c:forEach>
+                        <f:param name="page" value="1"/>
+                        <p:selectBooleanCheckbox value="#{MyDataSearchFragment.selectedTypesList.contains('files') ? true : false}"
+                                                 disabled="#{MyDataSearchFragment.getNewSelectedTypes('files') == null ? true : false}"/>
+                    </h:outputLink>
+                    <!--FILES ONLY-->
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{MyDataSearchFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}">
+                        <f:param name="q" value="#{MyDataSearchFragment.query}"/>
+                        <f:param name="types" value="files"/>
+                        <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
+                        <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                        </c:forEach>
+                        <c:forEach items="#{MyDataSearchFragment.roleFilters}" var="clickedRoleFilter" varStatus="status">
+                            <f:param name="rf#{status.index}" value='#{clickedRoleFilter}'/>
+                        </c:forEach>
+                        <f:param name="page" value="1"/>
+
+                        <i class="icon-file text-icon-inline"></i>
+
+                        <h:outputFormat styleClass="facetTypeFile"
+                                        value="#{bundle['dataverse.results.types.files']} #{MyDataSearchFragment.selectedTypesList.contains('files') ? '&#40;{0}&#41;': ''}">
+                            <f:param value="#{MyDataSearchFragment.facetCountFiles != null ? MyDataSearchFragment.facetCountFiles : 0}"/>
+                        </h:outputFormat>
+                    </h:outputLink>
                 </div>
+            </h:form>
+
+            <!--NON-TYPE FACETS-->
+            <h:form id="facetCategoryForm" rendered="#{MyDataSearchFragment.searchResultsCount > 0}">
+                <p:dataList id="facetCategoryList" value="#{MyDataSearchFragment.facetCategoryList}" var="facetCategory">
+                    <h:outputText value="#{facetCategory.displayName}" styleClass="facetCategoryName"/>
+                    <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{MyDataSearchFragment.getNumberOfFacets(facetCategory.name,5)}">
+                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{!MyDataSearchFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
+                            <h:outputFormat value="#{facetLabel.name} &#40;{0}&#41;">
+                                <f:param value="#{facetLabel.count}"/>
+                            </h:outputFormat>
+                            <f:param name="q" value="#{MyDataSearchFragment.query}"/>
+                            <f:param name="fq#{MyDataSearchFragment.filterQueries.size()}" value="#{facetLabel.filterQuery}"/>
+                            <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                            </c:forEach>
+                            <c:forEach items="#{MyDataSearchFragment.roleFilters}" var="clickedRoleFilter" varStatus="status">
+                                <f:param name="rf#{status.index}" value='#{clickedRoleFilter}'/>
+                            </c:forEach>
+                            <f:param name="types" value="#{MyDataSearchFragment.selectedTypesString}"/>
+                            <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
+                        </h:outputLink>
+
+                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{MyDataSearchFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink facetSelected">
+                            <h:outputFormat value="#{facetLabel.name} &#40;{0}&#41;">
+                                <f:param value="#{facetLabel.count}"/>
+                            </h:outputFormat>
+                            <span class="glyphicon glyphicon-remove"></span>
+                            <f:param name="q" value="#{MyDataSearchFragment.query}"/>
+                            <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}' disable="#{clickedFilterQuery == facetLabel.filterQuery}"/>
+                            </c:forEach>
+                            <c:forEach items="#{MyDataSearchFragment.roleFilters}" var="clickedRoleFilter" varStatus="status">
+                                <f:param name="rf#{status.index}" value='#{clickedRoleFilter}'/>
+                            </c:forEach>
+                            <f:param name="types" value="#{MyDataSearchFragment.selectedTypesString}"/>
+                            <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
+                        </h:outputLink>
+                    </p:dataList>
+
+                    <!--ROLES-->
+                    <h:form id="rolesForm" rendered="#{MyDataSearchFragment.searchResultsCount > 0}">
+                        <h:outputText value="#{bundle['dashboard.list_users.tbl_header.roles']}" styleClass="facetCategoryName"/>
+                        <p:dataList id="rolesList" value="#{MyDataSearchFragment.myRoles}" var="role" rows="#{MyDataSearchFragment.myRoles.size()}">
+                            <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{!MyDataSearchFragment.roleFilters.contains(role)}" styleClass="facetLink">
+                                <h:outputFormat value="#{role}" />
+                                <f:param name="q" value="#{MyDataSearchFragment.query}"/>
+                                <f:param name="rf#{MyDataSearchFragment.roleFilters.size()}" value="#{role}"/>
+                                <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                    <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                </c:forEach>
+                                <c:forEach items="#{MyDataSearchFragment.roleFilters}" var="clickedRoleFilter" varStatus="status">
+                                    <f:param name="rf#{status.index}" value='#{clickedRoleFilter}'/>
+                                </c:forEach>
+                                <f:param name="types" value="#{MyDataSearchFragment.selectedTypesString}"/>
+                                <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
+                            </h:outputLink>
+
+                            <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{MyDataSearchFragment.roleFilters.contains(role)}" styleClass="facetLink facetSelected">
+                                <h:outputFormat value="#{role}" />
+                                <span class="glyphicon glyphicon-remove"></span>
+                                <f:param name="q" value="#{MyDataSearchFragment.query}"/>
+                                <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                    <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                </c:forEach>
+                                <c:forEach items="#{MyDataSearchFragment.roleFilters}" var="clickedRoleFilter" varStatus="status">
+                                    <f:param name="rf#{status.index}" value='#{clickedRoleFilter}' disable="#{clickedRoleFilter == role}"/>
+                                </c:forEach>
+                                <f:param name="types" value="#{MyDataSearchFragment.selectedTypesString}"/>
+                                <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
+                            </h:outputLink>
+                        </p:dataList>
+                    </h:form>
+                </p:dataList>
+            </h:form>
+        </div>
+        <div id="dv-main" class="col-sm-8 col-md-9">
+            <!--DEBUG BEGIN-->
+            <div jsf:rendered="#{MyDataSearchFragment.debug}" style="background-color: lightgray">
+                <tt>
+                    <h:outputText value="mode:#{MyDataSearchFragment.mode} "/>
+                    <h:outputText value="#{MyDataSearchFragment.filterQueriesDebug}"/><br/>
+                    <h:outputText value="solrIsDown=#{MyDataSearchFragment.solrIsDown}"/><br/>
+                    <h:outputText value="errorFromSolr: #{MyDataSearchFragment.errorFromSolr}" rendered="#{MyDataSearchFragment.errorFromSolr != null}"/>
+                </tt>
             </div>
-            <!-- end dvobject checkboxes -->
-            <!-- start: publish states -->
-            <b>#{bundle['mydataFragment.publicationStatus']}</b>
-            <div id="div_published_states" style="border-bottom:1px solid #ddd; padding-bottom:8px; margin-bottom:0.5em;">
-                <ui:repeat value="#{MyDataPage.publishedStatesForMyDataPage}" var="pstate">
-                     <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
-                            <input style="margin-left:0;" name="published_states" id="id_cbox_#{pstate[1]}" type="checkbox" value="#{pstate[0]}" checked="checked"  />
-                        <label>
-                            <a class="mydata_pubstate_label"> #{bundle[pstate[0]]} <span id="id_#{pstate[1]}_count"></span></a>
-                        </label>
-                    </div>                   
+            <!--DEBUG END-->
+
+            <!--toggle sidebar button-->
+            <p class="visible-xs-block">
+                <button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas"><i class="glyphicon glyphicon-chevron-left"></i> Filter Results</button>
+            </p>
+
+            <!-- Message for zero results -->
+            <div id="emptyResults" class="emptyResults bg-warning"
+                 jsf:rendered="#{(MyDataSearchFragment.searchResultsList.size() == 0) and (!MyDataSearchFragment.wasSolrErrorEncountered())}">
+                <ui:fragment rendered="#{MyDataSearchFragment.mode == MyDataSearchFragment.searchModeString}">
+                    <!--THIS IS EMPTY / SEARCH-->
+                    <ui:fragment rendered="#{MyDataSearchFragment.searchResultsList.size() eq 0}">
+                        <!--SEARCH ZERO COUNTS-->
+                        <p><h:outputFormat value="#{bundle['dataverse.results.empty.zero']}" escape="false">
+                            <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                            <f:param value="#{settingsWrapper.guidesVersion}"/>
+                        </h:outputFormat></p>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{MyDataSearchFragment.searchResultsList.size() gt 0}">
+                        <!--SEARCH HIDDEN-->
+                        <p><h:outputFormat value="#{bundle['dataverse.results.empty.hidden']}" escape="false">
+                            <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                            <f:param value="#{settingsWrapper.guidesVersion}"/>
+                        </h:outputFormat></p>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{MyDataSearchFragment.errorFromSolr != null}">
+                        <p>
+                            <a data-toggle="collapse" data-parent="#emptyResults" href="#technicalDetails" aria-expanded="true" aria-controls="technicalDetails">[+] #{bundle['dataverse.results.empty.link.technicalDetails']}</a>
+                        </p>
+                        <div id="technicalDetails" class="collapse">
+                            <pre><h:outputText value="#{MyDataSearchFragment.errorFromSolr}"/></pre>
+                        </div>
+                    </ui:fragment>
+                </ui:fragment>
+                <ui:fragment rendered="#{dataverseSession.user.authenticated 
+                                        and MyDataSearchFragment.mode == MyDataSearchFragment.browseModeString}">
+                    <!--THIS IS EMPTY / BROWSE / LOGGED IN / PERMS-->
+                    <ui:fragment rendered="#{MyDataSearchFragment.searchResultsList.size() eq 0}">
+                        <!--BROWSE CAN_ADD ZERO COUNTS-->
+                        <p>
+                            <h:outputFormat value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.results.empty.browse.loggedin.perms.zero'] : bundle['dataverse.results.empty.browse.loggedin.perms.zero']}" escape="false">
+                                <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                <f:param value="#{settingsWrapper.guidesVersion}"/>
+                            </h:outputFormat>
+                        </p>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{MyDataSearchFragment.searchResultsList.size() gt 0}">
+                        <!--BROWSE CAN_ADD HIDDEN-->
+                        <p>#{bundle['dataverse.results.empty.browse.loggedin.perms.hidden']}</p>
+                    </ui:fragment>
+                </ui:fragment>
+
+            </div>
+
+            <div id="resultsFacetsTopBlock" jsf:rendered="#{!empty MyDataSearchFragment.filterQueries or !empty MyDataSearchFragment.roleFilters}">
+                <ui:repeat value="#{MyDataSearchFragment.filterQueries}" var="filterQuery" rendered="#{!MyDataSearchFragment.wasSolrErrorEncountered()}">
+                    <ui:param name="friendlyNames" value="#{MyDataSearchFragment.getFriendlyNamesFromFilterQuery(filterQuery)}"/>
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected" rendered="#{not empty friendlyNames}">
+                        <h:outputText value="#{friendlyNames.get(0)}: #{friendlyNames.get(1)}"/> <span class="glyphicon glyphicon-remove"></span>
+                        <f:param name="q" value="#{MyDataSearchFragment.query}"/>
+                        <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery}' disable="#{clickedFilterQuery == filterQuery}"/>
+                        </c:forEach>
+                        <c:forEach items="#{MyDataSearchFragment.roleFilters}" var="clickedRoleFilter" varStatus="status">
+                            <f:param name="rf#{status.index}" value='#{clickedRoleFilter}'/>
+                        </c:forEach>
+                        <f:param name="types" value="#{MyDataSearchFragment.selectedTypesString}"/>
+                        <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
+                    </h:outputLink>
+                </ui:repeat>
+                <ui:repeat value="#{MyDataSearchFragment.roleFilters}" var="roleFilter" rendered="#{!MyDataSearchFragment.wasSolrErrorEncountered()}">
+                    <ui:param name="friendlyNames" value="#{roleFilter}}"/>
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected">
+                        <h:outputText value="Role: #{roleFilter}"/> <span class="glyphicon glyphicon-remove"></span>
+                        <f:param name="q" value="#{MyDataSearchFragment.query}"/>
+                        <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                        </c:forEach>
+                        <c:forEach items="#{MyDataSearchFragment.roleFilters}" var="clickedRoleFilter" varStatus="status">
+                            <f:param name="rf#{status.index}" value='#{clickedRoleFilter}' disable="#{clickedRoleFilter == roleFilter}"/>
+                        </c:forEach>
+                        <f:param name="types" value="#{MyDataSearchFragment.selectedTypesString}"/>
+                        <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
+                    </h:outputLink>
                 </ui:repeat>
             </div>
-            <!-- end: publish states -->
-            <!-- start: role states -->
-            <b>#{bundle['mydataFragment.roles']}</b>
-            <div id="div_role_states" style="border-bottom:1px solid #ddd; padding-bottom:8px; margin-bottom:0.5em;">
-            <ui:repeat value="#{MyDataPage.roleInfoForCheckboxes}" var="roleInfoList">
-                <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
-                    <input style="margin-left:0;" name="role_ids" id="id_cbox_#{roleInfoList[2]}" type="checkbox" value="#{roleInfoList[0]}" checked="checked" />
-                    <label>
-                        <a class="mydata_role_label">#{roleInfoList[1]}</a>
-                    </label>                    
-                </div>    
-            </ui:repeat>
+
+            <div id="resultsCountPaginatorBlock" class="row" jsf:rendered="#{MyDataSearchFragment.searchResultsList.size() gt 0}">
+                <!-- RESULTS COUNT -->
+                <div class="results-count col-xs-6">
+                    <h:outputFormat value="#{bundle['dataverse.results.count.toofresults']}">
+                        <f:param value="#{MyDataSearchFragment.paginationGuiStart}"/>
+                        <f:param value="#{MyDataSearchFragment.paginationGuiEnd}"/>
+                        <f:param value="#{MyDataSearchFragment.searchResultsCount}"/>
+                    </h:outputFormat>
+                </div>
             </div>
-           <!-- end: role states -->
-             <!--/form>-->
-            <div id="div-search-params" class="well" style="display:none;"></div>
-        </div><!-- end: filter column -->
-        <!-- start: workspace column -->
-        <div class="col-xs-9">
-            <div id="div-pagination"></div>
-            <!--<div id="div-test-json" class="well">(pagination)</div>-->
-            <div id="div-result-message"></div>
-            <div id="resultsTable"><div id="div-card-results"></div></div>
-            <div id="div-more-cards-link" class="text-center" style="display:none;">
-                <a id="lnk_add_more_cards" class="btn btn-default">#{bundle['mydataFragment.moreResults']}</a>
-            </div> 
-            
-            <div id="div-json-results"></div>
+
+            <o:importFunctions type="org.omnifaces.el.functions.Strings" />
+            <ui:param name="descriptionAbbreviationThreshold" value="280"/>
+            <!--CARDS-->
+            <h:dataTable id="resultsTable" styleClass="#{MyDataSearchFragment.searchResultsCount > 0 ? '' : 'resultsNone'}" value="#{MyDataSearchFragment.searchResultsList}" var="result"
+                         rendered="#{MyDataSearchFragment.searchResultsList.size() > 0}">
+                <h:column>
+                    <ui:fragment rendered="#{MyDataSearchFragment.debug == true}">
+                        <h:outputText value="score: #{result.score}" rendered="#{MyDataSearchFragment.mode == MyDataSearchFragment.searchModeString}"/>
+                    </ui:fragment>
+                    <!--DATAVERSE CARDS-->
+                    <div class="dataverseResult clearfix" jsf:rendered="#{result.type == 'dataverses'}">
+                        <div class="card-title-icon-block">
+                            <span class="glyphicon glyphicon-link text-brand pull-right" title="#{bundle.linked}" jsf:rendered="#{!MyDataSearchFragment.rootDv and !result.isInTree}"/>
+                            <span class="glyphicon glyphicon-new-window text-brand pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
+                            <span class="icon-dataverse text-brand pull-right" title="#{bundle.dataverse}"/>
+                            <c:set var="dvUrl" value="/dataverse/#{result.dataverseAlias}"/>
+                            <h:outputLink value="#{!MyDataSearchFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
+                                <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
+                                <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
+                                <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{MyDataSearchFragment.debug == true}"/>
+                            </h:outputLink>
+                            <h:outputText value="(#{result.dataverseAffiliation})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{!empty result.dataverseAffiliation and result.dataverseAffiliationHighlightSnippet == null}"/>
+                            <h:outputText value="(#{result.dataverseAffiliationHighlightSnippet})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{result.dataverseAffiliationHighlightSnippet != null}" escape="false"/>
+                            <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{result.draftState}"/>
+                            <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
+                            <h:outputText value="#{bundle['dataset.versionUI.published']}" styleClass="label label-success" rendered="#{result.publishedState}"/>
+                            <ui:repeat value="#{MyDataSearchFragment.getRolesForEntity(result.entityId)}" var="role">
+                                <h:outputText value="#{role}" styleClass="label label-info"/>
+                            </ui:repeat>
+                        </div>
+                        <div class="card-preview-icon-block text-center">
+                            <h:outputLink value="#{!MyDataSearchFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
+                                <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}"/>
+                                <span class="icon-dataverse text-brand" jsf:rendered="#{empty result.imageUrl}"/>
+                            </h:outputLink>
+                        </div>
+
+                        <h:outputText value="#{result.dateToDisplayOnCard}" styleClass="text-muted" style="margin-right:.5em;"/>
+
+                        <c:set var="dvParentUrl" value="/dataverse/#{result.dataverseParentAlias}"/>
+                        <h:outputLink value="#{!MyDataSearchFragment.rootDv and !result.isInTree ? dvParentUrl : widgetWrapper.wrapURL(dvParentUrl)}" target="#{!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}" rendered="#{result.parent.id != MyDataSearchFragment.dataverse.id}">
+                            <h:outputText value="#{result.parent.get('name')}"/>
+                        </h:outputLink>
+
+                        <hr style="margin:.5em;border:0;"/>
+
+                        <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+
+                        <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
+                                   rendered="#{result.descriptionSnippets.size() gt 0}">
+                            <h:outputText value="#{snippet}" escape="false"/>
+                            <h:outputText value="... " rendered="#{varStatus.last != true}"/>
+                        </ui:repeat>
+
+                        <ui:fragment rendered="#{false and result.matchedFields.size() > 0}">
+                            <h:outputText value="#{bundle['dataverse.results.cards.foundInMetadata']} "/>
+                            <ui:repeat value="#{result.matchedFields}" var="field" varStatus="varStatus">
+                                <h:outputText value="#{field}"/>
+                                <h:outputText value=", " rendered="#{varStatus.last != true}"/>
+                            </ui:repeat>
+                        </ui:fragment>
+
+                        <ui:repeat value="#{result.highlightsAsList}" var="highlight" rendered="#{result.highlightsAsList.size() gt 0}">
+                            <ui:repeat value="#{highlight.snippets}" var="snippet">
+                                <div>
+                                    <h:outputText value="#{highlight.solrField.nameSearchable}: #{snippet}" escape="false"/>
+                                    <ui:param value="#{highlight.solrField.nameFacetable}:intentional" name="unfriendly"/>
+                                </div>
+                            </ui:repeat>
+                        </ui:repeat>
+                    </div>
+                    <!--DATASET CARDS-->
+                    <div class="datasetResult clearfix" jsf:rendered="#{result.type == 'datasets'}">
+                        <div class="card-title-icon-block">
+                            <span class="glyphicon glyphicon-link text-info pull-right" title="#{bundle.linked}" jsf:rendered="#{!MyDataSearchFragment.rootDv and !result.isInTree}"/>
+                            <span class="glyphicon glyphicon-new-window text-info pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
+                            <span class="icon-dataset text-info pull-right" title="#{bundle.dataset}"/>
+                            <a href="#{!MyDataSearchFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
+                                <h:outputText value="#{result.title}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet == null}"/>
+                                <h:outputText value="#{result.titleHighlightSnippet}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet != null}" escape="false"/>
+                                <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{MyDataSearchFragment.debug == true}"/></a>
+
+                            <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{result.draftState}"/>
+                            <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{result.inReviewState}"/>
+                            <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
+                            <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{result.deaccessionedState}"/>
+                            <h:outputText value="#{bundle['dataset.versionUI.published']}" styleClass="label label-success" rendered="#{result.publishedState}"/>
+                            <ui:repeat value="#{MyDataSearchFragment.getRolesForEntity(result.entityId)}" var="role">
+                                <h:outputText value="#{role}" styleClass="label label-info"/>
+                            </ui:repeat>
+                        </div>
+                        <div class="card-preview-icon-block text-center">
+                            <a href="#{!MyDataSearchFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
+                                <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}"/>
+                                <span class="icon-dataset" jsf:rendered="#{empty result.imageUrl}"/>
+                            </a>
+                        </div>
+
+                        <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard}"/>
+
+                        <h:outputText styleClass="text-muted" value=" - " rendered="#{result.parent.id != MyDataSearchFragment.dataverse.id}"/>
+
+                        <c:set var="dvParentAlias" value="/dataverse/#{result.dataverseAlias}"/>
+                        <h:outputLink value="#{!MyDataSearchFragment.rootDv and !result.isInTree ? dvParentAlias : widgetWrapper.wrapURL(dvParentAlias)}" target="#{(!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" rendered="#{result.parent.id != MyDataSearchFragment.dataverse.id}">
+                            <h:outputText value="#{result.parent.get('name')}"/>
+                        </h:outputLink>
+
+                        <div class="resultDatasetCitationBlock #{result.deaccessionedState ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
+                            <h:outputText value="#{result.citationHtml != null ? result.citationHtml : result.citation}" escape="false"/>
+                        </div>
+
+                        <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+
+                        <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
+                                   rendered="#{result.descriptionSnippets.size() gt 0}">
+                            <h:outputText value="... #{snippet} ..." escape="false"/>
+                        </ui:repeat>
+
+                        <ui:fragment rendered="#{false and result.matchedFields.size() > 0}">
+                            <h:outputText value="#{bundle['dataverse.results.cards.foundInMetadata']} "/>
+                            <ui:repeat value="#{result.matchedFields}" var="field" varStatus="varStatus">
+                                <h:outputText value="#{field}"/>
+                                <h:outputText value=", " rendered="#{varStatus.last != true}"/>
+                            </ui:repeat>
+                        </ui:fragment>
+
+                        <ui:repeat value="#{result.highlightsAsList}" var="highlight" rendered="#{result.highlightsAsList.size() > 0}">
+                            <ui:repeat value="#{highlight.snippets}" var="snippet">
+                                <div>
+                                    <h:outputText value="#{highlight.displayName}: #{snippet}" escape="false"/>
+                                </div>
+                            </ui:repeat>
+                        </ui:repeat>
+
+                        <div jsf:rendered="#{result.harvested and !empty result.harvestingDescription}" class="text-muted small margin-top-half">
+                            <h:outputText value="#{result.harvestingDescription}"/>
+                        </div>
+                    </div>
+                    <!--FILE CARDS-->
+                    <div class="fileResult clearfix" jsf:rendered="#{result.type == 'files'}">
+                        <div class="card-title-icon-block">
+                            <span class="glyphicon glyphicon-link text-muted pull-right" title="#{bundle.linked}" jsf:rendered="#{!MyDataSearchFragment.rootDv and !result.isInTree}"/>
+                            <span class="glyphicon glyphicon-new-window text-muted pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
+                            <span class="icon-file text-muted pull-right" title="#{bundle.file}"/>
+
+                            <span class="text-danger glyphicon glyphicon-lock" title="#{bundle.restricted}" jsf:rendered="#{result.fileAccess eq 'Restricted' and !permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
+                            <span class="text-success icon-unlock" title="#{bundle.restrictedaccess}" jsf:rendered="#{result.fileAccess eq 'Restricted' and permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
+                            <a href="#{!MyDataSearchFragment.rootDv and !result.isInTree ? (result.harvested ? result.fileDatasetUrl : result.fileUrl) : widgetWrapper.wrapURL(result.harvested ? result.fileDatasetUrl : result.fileUrl)}" target="#{(!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
+                                <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
+                                <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
+                                <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{MyDataSearchFragment.debug == true}"/></a>
+                            <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{result.draftState}"/>
+                            <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{result.inReviewState}"/>
+                            <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
+                            <h:outputText value="#{bundle['dataset.versionUI.published']}" styleClass="label label-success" rendered="#{result.publishedState}"/>
+                            <ui:repeat value="#{MyDataSearchFragment.getRolesForEntity(result.entityId)}" var="role">
+                                <h:outputText value="#{role}" styleClass="label label-info"/>
+                            </ui:repeat>
+                        </div>
+
+                        <div class="card-preview-icon-block text-center">
+                            <a href="#{!MyDataSearchFragment.rootDv and !result.isInTree ? (result.harvested ? result.fileDatasetUrl : result.fileUrl) : widgetWrapper.wrapURL(result.harvested ? result.fileDatasetUrl : result.fileUrl)}" target="#{(!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
+                                <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}"/>
+                                <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
+                                      jsf:rendered="#{empty result.imageUrl}"/>
+                            </a>
+                        </div>
+
+                        <div>
+                            <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>
+                            <a href="#{!MyDataSearchFragment.rootDv and !result.isInTree ? result.fileDatasetUrl : widgetWrapper.wrapURL(result.fileDatasetUrl)}" target="#{(!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
+                                <h:outputText value="#{result.parent.get('name')}"/></a>
+                        </div>
+
+                        <div>
+                            <h:outputText value="#{bundle['dataverse.results.cards.files.tabularData']}" styleClass="text-muted" rendered="#{!empty MyDataSearchFragment.tabularDataDisplayInfo(result.entity)}"/>
+                            <h:outputText value="#{result.filetype}" styleClass="text-muted" rendered="#{empty MyDataSearchFragment.tabularDataDisplayInfo(result.entity) and result.fileTypeHighlightSnippet == null}"/>
+                            <h:outputText value="#{result.fileTypeHighlightSnippet}" styleClass="text-muted" rendered="#{empty MyDataSearchFragment.tabularDataDisplayInfo(result.entity) and result.fileTypeHighlightSnippet != null}" escape="false"/>
+
+                            <h:outputText styleClass="text-muted" value=" - #{MyDataSearchFragment.dataFileSizeDisplay(result.entity)}" rendered="#{!result.harvested}" />
+
+                            <h:outputText styleClass="text-muted" value=" - #{MyDataSearchFragment.dataFileChecksumDisplay(result.entity)}" rendered="#{!result.harvested and !MyDataSearchFragment.isTabular(result.entity) and !(empty MyDataSearchFragment.dataFileChecksumDisplay(result.entity))}"/>
+
+                            <!-- if this is a tabular data file, extra information, such as the numbers of variables and observations and the unf, is displayed: -->
+                            <h:outputText styleClass="text-muted" value=" - #{MyDataSearchFragment.tabularDataDisplayInfo(result.entity)}"
+                                          rendered="#{!empty MyDataSearchFragment.tabularDataDisplayInfo(result.entity)}"/>
+                        </div>
+
+                        <div class="file-tags-block" jsf:rendered="#{(!empty result.fileCategories) or (!empty result.tabularDataTags)}">
+                            <ui:repeat value="#{result.fileCategories}" var="cat">
+                                <h:outputText value="#{cat}" styleClass="label label-default"/>
+                            </ui:repeat>
+                            <ui:repeat value="#{result.tabularDataTags}" var="tag">
+                                <h:outputText value="#{tag}" styleClass="label label-info"/>
+                            </ui:repeat>
+                        </div>
+
+                        <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+
+                        <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
+                                   rendered="#{result.descriptionSnippets.size() gt 0}">
+                            <h:outputText value="#{snippet}" escape="false"/>
+                            <h:outputText value="... " rendered="#{varStatus.last != true}"/>
+                        </ui:repeat>
+
+                        <div jsf:rendered="#{result.highlightsAsList.size() > 0}">
+                            <ui:repeat value="#{result.highlightsAsList}" var="highlight">
+                                <ui:repeat value="#{highlight.snippets}" var="snippet">
+                                    <div>
+                                        <h:outputText value="#{highlight.displayName}: #{snippet}" escape="false"/>
+                                    </div>
+                                </ui:repeat>
+                            </ui:repeat>
+                        </div>
+
+                        <div jsf:rendered="#{result.harvested and !empty result.harvestingDescription}">
+                            <h:outputText value="#{result.harvestingDescription}" styleClass="text-muted" style="margin-right:.5em;"/>
+                        </div>
+                    </div>
+                </h:column>
+            </h:dataTable>
+            <!-- BOTTOM PAGINATOR -->
+                <!-- PAGINATOR -->
+                <ui:fragment rendered="#{MyDataSearchFragment.totalPages != 1}">
+                    <o:importFunctions type="java.lang.Math" />
+                    <div class="results-sort-pagination results-bottom text-center">
+                        <!--<div class="pagination pull-right">-->
+                        <ul class="pagination">
+                            <!--should take you to page 1-->
+                            <li class="#{MyDataSearchFragment.page == '1' ? 'disabled' : ''}">
+                                <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+                                    <h:outputText value="&#171;"/>
+                                    <f:param name="q" value="#{MyDataSearchFragment.query}"/>
+                                    <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                        <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                    </c:forEach>
+                                    <c:forEach items="#{MyDataSearchFragment.roleFilters}" var="clickedRoleFilter" varStatus="role">
+                                        <f:param name="rf#{role.index}" value='#{clickedRoleFilter}'/>
+                                    </c:forEach>
+                                    <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
+                                    <f:param name="types" value="#{MyDataSearchFragment.selectedTypesString}"/>
+                                    <f:param name="page" value="1"/>
+                                </h:outputLink>
+                            </li>
+                            <li class="#{MyDataSearchFragment.page == '1' ? 'disabled' : ''}">
+                                <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+                                    <h:outputText value="&lt; #{bundle.previous}"/>
+                                    <f:param name="q" value="#{MyDataSearchFragment.query}"/>
+                                    <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                        <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                    </c:forEach>
+                                    <c:forEach items="#{MyDataSearchFragment.roleFilters}" var="clickedRoleFilter" varStatus="role">
+                                        <f:param name="rf#{role.index}" value='#{clickedRoleFilter}'/>
+                                    </c:forEach>
+                                    <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
+                                    <f:param name="types" value="#{MyDataSearchFragment.selectedTypesString}"/>
+                                    <f:param name="page" value="#{Math:max(1,MyDataSearchFragment.page-1).intValue()}"/>
+                                </h:outputLink>
+                            </li>
+                            <c:forEach begin="#{Math:max(1,MyDataSearchFragment.page-Math:max(2,MyDataSearchFragment.page-MyDataSearchFragment.totalPages+4))}"
+                                       end="#{Math:min(MyDataSearchFragment.totalPages,MyDataSearchFragment.page+Math:max(2,5-MyDataSearchFragment.page))}"
+                                       varStatus="pageStatus">
+                                <li class="#{MyDataSearchFragment.page == pageStatus.index ? 'active' : ''}">
+                                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+                                        <h:outputText value="#{pageStatus.index}">
+                                            <f:convertNumber pattern="###,###" />
+                                        </h:outputText>
+                                        <span class="#{MyDataSearchFragment.page == pageStatus.index ? 'sr-only' : ''}">
+                                                <h:outputText value="#{MyDataSearchFragment.page == pageStatus.index ? bundle['dataverse.results.paginator.current'] : ''}"/>
+                                            </span>
+                                        <f:param name="q" value="#{MyDataSearchFragment.query}"/>
+                                        <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
+                                        <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                        </c:forEach>
+                                        <c:forEach items="#{MyDataSearchFragment.roleFilters}" var="clickedRoleFilter" varStatus="role">
+                                            <f:param name="rf#{role.index}" value='#{clickedRoleFilter}'/>
+                                        </c:forEach>
+                                        <f:param name="types" value="#{MyDataSearchFragment.selectedTypesString}"/>
+                                        <f:param name="page" value="#{pageStatus.index}"/>
+                                    </h:outputLink>
+                                </li>
+                            </c:forEach>
+                            <li class="#{MyDataSearchFragment.page == MyDataSearchFragment.totalPages ? 'disabled' : ''}">
+                                <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+                                    <h:outputText value="#{bundle.next} &gt;"/>
+                                    <f:param name="q" value="#{MyDataSearchFragment.query}"/>
+                                    <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                        <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                    </c:forEach>
+                                    <c:forEach items="#{MyDataSearchFragment.roleFilters}" var="clickedRoleFilter" varStatus="role">
+                                        <f:param name="rf#{role.index}" value='#{clickedRoleFilter}'/>
+                                    </c:forEach>
+                                    <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
+                                    <f:param name="types" value="#{MyDataSearchFragment.selectedTypesString}"/>
+                                    <f:param name="page" value="#{Math:min(MyDataSearchFragment.page+1,MyDataSearchFragment.totalPages).intValue()}"/>
+                                </h:outputLink>
+                            </li>
+                            <li class="#{MyDataSearchFragment.page == MyDataSearchFragment.totalPages ? 'disabled' : ''}">
+                                <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+                                    <h:outputText value="&#187;"/>
+                                    <f:param name="q" value="#{MyDataSearchFragment.query}"/>
+                                    <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                        <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                    </c:forEach>
+                                    <c:forEach items="#{MyDataSearchFragment.roleFilters}" var="clickedRoleFilter" varStatus="role">
+                                        <f:param name="rf#{role.index}" value='#{clickedRoleFilter}'/>
+                                    </c:forEach>
+                                    <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
+                                    <f:param name="page" value="#{MyDataSearchFragment.totalPages}"/>
+                                    <f:param name="types" value="#{MyDataSearchFragment.selectedTypesString}"/>
+                                </h:outputLink>
+                            </li>
+                        </ul>
+                    </div>
+                </ui:fragment>
         </div>
-        <!-- end: workspace column -->
-    </div><!-- end row -->
-    <script src="#{resource['js/nunjucks.js']}?version=#{systemConfig.getVersion()}"></script>
-    <script> 
-        <ui:remove>This variable is needed by mydata.js to make the ajax call</ui:remove>
-        var RETRIEVE_DATA_API_PATH = '#{MyDataPage.retrieveDataFullAPIPath}';
-    </script>
-    <script src="#{resource['js/mydata.js']}?version=#{systemConfig.getVersion()}b"></script>
-    <script>            
-          $(document).ready(function() {
-             init_mydata_page(); // source: mydata.js 
-           });
-    </script>
+    </div>
+
 </div><!-- end panel body -->
-</div><!-- end panel -->
+
 </ui:composition>

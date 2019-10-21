@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -170,6 +171,15 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
             return false;
         }
         return this.hasDatasetPermissions(role.getId());
+    }
+
+    public List<Long> findRolesIdsByNames(List<String> roleNames) {
+        return roleNameLookup
+                .entrySet()
+                .stream()
+                .filter(kv -> roleNames.contains(kv.getValue()))
+                .map(kv -> kv.getKey())
+                .collect(Collectors.toList());
     }
 
     public boolean hasDatasetPermissions(Long role_id) {

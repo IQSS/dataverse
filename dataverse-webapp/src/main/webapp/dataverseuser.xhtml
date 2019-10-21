@@ -35,6 +35,31 @@
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DataverseUserPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
+
+                    <f:viewParam name="q" value="#{MyDataSearchFragment.query}"/>
+                    <f:viewParam name="uId" value="#{MyDataSearchFragment.searchUserId}" />
+                    <f:viewParam name="types" value="#{MyDataSearchFragment.selectedTypesString}"/>
+                    <f:viewParam name="fq1" value="#{MyDataSearchFragment.fq1}"/>
+                    <f:viewParam name="fq0" value="#{MyDataSearchFragment.fq0}"/>
+                    <f:viewParam name="fq2" value="#{MyDataSearchFragment.fq2}"/>
+                    <f:viewParam name="fq3" value="#{MyDataSearchFragment.fq3}"/>
+                    <f:viewParam name="fq4" value="#{MyDataSearchFragment.fq4}"/>
+                    <f:viewParam name="fq5" value="#{MyDataSearchFragment.fq5}"/>
+                    <f:viewParam name="fq6" value="#{MyDataSearchFragment.fq6}"/>
+                    <f:viewParam name="fq7" value="#{MyDataSearchFragment.fq7}"/>
+                    <f:viewParam name="fq8" value="#{MyDataSearchFragment.fq8}"/>
+                    <f:viewParam name="fq9" value="#{MyDataSearchFragment.fq9}"/>
+                    <f:viewParam name="rf1" value="#{MyDataSearchFragment.rf1}"/>
+                    <f:viewParam name="rf0" value="#{MyDataSearchFragment.rf0}"/>
+                    <f:viewParam name="rf2" value="#{MyDataSearchFragment.rf2}"/>
+                    <f:viewParam name="rf3" value="#{MyDataSearchFragment.rf3}"/>
+                    <f:viewParam name="rf4" value="#{MyDataSearchFragment.rf4}"/>
+                    <f:viewParam name="rf5" value="#{MyDataSearchFragment.rf5}"/>
+                    <f:viewParam name="page" value="#{MyDataSearchFragment.page}"/>
+                    <f:viewParam name="debug" value="#{MyDataSearchFragment.debug}"/>
+                    <f:viewAction action="#{MyDataSearchFragment.retrieveMyData()}"/>
+                    
+                    
                 </f:metadata>
                 <h:form id="dataverseUserForm">
                     <p:focus context="dataverseUserForm"/>

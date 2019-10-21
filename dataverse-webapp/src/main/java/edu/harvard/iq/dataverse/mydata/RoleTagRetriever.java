@@ -442,6 +442,10 @@ public class RoleTagRetriever {
 
     }
 
+    public Map<Long, List<String>> getFinalIdToRolesHash() {
+        return finalIdToRolesHash;
+    }
+
 
     public boolean hasRolesForCard(Long dvObjectId) {
         if (dvObjectId == null) {
