@@ -4,3 +4,4 @@ update webhook.
 make branch specifier ${ghprbActualCommit}
 use refspec +refs/pull/*:refs/remotes/origin/pr/*
 add IQSS,OdumInstitute orgs to whitelist
+add donsizemore to user whitelist
