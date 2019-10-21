@@ -513,6 +513,11 @@ public class DataverseUserPage implements java.io.Serializable {
                 case APIGENERATED:
                     userNotification.setTheObject(userNotification.getUser());
                     break;
+
+                case INGESTCOMPLETED:
+                case INGESTCOMPLETEDWITHERRORS:
+                    userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
+                    break;
             }
 
             userNotification.setDisplayAsRead(userNotification.isReadNotification());
