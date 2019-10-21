@@ -1,4 +1,5 @@
 test with additional webhook in place.
 switch jenkins to gitscm trigger.
 update webhook.
-remove branch specifier (was ${sha1})
+make branch specifier ${ghprbActualCommit}
+use refspec +refs/pull/*:refs/remotes/origin/pr/*
