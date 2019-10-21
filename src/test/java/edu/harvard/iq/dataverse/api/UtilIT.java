@@ -1985,6 +1985,27 @@ public class UtilIT {
         return given()
                 .get("/sitemap.xml");
     }
+    
+    static Response deleteToken( String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .delete("api/users/token");
+        return response;
+    }
+    
+    static Response getTokenExpiration( String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .get("api/users/token");
+        return response;
+    }
+    
+    static Response recreateToken( String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .post("api/users/token/recreate");
+        return response;
+    }
 
     @Test
     public void testGetFileIdFromSwordStatementWithNoFiles() {
