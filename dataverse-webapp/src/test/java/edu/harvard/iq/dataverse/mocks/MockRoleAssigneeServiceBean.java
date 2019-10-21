@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.mocks;
 
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
+import edu.harvard.iq.dataverse.qualifiers.TestBean;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,6 +10,7 @@ import java.util.Map;
 /**
  * @author michael
  */
+@TestBean
 public class MockRoleAssigneeServiceBean extends RoleAssigneeServiceBean {
 
     Map<String, RoleAssignee> assignees = new HashMap<>();
