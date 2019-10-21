@@ -414,7 +414,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
     public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {
 
 
-        if ((filterQuery == null) ||
+        if ((StringUtils.isEmpty(filterQuery)) ||
                 (datasetfieldFriendlyNamesBySolrField == null) ||
                 (staticSolrFieldFriendlyNamesBySolrField == null)) {
             return null;
