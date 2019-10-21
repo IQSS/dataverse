@@ -5,7 +5,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:iqbs="http://java.sun.com/jsf/composite/iqbs">
 
 <!--@elvariable id="fileMetadata" type="edu.harvard.iq.dataverse.persistence.datafile.FileMetadata"-->
 
@@ -341,6 +342,7 @@
                                                     <li class="#{ReplaceDatafilesPage.isLockedFromEdits()  ? 'disabled' : ''}">
                                                         <p:commandLink id="fileCategoriesButton"
                                                                        actionListener="#{ReplaceDatafilesPage.refreshTagsPopUp(fileMetadata)}"
+                                                                       action="#{FileTagModal.initForSingleFile(fileMetadata, ReplaceDatafilesPage.dataset)}"
                                                                        update="@form"
                                                                        oncomplete="PF('editFileTagsPopup').show();">
                                                             #{bundle['file.tags']}
@@ -391,11 +393,10 @@
                                 <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}"
                                                  action="#{ReplaceDatafilesPage.returnToFileLandingPage()}"
                                                  process="@this" update="@form"
-                                                 >
+                                >
                                 </p:commandButton>
                                 <p:commandButton value="#{bundle.saveChanges}" id="datasetSave"
                                                  update="@form,:messagePanel"
-                                                 onclick="PF('blockFileForm').show();"
                                                  oncomplete="$(document).scrollTop(0);"
                                                  action="#{ReplaceDatafilesPage.saveReplacement()}"/>
                             </div>
@@ -403,7 +404,7 @@
                                 <p:commandButton tabindex="1000" id="doneFilesButton" value="#{bundle.done}"
                                                  action="#{ReplaceDatafilesPage.returnToFileLandingPage()}"
                                                  process="@this" update="@form"
-                                                 >
+                                >
                                 </p:commandButton>
 
                             </div>
@@ -424,111 +425,15 @@
                                          type="button"/>
                     </div>
                 </p:dialog>
-                <p:dialog id="editFileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}"
-                          widgetVar="editFileTagsPopup" modal="true">
-                    <p class="help-block">#{bundle['file.editTagsDialog.tip']}</p>
 
-                    <div class="form-horizontal"
-                         jsf:rendered="#{!(empty ReplaceDatafilesPage.fileMetadataSelectedForTagsPopup)}">
-                        <div class="form-group text-left">
-                            <label for="selectedTagsListEFF" class="col-sm-4 control-label">
-                                #{bundle['file.editTagsDialog.selectedTags']}
-                            </label>
-                            <div class="col-sm-8">
-                                <p:outputPanel id="selectedTagsListEFF" style="padding-top:.5em;">
-                                    <h:outputText value="#{bundle['file.editTagsDialog.selectedTags.none']}"
-                                                  rendered="#{(empty ReplaceDatafilesPage.selectedTags) and (empty ReplaceDatafilesPage.selectedTabFileTags)}"/>
+                <iqbs:fileTagsDialog dialogWidgetId="editFileTagsPopup"
+                                     rendered="#{ReplaceDatafilesPage.fileMetadataSelectedForTagsPopup != null}">
 
-                                    <ui:repeat value="#{ReplaceDatafilesPage.selectedTags}" var="tags"
-                                               rendered="#{!empty ReplaceDatafilesPage.selectedTags}">
-                                        <h:outputText value="#{tags}" styleClass="label label-default"
-                                                      style="margin-right:.5em;display:inline-block;"/>
-                                    </ui:repeat>
-                                    <ui:repeat value="#{ReplaceDatafilesPage.selectedTabFileTags}" var="tags"
-                                               rendered="#{!empty ReplaceDatafilesPage.selectedTabFileTags}">
-                                        <h:outputText value="#{tags}" styleClass="label label-info"
-                                                      style="margin-right:.5em;display:inline-block;"/>
-                                    </ui:repeat>
-                                </p:outputPanel>
-                            </div>
-                        </div>
-                        <div class="form-group text-left">
-                            <label for="fileTagsMenu" class="col-sm-4 control-label">
-                                #{bundle['file.editTagsDialog.select']}
-                            </label>
-                            <div class="col-sm-8">
-                                <p:selectCheckboxMenu id="fileTagsMenu" styleClass="form-control"
-                                                      value="#{ReplaceDatafilesPage.selectedTags}"
-                                                      label="#{bundle.select}">
-                                    <f:selectItems value="#{ReplaceDatafilesPage.categoriesByName}"/>
-                                    <p:ajax event="toggleSelect"
-                                            listener="#{ReplaceDatafilesPage.handleFileCategoriesSelection}"
-                                            update="selectedTagsListEFF"/>
-                                    <p:ajax event="change"
-                                            listener="#{ReplaceDatafilesPage.handleFileCategoriesSelection}"
-                                            update="selectedTagsListEFF"/>
-                                </p:selectCheckboxMenu>
-                                <p:message for="fileTagsMenu" display="text"/>
-                            </div>
-                        </div>
-                        <div class="form-group text-left">
-                            <label for="fileTagAddNew" class="col-sm-4 control-label">
-                                #{bundle['file.editTagsDialog.add']}
-                            </label>
-                            <div class="col-sm-8">
-                                <div class="row form-inline">
-                                    <div class="col-sm-12">
-                                        <p class="help-block">#{bundle['file.editTagsDialog.add.tip']}</p>
-                                        <p:inputText id="fileTagAddNew" styleClass="form-control"
-                                                     type="text" value="#{ReplaceDatafilesPage.newCategoryName}"
-                                                     placeholder="#{bundle['file.editTagsDialog.newName']}"
-                                                     onkeypress="if (event.keyCode === 13) {
-                                                     return false;
-                                                 }"/>
-                                        <p:commandLink styleClass="btn btn-default" style="margin-left:.5em;"
-                                                       value="#{bundle.apply}"
-                                                       action="#{ReplaceDatafilesPage.saveNewCategory}"
-                                                       update="selectedTagsListEFF, fileTagAddNew, fileTagsMenu"/>
-                                        <p:message for="fileTagAddNew" display="text"/>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group text-left"
-                             jsf:rendered="#{ReplaceDatafilesPage.fileMetadataSelectedForTagsPopup.dataFile.tabularData}">
-                            <label for="tabularDataTags" class="col-sm-4 control-label">
-                                #{bundle['file.tabularDataTags']}
-                            </label>
-                            <div class="col-sm-8">
-                                <p class="help-block">#{bundle['file.tabularDataTags.tip']}</p>
-                                <p:selectCheckboxMenu id="tabularDataTags" styleClass="form-control"
-                                                      value="#{ReplaceDatafilesPage.selectedTabFileTags}"
-                                                      label="#{bundle.select}"
-                                                      filter="false">
-                                    <f:selectItems value="#{ReplaceDatafilesPage.tabFileTags}"/>
-                                    <p:ajax event="toggleSelect"
-                                            update="tabularDataTags"/>
-                                    <p:ajax event="change"
-                                            update="tabularDataTags"/>
-                                </p:selectCheckboxMenu>
-                                <p:message for="tabularDataTags" display="text"/>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="button-block">
-                        <p:commandButton styleClass="btn btn-default"
-                                         id="editFileTagsPopupSaveButton"
-                                         value="#{bundle.saveChanges}"
-                                         onclick="PF('editFileTagsPopup').hide()"
-                                         update="@form"
-                                         actionListener="#{ReplaceDatafilesPage.saveFileTagsAndCategories()}"/>
-                        <p:commandButton styleClass="btn btn-default"
-                                         id="editFileTagsPopupCancelButton"
-                                         value="#{bundle.cancel}"
-                                         onclick="PF('editFileTagsPopup').hide();PF('blockFileForm').hide();"
-                                         actionListener="#{ReplaceDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
-                    </div>
-                </p:dialog>
+                    <p:ajax event="saveAction" listener="#{ReplaceDatafilesPage.saveFileTagsAndCategories(FileTagModal.selectedFile,
+                    FileTagModal.selectedFileMetadataTags,
+                    FileTagModal.selectedDataFileTags)}" update="@form:filesTable"/>
+                </iqbs:fileTagsDialog>
+
                 <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}"
                           widgetVar="deleteFileConfirmation" modal="true">
                     <p class="text-warning"><span

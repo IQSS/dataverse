@@ -31,7 +31,6 @@ import org.primefaces.model.UploadedFile;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
-import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -43,8 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,16 +71,10 @@ public class ReplaceDatafilesPage implements Serializable {
     private DataFile fileToBeReplaced;
     private DataFile fileToBeSaved;
     private Map<String, String> temporaryThumbnailsMap = new HashMap<>();
-    private List<String> categoriesByName = new ArrayList<>();
     private List<FileMetadata> selectedFiles;
-    private String[] selectedTags = {};
-    private String[] selectedTabFileTags = {};
     private List<String> tabFileTags;
     private FileMetadata fileMetadataSelectedForTagsPopup;
-    private List<String> tabFileTagsByName;
     private boolean uploadInProgress;
-    private String warningMessageForPopUp;
-    private String newCategoryName;
     private String dropBoxSelection = "";
 
     // -------------------- CONSTRUCTORS --------------------
@@ -133,26 +125,6 @@ public class ReplaceDatafilesPage implements Serializable {
         return dropBoxSelection;
     }
 
-    public String getNewCategoryName() {
-        return newCategoryName;
-    }
-
-    public String getWarningMessageForPopUp() {
-        return warningMessageForPopUp;
-    }
-
-    public String[] getSelectedTags() {
-        return selectedTags;
-    }
-
-    public String[] getSelectedTabFileTags() {
-        return selectedTabFileTags;
-    }
-
-    public List<String> getCategoriesByName() {
-        return categoriesByName;
-    }
-
     public DataFile getFileToBeReplaced() {
         return fileToBeReplaced;
     }
@@ -178,6 +150,7 @@ public class ReplaceDatafilesPage implements Serializable {
         }
 
         return StringUtils.EMPTY;
+
     }
 
     public String handleFileUpload(FileUploadEvent event) {
@@ -323,43 +296,15 @@ public class ReplaceDatafilesPage implements Serializable {
         return saveReplacementFile();
     }
 
-    public void saveFileTagsAndCategories() {
-        if (fileMetadataSelectedForTagsPopup == null) {
-            logger.fine("No FileMetadata selected for the categories popup");
-            return;
-        }
-        // 1. File categories:
-        /*
-        In order to get the cancel button to work we had to separate the selected tags
-        from the file metadata and re-add them on save
+    public void saveFileTagsAndCategories(FileMetadata selectedFile,
+                                          Collection<String> selectedFileMetadataTags,
+                                          Collection<String> selectedDataFileTags) {
 
-        */
+        selectedFile.getCategories().clear();
+        selectedFileMetadataTags.forEach(selectedFile::addCategoryByName);
 
-        fileMetadataSelectedForTagsPopup.setCategories(new ArrayList<>());
+        setTagsForTabularData(selectedDataFileTags, selectedFile);
 
-        // New, custom file category (if specified):
-        if (newCategoryName != null) {
-            logger.fine("Adding new category, " + newCategoryName + " for file " + fileMetadataSelectedForTagsPopup.getLabel());
-            fileMetadataSelectedForTagsPopup.addCategoryByName(newCategoryName);
-        } else {
-            logger.fine("no category specified");
-        }
-        newCategoryName = null;
-
-        // File Categories selected from the list of existing categories:
-        if (selectedTags != null) {
-            for (String selectedTag : selectedTags) {
-
-                fileMetadataSelectedForTagsPopup.addCategoryByName(selectedTag);
-            }
-        }
-
-        fileMetadataSelectedForTagsPopup = null;
-
-    }
-
-    public void clearFileMetadataSelectedForTagsPopup() {
-        fileMetadataSelectedForTagsPopup = null;
     }
 
     public List<FileMetadata> getFileMetadatas() {
@@ -396,29 +341,6 @@ public class ReplaceDatafilesPage implements Serializable {
 
     public void refreshTagsPopUp(FileMetadata fm) {
         setFileMetadataSelectedForTagsPopup(fm);
-        refreshCategoriesByName();
-        refreshTabFileTagsByName();
-    }
-
-    public String saveNewCategory() {
-
-        if (newCategoryName != null && !newCategoryName.isEmpty()) {
-            categoriesByName.add(newCategoryName);
-        }
-        //Now increase size of selectedTags and add new category
-        String[] temp = new String[selectedTags.length + 1];
-        System.arraycopy(selectedTags, 0, temp, 0, selectedTags.length);
-        selectedTags = temp;
-        selectedTags[selectedTags.length - 1] = newCategoryName;
-        //Blank out added category
-        newCategoryName = "";
-        return "";
-    }
-
-    public void handleFileCategoriesSelection(final AjaxBehaviorEvent event) {
-        if (selectedTags != null) {
-            selectedTags = selectedTags.clone();
-        }
     }
 
     /**
@@ -494,9 +416,20 @@ public class ReplaceDatafilesPage implements Serializable {
         return StringUtils.EMPTY;
     }
 
+    private void setTagsForTabularData(Collection<String> selectedDataFileTags, FileMetadata fmd) {
+        fmd.getDataFile().getTags().clear();
+
+        selectedDataFileTags.forEach(selectedTag -> {
+            DataFileTag tag = new DataFileTag();
+            tag.setTypeByLabel(selectedTag);
+            tag.setDataFile(fmd.getDataFile());
+            fmd.getDataFile().addTag(tag);
+        });
+    }
+
     private boolean isFileInDataset(DatasetVersion datasetVersion, DataFile fileToCheck) {
         for (FileMetadata fileMetadata : datasetVersion.getFileMetadatas()) {
-            if (fileMetadata.getDataFile().equals(fileToCheck)){
+            if (fileMetadata.getDataFile().equals(fileToCheck)) {
                 return true;
             }
         }
@@ -549,54 +482,6 @@ public class ReplaceDatafilesPage implements Serializable {
         return returnToFileLandingPageAfterReplace(replacedFileOperation.get());
     }
 
-    private void refreshCategoriesByName() {
-        categoriesByName = new ArrayList<>();
-        categoriesByName.addAll(dataset.getCategoriesByName());
-        refreshSelectedTags();
-    }
-
-    private void refreshSelectedTags() {
-        selectedTags = new String[0];
-        List<String> selectedCategoriesByName = new ArrayList<>();
-
-        if (fileMetadataSelectedForTagsPopup.getCategories() != null) {
-            for (int i = 0; i < fileMetadataSelectedForTagsPopup.getCategories().size(); i++) {
-                if (!selectedCategoriesByName.contains(fileMetadataSelectedForTagsPopup.getCategories().get(i).getName())) {
-                    selectedCategoriesByName.add(fileMetadataSelectedForTagsPopup.getCategories().get(i).getName());
-                }
-            }
-        }
-
-        if (selectedCategoriesByName.size() > 0) {
-            selectedTags = new String[selectedCategoriesByName.size()];
-            for (int i = 0; i < selectedCategoriesByName.size(); i++) {
-                selectedTags[i] = selectedCategoriesByName.get(i);
-            }
-        }
-        Arrays.sort(selectedTags);
-    }
-
-    private void refreshTabFileTagsByName() {
-        tabFileTagsByName = new ArrayList<>();
-        if (fileMetadataSelectedForTagsPopup.getDataFile().getTags() != null) {
-            for (int i = 0; i < fileMetadataSelectedForTagsPopup.getDataFile().getTags().size(); i++) {
-                tabFileTagsByName.add(fileMetadataSelectedForTagsPopup.getDataFile().getTags().get(i).getTypeLabel());
-            }
-        }
-        refreshSelectedTabFileTags();
-    }
-
-    private void refreshSelectedTabFileTags() {
-        selectedTabFileTags = new String[0];
-        if (tabFileTagsByName.size() > 0) {
-            selectedTabFileTags = new String[tabFileTagsByName.size()];
-            for (int i = 0; i < tabFileTagsByName.size(); i++) {
-                selectedTabFileTags[i] = tabFileTagsByName.get(i);
-            }
-        }
-        Arrays.sort(selectedTabFileTags);
-    }
-
     private String returnToFileLandingPageAfterReplace(DataFile newFile) {
 
         return "/file.xhtml?fileId=" + newFile.getId() + "&version=DRAFT&faces-redirect=true";
@@ -622,14 +507,6 @@ public class ReplaceDatafilesPage implements Serializable {
 
     public void setSelectedFiles(List<FileMetadata> selectedFiles) {
         this.selectedFiles = selectedFiles;
-    }
-
-    public void setSelectedTags(String[] selectedTags) {
-        this.selectedTags = selectedTags;
-    }
-
-    public void setNewCategoryName(String newCategoryName) {
-        this.newCategoryName = newCategoryName;
     }
 
     public void setDropBoxSelection(String dropBoxSelection) {

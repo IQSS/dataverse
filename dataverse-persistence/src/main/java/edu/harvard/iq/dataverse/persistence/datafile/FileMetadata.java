@@ -160,7 +160,7 @@ public class FileMetadata implements Serializable {
     @ManyToMany
     @JoinTable(indexes = {@Index(columnList = "filecategories_id"), @Index(columnList = "filemetadatas_id")})
     @OrderBy("name")
-    private List<DataFileCategory> fileCategories;
+    private List<DataFileCategory> fileCategories = new ArrayList<>();
 
     public List<DataFileCategory> getCategories() {
         return fileCategories;
@@ -171,9 +171,6 @@ public class FileMetadata implements Serializable {
     }
 
     public void addCategory(DataFileCategory category) {
-        if (fileCategories == null) {
-            fileCategories = new ArrayList<>();
-        }
         fileCategories.add(category);
     }
 
@@ -185,15 +182,13 @@ public class FileMetadata implements Serializable {
     public List<String> getCategoriesByName() {
         ArrayList<String> ret = new ArrayList<>();
 
-        if (fileCategories == null) {
+        if (fileCategories.isEmpty()) {
             return ret;
         }
 
         for (DataFileCategory fileCategory : fileCategories) {
             ret.add(fileCategory.getName());
         }
-        // fileCategories.stream()
-        //              .map(x -> ret.add(x.getName()));
 
         return ret;
     }
@@ -203,7 +198,7 @@ public class FileMetadata implements Serializable {
 
         JsonArrayBuilder builder = Json.createArrayBuilder();
 
-        if (fileCategories == null) {
+        if (fileCategories.isEmpty()) {
             return builder;
         }
 

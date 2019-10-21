@@ -22,11 +22,28 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import javax.validation.constraints.Pattern;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
@@ -169,7 +186,7 @@ public class DataFile extends DvObject implements Comparable {
     private IngestRequest ingestRequest;
 
     @OneToMany(mappedBy = "dataFile", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<DataFileTag> dataFileTags;
+    private List<DataFileTag> dataFileTags = new ArrayList<>();
 
     @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<FileMetadata> fileMetadatas;
@@ -282,10 +299,6 @@ public class DataFile extends DvObject implements Comparable {
     }
 
     public void addTag(DataFileTag tag) {
-        if (dataFileTags == null) {
-            dataFileTags = new ArrayList<>();
-        }
-
         dataFileTags.add(tag);
     }
 
@@ -676,9 +689,6 @@ public class DataFile extends DvObject implements Comparable {
      * @return
      */
     public boolean hasGeospatialTag() {
-        if (this.dataFileTags == null) {
-            return false;
-        }
         for (DataFileTag tag : this.dataFileTags) {
             if (tag.isGeospatialTag()) {
                 return true;

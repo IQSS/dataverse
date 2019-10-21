@@ -40,6 +40,9 @@ public class FallbackExceptionHandler extends ExceptionHandlerWrapper {
 
         if (queue.hasNext()) {
             FacesContext facesContext = FacesContext.getCurrentInstance();
+            Throwable exception = queue.next().getContext().getException();
+
+            logger.log(Level.SEVERE, exception.getMessage(), exception);
 
             if (facesContext.getPartialViewContext().isAjaxRequest()) {
                 JsfHelper.addErrorMessage(null, BundleUtil.getStringFromBundle("error.general.message"), "");
@@ -51,6 +54,9 @@ public class FallbackExceptionHandler extends ExceptionHandlerWrapper {
         }
 
         while (queue.hasNext()) {
+            Throwable exception = queue.next().getContext().getException();
+
+            logger.log(Level.SEVERE, exception.getMessage(), exception);
             queue.remove();
         }
     }

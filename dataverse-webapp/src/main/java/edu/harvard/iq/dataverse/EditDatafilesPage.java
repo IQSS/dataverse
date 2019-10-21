@@ -74,6 +74,7 @@ import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -1805,224 +1806,41 @@ public class EditDatafilesPage implements java.io.Serializable {
      * Items for the "Tags (Categories)" popup.
      *
      */
-    private FileMetadata fileMetadataSelectedForTagsPopup = null;
+    private FileMetadata selectedFile = null;
 
-    public void setFileMetadataSelectedForTagsPopup(FileMetadata fm) {
-        fileMetadataSelectedForTagsPopup = fm;
+    public void setSelectedFile(FileMetadata fm) {
+        selectedFile = fm;
     }
 
-    public FileMetadata getFileMetadataSelectedForTagsPopup() {
-        return fileMetadataSelectedForTagsPopup;
+    public FileMetadata getSelectedFile() {
+        return selectedFile;
     }
-
-    public void clearFileMetadataSelectedForTagsPopup() {
-        fileMetadataSelectedForTagsPopup = null;
-    }
-
-    /*
-     * 1. Tabular File Tags:
-     */
-
-    private List<String> tabFileTags = null;
-
-    public List<String> getTabFileTags() {
-        if (tabFileTags == null) {
-            tabFileTags = DataFileTag.listTags();
-        }
-        return tabFileTags;
-    }
-
-    public void setTabFileTags(List<String> tabFileTags) {
-        this.tabFileTags = tabFileTags;
-    }
-
-    private String[] selectedTabFileTags = {};
-
-    public String[] getSelectedTabFileTags() {
-        return selectedTabFileTags;
-    }
-
-    public void setSelectedTabFileTags(String[] selectedTabFileTags) {
-        this.selectedTabFileTags = selectedTabFileTags;
-    }
-
-    private String[] selectedTags = {};
 
     public void refreshTagsPopUp(FileMetadata fm) {
-        setFileMetadataSelectedForTagsPopup(fm);
-        refreshCategoriesByName();
-        refreshTabFileTagsByName();
-    }
-
-    private List<String> tabFileTagsByName;
-
-    private void refreshTabFileTagsByName() {
-        tabFileTagsByName = new ArrayList<>();
-        if (fileMetadataSelectedForTagsPopup.getDataFile().getTags() != null) {
-            for (int i = 0; i < fileMetadataSelectedForTagsPopup.getDataFile().getTags().size(); i++) {
-                tabFileTagsByName.add(fileMetadataSelectedForTagsPopup.getDataFile().getTags().get(i).getTypeLabel());
-            }
-        }
-        refreshSelectedTabFileTags();
-    }
-
-    private void refreshSelectedTabFileTags() {
-        selectedTabFileTags = null;
-        selectedTabFileTags = new String[0];
-        if (tabFileTagsByName.size() > 0) {
-            selectedTabFileTags = new String[tabFileTagsByName.size()];
-            for (int i = 0; i < tabFileTagsByName.size(); i++) {
-                selectedTabFileTags[i] = tabFileTagsByName.get(i);
-            }
-        }
-        Arrays.sort(selectedTabFileTags);
-    }
-
-    private void refreshCategoriesByName() {
-        categoriesByName = new ArrayList<>();
-        for (String category : dataset.getCategoriesByName()) {
-            categoriesByName.add(category);
-        }
-        refreshSelectedTags();
+        setSelectedFile(fm);
     }
 
 
-    private List<String> categoriesByName;
+    public void saveFileTagsAndCategories(FileMetadata selectedFile,
+                                          Collection<String> selectedFileMetadataTags,
+                                          Collection<String> selectedDataFileTags) {
 
-    public List<String> getCategoriesByName() {
-        return categoriesByName;
+        selectedFile.getCategories().clear();
+        selectedFileMetadataTags.forEach(selectedFile::addCategoryByName);
+
+        setTagsForTabularData(selectedDataFileTags, selectedFile);
+        datasetUpdateRequired = true;
     }
 
-    public void setCategoriesByName(List<String> categoriesByName) {
-        this.categoriesByName = categoriesByName;
-    }
+    private void setTagsForTabularData(Collection<String> selectedDataFileTags, FileMetadata fmd) {
+        fmd.getDataFile().getTags().clear();
 
-    private void refreshSelectedTags() {
-        selectedTags = null;
-        selectedTags = new String[0];
-        List<String> selectedCategoriesByName = new ArrayList<>();
-
-        if (fileMetadataSelectedForTagsPopup.getCategories() != null) {
-            for (int i = 0; i < fileMetadataSelectedForTagsPopup.getCategories().size(); i++) {
-                if (!selectedCategoriesByName.contains(fileMetadataSelectedForTagsPopup.getCategories().get(i).getName())) {
-                    selectedCategoriesByName.add(fileMetadataSelectedForTagsPopup.getCategories().get(i).getName());
-                }
-            }
-        }
-
-        if (selectedCategoriesByName.size() > 0) {
-            selectedTags = new String[selectedCategoriesByName.size()];
-            for (int i = 0; i < selectedCategoriesByName.size(); i++) {
-                selectedTags[i] = selectedCategoriesByName.get(i);
-            }
-        }
-        Arrays.sort(selectedTags);
-    }
-
-    public String[] getSelectedTags() {
-        return selectedTags;
-    }
-
-    public void setSelectedTags(String[] selectedTags) {
-        this.selectedTags = selectedTags;
-    }
-
-
-
-    /*
-     * "File Tags" (aka "File Categories"):
-     */
-
-    private String newCategoryName = null;
-
-    public String getNewCategoryName() {
-        return newCategoryName;
-    }
-
-    public void setNewCategoryName(String newCategoryName) {
-        this.newCategoryName = newCategoryName;
-    }
-
-    public String saveNewCategory() {
-
-        if (newCategoryName != null && !newCategoryName.isEmpty()) {
-            categoriesByName.add(newCategoryName);
-        }
-        //Now increase size of selectedTags and add new category
-        String[] temp = new String[selectedTags.length + 1];
-        System.arraycopy(selectedTags, 0, temp, 0, selectedTags.length);
-        selectedTags = temp;
-        selectedTags[selectedTags.length - 1] = newCategoryName;
-        //Blank out added category
-        newCategoryName = "";
-        return "";
-    }
-
-    /* This method handles saving both "tabular file tags" and
-     * "file categories" (which are also considered "tags" in 4.0)
-     */
-    public void saveFileTagsAndCategories() {
-        if (fileMetadataSelectedForTagsPopup == null) {
-            logger.fine("No FileMetadata selected for the categories popup");
-            return;
-        }
-        // 1. File categories:
-        /*
-        In order to get the cancel button to work we had to separate the selected tags 
-        from the file metadata and re-add them on save
-        
-        */
-
-        fileMetadataSelectedForTagsPopup.setCategories(new ArrayList<>());
-
-        // New, custom file category (if specified):
-        if (newCategoryName != null) {
-            logger.fine("Adding new category, " + newCategoryName + " for file " + fileMetadataSelectedForTagsPopup.getLabel());
-            fileMetadataSelectedForTagsPopup.addCategoryByName(newCategoryName);
-        } else {
-            logger.fine("no category specified");
-        }
-        newCategoryName = null;
-
-        // File Categories selected from the list of existing categories: 
-        if (selectedTags != null) {
-            for (String selectedTag : selectedTags) {
-
-                fileMetadataSelectedForTagsPopup.addCategoryByName(selectedTag);
-            }
-        }
-
-        // 2. Tabular DataFile Tags: 
-
-        if (fileMetadataSelectedForTagsPopup.getDataFile() != null && tabularDataTagsUpdated && selectedTabFileTags != null) {
-            fileMetadataSelectedForTagsPopup.getDataFile().setTags(null);
-            for (String selectedTabFileTag : selectedTabFileTags) {
-                DataFileTag tag = new DataFileTag();
-                try {
-                    tag.setTypeByLabel(selectedTabFileTag);
-                    tag.setDataFile(fileMetadataSelectedForTagsPopup.getDataFile());
-                    fileMetadataSelectedForTagsPopup.getDataFile().addTag(tag);
-
-                } catch (IllegalArgumentException iax) {
-                    // ignore 
-                }
-            }
-
-            datasetUpdateRequired = true;
-        }
-
-        fileMetadataSelectedForTagsPopup = null;
-
-    }
-
-    public void handleFileCategoriesSelection(final AjaxBehaviorEvent event) {
-        if (selectedTags != null) {
-            selectedTags = selectedTags.clone();
-        }
-    }
-
-    public void handleTabularTagsSelection(final AjaxBehaviorEvent event) {
-        tabularDataTagsUpdated = true;
+        selectedDataFileTags.forEach(selectedTag -> {
+            DataFileTag tag = new DataFileTag();
+            tag.setTypeByLabel(selectedTag);
+            tag.setDataFile(fmd.getDataFile());
+            fmd.getDataFile().addTag(tag);
+        });
     }
 
     public void handleDescriptionChange(final AjaxBehaviorEvent event) {
