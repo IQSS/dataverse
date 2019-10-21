@@ -3,3 +3,4 @@ switch jenkins to gitscm trigger.
 update webhook.
 make branch specifier ${ghprbActualCommit}
 use refspec +refs/pull/*:refs/remotes/origin/pr/*
+add IQSS,OdumInstitute orgs to whitelist
