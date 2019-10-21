@@ -7,3 +7,4 @@ add IQSS,OdumInstitute orgs to whitelist
 add donsizemore to user whitelist
 update pull request
 correct origin tag
+and reinstate "run tests" phrase
