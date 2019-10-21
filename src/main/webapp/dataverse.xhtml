@@ -51,6 +51,11 @@
                     <!-- Edit Mode -->
                     <ui:fragment rendered="#{DataversePage.editMode == 'INFO' or DataversePage.editMode == 'CREATE'}">
                         <p:focus context="dataverseForm"/>
+                        <div class="row">
+                            <div class="col-xs-12 form-group">
+                                <span class="glyphicon glyphicon-asterisk text-danger"/> <h:outputText value="#{bundle['dataset.asterisk.tip']}"/>
+                            </div>
+                        </div>
                         <!-- Edit Info Panel -->
                         <div class="row">
                             <div class="col-md-6 form-group">
