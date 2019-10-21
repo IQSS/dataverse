@@ -381,7 +381,7 @@ public class Access extends AbstractApiBean {
             // a NotFoundException.
             throw new NotFoundException();
         } // Else - the file itself was requested or we have the info needed to invoke the service and get the derived info
-        logger.warning("Returning download instance");
+        logger.fine("Returning download instance");
         /* 
          * Provide some browser-friendly headers: (?)
          */
