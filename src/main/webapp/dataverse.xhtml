@@ -565,7 +565,7 @@
                         <p:commandButton id="save" styleClass="btn btn-default" tabindex="9" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update="@all">
                             <f:ajax onerror="window.scrollTo(0, 0)" />
                         </p:commandButton>
-                        <p:commandButton id="cancel" styleClass="btn btn-link" tabindex="10" value="#{bundle.cancel}" actionListener="#{DataversePage.cancel}" process="@this" update="@form,:searchResults,:messagePanel" rendered="#{DataversePage.dataverse.id != null}" oncomplete="javascript:bind_bsui_components();initCarousel();"/>
+                        <p:commandButton id="cancel" styleClass="btn btn-link" tabindex="10" value="#{bundle.cancel}" action="#{DataversePage.cancel}"  rendered="#{DataversePage.dataverse.id != null}"/>
                         <p:button id="cancelCreate" styleClass="btn btn-link" tabindex="10" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DataversePage.dataverse.owner.alias}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
                     </div>
 
