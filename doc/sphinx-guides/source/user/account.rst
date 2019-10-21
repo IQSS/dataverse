@@ -159,6 +159,7 @@ You will receive a notification when:
 - You've created your account
 - You've created a dataverse or added a dataset
 - Another Dataverse user has requested access to a restricted file in one of your datasets
+- A file in one of your datasets has finished the ingest process
 
 Notifications will only be emailed one time even if you haven't read the notification on the Dataverse site.
 
