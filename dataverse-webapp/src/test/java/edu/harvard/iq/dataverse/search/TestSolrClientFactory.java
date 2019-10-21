@@ -4,6 +4,7 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import javax.enterprise.inject.Disposes;
@@ -38,7 +39,8 @@ public class TestSolrClientFactory extends SolrClientFactory {
                 )
                 .withLogConsumer(new Slf4jLogConsumer(SOLR_CONTAINER_LOGGER))
                 .withCommand("solr-precreate collection1 /opt/solr/server/solr/configsets/dataverse_config")
-                .withExposedPorts(8983);
+                .withExposedPorts(8983)
+                .waitingFor(Wait.forHttp("/solr/collection1/select"));
         
         SOLR_CONTAINER.start();
     }

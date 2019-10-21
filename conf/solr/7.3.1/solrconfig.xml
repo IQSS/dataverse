@@ -697,18 +697,18 @@
       <float name="tie">0.075</float>
         <str name="qf">
             dvName^400
-            authorName^180
+            dsf_txt_authorName^180
             dvSubject^190
             dvDescription^180
             dvAffiliation^170
-            title^130
-            subject^120
-            keyword^110
-            topicClassValue^100
-            dsDescriptionValue^90
-            authorAffiliation^80
-            publicationCitation^60
-            producerName^50
+            dsf_txt_title^130
+            dsf_txt_subject^120
+            dsf_txt_keyword^110
+            dsf_txt_topicClassValue^100
+            dsf_txt_dsDescriptionValue^90
+            dsf_txt_authorAffiliation^80
+            dsf_txt_publicationCitation^60
+            dsf_txt_producerName^50
             fileName^30
             fileDescription^30
             variableLabel^20
@@ -717,18 +717,18 @@
         </str>
         <str name="pf">
             dvName^200
-            authorName^100
+            dsf_txt_authorName^100
             dvSubject^100
             dvDescription^100
             dvAffiliation^100
-            title^75
-            subject^75
-            keyword^75
-            topicClassValue^75
-            dsDescriptionValue^75
-            authorAffiliation^75
-            publicationCitation^75
-            producerName^75
+            dsf_txt_title^75
+            dsf_txt_subject^75
+            dsf_txt_keyword^75
+            dsf_txt_topicClassValue^75
+            dsf_txt_dsDescriptionValue^75
+            dsf_txt_authorAffiliation^75
+            dsf_txt_publicationCitation^75
+            dsf_txt_producerName^75
         </str>
         <!-- Even though this number is huge it only seems to apply a boost of ~1.5x to final result -MAD 4.9.3--> 
         <str name="bq">

@@ -1,8 +1,6 @@
 package edu.harvard.iq.dataverse.persistence.datafile.license;
 
 import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
-import edu.harvard.iq.dataverse.persistence.datafile.license.License;
-import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
@@ -10,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
+
 import java.util.List;
 import java.util.Locale;
 
