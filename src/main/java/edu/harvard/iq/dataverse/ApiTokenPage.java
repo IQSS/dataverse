@@ -69,16 +69,8 @@ public class ApiTokenPage implements java.io.Serializable {
             if (apiToken != null) {
                 authSvc.removeApiToken(au);
             }
-            /**
-             * @todo DRY! Stolen from BuiltinUsers API page
-             */
-            ApiToken newToken = new ApiToken();
-            newToken.setTokenString(java.util.UUID.randomUUID().toString());
-            newToken.setAuthenticatedUser(au);
-            Calendar c = Calendar.getInstance();
-            newToken.setCreateTime(new Timestamp(c.getTimeInMillis()));
-            c.roll(Calendar.YEAR, 1);
-            newToken.setExpireTime(new Timestamp(c.getTimeInMillis()));
+
+            ApiToken newToken = authSvc.generateApiTokenForUser(au);
             authSvc.save(newToken);
             
         }
