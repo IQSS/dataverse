@@ -375,7 +375,7 @@ div.ui-state-focus span.ui-chkbox-icon {outline: -webkit-focus-ring-color auto 5
 .form-group > .button-block, 
 .panel-body > .button-block, 
 td.col-file-action > .button-block, .col-manage-action > .button-block,
-div.ui-datatable-header > .button-block, .button-block.tab-header, #topDatasetBlock > #actionButtonBlock > .button-block, .inline-buttons > .button-block {margin-top:0;}
+div.ui-datatable-header > .button-block, .button-block.tab-header, #actionButtonBlock > .button-block, .inline-buttons > .button-block {margin-top:0;}
 th.col-file-action.text-right {text-align: right;}
 form.btn-form {display:inline-block;}
 .button-block button, .button-block a.btn, .button-block input.btn, .button-block div.btn-group, .button-block span.btn.ui-state-disabled, .button-block .button-container {margin-right:1em;}
@@ -589,7 +589,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #metrics-block {margin-bottom:20px;}
 
 /* -- OLD LAYOUT -- */
-#metrics-block {border:1px solid #eee;padding:0;}
+#metrics-block {border:1px solid #eee;}
 #metrics-label {color:#333;background:#eee;padding:8px 10px;}
 #metrics-label a {color:#333;display:block;}
 #metrics-label a:hover {text-decoration:none;}
@@ -619,6 +619,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 .citation-block {/*-- margin-bottom:.5em; padding-right:0; --*/}
 .bg-citation {background:#ECF6FB;}
 .bg-citation-file {background:#f5f5f5; border: 1px solid #DDD;}
+.alert-danger.bg-danger {background:#F2DEDE;}
 div.alert-info.bg-citation, div.alert-danger.bg-danger {padding-top:4px; padding-bottom:4px; border-radius:0; color:#333;}
 .citation-block > div.alert-info.bg-citation, .citation-block > div.alert-danger.bg-danger {padding-top:0; padding-bottom:0;}
 .citation-select {/*-- display:inline-block; --*/}
@@ -635,7 +636,7 @@ div.panel-body.read-terms{max-height:220px; overflow-y:scroll; width:100%; backg
 span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
 #replicationDataButton {margin-top:5px;}
 
-#deaccession-reason-block {padding:4px; margin-bottom:.5em;}
+#deaccession-reason-block {}
 
 div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:text-top;}
 #datasetForm .form-group, #templateForm .form-group {overflow: hidden;}
