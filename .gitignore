@@ -60,3 +60,6 @@ scripts/installer/default.config
 tests/node_modules
 tests/package-lock.json
 venv
+
+#Ignore
+scripts/installer/default.config

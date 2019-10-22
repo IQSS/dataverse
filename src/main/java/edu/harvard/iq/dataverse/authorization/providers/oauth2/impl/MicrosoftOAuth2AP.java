@@ -1,9 +1,10 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 
-import com.github.scribejava.core.builder.api.BaseApi;
-import com.github.scribejava.core.oauth.OAuth20Service;
+import com.github.scribejava.apis.MicrosoftAzureActiveDirectory20Api;
+import com.github.scribejava.core.builder.api.DefaultApi20;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Logger;
 import java.io.StringReader;
@@ -25,13 +26,13 @@ public class MicrosoftOAuth2AP extends AbstractOAuth2AuthenticationProvider{
         this.title = "Microsoft";
         this.clientId = aClientId;
         this.clientSecret = aClientSecret;
-        this.scope = "user.read";
+        this.scope = Arrays.asList("openid User.Read");
         this.baseUserEndpoint = "https://graph.microsoft.com/v1.0/me";
     }
 
     @Override
-    public BaseApi<OAuth20Service> getApiInstance(){
-        return MicrosoftAzureApi.instance();
+    public DefaultApi20 getApiInstance(){
+        return MicrosoftAzureActiveDirectory20Api.instance();
     }
 
     @Override
