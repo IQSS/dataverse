@@ -68,7 +68,7 @@ If you wish to start logging in advance of setting up other components, or wish 
 After you have your first day of logs, you can process them the next day.
 
 Enable or Disable Display of Make Data Count Metrics
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 By default, when MDC logging is enabled (when ``:MDCLogPath`` is set), Dataverse will display MDC metrics instead of it's internal (legacy) metrics. You can avoid this (e.g. to collect MDC metrics for some period of time before starting to display them) by setting ``:DisplayMDCMetrics`` to false.
 
@@ -135,10 +135,14 @@ Once you are satisfied with your testing, you should contact support@datacite.or
 - Views ("investigations" in COUNTER)
 - Downloads ("requests" in COUNTER)
 
+.. _MDC-updateCitationsForDataset:
+
 Configuring Dataverse for Make Data Count Citations
 ---------------------------------------------------
 
 Please note: as explained in the note above about limitations, this feature is not available to installations of Dataverse that use Handles.
+
+To configure Dataverse to pull citations from the test vs. production DataCite server see :ref:`doi.mdcbaseurlstring` in the Installation Guide.
 
 Please note that in the curl example, Bash environment variables are used with the idea that you can set a few environment variables and copy and paste the examples as is. For example, "$DOI" could become "doi:10.5072/FK2/BL2IBM" by issuing the following export command from Bash:
 
