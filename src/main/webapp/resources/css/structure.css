@@ -589,7 +589,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #metrics-block {margin-bottom:20px;}
 
 /* -- OLD LAYOUT -- */
-#metrics-block {border:1px solid #eee;}
+#metrics-block {border:1px solid #eee; padding:0;}
 #metrics-label {color:#333;background:#eee;padding:8px 10px;}
 #metrics-label a {color:#333;display:block;}
 #metrics-label a:hover {text-decoration:none;}
