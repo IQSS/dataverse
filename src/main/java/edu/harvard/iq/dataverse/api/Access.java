@@ -321,7 +321,7 @@ public class Access extends AbstractApiBean {
             logger.fine("is download service supported? key=" + key + ", value=" + value);
             // The loop goes through all query params (e.g. including key, gbrecs, persistentId, etc. )
             // So we need to identify when a service is being called and then let checkIfServiceSupportedAndSetConverter see if the required one exists
-            if (key.equals("imageThumb") || key.equals("format") || key.equals("variables")) {
+            if (key.equals("imageThumb") || key.equals("format") || key.equals("variables") || key.equals("noVarHeader")) {
                 serviceRequested = true;
                 //Only need to check if this key is associated with a service
                 if (downloadInstance.checkIfServiceSupportedAndSetConverter(key, value)) {
@@ -371,6 +371,8 @@ public class Access extends AbstractApiBean {
                     serviceFound = true;
                     break;
                 }
+            } else {
+                
             }
         }
         if (serviceRequested && !serviceFound) {
