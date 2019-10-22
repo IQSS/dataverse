@@ -24,7 +24,8 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.primefaces.context.RequestContext;
+import org.primefaces.PrimeFaces;
+//import org.primefaces.context.RequestContext;
 
 /**
  *
@@ -224,13 +225,14 @@ public class FileDownloadHelper implements java.io.Serializable {
      // file downloads and multiple (batch) downloads - sice both use the same 
      // terms/etc. popup. 
      public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse) {
-         RequestContext requestContext = RequestContext.getCurrentInstance();
+         //RequestContext requestContext = RequestContext.getCurrentInstance();
          boolean valid = validateGuestbookResponse(guestbookResponse);
 
          if (!valid) {
              JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
          } else {
-             requestContext.execute("PF('downloadPopup').hide()");
+             //requestContext.execute("PF('downloadPopup').hide()");
+             PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
              guestbookResponse.setDownloadtype("Download");
 
              // Note that this method is only ever called from the file-download-popup - 
@@ -252,14 +254,16 @@ public class FileDownloadHelper implements java.io.Serializable {
      }
      
      public void writeGuestbookAndOpenSubset(GuestbookResponse guestbookResponse) {
-        RequestContext requestContext = RequestContext.getCurrentInstance();
+        //RequestContext requestContext = RequestContext.getCurrentInstance();
         boolean valid = validateGuestbookResponse(guestbookResponse);
 
          if (!valid) {
 
          } else {
-             requestContext.execute("PF('downloadPopup').hide()"); 
-             requestContext.execute("PF('downloadDataSubsetPopup').show()");
+             //requestContext.execute("PF('downloadPopup').hide()");
+             PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+             //requestContext.execute("PF('downloadDataSubsetPopup').show()");
+             PrimeFaces.current().executeScript("PF('downloadDataSubsetPopup').show()");
              guestbookResponse.setDownloadtype("Subset");
              fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
          }
@@ -298,26 +302,30 @@ public class FileDownloadHelper implements java.io.Serializable {
              }
          }
 
-         RequestContext requestContext = RequestContext.getCurrentInstance();
+         //RequestContext requestContext = RequestContext.getCurrentInstance();
          boolean valid = validateGuestbookResponse(guestbookResponse);
 
          if (!valid) {
              return;
          }
          fileDownloadService.explore(guestbookResponse, fmd, externalTool);
-         requestContext.execute("PF('downloadPopup').hide()");
+         //requestContext.execute("PF('downloadPopup').hide()");
+         PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
     }
      
     public void writeGuestbookAndLaunchPackagePopup(GuestbookResponse guestbookResponse) {
-        RequestContext requestContext = RequestContext.getCurrentInstance();
+        //RequestContext requestContext = RequestContext.getCurrentInstance();
         boolean valid = validateGuestbookResponse(guestbookResponse);
 
         if (!valid) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
         } else {
-            requestContext.execute("PF('downloadPopup').hide()");
-            requestContext.execute("PF('downloadPackagePopup').show()");
-            requestContext.execute("handleResizeDialog('downloadPackagePopup')");
+            //requestContext.execute("PF('downloadPopup').hide()");
+            PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+            //requestContext.execute("PF('downloadPackagePopup').show()");
+            PrimeFaces.current().executeScript("PF('downloadPackagePopup').show()");
+            //requestContext.execute("handleResizeDialog('downloadPackagePopup')");
+            PrimeFaces.current().executeScript("handleResizeDialog('downloadPackagePopup')");
 
             fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
         }
@@ -325,7 +333,7 @@ public class FileDownloadHelper implements java.io.Serializable {
 
     public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
         
-        RequestContext requestContext = RequestContext.getCurrentInstance();
+        //RequestContext requestContext = RequestContext.getCurrentInstance();
         boolean valid = validateGuestbookResponse(guestbookResponse);
                   
          if (!valid) {
@@ -333,7 +341,8 @@ public class FileDownloadHelper implements java.io.Serializable {
          } 
         guestbookResponse.setDownloadtype("WorldMap");
         String retVal = fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fmd);
-        requestContext.execute("PF('downloadPopup').hide()"); 
+        //requestContext.execute("PF('downloadPopup').hide()");
+        PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
         return retVal;
     }
 
