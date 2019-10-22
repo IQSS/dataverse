@@ -3110,6 +3110,9 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public int getRestrictedFileCount() {
+        if (workingVersion == null){
+            return 0;
+        }
         int restrictedFileCount = 0;
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
             if (fmd.isRestricted()) {
