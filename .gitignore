@@ -63,3 +63,5 @@ venv
 
 #Ignore
 scripts/installer/default.config
+/doc/Architecture/plantuml.jar
+/doc/Architecture/Authentication-oauth.png
