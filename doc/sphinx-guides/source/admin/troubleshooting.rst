@@ -32,12 +32,28 @@ A User Needs Their Account to Be Converted From Institutional (Shibboleth), ORCI
 
 See :ref:`converting-shibboleth-users-to-local` and :ref:`converting-oauth-users-to-local`.
 
+.. _troubleshooting-glassfish:
+
 Glassfish
 ---------
 
-``server.log`` is the main place to look when you encounter problems. Hopefully an error message has been logged. If there's a stack trace, it may be of interest to developers, especially they can trace line numbers back to a tagged version.
+.. _glassfish-log:
 
-For debugging purposes, you may find it helpful to increase logging levels as mentioned in the :doc:`/developers/debugging` section of the Developer Guide.
+Finding the Glassfish Log File
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``/usr/local/glassfish4/glassfish/domains/domain1/logs/server.log`` is the main place to look when you encounter problems (assuming you installed Glassfish in the default directory). Hopefully an error message has been logged. If there's a stack trace, it may be of interest to developers, especially they can trace line numbers back to a tagged version or commit. Send more of the stack trace (the entire file if possible) to developers who can help (see "Getting Help", below) and be sure to say which version of Dataverse you are running.
+
+.. _increase-glassfish-logging:
+
+Increasing Glassfish Logging
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For debugging purposes, you may find it helpful to temporarily increase logging levels. Here's an example of increasing logging for the Java class behind the "datasets" API endpoints:
+
+``./asadmin set-log-levels edu.harvard.iq.dataverse.api.Datasets=FINE``
+
+For more on setting log levels, see the :doc:`/developers/debugging` section of the Developer Guide.
 
 Our guides focus on using the command line to manage Glassfish but you might be interested in an admin GUI at http://localhost:4848
 
@@ -100,3 +116,8 @@ Many Files with a File Type of "Unknown", "Application", or "Binary"
 --------------------------------------------------------------------
 
 From the home page of a Dataverse installation you can get a count of files by file type by clicking "Files" and then scrolling down to "File Type". If you see a lot of files that are "Unknown", "Application", or "Binary" you can have Dataverse attempt to redetect the file type by using the :ref:`Redetect File Type <redetect-file-type>` API endpoint.
+
+Getting Help
+------------
+
+If the troubleshooting advice above didn't help, contact any of the support channels mentioned in the :ref:`support` section of the Installation Guide.
