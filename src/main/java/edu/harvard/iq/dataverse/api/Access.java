@@ -379,7 +379,7 @@ public class Access extends AbstractApiBean {
             // a ServiceNotAvailableException. However, since the returns are all files of
             // some sort, it seems reasonable, and more standard, to just return
             // a NotFoundException.
-            throw new NotFoundException();
+            throw new NotFoundException("datafile access error: requested optional service (image scaling, format conversion, etc.) is not supported on this datafile.");
         } // Else - the file itself was requested or we have the info needed to invoke the service and get the derived info
         logger.fine("Returning download instance");
         /* 
