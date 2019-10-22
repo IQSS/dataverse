@@ -5,7 +5,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import org.apache.commons.lang.RandomStringUtils;
 import org.mindrot.jbcrypt.BCrypt;
-import org.primefaces.util.Base64;
+//import org.primefaces.util.Base64;
+import java.util.Base64;
 
 /**
  * Password encryption, supporting multiple encryption algorithms to
@@ -37,7 +38,8 @@ public final class PasswordEncryption implements java.io.Serializable {
                 MessageDigest md = MessageDigest.getInstance("SHA");
                 md.update(plainText.getBytes("UTF-8"));
                 byte[] raw = md.digest();
-                String hash = Base64.encodeToString(raw, true);
+                //String hash = Base64.encodeToString(raw, true);
+                String hash = Base64.getEncoder().encodeToString(raw);
                 return hash;
                 
             } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
