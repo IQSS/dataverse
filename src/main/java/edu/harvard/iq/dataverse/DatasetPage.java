@@ -1052,7 +1052,7 @@ public class DatasetPage implements java.io.Serializable {
     public boolean canComputeAllFiles(boolean isCartCompute){
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
              if (!fileDownloadHelper.canDownloadFile(fmd)) {
-                 //requestContext.execute("PF('computeInvalid').show()");
+                 //RequestContext requestContext = RequestContext.getCurrentInstance();
                  PrimeFaces.current().executeScript("PF('computeInvalid').show()");
                  return false;
              }
@@ -2818,7 +2818,7 @@ public class DatasetPage implements java.io.Serializable {
         setSelectedNonDownloadableFiles(new ArrayList<>());
         
         if (this.selectedFiles.isEmpty()) {
-            //requestContext.execute("PF('selectFilesForDownload').show()");
+            //RequestContext requestContext = RequestContext.getCurrentInstance();
             PrimeFaces.current().executeScript("PF('selectFilesForDownload').show()");
             return;
         }
@@ -2834,7 +2834,7 @@ public class DatasetPage implements java.io.Serializable {
         // list, and NONE of the files are left on the downloadable list
         // - we show them a "you're out of luck" popup: 
         if(getSelectedDownloadableFiles().isEmpty() && !getSelectedNonDownloadableFiles().isEmpty()){
-            //requestContext.execute("PF('downloadInvalid').show()");
+            //RequestContext requestContext = RequestContext.getCurrentInstance();
             PrimeFaces.current().executeScript("PF('downloadInvalid').show()");
             return;
         }
@@ -2871,7 +2871,7 @@ public class DatasetPage implements java.io.Serializable {
         // we are showing them this "you are somewhat in luck" popup; that will 
         // then direct them to the download, or popup, as needed:
         if(!getSelectedDownloadableFiles().isEmpty() && !getSelectedNonDownloadableFiles().isEmpty()){
-            //requestContext.execute("PF('downloadMixed').show()");
+            //RequestContext requestContext = RequestContext.getCurrentInstance();
             PrimeFaces.current().executeScript("PF('downloadMixed').show()");
         }       
 
@@ -4742,7 +4742,7 @@ public class DatasetPage implements java.io.Serializable {
             }
             if (isGuestbookAndTermsPopupRequired()) {
                 //RequestContext requestContext = RequestContext.getCurrentInstance();                
-                PrimeFaces.current().executeScript("PF('selectFilesForRequestAccess').show()");
+                PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').show()");               
                 return "";
             } else {
                 //No popup required
