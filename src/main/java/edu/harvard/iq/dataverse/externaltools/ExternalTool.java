@@ -104,6 +104,18 @@ public class ExternalTool implements Serializable {
         this.toolUrl = toolUrl;
         this.toolParameters = toolParameters;
         this.contentType = contentType;
+        this.hasPreviewMode = false;
+    }
+    
+    public ExternalTool(String displayName, String description, Type type, Scope scope, String toolUrl, String toolParameters, String contentType, boolean hasPreviewMode) {
+        this.displayName = displayName;
+        this.description = description;
+        this.type = type;
+        this.scope = scope;
+        this.toolUrl = toolUrl;
+        this.toolParameters = toolParameters;
+        this.contentType = contentType;
+        this.hasPreviewMode = hasPreviewMode;
     }
 
     public enum Type {
@@ -239,7 +251,9 @@ public class ExternalTool implements Serializable {
             jab.add(CONTENT_TYPE, getContentType());
         }
         if (getHasPreviewMode()) {
-            jab.add(CONTENT_TYPE, getContentType());
+            jab.add(HAS_PREVIEW_MODE, getHasPreviewMode());
+        } else {
+            
         }
         return jab;
     }
