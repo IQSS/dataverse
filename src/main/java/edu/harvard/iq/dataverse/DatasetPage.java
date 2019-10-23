@@ -3882,7 +3882,7 @@ public class DatasetPage implements java.io.Serializable {
         
         this.guestbookResponse.setDownloadtype("Download");
         //RequestContext requestContext = RequestContext.getCurrentInstance();
-        PrimeFaces.current().executeScript("PF('downloadPopup').show();handleResizeDialog('downloadPopup');");
+        PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');");
     }
     
     public void initGuestbookMultipleResponse(String selectedFileIds){
