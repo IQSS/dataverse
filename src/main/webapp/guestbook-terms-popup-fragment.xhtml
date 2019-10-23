@@ -197,7 +197,7 @@
             </p:commandLink>
            
             <p:commandLink type="button" styleClass="btn btn-default" rendered="#{!workingVersion.dataset.hasEnabledGuestbook()}" value="#{bundle['file.requestAccess']}"
-                    actionListener="#{fileDownloadHelper.requestAccessIndirect()}"                          
+                    actionListener="#{fileDownloadHelper.writeGuestbookResponseAndRequestAccess(fileDownloadHelper.guestbookResponse)}"                          
                     update="@([id$=Messages])"
                     oncomplete="if (!args || (args &amp;&amp; !args.validationFailed)){PF('guestbookAndTermsPopup').hide();window.location.replace(window.location.href);}">
                     <f:param name="DO_GB_VALIDATION" value="true"/>
