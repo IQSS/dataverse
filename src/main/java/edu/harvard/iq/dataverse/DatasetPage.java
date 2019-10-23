@@ -1052,7 +1052,6 @@ public class DatasetPage implements java.io.Serializable {
     public boolean canComputeAllFiles(boolean isCartCompute){
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
              if (!fileDownloadHelper.canDownloadFile(fmd)) {
-                 //RequestContext requestContext = RequestContext.getCurrentInstance();
                  //requestContext.execute("PF('computeInvalid').show()");
                  PrimeFaces.current().executeScript("PF('computeInvalid').show()");
                  return false;
@@ -2819,7 +2818,6 @@ public class DatasetPage implements java.io.Serializable {
         setSelectedNonDownloadableFiles(new ArrayList<>());
         
         if (this.selectedFiles.isEmpty()) {
-            //RequestContext requestContext = RequestContext.getCurrentInstance();
             //requestContext.execute("PF('selectFilesForDownload').show()");
             PrimeFaces.current().executeScript("PF('selectFilesForDownload').show()");
             return;
@@ -2836,7 +2834,6 @@ public class DatasetPage implements java.io.Serializable {
         // list, and NONE of the files are left on the downloadable list
         // - we show them a "you're out of luck" popup: 
         if(getSelectedDownloadableFiles().isEmpty() && !getSelectedNonDownloadableFiles().isEmpty()){
-            //RequestContext requestContext = RequestContext.getCurrentInstance();
             //requestContext.execute("PF('downloadInvalid').show()");
             PrimeFaces.current().executeScript("PF('downloadInvalid').show()");
             return;
@@ -2874,7 +2871,6 @@ public class DatasetPage implements java.io.Serializable {
         // we are showing them this "you are somewhat in luck" popup; that will 
         // then direct them to the download, or popup, as needed:
         if(!getSelectedDownloadableFiles().isEmpty() && !getSelectedNonDownloadableFiles().isEmpty()){
-            //RequestContext requestContext = RequestContext.getCurrentInstance();
             //requestContext.execute("PF('downloadMixed').show()");
             PrimeFaces.current().executeScript("PF('downloadMixed').show()");
         }       
@@ -3050,7 +3046,6 @@ public class DatasetPage implements java.io.Serializable {
     public String testSelectedFilesForRestrict(){
         //RequestContext requestContext = RequestContext.getCurrentInstance();
         if (selectedFiles.isEmpty()) {
-                //requestContext.execute("PF('selectFilesForRestrict').show()");
                 PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");
             return "";
         } else {           
@@ -3062,12 +3057,10 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
             if (!validSelection) {
-                //requestContext.execute("PF('selectFilesForRestrict').show()");
                 PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");
                 return "";
             }                       
             testSelectedFilesForMapData();
-            //requestContext.execute("PF('accessPopup').show()");
             PrimeFaces.current().executeScript("PF('accessPopup').show()");
             return "";
         }        
@@ -3076,13 +3069,10 @@ public class DatasetPage implements java.io.Serializable {
         
     public String restrictSelectedFiles(boolean restricted) throws CommandException{
         
-        //RequestContext requestContext = RequestContext.getCurrentInstance();
         if (selectedFiles.isEmpty()) {
             if (restricted) {
-                //requestContext.execute("PF('selectFilesForRestrict').show()");
                 PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");
             } else {
-                //requestContext.execute("PF('selectFilesForUnRestrict').show()");
                 PrimeFaces.current().executeScript("PF('selectFilesForUnRestrict').show()");
             }
             return "";
@@ -3096,11 +3086,9 @@ public class DatasetPage implements java.io.Serializable {
             }
             if (!validSelection) {
                 if (restricted) {
-                    //requestContext.execute("PF('selectFilesForRestrict').show()");
                     PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");
                 }
                 if (!restricted) {
-                    //requestContext.execute("PF('selectFilesForUnRestrict').show()");
                     PrimeFaces.current().executeScript("PF('selectFilesForUnRestrict').show()");
                 }
                 return "";
@@ -3883,7 +3871,6 @@ public class DatasetPage implements java.io.Serializable {
     public void openDownloadPopupForMultipleFileDownload() {
         if (this.selectedFiles.isEmpty()) {
             //RequestContext requestContext = RequestContext.getCurrentInstance();
-            //requestContext.execute("PF('selectFilesForDownload').show()");
             PrimeFaces.current().executeScript("PF('selectFilesForDownload').show()");
             return;
         }
@@ -3895,7 +3882,6 @@ public class DatasetPage implements java.io.Serializable {
         
         this.guestbookResponse.setDownloadtype("Download");
         //RequestContext requestContext = RequestContext.getCurrentInstance();
-        //requestContext.execute("PF('downloadPopup').show();handleResizeDialog('downloadPopup');");
         PrimeFaces.current().executeScript("PF('downloadPopup').show();handleResizeDialog('downloadPopup');");
     }
     
@@ -3913,7 +3899,6 @@ public class DatasetPage implements java.io.Serializable {
     public void compareVersionDifferences() {
         //RequestContext requestContext = RequestContext.getCurrentInstance();
         if (this.selectedVersions.size() != 2) {
-            //requestContext.execute("openCompareTwo();");
             PrimeFaces.current().executeScript("openCompareTwo();");
         } else {
             //order depends on order of selection - needs to be chronological order
@@ -4748,7 +4733,6 @@ public class DatasetPage implements java.io.Serializable {
 
         if (selectedFiles.isEmpty()) {
             //RequestContext requestContext = RequestContext.getCurrentInstance();
-            //requestContext.execute("PF('selectFilesForRequestAccess').show()");
             PrimeFaces.current().executeScript("PF('selectFilesForRequestAccess').show()");
             return "";
         } else {
@@ -4758,7 +4742,6 @@ public class DatasetPage implements java.io.Serializable {
             }
             if (isGuestbookAndTermsPopupRequired()) {
                 //RequestContext requestContext = RequestContext.getCurrentInstance();                
-                //requestContext.execute("PF('guestbookAndTermsPopup').show()");               
                 PrimeFaces.current().executeScript("PF('selectFilesForRequestAccess').show()");
                 return "";
             } else {
