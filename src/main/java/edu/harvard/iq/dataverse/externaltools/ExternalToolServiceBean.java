@@ -14,6 +14,7 @@ import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_URL;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TYPE;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.SCOPE;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.CONTENT_TYPE;
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.HAS_PREVIEW_MODE;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -173,6 +174,7 @@ public class ExternalToolServiceBean {
         String typeUserInput = getRequiredTopLevelField(jsonObject, TYPE);
         String scopeUserInput = getRequiredTopLevelField(jsonObject, SCOPE);
         String contentType = getOptionalTopLevelField(jsonObject, CONTENT_TYPE);
+        
 
         // Allow IllegalArgumentException to bubble up from ExternalTool.Type.fromString
         ExternalTool.Type type = ExternalTool.Type.fromString(typeUserInput);
@@ -235,7 +237,12 @@ public class ExternalToolServiceBean {
 
         }
         String toolParameters = toolParametersObj.toString();
-        return new ExternalTool(displayName, description, type, scope, toolUrl, toolParameters, contentType);
+        String hasPreviewMode = getOptionalTopLevelField(jsonObject, HAS_PREVIEW_MODE);
+        boolean hasPreviewModeBoolean = false;
+        if(hasPreviewMode.equals("true")){
+            hasPreviewModeBoolean = true;
+        }
+        return new ExternalTool(displayName, description, type, scope, toolUrl, toolParameters, contentType, hasPreviewModeBoolean);
     }
 
     private static String getRequiredTopLevelField(JsonObject jsonObject, String key) {
