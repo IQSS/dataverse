@@ -147,8 +147,6 @@
                 </div>
             </p:fragment>    
         </div>
-       
-       <h:outputText value="DatasetPage action: #{DatasetPage.termsGuestbookPopupAction}" />
         
        <ui:param name="button_label" value="#{(workingVersion.termsOfUseAndAccess.license != 'CC0' and !empty workingVersion.termsOfUseAndAccess.termsOfUse) or (!empty workingVersion.termsOfUseAndAccess.termsOfAccess) ? bundle.acceptTerms : bundle.download}" />
        
@@ -190,14 +188,21 @@
             </button>
         </div>
             
-        <div class="button-block" jsf:rendered="#{DatasetPage.termsGuestbookPopupAction == bundle['file.requestAccess'] }">
-            <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle['file.requestAccess']}"
+        <div class="button-block" jsf:rendered="#{DatasetPage.termsGuestbookPopupAction == bundle['file.requestAccess']}">
+            <p:commandLink type="button" styleClass="btn btn-default" rendered="#{workingVersion.dataset.hasEnabledGuestbook()}" value="#{bundle['file.requestAccess']}"
                     actionListener="#{fileDownloadHelper.writeGuestbookResponseAndRequestAccess(guestbookResponse)}"                          
                     update="@([id$=Messages])"
                     oncomplete="if (!args || (args &amp;&amp; !args.validationFailed)){PF('guestbookAndTermsPopup').hide();window.location.replace(window.location.href);}">
                     <f:param name="DO_GB_VALIDATION" value="true"/>
             </p:commandLink>
            
+            <p:commandLink type="button" styleClass="btn btn-default" rendered="#{!workingVersion.dataset.hasEnabledGuestbook()}" value="#{bundle['file.requestAccess']}"
+                    actionListener="#{fileDownloadHelper.requestAccessIndirect()}"                          
+                    update="@([id$=Messages])"
+                    oncomplete="if (!args || (args &amp;&amp; !args.validationFailed)){PF('guestbookAndTermsPopup').hide();window.location.replace(window.location.href);}">
+                    <f:param name="DO_GB_VALIDATION" value="true"/>
+            </p:commandLink>
+            
             <button type="button" class="btn btn-default" onclick="PF('guestbookAndTermsPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel} 1</button>
         </div>
 </ui:composition>
