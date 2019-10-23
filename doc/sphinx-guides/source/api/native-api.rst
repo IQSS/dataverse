@@ -279,6 +279,7 @@ To create a dataset, you must supply a JSON file that contains at least the foll
 
 - Title
 - Author
+- Contact
 - Description
 - Subject
 
@@ -1032,6 +1033,34 @@ Starting the release 4.10 the size of the saved original file (for an ingested t
 
 Note the optional "limit" parameter. Without it, the API will attempt to populate the sizes for all the saved originals that don't have them in the database yet. Otherwise it will do so for the first N such datafiles. 
 
+Users Token Management
+----------------------
+
+The following endpoints will allow users to manage their API tokens.
+
+Find a Token's Expiration Date
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In order to obtain the expiration date of a token use::
+
+	curl -H X-Dataverse-key:$API_TOKEN -X GET $SERVER_URL/api/users/token
+
+Recreate a Token
+~~~~~~~~~~~~~~~~
+
+In order to obtain a new token use::
+
+	curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/users/token/recreate
+
+Delete a Token
+~~~~~~~~~~~~~~~~
+
+In order to delete a token use::
+
+	curl -H X-Dataverse-key:$API_TOKEN -X DELETE $SERVER_URL/api/users/token
+	
+	
+
 Builtin Users
 -------------
 
@@ -1598,6 +1627,19 @@ Dataset Integrity
 Recalculate the UNF value of a dataset version, if it's missing, by supplying the dataset version database id::
 
   POST http://$SERVER/api/admin/datasets/integrity/{datasetVersionId}/fixmissingunf
+  
+Datafile Integrity
+~~~~~~~~~~~~~~~~~~
+
+Recalculate the check sum value value of a datafile, by supplying the file's database id and an algorithm (Valid values for $ALGORITHM include MD5, SHA-1, SHA-256, and SHA-512)::
+
+   curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/admin/computeDataFileHashValue/{fileId}/algorithm/$ALGORITHM
+  
+Validate an existing check sum value against one newly calculated from the saved file:: 
+
+   curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/admin/validateDataFileHashValue/{fileId}
+  
+These are only available to super users.
 
 .. _dataset-validation-api:
 

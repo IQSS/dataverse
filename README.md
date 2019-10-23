@@ -17,7 +17,9 @@ Dataverse is a trademark of President and Fellows of Harvard College and is regi
 
 [![Dataverse Project logo](src/main/webapp/resources/images/dataverseproject_logo.jpg?raw=true "Dataverse Project")](http://dataverse.org)
 
-[![Build Status](https://travis-ci.org/IQSS/dataverse.svg?branch=develop)](https://travis-ci.org/IQSS/dataverse) [![Coverage Status](https://coveralls.io/repos/IQSS/dataverse/badge.svg?branch=develop&service=github)](https://coveralls.io/github/IQSS/dataverse?branch=develop)
+[![API Test Status](https://jenkins.dataverse.org/buildStatus/icon?job=IQSS-dataverse-develop&subject=API%20Test%20Status)](https://jenkins.dataverse.org/job/IQSS-dataverse-develop/)
+[![Unit Test Status](https://img.shields.io/travis/IQSS/dataverse?label=Unit%20Test%20Status)](https://travis-ci.org/IQSS/dataverse)
+[![Unit Test Coverage](https://img.shields.io/coveralls/github/IQSS/dataverse?label=Unit%20Test%20Coverage)](https://coveralls.io/github/IQSS/dataverse?branch=develop)
 
 [dataverse.org]: https://dataverse.org
 [demo.dataverse.org]: https://demo.dataverse.org
@@ -25,7 +27,7 @@ Dataverse is a trademark of President and Fellows of Harvard College and is regi
 [Installation Guide]: http://guides.dataverse.org/en/latest/installation/index.html
 [latest release]: https://github.com/IQSS/dataverse/releases
 [features]: https://dataverse.org/software-features
-[roadmap]: https://dataverse.org/goals-roadmap-and-releases
+[roadmap]: https://www.iq.harvard.edu/roadmap-dataverse-project
 [integrations]: https://dataverse.org/integrations
 [REST APIs]: http://guides.dataverse.org/en/latest/api/index.html
 [Contributing Guide]: CONTRIBUTING.md

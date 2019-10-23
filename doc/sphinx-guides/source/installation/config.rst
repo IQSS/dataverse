@@ -142,6 +142,7 @@ Here are the configuration options for DOIs:
 - :ref:`doi.baseurlstring`
 - :ref:`doi.username`
 - :ref:`doi.password`
+- :ref:`doi.mdcbaseurlstring`
 
 **Database Settings:**
 
@@ -622,6 +623,8 @@ How to Help Translate Dataverse Into Your Language
 
 Please join the `dataverse-internationalization-wg`_ mailing list and contribute to https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs to help translate Dataverse into various languages!
 
+Some external tools are also ready to be translated, especially if they are using the ``{localeCode}`` reserved word in their tool manifest. For details, see the :doc:`/api/external-tools` section of the API Guide.
+
 .. _dataverse-internationalization-wg: https://groups.google.com/forum/#!forum/dataverse-internationalization-wg
 
 .. _Web-Analytics-Code:
@@ -953,6 +956,30 @@ See also these related database settings below:
 - :ref:`:Protocol`  
 - :ref:`:Authority`
 - :ref:`:Shoulder`
+
+.. _doi.mdcbaseurlstring:
+
+doi.mdcbaseurlstring
+++++++++++++++++++++
+
+This configuration option affects the ``updateCitationsForDataset`` API endpoint documented under :ref:`MDC-updateCitationsForDataset` in the Admin Guide.
+
+As of this writing, "https://api.datacite.org" (DataCite) and "https://api.test.datacite.org" (DataCite Testing) are the main valid values.
+
+Out of the box, Dataverse is configured to use a test DataCite MDC base URL string. You can delete it like this:
+
+``./asadmin delete-jvm-options '-Ddoi.mdcbaseurlstring=https\://api.test.datacite.org'``
+
+Then, to switch to production DataCite, you can issue the following command:
+
+``./asadmin create-jvm-options '-Ddoi.mdcbaseurlstring=https\://api.datacite.org'``
+
+For backward compatibility, if this option is not defined, the default used is "https\://api.datacite.org:.
+
+See also these related database settings below:
+
+- :ref:`:MDCLogPath`
+- :ref:`:DisplayMDCMetrics`
 
 .. _doi.username:
 
@@ -1767,6 +1794,13 @@ Sets how long a cached metrics result is used before re-running the query for a 
 Sets the path where the raw Make Data Count logs are stored before being processed. If not set, no logs will be created for Make Data Count. See also the :doc:`/admin/make-data-count` section of the Admin Guide.
 
 ``curl -X PUT -d '/usr/local/glassfish4/glassfish/domains/domain1/logs' http://localhost:8080/api/admin/settings/:MDCLogPath``
+
+:DisplayMDCMetrics
+++++++++++++++++++
+
+``:DisplayMDCMetrics`` can be set to false to disable display of MDC metrics (e.g. to enable collection of MDC metrics for some period prior to completing the set-up of Counter and performing the other steps described in the :doc:`/admin/make-data-count` section of the Admin Guide).
+
+``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:DisplayMDCMetrics``
 
 .. _:Languages:
 
