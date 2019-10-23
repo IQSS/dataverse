@@ -66,7 +66,7 @@ To make Dataverse log dataset usage (views and downloads) for Make Data Count, y
 After you have your first day of logs, you can process them the next day.
 
 Enable or Disable Display of Make Data Count Metrics
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 By default, when MDC logging is enabled (when ``:MDCLogPath`` is set), Dataverse will display MDC metrics instead of it's internal (legacy) metrics. You can avoid this (e.g. to collect MDC metrics for some period of time before starting to display them) by setting ``:DisplayMDCMetrics`` to false.
 
