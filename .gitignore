@@ -59,8 +59,3 @@ scripts/installer/default.config
 # ignore UI testing related files
 tests/node_modules
 tests/package-lock.json
-<<<<<<< HEAD
-.factorypath
-=======
-venv
->>>>>>> upstream/develop
