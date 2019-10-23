@@ -1,0 +1,30 @@
+pipeline {
+  agent any
+
+  stages {
+
+    stage('Build') {
+      steps {
+	// clean plate
+        sh 'rm -rf target/'
+	// package warfile
+	sh 'mvn -DcompilerArgument=-Xlint:unchecked test -P all-unit-tests package'
+	// generate HTML SureFire report
+	sh 'mvn surefire-report:report'
+      }
+    }
+
+    stage('Test') {
+      steps {
+	sh '/usr/bin/curl -O https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/ec2/ec2-create-instance.sh'
+	sh '/usr/bin/bash ./ec2-create-instance.sh -b develop -r https://github.com/IQSS/dataverse.git -t jenkins_delete_me -l target -g scripts/jenkins/groupvars.yml'
+      }
+    }
+
+    stage('Post') {
+      steps {
+	junit 'target/surefire-reports/*.xml'
+      }
+    }
+  }
+}

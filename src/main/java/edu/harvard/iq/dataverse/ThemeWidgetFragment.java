@@ -33,7 +33,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
-import org.primefaces.context.RequestContext;
+import org.primefaces.PrimeFaces;
+//import org.primefaces.context.RequestContext;
 
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
@@ -298,8 +299,9 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         }
     }
     public void resetForm() {
-        RequestContext context = RequestContext.getCurrentInstance();
-        context.reset(":dataverseForm:themeWidgetsTabView");
+        //RequestContext context = RequestContext.getCurrentInstance();
+        //context.reset(":dataverseForm:themeWidgetsTabView");
+        PrimeFaces.current().resetInputs(":dataverseForm:themeWidgetsTabView");
     }
     
     public String cancel() {
