@@ -660,11 +660,12 @@ public class DataversePage implements java.io.Serializable {
         }
     }
 
-    public void cancel(ActionEvent e) {
+    public String cancel() {
         // reset values
         dataverse = dataverseService.find(dataverse.getId());
         ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
         editMode = null;
+        return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
     }
 
     public boolean isRootDataverse() {

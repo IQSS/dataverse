@@ -1033,6 +1033,34 @@ Starting the release 4.10 the size of the saved original file (for an ingested t
 
 Note the optional "limit" parameter. Without it, the API will attempt to populate the sizes for all the saved originals that don't have them in the database yet. Otherwise it will do so for the first N such datafiles. 
 
+Users Token Management
+----------------------
+
+The following endpoints will allow users to manage their API tokens.
+
+Find a Token's Expiration Date
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In order to obtain the expiration date of a token use::
+
+	curl -H X-Dataverse-key:$API_TOKEN -X GET $SERVER_URL/api/users/token
+
+Recreate a Token
+~~~~~~~~~~~~~~~~
+
+In order to obtain a new token use::
+
+	curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/users/token/recreate
+
+Delete a Token
+~~~~~~~~~~~~~~~~
+
+In order to delete a token use::
+
+	curl -H X-Dataverse-key:$API_TOKEN -X DELETE $SERVER_URL/api/users/token
+	
+	
+
 Builtin Users
 -------------
 
