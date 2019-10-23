@@ -82,7 +82,7 @@ import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
 import javax.validation.ConstraintViolation;
 import org.apache.commons.httpclient.HttpClient;
-import org.primefaces.context.RequestContext;
+//import org.primefaces.context.RequestContext;
 import java.util.Arrays;
 import java.util.HashSet;
 import javax.faces.model.SelectItem;
@@ -1052,8 +1052,9 @@ public class DatasetPage implements java.io.Serializable {
     public boolean canComputeAllFiles(boolean isCartCompute){
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
              if (!fileDownloadHelper.canDownloadFile(fmd)) {
-                 RequestContext requestContext = RequestContext.getCurrentInstance();
-                 requestContext.execute("PF('computeInvalid').show()");
+                 //RequestContext requestContext = RequestContext.getCurrentInstance();
+                 //requestContext.execute("PF('computeInvalid').show()");
+                 PrimeFaces.current().executeScript("PF('computeInvalid').show()");
                  return false;
              }
         }
@@ -2818,8 +2819,9 @@ public class DatasetPage implements java.io.Serializable {
         setSelectedNonDownloadableFiles(new ArrayList<>());
         
         if (this.selectedFiles.isEmpty()) {
-            RequestContext requestContext = RequestContext.getCurrentInstance();
-            requestContext.execute("PF('selectFilesForDownload').show()");
+            //RequestContext requestContext = RequestContext.getCurrentInstance();
+            //requestContext.execute("PF('selectFilesForDownload').show()");
+            PrimeFaces.current().executeScript("PF('selectFilesForDownload').show()");
             return;
         }
         for (FileMetadata fmd : this.selectedFiles){
@@ -2834,8 +2836,9 @@ public class DatasetPage implements java.io.Serializable {
         // list, and NONE of the files are left on the downloadable list
         // - we show them a "you're out of luck" popup: 
         if(getSelectedDownloadableFiles().isEmpty() && !getSelectedNonDownloadableFiles().isEmpty()){
-            RequestContext requestContext = RequestContext.getCurrentInstance();
-            requestContext.execute("PF('downloadInvalid').show()");
+            //RequestContext requestContext = RequestContext.getCurrentInstance();
+            //requestContext.execute("PF('downloadInvalid').show()");
+            PrimeFaces.current().executeScript("PF('downloadInvalid').show()");
             return;
         }
         
@@ -2871,8 +2874,9 @@ public class DatasetPage implements java.io.Serializable {
         // we are showing them this "you are somewhat in luck" popup; that will 
         // then direct them to the download, or popup, as needed:
         if(!getSelectedDownloadableFiles().isEmpty() && !getSelectedNonDownloadableFiles().isEmpty()){
-            RequestContext requestContext = RequestContext.getCurrentInstance();
-            requestContext.execute("PF('downloadMixed').show()");
+            //RequestContext requestContext = RequestContext.getCurrentInstance();
+            //requestContext.execute("PF('downloadMixed').show()");
+            PrimeFaces.current().executeScript("PF('downloadMixed').show()");
         }       
 
     }
@@ -3044,9 +3048,10 @@ public class DatasetPage implements java.io.Serializable {
     public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
     
     public String testSelectedFilesForRestrict(){
-        RequestContext requestContext = RequestContext.getCurrentInstance();
+        //RequestContext requestContext = RequestContext.getCurrentInstance();
         if (selectedFiles.isEmpty()) {
-                requestContext.execute("PF('selectFilesForRestrict').show()");           
+                //requestContext.execute("PF('selectFilesForRestrict').show()");
+                PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");
             return "";
         } else {           
             boolean validSelection = true;
@@ -3057,11 +3062,13 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
             if (!validSelection) {
-                requestContext.execute("PF('selectFilesForRestrict').show()");
+                //requestContext.execute("PF('selectFilesForRestrict').show()");
+                PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");
                 return "";
             }                       
             testSelectedFilesForMapData();
-            requestContext.execute("PF('accessPopup').show()");
+            //requestContext.execute("PF('accessPopup').show()");
+            PrimeFaces.current().executeScript("PF('accessPopup').show()");
             return "";
         }        
     }
@@ -3069,12 +3076,14 @@ public class DatasetPage implements java.io.Serializable {
         
     public String restrictSelectedFiles(boolean restricted) throws CommandException{
         
-        RequestContext requestContext = RequestContext.getCurrentInstance();
+        //RequestContext requestContext = RequestContext.getCurrentInstance();
         if (selectedFiles.isEmpty()) {
             if (restricted) {
-                requestContext.execute("PF('selectFilesForRestrict').show()");
+                //requestContext.execute("PF('selectFilesForRestrict').show()");
+                PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");
             } else {
-                requestContext.execute("PF('selectFilesForUnRestrict').show()");
+                //requestContext.execute("PF('selectFilesForUnRestrict').show()");
+                PrimeFaces.current().executeScript("PF('selectFilesForUnRestrict').show()");
             }
             return "";
         } else {
@@ -3087,10 +3096,12 @@ public class DatasetPage implements java.io.Serializable {
             }
             if (!validSelection) {
                 if (restricted) {
-                    requestContext.execute("PF('selectFilesForRestrict').show()");
+                    //requestContext.execute("PF('selectFilesForRestrict').show()");
+                    PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");
                 }
                 if (!restricted) {
-                    requestContext.execute("PF('selectFilesForUnRestrict').show()");
+                    //requestContext.execute("PF('selectFilesForUnRestrict').show()");
+                    PrimeFaces.current().executeScript("PF('selectFilesForUnRestrict').show()");
                 }
                 return "";
             }
@@ -3871,8 +3882,9 @@ public class DatasetPage implements java.io.Serializable {
     
     public void openDownloadPopupForMultipleFileDownload() {
         if (this.selectedFiles.isEmpty()) {
-            RequestContext requestContext = RequestContext.getCurrentInstance();
-            requestContext.execute("PF('selectFilesForDownload').show()");
+            //RequestContext requestContext = RequestContext.getCurrentInstance();
+            //requestContext.execute("PF('selectFilesForDownload').show()");
+            PrimeFaces.current().executeScript("PF('selectFilesForDownload').show()");
             return;
         }
         
@@ -3882,8 +3894,9 @@ public class DatasetPage implements java.io.Serializable {
         // that's the case. -- L.A.
         
         this.guestbookResponse.setDownloadtype("Download");
-        RequestContext requestContext = RequestContext.getCurrentInstance();
-        requestContext.execute("PF('downloadPopup').show();handleResizeDialog('downloadPopup');");
+        //RequestContext requestContext = RequestContext.getCurrentInstance();
+        //requestContext.execute("PF('downloadPopup').show();handleResizeDialog('downloadPopup');");
+        PrimeFaces.current().executeScript("PF('downloadPopup').show();handleResizeDialog('downloadPopup');");
     }
     
     public void initGuestbookMultipleResponse(String selectedFileIds){
@@ -3898,9 +3911,10 @@ public class DatasetPage implements java.io.Serializable {
 
 
     public void compareVersionDifferences() {
-        RequestContext requestContext = RequestContext.getCurrentInstance();
+        //RequestContext requestContext = RequestContext.getCurrentInstance();
         if (this.selectedVersions.size() != 2) {
-            requestContext.execute("openCompareTwo();");
+            //requestContext.execute("openCompareTwo();");
+            PrimeFaces.current().executeScript("openCompareTwo();");
         } else {
             //order depends on order of selection - needs to be chronological order
             if (this.selectedVersions.get(0).getId().intValue() > this.selectedVersions.get(1).getId().intValue()) {
@@ -4733,8 +4747,9 @@ public class DatasetPage implements java.io.Serializable {
     public String requestAccessMultipleFiles() {
 
         if (selectedFiles.isEmpty()) {
-            RequestContext requestContext = RequestContext.getCurrentInstance();
-            requestContext.execute("PF('selectFilesForRequestAccess').show()");
+            //RequestContext requestContext = RequestContext.getCurrentInstance();
+            //requestContext.execute("PF('selectFilesForRequestAccess').show()");
+            PrimeFaces.current().executeScript("PF('selectFilesForRequestAccess').show()");
             return "";
         } else {
             fileDownloadHelper.clearRequestAccessFiles();
@@ -4742,8 +4757,9 @@ public class DatasetPage implements java.io.Serializable {
                  fileDownloadHelper.addMultipleFilesForRequestAccess(fmd.getDataFile());
             }
             if (isGuestbookAndTermsPopupRequired()) {
-                RequestContext requestContext = RequestContext.getCurrentInstance();                
-                requestContext.execute("PF('guestbookAndTermsPopup').show()");               
+                //RequestContext requestContext = RequestContext.getCurrentInstance();                
+                //requestContext.execute("PF('guestbookAndTermsPopup').show()");               
+                PrimeFaces.current().executeScript("PF('selectFilesForRequestAccess').show()");
                 return "";
             } else {
                 //No popup required
