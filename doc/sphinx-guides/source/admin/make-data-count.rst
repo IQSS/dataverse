@@ -63,8 +63,6 @@ Enable Logging for Make Data Count
 
 To make Dataverse log dataset usage (views and downloads) for Make Data Count, you must set the ``:MDCLogPath`` database setting. See :ref:`MDCLogPath` for details.
 
-If you wish to start logging in advance of setting up other components, or wish to log without display MDC metrics for any other reason, you can set the optional ``:DisplayMDCMetrics`` database setting to false. See :ref:`DisplayMDCMetrics` for details.
-
 After you have your first day of logs, you can process them the next day.
 
 Configure Counter Processor
