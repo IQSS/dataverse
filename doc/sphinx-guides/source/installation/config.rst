@@ -1071,7 +1071,9 @@ The pattern you will observe in curl examples below is that an HTTP ``PUT`` is u
 :BlockedApiPolicy
 +++++++++++++++++
 
-Out of the box, all API endpoints are completely open, as mentioned in :ref:`blocking-api-endpoints`. It is highly recommended that you choose one of the policies below and also configure :ref:`:BlockedApiEndpoints`.
+``:BlockedApiPolicy`` affects access to the list of API endpoints defined in :ref:`:BlockedApiEndpoints`.
+
+Out of the box, ``localhost-only`` is the default policy, as mentioned in :ref:`blocking-api-endpoints`. The other valid options are the following.
 
 - localhost-only: Allow from localhost.
 - unblock-key: Require a key defined in :ref:`:BlockedApiKey`.
@@ -1095,9 +1097,15 @@ See the :doc:`/api/index` for a list of API endpoints.
 :BlockedApiKey
 ++++++++++++++
 
-Used in conjunction with the :ref:`:BlockedApiPolicy` being set to ``unblock-key``. When calling blocked APIs, add a query parameter of ``unblock-key=theKeyYouChose`` to use the key.
+``:BlockedApiKey`` is used in conjunction with :ref:`:BlockedApiEndpoints` and :ref:`:BlockedApiPolicy` and will not be enabled unless the policy is set to ``unblock-key`` as demonstrated below.
+
+``curl -X PUT -d unblock-key http://localhost:8080/api/admin/settings/:BlockedApiPolicy``
 
 ``curl -X PUT -d s3kretKey http://localhost:8080/api/admin/settings/:BlockedApiKey``
+
+Now that ``:BlockedApiKey`` has been enabled, blocked APIs can be accessed using the query parameter ``unblock-key=theKeyYouChose`` as in the example below.
+
+``curl https://demo.dataverse.org/api/admin/settings?unblock-key=theKeyYouChose``
 
 .. _BuiltinUsers.KEY:
 
