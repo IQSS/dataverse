@@ -17,7 +17,7 @@ pipeline {
     stage('Test') {
       steps {
         script {
-          // if pull request comes from within IQSS use GIT_URL
+          // if pull request originates from IQSS, CHANGE_FORK is undefined
           if (env.CHANGE_FORK) {
             env.EC2_REPO = env.CHANGE_FORK
           } else {
