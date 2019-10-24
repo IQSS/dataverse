@@ -2876,7 +2876,11 @@ public class DatasetPage implements java.io.Serializable {
             if(this.fileDownloadHelper.canDownloadFile(fmd)){
                 getSelectedDownloadableFiles().add(fmd);
             } else {
-                getSelectedNonDownloadableFiles().add(fmd);
+                if(fmd.isRestricted()){
+                    getSelectedRestrictedFiles().add(fmd);
+                } else {
+                    getSelectedNonDownloadableFiles().add(fmd);
+                }
             }
         }
     }
@@ -2884,9 +2888,9 @@ public class DatasetPage implements java.io.Serializable {
     public void validateFilesForRequestAccess(){
         this.filterSelectedFiles();
         
-        if(dataset.isFileAccessRequest() && !this.selectedNonDownloadableFiles.isEmpty()){
+        if(dataset.isFileAccessRequest() && !this.selectedRestrictedFiles.isEmpty()){
             guestbookResponse.setDataFile(null);
-            guestbookResponse.setSelectedFileIds(this.getFilesIdsString(this.selectedNonDownloadableFiles));
+            guestbookResponse.setSelectedFileIds(this.getFilesIdsString(this.selectedRestrictedFiles));
             
             if(this.isGuestbookAndTermsPopupRequired()){ //need to pop up the guestbook and terms dialog
                 PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');");
@@ -4769,7 +4773,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public void requestAccessMultipleFiles() {
         guestbookResponse.setDataFile(null);
-        guestbookResponse.setSelectedFileIds(getFilesIdsString(this.selectedNonDownloadableFiles));
+        guestbookResponse.setSelectedFileIds(getFilesIdsString(this.selectedRestrictedFiles));
         
         if (isGuestbookAndTermsPopupRequired()) {
             //RequestContext requestContext = RequestContext.getCurrentInstance();                
