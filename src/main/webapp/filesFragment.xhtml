@@ -511,7 +511,7 @@
                                     styleClass="btn btn-default btn-download"
                                     disabled="#{false and DatasetPage.lockedFromDownload}"
                                     update="@form"
-                                    actionListener="#{DatasetPage.validateFilesForDownload(false, false)}">
+                                    actionListener="#{DatasetPage.validateFilesForDownload(false)}">
                         <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                     </p:commandLink>
@@ -519,7 +519,7 @@
                     <p:commandLink rendered="#{DatasetPage.guestbookAndTermsPopupRequired}"
                                     styleClass="btn btn-default btn-download"
                                     disabled="#{false and DatasetPage.lockedFromDownload}"
-                                    action="#{DatasetPage.validateFilesForDownload(true, false)}"
+                                    action="#{DatasetPage.validateFilesForDownload(false)}"
                                     update="@form" oncomplete="">
                         <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
@@ -537,14 +537,14 @@
                                 <p:commandLink rendered="#{!(DatasetPage.guestbookAndTermsPopupRequired)}"
                                                 disabled="#{false and DatasetPage.lockedFromDownload}"
                                                 update="@form"
-                                                actionListener="#{DatasetPage.validateFilesForDownload(false, true)}">
+                                                actionListener="#{DatasetPage.validateFilesForDownload(true)}">
                                     <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                                     #{bundle.downloadOriginal}
                                 </p:commandLink>
                                 <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                                 <p:commandLink rendered="#{DatasetPage.guestbookAndTermsPopupRequired}"
                                                 disabled="#{false and DatasetPage.lockedFromDownload}"
-                                                action="#{DatasetPage.validateFilesForDownload(true, true)}"
+                                                action="#{DatasetPage.validateFilesForDownload(true)}"
                                                 update="@form" oncomplete="">
                                     <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                                     #{bundle.downloadOriginal}
@@ -554,14 +554,14 @@
                                 <p:commandLink rendered="#{!(DatasetPage.guestbookAndTermsPopupRequired)}"
                                                 disabled="#{false and DatasetPage.lockedFromDownload}"
                                                 update="@form"
-                                                actionListener="#{DatasetPage.validateFilesForDownload(false, false)}">
+                                                actionListener="#{DatasetPage.validateFilesForDownload(false)}">
                                     <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                                     #{bundle.downloadArchival}
                                 </p:commandLink>
                                 <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                                 <p:commandLink rendered="#{DatasetPage.guestbookAndTermsPopupRequired}"
                                                 disabled="#{false and DatasetPage.lockedFromDownload}"
-                                                action="#{DatasetPage.validateFilesForDownload(true, false)}"
+                                                action="#{DatasetPage.validateFilesForDownload(false)}"
                                                 update="@form" oncomplete="">
                                     <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                                     #{bundle.downloadArchival}
@@ -573,7 +573,7 @@
                 <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired}"
                                 styleClass="btn btn-default btn-request"                                   
                                 update="@form" 
-                                action="#{DatasetPage.requestAccessMultipleFiles()}"
+                                action="#{DatasetPage.validateFilesForRequestAccess()}"
                                 disabled="#{DatasetPage.locked}">
                     <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle['file.requestAccess'])}"/>
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
