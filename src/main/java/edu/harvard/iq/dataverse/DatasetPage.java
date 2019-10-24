@@ -4661,6 +4661,9 @@ public class DatasetPage implements java.io.Serializable {
         if (!isSessionUserAuthenticated() || !dataset.isFileAccessRequest()){
             return false;
         }
+        
+        filterSelectedFiles(); //sort selected files into their respective containers - without this, selectedRestrictedFiles is always empty
+        
         if( this.selectedRestrictedFiles == null || this.selectedRestrictedFiles.isEmpty() ){
             return false;
         }
