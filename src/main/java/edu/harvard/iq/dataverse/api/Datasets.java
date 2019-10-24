@@ -78,6 +78,7 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
+import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDvObjectPIDMetadataCommand;
@@ -92,6 +93,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -1429,6 +1431,22 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
+@GET
+@Path("uploadsid")
+public Response getUploadUrl() {
+	String bucket = "s3://tdl-dataverse-dev/";
+	String sid = bucket+ FileUtil.generateStorageIdentifier();
+	S3AccessIO<DataFile> s3io = new S3AccessIO<DataFile>(sid);
+	String url = null;
+	try {
+		url = s3io.generateTemporaryS3UploadUrl();
+	} catch (IOException e) {
+		logger.warning("Identifier Collision");
+		e.printStackTrace();
+	}
+	return ok(url);
+	
+}
     /**
      * Add a File to an existing Dataset
      * 

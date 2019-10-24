@@ -819,6 +819,43 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
     
+    public String generateTemporaryS3UploadUrl() throws IOException {
+        //Questions:
+
+        // Q. how long should the download url work?
+        // A. 1 hour by default seems like an OK number. Making it configurable seems like a good idea too. -- L.A.
+        if (s3 == null) {
+            throw new IOException("ERROR: s3 not initialised. ");
+        }
+        //ToDO: Check for existing file given storage ID (could check bucket and/or DV Datafile
+        if(true) {
+            key = getMainFileKey();
+            java.util.Date expiration = new java.util.Date();
+            long msec = expiration.getTime();
+            msec += 1000 * getUrlExpirationMinutes();
+            expiration.setTime(msec);
+
+            GeneratePresignedUrlRequest generatePresignedUrlRequest = 
+                          new GeneratePresignedUrlRequest(bucketName, key).withMethod(HttpMethod.PUT).withExpiration(expiration);
+            URL s; 
+            try {
+                s = s3.generatePresignedUrl(generatePresignedUrlRequest);
+            } catch (SdkClientException sce) {
+                //throw new IOException("SdkClientException generating temporary S3 url for "+key+" ("+sce.getMessage()+")");
+                s = null; 
+            }
+
+            if (s != null) {
+                return s.toString();
+            }
+            
+            //throw new IOException("Failed to generate temporary S3 url for "+key);
+            return null;
+        } else {
+            throw new IOException("Data Access: GenerateTemporaryS3UploadUrl: StorageIdentifier already in use!");
+        }
+    }
+    
     int getUrlExpirationMinutes() {
         String optionValue = System.getProperty("dataverse.files.s3-url-expiration-minutes"); 
         if (optionValue != null) {
