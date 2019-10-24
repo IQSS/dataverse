@@ -2886,7 +2886,8 @@ public class DatasetPage implements java.io.Serializable {
         
         if(dataset.isFileAccessRequest() && !this.selectedNonDownloadableFiles.isEmpty()){
             guestbookResponse.setDataFile(null);
-            guestbookResponse.setSelectedFileIds(getSelectedDownloadableFilesIdsString());
+            guestbookResponse.setSelectedFileIds(this.getFilesIdsString(this.selectedNonDownloadableFiles));
+            
             if(this.isGuestbookAndTermsPopupRequired()){ //need to pop up the guestbook and terms dialog
                 PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');");
             } else {
@@ -4768,7 +4769,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public void requestAccessMultipleFiles() {
         guestbookResponse.setDataFile(null);
-        guestbookResponse.setSelectedFileIds(this.getFilesIdsString(this.selectedNonDownloadableFiles));
+        guestbookResponse.setSelectedFileIds(getFilesIdsString(this.selectedNonDownloadableFiles));
         
         if (isGuestbookAndTermsPopupRequired()) {
             //RequestContext requestContext = RequestContext.getCurrentInstance();                
