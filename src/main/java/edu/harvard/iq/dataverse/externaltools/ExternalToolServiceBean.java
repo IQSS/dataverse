@@ -163,6 +163,7 @@ public class ExternalToolServiceBean {
     }
 
     public static ExternalTool parseAddExternalToolManifest(String manifest) {
+
         if (manifest == null || manifest.isEmpty()) {
             throw new IllegalArgumentException("External tool manifest was null or empty!");
         }
@@ -237,11 +238,14 @@ public class ExternalToolServiceBean {
 
         }
         String toolParameters = toolParametersObj.toString();
+
         String hasPreviewMode = getOptionalTopLevelField(jsonObject, HAS_PREVIEW_MODE);
+
         boolean hasPreviewModeBoolean = false;
-        if(hasPreviewMode.equals("true")){
+        if(hasPreviewMode != null && hasPreviewMode.equals("true")){
             hasPreviewModeBoolean = true;
         }
+
         return new ExternalTool(displayName, description, type, scope, toolUrl, toolParameters, contentType, hasPreviewModeBoolean);
     }
 
