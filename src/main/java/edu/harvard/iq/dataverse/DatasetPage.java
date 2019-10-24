@@ -2813,25 +2813,8 @@ public class DatasetPage implements java.io.Serializable {
     }
     
             
-    public void validateFilesForDownload(boolean downloadOriginal){
-        /*setSelectedDownloadableFiles(new ArrayList<>());
-        setSelectedNonDownloadableFiles(new ArrayList<>());
-        
+    public void validateFilesForDownload(boolean downloadOriginal){ 
         if (this.selectedFiles.isEmpty()) {
-            //RequestContext requestContext = RequestContext.getCurrentInstance();
-            PrimeFaces.current().executeScript("PF('selectFilesForDownload').show()");
-            return;
-        }
-        for (FileMetadata fmd : this.selectedFiles){
-            if(this.fileDownloadHelper.canDownloadFile(fmd)){
-                getSelectedDownloadableFiles().add(fmd);
-            } else {
-                getSelectedNonDownloadableFiles().add(fmd);
-            }
-        }*/
-        
-        if (this.selectedFiles.isEmpty()) {
-            //RequestContext requestContext = RequestContext.getCurrentInstance();
             PrimeFaces.current().executeScript("PF('selectFilesForDownload').show()");
             return;
         } else {
@@ -2842,7 +2825,6 @@ public class DatasetPage implements java.io.Serializable {
         // list, and NONE of the files are left on the downloadable list
         // - we show them a "you're out of luck" popup: 
         if(getSelectedDownloadableFiles().isEmpty() && !getSelectedNonDownloadableFiles().isEmpty()){
-            //RequestContext requestContext = RequestContext.getCurrentInstance();
             PrimeFaces.current().executeScript("PF('downloadInvalid').show()");
             return;
         }
