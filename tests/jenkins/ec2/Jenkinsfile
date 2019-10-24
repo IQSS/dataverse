@@ -18,7 +18,7 @@ pipeline {
       steps {
 	sh '/usr/bin/curl -O https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/ec2/ec2-create-instance.sh'
         // if pull request comes from within IQSS use GIT_URL
-        if (${CHANGE_FORK}=NULL) {
+        if (${CHANGE_FORK}==NULL) {
            env.CHANGE_FORK=${GIT_URL}
         }
 	sh '/usr/bin/bash ./ec2-create-instance.sh -b ${CHANGE_BRANCH} -r ${CHANGE_FORK} -t jenkins_delete_me -l target -g tests/jenkins/groupvars.yml'
