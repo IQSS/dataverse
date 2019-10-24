@@ -957,10 +957,10 @@ See also these related database settings below:
 - :ref:`:Authority`
 - :ref:`:Shoulder`
 
-.. _doi.mdcbaseurlstring:
+.. _doi.baseurlstring:
 
 doi.mdcbaseurlstring
-++++++++++++++++++++
++++++++++++++++++
 
 As of this writing, "https://api.datacite.org" (DataCite) and "https://api.test.datacite.org" (DataCite Testing) are the main valid values.
 
