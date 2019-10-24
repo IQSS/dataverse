@@ -26,7 +26,7 @@ Obtain Client ID and Client Secret
 
 Before OAuth providers will release information about their users (first name, last name, etc.) to your Dataverse installation, you must request a "Client ID" and "Client Secret" from them. In the case of GitHub and Google, this is as simple as clicking a few buttons and there is no cost associated with using their authentication service. ORCID and Microsoft, on the other hand, do not have an automated system for requesting these credentials, and it is not free to use these authentication services.
 
-URLs to help you request a Client ID and Client Secret from the providers supported by Dataverse are provided below.  For all of these providers, it's a good idea to request the Client ID and Client secret using a generic account, perhaps the one that's associated with the ``:SystemEmail`` you've configured for Dataverse, rather than your own personal Microsoft, ORCID, GitHub, or Google account:
+URLs to help you request a Client ID and Client Secret from the providers supported by Dataverse are provided below.  For all of these providers, it's a good idea to request the Client ID and Client secret using a generic account, perhaps the one that's associated with the ``:SystemEmail`` you've configured for Dataverse, rather than your own personal Microsoft Azure AD, ORCID, GitHub, or Google account:
 
 - ORCID: https://orcid.org/content/register-client-application-production-trusted-party
 - Microsoft: https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code
