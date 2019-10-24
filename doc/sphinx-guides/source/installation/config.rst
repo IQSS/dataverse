@@ -24,9 +24,11 @@ The default password for the "dataverseAdmin" superuser account is "admin", as m
 Blocking API Endpoints
 ++++++++++++++++++++++
 
-The :doc:`/api/native-api` contains a useful but potentially dangerous API endpoint called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The ``builtin-users`` endpoint lets people create a local/builtin user account if they know the ``BuiltinUsers.KEY`` value described below.
+The :doc:`/api/native-api` contains a useful but potentially dangerous API endpoint called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The "builtin-users" endpoint lets people create a local/builtin user account if they know the key defined in :ref:`BuiltinUsers.KEY`. The endpoint "test" is not used but is where testing code maybe be added (see https://github.com/IQSS/dataverse/issues/4137 ).
 
-By default, all APIs can be operated on remotely and a number of endpoints do not require authentication. https://github.com/IQSS/dataverse/issues/1886 was opened to explore changing these defaults, but until then it is very important to block both the "admin" endpoint (and at least consider blocking ``builtin-users``). For details please see also the section on :ref:`:BlockedApiPolicy` below.
+By default, most APIs can be operated on remotely and a number of endpoints do not require authentication. The endpoints "admin" and "test" are limited to localhost out of the box by the settings :ref:`:BlockedApiEndpoints` and :ref:`:BlockedApiPolicy`.
+
+It is very important to keep the block in place for the "admin" endpoint (and at least consider blocking "builtin-users"). Please note that documentation for the "admin" endpoint is spread across the :doc:`/api/native-api` section of the API Guide and the :doc:`/admin/index`.
 
 It's also possible to prevent file uploads via API by adjusting the :ref:`:UploadMethods` database setting.
 
@@ -1079,6 +1081,8 @@ Out of the box, ``localhost-only`` is the default policy, as mentioned in :ref:`
 - unblock-key: Require a key defined in :ref:`:BlockedApiKey`.
 - drop: Disallow the blocked endpoints completely.
 
+Below is an example of setting ``localhost-only``.
+
 ``curl -X PUT -d localhost-only http://localhost:8080/api/admin/settings/:BlockedApiPolicy``
 
 .. _:BlockedApiEndpoints:
@@ -1090,18 +1094,18 @@ A comma separated list of API endpoints to be blocked. For a production installa
 
 ``curl -X PUT -d "admin,builtin-users" http://localhost:8080/api/admin/settings/:BlockedApiEndpoints``
 
-See the :doc:`/api/index` for a list of API endpoints.
+See the :ref:`list-of-dataverse-apis` for lists of API endpoints.
 
 .. _:BlockedApiKey:
 
 :BlockedApiKey
 ++++++++++++++
 
-``:BlockedApiKey`` is used in conjunction with :ref:`:BlockedApiEndpoints` and :ref:`:BlockedApiPolicy` and will not be enabled unless the policy is set to ``unblock-key`` as demonstrated below.
-
-``curl -X PUT -d unblock-key http://localhost:8080/api/admin/settings/:BlockedApiPolicy``
+``:BlockedApiKey`` is used in conjunction with :ref:`:BlockedApiEndpoints` and :ref:`:BlockedApiPolicy` and will not be enabled unless the policy is set to ``unblock-key`` as demonstrated below. Please note that the order is significant. You should set ``:BlockedApiKey`` first to prevent locking yourself out.
 
 ``curl -X PUT -d s3kretKey http://localhost:8080/api/admin/settings/:BlockedApiKey``
+
+``curl -X PUT -d unblock-key http://localhost:8080/api/admin/settings/:BlockedApiPolicy``
 
 Now that ``:BlockedApiKey`` has been enabled, blocked APIs can be accessed using the query parameter ``unblock-key=theKeyYouChose`` as in the example below.
 
