@@ -1,4 +1,4 @@
-OAuth Login: ORCID, Microsoft, GitHub, Google
+OAuth Login: ORCID, Microsoft Azure Active Directory, GitHub, Google
 ==================================
 
 .. contents:: |toctitle|
@@ -11,7 +11,7 @@ As explained under "Auth Modes" in the :doc:`config` section, OAuth2 is one of t
 
 `OAuth2 <https://oauth.net/2/>`_ is an authentication protocol that allows systems to share user data, while letting the users control what data is being shared. When you see buttons stating "login with Google" or "login through Facebook", OAuth2 is probably involved. For the purposes of this section, we will shorten "OAuth2" to just "OAuth." OAuth can be compared and contrasted with :doc:`shibboleth`.
 
-Dataverse supports four OAuth providers: `ORCID <http://orcid.org>`_, `Microsoft <https://www.microsoft.com>`_, `GitHub <https://github.com>`_, and `Google <https://console.developers.google.com>`_.
+Dataverse supports four OAuth providers: `ORCID <http://orcid.org>`_, `Microsoft Azure Active Directory (AD) <https://docs.microsoft.com/azure/active-directory/>`_, `GitHub <https://github.com>`_, and `Google <https://console.developers.google.com>`_.
 
 Setup
 -----
