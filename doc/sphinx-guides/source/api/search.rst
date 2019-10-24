@@ -222,6 +222,15 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
         }
     }
 
+.. _search-date-range:
+
+Date Range Search Example
+-------------------------
+
+Below is an example of searching across a date range of dataverses, datasets, and files that were published in 2018.
+
+`https://demo.dataverse.org/api/search?q=*&per_page=1000&sort=date&order=asc&q=*&fq=dateSort:[2018-01-01T00\:00\:00Z+TO+2019-01-01T00\:00\:00Z] <https://demo.dataverse.org/api/search?q=*&per_page=1000&sort=date&order=asc&q=*&fq=dateSort:[2018-01-01T00\:00\:00Z+TO+2019-01-01T00\:00\:00Z]>`_
+
 .. _iteration-example:
 
 Iteration
