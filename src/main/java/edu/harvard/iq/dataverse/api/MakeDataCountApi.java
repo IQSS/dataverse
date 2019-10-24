@@ -145,7 +145,6 @@ public class MakeDataCountApi extends AbstractApiBean {
             	baseUrl="https://api.datacite.org";
             }
             URL url = new URL(baseUrl + "/events?doi=" + authorityPlusIdentifier + "&source=crossref");
-            logger.fine("Requesting citations from " + url);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             int status = connection.getResponseCode();

@@ -962,8 +962,6 @@ See also these related database settings below:
 doi.mdcbaseurlstring
 ++++++++++++++++++++
 
-This configuration option affects the ``updateCitationsForDataset`` API endpoint documented under :ref:`MDC-updateCitationsForDataset` in the Admin Guide.
-
 As of this writing, "https://api.datacite.org" (DataCite) and "https://api.test.datacite.org" (DataCite Testing) are the main valid values.
 
 Out of the box, Dataverse is configured to use a test DataCite MDC base URL string. You can delete it like this:
