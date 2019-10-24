@@ -1,5 +1,5 @@
-OAuth Login: ORCID, Microsoft Azure Active Directory, GitHub, Google
-==================================
+OAuth Login Options
+===================
 
 .. contents:: |toctitle|
 	:local:
