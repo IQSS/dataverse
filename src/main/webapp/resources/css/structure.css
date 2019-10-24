@@ -1045,7 +1045,18 @@ div.container {
 .searchbutton {
   position: absolute;
   top: 13px;
-  right: 20.5vw;
+  right: 28%;
+}
+@media(max-width: 1200px){
+  .searchbutton {
+    right: 24%;
+  }
+}
+
+@media(max-width: 992px){
+  .searchbutton {
+    right: 16%;
+  }
 }
 .advsearchlink {
   margin: 10px auto;
@@ -1143,9 +1154,11 @@ th {background: none !important;}
   text-shadow: none;
 }
 
+.ui-buttonset { background: #f7f7f9 !important;}
+
 /* Pagination Icon URLs and Styles*/
 
-.results-sort-pagination {
+.results-bottom {
   margin-top: 25px;
 }
 
