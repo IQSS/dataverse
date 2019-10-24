@@ -142,7 +142,6 @@ Here are the configuration options for DOIs:
 - :ref:`doi.baseurlstring`
 - :ref:`doi.username`
 - :ref:`doi.password`
-- :ref:`doi.mdcbaseurlstring`
 
 **Database Settings:**
 
@@ -956,28 +955,6 @@ See also these related database settings below:
 - :ref:`:Protocol`  
 - :ref:`:Authority`
 - :ref:`:Shoulder`
-
-.. _doi.baseurlstring:
-
-doi.mdcbaseurlstring
-+++++++++++++++++
-
-As of this writing, "https://api.datacite.org" (DataCite) and "https://api.test.datacite.org" (DataCite Testing) are the main valid values.
-
-Out of the box, Dataverse is configured to use a test DataCite MDC base URL string. You can delete it like this:
-
-``./asadmin delete-jvm-options '-Ddoi.mdcbaseurlstring=https\://api.test.datacite.org'``
-
-Then, to switch to production DataCite, you can issue the following command:
-
-``./asadmin create-jvm-options '-Ddoi.mdcbaseurlstring=https\://api.datacite.org'``
-
-For backward compatibility, if this option is not defined, the default used is "https\://api.datacite.org:.
-
-See also these related database settings below:
-
-- :ref:`:MDCLogPath`
-- :ref:`:DisplayMDCMetrics`
 
 .. _doi.username:
 
