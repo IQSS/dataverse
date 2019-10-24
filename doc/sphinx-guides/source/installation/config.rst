@@ -19,14 +19,16 @@ Changing the Superuser Password
 
 The default password for the "dataverseAdmin" superuser account is "admin", as mentioned in the :doc:`installation-main` section, and you should change it, of course.
 
+.. _blocking-api-endpoints:
+
 Blocking API Endpoints
 ++++++++++++++++++++++
 
 The :doc:`/api/native-api` contains a useful but potentially dangerous API endpoint called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The ``builtin-users`` endpoint lets people create a local/builtin user account if they know the ``BuiltinUsers.KEY`` value described below.
 
-By default, all APIs can be operated on remotely and a number of endpoints do not require authentication. https://github.com/IQSS/dataverse/issues/1886 was opened to explore changing these defaults, but until then it is very important to block both the "admin" endpoint (and at least consider blocking ``builtin-users``). For details please see also the section on ``:BlockedApiPolicy`` below.
+By default, all APIs can be operated on remotely and a number of endpoints do not require authentication. https://github.com/IQSS/dataverse/issues/1886 was opened to explore changing these defaults, but until then it is very important to block both the "admin" endpoint (and at least consider blocking ``builtin-users``). For details please see also the section on :ref:`:BlockedApiPolicy` below.
 
-It's also possible to prevent file uploads via API by adjusting the ``:UploadMethods`` database setting.
+It's also possible to prevent file uploads via API by adjusting the :ref:`:UploadMethods` database setting.
 
 Forcing HTTPS
 +++++++++++++
@@ -190,7 +192,7 @@ Both Local and Remote Auth
 
 The ``authenticationproviderrow`` database table controls which "authentication providers" are available within Dataverse. Out of the box, a single row with an id of "builtin" will be present. For each user in Dataverse, the ``authenticateduserlookup`` table will have a value under ``authenticationproviderid`` that matches this id. For example, the default "dataverseAdmin" user will have the value "builtin" under  ``authenticationproviderid``. Why is this important? Users are tied to a specific authentication provider but conversion mechanisms are available to switch a user from one authentication provider to the other. As explained in the :doc:`/user/account` section of the User Guide, a graphical workflow is provided for end users to convert from the "builtin" authentication provider to a remote provider. Conversion from a remote authentication provider to the builtin provider can be performed by a sysadmin with access to the "admin" API. See the :doc:`/api/native-api` section of the API Guide for how to list users and authentication providers as JSON.
 
-Adding and enabling a second authentication provider (:ref:`native-api-add-auth-provider` and :ref:`api-toggle-auth-provider`) will result in the Log In page showing additional providers for your users to choose from. By default, the Log In page will show the "builtin" provider, but you can adjust this via the :ref:`conf-default-auth-provider` configuration option. Further customization can be achieved by setting :ref:`conf-allow-signup` to "false", thus preventing users from creating local accounts via the web interface. Please note that local accounts can also be created via API, and the way to prevent this is to block the ``builtin-users`` endpoint (:ref:`conf-blocked-api-endpoints`) or scramble (or remove) the ``BuiltinUsers.KEY`` database setting (:ref:`conf-built-in-users-key`) per the :doc:`config` section.
+Adding and enabling a second authentication provider (:ref:`native-api-add-auth-provider` and :ref:`api-toggle-auth-provider`) will result in the Log In page showing additional providers for your users to choose from. By default, the Log In page will show the "builtin" provider, but you can adjust this via the :ref:`conf-default-auth-provider` configuration option. Further customization can be achieved by setting :ref:`conf-allow-signup` to "false", thus preventing users from creating local accounts via the web interface. Please note that local accounts can also be created via API, and the way to prevent this is to block the ``builtin-users`` endpoint (:ref:`:BlockedApiEndpoints`) or scramble (or remove) the ``BuiltinUsers.KEY`` database setting (:ref:`BuiltinUsers.KEY`).
 
 To configure Shibboleth see the :doc:`shibboleth` section and to configure OAuth see the :doc:`oauth2` section.
 
@@ -1064,18 +1066,20 @@ The most commonly used configuration options are listed first.
 
 The pattern you will observe in curl examples below is that an HTTP ``PUT`` is used to add or modify a setting. If you perform an HTTP ``GET`` (the default when using curl), the output will contain the value of the setting, if it has been set. You can also do a ``GET`` of all settings with ``curl http://localhost:8080/api/admin/settings`` which you may want to pretty-print by piping the output through a tool such as jq by appending ``| jq .``. If you want to remove a setting, use an HTTP ``DELETE`` such as ``curl -X DELETE http://localhost:8080/api/admin/settings/:GuidesBaseUrl`` .
 
+.. _:BlockedApiPolicy:
+
 :BlockedApiPolicy
 +++++++++++++++++
 
-Out of the box, all API endpoints are completely open, as mentioned in the section on security above. It is highly recommended that you choose one of the policies below and also configure ``:BlockedApiEndpoints``.
+Out of the box, all API endpoints are completely open, as mentioned in :ref:`blocking-api-endpoints`. It is highly recommended that you choose one of the policies below and also configure :ref:`:BlockedApiEndpoints`.
 
 - localhost-only: Allow from localhost.
-- unblock-key: Require a key defined in ``:BlockedApiKey``.
+- unblock-key: Require a key defined in :ref:`:BlockedApiKey`.
 - drop: Disallow the blocked endpoints completely.
 
 ``curl -X PUT -d localhost-only http://localhost:8080/api/admin/settings/:BlockedApiPolicy``
 
-.. _conf-blocked-api-endpoints:
+.. _:BlockedApiEndpoints:
 
 :BlockedApiEndpoints
 ++++++++++++++++++++
@@ -1086,14 +1090,16 @@ A comma separated list of API endpoints to be blocked. For a production installa
 
 See the :doc:`/api/index` for a list of API endpoints.
 
+.. _:BlockedApiKey:
+
 :BlockedApiKey
 ++++++++++++++
 
-Used in conjunction with the ``:BlockedApiPolicy`` being set to ``unblock-key``. When calling blocked APIs, add a query parameter of ``unblock-key=theKeyYouChose`` to use the key.
+Used in conjunction with the :ref:`:BlockedApiPolicy` being set to ``unblock-key``. When calling blocked APIs, add a query parameter of ``unblock-key=theKeyYouChose`` to use the key.
 
 ``curl -X PUT -d s3kretKey http://localhost:8080/api/admin/settings/:BlockedApiKey``
 
-.. _conf-built-in-users-key:
+.. _BuiltinUsers.KEY:
 
 BuiltinUsers.KEY
 ++++++++++++++++
@@ -1725,6 +1731,8 @@ The URL for your Data Capture Module (DCM) installation. This component is exper
 The URL for your Repository Storage Abstraction Layer (RSAL) installation. This component is experimental and can be downloaded from https://github.com/sbgrid/rsal .
 
 ``curl -X PUT -d 'https://rsal.example.edu' http://localhost:8080/api/admin/settings/:RepositoryStorageAbstractionLayerUrl``
+
+.. _:UploadMethods:
 
 :UploadMethods
 ++++++++++++++
