@@ -704,7 +704,7 @@ public class FileUtil implements java.io.Serializable  {
         return "";
     }
     
-    public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, SystemConfig systemConfig) throws IOException {
+    public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum, SystemConfig systemConfig) throws IOException {
         List<DataFile> datafiles = new ArrayList<>(); 
         
         String warningMessage = null; 
@@ -713,7 +713,8 @@ public class FileUtil implements java.io.Serializable  {
         Path tempFile = null; 
         
         Long fileSizeLimit = systemConfig.getMaxFileUploadSize();
-        
+        String finalType = null; 
+        if(newStorageIdentifier!=null) {
         if (getFilesTempDirectory() != null) {
             tempFile = Files.createTempFile(Paths.get(getFilesTempDirectory()), "tmp", "upload");
             // "temporary" location is the key here; this is why we are not using 
@@ -745,7 +746,7 @@ public class FileUtil implements java.io.Serializable  {
         // than the type supplied:
         //  -- L.A. 
         String recognizedType = null;
-        String finalType = null; 
+
         try {
             recognizedType = determineFileType(tempFile.toFile(), fileName);
             logger.fine("File utility recognized the file as " + recognizedType);
@@ -925,7 +926,7 @@ public class FileUtil implements java.io.Serializable  {
                                 // to read it and create a DataFile with it:
 
                                 File unZippedTempFile = saveInputStreamInTempFile(unZippedIn, fileSizeLimit);
-                                DataFile datafile = createSingleDataFile(version, unZippedTempFile, shortName, MIME_TYPE_UNDETERMINED_DEFAULT, systemConfig.getFileFixityChecksumAlgorithm(), false);
+                                DataFile datafile = createSingleDataFile(version, unZippedTempFile, null, shortName, MIME_TYPE_UNDETERMINED_DEFAULT, systemConfig.getFileFixityChecksumAlgorithm(), null, false);
 
                                 if (!fileEntryName.equals(shortName)) {
                                     // If the filename looks like a hierarchical folder name (i.e., contains slashes and backslashes),
@@ -1079,12 +1080,24 @@ public class FileUtil implements java.io.Serializable  {
             }
             return null;
            
-        } 
+        } else {
+        	//ToDo what subset of checks from determineFileType makes sense?
+        	finalType=suppliedContentType;
+        }
+        }
         // Finally, if none of the special cases above were applicable (or 
         // if we were unable to unpack an uploaded file, etc.), we'll just 
         // create and return a single DataFile:
+        File newFile = null;
+        if(tempFile!=null) {
+        	newFile = tempFile.toFile();
+        }
+        ChecksumType checkSumType = DataFile.ChecksumType.MD5;
+        if(newStorageIdentifier!=null) {
+        	checkSumType=systemConfig.getFileFixityChecksumAlgorithm();
+        }
         
-        DataFile datafile = createSingleDataFile(version, tempFile.toFile(), fileName, finalType, systemConfig.getFileFixityChecksumAlgorithm());
+        DataFile datafile = createSingleDataFile(version, newFile, newStorageIdentifier, fileName, finalType, checkSumType, newCheckSum);
         
         if (datafile != null && tempFile.toFile() != null) {
        
@@ -1130,14 +1143,18 @@ public class FileUtil implements java.io.Serializable  {
      * individual files, etc., and once the file name and mime type have already 
      * been figured out. 
     */
-    
+
     private static DataFile createSingleDataFile(DatasetVersion version, File tempFile, String fileName, String contentType, DataFile.ChecksumType checksumType) {
-        return createSingleDataFile(version, tempFile, fileName, contentType, checksumType, false);
+        return createSingleDataFile(version, tempFile, null, fileName, contentType, checksumType, null, false);
     }
     
-    private static DataFile createSingleDataFile(DatasetVersion version, File tempFile, String fileName, String contentType, DataFile.ChecksumType checksumType, boolean addToDataset) {
+    private static DataFile createSingleDataFile(DatasetVersion version, File tempFile, String storageIdentifier,  String fileName, String contentType, DataFile.ChecksumType checksumType, String checksum) {
+        return createSingleDataFile(version, tempFile, storageIdentifier, fileName, contentType, checksumType, checksum, false);
+    }
+    
+    private static DataFile createSingleDataFile(DatasetVersion version, File tempFile, String storageIdentifier, String fileName, String contentType, DataFile.ChecksumType checksumType, String checksum, boolean addToDataset) {
 
-        if (tempFile == null) {
+        if ((tempFile == null) && (storageIdentifier == null)) {
             return null;
         }
 
@@ -1168,12 +1185,24 @@ public class FileUtil implements java.io.Serializable  {
             fmd.setDatasetVersion(version);
             version.getDataset().getFiles().add(datafile);
         }
-
+        if(storageIdentifier==null) {
         generateStorageIdentifier(datafile);
         if (!tempFile.renameTo(new File(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier()))) {
             return null;
         }
+        } else {
+        	datafile.setStorageIdentifier(storageIdentifier);
+        }
 
+        if ((checksum !=null)&&(!checksum.isEmpty())) {
+        	datafile.setChecksumType(checksumType);
+            datafile.setChecksumValue(checksum);
+            } else {
+        
+        
+        
+        
+        
         try {
             // We persist "SHA1" rather than "SHA-1".
             datafile.setChecksumType(checksumType);
@@ -1181,7 +1210,7 @@ public class FileUtil implements java.io.Serializable  {
         } catch (Exception cksumEx) {
             logger.warning("Could not calculate " + checksumType + " signature for the new file " + fileName);
         }
-
+        }
         return datafile;
     }
     

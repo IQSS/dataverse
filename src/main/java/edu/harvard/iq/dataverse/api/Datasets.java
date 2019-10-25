@@ -1509,17 +1509,6 @@ public Response getUploadUrl() {
             }
         }
 
-                       
-        // -------------------------------------
-        // (3) Get the file name and content type
-        // -------------------------------------
-        if(null == contentDispositionHeader) {
-             return error(BAD_REQUEST, "You must upload a file.");
-        }
-        String newFilename = contentDispositionHeader.getFileName();
-        String newFileContentType = formDataBodyPart.getMediaType().toString();
-      
-        
         // (2a) Load up optional params via JSON
         //---------------------------------------
         OptionalFileParams optionalFileParams = null;
@@ -1530,6 +1519,33 @@ public Response getUploadUrl() {
         } catch (DataFileTagException ex) {
             return error( Response.Status.BAD_REQUEST, ex.getMessage());            
         }
+        
+        // -------------------------------------
+        // (3) Get the file name and content type
+        // -------------------------------------
+        String newFilename = null;
+        String newFileContentType = null;
+        String newStorageIdentifier = null;
+		if (null == contentDispositionHeader) {
+			if (optionalFileParams.hasStorageIdentifier()) {
+				newStorageIdentifier = optionalFileParams.getStorageIdentifier();
+				// ToDo - check that storageIdentifier is valid
+				if (optionalFileParams.hasFileName()) {
+					newFilename = optionalFileParams.getFileName();
+					if (optionalFileParams.hasMimetype()) {
+						newFileContentType = optionalFileParams.getMimeType();
+					}
+
+				}
+			}
+
+			return error(BAD_REQUEST, "You must upload a file or provide a storageidentifier, filename, and mimetype.");
+		} else {
+			newFilename = contentDispositionHeader.getFileName();
+			newFileContentType = formDataBodyPart.getMediaType().toString();
+		}
+        
+
 
         
         //-------------------
@@ -1553,6 +1569,7 @@ public Response getUploadUrl() {
         addFileHelper.runAddFileByDataset(dataset,
                                 newFilename,
                                 newFileContentType,
+                                newStorageIdentifier,
                                 fileInputStream,
                                 optionalFileParams);
 
