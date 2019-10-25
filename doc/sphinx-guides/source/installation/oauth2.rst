@@ -1,5 +1,5 @@
-OAuth Login: ORCID, Microsoft, GitHub, Google
-==================================
+OAuth Login Options
+===================
 
 .. contents:: |toctitle|
 	:local:
@@ -11,7 +11,7 @@ As explained under "Auth Modes" in the :doc:`config` section, OAuth2 is one of t
 
 `OAuth2 <https://oauth.net/2/>`_ is an authentication protocol that allows systems to share user data, while letting the users control what data is being shared. When you see buttons stating "login with Google" or "login through Facebook", OAuth2 is probably involved. For the purposes of this section, we will shorten "OAuth2" to just "OAuth." OAuth can be compared and contrasted with :doc:`shibboleth`.
 
-Dataverse supports four OAuth providers: `ORCID <http://orcid.org>`_, `Microsoft <https://www.microsoft.com>`_, `GitHub <https://github.com>`_, and `Google <https://console.developers.google.com>`_.
+Dataverse supports four OAuth providers: `ORCID <http://orcid.org>`_, `Microsoft Azure Active Directory (AD) <https://docs.microsoft.com/azure/active-directory/>`_, `GitHub <https://github.com>`_, and `Google <https://console.developers.google.com>`_.
 
 Setup
 -----
@@ -26,7 +26,7 @@ Obtain Client ID and Client Secret
 
 Before OAuth providers will release information about their users (first name, last name, etc.) to your Dataverse installation, you must request a "Client ID" and "Client Secret" from them. In the case of GitHub and Google, this is as simple as clicking a few buttons and there is no cost associated with using their authentication service. ORCID and Microsoft, on the other hand, do not have an automated system for requesting these credentials, and it is not free to use these authentication services.
 
-URLs to help you request a Client ID and Client Secret from the providers supported by Dataverse are provided below.  For all of these providers, it's a good idea to request the Client ID and Client secret using a generic account, perhaps the one that's associated with the ``:SystemEmail`` you've configured for Dataverse, rather than your own personal Microsoft, ORCID, GitHub, or Google account:
+URLs to help you request a Client ID and Client Secret from the providers supported by Dataverse are provided below.  For all of these providers, it's a good idea to request the Client ID and Client secret using a generic account, perhaps the one that's associated with the ``:SystemEmail`` you've configured for Dataverse, rather than your own personal Microsoft Azure AD, ORCID, GitHub, or Google account:
 
 - ORCID: https://orcid.org/content/register-client-application-production-trusted-party
 - Microsoft: https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code
@@ -36,7 +36,7 @@ URLs to help you request a Client ID and Client Secret from the providers suppor
 Each of these providers will require the following information from you:
 
 - Basic information about your Dataverse installation such as a name, description, URL, logo, privacy policy, etc.
-- OAuth2 Redirect URI (ORCID) or Redirect URI (Microsoft) or Authorization Callback URL (GitHub) or Authorized Redirect URIs (Google): This is the URL on the Dataverse side to which the user will be sent after successfully authenticating with the identity provider. This should be the advertised URL of your Dataverse installation (the protocol, fully qualified domain name, and optional port configured via the ``dataverse.siteUrl`` JVM option mentioned in the :doc:`config` section) appended with ``/oauth2/callback.xhtml`` such as ``https://dataverse.example.edu/oauth2/callback.xhtml``.
+- OAuth2 Redirect URI (ORCID) or Redirect URI (Microsoft Azure AD) or Authorization Callback URL (GitHub) or Authorized Redirect URIs (Google): This is the URL on the Dataverse side to which the user will be sent after successfully authenticating with the identity provider. This should be the advertised URL of your Dataverse installation (the protocol, fully qualified domain name, and optional port configured via the ``dataverse.siteUrl`` JVM option mentioned in the :doc:`config` section) appended with ``/oauth2/callback.xhtml`` such as ``https://dataverse.example.edu/oauth2/callback.xhtml``.
 
 When you are finished you should have a Client ID and Client Secret from the provider. Keep them safe and secret.
 
