@@ -26,7 +26,7 @@ public class MicrosoftOAuth2AP extends AbstractOAuth2AuthenticationProvider{
         this.title = "Microsoft";
         this.clientId = aClientId;
         this.clientSecret = aClientSecret;
-        this.scope = Arrays.asList("openid User.Read");
+        this.scope = Arrays.asList("User.Read");
         this.baseUserEndpoint = "https://graph.microsoft.com/v1.0/me";
     }
 

@@ -127,7 +127,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         throws IOException, OAuth2Exception, InterruptedException, ExecutionException {
         
         OAuth2AccessToken accessToken = service.getAccessToken(code);
-        final String userEndpoint = getUserEndpoint(accessToken);
+        //final String userEndpoint = getUserEndpoint(accessToken);
         // We need to check if scope is null first: GitHub is used without scope, so the responses scope is null.
         // Checking scopes via Stream to be independent from order.
         if ( ( accessToken.getScope() != null && ! getScope().stream().allMatch(accessToken.getScope()::contains) ) ||
