@@ -2871,10 +2871,10 @@ public class DatasetPage implements java.io.Serializable {
     and <selected, non downloadable> and <selected restricted> for reuse*/
             
     private void filterSelectedFiles(){
-        getSelectedDownloadableFiles().clear();
-        getSelectedNonDownloadableFiles().clear();
-        getSelectedRestrictedFiles().clear();
-        getSelectedUnrestrictedFiles().clear();
+        setSelectedDownloadableFiles(new ArrayList<>());
+        setSelectedNonDownloadableFiles(new ArrayList<>());
+        setSelectedRestrictedFiles(new ArrayList<>());
+        setSelectedUnrestrictedFiles(new ArrayList<>());
         
         for (FileMetadata fmd : this.selectedFiles){
             if(this.fileDownloadHelper.canDownloadFile(fmd)){
