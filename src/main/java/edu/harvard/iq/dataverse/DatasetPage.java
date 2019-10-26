@@ -2901,8 +2901,10 @@ public class DatasetPage implements java.io.Serializable {
         if(!this.selectedRestrictedFiles.isEmpty()){
             ArrayList nonDownloadableRestrictedFiles = new ArrayList<>();
             
+            List<DataFile> userRequestedDataFiles = ((AuthenticatedUser) session.getUser()).getRequestedDataFiles();
+          
             for(FileMetadata fmd : this.selectedRestrictedFiles){
-                if(!this.fileDownloadHelper.canDownloadFile(fmd)){
+                if(!this.fileDownloadHelper.canDownloadFile(fmd) && !userRequestedDataFiles.contains(fmd.getDataFile())){
                     nonDownloadableRestrictedFiles.add(fmd);
                 }
             }
@@ -2916,6 +2918,8 @@ public class DatasetPage implements java.io.Serializable {
                 } else {
                     this.requestAccessMultipleFiles();
                 }
+            } else {
+                //popup select data files
             }
         }
     }
@@ -4687,8 +4691,11 @@ public class DatasetPage implements java.io.Serializable {
         if( this.selectedRestrictedFiles == null || this.selectedRestrictedFiles.isEmpty() ){
             return false;
         }
+        
+        List<DataFile> userRequestedDataFiles = ((AuthenticatedUser) session.getUser()).getRequestedDataFiles();
+          
         for (FileMetadata fmd : this.selectedRestrictedFiles){
-            if (!this.fileDownloadHelper.canDownloadFile(fmd)){
+            if (!userRequestedDataFiles.contains(fmd.getDataFile()) && !this.fileDownloadHelper.canDownloadFile(fmd)){
                 return true;               
             }
         }
