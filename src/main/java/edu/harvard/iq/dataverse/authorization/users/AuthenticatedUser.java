@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.Cart;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.FileAccessRequest;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
@@ -14,6 +15,7 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Objects;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -147,6 +149,16 @@ public class AuthenticatedUser implements User, Serializable {
     public void setFileAccessRequests(List<FileAccessRequest> fARs) {
         this.fileAccessRequests = fARs;
     }
+    
+    public List<DataFile> getRequestedDataFiles(){
+        List<DataFile> requestedDataFiles = new ArrayList<>();
+        
+        for(FileAccessRequest far : this.fileAccessRequests){
+            requestedDataFiles.add(far.getDataFile());
+        }
+        return requestedDataFiles;
+    }
+    
     /***/
     
     @Override
