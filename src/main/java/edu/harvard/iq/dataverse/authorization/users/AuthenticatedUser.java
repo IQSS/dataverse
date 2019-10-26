@@ -22,6 +22,7 @@ import javax.json.JsonObjectBuilder;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -139,7 +140,7 @@ public class AuthenticatedUser implements User, Serializable {
     }
     
     /*for many to many fileAccessRequests*/
-    @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY)
     private List<FileAccessRequest> fileAccessRequests;
     
     public List<FileAccessRequest> getFileAccessRequests() {
