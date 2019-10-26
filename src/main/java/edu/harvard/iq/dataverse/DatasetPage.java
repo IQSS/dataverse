@@ -2867,7 +2867,9 @@ public class DatasetPage implements java.io.Serializable {
 
     }
     
-    //helper function to filter the selected files into downloadable and not downloadable for reuse
+    /*helper function to filter the selected files into <selected downloadable>, 
+    and <selected, non downloadable> and <selected restricted> for reuse*/
+            
     private void filterSelectedFiles(){
         setSelectedDownloadableFiles(new ArrayList<>());
         setSelectedNonDownloadableFiles(new ArrayList<>());
@@ -2876,10 +2878,9 @@ public class DatasetPage implements java.io.Serializable {
             if(this.fileDownloadHelper.canDownloadFile(fmd)){
                 getSelectedDownloadableFiles().add(fmd);
             } else {
+                getSelectedNonDownloadableFiles().add(fmd);
                 if(fmd.isRestricted()){
-                    getSelectedRestrictedFiles().add(fmd);
-                } else {
-                    getSelectedNonDownloadableFiles().add(fmd);
+                    this.getSelectedRestrictedFiles().add(fmd);
                 }
             }
         }
@@ -2887,8 +2888,8 @@ public class DatasetPage implements java.io.Serializable {
     
     public void validateFilesForRequestAccess(){
         this.filterSelectedFiles();
-        
-        if(dataset.isFileAccessRequest() && !this.selectedRestrictedFiles.isEmpty()){
+       
+        if(dataset.isFileAccessRequest() && !this.selectedRestrictedFiles.isEmpty()){ 
             guestbookResponse.setDataFile(null);
             guestbookResponse.setSelectedFileIds(this.getFilesIdsString(this.selectedRestrictedFiles));
             
