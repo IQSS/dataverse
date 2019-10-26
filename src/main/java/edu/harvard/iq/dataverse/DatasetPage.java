@@ -2871,32 +2871,51 @@ public class DatasetPage implements java.io.Serializable {
     and <selected, non downloadable> and <selected restricted> for reuse*/
             
     private void filterSelectedFiles(){
-        setSelectedDownloadableFiles(new ArrayList<>());
-        setSelectedNonDownloadableFiles(new ArrayList<>());
+        getSelectedDownloadableFiles().clear();
+        getSelectedNonDownloadableFiles().clear();
+        getSelectedRestrictedFiles().clear();
+        getSelectedUnrestrictedFiles().clear();
         
         for (FileMetadata fmd : this.selectedFiles){
             if(this.fileDownloadHelper.canDownloadFile(fmd)){
                 getSelectedDownloadableFiles().add(fmd);
             } else {
                 getSelectedNonDownloadableFiles().add(fmd);
-                if(fmd.isRestricted()){
-                    this.getSelectedRestrictedFiles().add(fmd);
-                }
             }
+            if(fmd.isRestricted()){
+                getSelectedRestrictedFiles().add(fmd); //might be downloadable to user or not
+            } else {
+                getSelectedUnrestrictedFiles().add(fmd);
+            }
+            
         }
     }
     
     public void validateFilesForRequestAccess(){
         this.filterSelectedFiles();
        
-        if(dataset.isFileAccessRequest() && !this.selectedRestrictedFiles.isEmpty()){ 
-            guestbookResponse.setDataFile(null);
-            guestbookResponse.setSelectedFileIds(this.getFilesIdsString(this.selectedRestrictedFiles));
+        if(!dataset.isFileAccessRequest()){ //is this needed? wouldn't be able to click Request Access if this !isFileAccessRequest()
+            return;
+        }
+        
+        if(!this.selectedRestrictedFiles.isEmpty()){
+            ArrayList nonDownloadableRestrictedFiles = new ArrayList<>();
             
-            if(this.isGuestbookAndTermsPopupRequired()){ //need to pop up the guestbook and terms dialog
-                PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');");
-            } else {
-                this.requestAccessMultipleFiles();
+            for(FileMetadata fmd : this.selectedRestrictedFiles){
+                if(!this.fileDownloadHelper.canDownloadFile(fmd)){
+                    nonDownloadableRestrictedFiles.add(fmd);
+                }
+            }
+            
+            if(!nonDownloadableRestrictedFiles.isEmpty()){
+                guestbookResponse.setDataFile(null);
+                guestbookResponse.setSelectedFileIds(this.getFilesIdsString(nonDownloadableRestrictedFiles));
+
+                if(this.isGuestbookAndTermsPopupRequired()){ //need to pop up the guestbook and terms dialog
+                    PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');");
+                } else {
+                    this.requestAccessMultipleFiles();
+                }
             }
         }
     }
