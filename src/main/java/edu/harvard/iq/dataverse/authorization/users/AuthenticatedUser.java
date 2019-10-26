@@ -153,7 +153,7 @@ public class AuthenticatedUser implements User, Serializable {
     public List<DataFile> getRequestedDataFiles(){
         List<DataFile> requestedDataFiles = new ArrayList<>();
         
-        for(FileAccessRequest far : this.fileAccessRequests){
+        for(FileAccessRequest far : getFileAccessRequests()){
             requestedDataFiles.add(far.getDataFile());
         }
         return requestedDataFiles;
