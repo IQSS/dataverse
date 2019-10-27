@@ -1265,6 +1265,8 @@
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                         <ui:include src="guestbook-terms-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
+                            <ui:param name="guestbookPopupRequired" value="#{DatasetPage.guestbookPopupRequired}"/>
+                            <ui:param name="termsPopupRequired" value="#{DatasetPage.termsPopupRequired}"/>
                             <ui:param name="guestbookAndTermsPopupRequired" value="#{DatasetPage.guestbookAndTermsPopupRequired}"/>
                             <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}"/>
                             <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
