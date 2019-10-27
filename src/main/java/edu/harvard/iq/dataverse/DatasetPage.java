@@ -4778,6 +4778,14 @@ public class DatasetPage implements java.io.Serializable {
         return FileUtil.isGuestbookAndTermsPopupRequired(workingVersion);
     }
     
+    public boolean isGuestbookPopupRequired(){
+        return FileUtil.isGuestbookPopupRequired(workingVersion);
+    }
+    
+    public boolean isTermsPopupRequired(){
+        return FileUtil.isTermsPopupRequired(workingVersion);
+    }
+    
     /*public String requestAccessMultipleFiles() {
 
         if (selectedFiles.isEmpty()) {
