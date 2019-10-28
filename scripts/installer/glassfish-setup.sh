@@ -28,6 +28,8 @@
 # DOI_USERNAME
 # DOI_PASSWORD
 # DOI_BASEURL
+#
+# Base URL the Make Data Count: 
 # DOI_MDCBASEURL
 #
 # other local configuration:
