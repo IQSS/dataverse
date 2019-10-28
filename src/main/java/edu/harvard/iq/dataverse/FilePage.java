@@ -427,7 +427,6 @@ public class FilePage implements java.io.Serializable {
     }
 
     public void setActiveTabIndex(int activeTabIndex) {
-        System.out.print("setActiveTabIndex: " + activeTabIndex);
         this.activeTabIndex = activeTabIndex;
     }
     
@@ -938,7 +937,6 @@ public class FilePage implements java.io.Serializable {
     }
 
     public void setSelectedTool(ExternalTool selectedTool) {
-        System.out.print(selectedTool.getDisplayName());
         this.selectedTool = selectedTool;
     }
     
@@ -953,7 +951,6 @@ public class FilePage implements java.io.Serializable {
         }
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, file, apiToken, file.getFileMetadata(), session.getLocaleCode());
         String toolUrl = externalToolHandler.getToolUrlForPreviewMode();
-        System.out.print(toolUrl);
         return toolUrl;
     }
     
