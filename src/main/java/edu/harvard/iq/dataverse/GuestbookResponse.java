@@ -58,7 +58,7 @@ public class GuestbookResponse implements Serializable {
     @JoinColumn(nullable=true)
     private AuthenticatedUser authenticatedUser;
 
-    @OneToMany(cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},mappedBy="guestbookResponse",fetch = FetchType.LAZY)
+    @OneToOne(cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},mappedBy="guestbookResponse",fetch = FetchType.LAZY)
     private FileDownload fileDownload;
     
     @OneToMany(mappedBy="guestbookResponse",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},fetch = FetchType.LAZY)
