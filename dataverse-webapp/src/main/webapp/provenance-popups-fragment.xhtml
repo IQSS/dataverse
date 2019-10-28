@@ -2,9 +2,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
-                xmlns:c="http://java.sun.com/jsp/jstl/core"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
@@ -138,8 +136,17 @@
                 </div>
             </div>
             <div class="button-block">              
-                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.continue}" disabled="#{provPopupFragmentBean.isDataFilePublishedWithDraftRendering() and !provPopupFragmentBean.isDatasetInDraftRendering()}" update="provPopupOutput,assignMessages,confirmProvenancePopup" oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('editProvenancePopup').hide();PF('confirmProvenancePopup').show(); }" />
-                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupCancelButton" value="#{bundle.cancel}" update="provPopupOutput,assignMessages,confirmProvenancePopup" onclick="PF('editProvenancePopup').hide();" immediate="true" actionListener="#{provPopupFragmentBean.removeJsonAndRelatedData()}">
+                <p:commandButton id="editProvenancePopupSaveButton"
+                                 value="#{bundle.continue}"
+                                 disabled="#{provPopupFragmentBean.isDataFilePublishedWithDraftRendering() and !provPopupFragmentBean.isDatasetInDraftRendering()}"
+                                 update="provPopupOutput,assignMessages,confirmProvenancePopup"
+                                 oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('editProvenancePopup').hide();PF('confirmProvenancePopup').show(); }" />
+
+                <p:commandButton id="editProvenancePopupCancelButton" value="#{bundle.cancel}"
+                                 update="provPopupOutput,assignMessages,confirmProvenancePopup"
+                                 onclick="PF('editProvenancePopup').hide();"
+                                 immediate="true"
+                                 actionListener="#{provPopupFragmentBean.removeJsonAndRelatedData()}">
                 </p:commandButton>
             </div>
         </div>
@@ -176,8 +183,15 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('confirmProvenancePopup').hide();" action="#{provPopupFragmentBean.stagePopupChanges(saveInPopup == 'true')}" update=":messagePanel"/>
-            <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').show();PF('confirmProvenancePopup').hide();"/>
+            <p:commandButton id="confirmProvenancePopupSaveButton"
+                             value="#{bundle.saveChanges}"
+                             oncomplete="PF('confirmProvenancePopup').hide();"
+                             action="#{provPopupFragmentBean.stagePopupChanges(saveInPopup == 'true')}"
+                             update=":messagePanel"/>
+
+            <p:commandButton id="confirmProvenancePopupCancelButton"
+                             value="#{bundle.cancel}"
+                             onclick="PF('editProvenancePopup').show();PF('confirmProvenancePopup').hide();"/>
         </div>
     </p:dialog>
 </ui:composition>

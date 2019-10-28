@@ -3,20 +3,25 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.datafile.page;
 
+import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersionResponse;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.FileDownloadHelper;
+import edu.harvard.iq.dataverse.FileDownloadServiceBean;
+import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.files.mime.TextMimeType;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
-import edu.harvard.iq.dataverse.engine.command.Command;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.UpdateDatasetException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.ExporterType;
@@ -26,8 +31,8 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.FileVersionDifference;
-import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseIcon;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
+import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseIcon;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse;
@@ -36,6 +41,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import io.vavr.control.Try;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.ByteArrayContent;
@@ -48,13 +54,12 @@ import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.validation.ConstraintViolation;
+import javax.validation.ValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
@@ -104,8 +109,6 @@ public class FilePage implements java.io.Serializable {
     @Inject
     DataverseSession session;
     @EJB
-    EjbDataverseEngine commandEngine;
-    @EJB
     ExternalToolServiceBean externalToolService;
 
     @Inject
@@ -119,17 +122,10 @@ public class FilePage implements java.io.Serializable {
     @Inject
     private ExportService exportService;
 
-    public WorldMapPermissionHelper getWorldMapPermissionHelper() {
-        return worldMapPermissionHelper;
-    }
-
-    public void setWorldMapPermissionHelper(WorldMapPermissionHelper worldMapPermissionHelper) {
-        this.worldMapPermissionHelper = worldMapPermissionHelper;
-    }
+    @Inject
+    private FileService fileService;
 
     private static final Logger logger = Logger.getLogger(FilePage.class.getCanonicalName());
-
-    private boolean fileDeleteInProgress = false;
 
     public String init() {
 
@@ -142,7 +138,7 @@ public class FilePage implements java.io.Serializable {
             if (fileId != null) {
                 file = datafileService.find(fileId);
 
-            } else if (persistentId != null) {
+            } else {
                 file = datafileService.findByGlobalId(persistentId);
                 if (file != null) {
                     fileId = file.getId();
@@ -194,7 +190,7 @@ public class FilePage implements java.io.Serializable {
             // Check permisisons       
 
 
-            Boolean authorized = (fileMetadata.getDatasetVersion().isReleased()) ||
+            boolean authorized = (fileMetadata.getDatasetVersion().isReleased()) ||
                     (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset());
 
             if (!authorized) {
@@ -203,7 +199,7 @@ public class FilePage implements java.io.Serializable {
 
             this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
             this.dataset = fileMetadata.getDataFile().getOwner();
-            
+
             // Find external tools based on their type, the file content type, and whether
             // ingest has created a derived file for that type
             // Currently, tabular data files are the only type of derived file created, so
@@ -298,83 +294,82 @@ public class FilePage implements java.io.Serializable {
         return retList;
     }
 
-    public String saveProvFreeform(String freeformTextInput, DataFile dataFileFromPopup)  {
-        editDataset = this.file.getOwner();
-        file.setProvEntityName(dataFileFromPopup.getProvEntityName()); //passing this value into the file being saved here is pretty hacky.
-        Command cmd;
+    public String saveProvFreeform(String freeformTextInput, DataFile dataFileFromPopup){
 
-        for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
-            if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())) {
-                cmd = new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), file, freeformTextInput);
-                commandEngine.submit(cmd);
-            }
+        Try<Dataset> saveProvOperation = Try.of(() -> fileService.saveProvenanceFileWithDesc(fileMetadata, dataFileFromPopup, freeformTextInput))
+                .onFailure(this::handleProvenanceExceptions);
+
+        if (saveProvOperation.isFailure()){
+            return "";
         }
 
-        save();
+        JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("file.message.editSuccess"));
+        setVersion("DRAFT");
         init();
         return returnToDraftVersion();
     }
 
-    private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
-
     public String deleteFile() {
+        Try<Dataset> deleteFileOperation = Try.of(() -> fileService.deleteFile(this.fileMetadata))
+                .onFailure(this::handleDeleteFileExceptions);
 
-        String fileNames = this.getFileMetadata().getLabel();
-
-        editDataset = this.getFileMetadata().getDataFile().getOwner();
-
-        FileMetadata markedForDelete = null;
-
-        for (FileMetadata fmd : editDataset.getEditVersion().getFileMetadatas()) {
-
-            if (fmd.getDataFile().getId().equals(this.getFile().getId())) {
-                markedForDelete = fmd;
-            }
+        if (deleteFileOperation.isFailure()) {
+            return "";
         }
 
-        if (markedForDelete.getId() != null) {
-            // the file already exists as part of this dataset
-            // so all we remove is the file from the fileMetadatas (for display)
-            // and let the delete be handled in the command (by adding it to the filesToBeDeleted list
-            editDataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
-            filesToBeDeleted.add(markedForDelete);
+        JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("file.message.deleteSuccess"));
 
-        } else {
-            List<FileMetadata> filesToKeep = new ArrayList<>();
-            for (FileMetadata fmo : editDataset.getEditVersion().getFileMetadatas()) {
-                if (!fmo.getDataFile().getId().equals(this.getFile().getId())) {
-                    filesToKeep.add(fmo);
-                }
-            }
-            editDataset.getEditVersion().setFileMetadatas(filesToKeep);
-        }
-
-        fileDeleteInProgress = true;
-        save();
-        return returnToDatasetOnly();
-
-    }
-
-    private int activeTabIndex;
-
-    public int getActiveTabIndex() {
-        return activeTabIndex;
-    }
-
-    public void setActiveTabIndex(int activeTabIndex) {
-        this.activeTabIndex = activeTabIndex;
+        setVersion("DRAFT");
+        return returnToDatasetOnly(fileMetadata.getDataFile().getOwner());
     }
 
     public void tabChanged(TabChangeEvent event) {
         TabView tv = (TabView) event.getComponent();
-        this.activeTabIndex = tv.getActiveIndex();
-        if (this.activeTabIndex == 1 || this.activeTabIndex == 2) {
+        int activeTabIndex = tv.getActiveIndex();
+        if (activeTabIndex == 1 || activeTabIndex == 2) {
             setFileMetadatasForTab(loadFileMetadataTabList());
         } else {
             setFileMetadatasForTab(new ArrayList<>());
         }
     }
 
+    private void handleProvenanceExceptions(Throwable throwable){
+        if (throwable instanceof EJBException){
+            throwable = throwable.getCause();
+        }
+
+        if (throwable instanceof ValidationException){
+            JH.addMessage(FacesMessage.SEVERITY_ERROR,
+                          BundleUtil.getStringFromBundle("dataset.message.validationError"));
+
+        } else if (throwable instanceof UpdateDatasetException){
+            JH.addMessage(FacesMessage.SEVERITY_ERROR,
+                          BundleUtil.getStringFromBundle("dataset.save.fail"),
+                          " - " + throwable.toString());
+        } else {
+            JH.addMessage(FacesMessage.SEVERITY_ERROR,
+                          BundleUtil.getStringFromBundle("dataset.save.fail"));
+        }
+    }
+
+    private void handleDeleteFileExceptions(Throwable throwable){
+        if (throwable instanceof EJBException){
+            throwable = throwable.getCause();
+        }
+
+        if (throwable instanceof ValidationException){
+            JH.addMessage(FacesMessage.SEVERITY_ERROR,
+                          BundleUtil.getStringFromBundle("dataset.message.validationError"));
+
+        } else if (throwable instanceof UpdateDatasetException){
+            JH.addMessage(FacesMessage.SEVERITY_ERROR,
+                          BundleUtil.getStringFromBundle("dataset.delete.fail"),
+                          " - " + throwable.toString());
+        } else {
+            JH.addMessage(FacesMessage.SEVERITY_ERROR,
+                          BundleUtil.getStringFromBundle("dataset.delete.fail"));
+        }
+    }
 
     private List<FileMetadata> loadFileMetadataTabList() {
         List<DataFile> allfiles = allRelatedFiles();
@@ -383,7 +378,6 @@ public class FilePage implements java.io.Serializable {
             boolean foundFmd = false;
 
             if (versionLoop.isReleased() || versionLoop.isDeaccessioned() || permissionService.on(fileMetadata.getDatasetVersion().getDataset()).has(Permission.ViewUnpublishedDataset)) {
-                foundFmd = false;
                 for (DataFile df : allfiles) {
                     FileMetadata fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(versionLoop.getId(), df.getId());
                     if (fmd != null) {
@@ -473,9 +467,7 @@ public class FilePage implements java.io.Serializable {
             versionId = dvPrevious.getId();
         }
 
-        FileMetadata fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(versionId, dfId);
-
-        return fmd;
+        return datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(versionId, dfId);
     }
 
     public List<FileMetadata> getFileMetadatasForTab() {
@@ -492,91 +484,6 @@ public class FilePage implements java.io.Serializable {
 
     public void setPersistentId(String persistentId) {
         this.persistentId = persistentId;
-    }
-
-
-    public List<DatasetVersion> getDatasetVersionsForTab() {
-        return datasetVersionsForTab;
-    }
-
-    public void setDatasetVersionsForTab(List<DatasetVersion> datasetVersionsForTab) {
-        this.datasetVersionsForTab = datasetVersionsForTab;
-    }
-
-    public String save() {
-        // Validate
-        Set<ConstraintViolation> constraintViolations = this.fileMetadata.getDatasetVersion().validate();
-        if (!constraintViolations.isEmpty()) {
-            //JsfHelper.addFlashMessage(JH.localize("dataset.message.validationError"));
-            fileDeleteInProgress = false;
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
-            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
-            return "";
-        }
-
-
-        Command<Dataset> cmd;
-        boolean updateCommandSuccess = false;
-        Long deleteFileId = null;
-        String deleteStorageLocation = null;
-
-        if (!filesToBeDeleted.isEmpty()) {
-            // We want to delete the file (there's always only one file with this page)
-
-            deleteStorageLocation = datafileService.getPhysicalFileToDelete(filesToBeDeleted.get(0).getDataFile());
-        }
-
-        try {
-            cmd = new UpdateDatasetVersionCommand(editDataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
-            commandEngine.submit(cmd);
-            updateCommandSuccess = true;
-
-        } catch (EJBException ex) {
-
-            StringBuilder error = new StringBuilder();
-            error.append(ex).append(" ");
-            error.append(ex.getMessage()).append(" ");
-
-
-            Throwable cause = ex;
-            while (cause.getCause() != null) {
-                cause = cause.getCause();
-                error.append(cause).append(" ");
-                error.append(cause.getMessage()).append(" ");
-            }
-            return null;
-        } catch (CommandException ex) {
-            fileDeleteInProgress = false;
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.save.fail"), " - " + ex.toString()));
-            return null;
-        }
-
-
-        if (fileDeleteInProgress) {
-
-            if (updateCommandSuccess) {
-                if (deleteStorageLocation != null) {
-                    // Finalize the delete of the physical file 
-                    // (File service will double-check that the datafile no 
-                    // longer exists in the database, before proceeding to 
-                    // delete the physical file)
-                    try {
-                        datafileService.finalizeFileDelete(deleteFileId, deleteStorageLocation, new DataAccess());
-                    } catch (IOException ioex) {
-                        logger.warning("Failed to delete the physical file associated with the deleted datafile id="
-                                               + deleteFileId + ", storage location: " + deleteStorageLocation);
-                    }
-                }
-            }
-
-            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("file.message.deleteSuccess"));
-            fileDeleteInProgress = false;
-        } else {
-            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("file.message.editSuccess"));
-        }
-
-        setVersion("DRAFT");
-        return "";
     }
 
     private Boolean thumbnailAvailable = null;
@@ -618,9 +525,9 @@ public class FilePage implements java.io.Serializable {
         return Optional.of(new ByteArrayContent(licenseIcon.getContent(), licenseIcon.getContentType()));
     }
 
-    private String returnToDatasetOnly() {
+    private String returnToDatasetOnly(Dataset draftDataset) {
 
-        return "/dataset.xhtml?persistentId=" + editDataset.getGlobalIdString() + "&version=DRAFT" + "&faces-redirect=true";
+        return "/dataset.xhtml?persistentId=" + draftDataset.getGlobalIdString() + "&version=DRAFT" + "&faces-redirect=true";
     }
 
     private String returnToDraftVersion() {

@@ -4,10 +4,9 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EditDatafilesPage;
-import edu.harvard.iq.dataverse.FilePage;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.datafile.page.FilePage;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonCommand;
@@ -241,7 +240,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
                     addSuccessMessageToPage(saveInPopup); //we have to call this again here otherwise the file page overrides it
                     return theReturn;
                 }
-            } catch (AbstractApiBean.WrappedResponse | CommandException ex) {
+            } catch (AbstractApiBean.WrappedResponse ex) {
                 filePage.showProvError();
                 Logger.getLogger(ProvPopupFragmentBean.class.getName()).log(Level.SEVERE, null, ex);
             }
