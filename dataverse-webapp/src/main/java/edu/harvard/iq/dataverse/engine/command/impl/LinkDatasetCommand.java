@@ -36,7 +36,7 @@ public class LinkDatasetCommand extends AbstractCommand<DatasetLinkingDataverse>
     }
 
     @Override
-    public DatasetLinkingDataverse execute(CommandContext ctxt) throws CommandException {
+    public DatasetLinkingDataverse execute(CommandContext ctxt)  {
 
         if (!linkedDataset.isReleased()) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.published"), this);

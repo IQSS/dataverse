@@ -63,7 +63,7 @@ public class AbstractDatasetCommandTest {
         }
 
         @Override
-        public Object execute(CommandContext ctxt) throws CommandException {
+        public Object execute(CommandContext ctxt)  {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 

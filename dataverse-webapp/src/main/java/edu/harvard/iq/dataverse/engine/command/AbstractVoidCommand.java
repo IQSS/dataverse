@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.engine.command;
 
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 
 import java.util.Map;
@@ -26,11 +25,11 @@ public abstract class AbstractVoidCommand extends AbstractCommand<Void> {
     }
 
     @Override
-    public final Void execute(CommandContext ctxt) throws CommandException {
+    public final Void execute(CommandContext ctxt) {
         executeImpl(ctxt);
         return null;
     }
 
-    protected abstract void executeImpl(CommandContext ctxt) throws CommandException;
+    protected abstract void executeImpl(CommandContext ctxt);
 
 }

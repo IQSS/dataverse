@@ -45,7 +45,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         registrationRequired = isRegistrationRequired;
     }
 
-    protected void additionalParameterTests(CommandContext ctxt) throws CommandException {
+    protected void additionalParameterTests(CommandContext ctxt)  {
         // base class - do nothing.
     }
 
@@ -61,14 +61,14 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
      * @param ctxt
      * @throws edu.harvard.iq.dataverse.engine.command.exception.CommandException
      */
-    protected void postPersist(Dataset theDataset, CommandContext ctxt) throws CommandException {
+    protected void postPersist(Dataset theDataset, CommandContext ctxt)  {
         // base class - default to nothing.
     }
 
-    protected abstract void handlePid(Dataset theDataset, CommandContext ctxt) throws CommandException;
+    protected abstract void handlePid(Dataset theDataset, CommandContext ctxt) ;
 
     @Override
-    public Dataset execute(CommandContext ctxt) throws CommandException {
+    public Dataset execute(CommandContext ctxt)  {
 
         additionalParameterTests(ctxt);
 

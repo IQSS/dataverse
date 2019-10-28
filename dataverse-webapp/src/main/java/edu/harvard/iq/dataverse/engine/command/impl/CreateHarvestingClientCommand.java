@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
@@ -25,7 +24,7 @@ public class CreateHarvestingClientCommand extends AbstractCommand<HarvestingCli
     }
 
     @Override
-    public HarvestingClient execute(CommandContext ctxt) throws CommandException {
+    public HarvestingClient execute(CommandContext ctxt) {
         // TODO: check if the harvesting client config is legit; 
         // and that it is indeed new and unique? 
         // (may not be necessary - as the uniqueness should be enforced by 

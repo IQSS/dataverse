@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command;
 
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 
@@ -21,9 +20,8 @@ public interface Command<R> {
      *
      * @param ctxt the context on which the command work. All dependency injections, if any, should be done using this.
      * @return A result. May be {@code null}
-     * @throws CommandException If anything goes wrong.
      */
-    R execute(CommandContext ctxt) throws CommandException;
+    R execute(CommandContext ctxt);
 
 
     /**

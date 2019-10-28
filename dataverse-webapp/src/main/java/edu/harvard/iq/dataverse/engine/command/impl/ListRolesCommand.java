@@ -28,7 +28,7 @@ public class ListRolesCommand extends AbstractCommand<Set<DataverseRole>> {
     }
 
     @Override
-    public Set<DataverseRole> execute(CommandContext ctxt) throws CommandException {
+    public Set<DataverseRole> execute(CommandContext ctxt)  {
         return definitionPoint.getRoles();
     }
 

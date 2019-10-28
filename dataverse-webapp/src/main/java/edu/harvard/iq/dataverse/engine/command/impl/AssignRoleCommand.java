@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -51,7 +50,7 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
     }
 
     @Override
-    public RoleAssignment execute(CommandContext ctxt) throws CommandException {
+    public RoleAssignment execute(CommandContext ctxt) {
         // TODO make sure the role is defined on the dataverse.
 
         RoleAssignment roleAssignment = new RoleAssignment(role, grantee, defPoint, privateUrlToken);

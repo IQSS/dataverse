@@ -26,7 +26,7 @@ public class UpdateDataverseTemplateCommand extends AbstractVoidCommand {
 
 
     @Override
-    protected void executeImpl(CommandContext ctxt) throws CommandException {
+    protected void executeImpl(CommandContext ctxt) {
         ctxt.em().merge(this.template);
     }
 

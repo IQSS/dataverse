@@ -57,7 +57,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     }
 
     @Override
-    public Dataset execute(CommandContext ctxt) throws CommandException {
+    public Dataset execute(CommandContext ctxt)  {
         Dataset theDataset = getDataset();
 
         if (theDataset.getGlobalIdCreateTime() == null) {
@@ -168,7 +168,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
     }
 
-    private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
+    private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt)  {
         String protocol = getDataset().getProtocol();
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
         if (idServiceBean != null) {
@@ -211,7 +211,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
     }
 
-    private void updateFiles(Timestamp updateTime, CommandContext ctxt) throws CommandException {
+    private void updateFiles(Timestamp updateTime, CommandContext ctxt)  {
         for (DataFile dataFile : getDataset().getFiles()) {
             if (dataFile.getPublicationDate() == null) {
                 // this is a new, previously unpublished file, so publish by setting date

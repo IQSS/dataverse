@@ -30,7 +30,7 @@ public class CreateRoleCommand extends AbstractCommand<DataverseRole> {
     }
 
     @Override
-    public DataverseRole execute(CommandContext ctxt) throws CommandException {
+    public DataverseRole execute(CommandContext ctxt)  {
         User user = getUser();
         //todo: temporary for 4.0 - only superusers can create and edit roles
         if ((!(user instanceof AuthenticatedUser) || !user.isSuperuser())) {

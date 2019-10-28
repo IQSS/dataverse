@@ -50,7 +50,7 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
     }
 
     @Override
-    public DatasetThumbnail execute(CommandContext ctxt) throws CommandException {
+    public DatasetThumbnail execute(CommandContext ctxt) {
         if (dataset == null) {
             String message = "Can't update dataset thumbnail. Dataset is null.";
             logger.info(message);

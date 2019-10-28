@@ -32,7 +32,7 @@ public class UpdateDataverseTemplateCountCommand extends AbstractVoidCommand {
     }
 
     @Override
-    protected void executeImpl(CommandContext ctxt) throws CommandException {
+    protected void executeImpl(CommandContext ctxt)  {
         template.setUsageCount(template.getUsageCount() + 1);
         ctxt.em().merge(this.template);
     }

@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
@@ -34,7 +33,7 @@ public class GetHarvestingClientCommand extends AbstractCommand<HarvestingClient
     }
 
     @Override
-    public HarvestingClient execute(CommandContext ctxt) throws CommandException {
+    public HarvestingClient execute(CommandContext ctxt) {
         if (ownerDataverse == null) {
             throw new IllegalCommandException("GetHarvestingClientCommand called on a null Dataverse object", this);
         }

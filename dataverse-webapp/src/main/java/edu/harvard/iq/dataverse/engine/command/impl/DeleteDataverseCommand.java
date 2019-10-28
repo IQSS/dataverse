@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFieldTypeInputLevel;
@@ -34,7 +33,7 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
     }
 
     @Override
-    protected void executeImpl(CommandContext ctxt) throws CommandException {
+    protected void executeImpl(CommandContext ctxt) {
         // Make sure we don't delete root
         if (doomed.getOwner() == null) {
             throw new IllegalCommandException("Cannot delete the root dataverse", this);

@@ -27,7 +27,7 @@ public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset
     }
 
     @Override
-    public Dataset execute(CommandContext ctxt) throws CommandException {
+    public Dataset execute(CommandContext ctxt)  {
 
         final Dataset dataset = getDataset();
 

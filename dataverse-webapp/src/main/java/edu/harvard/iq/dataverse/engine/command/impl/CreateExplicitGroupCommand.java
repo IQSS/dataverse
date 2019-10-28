@@ -44,7 +44,7 @@ public class CreateExplicitGroupCommand extends AbstractCommand<ExplicitGroup> {
     }
 
     @Override
-    public ExplicitGroup execute(CommandContext ctxt) throws CommandException {
+    public ExplicitGroup execute(CommandContext ctxt) {
         // make sure alias in owner is unique
         eg.setOwner(dv);
         eg.updateAlias();

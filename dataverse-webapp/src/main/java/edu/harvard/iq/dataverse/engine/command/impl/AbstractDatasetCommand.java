@@ -96,7 +96,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      * @throws CommandException if and only if {@code lenient=false}, and field
      *                          validation failed.
      */
-    protected void validateOrDie(DatasetVersion dsv, Boolean lenient) throws CommandException {
+    protected void validateOrDie(DatasetVersion dsv, Boolean lenient)  {
         Set<ConstraintViolation> constraintViolations = dsv.validate();
         if (!constraintViolations.isEmpty()) {
             if (lenient) {
@@ -152,11 +152,10 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      * large enough number of values will be legitimately registered by another
      * entity sharing the same authority...)
      *
-     * @param theDataset
      * @param ctxt
-     * @throws CommandException
+     * @
      */
-    protected void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt) throws CommandException {
+    protected void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt)  {
         if (!theDataset.isIdentifierRegistered()) {
             GlobalIdServiceBean globalIdServiceBean = GlobalIdServiceBean.getBean(theDataset.getProtocol(), ctxt);
             if (globalIdServiceBean != null) {

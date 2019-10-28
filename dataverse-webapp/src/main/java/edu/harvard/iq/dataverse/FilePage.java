@@ -298,7 +298,7 @@ public class FilePage implements java.io.Serializable {
         return retList;
     }
 
-    public String saveProvFreeform(String freeformTextInput, DataFile dataFileFromPopup) throws CommandException {
+    public String saveProvFreeform(String freeformTextInput, DataFile dataFileFromPopup)  {
         editDataset = this.file.getOwner();
         file.setProvEntityName(dataFileFromPopup.getProvEntityName()); //passing this value into the file being saved here is pretty hacky.
         Command cmd;

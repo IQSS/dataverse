@@ -37,7 +37,7 @@ public class PersistProvJsonCommand extends AbstractCommand<DataFile> {
     }
 
     @Override
-    public DataFile execute(CommandContext ctxt) throws CommandException {
+    public DataFile execute(CommandContext ctxt)  {
         //First, save the name of the entity in the json so CPL can later connect the uploaded json
         if (null == entityName || "".equals(entityName)) {
             String error = "A valid entityName must be provided to connect the DataFile to the provenance data.";

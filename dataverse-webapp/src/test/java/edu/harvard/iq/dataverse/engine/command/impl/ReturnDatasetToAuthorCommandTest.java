@@ -145,7 +145,7 @@ public class ReturnDatasetToAuthorCommandTest {
         }
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testDatasetNull() throws CommandException {
+    public void testDatasetNull()  {
         new ReturnDatasetToAuthorCommand(dataverseRequest, null, "");
     }
 

@@ -35,7 +35,7 @@ public class GroupServiceBeanTest {
     }
 
     @Test
-    public void testFlattenGroupsCollection() throws GroupException {
+    public void testFlattenGroupsCollection()  {
         // Setup
         MockRoleAssigneeServiceBean roleAssigneeSvc = new MockRoleAssigneeServiceBean();
         ExplicitGroupProvider prv = new ExplicitGroupProvider(null, roleAssigneeSvc, new ArrayList<>());
@@ -79,7 +79,7 @@ public class GroupServiceBeanTest {
     }
 
     @Test
-    public void testCollectAncestors() throws GroupException {
+    public void testCollectAncestors()  {
         // Setup
         RoleAssigneeServiceBean roleAssigneeSvc = mock(RoleAssigneeServiceBean.class);
         

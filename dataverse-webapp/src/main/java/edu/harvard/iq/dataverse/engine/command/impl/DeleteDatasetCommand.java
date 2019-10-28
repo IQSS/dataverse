@@ -24,7 +24,7 @@ public class DeleteDatasetCommand extends AbstractVoidCommand {
     }
 
     @Override
-    protected void executeImpl(CommandContext ctxt) throws CommandException {
+    protected void executeImpl(CommandContext ctxt)  {
         // TODO: REMOVE THIS COMMAND
         // for now it just calls DeleteDatasetVersion
         ctxt.engine().submit(new DeleteDatasetVersionCommand(getRequest(), doomed));

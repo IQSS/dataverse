@@ -42,7 +42,7 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
     }
 
     @Override
-    public DataFile execute(CommandContext ctxt) throws CommandException {
+    public DataFile execute(CommandContext ctxt)  {
 
 
         file.getFileAccessRequesters().add(requester);

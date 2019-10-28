@@ -1,11 +1,14 @@
 package edu.harvard.iq.dataverse.persistence.group;
 
+import javax.ejb.ApplicationException;
+
 /**
  * When the groups library throws an exception, it has to be a subclass of this guy.
  *
  * @author michael
  */
-public class GroupException extends Exception {
+@ApplicationException(rollback = true)
+public class GroupException extends RuntimeException {
 
     private final Group theGroup;
 

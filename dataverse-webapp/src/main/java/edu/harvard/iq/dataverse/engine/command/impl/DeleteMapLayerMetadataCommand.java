@@ -24,7 +24,7 @@ public class DeleteMapLayerMetadataCommand extends AbstractCommand<Boolean> {
     }
 
     @Override
-    public Boolean execute(CommandContext ctxt) throws CommandException {
+    public Boolean execute(CommandContext ctxt)  {
         if (dataFile == null) {
             return false;
         }

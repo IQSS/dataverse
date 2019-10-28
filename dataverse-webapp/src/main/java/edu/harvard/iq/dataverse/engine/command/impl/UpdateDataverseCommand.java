@@ -52,7 +52,7 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
     }
 
     @Override
-    public Dataverse execute(CommandContext ctxt) throws CommandException {
+    public Dataverse execute(CommandContext ctxt)  {
         DataverseType oldDvType = ctxt.dataverses().find(editedDv.getId()).getDataverseType();
         String oldDvAlias = ctxt.dataverses().find(editedDv.getId()).getAlias();
         String oldDvName = ctxt.dataverses().find(editedDv.getId()).getName();

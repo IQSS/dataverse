@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -27,7 +26,7 @@ public class DeleteHarvestingClientCommand extends AbstractVoidCommand {
     }
 
     @Override
-    public void executeImpl(CommandContext ctxt) throws CommandException {
+    public void executeImpl(CommandContext ctxt) {
 
         if (harvestingClient == null) {
             throw new IllegalCommandException("DeleteHarvestingClientCommand: attempted to execute with null harvesting client; dataverse: " + motherDataverse.getAlias(), this);

@@ -30,7 +30,7 @@ public class ExplicitGroupTest {
     }
 
     @Test(expected = GroupException.class)
-    public void addGroupToDescendant() throws GroupException {
+    public void addGroupToDescendant()  {
         Dataverse dv = makeDataverse();
         ExplicitGroup root = new ExplicitGroup();
         root.setId(nextId());
@@ -52,7 +52,7 @@ public class ExplicitGroupTest {
     }
 
     @Test(expected = GroupException.class)
-    public void addGroupToUnrealtedGroup() throws GroupException {
+    public void addGroupToUnrealtedGroup()  {
         Dataverse dv1 = makeDataverse();
         Dataverse dv2 = makeDataverse();
         ExplicitGroup g1 = new ExplicitGroup();
@@ -67,7 +67,7 @@ public class ExplicitGroupTest {
     }
 
     @Test
-    public void addGroup() throws GroupException {
+    public void addGroup()  {
         Dataverse dvParent = makeDataverse();
         Dataverse dvSub = makeDataverse();
         dvSub.setOwner(dvParent);
@@ -82,7 +82,7 @@ public class ExplicitGroupTest {
     }
 
     @Test
-    public void adds() throws GroupException {
+    public void adds()  {
         Dataverse dvParent = makeDataverse();
         ExplicitGroup g1 = new ExplicitGroup();
         g1.setOwner(dvParent);
@@ -99,7 +99,7 @@ public class ExplicitGroupTest {
 
 
     @Test
-    public void recursiveStructuralContainment() throws GroupException {
+    public void recursiveStructuralContainment()  {
         Dataverse dvParent = makeDataverse();
         ExplicitGroup parentGroup = makeExplicitGroup();
         ExplicitGroup childGroup = makeExplicitGroup();

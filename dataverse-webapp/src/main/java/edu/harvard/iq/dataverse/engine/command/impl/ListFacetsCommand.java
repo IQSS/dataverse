@@ -29,7 +29,7 @@ public class ListFacetsCommand extends AbstractCommand<List<DataverseFacet>> {
     }
 
     @Override
-    public List<DataverseFacet> execute(CommandContext ctxt) throws CommandException {
+    public List<DataverseFacet> execute(CommandContext ctxt)  {
         return dv.getDataverseFacets();
     }
 

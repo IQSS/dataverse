@@ -195,7 +195,7 @@ public class CreateDataverseCommandTest {
 
 
     @Test
-    public void testDefaultOptions() throws CommandException {
+    public void testDefaultOptions() {
         Dataverse dv = makeDataverse();
         dv.setCreateDate(null);
         dv.setId(null);
@@ -231,7 +231,7 @@ public class CreateDataverseCommandTest {
     }
 
     @Test
-    public void testCustomOptions() throws CommandException {
+    public void testCustomOptions() {
         Dataverse dv = makeDataverse();
 
         Timestamp creation = timestamp(1990, 12, 12);

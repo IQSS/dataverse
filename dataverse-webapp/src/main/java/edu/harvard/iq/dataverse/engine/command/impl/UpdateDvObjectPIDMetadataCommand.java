@@ -32,7 +32,7 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
     }
 
     @Override
-    protected void executeImpl(CommandContext ctxt) throws CommandException {
+    protected void executeImpl(CommandContext ctxt)  {
 
 
         if (!getUser().isSuperuser()) {

@@ -56,7 +56,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
     }
 
     @Override
-    public void executeImpl(CommandContext ctxt) throws CommandException {
+    public void executeImpl(CommandContext ctxt)  {
         long moveDvStart = System.currentTimeMillis();
         logger.info("Starting dataverse move...");
         boolean removeGuestbook = false, removeTemplate = false, removeFeatDv = false, removeMetadataBlock = false, removeLinkDv = false, removeLinkDs = false;
