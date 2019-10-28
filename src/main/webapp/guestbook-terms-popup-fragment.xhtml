@@ -46,7 +46,12 @@
                 </div>
             </div>
             
-            <p:fragment rendered="#{workingVersion.dataset.hasEnabledGuestbook() and guestbookPopupRequired and !DatasetPage.getSelectedRestrictedFiles().isEmpty()}" id="guestbookUIFragment">
+            <p:fragment rendered="#{
+                        workingVersion.dataset.hasEnabledGuestbook() 
+                        and guestbookPopupRequired
+                        and (!DatasetPage.getSelectedDownloadableFiles().isEmpty()
+                        or (!DatasetPage.getSelectedRestrictedFiles().isEmpty()) )    
+                        }" id="guestbookUIFragment">
                 <p:fragment>
                     <div class="form-group">
                         <label class="col-sm-3 control-label" for="guestbookuser_nameText">
