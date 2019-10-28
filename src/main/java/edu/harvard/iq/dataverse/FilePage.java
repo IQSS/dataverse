@@ -216,6 +216,7 @@ public class FilePage implements java.io.Serializable {
             }
             configureTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.CONFIGURE, contentType);
             exploreTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.EXPLORE, contentType);
+            Collections.sort(exploreTools, CompareExternalToolName);
             toolsWithPreviews  = addMapLayerAndSortExternalTools();
             if(!toolsWithPreviews.isEmpty()){
                 setSelectedTool(toolsWithPreviews.get(0));                
