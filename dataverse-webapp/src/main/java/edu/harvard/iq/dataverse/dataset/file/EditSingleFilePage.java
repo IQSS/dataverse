@@ -571,9 +571,9 @@ public class EditSingleFilePage implements java.io.Serializable {
             logger.fine(successMessage);
             successMessage = successMessage.replace("{0}", fileMetadata.getLabel());
             JsfHelper.addFlashMessage(successMessage);
-
-            datasetUpdateRequired = true;
         }
+
+        datasetUpdateRequired = true;
     }
 
     public void deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead() {
