@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <!--
     If you are doing more than bumping the version number, please read
-    doc/sphinx-guides/source/developers/dependencies.rst	
+    doc/sphinx-guides/source/developers/dependencies.rst  
     -->
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
@@ -13,8 +13,8 @@
     <name>dataverse</name>
 
     <properties>
-	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	<additionalparam>-Xdoclint:none</additionalparam>
+  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  <additionalparam>-Xdoclint:none</additionalparam>
         <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
         <compilerArgument></compilerArgument>
         <project.timezone>UTC</project.timezone>
@@ -477,7 +477,7 @@
             <artifactId>commons-codec</artifactId>
             <version>1.9</version>
         </dependency>
-	<!-- JavaSwift/JOSS: for accessing OpenStack cloud storage -->
+  <!-- JavaSwift/JOSS: for accessing OpenStack cloud storage -->
         <dependency>
             <groupId>org.javaswift</groupId>
             <artifactId>joss</artifactId>
@@ -509,27 +509,27 @@
             <artifactId>scribejava-apis</artifactId>
             <version>3.1.0</version>
         </dependency>
-	<!-- EXPERIMENTAL: -->
-	<!-- lyncode xoai OAI-PMH implementation: -->
-	<!-- unfortunately, their 4.10 version -->
-	<!-- is still buggy. As an experiment, I'm using -->
-	<!-- a patched version I built locally. -->
-	<!-- (pull requests pending - L.A. -->
-	<dependency>
-	  <groupId>com.lyncode</groupId>
-	  <artifactId>xoai-common</artifactId>
-	  <version>4.1.0-header-patch</version>
-	</dependency>
-	<dependency>
-	  <groupId>com.lyncode</groupId>
-	  <artifactId>xoai-data-provider</artifactId>
-	  <version>4.1.0-header-patch</version>
-	</dependency>
+  <!-- EXPERIMENTAL: -->
+  <!-- lyncode xoai OAI-PMH implementation: -->
+  <!-- unfortunately, their 4.10 version -->
+  <!-- is still buggy. As an experiment, I'm using -->
+  <!-- a patched version I built locally. -->
+  <!-- (pull requests pending - L.A. -->
+  <dependency>
+    <groupId>com.lyncode</groupId>
+    <artifactId>xoai-common</artifactId>
+    <version>4.1.0-header-patch</version>
+  </dependency>
+  <dependency>
+    <groupId>com.lyncode</groupId>
+    <artifactId>xoai-data-provider</artifactId>
+    <version>4.1.0-header-patch</version>
+  </dependency>
         <dependency>
-	  <groupId>com.lyncode</groupId>
-	  <artifactId>xoai-service-provider</artifactId>
-	  <version>4.1.0-header-patch</version>
-	</dependency>
+    <groupId>com.lyncode</groupId>
+    <artifactId>xoai-service-provider</artifactId>
+    <version>4.1.0-header-patch</version>
+  </dependency>
         <!-- Added for AutoService -->
         <dependency>
             <groupId>com.google.auto.service</groupId>
@@ -654,17 +654,6 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
-                    <compilerArgument>${compilerArgument}</compilerArgument>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.3</version>
                 <configuration>
@@ -681,7 +670,7 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.3</version>
                 <configuration>
-		    <attachClasses>true</attachClasses>
+        <attachClasses>true</attachClasses>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                     <archive>
                         <manifest>
@@ -811,5 +800,46 @@
         <id>all-unit-tests</id>
       </profile>
       <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
+      <profile>
+        <id>Java8</id>
+        <activation>
+          <jdk>1.8</jdk>
+        </activation>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <version>3.8.0</version>
+              <configuration>
+                <source>1.8</source>
+                <target>1.8</target>
+                <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
+                <compilerArgument>${compilerArgument}</compilerArgument>
+              </configuration>
+            </plugin>
+          </plugins>
+        </build>
+      </profile>
+      <profile>
+        <id>Java9Plus</id>
+        <activation>
+          <jdk>[1.9</jdk>
+        </activation>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <version>3.8.0</version>
+              <configuration>
+                <release>8</release>
+                <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
+                <compilerArgument>${compilerArgument}</compilerArgument>
+              </configuration>
+            </plugin>
+          </plugins>
+        </build>
+      </profile>
     </profiles>
 </project>
