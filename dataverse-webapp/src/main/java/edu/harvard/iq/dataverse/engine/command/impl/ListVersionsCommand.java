@@ -33,7 +33,7 @@ public class ListVersionsCommand extends AbstractCommand<List<DatasetVersion>> {
     }
 
     @Override
-    public List<DatasetVersion> execute(CommandContext ctxt) throws CommandException {
+    public List<DatasetVersion> execute(CommandContext ctxt)  {
         List<DatasetVersion> outputList = new LinkedList<>();
         for (DatasetVersion dsv : ds.getVersions()) {
             if (dsv.isReleased() || ctxt.permissions().request(getRequest()).on(ds).has(Permission.EditDataset)) {

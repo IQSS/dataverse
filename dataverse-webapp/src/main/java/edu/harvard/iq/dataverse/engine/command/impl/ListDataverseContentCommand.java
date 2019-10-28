@@ -32,7 +32,7 @@ public class ListDataverseContentCommand extends AbstractCommand<List<DvObject>>
     }
 
     @Override
-    public List<DvObject> execute(CommandContext ctxt) throws CommandException {
+    public List<DvObject> execute(CommandContext ctxt)  {
         if (getRequest().getUser().isSuperuser()) {
             return ctxt.dvObjects().findByOwnerId(dvToList.getId());
         } else {

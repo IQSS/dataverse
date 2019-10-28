@@ -39,10 +39,9 @@ public class UpdateDataverseThemeCommand extends AbstractCommand<Dataverse> {
      *
      * @param ctxt
      * @return
-     * @throws CommandException
      */
     @Override
-    public Dataverse execute(CommandContext ctxt) throws CommandException {
+    public Dataverse execute(CommandContext ctxt) {
         // Get current dataverse, so we can delete current logo file if necessary
         Dataverse currentDv = ctxt.dataverses().find(editedDv.getId());
         File logoFileDir = new File(logoPath.toFile(), editedDv.getId().toString());

@@ -144,7 +144,7 @@ public class CreatePrivateUrlCommandTest {
     }
 
     @Test
-    public void testCreatePrivateUrlSuccessfully() throws CommandException {
+    public void testCreatePrivateUrlSuccessfully()  {
         dataset = new Dataset();
         dataset.setId(createDatasetLong);
         PrivateUrl privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset));

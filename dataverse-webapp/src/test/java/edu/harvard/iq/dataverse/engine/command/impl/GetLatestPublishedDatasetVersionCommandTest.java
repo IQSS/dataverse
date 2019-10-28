@@ -24,7 +24,7 @@ public class GetLatestPublishedDatasetVersionCommandTest {
     TestDataverseEngine engine = new TestDataverseEngine(new TestCommandContext());
 
     @Test
-    public void testLatestPublishedNoDraft() throws CommandException {
+    public void testLatestPublishedNoDraft()  {
 
         Dataset ds = MocksFactory.makeDataset();
         List<DatasetVersion> versions = make10Versions(ds);
@@ -36,7 +36,7 @@ public class GetLatestPublishedDatasetVersionCommandTest {
     }
 
     @Test
-    public void testLatestPublishedWithDraft() throws CommandException {
+    public void testLatestPublishedWithDraft()  {
 
         Dataset ds = MocksFactory.makeDataset();
         List<DatasetVersion> versions = make10Versions(ds);
@@ -49,7 +49,7 @@ public class GetLatestPublishedDatasetVersionCommandTest {
     }
 
     @Test
-    public void testLatestNonePublished() throws CommandException {
+    public void testLatestNonePublished()  {
 
         Dataset ds = MocksFactory.makeDataset();
 

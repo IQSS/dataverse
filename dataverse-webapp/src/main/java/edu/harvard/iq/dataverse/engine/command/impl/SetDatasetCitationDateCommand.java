@@ -28,7 +28,7 @@ public class SetDatasetCitationDateCommand extends AbstractCommand<Dataset> {
     }
 
     @Override
-    public Dataset execute(CommandContext ctxt) throws CommandException {
+    public Dataset execute(CommandContext ctxt)  {
         if (dsfType == null || dsfType.getFieldType().equals(FieldType.DATE)) {
             dataset.setCitationDateDatasetFieldType(dsfType);
         } else {

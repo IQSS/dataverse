@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.group.ExplicitGroup;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
@@ -19,7 +18,7 @@ public class ListExplicitGroupsCommand extends AbstractCommand<List<ExplicitGrou
     }
 
     @Override
-    public List<ExplicitGroup> execute(CommandContext ctxt) throws CommandException {
+    public List<ExplicitGroup> execute(CommandContext ctxt) {
         return ctxt.explicitGroups().findByOwner(getAffectedDvObjects().get("").getId());
     }
 

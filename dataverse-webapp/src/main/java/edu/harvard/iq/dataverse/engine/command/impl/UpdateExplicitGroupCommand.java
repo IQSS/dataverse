@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.persistence.group.ExplicitGroup;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 
@@ -22,7 +21,7 @@ public class UpdateExplicitGroupCommand extends AbstractCommand<ExplicitGroup> {
     }
 
     @Override
-    public ExplicitGroup execute(CommandContext ctxt) throws CommandException {
+    public ExplicitGroup execute(CommandContext ctxt) {
         return ctxt.explicitGroups().persist(explicitGroup);
     }
 

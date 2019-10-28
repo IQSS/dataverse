@@ -27,7 +27,7 @@ public class DeletePrivateUrlCommand extends AbstractVoidCommand {
     }
 
     @Override
-    protected void executeImpl(CommandContext ctxt) throws CommandException {
+    protected void executeImpl(CommandContext ctxt)  {
         logger.fine("Executing DeletePrivateUrlCommand....");
         if (dataset == null) {
             /**

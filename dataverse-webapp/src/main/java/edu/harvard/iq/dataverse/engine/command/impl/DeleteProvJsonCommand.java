@@ -30,7 +30,7 @@ public class DeleteProvJsonCommand extends AbstractCommand<DataFile> {
     }
 
     @Override
-    public DataFile execute(CommandContext ctxt) throws CommandException {
+    public DataFile execute(CommandContext ctxt)  {
 
         final String provJsonExtension = "prov-json.json";
 

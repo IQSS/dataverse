@@ -31,7 +31,7 @@ public class GetProvJsonCommand extends AbstractCommand<JsonObject> {
     }
 
     @Override
-    public JsonObject execute(CommandContext ctxt) throws CommandException {
+    public JsonObject execute(CommandContext ctxt)  {
 
         final String provJsonExtension = "prov-json.json";
 

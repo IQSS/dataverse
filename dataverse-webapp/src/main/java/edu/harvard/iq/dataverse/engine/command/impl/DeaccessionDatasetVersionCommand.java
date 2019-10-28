@@ -33,7 +33,7 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
 
 
     @Override
-    public DatasetVersion execute(CommandContext ctxt) throws CommandException {
+    public DatasetVersion execute(CommandContext ctxt)  {
 
         theVersion.setVersionState(DatasetVersion.VersionState.DEACCESSIONED);
         DatasetVersion managed = ctxt.em().merge(theVersion);

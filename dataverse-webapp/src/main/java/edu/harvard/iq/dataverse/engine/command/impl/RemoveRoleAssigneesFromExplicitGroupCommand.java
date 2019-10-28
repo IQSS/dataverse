@@ -26,7 +26,7 @@ public class RemoveRoleAssigneesFromExplicitGroupCommand extends AbstractCommand
     }
 
     @Override
-    public ExplicitGroup execute(CommandContext ctxt) throws CommandException {
+    public ExplicitGroup execute(CommandContext ctxt)  {
         for (String rai : roleAssigneeIdentifiers) {
             explicitGroup.removeByRoleAssgineeIdentifier(rai);
         }

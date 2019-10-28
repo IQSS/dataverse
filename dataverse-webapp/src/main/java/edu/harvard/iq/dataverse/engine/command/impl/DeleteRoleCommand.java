@@ -25,7 +25,7 @@ public class DeleteRoleCommand extends AbstractVoidCommand {
     }
 
     @Override
-    protected void executeImpl(CommandContext ctxt) throws CommandException {
+    protected void executeImpl(CommandContext ctxt)  {
         for (RoleAssignment ra : ctxt.roles().roleAssignments(doomed.getId())) {
             ctxt.roles().revoke(ra);
         }

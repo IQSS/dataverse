@@ -22,7 +22,7 @@ public class GetLatestPublishedDatasetVersionCommand extends AbstractCommand<Dat
     }
 
     @Override
-    public DatasetVersion execute(CommandContext ctxt) throws CommandException {
+    public DatasetVersion execute(CommandContext ctxt)  {
         for (DatasetVersion dsv : ds.getVersions()) {
             if (dsv.isReleased()) {
                 return dsv;

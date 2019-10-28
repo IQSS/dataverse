@@ -25,7 +25,7 @@ public class RenameDataverseCommand extends AbstractCommand<Dataverse> {
     }
 
     @Override
-    public Dataverse execute(CommandContext ctxt) throws CommandException {
+    public Dataverse execute(CommandContext ctxt)  {
         if (newName.trim().isEmpty()) {
             throw new IllegalCommandException("Dataverse name cannot be empty", this);
         }

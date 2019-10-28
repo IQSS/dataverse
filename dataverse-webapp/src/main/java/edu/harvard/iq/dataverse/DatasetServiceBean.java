@@ -584,7 +584,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     @Asynchronous
-    public void callFinalizePublishCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request, boolean isPidPrePublished) throws CommandException {
+    public void callFinalizePublishCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request, boolean isPidPrePublished)  {
 
         // Since we are calling the next command asynchronously anyway - sleep here 
         // for a few seconds, just in case, to make sure the database update of 

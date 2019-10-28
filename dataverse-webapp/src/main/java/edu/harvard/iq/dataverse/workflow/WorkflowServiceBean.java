@@ -100,7 +100,7 @@ public class WorkflowServiceBean {
      * @throws CommandException If the dataset could not be locked.
      */
     @Asynchronous
-    public void start(Workflow wf, WorkflowContext ctxt) throws CommandException {
+    public void start(Workflow wf, WorkflowContext ctxt)  {
         ctxt = refresh(ctxt, retrieveRequestedSettings(wf.getRequiredSettings()), getCurrentApiToken(ctxt.getRequest().getAuthenticatedUser()));
         lockDataset(ctxt);
         forward(wf, ctxt);
@@ -282,7 +282,7 @@ public class WorkflowServiceBean {
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    void lockDataset(WorkflowContext ctxt) throws CommandException {
+    void lockDataset(WorkflowContext ctxt)  {
         final DatasetLock datasetLock = new DatasetLock(DatasetLock.Reason.Workflow, ctxt.getRequest().getAuthenticatedUser());
         /* Note that this method directly adds a lock to the database rather than adding it via
          * engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
@@ -297,7 +297,7 @@ public class WorkflowServiceBean {
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    void unlockDataset(WorkflowContext ctxt) throws CommandException {
+    void unlockDataset(WorkflowContext ctxt)  {
         /* Since the lockDataset command above directly persists a lock to the database,
          * the ctxt.getDataset() is not updated and its list of locks can't be used. Using the named query below will find the workflow
          * lock and remove it (actually all workflow locks for this Dataset but only one workflow should be active).

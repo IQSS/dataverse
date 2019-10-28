@@ -34,7 +34,7 @@ public class ExplicitGroupProviderTest {
 
 
     @Test
-    public void recursiveLogicalContainment() throws GroupException {
+    public void recursiveLogicalContainment()  {
         Dataverse dvParent = makeDataverse();
         ExplicitGroup parentGroup = roleAssigneeSvc.add(makeExplicitGroup("parent"));
         ExplicitGroup childGroup = roleAssigneeSvc.add(makeExplicitGroup("child"));

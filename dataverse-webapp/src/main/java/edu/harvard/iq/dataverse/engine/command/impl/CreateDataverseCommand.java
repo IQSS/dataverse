@@ -55,7 +55,7 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
     }
 
     @Override
-    public Dataverse execute(CommandContext ctxt) throws CommandException {
+    public Dataverse execute(CommandContext ctxt)  {
 
         Dataverse owner = created.getOwner();
         if (owner == null) {

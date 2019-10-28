@@ -28,7 +28,7 @@ public class CreateSavedSearchCommand extends AbstractCommand<SavedSearch> {
     }
 
     @Override
-    public SavedSearch execute(CommandContext ctxt) throws CommandException {
+    public SavedSearch execute(CommandContext ctxt)  {
         String query = savedSearchToCreate.getQuery();
         if (query == null) {
             /**

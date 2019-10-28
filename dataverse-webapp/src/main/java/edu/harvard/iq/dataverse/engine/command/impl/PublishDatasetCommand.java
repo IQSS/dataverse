@@ -53,7 +53,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
     }
 
     @Override
-    public PublishDatasetResult execute(CommandContext ctxt) throws CommandException {
+    public PublishDatasetResult execute(CommandContext ctxt)  {
 
         verifyCommandArguments();
 

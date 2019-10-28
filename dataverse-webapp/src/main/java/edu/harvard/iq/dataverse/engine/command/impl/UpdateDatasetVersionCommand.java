@@ -76,7 +76,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
     }
 
     @Override
-    public Dataset execute(CommandContext ctxt) throws CommandException {
+    public Dataset execute(CommandContext ctxt)  {
         if (!(getUser() instanceof AuthenticatedUser)) {
             throw new IllegalCommandException("Only authenticated users can update datasets", this);
         }

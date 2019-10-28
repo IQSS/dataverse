@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -37,7 +36,7 @@ public class LinkDataverseCommand extends AbstractCommand<DataverseLinkingDatave
     }
 
     @Override
-    public DataverseLinkingDataverse execute(CommandContext ctxt) throws CommandException {
+    public DataverseLinkingDataverse execute(CommandContext ctxt) {
         if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
             throw new PermissionException("Link Dataverse can only be called by superusers.",
                                           this, Collections.singleton(Permission.PublishDataverse), linkingDataverse);

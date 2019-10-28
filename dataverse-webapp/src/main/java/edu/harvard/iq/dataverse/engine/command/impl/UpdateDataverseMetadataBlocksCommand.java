@@ -39,7 +39,7 @@ public abstract class UpdateDataverseMetadataBlocksCommand extends AbstractVoidC
         }
 
         @Override
-        protected void executeImpl(CommandContext ctxt) throws CommandException {
+        protected void executeImpl(CommandContext ctxt) {
             updatedDv.setMetadataBlockRoot(isRoot);
             ctxt.em().merge(updatedDv);
         }
@@ -56,7 +56,7 @@ public abstract class UpdateDataverseMetadataBlocksCommand extends AbstractVoidC
         }
 
         @Override
-        protected void executeImpl(CommandContext ctxt) throws CommandException {
+        protected void executeImpl(CommandContext ctxt)  {
             ctxt.engine().submit(new UpdateDataverseMetadataBlocksCommand.SetRoot(getRequest(), updatedDv, true));
 
             // We filter the list through a set, so that all blocks are distinct.

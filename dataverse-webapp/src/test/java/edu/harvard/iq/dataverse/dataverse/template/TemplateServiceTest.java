@@ -49,7 +49,7 @@ public class TemplateServiceTest {
     private TemplateDao templateDao;
 
     @BeforeEach
-    public void setUp() throws CommandException {
+    public void setUp()  {
 
         templateService.setClock(Clock.fixed(Instant.ofEpochSecond(1576156500), ZoneId.systemDefault()));
 
@@ -60,7 +60,7 @@ public class TemplateServiceTest {
     // -------------------- TESTS --------------------
 
     @Test
-    public void shouldSuccessfullyDeleteTemplate() throws CommandException {
+    public void shouldSuccessfullyDeleteTemplate()  {
         //given
         Dataverse dataverse = new Dataverse();
         dataverse.setTemplates(new ArrayList<>());
@@ -82,7 +82,7 @@ public class TemplateServiceTest {
     }
 
     @Test
-    public void deleteTemplateShouldFail() throws CommandException {
+    public void deleteTemplateShouldFail()  {
         //given
         Dataverse dataverse = new Dataverse();
         Template template = new Template();
@@ -99,7 +99,7 @@ public class TemplateServiceTest {
     }
 
     @Test
-    public void shouldSuccessfullyCloneTemplate() throws CommandException {
+    public void shouldSuccessfullyCloneTemplate()  {
         //given
         Dataverse dataverse = new Dataverse();
         Template template = new Template();
@@ -127,7 +127,7 @@ public class TemplateServiceTest {
     }
 
     @Test
-    public void templateCloningShouldFail() throws CommandException {
+    public void templateCloningShouldFail()  {
         //given
         Dataverse dataverse = new Dataverse();
         Template template = new Template();
@@ -175,7 +175,7 @@ public class TemplateServiceTest {
     }
 
     @Test
-    public void updateDefaultTemplates_ForInheritedValue() throws CommandException {
+    public void updateDefaultTemplates_ForInheritedValue()  {
         //given
         Dataverse dataverse = new Dataverse();
         Dataverse dataverseOwner = new Dataverse();
@@ -195,7 +195,7 @@ public class TemplateServiceTest {
     }
 
     @Test
-    public void updateDefaultTemplates_ForNonInheritedValue() throws CommandException {
+    public void updateDefaultTemplates_ForNonInheritedValue()  {
         //given
         Dataverse dataverse = new Dataverse();
         Dataverse dataverseOwner = new Dataverse();

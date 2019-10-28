@@ -44,7 +44,7 @@ public class CreateRoleCommandTest {
     }
 
     @Test(expected = IllegalCommandException.class)
-    public void testNonSuperUsersCantAddRoles() throws CommandException {
+    public void testNonSuperUsersCantAddRoles()  {
         DataverseRole dvr = new DataverseRole();
         dvr.setAlias("roleTest");
         dvr.setName("Tester Role");
@@ -62,7 +62,7 @@ public class CreateRoleCommandTest {
     }
 
     @Test
-    public void testSuperUsersAddRoles() throws CommandException {
+    public void testSuperUsersAddRoles()  {
         DataverseRole dvr = new DataverseRole();
         dvr.setAlias("roleTest");
         dvr.setName("Tester Role");
@@ -81,7 +81,7 @@ public class CreateRoleCommandTest {
     }
 
     @Test(expected = IllegalCommandException.class)
-    public void testGuestUsersCantAddRoles() throws CommandException {
+    public void testGuestUsersCantAddRoles()  {
         DataverseRole dvr = new DataverseRole();
         dvr.setAlias("roleTest");
         dvr.setName("Tester Role");

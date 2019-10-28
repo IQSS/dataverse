@@ -30,7 +30,7 @@ public class DeleteGuestbookCommand extends AbstractCommand<Dataverse> {
     }
 
     @Override
-    public Dataverse execute(CommandContext ctxt) throws CommandException {
+    public Dataverse execute(CommandContext ctxt)  {
         Dataverse merged = ctxt.em().merge(editedDv);
         Guestbook doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);

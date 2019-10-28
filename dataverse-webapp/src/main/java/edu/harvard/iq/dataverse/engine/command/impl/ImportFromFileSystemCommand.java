@@ -47,7 +47,7 @@ public class ImportFromFileSystemCommand extends AbstractCommand<JsonObject> {
     }
 
     @Override
-    public JsonObject execute(CommandContext ctxt) throws CommandException {
+    public JsonObject execute(CommandContext ctxt)  {
         JsonObjectBuilder bld = jsonObjectBuilder();
         /**
          * batch import as-individual-datafiles is disabled in this iteration;

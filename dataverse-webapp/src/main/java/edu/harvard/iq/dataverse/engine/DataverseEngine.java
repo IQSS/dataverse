@@ -17,7 +17,6 @@ public interface DataverseEngine {
      * @param <R>      The command result's type.
      * @param aCommand The command to execute
      * @return The result of the command execution.
-     * @throws CommandException
      */
-    <R> R submit(Command<R> aCommand) throws CommandException;
+    <R> R submit(Command<R> aCommand);
 }

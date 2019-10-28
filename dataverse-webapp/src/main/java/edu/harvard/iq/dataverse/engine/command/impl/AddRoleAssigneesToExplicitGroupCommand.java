@@ -34,7 +34,7 @@ public class AddRoleAssigneesToExplicitGroupCommand extends AbstractCommand<Expl
     }
 
     @Override
-    public ExplicitGroup execute(CommandContext ctxt) throws CommandException {
+    public ExplicitGroup execute(CommandContext ctxt)  {
 
         List<String> nonexistentRAs = new LinkedList<>();
         for (String rai : roleAssigneeIdentifiers) {

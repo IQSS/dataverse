@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
@@ -29,7 +28,7 @@ public class PersistProvFreeFormCommand extends AbstractCommand<DataFile> {
     }
 
     @Override
-    public DataFile execute(CommandContext ctxt) throws CommandException {
+    public DataFile execute(CommandContext ctxt) {
         if (dataFile.getOwner() == null) {
             // this is a new file through upload, set freeform
             dataFile.getFileMetadata().setProvFreeForm(userInput);

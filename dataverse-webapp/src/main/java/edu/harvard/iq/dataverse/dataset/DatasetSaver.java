@@ -7,7 +7,6 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.NotAuthenticatedException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -24,7 +23,6 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,7 +63,7 @@ public class DatasetSaver {
 
     // -------------------- LOGIC --------------------
 
-    public Dataset createDataset(Dataset dataset, Template usedTemplate) throws CommandException {
+    public Dataset createDataset(Dataset dataset, Template usedTemplate) {
 
         AuthenticatedUser user = retrieveAuthenticatedUser();
         
@@ -79,7 +77,7 @@ public class DatasetSaver {
         return dataset;
     }
     
-    public AddFilesResult addFilesToDataset(long datasetId, List<DataFile> newFiles) throws CommandException {
+    public AddFilesResult addFilesToDataset(long datasetId, List<DataFile> newFiles) {
         
         Dataset dataset = datasetService.find(datasetId);
         AuthenticatedUser user = retrieveAuthenticatedUser();

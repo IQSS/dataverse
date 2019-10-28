@@ -42,7 +42,7 @@ public class UpdatePermissionRootCommandTest {
     }
 
     @Test
-    public void testNoChange() throws CommandException {
+    public void testNoChange()  {
         Dataverse dv = MocksFactory.makeDataverse();
         DataverseEngine ngn = new TestDataverseEngine(testCommandContext);
         dv.setPermissionRoot(false);
@@ -63,7 +63,7 @@ public class UpdatePermissionRootCommandTest {
     }
 
     @Test
-    public void testChange() throws CommandException {
+    public void testChange()  {
         Dataverse dv = MocksFactory.makeDataverse();
         DataverseEngine ngn = new TestDataverseEngine(testCommandContext);
         dv.setPermissionRoot(false);

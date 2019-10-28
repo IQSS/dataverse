@@ -29,7 +29,7 @@ public class UpdateDataverseGuestbookRootCommand extends AbstractCommand<Dataver
     }
 
     @Override
-    public Dataverse execute(CommandContext ctxt) throws CommandException {
+    public Dataverse execute(CommandContext ctxt)  {
         if (dv.isGuestbookRoot() != newValue) {
             dv.setGuestbookRoot(newValue);
             dv = ctxt.dataverses().save(dv);

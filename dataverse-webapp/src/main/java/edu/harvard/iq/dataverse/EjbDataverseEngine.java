@@ -187,11 +187,11 @@ public class EjbDataverseEngine {
     private CommandContext ctxt;
 
     @TransactionAttribute(REQUIRES_NEW)
-    public <R> R submitInNewTransaction(Command<R> aCommand) throws CommandException {
+    public <R> R submitInNewTransaction(Command<R> aCommand)  {
         return submit(aCommand);
     }
 
-    public <R> R submit(Command<R> aCommand) throws CommandException {
+    public <R> R submit(Command<R> aCommand)  {
 
         final ActionLogRecord logRec = new ActionLogRecord(ActionLogRecord.ActionType.Command, aCommand.getClass().getCanonicalName());
 
@@ -425,7 +425,7 @@ public class EjbDataverseEngine {
                 public DataverseEngine engine() {
                     return new DataverseEngine() {
                         @Override
-                        public <R> R submit(Command<R> aCommand) throws CommandException {
+                        public <R> R submit(Command<R> aCommand)  {
                             return EjbDataverseEngine.this.submit(aCommand);
                         }
                     };

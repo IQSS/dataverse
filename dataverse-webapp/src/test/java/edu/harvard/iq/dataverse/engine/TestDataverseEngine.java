@@ -25,7 +25,7 @@ public class TestDataverseEngine implements DataverseEngine {
     }
 
     @Override
-    public <R> R submit(Command<R> aCommand) throws CommandException {
+    public <R> R submit(Command<R> aCommand)  {
         Map<String, DvObject> affectedDvs = aCommand.getAffectedDvObjects();
         final Map<String, Set<Permission>> requiredPermissions = aCommand.getRequiredPermissions();
         aCommand.getRequest();

@@ -54,7 +54,7 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
     }
 
     @Override
-    public void executeImpl(CommandContext ctxt) throws CommandException {
+    public void executeImpl(CommandContext ctxt)  {
         boolean removeGuestbook = false, removeLinkDs = false;
         if (!(getUser() instanceof AuthenticatedUser)) {
             throw new PermissionException("Move Dataset can only be called by authenticated users.", this, Collections.singleton(Permission.DeleteDatasetDraft), moved);

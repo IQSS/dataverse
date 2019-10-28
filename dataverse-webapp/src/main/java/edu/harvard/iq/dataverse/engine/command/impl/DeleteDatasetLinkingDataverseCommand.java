@@ -36,7 +36,7 @@ public class DeleteDatasetLinkingDataverseCommand extends AbstractCommand<Datase
     }
 
     @Override
-    public Dataset execute(CommandContext ctxt) throws CommandException {
+    public Dataset execute(CommandContext ctxt)  {
         if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
             throw new PermissionException("Delete dataset linking dataverse can only be called by superusers.",
                                           this, Collections.singleton(Permission.EditDataset), editedDs);

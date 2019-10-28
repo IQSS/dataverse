@@ -34,7 +34,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
     }
 
     @Override
-    protected void executeImpl(CommandContext ctxt) throws CommandException {
+    protected void executeImpl(CommandContext ctxt)  {
         ctxt.permissions().checkEditDatasetLock(doomed, getRequest(), this);
         doomed = ctxt.em().find(Dataset.class, doomed.getId());
         // if you are deleting a dataset that only has 1 version, we are actually destroying the dataset

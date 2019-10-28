@@ -32,7 +32,7 @@ public class RevokeRoleCommand extends AbstractVoidCommand {
     }
 
     @Override
-    protected void executeImpl(CommandContext ctxt) throws CommandException {
+    protected void executeImpl(CommandContext ctxt)  {
         ctxt.roles().revoke(toBeRevoked);
     }
 

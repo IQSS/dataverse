@@ -206,9 +206,11 @@ public class DatasetFilesTab implements Serializable {
                     rsyncScriptFilename = rsyncScriptFilename.replace("/", "_");
                 }
             } catch (RuntimeException ex) {
-                logger.warning("Problem getting rsync script: " + ex.getLocalizedMessage());
-            } catch (CommandException cex) {
-                logger.warning("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
+                if(ex instanceof CommandException) {
+                    logger.warning("Problem getting rsync script (Command Exception): " + ex.getLocalizedMessage());
+                } else {
+                    logger.warning("Problem getting rsync script: " + ex.getLocalizedMessage());
+                }
             }
         }
 

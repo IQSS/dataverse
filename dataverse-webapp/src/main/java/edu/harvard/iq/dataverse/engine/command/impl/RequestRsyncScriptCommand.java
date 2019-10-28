@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -45,7 +44,7 @@ public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResp
     }
 
     @Override
-    public ScriptRequestResponse execute(CommandContext ctxt) throws CommandException {
+    public ScriptRequestResponse execute(CommandContext ctxt) {
         if (request == null) {
             throw new IllegalCommandException("DataverseRequest cannot be null.", this);
         }

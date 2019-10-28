@@ -35,7 +35,7 @@ public class RevokeAllRolesCommand extends AbstractVoidCommand {
     }
 
     @Override
-    protected void executeImpl(CommandContext ctxt) throws CommandException {
+    protected void executeImpl(CommandContext ctxt)  {
         if (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser()) {
             throw new PermissionException("Revoke Superuser status command can only be called by superusers.",
                                           this, null, null);

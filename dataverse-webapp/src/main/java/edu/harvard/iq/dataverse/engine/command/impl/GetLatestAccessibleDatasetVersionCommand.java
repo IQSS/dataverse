@@ -31,7 +31,7 @@ public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<Da
     }
 
     @Override
-    public DatasetVersion execute(CommandContext ctxt) throws CommandException {
+    public DatasetVersion execute(CommandContext ctxt)  {
 
         if (ds.getLatestVersion().isDraft() && ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset)) {
             return ctxt.engine().submit(new GetDraftDatasetVersionCommand(getRequest(), ds));

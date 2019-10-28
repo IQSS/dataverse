@@ -31,7 +31,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
     }
 
     @Override
-    public DatasetVersion execute(CommandContext ctxt) throws CommandException {
+    public DatasetVersion execute(CommandContext ctxt)  {
 
         List<String> settingNames = ctxt.settings().getValueForKeyAsList(SettingsServiceBean.Key.ArchiverSettings);
         for (String setting : settingNames) {

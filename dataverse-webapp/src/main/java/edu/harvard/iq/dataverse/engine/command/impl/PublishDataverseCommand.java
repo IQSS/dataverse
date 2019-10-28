@@ -29,7 +29,7 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
     }
 
     @Override
-    public Dataverse execute(CommandContext ctxt) throws CommandException {
+    public Dataverse execute(CommandContext ctxt)  {
         if (dataverse.isReleased()) {
             throw new IllegalCommandException("Dataverse " + dataverse.getAlias() + " has already been published.", this);
         }

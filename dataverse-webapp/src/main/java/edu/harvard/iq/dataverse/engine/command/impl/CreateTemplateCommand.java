@@ -24,7 +24,7 @@ public class CreateTemplateCommand extends AbstractCommand<Template> {
     }
 
     @Override
-    public Template execute(CommandContext ctxt) throws CommandException {
+    public Template execute(CommandContext ctxt)  {
 
         return ctxt.templates().merge(created);
     }
