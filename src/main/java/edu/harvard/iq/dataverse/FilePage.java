@@ -38,6 +38,8 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -214,8 +216,10 @@ public class FilePage implements java.io.Serializable {
             }
             configureTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.CONFIGURE, contentType);
             exploreTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.EXPLORE, contentType);
-            toolsWithPreviews  = externalToolService.findFileToolsByTypeContentTypeAndAvailablePreview(ExternalTool.Type.EXPLORE, contentType);
-            
+            toolsWithPreviews  = addMapLayerAndSortExternalTools();
+            if(!toolsWithPreviews.isEmpty()){
+                setSelectedTool(toolsWithPreviews.get(0));                
+            }
         } else {
 
             return permissionsWrapper.notFound();
@@ -232,6 +236,32 @@ public class FilePage implements java.io.Serializable {
     public FileMetadata getFileMetadata() {
         return fileMetadata;
     }
+    
+    private List<ExternalTool> addMapLayerAndSortExternalTools(){
+        List<ExternalTool> retList = externalToolService.findFileToolsByTypeContentTypeAndAvailablePreview(ExternalTool.Type.EXPLORE, file.getContentType());
+        if (file != null && worldMapPermissionHelper.getMapLayerMetadata(file) != null && worldMapPermissionHelper.getMapLayerMetadata(file).getEmbedMapLink() != null) {
+            ExternalTool wpTool = new ExternalTool();
+            wpTool.setDisplayName("World Map"); 
+            wpTool.setToolParameters("{}");
+            wpTool.setToolUrl(worldMapPermissionHelper.getMapLayerMetadata(file).getEmbedMapLink());
+            retList.add(wpTool);
+        }
+        Collections.sort(retList, CompareExternalToolName);
+        
+        if(retList.size() > 1){
+            int order = 0;
+            for (ExternalTool t: retList){
+                t.setDisplayOrder(order);
+                order++;
+            }
+        }
+        
+        return retList;
+    }
+    
+    /*
+    worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink()
+    */
     
 
     public boolean isDownloadPopupRequired() {  
@@ -396,6 +426,7 @@ public class FilePage implements java.io.Serializable {
     }
 
     public void setActiveTabIndex(int activeTabIndex) {
+        System.out.print("setActiveTabIndex: " + activeTabIndex);
         this.activeTabIndex = activeTabIndex;
     }
     
@@ -899,14 +930,29 @@ public class FilePage implements java.io.Serializable {
         return toolsWithPreviews;
     }
     
+    private ExternalTool selectedTool;
+
+    public ExternalTool getSelectedTool() {
+        return selectedTool;
+    }
+
+    public void setSelectedTool(ExternalTool selectedTool) {
+        System.out.print(selectedTool.getDisplayName());
+        this.selectedTool = selectedTool;
+    }
+    
     public String preview(ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
         if (user instanceof AuthenticatedUser) {
             apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
         }
+        if(externalTool == null){
+            return "";
+        }
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, file, apiToken, file.getFileMetadata(), session.getLocaleCode());
         String toolUrl = externalToolHandler.getToolUrlForPreviewMode();
+        System.out.print(toolUrl);
         return toolUrl;
     }
     
@@ -915,5 +961,12 @@ public class FilePage implements java.io.Serializable {
     public void showProvError() {
         JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.metadataTab.provenance.error"));
     }
+    
+    private static final Comparator<ExternalTool> CompareExternalToolName = new Comparator<ExternalTool>() {
+        @Override
+        public int compare(ExternalTool o1, ExternalTool o2) {
+            return o1.getDisplayName().toUpperCase().compareTo(o2.getDisplayName().toUpperCase());
+        }
+    };
 
 }

@@ -394,69 +394,43 @@
                                 </div>
                                 <div id="preview-tool-block" jsf:rendered="#{!empty worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink()}">
 
-                                    <!-- TODO: CONFIG SETTING/FILE TYPE RENDER LOGIC -->
-                                    <!-- TODO: MAINTAIN WORLDMAP FUNCTIONALITY -->
 
-                                    <!-- TODO: NOFRAMES -->
-                                    <ui:fragment rendered="#{!worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(FilePage.fileMetadata)}">
-
-
-                                        <p:graphicImage styleClass="img-responsive" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" 
-                                                        alt="#{bundle['file.metadata.preview.alt']} #{FilePage.fileMetadata.label}" rendered="#{FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/> 
-                                        <div class="file-icon-restricted-block" >                  
-                                            <span class="glyphicon glyphicon-lock text-danger"/>
-                                        </div>
-
-                                    </ui:fragment>
-
-                                    <ui:fragment rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(FilePage.fileMetadata)}">
-
-                                        <div class="margin-bottom">
-                                            <!-- TODO: DETERMINE IF NECESSARY, REMOVED WORLDMAP LOGO TO BE CONSISTENT WITH OTHER EXTERNAL TOOL
-                                            <a href="# {worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getLayerLink()}" target="_blank" rel="noopener" title="# {bundle['file.mapData.worldMap']}"><img src="https://worldmap.harvard.edu/static/theme/img/WorldMap-Logo_26px.png" alt="# {bundle['file.mapData.worldMap']}"/></a>
-                                            -->
-                                            <a href="#{worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getLayerLink()}" class="btn btn-default" target="_blank" rel="noopener" title="#{bundle['file.metaData.viewOnWorldMap']}"><span class="glyphicon glyphicon-equalizer"/> #{bundle['file.metaData.viewOnWorldMap']}</a>
-                                        </div>
-
-                                        <div class="preview-frame-block">
-
-                                            <!-- TODO: ROLE, TITLE ATTRIBUTES -->
-                                            <!-- TODO: RESPONSIVE HEIGHT, WIDTH -->
-                                            <!-- TODO: MIXED CONTENT -->
-                                            <!-- TODO: LAZY LOAD, DEFER SCRIPTS -->
-
-                                            <iframe id="id_iframe_map" role="presentation" title="External File Preview Tool" height="500" width="100%" src="#{worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink()}"></iframe>
-                                        </div>
-
-                                    </ui:fragment>
                                     
 
                                 </div>
                                 <!-- Add external tools as an inner tab with buttons to full tool-->
                                 <div>
-                                    <ui:fragment rendered="#{FilePage.toolsWithPreviews.size()> 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">  
-                                        <h:outputText value="#{bundle['file.previewTab.externalTools.header']}"/>                                    
-                                        <p:tabView value="#{FilePage.toolsWithPreviews}" var="tool">
-                                            <p:tab title="#{tool.displayName}" >
-                                                <h:commandButton rendered="#{!downloadPopupRequired}" value="#{tool.displayName}" 
-                                                                 type="submit"
-                                                                 styleClass="#{(FilePage.fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
-                                                                 disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                                                                 action="#{FilePage.fileDownloadService.explore(FilePage.guestbookResponse, FilePage.fileMetadata, tool )}">
-                                                </h:commandButton>
-                                                <p:commandButton rendered="#{downloadPopupRequired}" value="#{tool.displayName}"
-                                                                 action="#{FilePage.guestbookResponseService.modifyDatafileAndFormat(FilePage.guestbookResponse, FilePage.fileMetadata, 'externalTool', tool)}"
-                                                                 disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                                                                 type="submit"
-                                                                 process="@this"
-                                                                 update="@widgetVar(downloadPopup)"
-                                                                 oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                                                </p:commandButton>
-                                                <iframe role="presentation" title="External File Preview Tool" height="500" width="100%" src="#{FilePage.preview(tool)}"></iframe>                                          
-                                            </p:tab>
-                                        </p:tabView>
-                                    </ui:fragment>
+                                    <!-- Preview Button Group -->
+
+                                    <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 1 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                        <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
+                                            <span class="glyphicon glyphicon-search"/> #{bundle['file.previewTab.button.label']} <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu pull-right text-left" role="menu">
+                                            <ui:repeat value="#{FilePage.toolsWithPreviews}" var="tool" >
+                                                
+                                            <li>
+                                                <h:commandLink  action="#{FilePage.setSelectedTool(tool)}"  >
+                                                    <h:outputText  value="#{tool.displayName}" />
+                                                </h:commandLink>
+                                            </li>
+                                            
+                                            </ui:repeat>
+
+
+
+                                        </ul>
+                                    </div>
+                                    <!-- END: Preview Button Group -->
                                 </div>
+                                
+                                <ui:fragment rendered="#{FilePage.toolsWithPreviews.size()> 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}" id="previewPresentation">
+
+                                    <iframe role="presentation" title="External File Preview Tool" height="500" width="100%" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe> 
+
+                                </ui:fragment>
+    
+
                             </p:tab>
                             
                             
