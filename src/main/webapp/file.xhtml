@@ -368,19 +368,18 @@
                             </p:tab>
 
 
-                            <p:tab id="previewTab" title="Preview" rendered="#{fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) or (empty worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink() and FilePage.toolsWithPreviews.size() == 0) }">
-
+                            <p:tab id="previewTab" title="Preview" rendered="#{fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) or (FilePage.toolsWithPreviews.size() > 0) }">
                                 <!-- Preview -->
-                                <div id="file-preview-icon-block" jsf:rendered="#{empty worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink() and FilePage.toolsWithPreviews.size() == 0 }">
+                                <div id="file-preview-icon-block" jsf:rendered="#{(FilePage.toolsWithPreviews.size() == 0) or !FilePage.publiclyDownloadable }">
                                     <div id="border-block" style="border:0;">
                                         <div id="preview-square">
                                             <ui:fragment rendered="#{!FilePage.isThumbnailAvailable(FilePage.fileMetadata)}">
                                                 <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(FilePage.fileMetadata.dataFile)} text-muted"/>
                                                 <!-- Restricted File Icon -->
-                                                <div class="file-icon-restricted-block" jsf:rendered="#{FilePage.fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(fileMetadata)}">                  
+                                                <div class="file-icon-restricted-block" jsf:rendered="#{FilePage.fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">                  
                                                     <span class="glyphicon glyphicon-lock text-danger"/>
                                                 </div>
-                                                <div class="file-icon-restricted-block" jsf:rendered="#{FilePage.fileMetadata.restricted and fileDownloadHelper.canDownloadFile(fileMetadata) }">
+                                                <div class="file-icon-restricted-block" jsf:rendered="#{FilePage.fileMetadata.restricted and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }">
                                                     <span class="icon-unlock text-success"/>
                                                 </div>
                                             </ui:fragment>
@@ -391,20 +390,18 @@
                                             <!-- #file-preview-icon-block > #border-block > #preview-square PADDING-BOTTOM: 100% -->
                                         </div>
                                     </div>
-                                </div>
-                                <div id="preview-tool-block" jsf:rendered="#{!empty worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink()}">
-
-
-                                    
-
+                                    <div jsf:rendered="#{(FilePage.toolsWithPreviews.size() > 0) and !FilePage.publiclyDownloadable }"> 
+                                        <h:outputText  value="#{bundle['file.previewTab.previews.not.available']}" />
+                                    </div>
                                 </div>
                                 <!-- Add external tools as an inner tab with buttons to full tool-->
+                                <div jsf:rendered="#{FilePage.publiclyDownloadable}">
                                 <div>
                                     <!-- Preview Button Group -->
 
                                     <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 1 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                         <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
-                                            <span class="glyphicon glyphicon-search"/> #{bundle['file.previewTab.button.label']} <span class="caret"></span>
+                                            <span class="glyphicon glyphicon-eye-open"/> #{bundle['file.previewTab.button.label']} <span class="caret"></span>
                                         </button>
                                         <ul class="dropdown-menu pull-right text-left" role="menu">
                                             <ui:repeat value="#{FilePage.toolsWithPreviews}" var="tool" >
@@ -423,13 +420,28 @@
                                     </div>
                                     <!-- END: Preview Button Group -->
                                 </div>
-                                
-                                <ui:fragment rendered="#{FilePage.toolsWithPreviews.size()> 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}" id="previewPresentation">
-                                    <h:outputText  value="#{FilePage.selectedTool.displayName}" />
-                                    <iframe role="presentation" title="External File Preview Tool" height="500" width="100%" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe> 
-                                </ui:fragment>
-    
+                                <div>
+                                    <ui:fragment rendered="#{FilePage.toolsWithPreviews.size()> 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}" id="previewPresentation">
 
+                                        <h:commandButton rendered="#{!downloadPopupRequired}" value="Open #{FilePage.selectedTool.displayName}" 
+                                                         type="submit"
+                                                         styleClass="#{(FilePage.fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
+                                                         disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                                         action="#{FilePage.fileDownloadService.explore(FilePage.guestbookResponse, FilePage.fileMetadata, FilePage.selectedTool )}">
+                                        </h:commandButton>
+                                        <p:commandButton rendered="#{downloadPopupRequired}" value="Open #{FilePage.selectedTool.displayName}"
+                                                         action="#{FilePage.guestbookResponseService.modifyDatafileAndFormat(FilePage.guestbookResponse, FilePage.fileMetadata, 'externalTool', FilePage.selectedTool)}"
+                                                         disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                                         type="submit"
+                                                         process="@this"
+                                                         update="@widgetVar(downloadPopup)"
+                                                         oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                                        </p:commandButton>
+
+                                        <iframe role="presentation" title="External File Preview Tool" height="500" width="100%" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe> 
+                                    </ui:fragment>
+                                </div>
+                                </div>
                             </p:tab>
                             
                             
