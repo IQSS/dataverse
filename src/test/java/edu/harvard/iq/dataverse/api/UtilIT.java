@@ -655,6 +655,12 @@ public class UtilIT {
                 //.header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/access/datafile/" + fileId + "?key=" + apiToken);
     }
+    
+    static Response downloadTabularFile(Integer fileId) {
+        return given()
+                // this downloads a tabular file, explicitly requesting the format by name
+                .get("/api/access/datafile/" + fileId + "?format=tab");
+    }
 
     static Response downloadFileOriginal(Integer fileId) {
         return given()
