@@ -368,58 +368,30 @@
                             </p:tab>
 
 
-                            <p:tab id="previewTab" title="Preview" rendered="#{fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) or (FilePage.toolsWithPreviews.size() > 0) }">
-                                <!-- Preview -->
-                                <div id="file-preview-icon-block" jsf:rendered="#{(FilePage.toolsWithPreviews.size() == 0) or !FilePage.publiclyDownloadable }">
-                                    <div id="border-block" style="border:0;">
-                                        <div id="preview-square">
-                                            <ui:fragment rendered="#{!FilePage.isThumbnailAvailable(FilePage.fileMetadata)}">
-                                                <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(FilePage.fileMetadata.dataFile)} text-muted"/>
-                                                <!-- Restricted File Icon -->
-                                                <div class="file-icon-restricted-block" jsf:rendered="#{FilePage.fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">                  
-                                                    <span class="glyphicon glyphicon-lock text-danger"/>
-                                                </div>
-                                                <div class="file-icon-restricted-block" jsf:rendered="#{FilePage.fileMetadata.restricted and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }">
-                                                    <span class="icon-unlock text-success"/>
-                                                </div>
-                                            </ui:fragment>
-
-                                            <p:graphicImage styleClass="img-responsive" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" 
-                                                            alt="#{bundle['file.metadata.preview.alt']} #{FilePage.fileMetadata.label}" rendered="#{FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
-
-                                            <!-- #file-preview-icon-block > #border-block > #preview-square PADDING-BOTTOM: 100% -->
-                                        </div>
-                                    </div>
-                                    <h:outputText  value="#{bundle['file.previewTab.previews.not.available']}" />
-                                </div>
+                            <p:tab id="previewTab" title="Preview" rendered="#{FilePage.publiclyDownloadable and (FilePage.toolsWithPreviews.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                 <!-- Add external tools as an inner tab with buttons to full tool-->
-                                <div jsf:rendered="#{FilePage.publiclyDownloadable}">
-                                <div>
                                     <!-- Preview Button Group -->
+                                    <div>
+                                        <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 1 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                            <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
+                                                <span class="glyphicon glyphicon-eye-open"/> #{bundle['file.previewTab.button.label']} <span class="caret"></span>
+                                            </button>
+                                            <ul class="dropdown-menu pull-right text-left" role="menu">
+                                                <ui:repeat value="#{FilePage.toolsWithPreviews}" var="tool" >
 
-                                    <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 1 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
-                                        <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
-                                            <span class="glyphicon glyphicon-eye-open"/> #{bundle['file.previewTab.button.label']} <span class="caret"></span>
-                                        </button>
-                                        <ul class="dropdown-menu pull-right text-left" role="menu">
-                                            <ui:repeat value="#{FilePage.toolsWithPreviews}" var="tool" >
-                                                
-                                            <li>
-                                                <h:commandLink  action="#{FilePage.setSelectedTool(tool)}"  >
-                                                    <h:outputText  value="#{tool.displayName}" />
-                                                </h:commandLink>
-                                            </li>
-                                            
-                                            </ui:repeat>
+                                                    <li>
+                                                        <h:commandLink  action="#{FilePage.setSelectedTool(tool)}"  >
+                                                            <h:outputText  value="#{tool.displayName}" />
+                                                        </h:commandLink>
+                                                    </li>
 
-
-
-                                        </ul>
+                                                </ui:repeat>
+                                            </ul>
+                                        </div>
+                                        <!-- END: Preview Button Group -->
                                     </div>
-                                    <!-- END: Preview Button Group -->
-                                </div>
                                 <div>
-                                    <ui:fragment rendered="#{FilePage.toolsWithPreviews.size()> 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}" id="previewPresentation">
+                                    <ui:fragment rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}" id="previewPresentation">
 
                                         <h:commandButton rendered="#{!downloadPopupRequired}" value="Open #{FilePage.selectedTool.displayName}" 
                                                          type="submit"
@@ -438,7 +410,6 @@
 
                                         <iframe role="presentation" title="External File Preview Tool" height="500" width="100%" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe> 
                                     </ui:fragment>
-                                </div>
                                 </div>
                             </p:tab>
                             
