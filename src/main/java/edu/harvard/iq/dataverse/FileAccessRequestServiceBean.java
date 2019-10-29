@@ -27,16 +27,23 @@ public class FileAccessRequestServiceBean {
         return em.createQuery("select object(o) from FileAccessRequest as o order by o.id", FileAccessRequest.class).getResultList();
     }
     
-    public List<FileAccessRequest> findAllBy(AuthenticatedUser au){
-        return em.createQuery("select object(o) from FileAccessRequest as o where authenticate_duser_id=" + au.getId() + " order by o.id", FileAccessRequest.class).getResultList();
+    public List<FileAccessRequest> findAllByAuthenticedUserId(Long authenticatedUserId){
+        return em.createNamedQuery("FileAccessRequest.findByAuthenticatedUserId", FileAccessRequest.class)
+                        .setParameter("authenticatedUserId", authenticatedUserId)
+                        .getResultList();
     }
     
-    public List<FileAccessRequest> findAllBy(GuestbookResponse gbr){
-        return em.createQuery("select object(o) from FileAccessRequest as o where guestbook_response_id=" + gbr.getId() + " order by o.id", FileAccessRequest.class).getResultList();
+    public List<FileAccessRequest> findAllByGuestbookResponseId(Long guestbookResponseId){
+        return em.createNamedQuery("FileAccessRequest.findByGuestbookResponseId", FileAccessRequest.class)
+                        .setParameter("guestbookResponseId", guestbookResponseId)
+                        .getResultList();
+    
     }
     
-    public List<FileAccessRequest> findAllBy(DataFile dataFile){
-        return em.createQuery("select object(o) from FileAccessRequest as o where datafile_id=" + dataFile.getId() + " order by o.id", FileAccessRequest.class).getResultList();
+    public List<FileAccessRequest> findAllByDataFileId(Long dataFileId){
+        return em.createNamedQuery("FileAccessRequest.findByDataFileId", FileAccessRequest.class)
+                        .setParameter("dataFileId", dataFileId)
+                        .getResultList();
     }
     
     public FileAccessRequest save(FileAccessRequest far) {
