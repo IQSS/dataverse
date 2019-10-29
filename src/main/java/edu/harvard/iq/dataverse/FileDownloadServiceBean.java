@@ -185,8 +185,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         if(countRequestAccessSuccess > 0){
             DataFile firstDataFile = selectedDataFiles.get(0);
             sendRequestFileAccessNotification(firstDataFile.getOwner(), firstDataFile.getId(), (AuthenticatedUser) session.getUser());
+            em.refresh((AuthenticatedUser) session.getUser()); //get the user to refresh in order to pick up the fileaccessrequests (I hope)
         }
-     
+       
     }
     
     
