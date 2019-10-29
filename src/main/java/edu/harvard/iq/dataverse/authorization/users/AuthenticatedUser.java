@@ -140,7 +140,7 @@ public class AuthenticatedUser implements User, Serializable {
     }
     
     /*for many to many fileAccessRequests*/
-    @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     private List<FileAccessRequest> fileAccessRequests;
     
     public List<FileAccessRequest> getFileAccessRequests() {
@@ -159,7 +159,7 @@ public class AuthenticatedUser implements User, Serializable {
         }
         return requestedDataFiles;
     }
-    
+   
     /***/
     
     @Override
