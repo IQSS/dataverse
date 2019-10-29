@@ -3,9 +3,10 @@ package edu.harvard.iq.dataverse;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.inject.Named;
-
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 
 /**
  *
@@ -24,6 +25,10 @@ public class FileAccessRequestServiceBean {
 
     public List<FileAccessRequest> findAll() {
         return em.createQuery("select object(o) from FileAccessRequest as o order by o.id", FileAccessRequest.class).getResultList();
+    }
+    
+    public List<FileAccessRequest> findAll(AuthenticatedUser au){
+        return em.createQuery("select object(o) from FileAccessRequest as o where authenticateduser_id=" + au.getId() + " order by o.id", FileAccessRequest.class).getResultList();
     }
     
     public FileAccessRequest save(FileAccessRequest far) {
