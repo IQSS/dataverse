@@ -27,8 +27,16 @@ public class FileAccessRequestServiceBean {
         return em.createQuery("select object(o) from FileAccessRequest as o order by o.id", FileAccessRequest.class).getResultList();
     }
     
-    public List<FileAccessRequest> findAll(AuthenticatedUser au){
-        return em.createQuery("select object(o) from FileAccessRequest as o where authenticateduser_id=" + au.getId() + " order by o.id", FileAccessRequest.class).getResultList();
+    public List<FileAccessRequest> findAllBy(AuthenticatedUser au){
+        return em.createQuery("select object(o) from FileAccessRequest as o where authenticate_duser_id=" + au.getId() + " order by o.id", FileAccessRequest.class).getResultList();
+    }
+    
+    public List<FileAccessRequest> findAllBy(GuestbookResponse gbr){
+        return em.createQuery("select object(o) from FileAccessRequest as o where guestbook_response_id=" + gbr.getId() + " order by o.id", FileAccessRequest.class).getResultList();
+    }
+    
+    public List<FileAccessRequest> findAllBy(DataFile dataFile){
+        return em.createQuery("select object(o) from FileAccessRequest as o where datafile_id=" + dataFile.getId() + " order by o.id", FileAccessRequest.class).getResultList();
     }
     
     public FileAccessRequest save(FileAccessRequest far) {
