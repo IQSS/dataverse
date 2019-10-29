@@ -106,11 +106,18 @@
                                         <p id="hostDataverseStatic" class="form-control-static">#{DataversePage.dataverse.getOwner().name}</p>
                                         <h:inputHidden value="#{DataversePage.ownerId}" id="hostDataverseStatic"/>
                                     </ui:fragment>
-                                    <p:selectOneMenu id="hostDataverse" rendered="#{DataversePage.editMode == 'CREATE'}"
+                                    <p:selectOneMenu id="hostDataverse" onchange="updateOwnerDataverse()" rendered="#{DataversePage.editMode == 'CREATE'}"
                                                      value="#{DataversePage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
-                                        <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"
-                                                       itemDisabled="#{dv eq DataversePage.dataverse or dv.owners.contains(DataversePage.dataverse)}"/>
+                                        <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"/>
+                                                       <!-- itemDisabled="#{dv eq DataversePage.dataverse or dv.owners.contains(DataversePage.dataverse)}"/ -->
                                     </p:selectOneMenu>
+                                    <!-- an invisible button to refresh the page with the new owner dataverse: -->
+                                    <p:commandButton id="updateOwnerDataverse"
+                                        style="display:none"
+                                        process="@this :dataverseForm:hostDataverse"
+                                        update="@form"
+                                        action="#{DataversePage.updateOwnerDataverse()}">
+                                    </p:commandButton>
                                 </div>
                             </div>
                         </div>
@@ -800,6 +807,9 @@
                     }
                     function uncheck() {
                         $('input:checkbox[id$="metadataRoot"]').prop('checked', false);
+                    }
+                    function updateOwnerDataverse() {
+                        $('button[id$="updateOwnerDataverse"]').trigger('click');
                     }
                     //]]>                                     
                 </script>

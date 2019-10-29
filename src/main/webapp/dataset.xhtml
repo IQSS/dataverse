@@ -528,10 +528,16 @@
                                     <p jsf:id="select_HostDataverse_Static" class="form-control-static">#{DatasetPage.dataset.owner.name}</p>
                                     <h:inputHidden value="#{DatasetPage.ownerId}" id="select_HostDataverseStatic"/>
                                 </ui:fragment>
-                                <p:selectOneMenu id="select_HostDataverse" rendered="#{DatasetPage.editMode == 'CREATE'}"
+                                <p:selectOneMenu id="select_HostDataverse" onchange="updateOwnerDataverse()" rendered="#{DatasetPage.editMode == 'CREATE'}"
                                                  value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
                                     <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"/>
                                 </p:selectOneMenu>
+                                <!-- an invisible button to refresh the page with the new owner dataverse: -->
+                                <p:commandButton id="updateOwnerDataverse"
+                                    style="display:none"
+                                    update="@form"
+                                    action="#{DatasetPage.updateOwnerDataverse()}">
+                                </p:commandButton>
                             </div>
                         </div>
                         <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataverseTemplates and DatasetPage.editMode == 'CREATE'}">
@@ -1660,6 +1666,9 @@
                     function updateHiddenReason(textArea) {
                         $('input[id$="hiddenReasonInput"]').val(textArea.value);
                     }
+                    function updateOwnerDataverse() {
+                        $('button[id$="updateOwnerDataverse"]').trigger('click');
+                    } 
                     //]]>
                 </script>
             </ui:define>

@@ -1750,6 +1750,15 @@ public class DatasetPage implements java.io.Serializable {
         return init(false);
     }     
     
+    public void updateOwnerDataverse() {
+        logger.info("New host dataverse id: "+ownerId);
+        // discard the dataset already created:
+        dataset = new Dataset();
+        // initiate from scratch: (isolate the creation of a new dataset in its own method?)
+        init(true);
+        logger.info("Created a new new dataset.");
+    }
+    
     private String init(boolean initFull) {
   
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes

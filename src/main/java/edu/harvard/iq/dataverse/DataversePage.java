@@ -267,6 +267,15 @@ public class DataversePage implements java.io.Serializable {
         this.ownerId = ownerId;
     }
 
+    public void updateOwnerDataverse() {
+        logger.info("New host dataverse id: "+ownerId);
+        // discard the dataverse already created:
+        dataverse = new Dataverse();
+        // initialize a new new dataverse:
+        init();
+        logger.info("Created a new new dataverse.");
+    }
+    
     public String init() {
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
 
