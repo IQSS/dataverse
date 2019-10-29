@@ -81,12 +81,10 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
         file.getFileAccessRequests().add(fileAccessRequest);
         file.getFileAccessRequesters().add(requester);
         requester.getFileAccessRequests().add(fileAccessRequest);
-        
-
+       
         if (sendNotification) {
             ctxt.fileDownload().sendRequestFileAccessNotification(this.file.getOwner(), this.file.getId(), requester);
         }
-        ctxt.authentication().save(requester);
         return ctxt.files().save(file);
         
     }
