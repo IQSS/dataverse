@@ -368,7 +368,7 @@
                             </p:tab>
 
 
-                            <p:tab id="previewTab" title="Preview" rendered="#{FilePage.publiclyDownloadable and (FilePage.toolsWithPreviews.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                            <p:tab id="previewTab" title="#{bundle['file.previewTab.header']}" rendered="#{FilePage.publiclyDownloadable and (FilePage.toolsWithPreviews.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                 <!-- Add external tools as an inner tab with buttons to full tool-->
                                     <!-- Preview Button Group -->
                                     <div>
@@ -393,13 +393,13 @@
                                 <div>
                                     <ui:fragment rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}" id="previewPresentation">
 
-                                        <h:commandButton rendered="#{!downloadPopupRequired}" value="Open #{FilePage.selectedTool.displayName}" 
+                                        <h:commandButton rendered="#{!downloadPopupRequired}" value="#{bundle['file.previewTab.tool.open']} #{FilePage.selectedTool.displayName}" 
                                                          type="submit"
                                                          styleClass="#{(FilePage.fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
                                                          disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                                          action="#{FilePage.fileDownloadService.explore(FilePage.guestbookResponse, FilePage.fileMetadata, FilePage.selectedTool )}">
                                         </h:commandButton>
-                                        <p:commandButton rendered="#{downloadPopupRequired}" value="Open #{FilePage.selectedTool.displayName}"
+                                        <p:commandButton rendered="#{downloadPopupRequired}" value="#{bundle['file.previewTab.tool.open']} #{FilePage.selectedTool.displayName}"
                                                          action="#{FilePage.guestbookResponseService.modifyDatafileAndFormat(FilePage.guestbookResponse, FilePage.fileMetadata, 'externalTool', FilePage.selectedTool)}"
                                                          disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                                          type="submit"
