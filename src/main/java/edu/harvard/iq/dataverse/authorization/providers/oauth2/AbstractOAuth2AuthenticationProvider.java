@@ -127,7 +127,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         throws IOException, OAuth2Exception, InterruptedException, ExecutionException {
         
         OAuth2AccessToken accessToken = service.getAccessToken(code);
-    
+        //final String userEndpoint = getUserEndpoint(accessToken);
         // We need to check if scope is null first: GitHub is used without scope, so the responses scope is null.
         // Checking scopes via Stream to be independent from order.
         if ( ( accessToken.getScope() != null && ! getScope().stream().allMatch(accessToken.getScope()::contains) ) ||
@@ -135,11 +135,12 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
             // We did not get the permissions on the scope(s) we need. Abort and inform the user.
             throw new OAuth2Exception(200, BundleUtil.getStringFromBundle("auth.providers.insufficientScope", Arrays.asList(this.getTitle())), "");
         }
-        
         OAuthRequest request = new OAuthRequest(Verb.GET, getUserEndpoint(accessToken));
         request.setCharset("UTF-8");
+        if (id.equals("microsoft")) {
+            request.addHeader("Accept", "application/json");
+        }
         service.signRequest(accessToken, request);
-    
         Response response = service.execute(request);
         int responseCode = response.getCode();
         String body = response.getBody();
