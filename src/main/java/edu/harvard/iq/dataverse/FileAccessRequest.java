@@ -14,6 +14,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import javax.persistence.GenerationType;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 
 /**
  *
@@ -24,6 +26,16 @@ import javax.persistence.GenerationType;
 @Table(name = "fileaccessrequests", //having added the guestbookresponse_id column to fileaccessrequests
     uniqueConstraints=@UniqueConstraint(columnNames={"datafile_id", "authenticated_user_id"}) //this may not make sense at some future point
 )
+
+@NamedQueries({
+        @NamedQuery(name = "FileAccessRequest.findByAuthenticatedUserId",
+                query = "SELECT far FROM FileAccessRequest far WHERE far.authenticatedUser.id=:authenticatedUserId"),
+        @NamedQuery(name = "FileAccessRequest.findByGuestbookResponseId",
+                query = "SELECT far FROM FileAccessRequest far WHERE far.guestbookResponse.id=:guestbookResponseId"),
+        @NamedQuery(name = "FileAccessRequest.findByDataFileId",
+                query = "SELECT far FROM FileAccessRequest far WHERE far.dataFile.id=:dataFileId")
+})
+
 public class FileAccessRequest implements Serializable{
     private static final long serialVersionUID = 1L;
     @Id
