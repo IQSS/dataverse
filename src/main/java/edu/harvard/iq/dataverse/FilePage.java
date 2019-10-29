@@ -249,14 +249,6 @@ public class FilePage implements java.io.Serializable {
         }
         Collections.sort(retList, CompareExternalToolName);
         
-        if(retList.size() > 1){
-            int order = 0;
-            for (ExternalTool t: retList){
-                t.setDisplayOrder(order);
-                order++;
-            }
-        }
-        
         return retList;
     }
     

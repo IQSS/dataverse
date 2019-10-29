@@ -390,9 +390,7 @@
                                             <!-- #file-preview-icon-block > #border-block > #preview-square PADDING-BOTTOM: 100% -->
                                         </div>
                                     </div>
-                                    <div jsf:rendered="#{(FilePage.toolsWithPreviews.size() > 0) and !FilePage.publiclyDownloadable }"> 
-                                        <h:outputText  value="#{bundle['file.previewTab.previews.not.available']}" />
-                                    </div>
+                                    <h:outputText  value="#{bundle['file.previewTab.previews.not.available']}" />
                                 </div>
                                 <!-- Add external tools as an inner tab with buttons to full tool-->
                                 <div jsf:rendered="#{FilePage.publiclyDownloadable}">

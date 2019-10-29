@@ -11,7 +11,6 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Transient;
 
 /**
  * A specification or definition for how an external tool is intended to
@@ -81,18 +80,6 @@ public class ExternalTool implements Serializable {
     
     @Column(nullable = false)
     private boolean hasPreviewMode;   
-    
-    @Transient 
-    private int displayOrder;
-
-    public int getDisplayOrder() {
-        return displayOrder;
-    }
-
-    public void setDisplayOrder(int displayOrder) {
-        this.displayOrder = displayOrder;
-    }
-
 
     /**
      * This default constructor is only here to prevent this error at
