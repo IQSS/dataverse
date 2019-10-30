@@ -172,12 +172,12 @@
         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
             <ui:remove>
                 <li>
-                    <p:commandLink styleClass="highlightBold" rendered="#{!(guestbookAndTermsPopupRequired)}"
+                    <p:commandLink styleClass="highlightBold" rendered="#{!(guestbookPopupRequiredAtDownload)}"
                                    process="@this"
                                    actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'bundle')}">
                         #{bundle['file.downloadBtn.format.all']}
                     </p:commandLink>
-                    <p:commandLink styleClass="highlightBold" rendered="#{guestbookAndTermsPopupRequired}"
+                    <p:commandLink styleClass="highlightBold" rendered="#{guestbookPopupRequiredAtDownload}"
                                    process="@this"
                                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'bundle' )}"
                                    update="@widgetVar(guestbookAndTermsPopup)"
@@ -189,7 +189,7 @@
                 <li role="presentation" class="divider"></li>
             </ui:remove>
             <li>
-                <p:commandLink rendered="#{!guestbookAndTermsPopupRequired and !(fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}"
+                <p:commandLink rendered="#{!guestbookPopupRequiredAtDownload and !(fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'original')}">
@@ -197,7 +197,7 @@
                         <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
                     </h:outputFormat>
                 </p:commandLink>
-                <p:commandLink rendered="#{guestbookAndTermsPopupRequired and !(fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}"
+                <p:commandLink rendered="#{guestbookPopupRequiredAtDownload and !(fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'original' )}"
@@ -210,13 +210,13 @@
                 </p:commandLink>
             </li>
             <li>
-                <p:commandLink rendered="#{!guestbookAndTermsPopupRequired}"
+                <p:commandLink rendered="#{!guestbookPopupRequiredAtDownload}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'tab')}">
                     #{bundle['file.downloadBtn.format.tab']}
                 </p:commandLink>
-                <p:commandLink rendered="#{guestbookAndTermsPopupRequired}"
+                <p:commandLink rendered="#{guestbookPopupRequiredAtDownload}"
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'tab' )}"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                update="@widgetVar(guestbookAndTermsPopup)"
@@ -227,13 +227,13 @@
             </li>
             <ui:fragment rendered="#{!(fileMetadata.dataFile.originalFormatLabel == 'RData')}">
                 <li>
-                    <p:commandLink rendered="#{!guestbookAndTermsPopupRequired}"
+                    <p:commandLink rendered="#{!guestbookPopupRequiredAtDownload}"
                                    process="@this"
                                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                    actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'RData')}">
                         #{bundle['file.downloadBtn.format.rdata']}
                     </p:commandLink>
-                    <p:commandLink rendered="#{guestbookAndTermsPopupRequired}"
+                    <p:commandLink rendered="#{guestbookPopupRequiredAtDownload}"
                                    process="@this"
                                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'RData' )}"
@@ -245,13 +245,13 @@
                 </li>
             </ui:fragment>
             <li>
-                <p:commandLink rendered="#{!guestbookAndTermsPopupRequired}"
+                <p:commandLink rendered="#{!guestbookPopupRequiredAtDownload}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'var')}">
                     #{bundle['file.downloadBtn.format.var']}
                 </p:commandLink>
-                <p:commandLink rendered="#{guestbookAndTermsPopupRequired}"
+                <p:commandLink rendered="#{guestbookPopupRequiredAtDownload}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'var' )}"
