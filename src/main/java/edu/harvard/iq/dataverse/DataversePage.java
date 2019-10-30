@@ -108,6 +108,7 @@ public class DataversePage implements java.io.Serializable {
     @EJB
     DataverseLinkingServiceBean linkingService;
     @Inject PermissionsWrapper permissionsWrapper;
+    @Inject DataverseHeaderFragment dataverseHeaderFragment; 
 
     private Dataverse dataverse = new Dataverse();
     private EditMode editMode;
@@ -274,6 +275,7 @@ public class DataversePage implements java.io.Serializable {
         // initialize a new new dataverse:
         init();
         logger.info("Created a new new dataverse.");
+        dataverseHeaderFragment.initBreadcrumbs(dataverse);
     }
     
     public String init() {

@@ -115,9 +115,10 @@
                                     <p:commandButton id="updateOwnerDataverse"
                                         style="display:none"
                                         process="@this :dataverseForm:hostDataverse"
-                                        update="@form"
+                                        update="@form,:breadCrumbPanel"
                                         action="#{DataversePage.updateOwnerDataverse()}">
                                     </p:commandButton>
+                                    <!-- update="@widgetVar(breadcrumbNavBlock), @form" -->
                                 </div>
                             </div>
                         </div>

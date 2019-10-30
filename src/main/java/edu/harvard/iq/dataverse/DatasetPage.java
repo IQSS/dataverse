@@ -237,6 +237,7 @@ public class DatasetPage implements java.io.Serializable {
     ProvPopupFragmentBean provPopupFragmentBean;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
+    @Inject DataverseHeaderFragment dataverseHeaderFragment;
 
     private Dataset dataset = new Dataset();
     private EditMode editMode;
@@ -1757,6 +1758,9 @@ public class DatasetPage implements java.io.Serializable {
         // initiate from scratch: (isolate the creation of a new dataset in its own method?)
         init(true);
         logger.info("Created a new new dataset.");
+        // rebuild the bred crumbs display:
+        //dataverseHeaderFragment.setBreadcrumbs(new ArrayList<>());
+        dataverseHeaderFragment.initBreadcrumbs(dataset);
     }
     
     private String init(boolean initFull) {

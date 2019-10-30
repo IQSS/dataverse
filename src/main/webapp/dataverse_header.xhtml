@@ -232,6 +232,7 @@
                 </div>
             </div>
         </div>
+	<p:fragment id="breadCrumbPanel" rendered="#{dataverseHeaderFragment.breadcrumbs.size() > 1}">
         <div id="breadcrumbNavBlock" class="container" jsf:rendered="#{dataverseHeaderFragment.breadcrumbs.size() > 1}">
             <ui:repeat value="#{dataverseHeaderFragment.breadcrumbs}" var="breadcrumb" varStatus="status">
                 <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{!status.first}"/>
@@ -267,6 +268,7 @@
                 </div>
             </ui:repeat>
         </div>
+	</p:fragment>
         <ui:remove>
             <!-- Removing this temporarily until we can fix the performance issues with it;
                  replaced with generic bookmarks; will have to see how to best make this work
