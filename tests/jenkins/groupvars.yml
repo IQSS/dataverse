@@ -1,0 +1,162 @@
+---
+# dataverse/defaults/main.yml
+
+apache:
+  ssl:
+    enabled: false
+    cert: 
+    interm: 
+    key: 
+    pem:
+      cert: 
+      key: 
+      interm: 
+
+letsencrypt:
+  enabled: false
+  certbot:
+    autorenew: true
+    email:
+    user: certbot
+
+dataverse:
+  adminpass: admin1
+  allow_signups: true
+  api:
+    allow_lookup: false
+    blocked_endpoints: "admin,test"
+    blocked_policy: "localhost-only"
+    location: "http://localhost:8080/api"
+    test_suite: true
+  copyright: "Your Institution"
+  counter:
+    enabled: false
+    geoipdir: maxmind_geoip
+    geoipfile: GeoLite2-Country.mmdb
+    hub_api_token: set_me_in_secrets
+    hub_base_url: "https://api.datacite.org"
+    machines_url: "https://raw.githubusercontent.com/CDLUC3/Make-Data-Count/master/user-agents/lists/machine.txt"
+    maxmind_geoip_country_path: "maxmind_geoip/GeoLite2-Country.mmdb"
+    output_file: "/dataverse/sushi_sample_logs"
+    output_format: json
+    platform: dash
+    robots_url: "https://raw.githubusercontent.com/CDLUC3/Make-Data-Count/master/user-agents/lists/robot.txt"
+    version: "0.1"
+    upload_to_hub: False
+    user: counter
+    year_month: "2018-05"
+  db:
+    name: dvndb
+    host: localhost
+    user: dvnuser
+    pass: dvnsecret
+    port: 5432
+  demo: false
+  doi:
+    authority: "10.5072"
+    baseurl: https://mds.test.datacite.org/
+    username: "testaccount"
+    password: "notmypassword"
+    protocol: doi
+    provider: FAKE
+    shoulder: "FK2/"
+  externaltools:
+    datacurationtool:
+      enabled: true
+      method: demo
+    dataexplorer:
+      enabled: true
+    wholetale:
+      enabled: false
+  filesdir: /usr/local/dvn/data
+  glassfish:
+    user: glassfish
+    group: glassfish
+    domain: domain1
+    logformat: ulf
+    adminuser: admin
+    adminpass: notPr0d
+    siteurl:
+    timeout: 180
+    root: /usr/local
+    dir: glassfish4 # change this for payara, etc.
+    zipurl: http://dlc-cdn.sun.com/glassfish/4.1/release/glassfish-4.1.zip
+    #zipurl: https://search.maven.org/remotecontent?filepath=fish/payara/distributions/payara/5.192/payara-5.192.zip
+  google_analytics_key:
+  java:
+    version: 1.8.0
+  memheap: 2048
+  postgres:
+    reporpm: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+    version: 9.6
+    log_lock_waits: true
+  previewers:
+    enabled: true
+  sampledata:
+    enabled: false
+    dir: /tmp/sampledata
+    repo: https://github.com/IQSS/dataverse-sample-data.git
+    branch: master
+    venv: /tmp/sampledata_venv
+  custom_sampledata:
+    enabled: false
+    custom_sampledir: "{{ playbook_dir }}/custom_sampledata"
+    custom_sampledatasets: "{{ playbook_dir }}/custom_sampledata/datasets"
+    custom_sampledataverses: "{{ playbook_dir }}/custom_sampledata/dataverses"
+    custom_sampleusers: "{{ playbook_dir }}/custom_sampledata/users"
+    custom_samplefiles: "{{ playbook_dir }}/custom_sampledata/files"
+  service_email: noreply@dataverse.yourinstitution.edu
+  smtp: localhost # or the FQDN of your organization's SMTP relay
+  solr:
+    group: solr
+    root: /usr/local/solr
+    user: solr
+    version: 7.3.1
+  srcdir: /tmp/dataverse
+  thumbnails: true
+  unittests:
+    enabled: true
+    argument: '-DcompilerArgument=-Xlint:unchecked test -P all-unit-tests'
+  usermgmtkey: burrito
+  version: 4.16
+
+grafana:
+  grafana_user: 'admin'
+  grafana_password: 'admin'
+
+munin:
+  install: false
+  admin:
+    user: admin
+    passwd: p4sswurd
+
+prometheus:
+  install: false
+  node_exporter: https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-amd64.tar.gz
+  root: /usr/local/prometheus
+  url: https://github.com/prometheus/prometheus/releases/download/v2.11.1/prometheus-2.11.1.linux-amd64.tar.gz
+  user: prometheus
+
+rserve:
+  install: false
+  host: localhost
+  user: rserve
+  group: rserve
+  pass: rserve
+  port: 6311
+  workdir: /tmp/Rserv
+
+shibboleth:
+  enabled: false
+  repo: "http://download.opensuse.org/repositories/security:/shibboleth/CentOS_7/security:shibboleth.repo"
+
+sshkeys:
+  enabled: false
+  files:
+  urls:
+  user:
+
+# un-nesting the below so's we can pass them at the CLI
+
+dataverse_branch: release
+dataverse_repo: https://github.com/IQSS/dataverse.git
