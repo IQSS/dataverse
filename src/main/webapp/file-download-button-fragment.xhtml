@@ -189,22 +189,22 @@
                 <li role="presentation" class="divider"></li>
             </ui:remove>
             <li>
-                <p:commandLink rendered="#{!guestbookAndTermsPopupRequired and !(fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}"
+                <p:commandLink rendered="#{!termsPopupRequired and !guestbookPopupRequiredAtDownload and !(fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'original')}">
-                    <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
+                    <h:outputFormat value="#{bundle['file.downloadBtn.format.original']} 3">
                         <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
                     </h:outputFormat>
                 </p:commandLink>
-                <p:commandLink rendered="#{guestbookAndTermsPopupRequired and !(fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}"
+                <p:commandLink rendered="#{(termsPopupRequired or guestbookPopupRequiredAtDownload) and !(fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'original' )}"
                                update="@widgetVar(guestbookAndTermsPopup)"
                                oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
                     <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
-                    <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
+                    <h:outputFormat value="#{bundle['file.downloadBtn.format.original']} 4">
                         <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
                     </h:outputFormat>
                 </p:commandLink>
