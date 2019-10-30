@@ -372,6 +372,9 @@ Reported Working S3-Compatible Storage
   **Can be used for quick testing, too:** just use the example values above. Uses the public (read: unsecure and
   possibly slow) https://play.minio.io:9000 service.
 
+`Surf Object Store v2019-10-30 <https://www.surf.nl/en>`_
+  Set ``dataverse.files.s3-payload-signing=true`` and ``dataverse.files.s3-chunked-encoding=false`` to use Surf Object
+  Store.
 
 **HINT:** If you are successfully using an S3 storage implementation not yet listed above, please feel free to
 `open an issue at Github <https://github.com/IQSS/dataverse/issues/new>`_ and describe your setup.
@@ -464,6 +467,8 @@ dataverse.files.s3-url-expiration-minutes  <?>                 If direct downloa
 dataverse.files.s3-custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.  (none)
 dataverse.files.s3-custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                     ``dataverse``
 dataverse.files.s3-path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.             ``false``
+dataverse.files.s3-payload-signing         ``true``/``false``  Enable payload signing. Optional                                    ``false``
+dataverse.files.s3-chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                  ``true``
 =========================================  ==================  ==================================================================  =============
 
 .. _Branding Your Installation:
