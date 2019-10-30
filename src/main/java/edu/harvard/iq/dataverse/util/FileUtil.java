@@ -714,377 +714,395 @@ public class FileUtil implements java.io.Serializable  {
         
         Long fileSizeLimit = systemConfig.getMaxFileUploadSize();
         String finalType = null; 
-        if(newStorageIdentifier!=null) {
-        if (getFilesTempDirectory() != null) {
-            tempFile = Files.createTempFile(Paths.get(getFilesTempDirectory()), "tmp", "upload");
-            // "temporary" location is the key here; this is why we are not using 
-            // the DataStore framework for this - the assumption is that 
-            // temp files will always be stored on the local filesystem. 
-            //          -- L.A. Jul. 2014
-            logger.fine("Will attempt to save the file as: " + tempFile.toString());
-            Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
-            
-            // A file size check, before we do anything else:
-            // (note that "no size limit set" = "unlimited")
-            // (also note, that if this is a zip file, we'll be checking 
-            // the size limit for each of the individual unpacked files)
-            Long fileSize = tempFile.toFile().length();
-            if (fileSizeLimit != null && fileSize > fileSizeLimit) {
-                try {tempFile.toFile().delete();} catch (Exception ex) {}
-                throw new IOException (MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), bytesToHumanReadable(fileSize), bytesToHumanReadable(fileSizeLimit)));  
-            }
-            
-        } else {
-            throw new IOException ("Temp directory is not configured.");
-        }
-        logger.fine("mime type supplied: "+suppliedContentType);
-        // Let's try our own utilities (Jhove, etc.) to determine the file type 
-        // of the uploaded file. (We may already have a mime type supplied for this
-        // file - maybe the type that the browser recognized on upload; or, if 
-        // it's a harvest, maybe the remote server has already given us the type
-        // for this file... with our own type utility we may or may not do better 
-        // than the type supplied:
-        //  -- L.A. 
-        String recognizedType = null;
+		if (newStorageIdentifier == null) {
+			if (getFilesTempDirectory() != null) {
+				tempFile = Files.createTempFile(Paths.get(getFilesTempDirectory()), "tmp", "upload");
+				// "temporary" location is the key here; this is why we are not using
+				// the DataStore framework for this - the assumption is that
+				// temp files will always be stored on the local filesystem.
+				// -- L.A. Jul. 2014
+				logger.fine("Will attempt to save the file as: " + tempFile.toString());
+				Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
 
-        try {
-            recognizedType = determineFileType(tempFile.toFile(), fileName);
-            logger.fine("File utility recognized the file as " + recognizedType);
-            if (recognizedType != null && !recognizedType.equals("")) {
-                // is it any better than the type that was supplied to us,
-                // if any?
-                // This is not as trivial a task as one might expect... 
-                // We may need a list of "good" mime types, that should always
-                // be chosen over other choices available. Maybe it should 
-                // even be a weighed list... as in, "application/foo" should 
-                // be chosen over "application/foo-with-bells-and-whistles".
-                
-                // For now the logic will be as follows: 
-                //
-                // 1. If the contentType supplied (by the browser, most likely) 
-                // is some form of "unknown", we always discard it in favor of 
-                // whatever our own utilities have determined; 
-                // 2. We should NEVER trust the browser when it comes to the 
-                // following "ingestable" types: Stata, SPSS, R;
-                // 2a. We are willing to TRUST the browser when it comes to
-                //  the CSV and XSLX ingestable types.
-                // 3. We should ALWAYS trust our utilities when it comes to 
-                // ingestable types. 
-                
-                if (suppliedContentType == null
-                        || suppliedContentType.equals("")
-                        || suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_DEFAULT)
-                        || suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_BINARY)
-                        || (canIngestAsTabular(suppliedContentType)
-                            && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV)
-                            && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV_ALT)
-                            && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_XLSX))
-                        || canIngestAsTabular(recognizedType)
-                        || recognizedType.equals("application/fits-gzipped")
-                        || recognizedType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)
-                        || recognizedType.equals(MIME_TYPE_ZIP)) {
-                    finalType = recognizedType;
-                }
-            }
-            
-        } catch (Exception ex) {
-            logger.warning("Failed to run the file utility mime type check on file " + fileName);
-        }
-        
-        if (finalType == null) {
-            finalType = (suppliedContentType == null || suppliedContentType.equals("")) 
-                ? MIME_TYPE_UNDETERMINED_DEFAULT
-                : suppliedContentType;
-        }
-                
-        // A few special cases: 
-        
-        // if this is a gzipped FITS file, we'll uncompress it, and ingest it as
-        // a regular FITS file:
-        
-        if (finalType.equals("application/fits-gzipped")) {
+				// A file size check, before we do anything else:
+				// (note that "no size limit set" = "unlimited")
+				// (also note, that if this is a zip file, we'll be checking
+				// the size limit for each of the individual unpacked files)
+				Long fileSize = tempFile.toFile().length();
+				if (fileSizeLimit != null && fileSize > fileSizeLimit) {
+					try {
+						tempFile.toFile().delete();
+					} catch (Exception ex) {
+					}
+					throw new IOException(MessageFormat.format(
+							BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"),
+							bytesToHumanReadable(fileSize), bytesToHumanReadable(fileSizeLimit)));
+				}
 
-            InputStream uncompressedIn = null;
-            String finalFileName = fileName;
-            // if the file name had the ".gz" extension, remove it, 
-            // since we are going to uncompress it:
-            if (fileName != null && fileName.matches(".*\\.gz$")) {
-                finalFileName = fileName.replaceAll("\\.gz$", "");
-            }
-            
-            DataFile datafile = null; 
-            try {                
-                uncompressedIn = new GZIPInputStream(new FileInputStream(tempFile.toFile()));
-                File unZippedTempFile = saveInputStreamInTempFile(uncompressedIn, fileSizeLimit);
-                datafile = createSingleDataFile(version, unZippedTempFile, finalFileName, MIME_TYPE_UNDETERMINED_DEFAULT, systemConfig.getFileFixityChecksumAlgorithm());
-            } catch (IOException | FileExceedsMaxSizeException ioex) {
-                datafile = null;
-            } finally {
-                if (uncompressedIn != null) {
-                    try {uncompressedIn.close();} catch (IOException e) {}
-                }
-            }
-            
-            // If we were able to produce an uncompressed file, we'll use it 
-            // to create and return a final DataFile; if not, we're not going
-            // to do anything - and then a new DataFile will be created further 
-            // down, from the original, uncompressed file.
-            if (datafile != null) {
-                // remove the compressed temp file: 
-                try {
-                    tempFile.toFile().delete();
-                } catch (SecurityException ex) {
-                    // (this is very non-fatal)
-                    logger.warning("Failed to delete temporary file "+tempFile.toString());
-                }
-                
-                datafiles.add(datafile);
-                return datafiles;
-            }
-                
-        // If it's a ZIP file, we are going to unpack it and create multiple 
-        // DataFile objects from its contents:
-          } else if (finalType.equals("application/zip")) {   
-            
-            ZipInputStream unZippedIn = null; 
-            ZipEntry zipEntry = null; 
-            
-            int fileNumberLimit = systemConfig.getZipUploadFilesLimit();
-            
-            try {
-                Charset charset = null;
-                /*
-                TODO: (?)
-                We may want to investigate somehow letting the user specify 
-                the charset for the filenames in the zip file...
-                - otherwise, ZipInputStream bails out if it encounteres a file 
-                name that's not valid in the current charest (i.e., UTF-8, in 
-                our case). It would be a bit trickier than what we're doing for 
-                SPSS tabular ingests - with the lang. encoding pulldown menu - 
-                because this encoding needs to be specified *before* we upload and
-                attempt to unzip the file. 
-                        -- L.A. 4.0 beta12
-                logger.info("default charset is "+Charset.defaultCharset().name());
-                if (Charset.isSupported("US-ASCII")) {
-                    logger.info("charset US-ASCII is supported.");
-                    charset = Charset.forName("US-ASCII");
-                    if (charset != null) {
-                        logger.info("was able to obtain charset for US-ASCII");
-                    }
-                    
-                }
-                */
-                
-                if (charset != null) {
-                    unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()), charset);
-                } else {
-                    unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()));
-                } 
+			} else {
+				throw new IOException("Temp directory is not configured.");
+			}
+			logger.fine("mime type supplied: " + suppliedContentType);
+			// Let's try our own utilities (Jhove, etc.) to determine the file type
+			// of the uploaded file. (We may already have a mime type supplied for this
+			// file - maybe the type that the browser recognized on upload; or, if
+			// it's a harvest, maybe the remote server has already given us the type
+			// for this file... with our own type utility we may or may not do better
+			// than the type supplied:
+			// -- L.A.
+			String recognizedType = null;
 
-                while (true) { 
-                    try {
-                        zipEntry = unZippedIn.getNextEntry();
-                    } catch (IllegalArgumentException iaex) {
-                        // Note: 
-                        // ZipInputStream documentation doesn't even mention that 
-                        // getNextEntry() throws an IllegalArgumentException!
-                        // but that's what happens if the file name of the next
-                        // entry is not valid in the current CharSet. 
-                        //      -- L.A.
-                        warningMessage = "Failed to unpack Zip file. (Unknown Character Set used in a file name?) Saving the file as is.";
-                        logger.warning(warningMessage);
-                        throw new IOException();
-                    } 
-                    
-                    if (zipEntry == null) {
-                        break;
-                    }
-                    // Note that some zip entries may be directories - we 
-                    // simply skip them:
-                    
-                    if (!zipEntry.isDirectory()) {
-                        if (datafiles.size() > fileNumberLimit) {
-                            logger.warning("Zip upload - too many files.");
-                            warningMessage = "The number of files in the zip archive is over the limit (" + fileNumberLimit + 
-                                "); please upload a zip archive with fewer files, if you want them to be ingested " +
-                                "as individual DataFiles.";
-                            throw new IOException();
-                        }
+			try {
+				recognizedType = determineFileType(tempFile.toFile(), fileName);
+				logger.fine("File utility recognized the file as " + recognizedType);
+				if (recognizedType != null && !recognizedType.equals("")) {
+					// is it any better than the type that was supplied to us,
+					// if any?
+					// This is not as trivial a task as one might expect...
+					// We may need a list of "good" mime types, that should always
+					// be chosen over other choices available. Maybe it should
+					// even be a weighed list... as in, "application/foo" should
+					// be chosen over "application/foo-with-bells-and-whistles".
 
-                        String fileEntryName = zipEntry.getName();
-                        logger.fine("ZipEntry, file: "+fileEntryName);
+					// For now the logic will be as follows:
+					//
+					// 1. If the contentType supplied (by the browser, most likely)
+					// is some form of "unknown", we always discard it in favor of
+					// whatever our own utilities have determined;
+					// 2. We should NEVER trust the browser when it comes to the
+					// following "ingestable" types: Stata, SPSS, R;
+					// 2a. We are willing to TRUST the browser when it comes to
+					// the CSV and XSLX ingestable types.
+					// 3. We should ALWAYS trust our utilities when it comes to
+					// ingestable types.
 
-                        if (fileEntryName != null && !fileEntryName.equals("")) {
+					if (suppliedContentType == null || suppliedContentType.equals("")
+							|| suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_DEFAULT)
+							|| suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_BINARY)
+							|| (canIngestAsTabular(suppliedContentType)
+									&& !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV)
+									&& !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV_ALT)
+									&& !suppliedContentType.equalsIgnoreCase(MIME_TYPE_XLSX))
+							|| canIngestAsTabular(recognizedType) || recognizedType.equals("application/fits-gzipped")
+							|| recognizedType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)
+							|| recognizedType.equals(MIME_TYPE_ZIP)) {
+						finalType = recognizedType;
+					}
+				}
 
-                            String shortName = fileEntryName.replaceFirst("^.*[\\/]", "");
+			} catch (Exception ex) {
+				logger.warning("Failed to run the file utility mime type check on file " + fileName);
+			}
 
-                            // Check if it's a "fake" file - a zip archive entry 
-                            // created for a MacOS X filesystem element: (these 
-                            // start with "._")
-                            if (!shortName.startsWith("._") && !shortName.startsWith(".DS_Store") && !"".equals(shortName)) {
-                                // OK, this seems like an OK file entry - we'll try 
-                                // to read it and create a DataFile with it:
+			if (finalType == null) {
+				finalType = (suppliedContentType == null || suppliedContentType.equals(""))
+						? MIME_TYPE_UNDETERMINED_DEFAULT
+						: suppliedContentType;
+			}
 
-                                File unZippedTempFile = saveInputStreamInTempFile(unZippedIn, fileSizeLimit);
-                                DataFile datafile = createSingleDataFile(version, unZippedTempFile, null, shortName, MIME_TYPE_UNDETERMINED_DEFAULT, systemConfig.getFileFixityChecksumAlgorithm(), null, false);
+			// A few special cases:
 
-                                if (!fileEntryName.equals(shortName)) {
-                                    // If the filename looks like a hierarchical folder name (i.e., contains slashes and backslashes),
-                                    // we'll extract the directory name; then subject it to some "aggressive sanitizing" - strip all 
-                                    // the leading, trailing and duplicate slashes; then replace all the characters that 
-                                    // don't pass our validation rules. 
-                                    String directoryName = fileEntryName.replaceFirst("[\\\\/][\\\\/]*[^\\\\/]*$", "");
-                                    directoryName = StringUtil.sanitizeFileDirectory(directoryName, true);
-                                    //if (!"".equals(directoryName)) {
-                                    if (!StringUtil.isEmpty(directoryName)) {
-                                        logger.fine("setting the directory label to " + directoryName);
-                                        datafile.getFileMetadata().setDirectoryLabel(directoryName);
-                                    }
-                                }
-                                
-                                if (datafile != null) {
-                                    // We have created this datafile with the mime type "unknown";
-                                    // Now that we have it saved in a temporary location, 
-                                    // let's try and determine its real type:
-                                    
-                                    String tempFileName = getFilesTempDirectory() + "/" + datafile.getStorageIdentifier();
-                                    
-                                    try {
-                                        recognizedType = determineFileType(new File(tempFileName), shortName);
-                                        logger.fine("File utility recognized unzipped file as " + recognizedType);
-                                        if (recognizedType != null && !recognizedType.equals("")) {
-                                             datafile.setContentType(recognizedType);
-                                        }
-                                    } catch (Exception ex) {
-                                        logger.warning("Failed to run the file utility mime type check on file " + fileName);
-                                    }
-                                    
-                                    datafiles.add(datafile);
-                                }
-                            }
-                        }
-                    } 
-                    unZippedIn.closeEntry(); 
-                    
-                }
-                
-            } catch (IOException ioex) {
-                // just clear the datafiles list and let 
-                // ingest default to creating a single DataFile out
-                // of the unzipped file. 
-                logger.warning("Unzipping failed; rolling back to saving the file as is.");
-                if (warningMessage == null) {
-                    warningMessage = "Failed to unzip the file. Saving the file as is.";
-                }
-                
-                datafiles.clear();
-            } catch (FileExceedsMaxSizeException femsx) {
-                logger.warning("One of the unzipped files exceeds the size limit; resorting to saving the file as is. " + femsx.getMessage());
-                warningMessage = femsx.getMessage() + "; saving the zip file as is, unzipped.";
-                datafiles.clear();
-            } finally {
-                if (unZippedIn != null) {
-                    try {unZippedIn.close();} catch (Exception zEx) {}
-                }
-            }
-            if (datafiles.size() > 0) {
-                // link the data files to the dataset/version: 
-                // (except we no longer want to do this! -- 4.6)
-                /*Iterator<DataFile> itf = datafiles.iterator();
-                while (itf.hasNext()) {
-                    DataFile datafile = itf.next();
-                    datafile.setOwner(version.getDataset());
-                    if (version.getFileMetadatas() == null) {
-                        version.setFileMetadatas(new ArrayList());
-                    }
-                    version.getFileMetadatas().add(datafile.getFileMetadata());
-                    datafile.getFileMetadata().setDatasetVersion(version);
-                    
-                    version.getDataset().getFiles().add(datafile);
-                } */
-                // remove the uploaded zip file: 
-                try {
-                    Files.delete(tempFile);
-                } catch (IOException ioex) {
-                    // do nothing - it's just a temp file.
-                    logger.warning("Could not remove temp file "+tempFile.getFileName().toString());
-                }
-                // and return:
-                return datafiles;
-            }
-            
-        } else if (finalType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
-            // Shape files may have to be split into multiple files, 
-            // one zip archive per each complete set of shape files:
-                       
-            //File rezipFolder = new File(this.getFilesTempDirectory());
-            File rezipFolder = getShapefileUnzipTempDirectory();
-            
-            IngestServiceShapefileHelper shpIngestHelper;
-            shpIngestHelper = new IngestServiceShapefileHelper(tempFile.toFile(), rezipFolder);
+			// if this is a gzipped FITS file, we'll uncompress it, and ingest it as
+			// a regular FITS file:
 
-            boolean didProcessWork = shpIngestHelper.processFile();
-            if (!(didProcessWork)){            
-                logger.severe("Processing of zipped shapefile failed.");
-                return null;
-            }
-            
-            try {
-                for (File finalFile : shpIngestHelper.getFinalRezippedFiles()) {
-                    FileInputStream finalFileInputStream = new FileInputStream(finalFile);
-                    finalType = determineContentType(finalFile);
-                    if (finalType == null) {
-                        logger.warning("Content type is null; but should default to 'MIME_TYPE_UNDETERMINED_DEFAULT'");
-                        continue;
-                    }
+			if (finalType.equals("application/fits-gzipped")) {
 
-                    File unZippedShapeTempFile = saveInputStreamInTempFile(finalFileInputStream, fileSizeLimit);
-                    DataFile new_datafile = createSingleDataFile(version, unZippedShapeTempFile, finalFile.getName(), finalType, systemConfig.getFileFixityChecksumAlgorithm());
-                    if (new_datafile != null) {
-                        datafiles.add(new_datafile);
-                    } else {
-                        logger.severe("Could not add part of rezipped shapefile. new_datafile was null: " + finalFile.getName());
-                    }
-                    finalFileInputStream.close();
+				InputStream uncompressedIn = null;
+				String finalFileName = fileName;
+				// if the file name had the ".gz" extension, remove it,
+				// since we are going to uncompress it:
+				if (fileName != null && fileName.matches(".*\\.gz$")) {
+					finalFileName = fileName.replaceAll("\\.gz$", "");
+				}
 
-                }
-            } catch (FileExceedsMaxSizeException femsx) {
-                logger.severe("One of the unzipped shape files exceeded the size limit; giving up. " + femsx.getMessage());
-                datafiles.clear();
-            }
-            
-            // Delete the temp directory used for unzipping
-            // The try-catch is due to error encountered in using NFS for stocking file,
-            // cf. https://github.com/IQSS/dataverse/issues/5909
-            try {
-            	FileUtils.deleteDirectory(rezipFolder);
-            } catch (IOException ioex) {
-                // do nothing - it's a tempo folder.
-                logger.warning("Could not remove temp folder, error message : " + ioex.getMessage());
-            }
-            
-            if (datafiles.size() > 0) {
-                // remove the uploaded zip file:
-                try {
-                    Files.delete(tempFile);
-                } catch (IOException ioex) {
-                    // do nothing - it's just a temp file.
-                    logger.warning("Could not remove temp file " + tempFile.getFileName().toString());
-                } catch (SecurityException se) {
-                    logger.warning("Unable to delete: " + tempFile.toString() + "due to Security Exception: "
-                            + se.getMessage());
-                }
-                return datafiles;
-            }else{
-                logger.severe("No files added from directory of rezipped shapefiles");
-            }
-            return null;
-           
-        } else {
-        	//ToDo what subset of checks from determineFileType makes sense?
-        	finalType=suppliedContentType;
-        }
-        }
+				DataFile datafile = null;
+				try {
+					uncompressedIn = new GZIPInputStream(new FileInputStream(tempFile.toFile()));
+					File unZippedTempFile = saveInputStreamInTempFile(uncompressedIn, fileSizeLimit);
+					datafile = createSingleDataFile(version, unZippedTempFile, finalFileName,
+							MIME_TYPE_UNDETERMINED_DEFAULT, systemConfig.getFileFixityChecksumAlgorithm());
+				} catch (IOException | FileExceedsMaxSizeException ioex) {
+					datafile = null;
+				} finally {
+					if (uncompressedIn != null) {
+						try {
+							uncompressedIn.close();
+						} catch (IOException e) {
+						}
+					}
+				}
+
+				// If we were able to produce an uncompressed file, we'll use it
+				// to create and return a final DataFile; if not, we're not going
+				// to do anything - and then a new DataFile will be created further
+				// down, from the original, uncompressed file.
+				if (datafile != null) {
+					// remove the compressed temp file:
+					try {
+						tempFile.toFile().delete();
+					} catch (SecurityException ex) {
+						// (this is very non-fatal)
+						logger.warning("Failed to delete temporary file " + tempFile.toString());
+					}
+
+					datafiles.add(datafile);
+					return datafiles;
+				}
+
+				// If it's a ZIP file, we are going to unpack it and create multiple
+				// DataFile objects from its contents:
+			} else if (finalType.equals("application/zip")) {
+
+				ZipInputStream unZippedIn = null;
+				ZipEntry zipEntry = null;
+
+				int fileNumberLimit = systemConfig.getZipUploadFilesLimit();
+
+				try {
+					Charset charset = null;
+					/*
+					 * TODO: (?) We may want to investigate somehow letting the user specify the
+					 * charset for the filenames in the zip file... - otherwise, ZipInputStream
+					 * bails out if it encounteres a file name that's not valid in the current
+					 * charest (i.e., UTF-8, in our case). It would be a bit trickier than what
+					 * we're doing for SPSS tabular ingests - with the lang. encoding pulldown menu
+					 * - because this encoding needs to be specified *before* we upload and attempt
+					 * to unzip the file. -- L.A. 4.0 beta12
+					 * logger.info("default charset is "+Charset.defaultCharset().name()); if
+					 * (Charset.isSupported("US-ASCII")) {
+					 * logger.info("charset US-ASCII is supported."); charset =
+					 * Charset.forName("US-ASCII"); if (charset != null) {
+					 * logger.info("was able to obtain charset for US-ASCII"); }
+					 * 
+					 * }
+					 */
+
+					if (charset != null) {
+						unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()), charset);
+					} else {
+						unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()));
+					}
+
+					while (true) {
+						try {
+							zipEntry = unZippedIn.getNextEntry();
+						} catch (IllegalArgumentException iaex) {
+							// Note:
+							// ZipInputStream documentation doesn't even mention that
+							// getNextEntry() throws an IllegalArgumentException!
+							// but that's what happens if the file name of the next
+							// entry is not valid in the current CharSet.
+							// -- L.A.
+							warningMessage = "Failed to unpack Zip file. (Unknown Character Set used in a file name?) Saving the file as is.";
+							logger.warning(warningMessage);
+							throw new IOException();
+						}
+
+						if (zipEntry == null) {
+							break;
+						}
+						// Note that some zip entries may be directories - we
+						// simply skip them:
+
+						if (!zipEntry.isDirectory()) {
+							if (datafiles.size() > fileNumberLimit) {
+								logger.warning("Zip upload - too many files.");
+								warningMessage = "The number of files in the zip archive is over the limit ("
+										+ fileNumberLimit
+										+ "); please upload a zip archive with fewer files, if you want them to be ingested "
+										+ "as individual DataFiles.";
+								throw new IOException();
+							}
+
+							String fileEntryName = zipEntry.getName();
+							logger.fine("ZipEntry, file: " + fileEntryName);
+
+							if (fileEntryName != null && !fileEntryName.equals("")) {
+
+								String shortName = fileEntryName.replaceFirst("^.*[\\/]", "");
+
+								// Check if it's a "fake" file - a zip archive entry
+								// created for a MacOS X filesystem element: (these
+								// start with "._")
+								if (!shortName.startsWith("._") && !shortName.startsWith(".DS_Store")
+										&& !"".equals(shortName)) {
+									// OK, this seems like an OK file entry - we'll try
+									// to read it and create a DataFile with it:
+
+									File unZippedTempFile = saveInputStreamInTempFile(unZippedIn, fileSizeLimit);
+									DataFile datafile = createSingleDataFile(version, unZippedTempFile, null, shortName,
+											MIME_TYPE_UNDETERMINED_DEFAULT,
+											systemConfig.getFileFixityChecksumAlgorithm(), null, false);
+
+									if (!fileEntryName.equals(shortName)) {
+										// If the filename looks like a hierarchical folder name (i.e., contains slashes
+										// and backslashes),
+										// we'll extract the directory name; then subject it to some "aggressive
+										// sanitizing" - strip all
+										// the leading, trailing and duplicate slashes; then replace all the characters
+										// that
+										// don't pass our validation rules.
+										String directoryName = fileEntryName.replaceFirst("[\\\\/][\\\\/]*[^\\\\/]*$",
+												"");
+										directoryName = StringUtil.sanitizeFileDirectory(directoryName, true);
+										// if (!"".equals(directoryName)) {
+										if (!StringUtil.isEmpty(directoryName)) {
+											logger.fine("setting the directory label to " + directoryName);
+											datafile.getFileMetadata().setDirectoryLabel(directoryName);
+										}
+									}
+
+									if (datafile != null) {
+										// We have created this datafile with the mime type "unknown";
+										// Now that we have it saved in a temporary location,
+										// let's try and determine its real type:
+
+										String tempFileName = getFilesTempDirectory() + "/"
+												+ datafile.getStorageIdentifier();
+
+										try {
+											recognizedType = determineFileType(new File(tempFileName), shortName);
+											logger.fine("File utility recognized unzipped file as " + recognizedType);
+											if (recognizedType != null && !recognizedType.equals("")) {
+												datafile.setContentType(recognizedType);
+											}
+										} catch (Exception ex) {
+											logger.warning("Failed to run the file utility mime type check on file "
+													+ fileName);
+										}
+
+										datafiles.add(datafile);
+									}
+								}
+							}
+						}
+						unZippedIn.closeEntry();
+
+					}
+
+				} catch (IOException ioex) {
+					// just clear the datafiles list and let
+					// ingest default to creating a single DataFile out
+					// of the unzipped file.
+					logger.warning("Unzipping failed; rolling back to saving the file as is.");
+					if (warningMessage == null) {
+						warningMessage = "Failed to unzip the file. Saving the file as is.";
+					}
+
+					datafiles.clear();
+				} catch (FileExceedsMaxSizeException femsx) {
+					logger.warning(
+							"One of the unzipped files exceeds the size limit; resorting to saving the file as is. "
+									+ femsx.getMessage());
+					warningMessage = femsx.getMessage() + "; saving the zip file as is, unzipped.";
+					datafiles.clear();
+				} finally {
+					if (unZippedIn != null) {
+						try {
+							unZippedIn.close();
+						} catch (Exception zEx) {
+						}
+					}
+				}
+				if (datafiles.size() > 0) {
+					// link the data files to the dataset/version:
+					// (except we no longer want to do this! -- 4.6)
+					/*
+					 * Iterator<DataFile> itf = datafiles.iterator(); while (itf.hasNext()) {
+					 * DataFile datafile = itf.next(); datafile.setOwner(version.getDataset()); if
+					 * (version.getFileMetadatas() == null) { version.setFileMetadatas(new
+					 * ArrayList()); } version.getFileMetadatas().add(datafile.getFileMetadata());
+					 * datafile.getFileMetadata().setDatasetVersion(version);
+					 * 
+					 * version.getDataset().getFiles().add(datafile); }
+					 */
+					// remove the uploaded zip file:
+					try {
+						Files.delete(tempFile);
+					} catch (IOException ioex) {
+						// do nothing - it's just a temp file.
+						logger.warning("Could not remove temp file " + tempFile.getFileName().toString());
+					}
+					// and return:
+					return datafiles;
+				}
+
+			} else if (finalType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
+				// Shape files may have to be split into multiple files,
+				// one zip archive per each complete set of shape files:
+
+				// File rezipFolder = new File(this.getFilesTempDirectory());
+				File rezipFolder = getShapefileUnzipTempDirectory();
+
+				IngestServiceShapefileHelper shpIngestHelper;
+				shpIngestHelper = new IngestServiceShapefileHelper(tempFile.toFile(), rezipFolder);
+
+				boolean didProcessWork = shpIngestHelper.processFile();
+				if (!(didProcessWork)) {
+					logger.severe("Processing of zipped shapefile failed.");
+					return null;
+				}
+
+				try {
+					for (File finalFile : shpIngestHelper.getFinalRezippedFiles()) {
+						FileInputStream finalFileInputStream = new FileInputStream(finalFile);
+						finalType = determineContentType(finalFile);
+						if (finalType == null) {
+							logger.warning(
+									"Content type is null; but should default to 'MIME_TYPE_UNDETERMINED_DEFAULT'");
+							continue;
+						}
+
+						File unZippedShapeTempFile = saveInputStreamInTempFile(finalFileInputStream, fileSizeLimit);
+						DataFile new_datafile = createSingleDataFile(version, unZippedShapeTempFile,
+								finalFile.getName(), finalType, systemConfig.getFileFixityChecksumAlgorithm());
+						if (new_datafile != null) {
+							datafiles.add(new_datafile);
+						} else {
+							logger.severe("Could not add part of rezipped shapefile. new_datafile was null: "
+									+ finalFile.getName());
+						}
+						finalFileInputStream.close();
+
+					}
+				} catch (FileExceedsMaxSizeException femsx) {
+					logger.severe("One of the unzipped shape files exceeded the size limit; giving up. "
+							+ femsx.getMessage());
+					datafiles.clear();
+				}
+
+				// Delete the temp directory used for unzipping
+				// The try-catch is due to error encountered in using NFS for stocking file,
+				// cf. https://github.com/IQSS/dataverse/issues/5909
+				try {
+					FileUtils.deleteDirectory(rezipFolder);
+				} catch (IOException ioex) {
+					// do nothing - it's a tempo folder.
+					logger.warning("Could not remove temp folder, error message : " + ioex.getMessage());
+				}
+
+				if (datafiles.size() > 0) {
+					// remove the uploaded zip file:
+					try {
+						Files.delete(tempFile);
+					} catch (IOException ioex) {
+						// do nothing - it's just a temp file.
+						logger.warning("Could not remove temp file " + tempFile.getFileName().toString());
+					} catch (SecurityException se) {
+						logger.warning("Unable to delete: " + tempFile.toString() + "due to Security Exception: "
+								+ se.getMessage());
+					}
+					return datafiles;
+				} else {
+					logger.severe("No files added from directory of rezipped shapefiles");
+				}
+				return null;
+
+			} else {
+				// ToDo what subset of checks from determineFileType makes sense?
+				finalType = suppliedContentType;
+			}
+		}
         // Finally, if none of the special cases above were applicable (or 
         // if we were unable to unpack an uploaded file, etc.), we'll just 
         // create and return a single DataFile:
