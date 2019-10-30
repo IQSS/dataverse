@@ -1759,7 +1759,6 @@ public class DatasetPage implements java.io.Serializable {
         init(true);
         logger.info("Created a new new dataset.");
         // rebuild the bred crumbs display:
-        //dataverseHeaderFragment.setBreadcrumbs(new ArrayList<>());
         dataverseHeaderFragment.initBreadcrumbs(dataset);
     }
     
