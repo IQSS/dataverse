@@ -29,7 +29,7 @@ import javax.persistence.NamedQuery;
 
 @NamedQueries({
         @NamedQuery(name = "FileAccessRequest.findByAuthenticatedUserId",
-                query = "SELECT far FROM FileAccessRequest far WHERE far.authenticatedUser.id=:authenticatedUserId"),
+                query = "SELECT far FROM FileAccessRequest far WHERE far.user.id=:authenticatedUserId"),
         @NamedQuery(name = "FileAccessRequest.findByGuestbookResponseId",
                 query = "SELECT far FROM FileAccessRequest far WHERE far.guestbookResponse.id=:guestbookResponseId"),
         @NamedQuery(name = "FileAccessRequest.findByDataFileId",
@@ -49,7 +49,7 @@ public class FileAccessRequest implements Serializable{
     @ManyToOne
     @JoinColumn(name="authenticated_user_id",nullable=false)
     private AuthenticatedUser user;
-
+    
     @OneToOne
     @JoinColumn(nullable=true)
     private GuestbookResponse guestbookResponse;
