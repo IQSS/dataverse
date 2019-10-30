@@ -392,7 +392,7 @@
                                     </div>
                                 <div>
                                     <ui:fragment rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}" id="previewPresentation">
-
+                                        <ui:fragment rendered="#{!FilePage.selectedTool.worldMapTool}">
                                         <h:commandButton rendered="#{!downloadPopupRequired}" value="#{bundle['file.previewTab.tool.open']} #{FilePage.selectedTool.displayName}" 
                                                          type="submit"
                                                          styleClass="#{(FilePage.fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
@@ -407,6 +407,28 @@
                                                          update="@widgetVar(downloadPopup)"
                                                          oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
                                         </p:commandButton>
+                                        </ui:fragment>
+                                        
+                                        <!--WorldMap Explore-->
+                                        <ui:fragment rendered="#{FilePage.selectedTool.worldMapTool}">
+
+                                            <h:commandLink rendered="#{!downloadPopupRequired}" 
+                                                           styleClass="btn btn-default btn-xs #{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
+                                                           disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
+
+                                                           action="#{FilePage.fileDownloadService.startWorldMapDownloadLink(FilePage.guestbookResponse, FilePage.fileMetadata )}" target="_blank" >
+                  #{bundle['file.previewTab.tool.open']} #{bundle['file.mapData.worldMap']}
+                                            </h:commandLink>
+                                            <p:commandButton rendered="#{downloadPopupRequired}"
+                                                             styleClass="#{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
+                                                             disabled="#{FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload}"
+                                                             process="@this"
+                                                             action="#{FilePage.guestbookResponseService.modifyDatafileAndFormat(FilePage.guestbookResponse, FilePage.fileMetadata, 'worldMap' )}"
+                                                             update="@widgetVar(downloadPopup)"
+                                                             oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                   #{bundle['file.previewTab.tool.open']} #{bundle['file.mapData.worldMap']}
+                                            </p:commandButton>
+                                        </ui:fragment>
 
                                         <iframe role="presentation" title="External File Preview Tool" height="500" width="100%" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe> 
                                     </ui:fragment>

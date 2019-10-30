@@ -11,6 +11,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 
 /**
  * A specification or definition for how an external tool is intended to
@@ -80,6 +81,19 @@ public class ExternalTool implements Serializable {
     
     @Column(nullable = false)
     private boolean hasPreviewMode;   
+
+
+    
+    @Transient
+    private boolean worldMapTool;
+    
+    public boolean isWorldMapTool() {
+        return worldMapTool;
+    }
+
+    public void setWorldMapTool(boolean worldMapTool) {
+        this.worldMapTool = worldMapTool;
+    }
 
     /**
      * This default constructor is only here to prevent this error at

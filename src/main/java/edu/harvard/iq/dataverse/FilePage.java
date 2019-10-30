@@ -239,11 +239,17 @@ public class FilePage implements java.io.Serializable {
     
     private List<ExternalTool> addMapLayerAndSortExternalTools(){
         List<ExternalTool> retList = externalToolService.findFileToolsByTypeContentTypeAndAvailablePreview(ExternalTool.Type.EXPLORE, file.getContentType());
+        if(!retList.isEmpty()){
+            retList.forEach((et) -> {
+                et.setWorldMapTool(false);
+            });
+        }
         if (file != null && worldMapPermissionHelper.getMapLayerMetadata(file) != null && worldMapPermissionHelper.getMapLayerMetadata(file).getEmbedMapLink() != null) {
             ExternalTool wpTool = new ExternalTool();
             wpTool.setDisplayName("World Map"); 
             wpTool.setToolParameters("{}");
             wpTool.setToolUrl(worldMapPermissionHelper.getMapLayerMetadata(file).getEmbedMapLink());
+            wpTool.setWorldMapTool(true);
             retList.add(wpTool);
         }
         Collections.sort(retList, CompareExternalToolName);
