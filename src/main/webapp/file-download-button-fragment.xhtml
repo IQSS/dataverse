@@ -172,12 +172,12 @@
         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
             <ui:remove>
                 <li>
-                    <p:commandLink styleClass="highlightBold" rendered="#{!guestbookAndTermsPopupRequired}"
+                    <p:commandLink styleClass="highlightBold" rendered="#{!termsPopupRequired and !guestbookPopupRequiredAtDownload}"
                                    process="@this"
                                    actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'bundle')}">
                         #{bundle['file.downloadBtn.format.all']}
                     </p:commandLink>
-                    <p:commandLink styleClass="highlightBold" rendered="#{guestbookAndTermsPopupRequired}"
+                    <p:commandLink styleClass="highlightBold" rendered="#{termsPopupRequired or guestbookPopupRequiredAtDownload}"
                                    process="@this"
                                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'bundle' )}"
                                    update="@widgetVar(guestbookAndTermsPopup)"
