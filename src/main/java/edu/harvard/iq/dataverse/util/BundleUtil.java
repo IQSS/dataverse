@@ -87,17 +87,7 @@ public class BundleUtil {
         if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
             bundle = ResourceBundle.getBundle("propertyFiles/" +propertyFileName, currentLocale);
         } else {
-            File bundleFileDir  = new File(filesRootDirectory);
-            URL[] urls = null;
-            try {
-                urls = new URL[]{bundleFileDir.toURI().toURL()};
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-
-            ClassLoader loader = new URLClassLoader(urls);
-            bundle = ResourceBundle.getBundle(propertyFileName, currentLocale, loader);
+            bundle = ResourceBundle.getBundle(propertyFileName, currentLocale);
         }
 
         return bundle ;

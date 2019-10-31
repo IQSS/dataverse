@@ -573,13 +573,10 @@ The presence of the :ref:`:Languages` database setting adds a dropdown in the he
 Configuring the "lang" Directory
 ++++++++++++++++++++++++++++++++
 
-Translations for Dataverse are stored in "properties" files in a directory on disk (e.g. ``/home/glassfish/langBundles``) that you specify with the :ref:`dataverse.lang.directory` ``dataverse.lang.directory`` JVM option, like this:
+Translations for Dataverse are stored in "properties" files in a directory on disk (e.g. ``<glassfish-install-dir>/glassfish/domains/<domain-name>/lib/classes``) that you specify with the :ref:`dataverse.lang.directory` ``dataverse.lang.directory`` JVM option, like this:
 
-``./asadmin create-jvm-options '-Ddataverse.lang.directory=/home/glassfish/langBundles'``
+``./asadmin create-jvm-options '-Ddataverse.lang.directory=<glassfish-install-dir>/glassfish/domains/<domain-name>/lib/classes'``
 
-Go ahead and create the directory you specified.
-
-``mkdir /home/glassfish/langBundles``
 
 Creating a languages.zip File
 +++++++++++++++++++++++++++++
@@ -1045,7 +1042,7 @@ dataverse.lang.directory
 
 This JVM option is used to configure the path where all the language specific property files are to be stored.  If this option is set then the English property file must be present in the path along with any other language property file. You can download language property files from https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs
 
-``./asadmin create-jvm-options '-Ddataverse.lang.directory=PATH_LOCATION_HERE'``
+``./asadmin create-jvm-options '-Ddataverse.lang.directory=<glassfish-install-dir>/glassfish/domains/<domain-name>/lib/classes'``
 
 If this value is not set, by default, a Dataverse installation will read the English language property files from the Java Application.
 
