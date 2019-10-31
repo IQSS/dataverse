@@ -148,7 +148,7 @@ Certain file types in Dataverse are supported by additional functionality, which
 File Previews
 -------------
 
-Installations of Dataverse can install previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically. File previews are not available for restricted files. 
+Installations of Dataverse can install previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically. File previews are not available for restricted files unless the user can access the file itself.
 
 Tabular Data Files
 ------------------
@@ -300,7 +300,7 @@ Here is an `example of a Data Usage Agreement <https://dataverse.org/best-practi
 Restricted Files + Terms of Access 
 ----------------------------------
 
-If you restrict any files in your dataset, you will be prompted by a pop-up to enter Terms of Access for the data. This can also be edited in the Terms tab or selecting Terms in the "Edit" dropdown button in the dataset. You may also allow users to request access for your restricted files by enabling "Request Access". To add more information about the Terms of Access, we have provided fields like Data Access Place, Availability Status, Contact for Access, etc. If you restrict a file, it will not have a preview shown on the file page. 
+If you restrict any files in your dataset, you will be prompted by a pop-up to enter Terms of Access for the data. This can also be edited in the Terms tab or selecting Terms in the "Edit" dropdown button in the dataset. You may also allow users to request access for your restricted files by enabling "Request Access". To add more information about the Terms of Access, we have provided fields like Data Access Place, Availability Status, Contact for Access, etc. If you restrict a file, it will not have a preview shown on the file page until the user is able to access the file itself. 
 
 **Note:** Some Dataverse installations do not allow for file restriction.
 

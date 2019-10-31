@@ -37,7 +37,7 @@ In the curl command below, replace the placeholder "fabulousFileTool.json" place
 
   curl -X POST -H 'Content-type: application/json' http://localhost:8080/api/admin/externalTools --upload-file fabulousFileTool.json 
 
-If you'd like to allow the external tool to be used in previews on the file page, you can define it in the manifest using the `hasPreviewMode` parameter.
+Note that some tools will provide a preview mode, which provides an embedded, simplified view of the tool on the file pages of your installation. This is controlled by the `hasPreviewMode` parameter. 
 
 Listing All External Tools in Dataverse
 +++++++++++++++++++++++++++++++++++++++
@@ -85,7 +85,7 @@ An "Explore" button will appear (on both the dataset page and the file landing p
 File Level Preview Tools
 ++++++++++++++++++++++++
 
-Similar to File level explore tools, File Level preview tools are specific to the file type. File level preview tools are designed to be embedded in the file page and can either be a tool designed solely for previewing data or can be a simplified view of another external tool.
+File level explore tools can be set up to display in preview mode, which is a simplified view of an explore tool designed specifically for embedding in the file page. 
 
 File Level Configure Tools
 ++++++++++++++++++++++++++
