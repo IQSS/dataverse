@@ -175,7 +175,7 @@
                     <p:commandLink styleClass="highlightBold" rendered="#{!termsPopupRequired and !guestbookPopupRequiredAtDownload}"
                                    process="@this"
                                    actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'bundle')}">
-                        #{bundle['file.downloadBtn.format.all']} 1
+                        #{bundle['file.downloadBtn.format.all']}
                     </p:commandLink>
                     <p:commandLink styleClass="highlightBold" rendered="#{termsPopupRequired or guestbookPopupRequiredAtDownload}"
                                    process="@this"
@@ -183,7 +183,7 @@
                                    update="@widgetVar(guestbookAndTermsPopup)"
                                    oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
                     <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
-                        #{bundle['file.downloadBtn.format.all']} 2
+                        #{bundle['file.downloadBtn.format.all']}
                     </p:commandLink>
                 </li>
                 <li role="presentation" class="divider"></li>
@@ -193,7 +193,7 @@
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'original')}">
-                    <h:outputFormat value="#{bundle['file.downloadBtn.format.original']} 3">
+                    <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
                         <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
                     </h:outputFormat>
                 </p:commandLink>
@@ -204,7 +204,7 @@
                                update="@widgetVar(guestbookAndTermsPopup)"
                                oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
                     <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
-                    <h:outputFormat value="#{bundle['file.downloadBtn.format.original']} 4">
+                    <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
                         <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
                     </h:outputFormat>
                 </p:commandLink>
