@@ -604,6 +604,8 @@
                 <ui:include src="file-download-button-fragment.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                     <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
+                    <ui:param name="termsPopupRequired" value="#{DatasetPage.termsPopupRequired}"/>
+                    <ui:param name="guestbookPopupRequiredAtDownload" value="#{DatasetPage.guestbookPopupRequiredAtDownload}"/>        
                     <ui:param name="guestbookAndTermsPopupRequired" value="#{DatasetPage.guestbookAndTermsPopupRequired}"/>
                     <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}"/>
                     <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}"/>
