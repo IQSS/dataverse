@@ -91,6 +91,14 @@ public class Search extends AbstractApiBean {
             try {
                 if (!types.isEmpty()) {
                     filterQueries.add(getFilterQueryFromTypes(types));
+                } else {
+                    /**
+                     * Added to prevent a NullPointerException for superusers
+                     * (who don't use our permission JOIN) when
+                     * SearchServiceBean tries to get SearchFields.TYPE. The GUI
+                     * always seems to add SearchFields.TYPE, even for superusers.
+                     */
+                    filterQueries.add(SearchFields.TYPE + ":(dataverses OR datasets OR files)");
                 }
                 sortBy = SearchUtil.getSortBy(sortField, sortOrder);
                 numResultsPerPage = getNumberOfResultsPerPage(numResultsPerPageRequested);
@@ -202,15 +210,6 @@ public class Search extends AbstractApiBean {
     }
 
     private User getUser() throws WrappedResponse {
-        /**
-         * @todo support searching as non-guest:
-         * https://github.com/IQSS/dataverse/issues/1299
-         *
-         * Note that superusers can't currently use the Search API because they
-         * see permission documents (all Solr documents, really) and we get a
-         * NPE when trying to determine the DvObject type if their query matches
-         * a permission document.
-         */
         User userToExecuteSearchAs = GuestUser.get();
         try {
             AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
@@ -222,16 +221,11 @@ public class Search extends AbstractApiBean {
                 throw ex;
             }
         }
-        if (nonPublicSearchAllowed()) {
+        if (publicSearchAllowed()) {
             return userToExecuteSearchAs;
         } else {
             return GuestUser.get();
         }
-    }
-
-    public boolean nonPublicSearchAllowed() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsSvc.isTrueForKey(SettingsServiceBean.Key.SearchApiNonPublicAllowed, safeDefaultIfKeyNotFound);
     }
 
     public boolean tokenLessSearchAllowed() {
@@ -239,6 +233,11 @@ public class Search extends AbstractApiBean {
         boolean tokenLessSearchAllowed = settingsSvc.isFalseForKey(SettingsServiceBean.Key.SearchApiRequiresToken, outOfBoxBehavior);
         logger.fine("tokenLessSearchAllowed: " + tokenLessSearchAllowed);
         return tokenLessSearchAllowed;
+    }
+
+    public boolean publicSearchAllowed() {
+        boolean saneDefault = false;
+        return settingsSvc.isFalseForKey(SettingsServiceBean.Key.SearchApiHideUnpublished, saneDefault);
     }
 
     private boolean getDataRelatedToMe() {

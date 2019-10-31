@@ -883,8 +883,9 @@ public class SearchServiceBean {
         //      Yes, give back everything
         // ----------------------------------------------------
         if (au.isSuperuser()) {
-            // dangerous because this user will be able to see
-            // EVERYTHING in Solr with no regard to permissions!
+            // Somewhat dangerous because this user (a superuser) will be able
+            // to see everything in Solr with no regard to permissions. But it's
+            // been this way since Dataverse 4.0. So relax. :)
 
             return dangerZoneNoSolrJoin;
         }

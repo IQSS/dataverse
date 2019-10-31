@@ -94,16 +94,17 @@ public class SettingsServiceBean {
          */
         MyDataDoesNotUseSolrPermissionDocs,
         /**
-         * Experimental: Allow non-public search with a key/token using the
-         * Search API. See also https://github.com/IQSS/dataverse/issues/1299
-         */
-        SearchApiNonPublicAllowed,
-        /**
          * In Dataverse 4.7 and earlier, an API token was required to use the
          * Search API. Tokens are no longer required but you can revert to the
          * old behavior by setting this to false.
          */
         SearchApiRequiresToken,
+        /**
+         * Don't let even creators or superusers find unpublished content. This
+         * was the original behavior of Dataverse from 4.0 through 4.17 and this
+         * setting allows you to revert to the old behavior if you prefer it.
+         */
+        SearchApiHideUnpublished,
         /**
          * Experimental: Use Solr to power the file listing on the dataset page.
          */

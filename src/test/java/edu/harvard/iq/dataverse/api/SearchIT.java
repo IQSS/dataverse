@@ -45,9 +45,9 @@ public class SearchIT {
         makeSureTokenlessSearchIsEnabled.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response removeSearchApiNonPublicAllowed = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        removeSearchApiNonPublicAllowed.prettyPrint();
-        removeSearchApiNonPublicAllowed.then().assertThat()
+        Response makeSureUnpublishedNotHidden = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiHideUnpublished);
+        makeSureUnpublishedNotHidden.prettyPrint();
+        makeSureUnpublishedNotHidden.then().assertThat()
                 .statusCode(200);
 
         Response remove = UtilIT.deleteSetting(SettingsServiceBean.Key.ThumbnailSizeLimitImage);
@@ -73,10 +73,6 @@ public class SearchIT {
                 .statusCode(CREATED.getStatusCode());
 
         Integer datasetId1 = UtilIT.getDatasetIdFromResponse(createDataset1Response);
-
-        Response enableNonPublicSearch = UtilIT.enableSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        enableNonPublicSearch.then().assertThat()
-                .statusCode(OK.getStatusCode());
 
         Response shouldBeVisibleToUser1 = UtilIT.search("id:dataset_" + datasetId1 + "_draft", apiToken1);
         shouldBeVisibleToUser1.prettyPrint();
@@ -131,9 +127,6 @@ public class SearchIT {
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response disableNonPublicSearch = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        disableNonPublicSearch.then().assertThat()
-                .statusCode(OK.getStatusCode());
 
         Response makeSureTokenlessSearchIsEnabled = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiRequiresToken);
         makeSureTokenlessSearchIsEnabled.then().assertThat()
@@ -188,10 +181,6 @@ public class SearchIT {
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
-        Response enableNonPublicSearch = UtilIT.enableSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        enableNonPublicSearch.then().assertThat()
-                .statusCode(OK.getStatusCode());
-
         Response searchResponse = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
         searchResponse.prettyPrint();
         assertFalse(searchResponse.body().jsonPath().getString("data.items[0].citation").contains("href"));
@@ -211,10 +200,6 @@ public class SearchIT {
         deleteDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response disableNonPublicSearch = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        disableNonPublicSearch.then().assertThat()
-                .statusCode(OK.getStatusCode());
-
         Response deleteUserResponse = UtilIT.deleteUser(username);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
@@ -232,14 +217,6 @@ public class SearchIT {
     public void testDatasetThumbnail() {
         logger.info("BEGIN testDatasetThumbnail");
 
-//        Response setSearchApiNonPublicAllowed = UtilIT.setSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed, "true");
-//        setSearchApiNonPublicAllowed.prettyPrint();
-//
-//        assertEquals("foo", "foo");
-//        if (true) {
-//            return;
-//        }
-//
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -252,11 +229,6 @@ public class SearchIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
-
-        Response setSearchApiNonPublicAllowed = UtilIT.setSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed, "true");
-        setSearchApiNonPublicAllowed.prettyPrint();
-        setSearchApiNonPublicAllowed.then().assertThat()
-                .statusCode(200);
 
         Response search1 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
         search1.prettyPrint();
@@ -612,10 +584,6 @@ public class SearchIT {
         searchResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response removeSearchApiNonPublicAllowed = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        removeSearchApiNonPublicAllowed.then().assertThat()
-                .statusCode(200);
-
         /**
          * @todo What happens when you delete a dataset? Does the thumbnail
          * created based on the logo get deleted too? Should it?
@@ -653,8 +621,7 @@ public class SearchIT {
         searchUnpublished.prettyPrint();
         searchUnpublished.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find it because it hasn't been published.
-                .body("data.total_count", CoreMatchers.equalTo(0));
+                .body("data.total_count", CoreMatchers.equalTo(1));
 
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         publishDataverse.then().assertThat()
@@ -697,6 +664,10 @@ public class SearchIT {
 
         String searchPart = "*"; 
 
+        Response disableNonPublicSearch = UtilIT.enableSetting(SettingsServiceBean.Key.SearchApiHideUnpublished);
+        disableNonPublicSearch.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
         Response searchUnpublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
         searchUnpublishedSubtree.prettyPrint();
         searchUnpublishedSubtree.then().assertThat()
@@ -710,6 +681,10 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode())
                 // It's expected that you can't find it because it hasn't been published.
                 .body("data.total_count", CoreMatchers.equalTo(0));
+
+        Response revertToShowPublished = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiHideUnpublished);
+        revertToShowPublished.then().assertThat()
+                .statusCode(OK.getStatusCode());
         
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         publishDataverse.then().assertThat()
@@ -782,11 +757,7 @@ public class SearchIT {
     //Hopefully it will not fail as we fixed the issue in https://github.com/IQSS/dataverse/issues/3471
     @Test
     public void testCuratorCardDataversePopulation() throws InterruptedException {
-        Response setSearchApiNonPublicAllowed = UtilIT.setSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed, "true");
-        setSearchApiNonPublicAllowed.prettyPrint();
-        setSearchApiNonPublicAllowed.then().assertThat()
-                .statusCode(200);
-        
+
         Response createSuperUser = UtilIT.createRandomUser();
         createSuperUser.prettyPrint();
         assertEquals(200, createSuperUser.getStatusCode());
@@ -886,7 +857,11 @@ public class SearchIT {
         searchFakeSubtreeNoAPI.prettyPrint();
         searchFakeSubtreeNoAPI.then().assertThat()
                 .statusCode(400);
-        
+
+        Response disableNonPublicSearch = UtilIT.enableSetting(SettingsServiceBean.Key.SearchApiHideUnpublished);
+        disableNonPublicSearch.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
         Response searchUnpublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
         searchUnpublishedSubtree.prettyPrint();
         searchUnpublishedSubtree.then().assertThat()
@@ -942,7 +917,11 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode())
                 // It's expected that you can't find it because it hasn't been published.
                 .body("data.total_count", CoreMatchers.equalTo(0));
-        
+
+        Response revertToShowPublished = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiHideUnpublished);
+        revertToShowPublished.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
         //PUBLISH
         
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
@@ -1010,19 +989,9 @@ public class SearchIT {
 
     @AfterClass
     public static void cleanup() {
-
-        Response enableNonPublicSearch = UtilIT.enableSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        assertEquals(200, enableNonPublicSearch.getStatusCode());
-
-        Response deleteSearchApiNonPublicAllowed = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        deleteSearchApiNonPublicAllowed.then().assertThat()
+        Response revertToDefaultofUnpublishedShown = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiHideUnpublished);
+        revertToDefaultofUnpublishedShown.then().assertThat()
                 .statusCode(200);
-
-        Response getSearchApiNonPublicAllowed = UtilIT.getSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-//        getSearchApiNonPublicAllowed.prettyPrint();
-        getSearchApiNonPublicAllowed.then().assertThat()
-                .body("message", CoreMatchers.equalTo("Setting " + SettingsServiceBean.Key.SearchApiNonPublicAllowed + " not found"))
-                .statusCode(404);
     }
 
 }
