@@ -58,6 +58,7 @@ public class ExternalToolServiceBeanTest {
         job.add("type", "explore");
         job.add("scope", "file");
         job.add("toolUrl", "http://awesometool.com");
+        job.add("hasPreviewMode", "false");
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()
@@ -105,6 +106,7 @@ public class ExternalToolServiceBeanTest {
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
         job.add("scope", "file");
+        job.add("hasPreviewMode", "false");
         job.add("toolUrl", "http://awesometool.com");
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
@@ -154,6 +156,7 @@ public class ExternalToolServiceBeanTest {
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
         job.add("scope", "file");
+        job.add("hasPreviewMode", "false");
         job.add("toolUrl", "http://awesometool.com");
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
@@ -206,6 +209,7 @@ public class ExternalToolServiceBeanTest {
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
         job.add("scope", "file");
+        job.add("hasPreviewMode", "false");
         job.add("toolUrl", "http://awesometool.com");
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
@@ -238,6 +242,7 @@ public class ExternalToolServiceBeanTest {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("description", "This tool is awesome.");
         job.add("toolUrl", "http://awesometool.com");
+        job.add("hasPreviewMode", "false");
         job.add("toolParameters", Json.createObjectBuilder().build());
         job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
         String tool = job.build().toString();
@@ -256,6 +261,7 @@ public class ExternalToolServiceBeanTest {
     public void testParseAddExternalToolInputNoDescription() {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("displayName", "AwesomeTool");
+        job.add("hasPreviewMode", "false");
         job.add("toolUrl", "http://awesometool.com");
         job.add("toolParameters", Json.createObjectBuilder().build());
         job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
@@ -278,6 +284,7 @@ public class ExternalToolServiceBeanTest {
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
         job.add("scope", "file");
+        job.add("hasPreviewMode", "false");
         job.add("toolParameters", Json.createObjectBuilder().build());
         job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
         String tool = job.build().toString();
@@ -299,6 +306,7 @@ public class ExternalToolServiceBeanTest {
         job.add("description", "This tool is awesome.");
         job.add("type", "noSuchType");
         job.add("scope", "file");
+        job.add("hasPreviewMode", "false");
         job.add("toolUrl", "http://awesometool.com");
         job.add("toolParameters", Json.createObjectBuilder().build());
         job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
@@ -322,6 +330,7 @@ public class ExternalToolServiceBeanTest {
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
         job.add("scope", "file");
+        job.add("hasPreviewMode", "false");
         job.add("toolUrl", "http://awesometool.com");
 
         job.add("toolParameters", Json.createObjectBuilder().add("queryParameters", Json.createArrayBuilder()
@@ -352,6 +361,7 @@ public class ExternalToolServiceBeanTest {
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
         job.add("scope", "dataset");
+        job.add("hasPreviewMode", "false");
         job.add("toolUrl", "http://awesometool.com");
 
         job.add("toolParameters", Json.createObjectBuilder().add("queryParameters", Json.createArrayBuilder()
@@ -380,6 +390,7 @@ public class ExternalToolServiceBeanTest {
         job.add("type", "explore");
         job.add("scope", "dataset");
         job.add("toolUrl", "http://awesometool.com");
+        job.add("hasPreviewMode", "true");
 
         job.add("toolParameters", Json.createObjectBuilder().add("queryParameters", Json.createArrayBuilder()
                 .add(Json.createObjectBuilder()
@@ -410,6 +421,7 @@ public class ExternalToolServiceBeanTest {
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
         job.add("scope", "dataset");
+        job.add("hasPreviewMode", "false");
         job.add("toolUrl", "http://awesometool.com");
 
         job.add("toolParameters", Json.createObjectBuilder().add("queryParameters", Json.createArrayBuilder()

@@ -11,6 +11,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 
 /**
  * A specification or definition for how an external tool is intended to
@@ -27,6 +28,7 @@ public class ExternalTool implements Serializable {
     public static final String TOOL_URL = "toolUrl";
     public static final String TOOL_PARAMETERS = "toolParameters";
     public static final String CONTENT_TYPE = "contentType";
+    public static final String HAS_PREVIEW_MODE = "hasPreviewMode";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -76,6 +78,22 @@ public class ExternalTool implements Serializable {
      */
     @Column(nullable = true, columnDefinition = "TEXT")
     private String contentType;
+    
+    @Column(nullable = false)
+    private boolean hasPreviewMode;   
+
+
+    
+    @Transient
+    private boolean worldMapTool;
+    
+    public boolean isWorldMapTool() {
+        return worldMapTool;
+    }
+
+    public void setWorldMapTool(boolean worldMapTool) {
+        this.worldMapTool = worldMapTool;
+    }
 
     /**
      * This default constructor is only here to prevent this error at
@@ -99,6 +117,18 @@ public class ExternalTool implements Serializable {
         this.toolUrl = toolUrl;
         this.toolParameters = toolParameters;
         this.contentType = contentType;
+        this.hasPreviewMode = false;
+    }
+    
+    public ExternalTool(String displayName, String description, Type type, Scope scope, String toolUrl, String toolParameters, String contentType, boolean hasPreviewMode) {
+        this.displayName = displayName;
+        this.description = description;
+        this.type = type;
+        this.scope = scope;
+        this.toolUrl = toolUrl;
+        this.toolParameters = toolParameters;
+        this.contentType = contentType;
+        this.hasPreviewMode = hasPreviewMode;
     }
 
     public enum Type {
@@ -212,7 +242,15 @@ public class ExternalTool implements Serializable {
     public void setContentType(String contentType) {
         this.contentType = contentType;
     }
+    
+    public boolean getHasPreviewMode() {
+        return hasPreviewMode;
+    }
 
+    public void setHasPreviewMode(boolean hasPreviewMode) {
+        this.hasPreviewMode = hasPreviewMode;
+    }
+    
     public JsonObjectBuilder toJson() {
         JsonObjectBuilder jab = Json.createObjectBuilder();
         jab.add("id", getId());
@@ -224,6 +262,11 @@ public class ExternalTool implements Serializable {
         jab.add(TOOL_PARAMETERS, getToolParameters());
         if (getContentType() != null) {
             jab.add(CONTENT_TYPE, getContentType());
+        }
+        if (getHasPreviewMode()) {
+            jab.add(HAS_PREVIEW_MODE, getHasPreviewMode());
+        } else {
+            
         }
         return jab;
     }

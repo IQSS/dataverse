@@ -62,7 +62,11 @@ Once on a dataset page, you will see the title, citation, description, and sever
 View Files
 ----------
 
-Files in Dataverse each have their own page that can be reached through the search results or through the Files table on their parent dataset's page. The dataset page and file page offer much the same functionality in terms of viewing and editing files, with a few small exceptions. The file page includes the file's persistent identifier (DOI or handle), which can be found under the Metadata tab. Also, the file page's Versions tab gives you a version history that is more focused on the individual file rather than the dataset as a whole. 
+Files in Dataverse each have their own landing page that can be reached through the search results or through the Files table on their parent dataset's page. The dataset page and file page offer much the same functionality in terms of viewing and editing files, with a few small exceptions. 
+
+- In installations that have enabled support for persistent identifers (PIDs) at the file level, the file page includes the file's DOI or handle, which can be found in the file citation and also under the Metadata tab.
+- Previewers for several common file types are available and can be added by installation administrators.
+- The file page's Versions tab gives you a version history that is more focused on the individual file rather than the dataset as a whole. 
 
 File Search within Datasets
 ---------------------------
@@ -88,6 +92,8 @@ Cite Data
 You can find the citation for the dataset at the top of the dataset page in a blue box. Additionally, there is a Cite Data button that offers the option to download the citation as EndNote XML, RIS Format, or BibTeX Format.
 
 .. _download_files:
+
+In installations that have added file-level citations, you can find and download the file's citation on the file page in a similar manner.
 
 Download Files
 --------------
