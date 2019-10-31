@@ -2849,7 +2849,7 @@ public class DatasetPage implements java.io.Serializable {
         // either send the user directly to the download API (if no guestbook/terms
         // popup is required), or send them to the download popup:
         if(!getSelectedDownloadableFiles().isEmpty() && getSelectedNonDownloadableFiles().isEmpty()){
-            if (isGuestbookAndTermsPopupRequired()){
+            if (isTermsPopupRequired() || isGuestbookPopupRequiredAtDownload()){
                 PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');");
             } else {
                 startMultipleFileDownload();
