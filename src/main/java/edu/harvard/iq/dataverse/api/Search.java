@@ -98,7 +98,7 @@ public class Search extends AbstractApiBean {
                      * SearchServiceBean tries to get SearchFields.TYPE. The GUI
                      * always seems to add SearchFields.TYPE, even for superusers.
                      */
-                    filterQueries.add(SearchFields.TYPE + ":(dataverses OR datasets OR files)");
+                    filterQueries.add(SearchFields.TYPE + ":(" + SearchConstants.DATAVERSES + " OR " + SearchConstants.DATASETS + " OR " + SearchConstants.FILES + ")");
                 }
                 sortBy = SearchUtil.getSortBy(sortField, sortOrder);
                 numResultsPerPage = getNumberOfResultsPerPage(numResultsPerPageRequested);
