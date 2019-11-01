@@ -12,7 +12,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.persistence.EnumType;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import javax.persistence.Column;
+import javax.persistence.Enumerated;
 import javax.persistence.GenerationType;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -54,6 +58,12 @@ public class FileAccessRequest implements Serializable{
     @JoinColumn(nullable=true)
     private GuestbookResponse guestbookResponse;
     
+    public enum RequestState {CREATED,EDITED,GRANTED,REJECTED,RESUBMIT,INVALIDATED,CLOSED};
+    //private RequestState state;
+    @Enumerated(EnumType.STRING)
+    @Column( nullable=false )
+    private RequestState requestState;
+    
     public FileAccessRequest(){
         
     }
@@ -61,14 +71,16 @@ public class FileAccessRequest implements Serializable{
     public FileAccessRequest(DataFile df, AuthenticatedUser au){
         setDataFile(df);
         setRequester(au);
+        setState(RequestState.CREATED);
     }
     
     public FileAccessRequest(DataFile df, AuthenticatedUser au, GuestbookResponse gbr){
         setDataFile(df);
         setRequester(au);
         setGuestbookResponse(gbr);
+        setState(RequestState.CREATED);
     }
-    
+     
     public Long getId() {
         return id;
     }
@@ -81,7 +93,7 @@ public class FileAccessRequest implements Serializable{
         return dataFile;
     }
     
-    public void setDataFile(DataFile df){
+    public final void setDataFile(DataFile df){
         this.dataFile = df;
     }
     
@@ -89,7 +101,7 @@ public class FileAccessRequest implements Serializable{
         return user;
     }
     
-    public void setRequester(AuthenticatedUser au){
+    public final void setRequester(AuthenticatedUser au){
         this.user = au;
     }
     
@@ -97,8 +109,98 @@ public class FileAccessRequest implements Serializable{
         return guestbookResponse;
     }
     
-    public void setGuestbookResponse(GuestbookResponse gbr){
+    public final void setGuestbookResponse(GuestbookResponse gbr){
         this.guestbookResponse = gbr;
+    }
+    
+    public RequestState getState() {
+        return this.requestState;
+    }
+    
+    public void setState(RequestState requestState) {
+        this.requestState = requestState;
+    }
+    
+    public String getStateLabel() {
+        if(isStateCreated()){
+            return "created";
+        }
+        if(isStateEdited()) {
+            return "edited";
+        }
+        if(isStateGranted()) {
+            return "granted";
+        }
+        if(isStateRejected()) {
+            return "rejected";
+        }
+        if(isStateResubmit()) {
+            return "resubmit";
+        }
+        if(isStateInvalidated()) {
+            return "invalidated";
+        }
+        if(isStateClosed()) {
+            return "closed";
+        }
+        return null; 
+    }
+    
+    public void setStateCreated() {
+        this.requestState = RequestState.CREATED;
+    }
+    
+    public void setStateEdited() {
+        this.requestState = RequestState.EDITED;
+    }
+    
+    public void setStateGranted() {
+        this.requestState = RequestState.GRANTED;
+    }
+
+    public void setStateRejected() {
+        this.requestState = RequestState.REJECTED;
+    }
+
+    public void setStateResubmit() {
+        this.requestState = RequestState.RESUBMIT;
+    }
+    
+    public void setStateInvalidated() {
+        this.requestState = RequestState.INVALIDATED;
+    }
+
+    public void setStateClosed() {
+        this.requestState = RequestState.CLOSED;
+    }
+
+    
+    public boolean isStateCreated() {
+        return this.requestState == RequestState.CREATED;
+    }
+   
+    public boolean isStateEdited() {
+        return this.requestState == RequestState.EDITED;
+    }
+    
+    public boolean isStateGranted() {
+        return this.requestState == RequestState.GRANTED;
+    }
+
+    public boolean isStateRejected() {
+        return this.requestState == RequestState.REJECTED;
+    }
+
+    public boolean isStateResubmit() {
+        return this.requestState == RequestState.RESUBMIT;
+    }
+    
+    public boolean isStateInvalidated() {
+        return this.requestState == RequestState.INVALIDATED;
+    }
+
+    public boolean isStateClosed() {
+        return this.requestState == RequestState.CLOSED;
     }
     
     @Override
