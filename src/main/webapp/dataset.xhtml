@@ -528,17 +528,22 @@
                                     <p jsf:id="select_HostDataverse_Static" class="form-control-static">#{DatasetPage.dataset.owner.name}</p>
                                     <h:inputHidden value="#{DatasetPage.ownerId}" id="select_HostDataverseStatic"/>
                                 </ui:fragment>
-                                <p:selectOneMenu id="hostDataverse" onchange="updateOwnerDataverse()" rendered="#{DatasetPage.editMode == 'CREATE'}"
-                                                 value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
-                                    <f:selectItems value="#{dataverseServiceBean.getDataverseMenuList()}" var="dv" itemLabel="#{dv[1]}" itemValue="#{dv[0]}"/>
-                                </p:selectOneMenu>
-                                <!-- an invisible button to refresh the page with the new owner dataverse: -->
-                                <p:commandButton id="updateOwnerDataverse"
-                                    style="display:none"
-                                    process="@this :datasetForm:hostDataverse"
-                                    update="@form,:breadCrumbPanel"
-                                    action="#{DatasetPage.updateOwnerDataverse()}">
-                                </p:commandButton>
+                                <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
+                                    <p class="help-block">
+                                        #{bundle['dataset.host.tip']}
+                                    </p>
+                                    <p:selectOneMenu id="hostDataverse" onchange="updateOwnerDataverse()"
+                                                     value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
+                                        <f:selectItems value="#{dataverseServiceBean.getDataverseMenuList()}" var="dv" itemLabel="#{dv[1]}" itemValue="#{dv[0]}"/>
+                                    </p:selectOneMenu>
+                                    <!-- an invisible button to refresh the page with the new owner dataverse: -->
+                                    <p:commandButton id="updateOwnerDataverse"
+                                        style="display:none"
+                                        process="@this :datasetForm:hostDataverse"
+                                        update="@form,:breadCrumbPanel"
+                                        action="#{DatasetPage.updateOwnerDataverse()}">
+                                    </p:commandButton>
+                                </ui:fragment>
                             </div>
                         </div>
                         <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataverseTemplates and DatasetPage.editMode == 'CREATE'}">
