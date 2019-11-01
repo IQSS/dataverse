@@ -108,8 +108,7 @@
                                     </ui:fragment>
                                     <p:selectOneMenu id="hostDataverse" onchange="updateOwnerDataverse()" rendered="#{DataversePage.editMode == 'CREATE'}"
                                                      value="#{DataversePage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
-                                        <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"/>
-                                                       <!-- itemDisabled="#{dv eq DataversePage.dataverse or dv.owners.contains(DataversePage.dataverse)}"/ -->
+                                        <f:selectItems value="#{dataverseServiceBean.getDataverseMenuList()}" var="dv" itemLabel="#{dv[1]}" itemValue="#{dv[0]}"/>
                                     </p:selectOneMenu>
                                     <!-- an invisible button to refresh the page with the new owner dataverse: -->
                                     <p:commandButton id="updateOwnerDataverse"
@@ -118,7 +117,6 @@
                                         update="@form,:breadCrumbPanel"
                                         action="#{DataversePage.updateOwnerDataverse()}">
                                     </p:commandButton>
-                                    <!-- update="@widgetVar(breadcrumbNavBlock), @form" -->
                                 </div>
                             </div>
                         </div>
