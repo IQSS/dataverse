@@ -121,6 +121,9 @@ public class AccessIT {
         tabFile2Name = "stata13-auto.dta";
         tabFile2NameConvert = tabFile2Name.substring(0, tabFile2Name.indexOf(".dta")) + ".tab";
         String tab2PathToFile = "scripts/search/data/tabular/" + tabFile2Name;
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + tabFile2Name, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
         Response tab2AddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), tab2PathToFile, apiToken);
         tabFile2Id = JsonPath.from(tab2AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
         
