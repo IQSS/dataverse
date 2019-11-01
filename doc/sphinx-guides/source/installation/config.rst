@@ -1125,13 +1125,6 @@ The key required to create users via API as documented at :doc:`/api/native-api`
 
 ``curl -X PUT -d builtInS3kretKey http://localhost:8080/api/admin/settings/BuiltinUsers.KEY``
 
-.. _:SearchApiHideUnpublished:
-
-:SearchApiHideUnpublished
-+++++++++++++++++++++++++
-
-In Dataverse 4.17 and lower, the :doc:`/api/search` never showed unpublished dataverses, datasets, or files. As of Dataverse 4.18, unpublished dataverses, datasets, and files are all now searchable if you pass an API token with sufficient permissions. To revert to the old behavior, set ``:SearchApiHideUnpublished`` to true.
-
 :SearchApiRequiresToken
 +++++++++++++++++++++++
 

@@ -45,11 +45,6 @@ public class SearchIT {
         makeSureTokenlessSearchIsEnabled.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response makeSureUnpublishedNotHidden = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiHideUnpublished);
-        makeSureUnpublishedNotHidden.prettyPrint();
-        makeSureUnpublishedNotHidden.then().assertThat()
-                .statusCode(200);
-
         Response remove = UtilIT.deleteSetting(SettingsServiceBean.Key.ThumbnailSizeLimitImage);
         remove.then().assertThat()
                 .statusCode(200);
@@ -664,28 +659,19 @@ public class SearchIT {
 
         String searchPart = "*"; 
 
-        Response disableNonPublicSearch = UtilIT.enableSetting(SettingsServiceBean.Key.SearchApiHideUnpublished);
-        disableNonPublicSearch.then().assertThat()
-                .statusCode(OK.getStatusCode());
-
         Response searchUnpublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
         searchUnpublishedSubtree.prettyPrint();
         searchUnpublishedSubtree.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find it because it hasn't been published.
-                .body("data.total_count", CoreMatchers.equalTo(0));
+                .body("data.total_count", CoreMatchers.equalTo(1));
         
         Response searchUnpublishedSubtree2 = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias2);
         searchUnpublishedSubtree2.prettyPrint();
         searchUnpublishedSubtree2.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find it because it hasn't been published.
+                // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
 
-        Response revertToShowPublished = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiHideUnpublished);
-        revertToShowPublished.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         publishDataverse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -726,6 +712,7 @@ public class SearchIT {
         searchPublishedSubtree2.prettyPrint();
         searchPublishedSubtree2.then().assertThat()
                 .statusCode(OK.getStatusCode())
+                // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
         
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias2, apiToken);
@@ -858,69 +845,57 @@ public class SearchIT {
         searchFakeSubtreeNoAPI.then().assertThat()
                 .statusCode(400);
 
-        Response disableNonPublicSearch = UtilIT.enableSetting(SettingsServiceBean.Key.SearchApiHideUnpublished);
-        disableNonPublicSearch.then().assertThat()
-                .statusCode(OK.getStatusCode());
-
         Response searchUnpublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
         searchUnpublishedSubtree.prettyPrint();
         searchUnpublishedSubtree.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find it because it hasn't been published.
-                .body("data.total_count", CoreMatchers.equalTo(0));
+                .body("data.total_count", CoreMatchers.equalTo(1));
         
         Response searchUnpublishedSubtreeNoAPI = UtilIT.search(searchPart, null, "&subtree="+dataverseAlias);
         searchUnpublishedSubtreeNoAPI.prettyPrint();
         searchUnpublishedSubtreeNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find it because it hasn't been published.
+                // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
         
         Response searchUnpublishedSubtrees = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias +"&subtree="+dataverseAlias2);
         searchUnpublishedSubtrees.prettyPrint();
         searchUnpublishedSubtrees.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find them because they haven't been published.
-                .body("data.total_count", CoreMatchers.equalTo(0));
+                .body("data.total_count", CoreMatchers.equalTo(2));
         
         Response searchUnpublishedSubtreesNoAPI = UtilIT.search(searchPart, null, "&subtree="+dataverseAlias +"&subtree="+dataverseAlias2);
         searchUnpublishedSubtreesNoAPI.prettyPrint();
         searchUnpublishedSubtreesNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find them because they haven't been published.
+                // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
 
         Response searchUnpublishedRootSubtreeForDataset = UtilIT.search(identifier.replace("FK2/", ""), apiToken, "&subtree=root");
         searchUnpublishedRootSubtreeForDataset.prettyPrint();
         searchUnpublishedRootSubtreeForDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find it because it hasn't been published.
-                .body("data.total_count", CoreMatchers.equalTo(0));
+                .body("data.total_count", CoreMatchers.equalTo(1));
 
         Response searchUnpublishedRootSubtreeForDatasetNoAPI = UtilIT.search(identifier.replace("FK2/", ""), null, "&subtree=root");
         searchUnpublishedRootSubtreeForDatasetNoAPI.prettyPrint();
         searchUnpublishedRootSubtreeForDatasetNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find it because it hasn't been published.
+                // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
         
         Response searchUnpublishedNoSubtreeForDataset = UtilIT.search(identifier.replace("FK2/", ""), apiToken, "");
         searchUnpublishedNoSubtreeForDataset.prettyPrint();
         searchUnpublishedNoSubtreeForDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find it because it hasn't been published.
-                .body("data.total_count", CoreMatchers.equalTo(0));
+                .body("data.total_count", CoreMatchers.equalTo(1));
         
         Response searchUnpublishedNoSubtreeForDatasetNoAPI = UtilIT.search(identifier.replace("FK2/", ""), null, "");
         searchUnpublishedNoSubtreeForDatasetNoAPI.prettyPrint();
         searchUnpublishedNoSubtreeForDatasetNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find it because it hasn't been published.
+                // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
-
-        Response revertToShowPublished = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiHideUnpublished);
-        revertToShowPublished.then().assertThat()
-                .statusCode(OK.getStatusCode());
 
         //PUBLISH
         
@@ -989,9 +964,6 @@ public class SearchIT {
 
     @AfterClass
     public static void cleanup() {
-        Response revertToDefaultofUnpublishedShown = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiHideUnpublished);
-        revertToDefaultofUnpublishedShown.then().assertThat()
-                .statusCode(200);
     }
 
 }

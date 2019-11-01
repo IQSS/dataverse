@@ -221,11 +221,7 @@ public class Search extends AbstractApiBean {
                 throw ex;
             }
         }
-        if (publicSearchAllowed()) {
-            return userToExecuteSearchAs;
-        } else {
-            return GuestUser.get();
-        }
+        return userToExecuteSearchAs;
     }
 
     public boolean tokenLessSearchAllowed() {
@@ -233,11 +229,6 @@ public class Search extends AbstractApiBean {
         boolean tokenLessSearchAllowed = settingsSvc.isFalseForKey(SettingsServiceBean.Key.SearchApiRequiresToken, outOfBoxBehavior);
         logger.fine("tokenLessSearchAllowed: " + tokenLessSearchAllowed);
         return tokenLessSearchAllowed;
-    }
-
-    public boolean publicSearchAllowed() {
-        boolean saneDefault = false;
-        return settingsSvc.isFalseForKey(SettingsServiceBean.Key.SearchApiHideUnpublished, saneDefault);
     }
 
     private boolean getDataRelatedToMe() {

@@ -100,12 +100,6 @@ public class SettingsServiceBean {
          */
         SearchApiRequiresToken,
         /**
-         * Don't let even creators or superusers find unpublished content. This
-         * was the original behavior of Dataverse from 4.0 through 4.17 and this
-         * setting allows you to revert to the old behavior if you prefer it.
-         */
-        SearchApiHideUnpublished,
-        /**
          * Experimental: Use Solr to power the file listing on the dataset page.
          */
         FilesOnDatasetPageFromSolr,
