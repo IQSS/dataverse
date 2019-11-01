@@ -641,17 +641,6 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
-                    <compilerArgument>${compilerArgument}</compilerArgument>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.3</version>
                 <configuration>
@@ -798,5 +787,46 @@
             <id>all-unit-tests</id>
         </profile>
         <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
+      <profile>
+        <id>Java8</id>
+        <activation>
+          <jdk>1.8</jdk>
+        </activation>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <version>3.8.0</version>
+              <configuration>
+                <source>1.8</source>
+                <target>1.8</target>
+                <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
+                <compilerArgument>${compilerArgument}</compilerArgument>
+              </configuration>
+            </plugin>
+          </plugins>
+        </build>
+      </profile>
+      <profile>
+        <id>Java9Plus</id>
+        <activation>
+          <jdk>[1.9</jdk>
+        </activation>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <version>3.8.0</version>
+              <configuration>
+                <release>8</release>
+                <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
+                <compilerArgument>${compilerArgument}</compilerArgument>
+              </configuration>
+            </plugin>
+          </plugins>
+        </build>
+      </profile>
     </profiles>
 </project>
