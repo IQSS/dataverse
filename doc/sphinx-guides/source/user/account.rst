@@ -22,12 +22,13 @@ Dataverse has been configured for one or more of the following log in options:
 - Username/Email and Password
 - Institutional Log In
 - ORCID
+- Microsoft Azure AD
 - GitHub
 - Google
 
 Please note that once you create your Dataverse account, it will be associated with only one of the log in options above.
 
-The Institutional Log In, ORCID, GitHub, and Google options are described in more detail below under "Remote Authentication."
+The Institutional Log In, ORCID, Microsoft, GitHub, and Google options are described in more detail below under "Remote Authentication."
 
 Create Account
 ~~~~~~~~~~~~~~
@@ -134,10 +135,10 @@ Convert your Dataverse account away from ORCID for log in
 
 If you don't want to log in to Dataverse using ORCID any more, you will want to convert your Dataverse account to the Dataverse Username/Email log in option. To do this, you will need to contact support for the Dataverse installation you are using. On your account page, there is a link that will open a popup form to contact support for assistance.
 
-GitHub and Google Log In
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Microsoft Azure AD, GitHub, and Google Log In
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can also convert your Dataverse account to use authentication provided by GitHub or Google. These options may be found in the "Other options" section of the log in page, and function similarly to how ORCID is outlined above. If you would like to convert your account away from using one of these services for log in, then you can follow the same steps as listed above for converting away from the ORCID log in.
+You can also convert your Dataverse account to use authentication provided by GitHub, Microsoft, or Google. These options may be found in the "Other options" section of the log in page, and function similarly to how ORCID is outlined above. If you would like to convert your account away from using one of these services for log in, then you can follow the same steps as listed above for converting away from the ORCID log in.
 
 My Data
 -------

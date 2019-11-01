@@ -83,6 +83,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
             // some custom S3 implementations require "PathStyleAccess" as they us a path, not a subdomain. default = false
             s3CB.withPathStyleAccessEnabled(s3pathStyleAccess);
+            // Openstack SWIFT S3 implementations require "PayloadSigning" set to true. default = false
+            s3CB.setPayloadSigningEnabled(s3payloadSigning);
+            // Openstack SWIFT S3 implementations require "ChunkedEncoding" set to false. default = true
+            // Boolean is inverted, otherwise setting dataverse.files.s3-chunked-encoding=false would result in leaving Chunked Encoding enabled
+            s3CB.setChunkedEncodingDisabled(!s3chunkedEncoding);
+
             // let's build the client :-)
             this.s3 = s3CB.build();
         } catch (Exception e) {
@@ -124,6 +130,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
      * Anything but case-insensitive "true" will lead to value of false, which is default value, too.
      */
     private boolean s3pathStyleAccess = Boolean.parseBoolean(System.getProperty("dataverse.files.s3-path-style-access", "false"));
+    /**
+     * Pass in a boolean value if payload signing should be used within the S3 client.
+     * Anything but case-insensitive "true" will lead to value of false, which is default value, too.
+     */
+    private boolean s3payloadSigning = Boolean.parseBoolean(System.getProperty("dataverse.files.s3-payload-signing","false"));
+    /**
+     * Pass in a boolean value if chunked encoding should not be used within the S3 client.
+     * Anything but case-insensitive "false" will lead to value of true, which is default value, too.
+     */
+    private boolean s3chunkedEncoding = Boolean.parseBoolean(System.getProperty("dataverse.files.s3-chunked-encoding","true"));
     private String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
     private String key;
 

@@ -350,12 +350,12 @@
                     </div>
                     <!-- END Top Button/Citation Blocks -->
                     <div id="contentTabs">
-                        <!-- Metadata -->
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{FilePage.selectedTabIndex}">
                             <p:ajax event="tabChange" listener="#{FilePage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
                             <p:tab id="accessTab" class="padding-none" title="#{bundle['file.dataFilesTab.dataAccess']}"
                                    rendered="#{settingsWrapper.rsyncDownload and FilePage.fileMetadata.dataFile.filePackage and systemConfig.rsyncDownload
                                         and !FilePage.fileMetadata.getDataFile().getOwner().getStorageIdentifier().startsWith('s3://') }">
+                                <!-- Access -->
                                 <ui:include src="file-data-access-fragment.xhtml">
                                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                                     <ui:param name="datasetVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
@@ -363,12 +363,84 @@
                                     <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                                 </ui:include>
                             </p:tab>
+
+
+                            <p:tab id="previewTab" title="#{bundle['file.previewTab.header']}" rendered="#{FilePage.publiclyDownloadable and (FilePage.toolsWithPreviews.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)
+                                                            and FilePage.fileMetadata.datasetVersion == FilePage.fileMetadata.datasetVersion.dataset.latestVersion}">
+                                <!-- Add external tools as an inner tab with buttons to full tool-->
+                                    <!-- Preview Button Group -->
+                                    <div>
+                                        <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 1 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                            <button type="button" id="selectTool" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
+                                                <span class="glyphicon glyphicon-eye-open"/> #{bundle['file.previewTab.button.label']} <span class="caret"></span>
+                                            </button>
+                                            <ul class="dropdown-menu pull-right text-left" role="menu">
+                                                <ui:repeat value="#{FilePage.toolsWithPreviews}" var="tool" >
+
+                                                    <li>
+                                                        <h:commandLink  action="#{FilePage.setSelectedTool(tool)}"  >
+                                                            <h:outputText  value="#{tool.displayName}" />
+                                                        </h:commandLink>
+                                                    </li>
+
+                                                </ui:repeat>
+                                            </ul>
+                                        </div>
+                                        <!-- END: Preview Button Group -->
+                                    </div>
+                                <div>
+                                    <ui:fragment rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}" id="previewPresentation">
+                                        <ui:fragment rendered="#{!FilePage.selectedTool.worldMapTool}">
+                                        <h:commandButton rendered="#{!downloadPopupRequired}" value="#{bundle['file.previewTab.tool.open']} #{FilePage.selectedTool.displayName}" 
+                                                         type="submit"
+                                                         styleClass="#{(FilePage.fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
+                                                         disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                                         action="#{FilePage.fileDownloadService.explore(FilePage.guestbookResponse, FilePage.fileMetadata, FilePage.selectedTool )}">
+                                        </h:commandButton>
+                                        <p:commandButton rendered="#{downloadPopupRequired}" value="#{bundle['file.previewTab.tool.open']} #{FilePage.selectedTool.displayName}"
+                                                         action="#{FilePage.guestbookResponseService.modifyDatafileAndFormat(FilePage.guestbookResponse, FilePage.fileMetadata, 'externalTool', FilePage.selectedTool)}"
+                                                         disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                                         type="submit"
+                                                         process="@this"
+                                                         update="@widgetVar(downloadPopup)"
+                                                         oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                                        </p:commandButton>
+                                        </ui:fragment>
+                                        
+                                        <!--WorldMap Explore-->
+                                        <ui:fragment rendered="#{FilePage.selectedTool.worldMapTool}">
+
+                                            <h:commandLink rendered="#{!downloadPopupRequired}" 
+                                                           styleClass="btn btn-default btn-xs #{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
+                                                           disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
+
+                                                           action="#{FilePage.fileDownloadService.startWorldMapDownloadLink(FilePage.guestbookResponse, FilePage.fileMetadata )}" target="_blank" >
+                  #{bundle['file.previewTab.tool.open']} #{bundle['file.mapData.worldMap']}
+                                            </h:commandLink>
+                                            <p:commandButton rendered="#{downloadPopupRequired}"
+                                                             styleClass="#{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
+                                                             disabled="#{FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload}"
+                                                             process="@this"
+                                                             action="#{FilePage.guestbookResponseService.modifyDatafileAndFormat(FilePage.guestbookResponse, FilePage.fileMetadata, 'worldMap' )}"
+                                                             update="@widgetVar(downloadPopup)"
+                                                             oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                   #{bundle['file.previewTab.tool.open']} #{bundle['file.mapData.worldMap']}
+                                            </p:commandButton>
+                                        </ui:fragment>
+
+                                        <iframe role="presentation" title="External File Preview Tool" height="500" width="100%" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe> 
+                                    </ui:fragment>
+                                </div>
+                            </p:tab>
+                            
+                            
                             <p:tab id="metadataMapTab" class="padding-none" title="#{bundle['file.dataFilesTab.metadata.header']}"
                                    rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
                                                               (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset()))}">
                                 
-                                <!-- Add + Edit Metadata Button -->
+                                <!-- Metadata -->
                                 <div class="button-block tab-header margin-bottom text-right">
+                                    <!-- Add + Edit Metadata Button -->
                                     <h:outputLink styleClass="btn btn-default btn-access #{(FilePage.lockedFromEdits) ? 'disabled' : ''}"
                                                   value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE"
                                                   rendered="#{!widgetWrapper.widgetView and (dataverseSession.user.authenticated
@@ -400,7 +472,6 @@
                                         </ul>
                                     </div>
                                 </div>
-                                <!-- END: Add + Edit Metadata Button -->
                                 
                                 <div class="panel panel-default">
                                     <div data-toggle="collapse" data-target="#panelCollapseFMD" class="panel-heading text-info">
@@ -542,14 +613,8 @@
                                     </div>
                                 </div>
                             </p:tab>
-                            <ui:remove>
-                                <p:tab id="provenanceTab" title="Provenance" rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
-                                                              (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset()))}">
-                                    <!-- Placeholder -->
-                                    <em>Coming soon...</em>
-                                </p:tab>
-                            </ui:remove>
                             <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}">
+                                <!-- Versions -->
                                 <ui:include src="file-versions.xhtml"></ui:include>
                             </p:tab>
                         </p:tabView>
