@@ -46,6 +46,28 @@ public class FileAccessRequestServiceBean {
                         .getResultList();
     }
     
+    public List<FileAccessRequest> findAllByAuthenticatedUserIdAndRequestState(Long authenticatedUserId, FileAccessRequest.RequestState requestState){
+        return em.createNamedQuery("FileAccessRequest.findByAuthenticatedUserIdAndRequestState", FileAccessRequest.class)
+                        .setParameter("authenticatedUserId", authenticatedUserId)
+                        .setParameter("requestState",requestState)
+                        .getResultList();
+    }
+    
+    public List<FileAccessRequest> findAllByGuestbookResponseIdAndRequestState(Long guestbookResponseId, FileAccessRequest.RequestState requestState){
+        return em.createNamedQuery("FileAccessRequest.findByGuestbookResponseIdAndRequestState", FileAccessRequest.class)
+                        .setParameter("dataFileId", guestbookResponseId)
+                        .setParameter("requestState",requestState)
+                        .getResultList();
+    }
+    
+    public List<FileAccessRequest> findAllByDataFileIdAndRequestState(Long dataFileId, FileAccessRequest.RequestState requestState){
+        return em.createNamedQuery("FileAccessRequest.findByDataFileIdAndRequestState", FileAccessRequest.class)
+                        .setParameter("dataFileId", dataFileId)
+                        .setParameter("requestState",requestState)
+                        .getResultList();
+    }
+    
+    
     public FileAccessRequest save(FileAccessRequest far) {
         if (far.getId() == null) {
             em.persist(far);
