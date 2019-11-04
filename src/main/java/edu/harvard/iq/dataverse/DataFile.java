@@ -218,7 +218,6 @@ public class DataFile extends DvObject implements Comparable {
     private List<FileAccessRequest> fileAccessRequests;
     
     public List<FileAccessRequest> getFileAccessRequests(){
-        logger.info("DataFile.getFileAccessRequests()");
         return fileAccessRequests;
     }
       
@@ -701,7 +700,9 @@ public class DataFile extends DvObject implements Comparable {
         if(fileAccessRequesters == null){
            this.fileAccessRequesters = new ArrayList<>();
            for(FileAccessRequest far : fileAccessRequests){
-               fileAccessRequesters.add(far.getRequester());
+               if(far.isStateCreated()){
+                    fileAccessRequesters.add(far.getRequester());
+               }
            }
         }
         return fileAccessRequesters;
