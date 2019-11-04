@@ -54,6 +54,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     @EJB
     DataFileServiceBean datafileService;
     @EJB
+    FileAccessRequestServiceBean fileAccessRequestService;
+    @EJB
     DataverseRoleServiceBean roleService;
     @EJB
     RoleAssigneeServiceBean roleAssigneeService;
@@ -325,7 +327,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         return roleAssigneeService.filterRoleAssignees(query, dataset, selectedRoleAssignees); 
     }
     
-    public void grantAccess(ActionEvent evt) {
+    /*public void grantAccess(ActionEvent evt) {
         // Find the built in file downloader role (currently by alias)
         DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
         for (RoleAssignee roleAssignee : selectedRoleAssignees) {
@@ -341,6 +343,41 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                     }                  
                 }               
             
+            }
+
+            if (sendNotification) {
+                for (AuthenticatedUser au : roleAssigneeService.getExplicitUsers(roleAssignee)) {
+                    userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.GRANTFILEACCESS, dataset.getId());                
+                }
+             }
+        }
+        
+        initMaps();
+    }*/
+    
+    public void grantAccess(ActionEvent evt) {
+        // Find the built in file downloader role (currently by alias)
+        DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
+        for (RoleAssignee roleAssignee : selectedRoleAssignees) {
+            boolean sendNotification = false;
+            for (DataFile file : selectedFiles) {
+                if (assignRole(roleAssignee, file, fileDownloaderRole)) {
+                    if (file.isReleased()) {
+                        sendNotification = true;
+                    }
+                    // remove request, if it exist
+                    for (AuthenticatedUser au : roleAssigneeService.getExplicitUsers(roleAssignee)) {
+                            if (file.getFileAccessRequesters().remove(au)) {
+                                List<FileAccessRequest> fileAccessRequests = fileAccessRequestService.findAllByAuthenticatedUserIdAndRequestState(au.getId(), FileAccessRequest.RequestState.CREATED);
+                                for(FileAccessRequest far : fileAccessRequests){
+                                    far.setStateGranted();
+                                    fileAccessRequestService.save(far);
+                                }
+                                file.setFileAccessRequests(fileAccessRequests); 
+                                datafileService.save(file);
+                            }       
+                    }
+                }
             }
 
             if (sendNotification) {
@@ -368,6 +405,12 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         for (DataFile file : files) {
             if (assignRole(au, file, fileDownloaderRole)) {                
                 file.getFileAccessRequesters().remove(au);
+                List<FileAccessRequest> fileAccessRequests = fileAccessRequestService.findAllByAuthenticatedUserIdAndRequestState(au.getId(), FileAccessRequest.RequestState.CREATED);
+                for(FileAccessRequest far : fileAccessRequests){
+                    far.setStateGranted();
+                    fileAccessRequestService.save(far);
+                }
+                file.setFileAccessRequests(fileAccessRequests); 
                 datafileService.save(file);
                 actionPerformed = true;
             }
