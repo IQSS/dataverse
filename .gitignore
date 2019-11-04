@@ -46,6 +46,10 @@ conf/docker-aio/dv/deps/
 conf/docker-aio/dv/install/dvinstall.zip
 # or copy of test data
 conf/docker-aio/testdata/
+
+# file contains environment variables for docker
+conf/docker-aio/env-var-4-docker.config
+
 scripts/installer/default.config
 *.pem
 
