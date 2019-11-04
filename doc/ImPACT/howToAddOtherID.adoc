@@ -1,0 +1,53 @@
+= How to add an OtherID to an existing Dataset of a paired Dataverse via its Native API
+* last updated: {docdatetime}
+
+== Information about an otherID as a Json payload: an example
+
+[source, json]
+----
+
+{
+"fields": [
+
+  {
+    "typeName": "otherId",
+    "multiple": true,
+    "typeClass": "compound",
+    "value": [
+      {
+        "otherIdAgency": {
+          "typeName": "otherIdAgency",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "ImPACT Notary Service"
+        },
+        "otherIdValue": {
+          "typeName": "otherIdValue",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "1bb30a949033d087a9dd519da90ad8dc32f93a25"
+        }
+      }
+    ]
+  }
+]
+}
+----
+
+* Fields to be customized for an actual request in the above example are:
+. "value": "ImPACT Notary Service"
+. "value": "1bb30a949033d087a9dd519da90ad8dc32f93a25"
+
+
+== How to execute an add-otherID request
+
+Example by curl::
+----
+
+$ curl -H "X-Dataverse-key: c78323bf-d1e0-4058-b5c4-bdc74b69f42f" -X PUT "http://localhost:8083/api/datasets/:persistentId/editMetadata/?persistentId=doi:10.33563/FK2/POMAFL" --upload-file payload_otherId.json
+----
+where +
+"http://localhost;8083" is the sever URL of a paired Datataverse, +
+"c78323bf-d1e0-4058-b5c4-bdc74b69f42f" is an API key, +
+"doi:10.33563/FK2/POMAFL" is a DatasetId, +
+"payload_otherId.json" is the file name of a payload (json file)
