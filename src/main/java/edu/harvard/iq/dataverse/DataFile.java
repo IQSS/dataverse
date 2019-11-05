@@ -699,12 +699,16 @@ public class DataFile extends DvObject implements Comparable {
     public List<AuthenticatedUser> getFileAccessRequesters() {
         if(fileAccessRequesters == null){
            this.fileAccessRequesters = new ArrayList<>();
-           for(FileAccessRequest far : fileAccessRequests){
-               if(far.isStateCreated()){
-                    fileAccessRequesters.add(far.getRequester());
-               }
+        } else {
+            this.fileAccessRequesters.clear();
+        }
+        
+        for(FileAccessRequest far : fileAccessRequests){
+           if(far.isStateCreated()){
+                fileAccessRequesters.add(far.getRequester());
            }
         }
+        
         return fileAccessRequesters;
     }
 
