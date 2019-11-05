@@ -215,7 +215,7 @@ public class DataFile extends DvObject implements Comparable {
         this.guestbookResponses = guestbookResponses;
     }
     
-    @OneToMany(mappedBy="dataFile",fetch = FetchType.LAZY,cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy="dataFile",fetch = FetchType.LAZY,cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     private List<FileAccessRequest> fileAccessRequests;
     
     public List<FileAccessRequest> getFileAccessRequests(){
