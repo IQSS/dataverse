@@ -375,9 +375,11 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                                 }
                                 file.setFileAccessRequests(fileAccessRequests); 
                                 datafileService.save(file);
+                                em.refresh(file); //not sure how to get the file to refresh everything
                             }       
                     }
                 }
+                
             }
 
             if (sendNotification) {
@@ -413,6 +415,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                 file.setFileAccessRequests(fileAccessRequests); 
                 datafileService.save(file);
                 actionPerformed = true;
+                em.refresh(file);
             }
         }
         if (actionPerformed) {
