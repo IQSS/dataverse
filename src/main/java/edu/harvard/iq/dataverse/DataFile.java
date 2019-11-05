@@ -40,6 +40,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -214,7 +215,7 @@ public class DataFile extends DvObject implements Comparable {
         this.guestbookResponses = guestbookResponses;
     }
     
-    @OneToMany(mappedBy="dataFile",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy="dataFile",fetch = FetchType.LAZY,cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<FileAccessRequest> fileAccessRequests;
     
     public List<FileAccessRequest> getFileAccessRequests(){
@@ -703,12 +704,14 @@ public class DataFile extends DvObject implements Comparable {
             this.fileAccessRequesters.clear();
         }
         
-        for(FileAccessRequest far : getFileAccessRequests()){
-           if(far.isStateCreated()){
-                fileAccessRequesters.add(far.getRequester());
-           }
+        List<FileAccessRequest> fars = getFileAccessRequests();
+        if(fars != null && fars.size() > 0){
+            for(FileAccessRequest far : fars){
+               if(far.isStateCreated()){
+                    fileAccessRequesters.add(far.getRequester());
+               }
+            }
         }
-        
         return fileAccessRequesters;
     }
 
