@@ -703,7 +703,7 @@ public class DataFile extends DvObject implements Comparable {
             this.fileAccessRequesters.clear();
         }
         
-        for(FileAccessRequest far : fileAccessRequests){
+        for(FileAccessRequest far : getFileAccessRequests()){
            if(far.isStateCreated()){
                 fileAccessRequesters.add(far.getRequester());
            }
