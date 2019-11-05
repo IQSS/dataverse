@@ -88,6 +88,7 @@ import java.util.HashSet;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
@@ -129,6 +130,7 @@ import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.TimeZone;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.solr.client.solrj.SolrClient;
@@ -3009,6 +3011,48 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             return null;
         }
+    }
+    
+    public List<Object[]> getHostDataverseMenuList() {
+        // An unauthenticated user should not have gotten this far, but just in case:
+        if (!this.isSessionUserAuthenticated()){
+            return null; 
+        }
+        // Admin user can modify any dataverse - so we just return them all: 
+        if (this.session.getUser().isSuperuser()) {
+            return dataverseService.getDataverseMenuList();
+        }
+        
+        // For everybody else, we'll have to do something more elaborate:
+        
+        Dataverse rootDv = dataverseService.findRootDataverse();
+        List<Object[]> ret = new ArrayList<>();
+        
+        // Check if we can add datasets in root: 
+        DataverseRequest req = dvRequestService.getDataverseRequest();
+        if (permissionService.requestOn(req, rootDv).has(Permission.AddDataset)) {
+            logger.info("Yes, can add datasets to root");
+            Object[] dvEntry = new Object[2];
+            dvEntry[0] = rootDv.getId();
+            dvEntry[1] = rootDv.getName();
+            ret.add(dvEntry);
+        }
+        
+        List<DvObject> authorizedDataverses = permissionService.whichChildrenHasPermissionsFor(dvRequestService.getDataverseRequest(), dataverseService.findRootDataverse(), EnumSet.of(Permission.PublishDataset));
+        // (Why does Permission.AddDaset NOT work though??)
+        
+        for (DvObject dvObject : authorizedDataverses) {
+            if (dvObject instanceof Dataverse) {
+                Dataverse dataverse = (Dataverse)dvObject;
+                Object[] dvEntry = new Object[2];
+                dvEntry[0] = dataverse.getId();
+                dvEntry[1] = dataverse.getName();
+                ret.add(dvEntry);
+            }
+        }
+        
+        return ret; 
+        
     }
 
     List<FileMetadata> previouslyRestrictedFiles = null;

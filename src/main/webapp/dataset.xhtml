@@ -534,7 +534,7 @@
                                     </p>
                                     <p:selectOneMenu id="hostDataverse" onchange="updateOwnerDataverse()"
                                                      value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
-                                        <f:selectItems value="#{dataverseServiceBean.getDataverseMenuList()}" var="dv" itemLabel="#{dv[1]}" itemValue="#{dv[0]}"/>
+                                        <f:selectItems value="#{DatasetPage.getHostDataverseMenuList()}" var="dv" itemLabel="#{dv[1]}" itemValue="#{dv[0]}"/>
                                     </p:selectOneMenu>
                                     <!-- an invisible button to refresh the page with the new owner dataverse: -->
                                     <p:commandButton id="updateOwnerDataverse"
