@@ -170,7 +170,9 @@
                                                  selection="#{ReplaceDatafilesPage.selectedFiles}"
                                                  var="fileMetadata"
                                                  widgetVar="filesTable"
-                                                 emptyMessage="#{ReplaceDatafilesPage.fileToBeSaved != null ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
+                                                 emptyMessage="#{ReplaceDatafilesPage.fileToBeSaved != null ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}"
+                                                 styleClass="filesTable"
+                                    >
                                         <f:facet name="header">
                                             <div jsf:id="filesHeaderBlock" class="row">
                                                 <div id="filesHeaderCount" class="col-xs-6 text-left">

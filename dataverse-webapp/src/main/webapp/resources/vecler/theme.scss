@@ -1011,7 +1011,7 @@ table[id$="resultsTable"] {
 	}
 }
 
-div[id$="filesTable"] .ui-paginator {
+div.filesTable .ui-paginator {
 	.ui-paginator-pages .ui-state-active {
 		background: $main-color;
 		border-color: $main-color;

@@ -28,7 +28,9 @@
                              sortOrder="ascending"
                              var="fileMetadata" widgetVar="filesTable"
                              draggableRows="true"
-                             emptyMessage="#{bundle['file.notFound.tip']}">
+                             emptyMessage="#{bundle['file.notFound.tip']}"
+                             styleClass="filesTable"
+                >
                     <p:column class="col-file-metadata" headerText="File" style="padding-left: 10px">
 
                         <ui:fragment rendered="#{!empty fileMetadata.dataFile.globalIdString}">

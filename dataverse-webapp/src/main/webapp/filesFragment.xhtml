@@ -28,7 +28,9 @@
                  var="fileMetadata"
                  widgetVar="filesTable"
                  rendered="#{datasetFilesTab.workingVersion != null}"
-                 emptyMessage="#{bundle['file.notFound.tip']}">
+                 emptyMessage="#{bundle['file.notFound.tip']}"
+                 styleClass="filesTable"
+    >
         <p:ajax event="page" listener="#{datasetFilesTab.fileListingPaginatorListener}" update="filesTable" process="@this"  oncomplete="refreshPaginator()"  immediate="true"/>
         <p:ajax event="toggleSelect" listener="#{datasetFilesTab.toggleAllSelected()}" update="filesTable"/>
         <p:ajax event="rowUnselectCheckbox" listener="#{datasetFilesTab.setSelectAllFiles(false)}" update="filesTable" process="@this" />
