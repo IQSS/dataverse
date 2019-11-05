@@ -36,4 +36,8 @@ public class UpdateDataverseGuestbookRootCommand extends AbstractCommand<Dataver
         }
         return dv;
     }
+
+    public boolean isNewValue() {
+        return newValue;
+    }
 }

@@ -1241,11 +1241,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             } catch (EJBException ex) {
                 logger.warning("Problem getting rsync script (EJBException): " + EjbUtil.ejbExceptionToString(ex));
             } catch (RuntimeException ex) {
-                if (ex instanceof CommandException) {
-                    logger.warning("Problem getting rsync script (Command Exception): " + ex.getLocalizedMessage());
-                } else {
-                    logger.warning("Problem getting rsync script (RuntimeException): " + ex.getLocalizedMessage());
-                }
+                logger.warning("Problem getting rsync script (RuntimeException): " + ex.getLocalizedMessage());
             }
         }
     }
