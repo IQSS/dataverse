@@ -374,7 +374,9 @@
                                  selection="#{EditDatafilesPage.selectedFiles}"
                                  var="fileMetadata"
                                  widgetVar="filesTable"
-                                 emptyMessage="#{showFileUpload ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
+                                 emptyMessage="#{showFileUpload ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}"
+                                 styleClass="filesTable"
+                    >
                         <f:facet name="header">
                             <div jsf:id="filesHeaderBlock" class="row">
                                 <div id="filesHeaderCount" class="col-xs-6 text-left">

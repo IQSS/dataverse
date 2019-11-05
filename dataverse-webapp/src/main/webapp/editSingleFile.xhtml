@@ -22,7 +22,7 @@
 
 <h:body>
     <ui:composition template="/dataverse_template.xhtml">
-        <ui:param name="pageTitle" value="#{bundle['file.editFiles']} - #{EditSingleFilePage.workingVersion.title}"/>
+        <ui:param name="pageTitle" value="#{bundle['file.editSingleFile']} - #{EditSingleFilePage.workingVersion.title}"/>
         <ui:param name="dataverse" value="#{EditSingleFilePage.dataset.owner}"/>
         <ui:param name="dataset" value="#{EditSingleFilePage.dataset}"/>
         <ui:param name="version" value="#{EditSingleFilePage.workingVersion}"/>
@@ -35,7 +35,7 @@
                 <f:viewParam name="versionString" value="#{EditSingleFilePage.versionString}"/>
                 <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                 <f:viewAction action="#{EditSingleFilePage.init}" />
-                <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(EditSingleFilePage.singleFile, bundle['file.editFiles'])}" />
+                <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(EditSingleFilePage.singleFile, bundle['file.editSingleFile'])}" />
             </f:metadata>
 
         <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType" var="restrictTypeEnum"/>
@@ -52,9 +52,10 @@
                                      var="fileMetadata"
                                      widgetVar="fileTable"
                                      emptyMessage=""
-                                     styleClass="hideTableheader"
+                                     styleClass="hideTableheader filesTable"
                         >
-                            <p:column class="col-file-thumb text-center" style="width:93px !important;padding:4px 10px;">
+                            <p:column class="col-file-thumb text-center"
+                                      style="width:73px !important;padding:4px 10px;">
                                 <div class="thumbnail-block">
                                     <!-- Thumbnail Preview -->
                                     <span class="file-thumbnail-preview-img" jsf:rendered="#{!empty fileMetadata.dataFile.id and dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}"
@@ -131,15 +132,11 @@
                                     </ui:fragment>
                                 </div>
                             </p:column>
-                            <p:column class="col-file-action text-right" style="width: 250px !important;">
+                            <p:column class="col-file-action text-right">
                                 <div style="margin-right:14px;" class="btn-group" >
-                                    <div jsf:id="editFilesRestrictDeletePanelButton" style="margin-right:14px;" class="btn-group"
-                                         jsf:rendered="#{!empty EditSingleFilePage.fileMetadatas and !EditSingleFilePage.workingVersion.hasPackageFile}">
-                                        <p:commandLink type="button" class="btn btn-default" onclick="PF('deleteFileConfirmation').show();">
-                                            <span class="glyphicon glyphicon-trash"/> #{bundle['file.delete']}
-                                        </p:commandLink>
-                                    </div>
-                                    <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
+                                    <button type="button"
+                                            class="btn btn-default btn-access dropdown-toggle"
+                                            data-toggle="dropdown">
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFile']} <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
@@ -215,24 +212,6 @@
                 </p:fragment>
 
                 <!-- END: Create/Save Dataset Button Panel -->
-
-                <!--Delete file window-->
-                <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
-                    <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
-                    <ui:fragment rendered="#{EditSingleFilePage.dataset.released}">
-                        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
-                    </ui:fragment>
-                    <div class="button-block">
-                        <p:commandButton value="#{bundle.continue}"
-                                         onclick="PF('deleteFileConfirmation').hide()"
-                                         oncomplete="window.scrollTo(0, 0);"
-                                         update=":#{p:resolveClientId('fileForm:fileTable', view)},:messagePanel, :fileForm:editDataFileButtons"
-                                         action="#{EditSingleFilePage.deleteFile()}" />
-                        <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()" type="button"
-                                         update=":fileForm:editDataFileButtons"
-                        />
-                    </div>
-                </p:dialog>
                 <!--Edit file tags window-->
                 <iqbs:fileTagsDialog dialogWidgetId="editFileTagsPopup"
                                      rendered="#{EditSingleFilePage.fileMetadata != null}">
