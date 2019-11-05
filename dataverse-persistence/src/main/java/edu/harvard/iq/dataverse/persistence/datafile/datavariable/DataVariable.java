@@ -6,6 +6,7 @@ import org.hibernate.validator.constraints.NotBlank;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -165,6 +166,10 @@ public class DataVariable implements Serializable {
     @OrderBy("catOrder")
     private Collection<VariableCategory> categories;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn
+    private VarGroup varGroup;
+
     /*
      * The boolean "ordered": identifies ordered categorical variables ("ordinals").
      */
@@ -200,7 +205,7 @@ public class DataVariable implements Serializable {
     private Long numberOfDecimalPoints;
 
     @OneToMany(mappedBy = "dataVariable", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private Collection<VariableMetadata> variableMetadatas;
+    private Collection<VariableMetadata> variableMetadatas = new ArrayList<>();
 
     public DataVariable() {
     }
@@ -223,6 +228,15 @@ public class DataVariable implements Serializable {
     /*
      * Getter and Setter functions:
      */
+
+    public VarGroup getVarGroup() {
+        return varGroup;
+    }
+
+    public void setVarGroup(VarGroup varGroup) {
+        this.varGroup = varGroup;
+    }
+
     public DataTable getDataTable() {
         return this.dataTable;
     }

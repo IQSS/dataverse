@@ -41,7 +41,7 @@
                                                     <div class="form-col-container col-sm-12">
                                                         <ui:repeat value="#{dsf.datasetFieldValues}" var="dsfv" varStatus="valCount" >
                                                             <div class="form-group dataset-field-values">
-                                                                <div class="form-col-container col-sm-9 edit-field">
+                                                                <div class="form-col-container col-xs-9 edit-field">
                                                                     <ui:include src="datasetFieldForEditFragment.xhtml">
                                                                         <ui:param name="dsfv" value="#{dsfv}"/>
                                                                         <ui:param name="dsfvIndex" value="#{valCount.index}"/>
@@ -95,66 +95,67 @@
                                             <p:autoUpdate/>
                                             <div class="form-group form-col-container col-sm-9 dataset-field-values">
                                                 <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue" varStatus="valCount">
-                                                    <div class="form-group form-col-container col-sm-9 edit-compound-field">
-                                                        <!-- Sub Fields -->
-                                                        <ui:repeat value="#{compoundValue.childDatasetFields}" var="subdsf">
-                                                            <div class="form-col-container #{(subdsf.datasetFieldType.fieldType == 'TEXTBOX') ? 'col-sm-12' : 'col-sm-6'}">
-                                                                <ui:fragment rendered="#{subdsf.datasetFieldType.name == 'dsDescriptionValue'}">
-                                                                    <p class="help-block">
-                                                                        <h:outputFormat value="#{bundle.htmlAllowedMsg}" escape="false">
-                                                                            <f:param value="#{bundle.htmlAllowedTags}"/>
-                                                                        </h:outputFormat>
-                                                                    </p>
-                                                                </ui:fragment>
-                                                                <label class="control-label" for="metadata_#{subdsf.datasetFieldType.name}">
-                                                                    #{subdsf.datasetFieldType.localeTitle}
-                                                                    <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{subdsf.required}" />
-                                                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{subdsf.datasetFieldType.localeDescription}"></span>
-                                                                </label>
-                                                                <ui:fragment rendered="#{!subdsf.datasetFieldType.controlledVocabulary}">
-                                                                    <ui:include src="datasetFieldForEditFragment.xhtml">
-                                                                        <ui:param name="dsfv" value="#{subdsf.singleValue}"/>
-                                                                        <ui:param name="dsfvIndex" value="0"/>
-                                                                        <ui:param name="showAddReplicationForTitleButton" value="#{showAddReplicationForTitleButton}" />
-                                                                    </ui:include>
-                                                                </ui:fragment>
-                                                                <!-- MOVED SELECT ONE TO dataFieldForEdit -->
-                                                                <div jsf:rendered="#{subdsf.datasetFieldType.controlledVocabulary}">
-                                                                    <p:selectOneMenu tabindex="#{block.index+1}" value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;"
-                                                                                     rendered="#{!subdsf.datasetFieldType.allowMultiples}">
-                                                                        <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
-                                                                        <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
-                                                                    </p:selectOneMenu>
-                                                                    <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{subdsf.datasetFieldType.allowMultiples}">
-                                                                        <p:selectManyCheckbox value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
-                                                                                              layout="pageDirection">
+                                                    <div class="form-field-group"><div class="form-group form-col-container col-xs-9 edit-compound-field">
+                                                            <!-- Sub Fields -->
+                                                            <ui:repeat value="#{compoundValue.childDatasetFields}" var="subdsf">
+                                                                <div class="form-col-container #{(subdsf.datasetFieldType.fieldType == 'TEXTBOX') ? 'col-sm-12' : 'col-sm-6'}">
+                                                                    <ui:fragment rendered="#{subdsf.datasetFieldType.name == 'dsDescriptionValue'}">
+                                                                        <p class="help-block">
+                                                                            <h:outputFormat value="#{bundle.htmlAllowedMsg}" escape="false">
+                                                                                <f:param value="#{bundle.htmlAllowedTags}"/>
+                                                                            </h:outputFormat>
+                                                                        </p>
+                                                                    </ui:fragment>
+                                                                    <label class="control-label" for="metadata_#{subdsf.datasetFieldType.name}">
+                                                                        #{subdsf.datasetFieldType.localeTitle}
+                                                                        <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{subdsf.required}" />
+                                                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{subdsf.datasetFieldType.localeDescription}"></span>
+                                                                    </label>
+                                                                    <ui:fragment rendered="#{!subdsf.datasetFieldType.controlledVocabulary}">
+                                                                        <ui:include src="datasetFieldForEditFragment.xhtml">
+                                                                            <ui:param name="dsfv" value="#{subdsf.singleValue}"/>
+                                                                            <ui:param name="dsfvIndex" value="0"/>
+                                                                            <ui:param name="showAddReplicationForTitleButton" value="#{showAddReplicationForTitleButton}" />
+                                                                        </ui:include>
+                                                                    </ui:fragment>
+                                                                    <!-- MOVED SELECT ONE TO dataFieldForEdit -->
+                                                                    <div jsf:rendered="#{subdsf.datasetFieldType.controlledVocabulary}">
+                                                                        <p:selectOneMenu tabindex="#{block.index+1}" value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;"
+                                                                                         rendered="#{!subdsf.datasetFieldType.allowMultiples}">
+                                                                            <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
                                                                             <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
-                                                                        </p:selectManyCheckbox>
-                                                                    </div>
-                                                                    <div class="alert-danger" jsf:rendered="#{!empty subdsf.validationMessage}">
-                                                                        <strong>#{subdsf.validationMessage}</strong>
+                                                                        </p:selectOneMenu>
+                                                                        <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{subdsf.datasetFieldType.allowMultiples}">
+                                                                            <p:selectManyCheckbox value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
+                                                                                                  layout="pageDirection">
+                                                                                <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
+                                                                            </p:selectManyCheckbox>
+                                                                        </div>
+                                                                        <div class="alert-danger" jsf:rendered="#{!empty subdsf.validationMessage}">
+                                                                            <strong>#{subdsf.validationMessage}</strong>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                        </ui:repeat>
-                                                    </div>
-                                                    <div class="col-sm-3 field-add-delete" jsf:rendered="#{dsf.datasetFieldType.allowMultiples and !dsf.datasetFieldType.controlledVocabulary}">
-                                                        <p:commandLink tabindex="#{block.index+1}" title="#{bundle.add}"
-                                                                       styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
-                                                                       actionListener="#{dsf.addDatasetFieldCompoundValue(valCount.index + 1)}"   
-                                                                       update=":#{p:resolveClientIds('@id(editCompoundValueFragment)', view)}"
-                                                                       >
-                                                            <span class="glyphicon glyphicon-plus no-text"/>
-                                                        </p:commandLink>
-                                                        <p:commandLink tabindex="#{block.index+1}" title="#{bundle.delete}"
-                                                                       styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
-                                                                       rendered="#{dsf.datasetFieldCompoundValues.size() > 1}"
-                                                                       actionListener="#{dsf.removeDatasetFieldCompoundValue(valCount.index)}"
-                                                                       update=":#{p:resolveClientIds('@id(editCompoundValueFragment)', view)}"
-                                                                       >
-                                                            <span class="glyphicon glyphicon-minus no-text"/>
-                                                        </p:commandLink>
+                                                            </ui:repeat>
+                                                        </div>
+                                                        <div class="col-xs-3 field-add-delete" jsf:rendered="#{dsf.datasetFieldType.allowMultiples and !dsf.datasetFieldType.controlledVocabulary}">
+                                                            <p:commandLink tabindex="#{block.index+1}" title="#{bundle.add}"
+                                                                           styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
+                                                                           actionListener="#{dsf.addDatasetFieldCompoundValue(valCount.index + 1)}"   
+                                                                           update=":#{p:resolveClientIds('@id(editCompoundValueFragment)', view)}"
+                                                                           >
+                                                                <span class="glyphicon glyphicon-plus no-text"/>
+                                                            </p:commandLink>
+                                                            <p:commandLink tabindex="#{block.index+1}" title="#{bundle.delete}"
+                                                                           styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
+                                                                           rendered="#{dsf.datasetFieldCompoundValues.size() > 1}"
+                                                                           actionListener="#{dsf.removeDatasetFieldCompoundValue(valCount.index)}"
+                                                                           update=":#{p:resolveClientIds('@id(editCompoundValueFragment)', view)}"
+                                                                           >
+                                                                <span class="glyphicon glyphicon-minus no-text"/>
+                                                            </p:commandLink>
+                                                        </div>
                                                     </div>
                                                 </ui:repeat>
                                             </div>

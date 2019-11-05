@@ -145,9 +145,7 @@ body {
 	}
 
 	&.btn-default {
-		&.btn-access {
-			@include btn-access;
-		}
+		@include btn-access;
 	}
 
 	.glyphicon, .caret {
@@ -338,6 +336,10 @@ div.field-add-delete {
 		margin: 0 1em;
 	}
 
+	a.btn.compound-field-btn {
+		margin-top: 1.4em;
+	}
+
 	@media (max-width: $screen-sm-max) {
 		.btn span.glyphicon.no-text {
 			margin: 0 0.3em;
@@ -359,6 +361,18 @@ input, textarea {
 	padding-top: 10px;
 	padding-bottom: 5px;
 	color: $main-text-color;
+}
+
+.form-field-group {
+	border: 1px solid $gray-border-color;
+	padding: 10px 15px 15px 15px;
+	overflow: hidden;
+	border-radius: $border-radius;
+	margin: 0 -15px;
+
+	& + .form-field-group {
+		margin-top: 15px;
+	}
 }
 
 /* Labels */
@@ -597,6 +611,22 @@ tr.ui-state-highlight a:not(.btn), .ui-widget-content tr.ui-state-highlight a:no
 
 .ui-datatable-tablewrapper .col-manage-action .button-block div.btn-group {
 	margin: 0 5px 0 1px;
+}
+
+.panel-default > div.panel-heading {
+	padding: 16px 20px 14px 20px;
+	border-bottom: 1px solid $gray-border-color;
+	background: $search-result-desc-color;
+
+	&.text-info[data-toggle="collapse"] {
+		color: $link-color;
+	}
+
+	.glyphicon {
+		top: 3px;
+		left: 7px;
+		color: $icon-color;
+	}
 }
 
 /* AJAX loading spinner */

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.persistence.datafile.datavariable;
 
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -10,6 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,8 +30,8 @@ public class VarGroup {
     @JoinColumn(nullable = false)
     private FileMetadata fileMetadata;
 
-    private Set<DataVariable> varsInGroup;
-
+    @OneToMany(mappedBy = "varGroup", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<DataVariable> varsInGroup = new HashSet<>();
 
     public VarGroup() {
         varsInGroup = new HashSet<DataVariable>();
