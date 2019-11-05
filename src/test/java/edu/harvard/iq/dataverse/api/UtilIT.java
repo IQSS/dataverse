@@ -278,7 +278,8 @@ public class UtilIT {
         /**
          * @todo stop assuming the last 22 characters are the doi/globalId
          */
-        return datasetSwordIdUrl.substring(datasetSwordIdUrl.length() - 22);
+        int doiPos = datasetSwordIdUrl.indexOf("doi");
+        return datasetSwordIdUrl.substring(doiPos, datasetSwordIdUrl.length());
     }
 
     public static Response getServiceDocument(String apiToken) {

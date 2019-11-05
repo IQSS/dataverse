@@ -94,11 +94,6 @@ public class SettingsServiceBean {
          */
         MyDataDoesNotUseSolrPermissionDocs,
         /**
-         * Experimental: Allow non-public search with a key/token using the
-         * Search API. See also https://github.com/IQSS/dataverse/issues/1299
-         */
-        SearchApiNonPublicAllowed,
-        /**
          * In Dataverse 4.7 and earlier, an API token was required to use the
          * Search API. Tokens are no longer required but you can revert to the
          * old behavior by setting this to false.
