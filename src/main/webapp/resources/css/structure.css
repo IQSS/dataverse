@@ -434,7 +434,7 @@ div.panelSearchForm input.search-input {
   display: block;
   font-size: 25px;
   background: transparent;
-  width: auto;
+  width: 550px;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2), inset 0 1px 3px 0 rgba(0, 0, 0, 0.2);
 }
 div.panelSearchForm input.search-input::placeholder {color: rgba(0, 0, 0, 0.3);}
@@ -1026,7 +1026,7 @@ div.container {
   left: calc(-50vw + 50%);
   top: 42px;
   width: 100vw;
-  height: 115%;
+  height: calc(100% + 15vh);
   z-index: -1;
   border-top: 2px solid rgba(0, 0, 0, 0.1);
 }
