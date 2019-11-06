@@ -827,7 +827,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         List<AuthenticatedUser> retList = new ArrayList<>();
         
         //List<Object> requesters  = em.createNativeQuery("select authenticated_user_id from fileaccessrequests where datafile_id = "+fileIn.getId()).getResultList();
-        List<Object> requesters  = em.createNativeQuery("select authenticated_user_id from fileaccessrequests where datafile_id = " + fileIn.getId() + " and requeststate=CREATED").getResultList();
+        List<Object> requesters  = em.createNativeQuery("select authenticated_user_id from fileaccessrequests where datafile_id = " + fileIn.getId() + " and requeststate='CREATED'").getResultList();
         
         for (Object userIdObj : requesters){
             Long userId = (Long) userIdObj;
