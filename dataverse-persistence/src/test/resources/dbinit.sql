@@ -3,9 +3,21 @@
 
 INSERT INTO authenticateduser (id, affiliation, createdtime, email, emailconfirmed, firstname, lastapiusetime, lastlogintime, lastname, "position", superuser, useridentifier)
     VALUES (2, 'Superuser Aff', '2019-05-31 09:32:32.922', 'superuser@mailinator.com', NULL, 'firstname', NULL, '2019-05-31 09:32:32.962', 'lastname', NULL, true, 'superuser');
-INSERT INTO authenticateduserlookup (id, authenticationproviderid, persistentuserid, authenticateduser_id) VALUES (2, 'builtin', 'madryk', 2);
+INSERT INTO authenticateduserlookup (id, authenticationproviderid, persistentuserid, authenticateduser_id) VALUES (2, 'builtin', 'superuser', 2);
+
+INSERT INTO authenticateduser (id, affiliation, createdtime, email, emailconfirmed, firstname, lastapiusetime, lastlogintime, lastname, "position", superuser, useridentifier)
+    VALUES (3, 'some affiliation', '2019-10-28 13:29:06.000', 'filedownloader@mailinator.com', NULL, 'firstname', NULL, NULL, 'lastname', NULL, false, 'filedownloader');
+INSERT INTO authenticateduserlookup (id, authenticationproviderid, persistentuserid, authenticateduser_id) VALUES (3, 'builtin', 'filedownloader', 3);
+
+INSERT INTO authenticateduser (id, affiliation, createdtime, email, emailconfirmed, firstname, lastapiusetime, lastlogintime, lastname, "position", superuser, useridentifier)
+    VALUES (4, 'some affiliation', '2019-10-25 13:22:51.000', 'groupmember@mailinator.com', NULL, 'firstname', NULL, NULL, 'lastname', NULL, false, 'rootGroupMember');
+INSERT INTO authenticateduserlookup (id, authenticationproviderid, persistentuserid, authenticateduser_id) VALUES (4, 'builtin', 'rootGroupMember', 4);
+
 
 INSERT INTO builtinuser (id, encryptedpassword, passwordencryptionversion, username) VALUES (2, '$2a$10$bdf0fR5BmHXhbqBKAk.11OkGSc99w2uvKU8xqKSrTpt33iycRoqfq', 1, 'superuser');
+INSERT INTO builtinuser (id, encryptedpassword, passwordencryptionversion, username) VALUES (3, '$2a$10$bdf0fR5BmHXhbqBKAk.11OkGSc99w2uvKU8xqKSrTpt33iycRoqfq', 1, 'filedownloader');
+INSERT INTO builtinuser (id, encryptedpassword, passwordencryptionversion, username) VALUES (4, '$2a$10$bdf0fR5BmHXhbqBKAk.11OkGSc99w2uvKU8xqKSrTpt33iycRoqfq', 1, 'rootGroupMember');
+
 
 
 -------------------- DATAVERSES --------------------
@@ -148,16 +160,26 @@ INSERT INTO filemetadata (id, description, directorylabel, label, prov_freeform,
 INSERT INTO filemetadata_datafilecategory (filecategories_id, filemetadatas_id) VALUES (11, 112);
 
 
--- Role Assigments
+-------------------- GROUPS --------------------
+
+INSERT INTO explicitgroup (id, description, displayname, groupalias, groupaliasinowner, owner_id)
+    VALUES (1, NULL, 'Group in root dataverse', '1-rootgroup', 'rootgroup', 1);
+
+INSERT INTO explicitgroup_containedroleassignees (explicitgroup_id, containedroleassignees) VALUES (1, '@rootGroupMember');
+
+-------------------- ROLE ASSIGNMENTS --------------------
 
 INSERT INTO roleassignment (id, assigneeidentifier, privateurltoken, definitionpoint_id, role_id) VALUES (5, '@dataverseAdmin', NULL, 1, 1);
 INSERT INTO roleassignment (id, assigneeidentifier, privateurltoken, definitionpoint_id, role_id) VALUES (7, '@dataverseAdmin', NULL, 19, 1);
 INSERT INTO roleassignment (id, assigneeidentifier, privateurltoken, definitionpoint_id, role_id) VALUES (29, '@dataverseAdmin', NULL, 51, 1);
 
+INSERT INTO roleassignment (id, assigneeidentifier, privateurltoken, definitionpoint_id, role_id) VALUES (30, '@filedownloader', NULL, 53, 2);
+INSERT INTO roleassignment (id, assigneeidentifier, privateurltoken, definitionpoint_id, role_id) VALUES (31, '@filedownloader', NULL, 55, 2);
 
 
 
---- Fix sequences
+
+-------------------- Fix sequences --------------------
 
 SELECT setval('authenticateduser_id_seq', COALESCE((SELECT MAX(id)+1 FROM authenticateduser), 1), false);
 SELECT setval('authenticateduserlookup_id_seq', COALESCE((SELECT MAX(id)+1 FROM authenticateduserlookup), 1), false);

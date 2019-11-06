@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.SetUtils;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -221,7 +222,7 @@ public class EjbDataverseEngine {
 
                 if ((!aCommand.isAllPermissionsRequired() && !CollectionUtils.containsAny(granted, required) ||
                         (aCommand.isAllPermissionsRequired() && !granted.containsAll(required)))) {
-                    required.removeAll(granted);
+                    Set<Permission> missingPermissions = SetUtils.difference(required, granted);
                     logRec.setActionResult(ActionLogRecord.Result.PermissionError);
                     /**
                      * @todo Is there any harm in showing the "granted" set
@@ -230,10 +231,10 @@ public class EjbDataverseEngine {
                      */
                     throw new PermissionException("Can't execute command " + aCommand
                                                           + ", because request " + aCommand.getRequest()
-                                                          + " is missing permissions " + required
+                                                          + " is missing permissions " + missingPermissions
                                                           + " on Object " + dvo.accept(DvObject.NamePrinter),
                                                   aCommand,
-                                                  required, dvo);
+                                                  missingPermissions, dvo);
                 }
             }
             try {
