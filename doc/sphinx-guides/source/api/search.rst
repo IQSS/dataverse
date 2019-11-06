@@ -6,7 +6,7 @@ Search API
 
 The Search API supports the same searching, sorting, and faceting operations as the Dataverse web interface.
 
-Unlike the web interface, this new API is limited to *published* data.
+To search unpublished content, you must pass in an API token as described in the :doc:`auth` section.
 
 The parameters and JSON response are partly inspired by the `GitHub Search API <https://developer.github.com/v3/search/>`_.
 
