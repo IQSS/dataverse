@@ -256,6 +256,10 @@ Securing Solr
 
 Solr must be firewalled off from all hosts except the server(s) running Dataverse. Otherwise, any host  that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://lucene.apache.org/solr/guide/7_2/securing-solr.html
 
+We additionally recommend that the solr service account's shell be disabled, as it isn't necessary for daily operation:
+
+        # usermod -s /sbin/nologin solr
+
 jq
 --
 
