@@ -831,8 +831,4 @@ public class DataverseServiceBean implements java.io.Serializable {
         return (result);
     }
     
-    public List<Object[]> getDataverseMenuList() {
-            return em.createNativeQuery("SELECT d.id, d.name FROM Dataverse d order by d.name").getResultList();
-    }
-    
 }

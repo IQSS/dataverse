@@ -122,6 +122,16 @@ public class DataversePage implements java.io.Serializable {
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
     private List<ControlledVocabularyValue> selectedSubjects;
+    
+    UIInput selectedHostDataverseMenu;
+    
+    public UIInput getSelectedHostDataverseMenu() {
+        return selectedHostDataverseMenu;
+    }
+
+    public void setSelectedHostDataverseMenu(UIInput selectedHostDataverseMenu) {
+        this.selectedHostDataverseMenu = selectedHostDataverseMenu;
+    }
 
     public List<ControlledVocabularyValue> getSelectedSubjects() {
         return selectedSubjects;
@@ -269,13 +279,16 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public void updateOwnerDataverse() {
-        logger.info("New host dataverse id: "+ownerId);
-        // discard the dataverse already created:
-        dataverse = new Dataverse();
-        // initialize a new new dataverse:
-        init();
-        logger.info("Created a new new dataverse.");
-        dataverseHeaderFragment.initBreadcrumbs(dataverse);
+        if (dataverse.getOwner() != null && dataverse.getOwner().getId() != null) {
+            ownerId = dataverse.getOwner().getId();
+            logger.info("New host dataverse id: " + ownerId);
+            // discard the dataverse already created:
+            dataverse = new Dataverse();
+            // initialize a new new dataverse:
+            init();
+            logger.info("Created a new new dataverse.");
+            dataverseHeaderFragment.initBreadcrumbs(dataverse);
+        }
     }
     
     public String init() {
@@ -1169,5 +1182,13 @@ public class DataversePage implements java.io.Serializable {
 
     public void setSearchFieldSubtree(String searchFieldSubtree) {
         this.searchFieldSubtree = searchFieldSubtree;
+    }
+    
+    public List<Dataverse> completeHostDataverseMenuList(String query) {
+        if (session.getUser().isAuthenticated()) {
+            return dataverseService.filterDataversesForHosting(query, dvRequestService.getDataverseRequest());
+        } else {
+            return null;
+        }
     }
 }

@@ -59,33 +59,48 @@
                         <!-- Edit Info Panel -->
                         <div class="row" jsf:rendered="#{DataversePage.ownerId != null}">
                             <div class="col-md-6 form-group">
-                                <h:outputLabel for="#{DataversePage.editMode == 'CREATE' ? 'hostDataverse' : 'hostDataverseStatic'}" styleClass="control-label">
+                                <h:outputLabel for="#{DataversePage.editMode == 'CREATE' ? 'selectHostDataverse' : 'hostDataverseStatic'}" styleClass="control-label">
                                     #{bundle.hostDataverse}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.host.title']}"></span>
                                 </h:outputLabel>
-                                <div class="form-col-container">
-                                    <ui:fragment rendered="#{DataversePage.editMode == 'INFO'}">
-                                        <p id="hostDataverseStatic" class="form-control-static">#{DataversePage.dataverse.getOwner().name}</p>
-                                        <h:inputHidden value="#{DataversePage.ownerId}" id="hostDataverseStatic"/>
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{DataversePage.editMode == 'CREATE'}">
-                                        <p class="help-block">
-                                            #{bundle['dataverse.host.tip']}
-                                        </p>
-                                        <p:selectOneMenu id="hostDataverse" onchange="updateOwnerDataverse()"
-                                                         value="#{DataversePage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
-                                            <f:selectItems value="#{dataverseServiceBean.getDataverseMenuList()}" var="dv" itemLabel="#{dv[1]}" itemValue="#{dv[0]}"/>
-                                        </p:selectOneMenu>
-                                        <!-- an invisible button to refresh the page with the new owner dataverse: -->
-                                        <p:commandButton id="updateOwnerDataverse"
-                                            style="display:none"
-                                            process="@this :dataverseForm:hostDataverse"
-                                            update="@form,:breadCrumbPanel"
-                                            action="#{DataversePage.updateOwnerDataverse()}">
-                                        </p:commandButton>
-                                    </ui:fragment>
-                                </div>
+                                
+                                <div class="form-group">
+
+                                        <p:focus for="selectHostDataverse"/>
+                                        <div class="col-xs-8">
+                                            <p:fragment id="hostDataverseContent">
+                                                <p:autoComplete id="selectHostDataverse" style="width:100%;"
+                                                                binding="#{DataversePage.selectedHostDataverseMenu}"
+                                                                placeholder="#{bundle['dataverse.link.yourDataverses.inputPlaceholder']}"
+                                                                scrollHeight="180" forceSelection="true" 
+                                                                minQueryLength="1" queryDelay="1000"
+                                                                value="#{DataversePage.dataverse.owner}" 
+                                                                multiple="false"
+                                                                completeMethod="#{DataversePage.completeHostDataverseMenuList}"
+                                                                required="#{param['DO_DS_LINK_VALIDATION']}" requiredMessage="#{bundle['dataverse.link.select']}"
+                                                                styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
+                                                                var="hostDataverse" itemLabel="#{hostDataverse.displayName}" itemValue="#{hostDataverse}" converter="dataverseConverter"
+                                                                >
+                                                    <p:column>
+                                                        <h:outputText value="#{hostDataverse.displayName}"/> 
+                                                    </p:column>
+                                                    <p:column>
+                                                        <h:outputText value="#{hostDataverse.alias}"/> 
+                                                    </p:column>
+                                                    <p:ajax process="@this" event="itemSelect"  oncomplete="updateOwnerDataverse()"  />
+                                                    <p:ajax process="@this" event="itemUnselect" oncomplete="updateOwnerDataverse()" />
+                                                </p:autoComplete>
+                                                <p:message for="selectHostDataverse"/>
+                                                <p:commandButton id="updateOwnerDataverse"
+                                                                 style="display:none"
+                                                                 process="@this :dataverseForm:selectHostDataverse"
+                                                                 update="@form,:breadCrumbPanel"
+                                                                 action="#{DataversePage.updateOwnerDataverse()}">
+                                                </p:commandButton>
+                                            </p:fragment>
+                                        </div>
+                                    </div>
                             </div>
                         </div>
                         <div class="row">
