@@ -260,6 +260,14 @@ We additionally recommend that the solr service account's shell be disabled, as 
 
         # usermod -s /sbin/nologin solr
 
+For solr upgrades or further configuration you may temporarily re-enable the service account shell:
+
+        # usermod -s /bin/bash solr
+
+or simply prepend each command you would run as the solr user with "sudo -u solr":
+
+        # sudo -u solr command
+
 jq
 --
 
