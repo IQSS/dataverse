@@ -303,6 +303,8 @@ For institutions and organizations looking to use some kind of S3-based object s
 this is entirely possible. You can either use Amazon Web Services or use some other, even on-site S3-compatible
 storage (like Minio, Ceph RADOS S3 Gateway and many more). 
 
+The Dataverse S3 driver supports multipart upload for files over 4 GB.
+
 **Note:** The Dataverse Team is most familiar with AWS S3, and can provide support on its usage with Dataverse. Thanks to community contributions, the application's architecture also allows non-AWS S3 providers. The Dataverse Team can provide very limited support on these other providers. We recommend reaching out to the wider Dataverse community if you have questions.
 
 First: Set Up Accounts and Access Credentials
