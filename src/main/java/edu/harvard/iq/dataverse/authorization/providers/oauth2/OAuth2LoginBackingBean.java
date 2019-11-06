@@ -62,7 +62,7 @@ public class OAuth2LoginBackingBean implements Serializable {
 
     @Inject
     OAuth2FirstLoginPage newAccountPage;
-
+    
     /**
      * Generate the OAuth2 Provider URL to be used in the login page link for the provider.
      * @param idpId Unique ID for the provider (used to lookup in authn service bean)
@@ -71,16 +71,8 @@ public class OAuth2LoginBackingBean implements Serializable {
      */
     public String linkFor(String idpId, String redirectPage) {
         AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(idpId);
-        OAuth20Service svc = idp.getService(systemConfig.getOAuth2CallbackUrl());
         String state = createState(idp, toOption(redirectPage));
-        
-        AuthorizationUrlBuilder aub = svc.createAuthorizationUrlBuilder()
-                                         .state(state);
-        
-        // Do not include scope if empty string (necessary for GitHub)
-        if (!idp.getSpacedScope().isEmpty()) { aub.scope(idp.getSpacedScope()); }
-        
-        return aub.build();
+        return idp.buildAuthzUrl(state, systemConfig.getOAuth2CallbackUrl());
     }
     
     /**

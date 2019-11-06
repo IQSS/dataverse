@@ -6,6 +6,7 @@ import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
+import com.github.scribejava.core.oauth.AuthorizationUrlBuilder;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
@@ -98,6 +99,21 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     public abstract DefaultApi20 getApiInstance();
     
     protected abstract ParsedUserResponse parseUserResponse( String responseBody );
+    
+    /**
+     * Build an Authorization URL for this identity provider
+     * @param state A randomized state, necessary to secure the authorization flow. @see OAuth2LoginBackingBean.createState()
+     * @param callbackUrl URL where the provider should send the browser after authn in code flow
+     */
+    public String buildAuthzUrl(String state, String callbackUrl) {
+        OAuth20Service svc = this.getService(callbackUrl);
+        
+        AuthorizationUrlBuilder aub = svc.createAuthorizationUrlBuilder().state(state);
+        // Do not include scope if empty string (necessary for GitHub)
+        if (!this.getSpacedScope().isEmpty()) { aub.scope(this.getSpacedScope()); }
+        
+        return aub.build();
+    }
     
     /**
      * Build an OAuth20Service based on client ID & secret. Add default scope and insert
