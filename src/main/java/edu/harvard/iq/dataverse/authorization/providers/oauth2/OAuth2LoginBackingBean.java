@@ -192,8 +192,14 @@ public class OAuth2LoginBackingBean implements Serializable {
             return Optional.empty();
         }
     }
-
-    private String createState(AbstractOAuth2AuthenticationProvider idp, Optional<String> redirectPage ) {
+    
+    /**
+     * Create a randomized unique state string to be used while crafting the autorization request
+     * @param idp
+     * @param redirectPage
+     * @return Random state string, composed from system time, random numbers and redirectPage parameter
+     */
+    String createState(AbstractOAuth2AuthenticationProvider idp, Optional<String> redirectPage) {
         if (idp == null) {
             throw new IllegalArgumentException("idp cannot be null");
         }
