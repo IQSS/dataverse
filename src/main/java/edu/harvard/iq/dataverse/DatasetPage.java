@@ -1462,7 +1462,7 @@ public class DatasetPage implements java.io.Serializable {
     public void setOwnerId(Long ownerId) {
         this.ownerId = ownerId;
     }
-
+    
     public Long getVersionId() {
         return versionId;
     }
@@ -1754,14 +1754,17 @@ public class DatasetPage implements java.io.Serializable {
     }     
     
     public void updateOwnerDataverse() {
-        logger.info("New host dataverse id: "+ownerId);
-        // discard the dataset already created:
-        dataset = new Dataset();
-        // initiate from scratch: (isolate the creation of a new dataset in its own method?)
-        init(true);
-        logger.info("Created a new new dataset.");
-        // rebuild the bred crumbs display:
-        dataverseHeaderFragment.initBreadcrumbs(dataset);
+        if (dataset.getOwner() != null && dataset.getOwner().getId() != null) {
+            ownerId = dataset.getOwner().getId();
+            logger.info("New host dataverse id: "+ownerId);
+            // discard the dataset already created:
+            dataset = new Dataset();
+            // initiate from scratch: (isolate the creation of a new dataset in its own method?)
+            init(true);
+            logger.info("Created a new new dataset.");
+            // rebuild the bred crumbs display:
+            dataverseHeaderFragment.initBreadcrumbs(dataset);
+        }
     }
     
     private String init(boolean initFull) {
@@ -1937,7 +1940,7 @@ public class DatasetPage implements java.io.Serializable {
             } else if (!permissionService.on(dataset.getOwner()).has(Permission.AddDataset)) {
                 return permissionsWrapper.notAuthorized(); 
             }
-            
+                        
             dataverseTemplates.addAll(dataverseService.find(ownerId).getTemplates());
             if (!dataverseService.find(ownerId).isTemplateRoot()) {
                 dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());
@@ -2979,6 +2982,15 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedLinkingDataverseMenu = selectedDataverseMenu;
     }
     
+    UIInput selectedHostDataverseMenu;
+    
+    public UIInput getSelectedHostDataverseMenu() {
+        return selectedHostDataverseMenu;
+    }
+
+    public void setSelectedHostDataverseMenu(UIInput selectedHostDataverseMenu) {
+        this.selectedHostDataverseMenu = selectedHostDataverseMenu;
+    }
     
     private Boolean saveLink(Dataverse dataverse){
         boolean retVal = true;
@@ -3008,6 +3020,14 @@ public class DatasetPage implements java.io.Serializable {
         dataset = datasetService.find(dataset.getId());
         if (session.getUser().isAuthenticated()) {
             return dataverseService.filterDataversesForLinking(query, dvRequestService.getDataverseRequest(), dataset);
+        } else {
+            return null;
+        }
+    }
+    
+    public List<Dataverse> completeHostDataverseMenuList(String query) {
+        if (session.getUser().isAuthenticated()) {
+            return dataverseService.filterDataversesForHosting(query, dvRequestService.getDataverseRequest());
         } else {
             return null;
         }

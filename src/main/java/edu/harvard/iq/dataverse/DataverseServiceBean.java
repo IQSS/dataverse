@@ -498,6 +498,47 @@ public class DataverseServiceBean implements java.io.Serializable {
         return dataverseList;
     }
     
+    public List<Dataverse> filterDataversesForHosting(String pattern, DataverseRequest req) {
+
+        List<Dataverse> dataverseList = new ArrayList<>();
+
+        pattern = pattern.toLowerCase();
+        String nameQuery;
+        
+        String pattern1 = pattern + "%";
+        String pattern2 = "% " + pattern + "%";
+
+        // Adjust the queries for very short, 1 and 2-character patterns:
+        if (pattern.length() < 3) {
+            pattern1 = pattern;
+            pattern2 = pattern + " %";
+        } 
+        
+        // Find the dataverses matching the search parameters: 
+        List<Dataverse> results = em.createNamedQuery("Dataverse.filterByNamePattern", Dataverse.class)
+                .setParameter("pattern1", pattern1)
+                .setParameter("pattern2", pattern2)
+                .getResultList();
+
+        logger.info("search query found " + results.size() + " results");
+        
+        // Filter the results and drop the dataverses where the user is not allowed to 
+        // add datasets:
+        
+        if (req.getAuthenticatedUser().isSuperuser()) {
+            logger.info("will skip permission check...");
+        }
+        for (Dataverse res : results) {
+            if (req.getAuthenticatedUser().isSuperuser() || this.permissionService.requestOn(req, res).has(Permission.AddDataset)) {
+                dataverseList.add(res);
+            }
+        }
+        
+        logger.info("returning " + dataverseList.size() + " final results");
+
+        return dataverseList;
+    }
+    
     /**
      * Used to identify and properly display Harvested objects on the dataverse page.
      * 
