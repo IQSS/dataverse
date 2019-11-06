@@ -520,13 +520,13 @@ public class DataverseServiceBean implements java.io.Serializable {
                 .setParameter("pattern2", pattern2)
                 .getResultList();
 
-        logger.info("search query found " + results.size() + " results");
+        logger.fine("search query found " + results.size() + " results");
         
         // Filter the results and drop the dataverses where the user is not allowed to 
         // add datasets:
         
         if (req.getAuthenticatedUser().isSuperuser()) {
-            logger.info("will skip permission check...");
+            logger.fine("will skip permission check...");
         }
         for (Dataverse res : results) {
             if (req.getAuthenticatedUser().isSuperuser() || this.permissionService.requestOn(req, res).has(Permission.AddDataset)) {
@@ -534,7 +534,7 @@ public class DataverseServiceBean implements java.io.Serializable {
             }
         }
         
-        logger.info("returning " + dataverseList.size() + " final results");
+        logger.fine("returning " + dataverseList.size() + " final results");
 
         return dataverseList;
     }
