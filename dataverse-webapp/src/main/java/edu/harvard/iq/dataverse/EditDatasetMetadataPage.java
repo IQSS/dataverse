@@ -3,12 +3,12 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetFieldsInitializer;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
@@ -17,13 +17,10 @@ import javax.faces.application.FacesMessage;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.validation.ConstraintViolation;
-
+import javax.validation.ValidationException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -118,28 +115,12 @@ public class EditDatasetMetadataPage implements Serializable {
     }
 
     public String save() {
-        // Validate
-        Set<ConstraintViolation> constraintViolations = workingVersion.validate();
-        if (!constraintViolations.isEmpty()) {
-            //JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataset.message.validationError"));
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
-            return StringUtils.EMPTY;
-        }
 
-        try {
-            UpdateDatasetVersionCommand cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), new ArrayList<>(), clone);
-            cmd.setValidateLenient(true);
-            dataset = commandEngine.submit(cmd);
-            logger.fine("Successfully executed UpdateDatasetVersionCommand.");
+        Try<Dataset> updateDataset = Try.of(() -> datasetVersionService.updateDatasetVersion(workingVersion, true))
+                .onFailure(this::handleUpdateDatasetExceptions);
 
-        } catch (EJBException ex) {
-            logger.log(Level.SEVERE, "Couldn't edit dataset metadata: " + ex.getMessage(), ex);
-            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.metadataFailure"));
-            return StringUtils.EMPTY;
-        } catch (CommandException ex) {
-            logger.log(Level.SEVERE, "CommandException, when attempting to update the dataset: " + ex.getMessage(), ex);
-            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.metadataFailure"));
-            return StringUtils.EMPTY;
+        if (updateDataset.isFailure()){
+            return "";
         }
 
         return returnToLatestVersion();
@@ -158,6 +139,25 @@ public class EditDatasetMetadataPage implements Serializable {
             workingVersion = dataset.getReleasedVersion();
         }
         return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&version=" + workingVersion.getFriendlyVersionNumber() + "&faces-redirect=true";
+    }
+
+    private void handleUpdateDatasetExceptions(Throwable throwable) {
+        if (throwable instanceof EJBException) {
+            throwable = throwable.getCause();
+        }
+
+        if (throwable instanceof ValidationException) {
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
+
+        } else if (throwable instanceof CommandException) {
+
+            logger.log(Level.SEVERE, "CommandException, when attempting to update the dataset: " + throwable.getMessage(), throwable);
+            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.metadataFailure"));
+        } else {
+
+            logger.log(Level.SEVERE, "Couldn't edit dataset metadata: " + throwable.getMessage(), throwable);
+            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.metadataFailure"));
+        }
     }
 
     // -------------------- SETTERS --------------------

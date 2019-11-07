@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.MarkupChecker;
 import edu.harvard.iq.dataverse.dataset.difference.DatasetVersionDifference;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -15,13 +16,13 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -29,6 +30,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import javax.validation.ConstraintViolation;
+import javax.validation.ValidationException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +40,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,13 +59,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
     @EJB
-    DatasetServiceBean datasetService;
-
-    @EJB
     DataFileServiceBean datafileService;
-
-    @EJB
-    SettingsServiceBean settingsService;
 
     @EJB
     AuthenticationServiceBean authService;
@@ -71,6 +69,12 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
     @EJB
     IndexServiceBean indexService;
+
+    @Inject
+    private EjbDataverseEngine commandEngine;
+
+    @Inject
+    private DataverseRequestServiceBean dvRequestService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -1154,5 +1158,26 @@ w
 
         return null;
     }
+
+    public Dataset updateDatasetVersion(DatasetVersion workingVersion, boolean validateLenient) {
+        Set<ConstraintViolation> constraintViolations = workingVersion.validate();
+
+        if (!constraintViolations.isEmpty()) {
+            constraintViolations.forEach(constraintViolation -> logger.warning(constraintViolation.getMessage()));
+            throw new ValidationException("There was validation error during updating dataset attempt with id: " + workingVersion.getDataset().getId());
+        }
+
+        Dataset dataset = workingVersion.getDataset();
+        DatasetVersion clonedDataset = dataset.getEditVersion().cloneDatasetVersion();
+
+
+        UpdateDatasetVersionCommand command = new UpdateDatasetVersionCommand(dataset,
+                                                                              dvRequestService.getDataverseRequest(),
+                                                                              Collections.emptyList(),
+                                                                              clonedDataset);
+        command.setValidateLenient(validateLenient);
+        return commandEngine.submit(command);
+    }
+
 
 } // end class
