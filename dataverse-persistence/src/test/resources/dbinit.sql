@@ -43,6 +43,8 @@ INSERT INTO dataverse (id, alias, name, affiliation, dataversetype, description,
 INSERT INTO dataverse_metadatablock (dataverse_id, metadatablocks_id) VALUES (19, 1);
 INSERT INTO dataversefacet (id, displayorder, datasetfieldtype_id, dataverse_id) VALUES (19, 3, 58, 1);
 INSERT INTO dataversecontact (id, contactemail, displayorder, dataverse_id) VALUES (2, 'ownmetadatablocks.dv.contact@mailinator.com', 0, 19);
+INSERT INTO guestbook (id, createtime, emailrequired, enabled, institutionrequired, name, namerequired, positionrequired, dataverse_id)
+    VALUES (2, '2019-06-06 08:27:43.217', false, false, false, 'Simple guestbook', true, false, 19);
 
 --- ROOT -> unreleased ---
 INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate, creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime) 

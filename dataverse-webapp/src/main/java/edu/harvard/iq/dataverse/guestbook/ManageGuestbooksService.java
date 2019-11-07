@@ -37,8 +37,10 @@ public class ManageGuestbooksService {
     // -------------------- LOGIC --------------------
     public Dataverse deleteGuestbook(long guestbookId) {
         Guestbook guestbook = guestbookService.find(guestbookId);
+        Dataverse dataverse = guestbook.getDataverse();
+        dataverse.getGuestbooks().remove(guestbook);
 
-        return engineService.submit(new DeleteGuestbookCommand(dvRequestService.getDataverseRequest(), guestbook.getDataverse(), guestbook));
+        return engineService.submit(new DeleteGuestbookCommand(dvRequestService.getDataverseRequest(), dataverse, guestbook));
     }
 
     public Dataverse updateAllowGuestbooksFromRootStatus(long dataverseId, boolean allowGuestbooksFromRoot) {
@@ -62,7 +64,7 @@ public class ManageGuestbooksService {
     }
 
     // -------------------- PRIVATE ---------------------
-    protected Dataverse updateDataverse(Dataverse dataverse) {
+    private Dataverse updateDataverse(Dataverse dataverse) {
         return engineService.submit(new UpdateDataverseCommand(dataverse, null, null, dvRequestService.getDataverseRequest(), null));
     }
 }
