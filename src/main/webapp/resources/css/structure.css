@@ -918,9 +918,13 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
     margin-left: 0px;
 } */
 .ui-state-disabled, .ui-widget-content .ui-state-disabled, .ui-widget-header .ui-state-disabled {background: #e0e0e0; border-color: #ccc; opacity: 0.65;}
-.ui-autocomplete-input-token input, .ui-autocomplete-input-token {width:100%;}
+/* .ui-autocomplete-input-token input, .ui-autocomplete-input-token {width:100%;} */
 .ui-autocomplete-panel {z-index:100002 !important;}
-.ui-autocomplete input.ui-autocomplete-input {width:calc(100% - 34px);}
+div.ui-autocomplete {width:100%;}
+div.ui-autocomplete > ul, div.ui-autocomplete > ul > li > input {width:100%;} /* FIX WIDTH FOR AUTOCOMPLETE WITHOUT P:FRAGMENT */
+span.ui-autocomplete {width:100%;} /* FIX WIDTH FOR AUTOCOMPLETE IN P:FRAGMENT */
+span.ui-autocomplete input.ui-autocomplete-input {width:100%;}
+.ui-autocomplete input {padding:6px 12px; margin:0;}
 
 /* Overwrite Bootstrap */
 @media print {
