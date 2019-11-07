@@ -500,10 +500,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     
     public List<Dataverse> filterDataversesForHosting(String pattern, DataverseRequest req) {
 
-        List<Dataverse> dataverseList = new ArrayList<>();
-
         pattern = pattern.toLowerCase();
-        String nameQuery;
         
         String pattern1 = pattern + "%";
         String pattern2 = "% " + pattern + "%";
@@ -518,28 +515,32 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
         
         // Find the dataverses matching the search parameters: 
-        List<Dataverse> results = em.createNamedQuery("Dataverse.filterByNamePattern", Dataverse.class)
+        List<Dataverse> searchResults = em.createNamedQuery("Dataverse.filterByNamePattern", Dataverse.class)
                 .setParameter("pattern1", pattern1)
                 .setParameter("pattern2", pattern2)
                 .getResultList();
 
-        logger.fine("search query found " + results.size() + " results");
+        logger.fine("search query found " + searchResults.size() + " results");
         
         // Filter the results and drop the dataverses where the user is not allowed to 
         // add datasets:
         
         if (req.getAuthenticatedUser().isSuperuser()) {
             logger.fine("will skip permission check...");
+            return searchResults;
         }
-        for (Dataverse res : results) {
-            if (req.getAuthenticatedUser().isSuperuser() || this.permissionService.requestOn(req, res).has(Permission.AddDataset)) {
-                dataverseList.add(res);
+        
+        List<Dataverse> finalResults = new ArrayList<>();
+        
+        for (Dataverse res : searchResults) {
+            if (this.permissionService.requestOn(req, res).has(Permission.AddDataset)) {
+                finalResults.add(res);
             }
         }
         
-        logger.fine("returning " + dataverseList.size() + " final results");
+        logger.fine("returning " + finalResults.size() + " final results");
 
-        return dataverseList;
+        return finalResults;
     }
     
     /**
