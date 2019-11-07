@@ -513,6 +513,9 @@ public class DataverseServiceBean implements java.io.Serializable {
             pattern1 = pattern;
             pattern2 = pattern + " %";
         } 
+        if (pattern.length() == 2) {
+            pattern2 = pattern + "%";
+        }
         
         // Find the dataverses matching the search parameters: 
         List<Dataverse> results = em.createNamedQuery("Dataverse.filterByNamePattern", Dataverse.class)
