@@ -52,7 +52,6 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
     @Override
     public RoleAssignment execute(CommandContext ctxt) {
         // TODO make sure the role is defined on the dataverse.
-
         RoleAssignment roleAssignment = new RoleAssignment(role, grantee, defPoint, privateUrlToken);
         return ctxt.roles().save(roleAssignment);
     }

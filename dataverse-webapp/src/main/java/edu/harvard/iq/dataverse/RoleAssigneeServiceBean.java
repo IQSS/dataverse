@@ -26,6 +26,7 @@ import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
@@ -95,6 +96,17 @@ public class RoleAssigneeServiceBean {
         return em.createNamedQuery("RoleAssignment.listByAssigneeIdentifier", RoleAssignment.class)
                 .setParameter("assigneeIdentifier", roleAssigneeIdentifier)
                 .getResultList();
+    }
+
+    public Optional<RoleAssignment> getAssignmentFor(String roleAssigneeIdentifier, Long definitionPointId, long roleId) {
+        RoleAssignment roleAssignment = em.createQuery("SELECT r FROM RoleAssignment r WHERE "
+                + "r.assigneeIdentifier=:assigneeIdentifier AND r.definitionPoint.id=:definitionPointId and r.role.id=:roleId",
+                RoleAssignment.class)
+            .setParameter("assigneeIdentifier", roleAssigneeIdentifier)
+            .setParameter("definitionPointId", definitionPointId)
+            .setParameter("roleId", roleId)
+            .getSingleResult();
+        return Optional.ofNullable(roleAssignment);
     }
 
     public List<AuthenticatedUser> getExplicitUsers(RoleAssignee ra) {
