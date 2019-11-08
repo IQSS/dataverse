@@ -11,8 +11,8 @@ body {
 body.widget-view {margin-bottom:54px;}
 body .ui-widget {font-size: inherit;}
 body .ui-widget .ui-widget-content {background: none;}
-.ui-widget-content a {color: #337AB7;}
-.ui-widget-content a:hover, .ui-widget-content a:focus {color: #23527C;}
+.ui-widget-content a {color: #4b74ff; font-size: 18px;}
+.ui-widget-content a:hover, .ui-widget-content a:focus {color: #337ab7;}
 .ui-tabs.ui-widget-content .ui-tabs-nav li a {color: #333;}
 
 /* -------- TEMPLATE -------- */
@@ -565,7 +565,7 @@ table.ui-panelgrid.facetsMoreLess td:last-child {text-align:right;}
 #dv-main div.results-sort-pagination.results-bottom .pagination {margin-top:0; margin-bottom:0;}
 
 table[id$='resultsTable'] td > div {border-top:1px solid #DDD; margin:6px 0; padding: 4px 10px;}
-table[id$='resultsTable'] td > div.dataverseResult {border-color:#c55b28;}
+/* table[id$='resultsTable'] td > div.dataverseResult {border-color:#c55b28;} */
 /* table[id$='resultsTable'] td > div.datasetResult {border-color:#428bca;} */
 table[id$='resultsTable'] td > div > div.card-title-icon-block,
 table[id$='resultsTable'] td > div > div.card-preview-icon-block, 
@@ -1152,6 +1152,7 @@ th {background: none !important;}
   color: #FFF !important; /* TODO: Find ui-widget CSS rules and take out their color so important is not needed here */
   border-radius: 2px;
   text-shadow: none;
+  font-family: inherit !important;
 }
 
 .ui-buttonset { background: #f7f7f9 !important;}
@@ -1162,6 +1163,14 @@ th {background: none !important;}
 
 .qdr-menu__close-button i {
   vertical-align: super;
+}
+
+body .ui-widget {
+  font-family: inherit;
+}
+
+.pagination > li > a {
+  border-color: #b8b8b8 !important;
 }
 
 /* Pagination Icon URLs and Styles*/
