@@ -68,7 +68,7 @@
                                     <p:fragment id="hostDataverseContent">
                                         <ui:fragment rendered="#{DataversePage.editMode == 'INFO'}">
                                             <p id="hostDataverseStatic" class="form-control-static">#{DataversePage.dataverse.getOwner().name}</p>
-                                            <h:inputHidden value="#{DataversePage.ownerId}" id="hostDataverseStatic"/>
+                                            <h:inputHidden value="#{DataversePage.ownerId}" id="hostDataverseStatic_hidden"/>
                                         </ui:fragment>
                                         <p:autoComplete id="selectHostDataverse"
                                                         rendered="#{DataversePage.editMode == 'CREATE'}"
