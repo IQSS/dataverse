@@ -47,8 +47,7 @@ import org.hibernate.validator.constraints.NotEmpty;
     @NamedQuery(name = "Dataverse.findByOwnerId", query="select object(o) from Dataverse as o where o.owner.id =:ownerId order by o.name"),
     @NamedQuery(name = "Dataverse.filterByAlias", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias) LIKE :alias order by dv.alias"),
     @NamedQuery(name = "Dataverse.filterByAliasNameAffiliation", query="SELECT dv FROM Dataverse dv WHERE (LOWER(dv.alias) LIKE :alias) OR (LOWER(dv.name) LIKE :name) OR (LOWER(dv.affiliation) LIKE :affiliation) order by dv.alias"),
-    @NamedQuery(name = "Dataverse.filterByName", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.name) LIKE :name  order by dv.alias"),
-    @NamedQuery(name = "Dataverse.filterByNamePattern", query="SELECT dv FROM Dataverse dv WHERE (LOWER(dv.name) LIKE :pattern1) OR (LOWER(dv.name) LIKE :pattern2) order by dv.alias")
+    @NamedQuery(name = "Dataverse.filterByName", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.name) LIKE :name  order by dv.alias")
 })
 @Entity
 @Table(indexes = {@Index(columnList="defaultcontributorrole_id")
