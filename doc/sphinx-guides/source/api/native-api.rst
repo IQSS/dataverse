@@ -1560,7 +1560,7 @@ Change User Identifier
 
 Changes identifier for user in ``AuthenticatedUser``, ``BuiltinUser``, ``AuthenticatedUserLookup`` & ``RoleAssignment``. Allows them to log in with the new identifier. Only accessible to superusers.::
 
-    PUT http://$SERVER/api/users/$oldIdentifier/changeIdentifier/$newIdentifier
+    POST http://$SERVER/api/users/$oldIdentifier/changeIdentifier/$newIdentifier
 
 Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST  https://demo.dataverse.org/api/users/johnsmith/changeIdentifier/jsmith``
 
