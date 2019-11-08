@@ -41,10 +41,10 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 public class OAuth2LoginBackingBean implements Serializable {
 
     private static final Logger logger = Logger.getLogger(OAuth2LoginBackingBean.class.getName());
-    private static final long STATE_TIMEOUT = 1000 * 60 * 15; // 15 minutes in msec
+    static final long STATE_TIMEOUT = 1000 * 60 * 15; // 15 minutes in msec
     private int responseCode;
     private String responseBody;
-    private Optional<String> redirectPage;
+    Optional<String> redirectPage = Optional.empty();
     private OAuth2Exception error;
     private OAuth2UserRecord oauthUser;
 
@@ -83,7 +83,7 @@ public class OAuth2LoginBackingBean implements Serializable {
         HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         
         try {
-            Optional<AbstractOAuth2AuthenticationProvider> oIdp = parseStateFromRequest(req);
+            Optional<AbstractOAuth2AuthenticationProvider> oIdp = parseStateFromRequest(req.getParameter("state"));
             Optional<String> code = parseCodeFromRequest(req);
 
             if (oIdp.isPresent() && code.isPresent()) {
@@ -144,11 +144,21 @@ public class OAuth2LoginBackingBean implements Serializable {
         }
         return Optional.of(code);
     }
-
-    private Optional<AbstractOAuth2AuthenticationProvider> parseStateFromRequest(@NotNull HttpServletRequest req) {
-        String state = req.getParameter("state");
-        
-        if (state == null) {
+    
+    /**
+     * Parse and verify the state returned from the provider.
+     *
+     * As it contains the providers implementation "id" field when send by us,
+     * we can return the corresponding provider object.
+     *
+     * This function is not side effect free: it will (if present) set {@link #redirectPage}
+     * to the value received from the state.
+     *
+     * @param state The state string, created in  {@link #createState(AbstractOAuth2AuthenticationProvider, Optional)}, send and returned by provider
+     * @return A corresponding provider object when state verification succeeded.
+     */
+    Optional<AbstractOAuth2AuthenticationProvider> parseStateFromRequest(@NotNull String state) {
+        if (state == null || state.trim().equals("")) {
             logger.log(Level.INFO, "No state present in request");
             return Optional.empty();
         }
@@ -172,7 +182,7 @@ public class OAuth2LoginBackingBean implements Serializable {
             long timeDifference = System.currentTimeMillis() - timeOrigin;
             if (timeDifference > 0 && timeDifference < STATE_TIMEOUT) {
                 if ( stateFields.length > 3) {
-                    redirectPage = Optional.ofNullable(stateFields[3]);
+                    this.redirectPage = Optional.ofNullable(stateFields[3]);
                 }
                 return Optional.of(idp);
             } else {
