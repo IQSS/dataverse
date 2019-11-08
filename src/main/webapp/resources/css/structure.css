@@ -11,7 +11,7 @@ body {
 body.widget-view {margin-bottom:54px;}
 body .ui-widget {font-size: inherit;}
 body .ui-widget .ui-widget-content {background: none;}
-.ui-widget-content a {color: #4b74ff; font-size: 18px;}
+.ui-widget-content a {color: #4b75ff; font-size: 18px;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #337ab7;}
 .ui-tabs.ui-widget-content .ui-tabs-nav li a {color: #333;}
 
@@ -1091,7 +1091,7 @@ div.container {
 .add-data-plus-wrapper span {
   font-weight: normal;
   margin-top: 11px;
-  color: #337ab7;
+  color: #4b75ff;
   font-size: 15px;
   display: block;
 }
@@ -1101,7 +1101,7 @@ div.container {
   border: none;
   box-shadow: none;
   font-size: 15px;
-  color: #337ab7;
+  color: #4b75ff;
 }
 
 .card-title-icon-block {
@@ -1171,6 +1171,10 @@ body .ui-widget {
 
 .pagination > li > a {
   border-color: #b8b8b8 !important;
+}
+
+a {
+  color: #4b75ff;
 }
 
 /* Pagination Icon URLs and Styles*/
