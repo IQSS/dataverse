@@ -156,13 +156,15 @@
                                                                 <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
                                                                 <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
                                                             </p:selectOneMenu>
-                                                            <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{dsf.datasetFieldType.allowMultiples}">
+                                                            <p:scrollPanel mode="native" styleClass="ui-inputfield form-control select-scroll-block"  rendered="#{dsf.datasetFieldType.allowMultiples}" >
+                                                                <h:panelGrid bodyrows="5">                                                            
                                                                 <p:selectManyCheckbox value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
                                                                                       layout="pageDirection">
                                                                     <f:selectItem itemLabel="#{bundle.select}" class="chkbox-label-margin" itemValue="" noSelectionOption="true"/>
                                                                     <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
-                                                                </p:selectManyCheckbox>
-                                                            </div>
+                                                                </p:selectManyCheckbox>                                                          
+                                                             </h:panelGrid>
+                                                            </p:scrollPanel>
                                                             <div class="alert-danger" jsf:rendered="#{!empty dsf.validationMessage}">
                                                                 <strong>#{dsf.validationMessage}</strong>
                                                             </div>
