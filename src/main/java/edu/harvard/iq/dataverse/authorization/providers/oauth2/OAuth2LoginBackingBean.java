@@ -46,6 +46,9 @@ public class OAuth2LoginBackingBean implements Serializable {
     private String responseBody;
     Optional<String> redirectPage = Optional.empty();
     private OAuth2Exception error;
+    /**
+     * TODO: Only used in exchangeCodeForToken(). Make local var in method.
+     */
     private OAuth2UserRecord oauthUser;
 
     @EJB
@@ -124,6 +127,10 @@ public class OAuth2LoginBackingBean implements Serializable {
         }
     }
     
+    /**
+     * TODO: Refactor this to be included in calling method.
+     * TODO: Use org.apache.commons.io.IOUtils.toString(req.getReader()) instead of overcomplicated code below.
+     */
     private Optional<String> parseCodeFromRequest(@NotNull HttpServletRequest req) {
         String code = req.getParameter("code");
         if (code == null || code.trim().isEmpty()) {
@@ -215,15 +222,24 @@ public class OAuth2LoginBackingBean implements Serializable {
         final String state = idp.getId() + "~" + encrypted;
         return state;
     }
-
+    
+    /**
+     * TODO: Unused. Remove.
+     */
     public String getResponseBody() {
         return responseBody;
     }
-
+    
+    /**
+     * TODO: Unused. Remove.
+     */
     public int getResponseCode() {
         return responseCode;
     }
-
+    
+    /**
+     * TODO: Unused. Remove.
+     */
     public OAuth2UserRecord getUser() {
         return oauthUser;
     }
@@ -231,17 +247,26 @@ public class OAuth2LoginBackingBean implements Serializable {
     public OAuth2Exception getError() {
         return error;
     }
-
+    
+    /**
+     * TODO: Unused. Remove.
+     */
     public boolean isInError() {
         return error != null;
     }
-
+    
+    /**
+     * TODO: Unused. Remove.
+     */
     public List<AbstractOAuth2AuthenticationProvider> getProviders() {
         return authenticationSvc.getOAuth2Providers().stream()
                 .sorted(Comparator.comparing(AbstractOAuth2AuthenticationProvider::getTitle))
                 .collect(toList());
     }
-
+    
+    /**
+     * TODO: Unused. Remove.
+     */
     public boolean isOAuth2ProvidersDefined() {
         return !authenticationSvc.getOAuth2Providers().isEmpty();
     }
