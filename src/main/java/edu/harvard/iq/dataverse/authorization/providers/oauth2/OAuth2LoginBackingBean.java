@@ -29,6 +29,7 @@ import javax.validation.constraints.NotNull;
 
 import static edu.harvard.iq.dataverse.util.StringUtil.toOption;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.omnifaces.util.Faces;
 
 /**
  * Backing bean of the oauth2 login process. Used from the login and the
@@ -83,7 +84,7 @@ public class OAuth2LoginBackingBean implements Serializable {
      * @throws IOException
      */
     public void exchangeCodeForToken() throws IOException {
-        HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        HttpServletRequest req = Faces.getRequest();
         
         try {
             Optional<AbstractOAuth2AuthenticationProvider> oIdp = parseStateFromRequest(req.getParameter("state"));
@@ -101,7 +102,7 @@ public class OAuth2LoginBackingBean implements Serializable {
                 if (dvUser == null) {
                     // need to create the user
                     newAccountPage.setNewUser(oauthUser);
-                    FacesContext.getCurrentInstance().getExternalContext().redirect("/oauth2/firstLogin.xhtml");
+                    Faces.redirect("/oauth2/firstLogin.xhtml");
         
                 } else {
                     // login the user and redirect to HOME of intended page (if any).
@@ -111,10 +112,8 @@ public class OAuth2LoginBackingBean implements Serializable {
                     tokenData.setUser(dvUser);
                     tokenData.setOauthProviderId(idp.getId());
                     oauth2Tokens.store(tokenData);
-                    String destination = redirectPage.orElse("/");
-                    HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
-                    String prettyUrl = response.encodeRedirectURL(destination);
-                    FacesContext.getCurrentInstance().getExternalContext().redirect(prettyUrl);
+                    
+                    Faces.redirect(redirectPage.orElse("/"));
                 }
             }
         } catch (OAuth2Exception ex) {
