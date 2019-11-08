@@ -4,10 +4,6 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
-      xmlns:jsf="http://xmlns.jcp.org/jsf"
-      xmlns:o="http://omnifaces.org/ui"
-      xmlns:dv="http://dataverse.org/facelets"
 >
     <h:head>
     </h:head>
@@ -47,7 +43,12 @@
                     
                     <!-- Top action buttons -->
                     <div class="button-block form-top">
-                        <p:commandButton id="saveTop" value="#{bundle.saveChanges}" onclick="PF('datasetSaveButton').getJQ().click();" />
+                        <p:commandButton value="#{bundle.saveChanges}"
+                                         widgetVar="datasetSaveButton"
+                                         update=":editMetadataForm"
+                                         onclick="PF('lockEditMetadataForm').show();"
+                                         oncomplete="$(document).scrollTop(0);"
+                                         action="#{editDatasetMetadataPage.save}" />
                         <p:commandButton id="cancelTop" value="#{bundle.cancel}" action="#{editDatasetMetadataPage.cancel}">
                         </p:commandButton>
                     </div>
@@ -65,15 +66,14 @@
                     
                     <!-- Bottom action buttons -->
                     <div class="button-block">
-                        <p:commandButton tabindex="1000" id="save" value="#{bundle.saveChanges}" onclick="PF('datasetSaveButton').getJQ().click();" />
-                        <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{editDatasetMetadataPage.cancel}" />
-                        <p:commandButton value="Direct" id="datasetSave"
+                        <p:commandButton value="#{bundle.saveChanges}"
                                          widgetVar="datasetSaveButton"
-                                         style="display:none"
-                                         update=":editMetadataForm,:messagePanel"
+                                         update=":editMetadataForm"
                                          onclick="PF('lockEditMetadataForm').show();"
                                          oncomplete="$(document).scrollTop(0);"
                                          action="#{editDatasetMetadataPage.save}" />
+                        <p:commandButton id="cancel" value="#{bundle.cancel}" action="#{editDatasetMetadataPage.cancel}" />
+
                     </div>
 
                     <p:blockUI block="editMetadataForm" widgetVar="lockEditMetadataForm"/>
