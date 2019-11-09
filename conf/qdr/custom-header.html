@@ -1,0 +1,14 @@
+<div id="header"></div>
+<script>
+    $(document).ready(function() {
+    $.ajax({ url: 'https://d8.dev-aws.qdr.org/content/just-header', xhrFields: { withCredentials: true } }).done(function(data) { $('#header').html(data); changeRedirect();});
+    });
+    
+    function changeRedirect() {
+      if($('#qdr-login').length) {
+        $href = $('#qdr-login').attr('href');
+         $href = $href.substring(0, $href.indexOf('current_page=') + 13) + window.location.href;
+         $href = $('#qdr-login').attr('href', $href);
+      }
+    }
+</script>
