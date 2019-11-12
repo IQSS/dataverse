@@ -65,41 +65,38 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.host.title']}"></span>
                                 </h:outputLabel>
                                 <div class="form-col-container">
-                                    <p:fragment id="hostDataverseContent">
-                                        <ui:fragment rendered="#{DataversePage.editMode == 'INFO'}">
-                                            <p id="hostDataverseStatic" class="form-control-static">#{DataversePage.dataverse.getOwner().name}</p>
-                                            <h:inputHidden value="#{DataversePage.ownerId}" id="hostDataverseStatic_hidden"/>
-                                        </ui:fragment>
-                                        <p:autoComplete id="selectHostDataverse"
-                                                        rendered="#{DataversePage.editMode == 'CREATE'}"
-                                                        binding="#{DataversePage.selectedHostDataverseMenu}"
-                                                        placeholder="#{bundle['dataverse.link.yourDataverses.inputPlaceholder']}"
-                                                        emptyMessage="#{bundle['dataverse.host.autocomplete.nomatches']}"
-                                                        scrollHeight="180" forceSelection="true" 
-                                                        minQueryLength="1" queryDelay="1000"
-                                                        value="#{DataversePage.dataverse.owner}" 
-                                                        multiple="false"
-                                                        completeMethod="#{DataversePage.completeHostDataverseMenuList}"
-                                                        required="#{param['DO_DS_LINK_VALIDATION']}" requiredMessage="#{bundle['dataverse.link.select']}"
-                                                        styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
-                                                        var="hostDataverse" itemLabel="#{hostDataverse.displayName}" itemValue="#{hostDataverse}" converter="dataverseConverter">
-                                            <p:column>
-                                                <h:outputText value="#{hostDataverse.displayName}"/> 
-                                            </p:column>
-                                            <p:column>
-                                                <h:outputText value="#{hostDataverse.alias}"/> 
-                                            </p:column>
-                                            <p:ajax process="@this" event="itemSelect" oncomplete="updateOwnerDataverse()"/>
-                                            <p:ajax process="@this" event="itemUnselect" oncomplete="updateOwnerDataverse()"/>
-                                        </p:autoComplete>
-                                        <p:message for="selectHostDataverse"/>
-                                        <p:commandButton id="updateOwnerDataverse"
-                                                         style="display:none"
-                                                         process="@this :dataverseForm:selectHostDataverse"
-                                                         update="@form,:breadCrumbPanel"
-                                                         action="#{DataversePage.updateOwnerDataverse()}">
-                                        </p:commandButton>
-                                    </p:fragment>
+                                    <ui:fragment rendered="#{DataversePage.editMode == 'INFO'}">
+                                        <p id="hostDataverseStatic" class="form-control-static">#{DataversePage.dataverse.getOwner().name}</p>
+                                        <h:inputHidden value="#{DataversePage.ownerId}" id="hostDataverseStatic_hidden"/>
+                                    </ui:fragment>
+                                    <p:autoComplete id="selectHostDataverse"
+                                                    rendered="#{DataversePage.editMode == 'CREATE'}"
+                                                    placeholder="#{bundle['dataverse.link.yourDataverses.inputPlaceholder']}"
+                                                    emptyMessage="#{bundle['dataverse.host.autocomplete.nomatches']}"
+                                                    scrollHeight="180" forceSelection="true" 
+                                                    minQueryLength="1" queryDelay="1000"
+                                                    value="#{DataversePage.dataverse.owner}" 
+                                                    multiple="false"
+                                                    completeMethod="#{DataversePage.completeHostDataverseMenuList}"
+                                                    required="#{param['DO_DS_LINK_VALIDATION']}" requiredMessage="#{bundle['dataverse.link.select']}"
+                                                    styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
+                                                    var="hostDataverse" itemLabel="#{hostDataverse.displayName}" itemValue="#{hostDataverse}" converter="dataverseConverter">
+                                        <p:column>
+                                            <h:outputText value="#{hostDataverse.displayName}"/> 
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="#{hostDataverse.alias}"/> 
+                                        </p:column>
+                                        <p:ajax process="@this" event="itemSelect" oncomplete="updateOwnerDataverse()"/>
+                                        <p:ajax process="@this" event="itemUnselect" oncomplete="updateOwnerDataverse()"/>
+                                    </p:autoComplete>
+                                    <p:message for="selectHostDataverse"/>
+                                    <p:commandButton id="updateOwnerDataverse"
+                                                     style="display:none"
+                                                     process="@this :dataverseForm:selectHostDataverse"
+                                                     update="@form,:breadCrumbPanel"
+                                                     action="#{DataversePage.updateOwnerDataverse()}">
+                                    </p:commandButton>
                                 </div>
                             </div>
                         </div>
