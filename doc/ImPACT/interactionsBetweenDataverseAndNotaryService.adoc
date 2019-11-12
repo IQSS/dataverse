@@ -1,0 +1,68 @@
+= UML Diagrams: Interactions between Dataverse and Notary Service
+* last updated: {docdatetime}
+
+== Diagram 1: Dataset Registration
+
+[plantuml]
+....
+@startuml
+title Communications between Dataverse and Notary Service: 1. Dataset Registration 
+actor "Data Provider" as dp
+participant "Web Browser" as wb
+participant "Notary Service" as ns
+participant Dataverse as dv
+
+dp -> wb: type the url of NS
+wb -> ns: request: go to NS
+ns -> wb: forward to the login page
+dp -> wb: type login-credentials
+wb -> ns: request: authentication 
+ns -> wb: response: top page
+dp -> wb: click the dataset registration link
+wb -> ns: request: dataset registration page
+ns -> wb: response: dataset-registration form 
+dp -> wb: type in the required data of a dataset
+wb -> ns: request: dataset registration 
+activate ns
+ns -> dv: request: otherId registration to Dataverse
+dv -> ns: response: OK
+ns -> wb: response: registration success message
+@enduml
+....
+
+== Diagram 2: Datafile-downloading
+[plantuml]
+.....
+@startuml
+title Communications between Dataverse and Notary Service: 2. Datafile-downloading request 
+actor Researcher as rs
+'actor "Data Provider" as dp
+participant "Web Browser" as wb
+'participant TRSA as sa
+participant  Dataverse as dv
+participant "Notary Service" as ns
+participant "Safe Server" as sf 
+participant presidio as fs
+rs -> wb: type the landing URL\n of a Dataset
+wb -> dv: request: landing page of the Dataset
+dv -> wb: response: Landing page
+rs -> wb: click the "Download" button\n of a DataFile
+wb -> dv: request: Downloading the DataFile
+dv -> dv: retrieve the other Dataset ID
+dv -> dv: build the url of the Dataset
+dv -> wb: redirect action
+wb -> ns: redirect to NS Dataset landing page
+ns -> wb: response: NS login form page
+rs -> wb: type his|her credentials\n in the form 
+wb -> ns: log-in request
+ns -> wb: response: Dataset landing page
+rs -> wb: click a download link
+wb -> ns: request: Datafile downloading 
+ns -> sf: access-validation\n request
+sf -> ns: response: access granted
+ns -> fs: forward to presidio
+fs -> wb: response: prompt the save as action
+rs -> wb: click the save as button
+fs -> wb: dump the Datafile 
+@enduml
+....

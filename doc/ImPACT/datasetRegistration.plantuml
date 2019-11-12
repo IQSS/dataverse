@@ -1,0 +1,23 @@
+@startuml
+title Communications between Dataverse and Notary Service: 1. Dataset Registration 
+actor "Data Provider" as dp
+participant "Web Browser" as wb
+participant "Notary Service" as ns
+participant Dataverse as dv
+
+dp -> wb: type the url of NS
+wb -> ns: request: go to NS
+ns -> wb: forward to the login page
+dp -> wb: type login-credentials
+wb -> ns: request: authentication 
+ns -> wb: response: top page
+dp -> wb: click the dataset registration link
+wb -> ns: request: dataset registration page
+ns -> wb: response: dataset-registration form 
+dp -> wb: type in the required data of a dataset
+wb -> ns: request: dataset registration 
+activate ns
+ns -> dv: request: otherId registration to Dataverse
+dv -> ns: response: OK
+ns -> wb: response: registration success message
+@enduml

@@ -1,0 +1,32 @@
+@startuml
+title Communications between Dataverse and Notary Service: 2. Datafile-downloading request 
+actor Researcher as rs
+'actor "Data Provider" as dp
+participant "Web Browser" as wb
+'participant TRSA as sa
+participant  Dataverse as dv
+participant "Notary Service" as ns
+participant "Safe Server" as sf 
+participant presidio as fs
+rs -> wb: type the landing URL\n of a Dataset
+wb -> dv: request: landing page of the Dataset
+dv -> wb: response: Landing page
+rs -> wb: click the "Download" button\n of a DataFile
+wb -> dv: request: Downloading the DataFile
+dv -> dv: retrieve the other Dataset ID
+dv -> dv: build the url of the Dataset
+dv -> wb: redirect action
+wb -> ns: redirect to NS Dataset landing page
+ns -> wb: response: NS login form page
+rs -> wb: type his|her credentials\n in the form 
+wb -> ns: log-in request
+ns -> wb: response: Dataset landing page
+rs -> wb: click a download link
+wb -> ns: request: Datafile downloading 
+ns -> sf: access-validation\n request
+sf -> ns: response: access granted
+ns -> fs: forward to presidio
+fs -> wb: response: prompt the save as action
+rs -> wb: click the save as button
+fs -> wb: dump the Datafile 
+@enduml
