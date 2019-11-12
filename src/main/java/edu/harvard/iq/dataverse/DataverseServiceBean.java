@@ -475,6 +475,10 @@ public class DataverseServiceBean implements java.io.Serializable {
         List<Dataverse> dataverseList = new ArrayList<>();
 
         List<Dataverse> results = filterDataversesByNamePattern(query);
+        
+        if (results == null || results.size() == 0) {
+            return null; 
+        }
 
         List<Object> alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM datasetlinkingdataverse WHERE dataset_id = " + dataset.getId()).getResultList();
         List<Dataverse> remove = new ArrayList<>();
@@ -501,6 +505,10 @@ public class DataverseServiceBean implements java.io.Serializable {
         // Find the dataverses matching the search parameters: 
         
         List<Dataverse> searchResults = filterDataversesByNamePattern(pattern);
+        
+        if (searchResults == null || searchResults.size() == 0) {
+            return null; 
+        }
         
         logger.fine("search query found " + searchResults.size() + " results");
         
@@ -554,24 +562,25 @@ public class DataverseServiceBean implements java.io.Serializable {
         
         
         String qstr = "select dv from Dataverse dv "
-                + "where (LOWER(dv.name) LIKE '%dataverse' and ((SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE '" + pattern1 + "') "
-                + "     or (SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE '" + pattern2 + "'))) "
-                + "or (LOWER(dv.name) NOT LIKE '%dataverse' and ((LOWER(dv.name) LIKE '" + pattern1 + "') "
-                + "     or (LOWER(dv.name) LIKE '" + pattern2 + "'))) "
+                + "where (LOWER(dv.name) LIKE :dataverse and ((SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE :pattern1) "
+                + "     or (SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE :pattern2))) "
+                + "or (LOWER(dv.name) NOT LIKE :dataverse and ((LOWER(dv.name) LIKE :pattern1) "
+                + "     or (LOWER(dv.name) LIKE :pattern2))) "
                 + "order by dv.alias";
                 
-        List<Dataverse> testResults = null;
+        List<Dataverse> searchResults = null;
         
         try {
-            testResults = em.createQuery(qstr, Dataverse.class)
-                    //.setParameter("pattern1", "pattern1")
-                    //.setParameter("pattern2", "pattern2")
+            searchResults = em.createQuery(qstr, Dataverse.class)
+                    .setParameter("dataverse", "%dataverse")
+                    .setParameter("pattern1", pattern1)
+                    .setParameter("pattern2", pattern2)
                     .getResultList();
         } catch (Exception ex) {
-            testResults = null;
+            searchResults = null;
         }
         
-        return testResults;
+        return searchResults;
     }
     
     /**
