@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.guestbook;
 
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
 
@@ -51,15 +51,6 @@ public class GuestbookServiceBean implements java.io.Serializable {
 
     public Guestbook find(Object pk) {
         return em.find(Guestbook.class, pk);
-    }
-
-    public Guestbook save(Guestbook guestbook) {
-        if (guestbook.getId() == null) {
-            em.persist(guestbook);
-            return guestbook;
-        } else {
-            return em.merge(guestbook);
-        }
     }
 
 }
