@@ -10,7 +10,7 @@
     <!--@elvariable id="fileMetadata" type="edu.harvard.iq.dataverse.persistence.datafile.FileMetadata"-->
     <!--@elvariable id="fileDownloadService" type="edu.harvard.iq.dataverse.FileDownloadServiceBean"-->
     <!--@elvariable id="guestbookResponse" type="edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse"-->
-    <!--@elvariable id="guestbookResponseService" type="edu.harvard.iq.dataverse.GuestbookResponseServiceBean"-->
+    <!--@elvariable id="guestbookResponseService" type="edu.harvard.iq.dataverse.guestbook.GuestbookResponseServiceBean"-->
 
     <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem and canUpdateDataset}">
         <!-- Ingest Problem - this is the infamous "red triangle" error. As of 4.2, we only want to show it to the owner of the dataset: -->

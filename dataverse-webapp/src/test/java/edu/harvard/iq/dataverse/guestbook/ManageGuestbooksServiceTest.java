@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.guestbook;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteGuestbookCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
@@ -125,6 +125,7 @@ public class ManageGuestbooksServiceTest {
         gb.setName(guestBookName);
         gb.setId(1L);
         gb.setDataverse(createTestDataverse(false));
+        gb.getDataverse().setGuestbooks(Lists.newArrayList(gb));
 
         return gb;
     }

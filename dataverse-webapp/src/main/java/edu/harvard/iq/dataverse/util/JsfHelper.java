@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.common.BundleUtil;
+
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import java.util.logging.Level;
@@ -16,8 +18,10 @@ public class JsfHelper {
     public static final JsfHelper JH = new JsfHelper();
 
     public static void addFlashSuccessMessage(String message) {
-        FacesContext.getCurrentInstance().getExternalContext().getFlash().put("successMsg", message);
+        FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
 
+        FacesContext.getCurrentInstance().addMessage("successMessage", new FacesMessage(BundleUtil.getStringFromBundle("messages.success"),
+                                                                                        message));
     }
 
     public static void addFlashMessage(String message) {
@@ -25,15 +29,27 @@ public class JsfHelper {
     }
 
     public static void addFlashErrorMessage(String message) {
-        FacesContext.getCurrentInstance().getExternalContext().getFlash().put("errorMsg", message);
+        FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                                                                       BundleUtil.getStringFromBundle("messages.error"),
+                                                                                       message));
     }
 
     public static void addFlashInfoMessage(String message) {
-        FacesContext.getCurrentInstance().getExternalContext().getFlash().put("infoMsg", message);
+        FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,
+                                                                                       BundleUtil.getStringFromBundle("messages.info"),
+                                                                                       message));
     }
 
     public static void addFlashWarningMessage(String message) {
-        FacesContext.getCurrentInstance().getExternalContext().getFlash().put("warningMsg", message);
+        FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,
+                                                                                       BundleUtil.getStringFromBundle("messages.info"),
+                                                                                       message));
     }
 
     public static void addErrorMessage(String componentId, String summary, String detail) {

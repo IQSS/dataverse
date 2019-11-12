@@ -3,21 +3,20 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.guestbook;
 
+import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.engine.command.Command;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestbookCommand;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.guestbook.CustomQuestion;
 import edu.harvard.iq.dataverse.persistence.guestbook.CustomQuestionValue;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 
-import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIInput;
@@ -29,6 +28,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static javax.faces.application.FacesMessage.SEVERITY_ERROR;
@@ -42,20 +42,10 @@ public class GuestbookPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(GuestbookPage.class.getCanonicalName());
 
-    @EJB
-    private GuestbookServiceBean guestbookService;
-
-    @EJB
+    private GuestbookServiceBean guestbookHelperService;
     private DataverseServiceBean dataverseService;
-
-    @EJB
-    private EjbDataverseEngine commandEngine;
-
-    @Inject
-    private DataverseRequestServiceBean dvRequestService;
-
-    @Inject
     private PermissionsWrapper permissionsWrapper;
+    private GuestbookService guestbookService;
 
     public enum EditMode {
 
@@ -71,6 +61,19 @@ public class GuestbookPage implements java.io.Serializable {
 
     private UIInput guestbookName;
 
+    // -------------------- CONSTRUCTORS --------------------
+    @Deprecated
+    public GuestbookPage() {
+    }
+
+    @Inject
+    public GuestbookPage(GuestbookServiceBean guestbookHelperService, DataverseServiceBean dataverseService,
+                         PermissionsWrapper permissionsWrapper, GuestbookService guestbookService) {
+        this.guestbookHelperService = guestbookHelperService;
+        this.dataverseService = dataverseService;
+        this.permissionsWrapper = permissionsWrapper;
+        this.guestbookService = guestbookService;
+    }
 
     // -------------------- GETTERS --------------------
 
@@ -129,11 +132,11 @@ public class GuestbookPage implements java.io.Serializable {
         } else if (ownerId != null && sourceId != null) {
             // Clone mode for a new template from source
             editMode = EditMode.CLONE;
-            Guestbook sourceGB = guestbookService.find(sourceId);
+            Guestbook sourceGB = guestbookHelperService.find(sourceId);
             guestbook = sourceGB.copyGuestbook(sourceGB, dataverse);
             String name = BundleUtil.getStringFromBundle("page.copy") + " " + sourceGB.getName();
             guestbook.setName(name);
-            guestbook.setUsageCount(new Long(0));
+            guestbook.setUsageCount(0L);
             guestbook.setCreateTime(new Timestamp(new Date().getTime()));
 
         } else {
@@ -176,7 +179,6 @@ public class GuestbookPage implements java.io.Serializable {
 
 
     public String save() {
-        boolean create = false;
 
         if (StringUtils.isEmpty(guestbook.getName())) {
             FacesContext.getCurrentInstance().validationFailed();
@@ -238,45 +240,22 @@ public class GuestbookPage implements java.io.Serializable {
             }
         }
 
-        Command<Dataverse> cmd;
-        try {
-            if (editMode == EditMode.CREATE || editMode == EditMode.CLONE) {
-                guestbook.setCreateTime(new Timestamp(new Date().getTime()));
-                guestbook.setUsageCount(new Long(0));
-                guestbook.setEnabled(true);
-                dataverse.getGuestbooks().add(guestbook);
-                cmd = new UpdateDataverseCommand(dataverse, null, null, dvRequestService.getDataverseRequest(), null);
-                commandEngine.submit(cmd);
-                create = true;
-            } else {
-                cmd = new UpdateDataverseGuestbookCommand(dataverse, guestbook, dvRequestService.getDataverseRequest());
-                commandEngine.submit(cmd);
-            }
+        if (editMode == EditMode.CREATE || editMode == EditMode.CLONE) {
+            Try<Dataverse> guestbookTry = Try.of(() -> guestbookService.saveGuestbook(guestbook))
+                    .onSuccess(dv -> JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("guestbook.create")))
+                    .onFailure(this::handleErrorMessages);
 
-        } catch (EJBException ex) {
-            StringBuilder error = new StringBuilder();
-            error.append(ex).append(" ");
-            error.append(ex.getMessage()).append(" ");
-            Throwable cause = ex;
-            while (cause.getCause() != null) {
-                cause = cause.getCause();
-                error.append(cause).append(" ");
-                error.append(cause.getMessage()).append(" ");
+            if(guestbookTry.isFailure() && guestbookTry.getCause() instanceof EJBException) {
+                return "";
             }
-            //
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("guestbook.save.fail"), " - " + error.toString()));
-            logger.info("Guestbook Page EJB Exception. Dataverse: " + dataverse.getName());
-            logger.info(error.toString());
-            return null;
-        } catch (CommandException ex) {
-            logger.info("Guestbook Page Command Exception. Dataverse: " + dataverse.getName());
-            logger.info(ex.toString());
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("guestbook.save.fail"), " - " + ex.toString()));
-            //logger.severe(ex.getMessage());
+        } else {
+            Try.of(() -> guestbookService.editGuestbook(guestbook))
+                    .onSuccess(dv -> JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("guestbook.save")))
+                    .onFailure(this::handleErrorMessages);
         }
+
         editMode = null;
-        String msg = (create) ? BundleUtil.getStringFromBundle("guestbook.create") : BundleUtil.getStringFromBundle("guestbook.save");
-        JsfHelper.addFlashMessage(msg);
+
         return "/manage-guestbooks.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";
     }
 
@@ -285,6 +264,12 @@ public class GuestbookPage implements java.io.Serializable {
     }
 
     // -------------------- PRIVATE --------------------
+    private void handleErrorMessages(Throwable throwable) {
+            logger.log(Level.SEVERE,"Guestbook Page Exception. Dataverse: " + dataverse.getName());
+            logger.log(Level.SEVERE, "There was an error when saving guestbook: ", throwable);
+
+            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("guestbook.save.fail"));
+    }
 
     private void initCustomQuestionsForView() {
         if (guestbook.getCustomQuestions() == null || guestbook.getCustomQuestions().isEmpty()) {

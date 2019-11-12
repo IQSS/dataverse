@@ -44,7 +44,7 @@
         <dependency>
             <groupId>org.glassfish.main.extras</groupId>
             <artifactId>glassfish-embedded-all</artifactId>
-            <version>4.1</version>
+            <version>4.1.2</version>
         </dependency>
         <dependency>
             <groupId>org.dom4j</groupId>
