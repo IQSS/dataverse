@@ -1761,7 +1761,6 @@ public class DatasetPage implements java.io.Serializable {
             dataset = new Dataset();
             // initiate from scratch: (isolate the creation of a new dataset in its own method?)
             init(true);
-            logger.info("Created a new new dataset.");
             // rebuild the bred crumbs display:
             dataverseHeaderFragment.initBreadcrumbs(dataset);
         }
@@ -2982,16 +2981,6 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedLinkingDataverseMenu = selectedDataverseMenu;
     }
     
-    UIInput selectedHostDataverseMenu;
-    
-    public UIInput getSelectedHostDataverseMenu() {
-        return selectedHostDataverseMenu;
-    }
-
-    public void setSelectedHostDataverseMenu(UIInput selectedHostDataverseMenu) {
-        this.selectedHostDataverseMenu = selectedHostDataverseMenu;
-    }
-    
     private Boolean saveLink(Dataverse dataverse){
         boolean retVal = true;
         if (readOnly) {
@@ -3306,12 +3295,16 @@ public class DatasetPage implements java.io.Serializable {
 
     }
      
-     public String save() {
-         //Before dataset saved, write cached prov freeform to version
-        if(systemConfig.isProvCollectionEnabled()) {
+    public String save() {
+        //Before dataset saved, write cached prov freeform to version
+        if (systemConfig.isProvCollectionEnabled()) {
             provPopupFragmentBean.saveStageProvFreeformToLatestVersion();
         }
-        
+
+        // Before validating, ensure that the dataset has an owner:
+        if (dataset.getOwner() == null || dataset.getOwner().getId() == null) {
+            dataset.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
+        }
         // Validate
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
         if (!constraintViolations.isEmpty()) {
@@ -3324,7 +3317,7 @@ public class DatasetPage implements java.io.Serializable {
         Map<Long, String> deleteStorageLocations = null;
         
         try { 
-            if (editMode == EditMode.CREATE) {                
+            if (editMode == EditMode.CREATE) {
                 if ( selectedTemplate != null ) {
                     if ( isSessionUserAuthenticated() ) {
                         cmd = new CreateNewDatasetCommand(dataset, dvRequestService.getDataverseRequest(), false, selectedTemplate); 
