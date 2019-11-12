@@ -68,7 +68,7 @@ public class TemplateServiceIT extends WebappArquillianDeployment {
         em.persist(template);
 
         //when
-        Try<Dataverse> savedDataverse = templateService.updateDataverseTemplate(dataverse, false);
+        Try<Dataverse> savedDataverse = templateService.updateTemplateInheritance(dataverse, false);
 
         //then
         assertFalse(savedDataverse.isFailure());
@@ -170,7 +170,7 @@ public class TemplateServiceIT extends WebappArquillianDeployment {
         em.persist(template);
 
         //when
-        templateService.updateDataverseTemplate(dataverse, true);
+        templateService.updateTemplateInheritance(dataverse, true);
 
         //then
         assertEquals(dataverse.getDefaultTemplate(), template);
@@ -190,7 +190,7 @@ public class TemplateServiceIT extends WebappArquillianDeployment {
         em.persist(template);
 
         //when
-        templateService.updateDataverseTemplate(dataverse, false);
+        templateService.updateTemplateInheritance(dataverse, false);
 
         //then
         assertNull(dataverse.getDefaultTemplate());

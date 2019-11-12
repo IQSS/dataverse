@@ -312,7 +312,7 @@ public class Dataverse extends DvObjectContainer {
     }
 
     @OneToMany(mappedBy = "dataverse", cascade = {CascadeType.MERGE, CascadeType.REMOVE}, orphanRemoval = true)
-    private List<Template> templates;
+    private List<Template> templates = new ArrayList<>();
 
     @OneToMany(mappedBy = "dataverse", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     private List<Guestbook> guestbooks;
