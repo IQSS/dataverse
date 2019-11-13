@@ -64,6 +64,7 @@ public class OAuth2AuthenticationProviderFactory implements AuthenticationProvid
 
     /**
      * Expected map format.: {@code name: value|name: value|...}
+     * TODO: this should be refactored to use proper JSON objects ("dicts") instead of custom string format.
      *
      * @param factoryData
      * @return A map of the factory data.
