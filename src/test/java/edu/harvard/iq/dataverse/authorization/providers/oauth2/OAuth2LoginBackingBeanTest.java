@@ -13,7 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.omnifaces.util.Faces;
 
@@ -23,8 +25,6 @@ import javax.faces.context.Flash;
 import javax.servlet.http.HttpServletRequest;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -34,17 +34,16 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class OAuth2LoginBackingBeanTest {
     
     OAuth2LoginBackingBean loginBackingBean = new OAuth2LoginBackingBean();
-    static AbstractOAuth2AuthenticationProvider testIdp = new GitHubOAuth2APTest();
+    @Spy static AbstractOAuth2AuthenticationProvider testIdp = new GitHubOAuth2APTest();
     
-    @Mock
-    AuthenticationServiceBean authenticationServiceBean;
-    @Mock
-    SystemConfig systemConfig;
+    @Mock AuthenticationServiceBean authenticationServiceBean;
+    @Mock SystemConfig systemConfig;
     
     @BeforeEach
     void setUp() {
@@ -81,22 +80,50 @@ class OAuth2LoginBackingBeanTest {
         @Mock Flash flashMock;
         @Mock HttpServletRequest requestMock;
         @Mock BufferedReader reader;
+        @Mock OAuth2FirstLoginPage newAccountPage;
         
         @BeforeEach
         void setUp() throws IOException {
+            loginBackingBean.newAccountPage = this.newAccountPage;
+            
             // mock FacesContext to make the method testable
             Faces.setContext(facesContextMock);
             when(facesContextMock.getExternalContext()).thenReturn(externalContextMock);
-            lenient().when(externalContextMock.getFlash()).thenReturn(flashMock);
             when(externalContextMock.getRequest()).thenReturn(requestMock);
-            when(requestMock.getReader()).thenReturn(reader);
-            when(requestMock.getParameter("state")).thenReturn(loginBackingBean.createState(testIdp, Optional.of("/dataverse.xhtml")));
+            lenient().when(externalContextMock.getFlash()).thenReturn(flashMock);
+            lenient().when(requestMock.getReader()).thenReturn(reader);
+            doReturn(loginBackingBean.createState(testIdp, Optional.of("/dataverse.xhtml"))).when(requestMock).getParameter("state");
         }
         
         @Test
         void noCode() {
             assertDoesNotThrow(() -> loginBackingBean.exchangeCodeForToken());
             assertThat(loginBackingBean.getError(), Matchers.isA(OAuth2Exception.class));
+        }
+        
+        @Test
+        void newUser() throws Exception {
+            // GIVEN
+            String code = "randomstring";
+            OAuth2UserRecord userRecord = ((GitHubOAuth2APTest) testIdp).getExampleUserRecord();
+            String newUserRedirect = "/oauth2/firstLogin.xhtml";
+            
+            // fake the code received from the provider
+            when(requestMock.getParameter("code")).thenReturn(code);
+            // let's deep-fake the result of getUserRecord()
+            doReturn(userRecord).when(testIdp).getUserRecord(code);
+    
+            // WHEN
+            // capture the redirect target from the faces context
+            ArgumentCaptor<String> redirectUrlCaptor = ArgumentCaptor.forClass(String.class);
+            doNothing().when(externalContextMock).redirect(redirectUrlCaptor.capture());
+            
+            // THEN
+            assertDoesNotThrow(() -> loginBackingBean.exchangeCodeForToken());
+            // verify that the user object is passed on to the first login page
+            verify(newAccountPage, times(1)).setNewUser(userRecord);
+            // verify that the user is redirected to the first login page
+            assertThat(redirectUrlCaptor.getValue(), equalTo(newUserRedirect));
         }
     }
     
