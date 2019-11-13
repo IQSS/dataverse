@@ -4,20 +4,32 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2APTest;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.omnifaces.util.Faces;
 
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import javax.faces.context.Flash;
+import javax.servlet.http.HttpServletRequest;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 import java.util.stream.Stream;
+import java.io.BufferedReader;
+import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -59,6 +71,33 @@ class OAuth2LoginBackingBeanTest {
         assertThat(link, notNullValue());
         assertThat(link, not(isEmptyString()));
         assertThat(link, StringContains.containsString(testIdp.getService(callbackURL).getAuthorizationUrl()));
+    }
+    
+    @Nested
+    @DisplayName("Tests for exchangeCodeForToken()")
+    class ecft {
+        @Mock FacesContext facesContextMock;
+        @Mock ExternalContext externalContextMock;
+        @Mock Flash flashMock;
+        @Mock HttpServletRequest requestMock;
+        @Mock BufferedReader reader;
+        
+        @BeforeEach
+        void setUp() throws IOException {
+            // mock FacesContext to make the method testable
+            Faces.setContext(facesContextMock);
+            when(facesContextMock.getExternalContext()).thenReturn(externalContextMock);
+            lenient().when(externalContextMock.getFlash()).thenReturn(flashMock);
+            when(externalContextMock.getRequest()).thenReturn(requestMock);
+            when(requestMock.getReader()).thenReturn(reader);
+            when(requestMock.getParameter("state")).thenReturn(loginBackingBean.createState(testIdp, Optional.of("/dataverse.xhtml")));
+        }
+        
+        @Test
+        void noCode() {
+            assertDoesNotThrow(() -> loginBackingBean.exchangeCodeForToken());
+            assertThat(loginBackingBean.getError(), Matchers.isA(OAuth2Exception.class));
+        }
     }
     
     @Test
