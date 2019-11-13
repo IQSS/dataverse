@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
-import com.github.scribejava.core.oauth.AuthorizationUrlBuilder;
-import com.github.scribejava.core.oauth.OAuth20Service;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
@@ -19,12 +17,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.toList;
 import javax.ejb.EJB;
-import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
 
 import static edu.harvard.iq.dataverse.util.StringUtil.toOption;
@@ -92,9 +88,7 @@ public class OAuth2LoginBackingBean implements Serializable {
 
             if (oIdp.isPresent() && code.isPresent()) {
                 AbstractOAuth2AuthenticationProvider idp = oIdp.get();
-                
-                OAuth20Service svc = idp.getService(systemConfig.getOAuth2CallbackUrl());
-                oauthUser = idp.getUserRecord(code.get(), svc);
+                oauthUser = idp.getUserRecord(code.get());
                 
                 UserRecordIdentifier idtf = oauthUser.getUserRecordIdentifier();
                 AuthenticatedUser dvUser = authenticationSvc.lookupUser(idtf);
