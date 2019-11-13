@@ -150,7 +150,9 @@ INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber
     VALUES (43, 11, 56, 'RELEASED', 2, 0, NULL, 36, NULL, NULL, NULL, '2019-08-22 08:22:33.1', '2019-09-27 12:00:43.188', '2019-09-27 12:00:43.188', NULL, NULL);
 INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, termsofuseandaccess_id, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
     VALUES (44, 11, 56, 'DRAFT', NULL, NULL, NULL, 36, NULL, NULL, NULL, '2019-08-22 08:22:33.1', '2019-09-27 12:00:43.188', NULL, NULL, NULL);
-
+INSERT INTO datasetversionuser (id, lastupdatedate, authenticateduser_id, datasetversion_id) VALUES (40, '2019-08-22 08:23:02.738', 2, 42);
+INSERT INTO datasetversionuser (id, lastupdatedate, authenticateduser_id, datasetversion_id) VALUES (41, '2019-08-22 08:23:02.738', 2, 43);
+INSERT INTO datasetversionuser (id, lastupdatedate, authenticateduser_id, datasetversion_id) VALUES (42, '2019-08-22 08:23:02.738', 2, 43);
 -------------------- DATAFILES --------------------
 
 --- DS:Draft with files -> testfile6.zip
@@ -158,18 +160,22 @@ INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, auth
     VALUES (53, 'DataFile', 52, false, NULL, NULL, NULL, NULL, false, '16d24989113-5834f8e1e68e', NULL, NULL, 1, '2019-09-12 08:30:53.446', '2019-09-27 12:00:43.188', '2019-09-12 08:30:41.424', NULL, NULL);
 INSERT INTO datafile (id, checksumtype, checksumvalue, contenttype, filesize, ingeststatus, previousdatafileid, prov_entityname, restricted, rootdatafileid) 
     VALUES (53, 'MD5', 'd9881598b92d3f87fd8a7c7eb99f84b7', 'application/zip', 19, 'A', NULL, NULL, NULL, -1);
-INSERT INTO filetermsofuse (id, allrightsreserved, restrictcustomtext, restricttype, license_id) VALUES (117, false, NULL, NULL, 1);
+INSERT INTO filetermsofuse (id, allrightsreserved, restrictcustomtext, restricttype, license_id)
+    VALUES (117, false, NULL, NULL, 1);
 INSERT INTO filemetadata (id, description, directorylabel, label, prov_freeform, restricted, version, datafile_id, datasetversion_id, displayorder, termsofuse_id)
     VALUES (110, '', NULL, 'testfile6.zip', NULL, NULL, 5, 53, 36, 0, 117);
-INSERT INTO filemetadata_datafilecategory (filecategories_id, filemetadatas_id) VALUES (11, 110);
-INSERT INTO filemetadata_datafilecategory (filecategories_id, filemetadatas_id) VALUES (12, 110);
+INSERT INTO filemetadata_datafilecategory (filecategories_id, filemetadatas_id)
+    VALUES (11, 110);
+INSERT INTO filemetadata_datafilecategory (filecategories_id, filemetadatas_id)
+    VALUES (12, 110);
 
 --- DS:Draft with files -> testfile1.zip
 INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate, creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime) 
     VALUES (55, 'DataFile', 52, false, NULL, NULL, NULL, NULL, false, '16d24989319-2c86e28809de', NULL, NULL, 1, '2019-09-12 08:30:53.446', '2019-09-27 12:00:43.188', '2019-09-12 08:30:41.942', NULL, NULL);
 INSERT INTO datafile (id, checksumtype, checksumvalue, contenttype, filesize, ingeststatus, previousdatafileid, prov_entityname, restricted, rootdatafileid) 
     VALUES (55, 'MD5', '7ed0097d7e9ee73cf0952a1f0a07c07e', 'application/zip', 3, 'A', NULL, NULL, NULL, -1);
-INSERT INTO filetermsofuse (id, allrightsreserved, restrictcustomtext, restricttype, license_id) VALUES (119, false, NULL, NULL, 1);
+INSERT INTO filetermsofuse (id, allrightsreserved, restrictcustomtext, restricttype, license_id)
+    VALUES (119, false, NULL, NULL, 1);
 INSERT INTO filemetadata (id, description, directorylabel, label, prov_freeform, restricted, version, datafile_id, datasetversion_id, displayorder, termsofuse_id)
     VALUES (112, '', NULL, 'testfile1.zip', NULL, NULL, 5, 55, 36, 1, 119);
 INSERT INTO filemetadata_datafilecategory (filecategories_id, filemetadatas_id) VALUES (11, 112);

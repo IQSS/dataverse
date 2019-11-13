@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class DatasetDeaccessionServiceTest {
     @InjectMocks
-    private DatasetDeaccesssionService deaccesssionService;
+    private DatasetDeaccessionService deaccesssionService;
 
     @Mock
     private EjbDataverseEngine commandEngine;
@@ -61,7 +61,7 @@ public class DatasetDeaccessionServiceTest {
         int versionToDeaccess = 1;
 
         // when
-        deaccesssionService.deaccessVersion(dataset.getVersions().get(versionToDeaccess));
+        deaccesssionService.deaccessVersion(dataset.getVersions().get(versionToDeaccess).getId(), "testReason", "testForwardUrl");
 
         // then
         verify(commandEngine, times(1)).submit(any(DeaccessionDatasetVersionCommand.class));

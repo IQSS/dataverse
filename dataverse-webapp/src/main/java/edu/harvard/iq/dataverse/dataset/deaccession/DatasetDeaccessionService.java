@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Stateless
-public class DatasetDeaccesssionService {
+public class DatasetDeaccessionService {
 
     private EjbDataverseEngine commandEngine;
     private DataverseRequestServiceBean dvRequestService;
@@ -21,26 +21,30 @@ public class DatasetDeaccesssionService {
     // -------------------- CONSTRUCTORS --------------------
 
     @Deprecated
-    public DatasetDeaccesssionService() {
+    public DatasetDeaccessionService() {
     }
 
     @Inject
-    public DatasetDeaccesssionService(EjbDataverseEngine commandEngine, DataverseRequestServiceBean dvRequestService,
-                                      DatasetVersionServiceBean datasetVersionService) {
+    public DatasetDeaccessionService(EjbDataverseEngine commandEngine, DataverseRequestServiceBean dvRequestService,
+                                     DatasetVersionServiceBean datasetVersionService) {
         this.commandEngine = commandEngine;
         this.dvRequestService = dvRequestService;
         this.datasetVersionService = datasetVersionService;
     }
 
     // -------------------- LOGIC --------------------
-    public DatasetVersion deaccessVersion(DatasetVersion version) {
-        return commandEngine.submit(new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), version));
+    public DatasetVersion deaccessVersion(long versionId, String deaccessionReason, String deaccessionForwardURLFor) {
+        DatasetVersion versionToDeaccess = datasetVersionService.find(versionId);
+        versionToDeaccess.setVersionNote(deaccessionReason);
+        versionToDeaccess.setArchiveNote(deaccessionForwardURLFor);
+
+        return commandEngine.submit(new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), versionToDeaccess));
     }
 
     public List<DatasetVersion> deaccessVersions(List<DatasetVersion> versions, String deaccessionReason ,String deaccessionForwardURLFor) {
         List<DatasetVersion> deaccessionedVersions = new ArrayList<>();
         for (DatasetVersion version : versions) {
-            deaccessionedVersions.add(deaccessSingleVersion(version, deaccessionReason, deaccessionForwardURLFor));
+            deaccessionedVersions.add(deaccessVersion(version.getId(), deaccessionReason, deaccessionForwardURLFor));
         }
         return deaccessionedVersions;
     }
@@ -49,22 +53,9 @@ public class DatasetDeaccesssionService {
         List<DatasetVersion> deaccessionedVersions = new ArrayList<>();
         for (DatasetVersion version : versions) {
             if(version.isReleased()) {
-                deaccessionedVersions.add(deaccessSingleVersion(version, deaccessionReason, deaccessionForwardURLFor));
+                deaccessionedVersions.add(deaccessVersion(version.getId(), deaccessionReason, deaccessionForwardURLFor));
             }
         }
         return deaccessionedVersions;
-    }
-
-    // -------------------- PRIVATE ---------------------
-    private DatasetVersion deaccessSingleVersion(DatasetVersion version, String deaccessionReason,
-                                                 String deaccessionForwardURLFor) {
-        DatasetVersion versionToDeaccess = datasetVersionService.find(version.getId());
-        updateDeaccessionReasonAndURL(versionToDeaccess, deaccessionReason, deaccessionForwardURLFor);
-        return deaccessVersion(versionToDeaccess);
-    }
-
-    private void updateDeaccessionReasonAndURL(DatasetVersion datasetVersion, String deaccessionReason ,String deaccessionForwardURLFor) {
-        datasetVersion.setVersionNote(deaccessionReason);
-        datasetVersion.setArchiveNote(deaccessionForwardURLFor);
     }
 }

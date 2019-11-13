@@ -33,7 +33,7 @@ public class DatasetDeaccessionDialog implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
 
-    private DatasetDeaccesssionService deaccesssionService;
+    private DatasetDeaccessionService datasetDeaccessionService;
 
     private Dataset dataset;
 
@@ -50,8 +50,8 @@ public class DatasetDeaccessionDialog implements Serializable {
     }
 
     @Inject
-    public DatasetDeaccessionDialog(DatasetDeaccesssionService deaccesssionService) {
-        this.deaccesssionService = deaccesssionService;
+    public DatasetDeaccessionDialog(DatasetDeaccessionService datasetDeaccessionService) {
+        this.datasetDeaccessionService = datasetDeaccessionService;
     }
 
     // -------------------- GETTERS --------------------
@@ -147,15 +147,15 @@ public class DatasetDeaccessionDialog implements Serializable {
         String deaccessionReason = buildDeaccessionReason();
 
         if (selectedDeaccessionVersions == null) {
-            listTry = Try.of(() -> deaccesssionService.deaccessReleasedVersions(dataset.getVersions(), deaccessionReason, deaccessionForwardURLFor));
+            listTry = Try.of(() -> datasetDeaccessionService.deaccessReleasedVersions(dataset.getVersions(), deaccessionReason, deaccessionForwardURLFor));
         } else {
-            listTry = Try.of(() -> deaccesssionService.deaccessVersions(selectedDeaccessionVersions, deaccessionReason, deaccessionForwardURLFor));
+            listTry = Try.of(() -> datasetDeaccessionService.deaccessVersions(selectedDeaccessionVersions, deaccessionReason, deaccessionForwardURLFor));
         }
 
         if(listTry.isSuccess()) {
             JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("datasetVersion.message.deaccessionSuccess"));
         } else {
-            logger.log(Level.SEVERE, "Deaccesion has failed.", listTry.getCause());
+            logger.log(Level.SEVERE, "Deaccession has failed.", listTry.getCause());
             JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.deaccessionFailure"));
         }
 
