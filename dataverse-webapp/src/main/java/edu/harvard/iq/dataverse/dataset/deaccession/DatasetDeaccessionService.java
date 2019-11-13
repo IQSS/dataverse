@@ -33,8 +33,8 @@ public class DatasetDeaccessionService {
     }
 
     // -------------------- LOGIC --------------------
-    public DatasetVersion deaccessVersion(long versionId, String deaccessionReason, String deaccessionForwardURLFor) {
-        DatasetVersion versionToDeaccess = datasetVersionService.find(versionId);
+    public DatasetVersion deaccessVersion(DatasetVersion version, String deaccessionReason, String deaccessionForwardURLFor) {
+        DatasetVersion versionToDeaccess = datasetVersionService.find(version.getId());
         versionToDeaccess.setVersionNote(deaccessionReason);
         versionToDeaccess.setArchiveNote(deaccessionForwardURLFor);
 
@@ -44,7 +44,7 @@ public class DatasetDeaccessionService {
     public List<DatasetVersion> deaccessVersions(List<DatasetVersion> versions, String deaccessionReason ,String deaccessionForwardURLFor) {
         List<DatasetVersion> deaccessionedVersions = new ArrayList<>();
         for (DatasetVersion version : versions) {
-            deaccessionedVersions.add(deaccessVersion(version.getId(), deaccessionReason, deaccessionForwardURLFor));
+            deaccessionedVersions.add(deaccessVersion(version, deaccessionReason, deaccessionForwardURLFor));
         }
         return deaccessionedVersions;
     }
@@ -53,7 +53,7 @@ public class DatasetDeaccessionService {
         List<DatasetVersion> deaccessionedVersions = new ArrayList<>();
         for (DatasetVersion version : versions) {
             if(version.isReleased()) {
-                deaccessionedVersions.add(deaccessVersion(version.getId(), deaccessionReason, deaccessionForwardURLFor));
+                deaccessionedVersions.add(deaccessVersion(version, deaccessionReason, deaccessionForwardURLFor));
             }
         }
         return deaccessionedVersions;

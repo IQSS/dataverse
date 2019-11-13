@@ -145,7 +145,7 @@ INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, auth
 INSERT INTO dataset (id, fileaccessrequest, harvestidentifier, usegenericthumbnail, citationdatedatasetfieldtype_id, harvestingclient_id, guestbook_id, thumbnailfile_id)
     VALUES (56, NULL, NULL, false, NULL, NULL, NULL, NULL);
 INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, termsofuseandaccess_id, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
-    VALUES (42, 11, 56, 'ARCHIVED', 1, 0, NULL, 36, 'archived version', NULL, NULL, '2019-08-22 08:22:33.1', '2019-09-27 12:00:43.188', '2019-09-27 12:00:43.188', NULL, NULL);
+    VALUES (42, 11, 56, 'ARCHIVED', 1, 0, NULL, 36, 'https://www.google.com/', NULL, NULL, '2019-08-22 08:22:33.1', '2019-09-27 12:00:43.188', '2019-09-27 12:00:43.188', NULL, NULL);
 INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, termsofuseandaccess_id, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
     VALUES (43, 11, 56, 'RELEASED', 2, 0, NULL, 36, NULL, NULL, NULL, '2019-08-22 08:22:33.1', '2019-09-27 12:00:43.188', '2019-09-27 12:00:43.188', NULL, NULL);
 INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, termsofuseandaccess_id, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)

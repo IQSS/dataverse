@@ -61,7 +61,7 @@ public class DatasetDeaccessionServiceTest {
         int versionToDeaccess = 1;
 
         // when
-        deaccesssionService.deaccessVersion(dataset.getVersions().get(versionToDeaccess).getId(), "testReason", "testForwardUrl");
+        deaccesssionService.deaccessVersion(dataset.getVersions().get(versionToDeaccess), "testReason", "testForwardUrl");
 
         // then
         verify(commandEngine, times(1)).submit(any(DeaccessionDatasetVersionCommand.class));
