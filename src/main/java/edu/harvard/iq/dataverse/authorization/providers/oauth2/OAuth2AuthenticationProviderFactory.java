@@ -65,11 +65,12 @@ public class OAuth2AuthenticationProviderFactory implements AuthenticationProvid
     /**
      * Expected map format.: {@code name: value|name: value|...}
      * TODO: this should be refactored to use proper JSON objects ("dicts") instead of custom string format.
+     * TODO: this should be included in some base class when refactoring the package to be about token flow based auth
      *
      * @param factoryData
      * @return A map of the factory data.
      */
-    protected Map<String, String> parseFactoryData(String factoryData) {
+    public static Map<String, String> parseFactoryData(String factoryData) {
         return Arrays.asList(factoryData.split("\\|")).stream()
                 .map(s -> s.split(":", 2))
                 .filter(p -> p.length == 2)
