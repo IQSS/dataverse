@@ -139,6 +139,17 @@ INSERT INTO datasetfieldvalue (id, displayorder, value, datasetfield_id) VALUES 
 INSERT INTO datasetfieldvalue (id, displayorder, value, datasetfield_id) VALUES (343, 0, 'Some contact name', 574);
 INSERT INTO datasetfieldvalue (id, displayorder, value, datasetfield_id) VALUES (344, 0, 'Some depositor name', 573);
 
+--- DV:unreleased -> Dataset with Versions ---
+INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate, creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
+    VALUES (56, 'Dataset', 19, false, 'doi', '10.18150', 'FK2/MLDB99', NULL, false, 'file://10.18150/FK2/MLDB99', NULL, NULL, 2, '2019-08-22 08:22:33.069', '2019-09-27 12:00:43.188', '2019-08-22 08:22:33.069', '2019-09-27 12:00:43.631', '2019-09-27 12:00:44.29');
+INSERT INTO dataset (id, fileaccessrequest, harvestidentifier, usegenericthumbnail, citationdatedatasetfieldtype_id, harvestingclient_id, guestbook_id, thumbnailfile_id)
+    VALUES (56, NULL, NULL, false, NULL, NULL, NULL, NULL);
+INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, termsofuseandaccess_id, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
+    VALUES (42, 11, 56, 'ARCHIVED', 1, 0, NULL, 36, 'archived version', NULL, NULL, '2019-08-22 08:22:33.1', '2019-09-27 12:00:43.188', '2019-09-27 12:00:43.188', NULL, NULL);
+INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, termsofuseandaccess_id, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
+    VALUES (43, 11, 56, 'RELEASED', 2, 0, NULL, 36, NULL, NULL, NULL, '2019-08-22 08:22:33.1', '2019-09-27 12:00:43.188', '2019-09-27 12:00:43.188', NULL, NULL);
+INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, termsofuseandaccess_id, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
+    VALUES (44, 11, 56, 'DRAFT', NULL, NULL, NULL, 36, NULL, NULL, NULL, '2019-08-22 08:22:33.1', '2019-09-27 12:00:43.188', NULL, NULL, NULL);
 
 -------------------- DATAFILES --------------------
 
@@ -148,7 +159,8 @@ INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, auth
 INSERT INTO datafile (id, checksumtype, checksumvalue, contenttype, filesize, ingeststatus, previousdatafileid, prov_entityname, restricted, rootdatafileid) 
     VALUES (53, 'MD5', 'd9881598b92d3f87fd8a7c7eb99f84b7', 'application/zip', 19, 'A', NULL, NULL, NULL, -1);
 INSERT INTO filetermsofuse (id, allrightsreserved, restrictcustomtext, restricttype, license_id) VALUES (117, false, NULL, NULL, 1);
-INSERT INTO filemetadata (id, description, directorylabel, label, prov_freeform, restricted, version, datafile_id, datasetversion_id, displayorder, termsofuse_id) VALUES (110, '', NULL, 'testfile6.zip', NULL, NULL, 5, 53, 36, 0, 117);
+INSERT INTO filemetadata (id, description, directorylabel, label, prov_freeform, restricted, version, datafile_id, datasetversion_id, displayorder, termsofuse_id)
+    VALUES (110, '', NULL, 'testfile6.zip', NULL, NULL, 5, 53, 36, 0, 117);
 INSERT INTO filemetadata_datafilecategory (filecategories_id, filemetadatas_id) VALUES (11, 110);
 INSERT INTO filemetadata_datafilecategory (filecategories_id, filemetadatas_id) VALUES (12, 110);
 
@@ -158,7 +170,8 @@ INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, auth
 INSERT INTO datafile (id, checksumtype, checksumvalue, contenttype, filesize, ingeststatus, previousdatafileid, prov_entityname, restricted, rootdatafileid) 
     VALUES (55, 'MD5', '7ed0097d7e9ee73cf0952a1f0a07c07e', 'application/zip', 3, 'A', NULL, NULL, NULL, -1);
 INSERT INTO filetermsofuse (id, allrightsreserved, restrictcustomtext, restricttype, license_id) VALUES (119, false, NULL, NULL, 1);
-INSERT INTO filemetadata (id, description, directorylabel, label, prov_freeform, restricted, version, datafile_id, datasetversion_id, displayorder, termsofuse_id) VALUES (112, '', NULL, 'testfile1.zip', NULL, NULL, 5, 55, 36, 1, 119);
+INSERT INTO filemetadata (id, description, directorylabel, label, prov_freeform, restricted, version, datafile_id, datasetversion_id, displayorder, termsofuse_id)
+    VALUES (112, '', NULL, 'testfile1.zip', NULL, NULL, 5, 55, 36, 1, 119);
 INSERT INTO filemetadata_datafilecategory (filecategories_id, filemetadatas_id) VALUES (11, 112);
 
 
