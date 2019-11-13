@@ -1,7 +1,11 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2APTest;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.hamcrest.Matchers;
@@ -81,10 +85,15 @@ class OAuth2LoginBackingBeanTest {
         @Mock HttpServletRequest requestMock;
         @Mock BufferedReader reader;
         @Mock OAuth2FirstLoginPage newAccountPage;
+        @Mock DataverseSession session;
+        @Mock OAuth2TokenDataServiceBean oauth2Tokens;
+        Optional<String> redirect = Optional.of("/hellotest");
         
         @BeforeEach
         void setUp() throws IOException {
             loginBackingBean.newAccountPage = this.newAccountPage;
+            loginBackingBean.session = this.session;
+            loginBackingBean.oauth2Tokens = this.oauth2Tokens;
             
             // mock FacesContext to make the method testable
             Faces.setContext(facesContextMock);
@@ -92,7 +101,7 @@ class OAuth2LoginBackingBeanTest {
             when(externalContextMock.getRequest()).thenReturn(requestMock);
             lenient().when(externalContextMock.getFlash()).thenReturn(flashMock);
             lenient().when(requestMock.getReader()).thenReturn(reader);
-            doReturn(loginBackingBean.createState(testIdp, Optional.of("/dataverse.xhtml"))).when(requestMock).getParameter("state");
+            doReturn(loginBackingBean.createState(testIdp, this.redirect)).when(requestMock).getParameter("state");
         }
         
         @Test
@@ -105,7 +114,7 @@ class OAuth2LoginBackingBeanTest {
         void newUser() throws Exception {
             // GIVEN
             String code = "randomstring";
-            OAuth2UserRecord userRecord = ((GitHubOAuth2APTest) testIdp).getExampleUserRecord();
+            OAuth2UserRecord userRecord = mock(OAuth2UserRecord.class);
             String newUserRedirect = "/oauth2/firstLogin.xhtml";
             
             // fake the code received from the provider
@@ -113,17 +122,50 @@ class OAuth2LoginBackingBeanTest {
             // let's deep-fake the result of getUserRecord()
             doReturn(userRecord).when(testIdp).getUserRecord(code);
     
-            // WHEN
+            // WHEN (& then)
             // capture the redirect target from the faces context
             ArgumentCaptor<String> redirectUrlCaptor = ArgumentCaptor.forClass(String.class);
             doNothing().when(externalContextMock).redirect(redirectUrlCaptor.capture());
             
-            // THEN
             assertDoesNotThrow(() -> loginBackingBean.exchangeCodeForToken());
+            
+            // THEN
             // verify that the user object is passed on to the first login page
             verify(newAccountPage, times(1)).setNewUser(userRecord);
             // verify that the user is redirected to the first login page
             assertThat(redirectUrlCaptor.getValue(), equalTo(newUserRedirect));
+        }
+    
+        @Test
+        void existingUser() throws Exception {
+            // GIVEN
+            String code = "randomstring";
+            OAuth2UserRecord userRecord = mock(OAuth2UserRecord.class);
+            UserRecordIdentifier userIdentifier = mock(UserRecordIdentifier.class);
+            AuthenticatedUser user = mock(AuthenticatedUser.class);
+            OAuth2TokenData tokenData = mock(OAuth2TokenData.class);
+        
+            // fake the code received from the provider
+            when(requestMock.getParameter("code")).thenReturn(code);
+            // let's deep-fake the result of getUserRecord()
+            doReturn(userRecord).when(testIdp).getUserRecord(code);
+            doReturn(tokenData).when(userRecord).getTokenData();
+            // also fake the result of the lookup in the auth service
+            doReturn(userIdentifier).when(userRecord).getUserRecordIdentifier();
+            doReturn(user).when(authenticationServiceBean).lookupUser(userIdentifier);
+        
+            // WHEN (& then)
+            // capture the redirect target from the faces context
+            ArgumentCaptor<String> redirectUrlCaptor = ArgumentCaptor.forClass(String.class);
+            doNothing().when(externalContextMock).redirect(redirectUrlCaptor.capture());
+    
+            assertDoesNotThrow(() -> loginBackingBean.exchangeCodeForToken());
+        
+            // THEN
+            // verify session handling: set the looked up user
+            verify(session, times(1)).setUser(user);
+            // verify that the user is redirected to the first login page
+            assertThat(redirectUrlCaptor.getValue(), equalTo(redirect.get()));
         }
     }
     
