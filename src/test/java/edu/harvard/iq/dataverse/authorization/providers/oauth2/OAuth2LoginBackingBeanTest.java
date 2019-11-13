@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.*;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
@@ -37,6 +38,7 @@ class OAuth2LoginBackingBeanTest {
     void setUp() {
         this.loginBackingBean.authenticationSvc = this.authenticationServiceBean;
         this.loginBackingBean.systemConfig = this.systemConfig;
+        lenient().when(this.authenticationServiceBean.getOAuth2Provider(testIdp.getId())).thenReturn(testIdp);
     }
     
     /**
@@ -45,21 +47,18 @@ class OAuth2LoginBackingBeanTest {
     @Test
     void linkFor() {
         // given
-        String idpId = "github";
         String redirectPage = "dataverse.xhtml"; // @see LoginPage.redirectPage
         String callbackURL = "oauth2/callback.xhtml";
-        AbstractOAuth2AuthenticationProvider idp = new GitHubOAuth2APTest();
         
         // when
-        when(this.authenticationServiceBean.getOAuth2Provider(idpId)).thenReturn(idp);
         when(this.systemConfig.getOAuth2CallbackUrl()).thenReturn(callbackURL);
         
-        String link = loginBackingBean.linkFor(idpId, redirectPage);
+        String link = loginBackingBean.linkFor(testIdp.getId(), redirectPage);
         
         // then
         assertThat(link, notNullValue());
         assertThat(link, not(isEmptyString()));
-        assertThat(link, StringContains.containsString(idp.getService(callbackURL).getAuthorizationUrl()));
+        assertThat(link, StringContains.containsString(testIdp.getService(callbackURL).getAuthorizationUrl()));
     }
     
     @Test
@@ -100,10 +99,6 @@ class OAuth2LoginBackingBeanTest {
     @ParameterizedTest
     @MethodSource("tamperedStates")
     void parseStateFromRequestStateTampered(String state) {
-        // when
-        when(this.authenticationServiceBean.getOAuth2Provider(testIdp.getId())).thenReturn(testIdp);
-        
-        // then
         assertThat(loginBackingBean.parseStateFromRequest(state), is(Optional.empty()));
     }
     
@@ -120,13 +115,9 @@ class OAuth2LoginBackingBeanTest {
     @MethodSource("provideStates")
     void parseStateFromRequestStateValid(Optional<String> redirectPage, boolean present) {
         // given
-        String idpId = testIdp.getId();
-    
-        // when
-        when(this.authenticationServiceBean.getOAuth2Provider(idpId)).thenReturn(testIdp);
         String stateWithRedirect = loginBackingBean.createState(testIdp, redirectPage);
     
-        // then
+        // when & then
         assertThat(loginBackingBean.parseStateFromRequest(stateWithRedirect), is(Optional.of(testIdp)));
         assertThat(loginBackingBean.redirectPage.isPresent(), is(present));
         if (present) {
