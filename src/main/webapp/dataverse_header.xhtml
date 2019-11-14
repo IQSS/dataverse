@@ -27,6 +27,9 @@
                     
                 </div>
                 <!-- QDRCustom- Menu Items -->
+                <!-- Adding an element where the custom header javascript can pick up the Drupal URL -->
+                <!-- If/when we remove the custom QDR menu, we should keep this one element -->
+                <div id='qdrdrupalurl' style="display:none;">#{settingsWrapper.get(':QDRDrupalSiteURL')}</div>
                 <div class="collapse navbar-collapse" id="topNavBar">
                     <ul class="nav navbar-nav navbar-right">
                         <li class="dropdown">

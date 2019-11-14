@@ -1,6 +1,7 @@
 <div id="custom-footer"></div>
 <script>
     $(document).ready(function() {
-        $('#custom-footer').load('https://d8.dev-aws.qdr.org/content/just-footer');
+        $url = $('#qdrdrupalurl').text();
+        $('#custom-footer').load($url + '/content/just-footer');
     });
 </script>
