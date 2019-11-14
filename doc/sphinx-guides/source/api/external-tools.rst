@@ -29,7 +29,13 @@ Note: This is the same list that appears in the :doc:`/admin/external-tools` sec
 How External Tools Are Presented to Users
 -----------------------------------------
 
-In short, an external tool appears under an "Explore" or "Configure" button either on a dataset landing page or a file landing page. See also the :ref:`testing-external-tools` section of the Admin Guide for some perspective on how installations of Dataverse will expect to test your tool before announcing it to their users.
+An external tool can appear in Dataverse in one of three ways:
+
+- under an "Explore" or "Configure" button either on a dataset landing page
+- under an "Explore" or "Configure" button on a file landing page
+- as an embedded preview on the file landing page
+
+See also the :ref:`testing-external-tools` section of the Admin Guide for some perspective on how installations of Dataverse will expect to test your tool before announcing it to their users.
 
 Creating an External Tool Manifest
 ----------------------------------
@@ -75,6 +81,8 @@ Terminology
     type                         Whether the external tool is an **explore** tool or a **configure** tool. Configure tools require an API token because they make changes to data files (files within datasets). Configure tools are currently not supported at the dataset level (no "Configure" button appears in the GUI for datasets).
 
     toolUrl                      The **base URL** of the tool before query parameters are added.
+    
+    hasPreviewMode               A boolean that indicates whether tool has a preview mode which can be embedded in the File Page. Since this view is designed for embedding within Dataverse, the preview mode for a tool will typically be a view without headers or other options that may be included with a tool that is designed to be launched in a new window. Sometimes, a tool will exist solely to preview files in Dataverse and the preview mode will be the same as the regular view. 
 
     contentType                  File level tools operate on a specific **file type** (content type or MIME type such as "application/pdf") and this must be specified. Dataset level tools do not use contentType.
 

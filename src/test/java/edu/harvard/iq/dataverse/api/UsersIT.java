@@ -5,15 +5,10 @@ import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
-import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
-import static edu.harvard.iq.dataverse.api.AccessIT.datasetId;
-import static edu.harvard.iq.dataverse.api.AccessIT.tabFile3NameRestricted;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -22,6 +17,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
@@ -351,6 +347,89 @@ public class UsersIT {
                  */
                 .body("message", equalTo("username '" + uppercaseUsername + "' already exists"));
         ;
+    }
+    
+    @Test
+    public void testAPITokenEndpoints() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        assertEquals(200, createUser.getStatusCode());
+        
+        String userApiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response getExpiration = UtilIT.getTokenExpiration("BAD-TOKEN-692134794");
+        getExpiration.prettyPrint();
+        getExpiration.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+        
+        getExpiration = UtilIT.getTokenExpiration(userApiToken);
+        getExpiration.prettyPrint();
+        getExpiration.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", containsString(userApiToken))
+                .body("data.message", containsString("expires on"));
+
+        Response recreateToken = UtilIT.recreateToken("BAD-Token-blah-89234");
+        recreateToken.prettyPrint();
+        recreateToken.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
+        recreateToken = UtilIT.recreateToken(userApiToken);
+        recreateToken.prettyPrint();
+        recreateToken.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", containsString("New token for"));
+
+        createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        assertEquals(200, createUser.getStatusCode());
+
+        String userApiTokenForDelete = UtilIT.getApiTokenFromResponse(createUser);
+        
+        /*
+        Add tests for Private URL
+        */
+        
+        createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        
+        Response createPrivateUrl = UtilIT.privateUrlCreate(datasetId, apiToken);
+        createPrivateUrl.prettyPrint();
+        assertEquals(OK.getStatusCode(), createPrivateUrl.getStatusCode());
+
+        Response shouldExist = UtilIT.privateUrlGet(datasetId, apiToken);
+        shouldExist.prettyPrint();
+        assertEquals(OK.getStatusCode(), shouldExist.getStatusCode());
+
+        String tokenForPrivateUrlUser = JsonPath.from(shouldExist.body().asString()).getString("data.token");
+        
+        getExpiration = UtilIT.getTokenExpiration(tokenForPrivateUrlUser);
+        getExpiration.prettyPrint();
+        getExpiration.then().assertThat()
+                .statusCode(NOT_FOUND.getStatusCode());
+
+
+        Response deleteToken = UtilIT.deleteToken(userApiTokenForDelete);
+        deleteToken.prettyPrint();
+        deleteToken.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", containsString(" deleted."));
+
+        //Make sure it's deleted
+        getExpiration = UtilIT.getTokenExpiration(userApiTokenForDelete);
+        getExpiration.prettyPrint();
+        getExpiration.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+        
     }
 
     private Response convertUserFromBcryptToSha1(long idOfBcryptUserToConvert, String password) {

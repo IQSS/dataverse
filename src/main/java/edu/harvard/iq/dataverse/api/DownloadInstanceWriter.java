@@ -37,10 +37,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.RedirectionException;
+import javax.ws.rs.ServiceUnavailableException;
 
 /**
  *
@@ -222,7 +222,10 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     
                     
                     if (storageIO == null) {
-                        throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
+                        //throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
+                        // 404/not found may be a better return code option here
+                        // (similarly to what the Access API returns when a thumbnail is requested on a text file, etc.)
+                        throw new NotFoundException("datafile access error: requested optional service (image scaling, format conversion, etc.) could not be performed on this datafile.");
                     }
                 } else {
                     if (storageIO instanceof S3AccessIO && !(dataFile.isTabularData()) && isRedirectToS3()) {
@@ -241,7 +244,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         }
                         
                         if (redirect_url_str == null) {
-                            throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
+                            throw new WebApplicationException(new ServiceUnavailableException());
                         }
                         
                         logger.fine("Data Access API: direct S3 url: "+redirect_url_str);
@@ -271,7 +274,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             logger.fine("Issuing redirect to the file location on S3.");
                             throw new RedirectionException(response);
                         }
-                        throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
+                        throw new WebApplicationException(new ServiceUnavailableException());
                     }
                 }
                 

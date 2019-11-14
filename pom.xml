@@ -7,7 +7,7 @@
     -->
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.17</version>
+    <version>4.18</version>
     <packaging>war</packaging>
     <name>dataverse</name>
     <properties>
@@ -31,7 +31,7 @@
         <junit.jupiter.version>5.3.1</junit.jupiter.version>
         <junit.vintage.version>5.3.1</junit.vintage.version>
         <junit.platform.version>1.3.1</junit.platform.version>
-        <mockito.version>2.22.0</mockito.version>
+        <mockito.version>2.28.2</mockito.version>
         <flyway.version>5.2.4</flyway.version>
         <jhove.version>1.20.1</jhove.version>
         <!--
@@ -277,7 +277,7 @@
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
-            <version>6.2</version>
+            <version>7.0</version>
         </dependency>
         <dependency>
             <groupId>org.primefaces.themes</groupId>
@@ -477,11 +477,6 @@
             <version>0.10.0</version>
         </dependency>
         <dependency>
-            <groupId>com.maxmind.geoip2</groupId>
-            <artifactId>geoip2</artifactId>
-            <version>2.3.1</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
             <version>1.2</version>
@@ -500,7 +495,7 @@
         <dependency>
             <groupId>com.github.scribejava</groupId>
             <artifactId>scribejava-apis</artifactId>
-            <version>3.1.0</version>
+            <version>6.9.0</version>
         </dependency>
         <!-- EXPERIMENTAL: -->
         <!-- lyncode xoai OAI-PMH implementation: -->
@@ -552,7 +547,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.18</version>
+            <version>1.19</version>
         </dependency>
         <dependency>
             <groupId>org.duracloud</groupId>
@@ -644,17 +639,6 @@
             </resource>
         </resources>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
-                    <compilerArgument>${compilerArgument}</compilerArgument>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -803,5 +787,46 @@
             <id>all-unit-tests</id>
         </profile>
         <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
+      <profile>
+        <id>Java8</id>
+        <activation>
+          <jdk>1.8</jdk>
+        </activation>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <version>3.8.0</version>
+              <configuration>
+                <source>1.8</source>
+                <target>1.8</target>
+                <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
+                <compilerArgument>${compilerArgument}</compilerArgument>
+              </configuration>
+            </plugin>
+          </plugins>
+        </build>
+      </profile>
+      <profile>
+        <id>Java9Plus</id>
+        <activation>
+          <jdk>[1.9</jdk>
+        </activation>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <version>3.8.0</version>
+              <configuration>
+                <release>8</release>
+                <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
+                <compilerArgument>${compilerArgument}</compilerArgument>
+              </configuration>
+            </plugin>
+          </plugins>
+        </build>
+      </profile>
     </profiles>
 </project>

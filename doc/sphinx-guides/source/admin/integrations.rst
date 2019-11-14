@@ -90,7 +90,7 @@ Dataverse supports a protocol called OAI-PMH that facilitates harvesting dataset
 SHARE
 +++++
 
-`SHARE <http://www.share-research.org>`_ is building a free, open, data set about research and scholarly activities across their life cycle. It's possible to add and installation of Dataverse as one of the `sources <https://share.osf.io/sources>`_ they include if you contact the SHARE team.
+`SHARE <http://www.share-research.org>`_ is building a free, open, data set about research and scholarly activities across their life cycle. It's possible to add an installation of Dataverse as one of the `sources <https://share.osf.io/sources>`_ they include if you contact the SHARE team.
 
 Research Data Preservation
 --------------------------
