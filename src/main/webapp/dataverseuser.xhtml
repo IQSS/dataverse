@@ -510,6 +510,17 @@
                                 <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
                                     #{ApiTokenPage.checkForApiToken() ? bundle['apitoken.regenerateBtn'] : bundle['apitoken.generateBtn']}
                                 </button>
+
+                                <ui:fragment rendered="${ApiTokenPage.apiTokenExpiration != ''}">
+                                    <button class="btn btn-default" jsf:action="#{ApiTokenPage.revoke()}">
+                                    #{bundle['apitoken.revoke']}
+                                    </button>
+                                </ui:fragment>
+                            </div>
+                            <div>
+                                <ui:fragment rendered="${ApiTokenPage.apiTokenExpiration != ''}">
+                                    <p:outputLabel value="#{bundle['apitoken.expirationDate.label']} #{ApiTokenPage.apiTokenExpiration}"/>
+                                </ui:fragment>
                             </div>
                         </p:tab>
                         <ui:remove>
