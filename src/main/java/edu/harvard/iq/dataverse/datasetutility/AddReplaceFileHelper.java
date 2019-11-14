@@ -1473,7 +1473,7 @@ public class AddReplaceFileHelper{
 
         Command<Dataset> update_cmd;
         update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, clone);
-        ((UpdateDatasetVersionCommand) update_cmd).setValidateLenient(true);  
+        ((UpdateDatasetVersionCommand) update_cmd).setValidateLenient(false);  
         
         try {            
             // Submit the update dataset command 

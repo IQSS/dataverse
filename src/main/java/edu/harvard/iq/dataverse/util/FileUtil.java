@@ -1102,6 +1102,9 @@ public class FileUtil implements java.io.Serializable  {
 				// ToDo what subset of checks from determineFileType makes sense?
 				finalType = suppliedContentType;
 			}
+		} else {
+			//Remote file, trust supplier
+			finalType = suppliedContentType;
 		}
         // Finally, if none of the special cases above were applicable (or 
         // if we were unable to unpack an uploaded file, etc.), we'll just 
@@ -1111,13 +1114,16 @@ public class FileUtil implements java.io.Serializable  {
         	newFile = tempFile.toFile();
         }
         ChecksumType checkSumType = DataFile.ChecksumType.MD5;
-        if(newStorageIdentifier!=null) {
+        if(newStorageIdentifier==null) {
         	checkSumType=systemConfig.getFileFixityChecksumAlgorithm();
         }
         
         DataFile datafile = createSingleDataFile(version, newFile, newStorageIdentifier, fileName, finalType, checkSumType, newCheckSum);
-        
-        if (datafile != null && tempFile.toFile() != null) {
+        File f = null;
+        if(tempFile!=null) {
+        	f=tempFile.toFile();
+        }
+        if (datafile != null && ((f != null) || (newStorageIdentifier!=null))) {
        
             if (warningMessage != null) {
                 createIngestFailureReport(datafile, warningMessage);

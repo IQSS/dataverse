@@ -1432,10 +1432,13 @@ public class Datasets extends AbstractApiBean {
     }
 
 @GET
-@Path("uploadsid")
-public Response getUploadUrl() {
-	String bucket = "s3://tdl-dataverse-dev/";
-	String sid = bucket+ FileUtil.generateStorageIdentifier();
+@Path("{id}/uploadsid")
+public Response getUploadUrl(@PathParam("id") String idSupplied) {
+	try {
+		Dataset dataset = findDatasetOrDie(idSupplied);
+
+	String bucket = System.getProperty("dataverse.files.s3-bucket-name") + "/";
+	String sid = bucket+ dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + FileUtil.generateStorageIdentifier();
 	S3AccessIO<DataFile> s3io = new S3AccessIO<DataFile>(sid);
 	String url = null;
 	try {
@@ -1445,7 +1448,9 @@ public Response getUploadUrl() {
 		e.printStackTrace();
 	}
 	return ok(url);
-	
+	} catch (WrappedResponse wr) {
+        return wr.getResponse();
+	}
 }
     /**
      * Add a File to an existing Dataset
@@ -1537,14 +1542,18 @@ public Response getUploadUrl() {
 					}
 
 				}
-			}
+			} else {
 
-			return error(BAD_REQUEST, "You must upload a file or provide a storageidentifier, filename, and mimetype.");
+				return error(BAD_REQUEST,
+						"You must upload a file or provide a storageidentifier, filename, and mimetype.");
+			}
 		} else {
 			newFilename = contentDispositionHeader.getFileName();
 			newFileContentType = formDataBodyPart.getMediaType().toString();
 		}
-        
+        logger.info("StorageId: " + newStorageIdentifier);
+        logger.info("FileName: " + newFilename);
+        logger.info("Mime: " + newFileContentType);
 
 
         
