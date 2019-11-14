@@ -11,7 +11,7 @@ body {
 body.widget-view {margin-bottom:54px;}
 body .ui-widget {font-size: inherit;}
 body .ui-widget .ui-widget-content {background: none;}
-.ui-widget-content a {color: #4b75ff; font-size: 18px;}
+.ui-widget-content a {color: #4b75ff; font-size: 18px !important;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #337ab7;}
 .ui-tabs.ui-widget-content .ui-tabs-nav li a {color: #333;}
 
@@ -1169,13 +1169,11 @@ body .ui-widget {
   font-family: inherit;
 }
 
-.pagination > li > a {
-  border-color: #b8b8b8 !important;
-}
-
 a {
   color: #4b75ff;
 }
+
+span.label-primary { background-color: #4b75ff; }
 
 /* Pagination Icon URLs and Styles*/
 
@@ -1183,8 +1181,15 @@ a {
   margin-top: 25px;
 }
 
+.pagination > li.active > a,
+.pagination > li.active > a:focus,
+.pagination > li.active > a:hover{
+  background-color: #4b75ff;
+}
+
 .pagination > li > a {
-  background-color: #f7f7f9;
+  color: #4b75ff;
+  border-color: #b8b8b8 !important;
 }
 
 .pagination > li > a.skip {
