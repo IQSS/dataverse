@@ -27,7 +27,7 @@
                     #{bundle['file.editTagsDialog.selectedTags']}
                 </label>
                 <div class="col-sm-8">
-                    <p:outputPanel id="selectedTagsList" style="padding-top:.5em;">
+                    <p:outputPanel id="selectedTagsList">
                         <h:outputText value="#{bundle['file.editTagsDialog.selectedTags.none']}"
                                       rendered="#{(empty FileTagModal.selectedFileMetadataTags) and (empty FileTagModal.selectedDataFileTags)}"/>
 

@@ -192,8 +192,8 @@
                     <div  class="button-block">
                         <p:outputPanel id="fileButtons" >
                             <div>
-                                <p:commandButton
-                                                 id="save"
+                                <p:commandButton id="save"
+                                                 styleClass="btn btn-default btn-access"
                                                  value="#{bundle.saveChanges}"
                                                  onclick="PF('blockFileForm').show();"
                                                  action="#{EditSingleFilePage.save()}"
@@ -202,6 +202,7 @@
                                                  process="@this"
                                 />
                                 <p:commandButton id="cancel"
+                                                 styleClass="btn btn-default btn-access"
                                                  value="#{bundle.cancel}"
                                                  action="#{EditSingleFilePage.cancel}"
                                                  process="@this"

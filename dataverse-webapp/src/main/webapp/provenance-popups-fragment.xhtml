@@ -184,12 +184,14 @@
         </div>
         <div class="button-block">
             <p:commandButton id="confirmProvenancePopupSaveButton"
+                             styleClass="btn btn-default"
                              value="#{bundle.saveChanges}"
                              oncomplete="PF('confirmProvenancePopup').hide();"
                              action="#{provPopupFragmentBean.stagePopupChanges(saveInPopup == 'true')}"
                              update=":messagePanel"/>
 
             <p:commandButton id="confirmProvenancePopupCancelButton"
+                             styleClass="btn btn-default"
                              value="#{bundle.cancel}"
                              onclick="PF('editProvenancePopup').show();PF('confirmProvenancePopup').hide();"/>
         </div>
