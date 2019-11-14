@@ -8,8 +8,8 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Stateless
 public class DatasetDeaccessionService {
@@ -34,28 +34,22 @@ public class DatasetDeaccessionService {
 
     // -------------------- LOGIC --------------------
     public DatasetVersion deaccessVersion(DatasetVersion version, String deaccessionReason, String deaccessionForwardURLFor) {
-        DatasetVersion versionToDeaccess = datasetVersionService.find(version.getId());
-        versionToDeaccess.setVersionNote(deaccessionReason);
-        versionToDeaccess.setArchiveNote(deaccessionForwardURLFor);
+        version.setVersionNote(deaccessionReason);
+        version.setArchiveNote(deaccessionForwardURLFor);
 
-        return commandEngine.submit(new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), versionToDeaccess));
+        return commandEngine.submit(new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), version));
     }
 
     public List<DatasetVersion> deaccessVersions(List<DatasetVersion> versions, String deaccessionReason ,String deaccessionForwardURLFor) {
-        List<DatasetVersion> deaccessionedVersions = new ArrayList<>();
-        for (DatasetVersion version : versions) {
-            deaccessionedVersions.add(deaccessVersion(version, deaccessionReason, deaccessionForwardURLFor));
-        }
-        return deaccessionedVersions;
+        return versions
+                .stream()
+                .map(version -> deaccessVersion(version, deaccessionReason, deaccessionForwardURLFor)).collect(Collectors.toList());
     }
 
     public List<DatasetVersion> deaccessReleasedVersions(List<DatasetVersion> versions, String deaccessionReason ,String deaccessionForwardURLFor) {
-        List<DatasetVersion> deaccessionedVersions = new ArrayList<>();
-        for (DatasetVersion version : versions) {
-            if(version.isReleased()) {
-                deaccessionedVersions.add(deaccessVersion(version, deaccessionReason, deaccessionForwardURLFor));
-            }
-        }
-        return deaccessionedVersions;
+        return versions
+                .stream()
+                .filter(DatasetVersion::isReleased)
+                .map(version -> deaccessVersion(version, deaccessionReason, deaccessionForwardURLFor)).collect(Collectors.toList());
     }
 }

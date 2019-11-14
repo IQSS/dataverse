@@ -143,19 +143,19 @@ public class DatasetDeaccessionDialog implements Serializable {
     }
 
     public String deaccessVersions() {
-        Try<List<DatasetVersion>> listTry;
+        Try<List<DatasetVersion>> deaccessionOperation;
         String deaccessionReason = buildDeaccessionReason();
 
         if (selectedDeaccessionVersions == null) {
-            listTry = Try.of(() -> datasetDeaccessionService.deaccessReleasedVersions(dataset.getVersions(), deaccessionReason, deaccessionForwardURLFor));
+            deaccessionOperation = Try.of(() -> datasetDeaccessionService.deaccessReleasedVersions(dataset.getVersions(), deaccessionReason, deaccessionForwardURLFor));
         } else {
-            listTry = Try.of(() -> datasetDeaccessionService.deaccessVersions(selectedDeaccessionVersions, deaccessionReason, deaccessionForwardURLFor));
+            deaccessionOperation = Try.of(() -> datasetDeaccessionService.deaccessVersions(selectedDeaccessionVersions, deaccessionReason, deaccessionForwardURLFor));
         }
 
-        if(listTry.isSuccess()) {
+        if(deaccessionOperation.isSuccess()) {
             JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("datasetVersion.message.deaccessionSuccess"));
         } else {
-            logger.log(Level.SEVERE, "Deaccession has failed.", listTry.getCause());
+            logger.log(Level.SEVERE, "Deaccession has failed.", deaccessionOperation.getCause());
             JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.deaccessionFailure"));
         }
 

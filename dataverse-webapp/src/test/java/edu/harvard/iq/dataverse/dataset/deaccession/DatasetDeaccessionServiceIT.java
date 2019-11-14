@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.dataset.deaccession;
 
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -15,11 +16,9 @@ import org.junit.runner.RunWith;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(Arquillian.class)
@@ -38,6 +37,9 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
     @EJB
     private AuthenticationServiceBean authenticationServiceBean;
 
+    @Inject
+    private DatasetVersionServiceBean versionsService;
+
     @Before
     public void setUp() {
         dataverseSession.setUser(authenticationServiceBean.getAdminUser());
@@ -47,30 +49,19 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
     public void shouldDeaccessVersion() {
         // given
         Dataset dataset = datasetService.find(56L);
+        DatasetVersion versionToBeDeaccessed = dataset.getReleasedVersion();
+
         // when
-        DatasetVersion deaccessedVersion = deaccessionService.deaccessVersion(dataset.getReleasedVersion(), "TestReason", "https://www.google.com/");
+        deaccessionService.deaccessVersion(versionToBeDeaccessed, "TestReason", "https://www.google.com/");
 
         // then
         Dataset dbDataset = datasetService.find(56L);
-        assertEquals(deaccessedVersion.getVersionState(), DatasetVersion.VersionState.DEACCESSIONED);
-        assertTrue(dbDataset.getVersions().contains(deaccessedVersion));
 
+        assertEquals(DatasetVersion.VersionState.DEACCESSIONED, versionsService.find(versionToBeDeaccessed.getId()).getVersionState());
+        assertEquals(dataset.getVersions().size(), dbDataset.getVersions().size());
         assertTrue(dbDataset.getVersions()
                 .stream()
-                .map(DatasetVersion::getVersionState).collect(Collectors.toList())
-                .contains(DatasetVersion.VersionState.DEACCESSIONED));
-        assertFalse(dbDataset.getVersions()
-                .stream()
-                .map(DatasetVersion::getVersionState).collect(Collectors.toList())
-                .contains(DatasetVersion.VersionState.RELEASED));
-        assertTrue(dbDataset.getVersions()
-                .stream()
-                .map(DatasetVersion::getVersionState).collect(Collectors.toList())
-                .contains(DatasetVersion.VersionState.ARCHIVED));
-        assertTrue(dbDataset.getVersions()
-                .stream()
-                .map(DatasetVersion::getVersionState).collect(Collectors.toList())
-                .contains(DatasetVersion.VersionState.DRAFT));
+                .anyMatch(version -> version.getVersionState().equals(DatasetVersion.VersionState.DEACCESSIONED)));
     }
 
     @Test
@@ -83,26 +74,10 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
 
         // then
         Dataset dbDataset = datasetService.find(56L);
-        for (DatasetVersion version: dbDataset.getVersions()) {
-            assertEquals(DatasetVersion.VersionState.DEACCESSIONED, version.getVersionState());
-        }
 
-        assertTrue(dbDataset.getVersions()
-                .stream()
-                .map(DatasetVersion::getVersionState).collect(Collectors.toList())
-                .contains(DatasetVersion.VersionState.DEACCESSIONED));
-        assertFalse(dbDataset.getVersions()
-                .stream()
-                .map(DatasetVersion::getVersionState).collect(Collectors.toList())
-                .contains(DatasetVersion.VersionState.RELEASED));
-        assertFalse(dbDataset.getVersions()
-                .stream()
-                .map(DatasetVersion::getVersionState).collect(Collectors.toList())
-                .contains(DatasetVersion.VersionState.ARCHIVED));
-        assertFalse(dbDataset.getVersions()
-                .stream()
-                .map(DatasetVersion::getVersionState).collect(Collectors.toList())
-                .contains(DatasetVersion.VersionState.DRAFT));
+        assertEquals(dataset.getVersions().size(), dbDataset.getVersions().size());
+        assertTrue(dbDataset.getVersions().stream()
+                .allMatch(version -> version.getVersionState().equals(DatasetVersion.VersionState.DEACCESSIONED)));
     }
 
     @Test
@@ -115,29 +90,8 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
 
         // then
         Dataset dbDataset = datasetService.find(56L);
-        for (DatasetVersion version: dbDataset.getVersions()) {
-            if(version.isDeaccessioned()) {
-                assertEquals(DatasetVersion.VersionState.DEACCESSIONED, version.getVersionState());
-            } else {
-                assertNotEquals(DatasetVersion.VersionState.DEACCESSIONED, version.getVersionState());
-            }
-        }
-
-        assertTrue(dbDataset.getVersions()
-                .stream()
-                .map(DatasetVersion::getVersionState).collect(Collectors.toList())
-                .contains(DatasetVersion.VersionState.DEACCESSIONED));
-        assertFalse(dbDataset.getVersions()
-                .stream()
-                .map(DatasetVersion::getVersionState).collect(Collectors.toList())
-                .contains(DatasetVersion.VersionState.RELEASED));
-        assertTrue(dbDataset.getVersions()
-                .stream()
-                .map(DatasetVersion::getVersionState).collect(Collectors.toList())
-                .contains(DatasetVersion.VersionState.ARCHIVED));
-        assertTrue(dbDataset.getVersions()
-                .stream()
-                .map(DatasetVersion::getVersionState).collect(Collectors.toList())
-                .contains(DatasetVersion.VersionState.DRAFT));
+        assertEquals(dataset.getVersions().size(), dbDataset.getVersions().size());
+        assertFalse(dbDataset.getVersions().stream()
+                .anyMatch(version -> version.getVersionState().equals(DatasetVersion.VersionState.RELEASED)));
     }
 }
