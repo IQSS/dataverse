@@ -144,7 +144,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             	//Backward compatible default to the production server
             	baseUrl="https://api.datacite.org";
             }
-            URL url = new URL(baseUrl + "/events?doi=" + authorityPlusIdentifier + "&source=crossref");
+            URL url = new URL(baseUrl + "/events?doi=" + authorityPlusIdentifier + "&source=crossref&page[size]=10");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             int status = connection.getResponseCode();
