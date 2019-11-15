@@ -11,7 +11,8 @@ body {
 body.widget-view {margin-bottom:54px;}
 body .ui-widget {font-size: inherit;}
 body .ui-widget .ui-widget-content {background: none;}
-.ui-widget-content a {color: #4b75ff; font-size: 18px !important;}
+.ui-widget-content a {color: #4b75ff;}
+.ui-widget-content td > a { font-size: 18px !important;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #337ab7;}
 .ui-tabs.ui-widget-content .ui-tabs-nav li a {color: #333;}
 
@@ -501,7 +502,7 @@ span.search-term-match {font-weight: bold;}
 [id$='resultsTable'] div.card-title-icon-block span[class$='lock'] {font-size:inherit; margin-left:0;}
 [id$='resultsTable'] div.card-title-icon-block span[class^='glyphicon'] {margin-top:3px;}
 [id$='resultsTable'] div.card-title-icon-block span.label {vertical-align:15%}
-[id$='resultsTable'] div.card-preview-icon-block {width:110px; position: absolute; float:left; margin:4px 10px 6px 0;}
+[id$='resultsTable'] div.card-preview-icon-block {width:110px; float:left; margin:4px 10px 6px 0;}
 [id$='resultsTable'] div.card-preview-icon-block a {display:block; height:48px; line-height:48px;}
 [id$='resultsTable'] div.card-preview-icon-block img {vertical-align:middle; width: 90px; max-height: 60px;}
 [id$='resultsTable'] div.card-preview-icon-block span[class^='icon'],
@@ -1041,7 +1042,7 @@ div.container {
   display: block;
 }
 
-.glyphicon-search {font-size:18px; color: #979797;}
+.glyphicon-search {font-size:18px;}
 .searchbutton {
   position: absolute;
   top: 13px;
@@ -1111,7 +1112,8 @@ div.container {
 
 .dataverseResult > *,
 .datasetResult > *,
-.fileResult > * {
+.fileResult > *,
+#div-card-results > div > * {
   margin-left: 120px;
 }
 
@@ -1169,6 +1171,10 @@ body .ui-widget {
   font-family: inherit;
 }
 
+body .ui-widget button {
+  font-family: inherit;
+}
+
 a {
   color: #4b75ff;
 }
@@ -1190,6 +1196,7 @@ span.label-primary { background-color: #4b75ff; }
 .pagination > li > a {
   color: #4b75ff;
   border-color: #b8b8b8 !important;
+  padding: 9px 12px 3px 12px;
 }
 
 .pagination > li > a.skip {
