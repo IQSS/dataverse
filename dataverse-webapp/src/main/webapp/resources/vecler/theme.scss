@@ -1104,6 +1104,13 @@ div.filesTable .ui-paginator {
 		/* Size issue fix */
 		width: 100% !important;
 		height: calc(100% - 67px) !important;
+
+		/* Null height fix */
+		.form-group::after {
+			content: " ";
+			display: block;
+			clear: both;
+		}
 	}
 
 	.button-block {

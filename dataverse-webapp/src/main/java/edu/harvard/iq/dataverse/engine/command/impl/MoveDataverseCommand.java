@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -18,6 +17,7 @@ import edu.harvard.iq.dataverse.persistence.dataverse.link.DataverseLinkingDatav
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -134,7 +134,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
 
         // generate a list of templates in destination to check against
         List<Template> destinationTemplates = null;
-        if (moved.getTemplates() != null) {
+        if (CollectionUtils.isNotEmpty(moved.getTemplates())) {
             List<Template> movedTemplates = moved.getTemplates();
             destinationTemplates = destination.getTemplates();
             boolean inheritTemplateValue = !destination.isTemplateRoot();

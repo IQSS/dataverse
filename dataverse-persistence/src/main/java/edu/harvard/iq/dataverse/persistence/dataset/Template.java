@@ -46,6 +46,10 @@ public class Template implements Serializable {
         return this.id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     @NotBlank(message = "{dataset.templatename}")
     @Size(max = 255, message = "{dataset.nameLength}")
     @Column(nullable = false)

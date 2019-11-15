@@ -4,7 +4,8 @@ import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.Command;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateTemplateCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCommand;
 import edu.harvard.iq.dataverse.persistence.dataset.Template;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import io.vavr.control.Try;
@@ -48,16 +49,53 @@ public class TemplateServiceTest {
     @Mock
     private TemplateDao templateDao;
 
+    private int testTime = 1576156500;
+
     @BeforeEach
     public void setUp()  {
-
-        templateService.setClock(Clock.fixed(Instant.ofEpochSecond(1576156500), ZoneId.systemDefault()));
+        templateService.setClock(Clock.fixed(Instant.ofEpochSecond(testTime), ZoneId.systemDefault()));
 
         when(ejbDataverseEngine.submit(any(Command.class)))
                 .then(InvocationOnMock::getMock);
     }
 
     // -------------------- TESTS --------------------
+
+
+    @Test
+    public void createTemplate() {
+        //given
+        Dataverse dataverse = new Dataverse();
+        Template template = new Template();
+        template.setId(11L);
+
+        //when
+        when(ejbDataverseEngine.submit(any(CreateTemplateCommand.class))).thenReturn(template);
+
+        Try<Template> createdTemplate = templateService.createTemplate(dataverse, template);
+
+        //then
+        Assert.assertTrue(createdTemplate.isSuccess());
+        Assert.assertEquals(0, createdTemplate.get().getUsageCount().longValue());
+        Assert.assertEquals(Instant.ofEpochSecond(testTime), createdTemplate.get().getCreateTime().toInstant());
+        Assert.assertTrue(dataverse.getTemplates().contains(template));
+
+    }
+
+    @Test
+    public void updateTemplate() {
+        //given
+        Dataverse dataverse = new Dataverse();
+        Template template = new Template();
+
+        //when
+        when(ejbDataverseEngine.submit(any(UpdateDataverseTemplateCommand.class))).thenReturn(template);
+
+        Try<Template> updatedTemplate = templateService.updateTemplate(dataverse, template);
+
+        //then
+        Assert.assertTrue(updatedTemplate.isSuccess());
+    }
 
     @Test
     public void shouldSuccessfullyDeleteTemplate()  {
@@ -186,7 +224,7 @@ public class TemplateServiceTest {
         dataverse.setOwner(dataverseOwner);
 
         //when
-        templateService.updateDataverseTemplate(dataverse, true);
+        templateService.updateTemplateInheritance(dataverse, true);
 
         //then
         Assert.assertEquals(dataverse.getDefaultTemplate(), template);
@@ -207,11 +245,12 @@ public class TemplateServiceTest {
         dataverse.setDefaultTemplate(template);
 
         //when
-        templateService.updateDataverseTemplate(dataverse, false);
+        templateService.updateTemplateInheritance(dataverse, false);
         Mockito.verify(ejbDataverseEngine, times(1)).submit(any());
 
         //then
         Assert.assertNull(dataverse.getDefaultTemplate());
 
     }
+
 }

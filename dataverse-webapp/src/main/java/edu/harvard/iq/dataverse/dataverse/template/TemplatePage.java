@@ -1,29 +1,26 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.dataverse.template;
 
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetFieldsInitializer;
-import edu.harvard.iq.dataverse.dataverse.template.TemplateDao;
-import edu.harvard.iq.dataverse.engine.command.Command;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCommand;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.persistence.dataset.Template;
 import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -54,6 +51,9 @@ public class TemplatePage implements java.io.Serializable {
 
     @Inject
     DatasetFieldsInitializer datasetFieldsInitializer;
+
+    @Inject
+    private TemplateService templateService;
 
     private static final Logger logger = Logger.getLogger(TemplatePage.class.getCanonicalName());
 
@@ -165,28 +165,24 @@ public class TemplatePage implements java.io.Serializable {
 
     public String save() {
 
-        Command<Void> cmd;
-        try {
-            if (editMode == EditMode.CREATE) {
-                template.setCreateTime(new Timestamp(new Date().getTime()));
-                template.setUsageCount(0L);
-                dataverse.getTemplates().add(template);
-                commandEngine.submit(new CreateTemplateCommand(template, dvRequestService.getDataverseRequest(), dataverse));
-                
-                JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("template.create"));
-            } else {
-                cmd = new UpdateDataverseTemplateCommand(dataverse, template, dvRequestService.getDataverseRequest());
-                commandEngine.submit(cmd);
-                JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("template.save"));
-            }
+        Try<Template> templateOperation;
 
-        } catch (EJBException | CommandException ex) {
+        if (editMode == EditMode.CREATE) {
 
-            logger.fine("There was a problem with creating template: " + ex.getMessage());
+            templateOperation = templateService.createTemplate(dataverse, this.template)
+                    .onSuccess(op -> JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("template.create")));
+        } else {
+
+            templateOperation = templateService.updateTemplate(dataverse, template)
+                    .onSuccess(op -> JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("template.save")));
+        }
+
+        if (templateOperation.isFailure()) {
+            logger.fine("There was a problem with creating template: " + templateOperation.getCause().getMessage());
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("template.save.fail"));
+
             return StringUtils.EMPTY;
         }
-        
 
         return "/manage-templates.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";
     }
