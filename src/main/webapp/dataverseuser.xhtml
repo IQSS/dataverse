@@ -481,6 +481,20 @@
                                     <f:param value="&lt;/a&gt;"/>
                                 </h:outputFormat>
                             </p>
+                            <div class="metadata-container margin-bottom-half" jsf:rendered="${ApiTokenPage.apiTokenExpiration != ''}">
+                                <table class="metadata">
+                                    <tbody>
+                                        <tr>
+                                            <th scope="row">
+                                                <h:outputText value="#{bundle['apitoken.expirationDate.label']}"/>
+                                            </th>
+                                            <td>
+                                                <h:outputText value="#{ApiTokenPage.apiTokenExpiration}"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                             <div id="apiToken" class="highlight hidden">
                                 <pre>
                                     <code class="language-html" data-lang="html">${ApiTokenPage.apiToken}</code>
@@ -498,20 +512,6 @@
                                 });
                                 //]]>
                             </script>
-                            <div class="metadata-container margin-bottom-half" jsf:rendered="${ApiTokenPage.apiTokenExpiration != ''}">
-                                <table class="metadata">
-                                    <tbody>
-                                        <tr>
-                                            <th scope="row">
-                                                <h:outputText value="#{bundle['apitoken.expirationDate.label']}"/>
-                                            </th>
-                                            <td>
-                                                <h:outputText value="#{ApiTokenPage.apiTokenExpiration}"/>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
                             <div class="btn-toolbar" role="toolbar">
                                 <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
                                     #{ApiTokenPage.checkForApiToken() ? bundle['apitoken.regenerateBtn'] : bundle['apitoken.generateBtn']}
