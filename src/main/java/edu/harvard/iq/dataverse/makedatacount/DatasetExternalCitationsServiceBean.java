@@ -35,9 +35,8 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
     DatasetServiceBean datasetService;
     
     
-    public List<DatasetExternalCitations> parseCitations(JsonObject report) {
+    public List<DatasetExternalCitations> parseCitations(JsonArray citations) {
         List<DatasetExternalCitations> datasetExternalCitations = new ArrayList<>();
-        JsonArray citations = report.getJsonArray("data");
         for (JsonValue citationValue : citations) {
             DatasetExternalCitations exCit = new DatasetExternalCitations();
             JsonObject citation = (JsonObject) citationValue;

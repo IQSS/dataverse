@@ -16,6 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.POST;
@@ -144,15 +145,36 @@ public class MakeDataCountApi extends AbstractApiBean {
             	//Backward compatible default to the production server
             	baseUrl="https://api.datacite.org";
             }
-            URL url = new URL(baseUrl + "/events?doi=" + authorityPlusIdentifier + "&source=crossref&page[size]=10");
+            URL url = new URL(baseUrl + "/events?doi=" + authorityPlusIdentifier + "&source=crossref&page[size]=1000");
+            boolean nextPage=true;
+            JsonArray allData = null;
+            do {
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             int status = connection.getResponseCode();
-            // TODO: Do something with non 200 status.
-            System.out.println("status: " + status);
+            if(status!=200) {
+                logger.warning("Failed to get citations from " + url.toString());
+                return error(Status.fromStatusCode(status), "Failed to get citations from " + url.toString());
+            }
             JsonObject report = Json.createReader(connection.getInputStream()).readObject();
+            JsonObject links = report.getJsonObject("links");
+            JsonArray data = report.getJsonArray("data");
+            if(allData==null) {
+                allData=data;
+            } else {
+                allData.addAll(data);
+            }
+            
+            if(links.containsKey("next")) {
+                url=new URL(links.getString("next"));
+                
+            } else {
+                nextPage=false;
+            }
             logger.fine("body of citation response: " + report.toString());
-            List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(report);
+            } while(nextPage==true);
+
+            List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(allData);
 
             if (!datasetExternalCitations.isEmpty()) {
                 for (DatasetExternalCitations dm : datasetExternalCitations) {
