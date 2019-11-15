@@ -17,10 +17,6 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2AuthenticationProviderFactory;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GoogleOAuth2AP;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.MicrosoftOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
@@ -29,11 +25,9 @@ import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -872,25 +866,6 @@ public class AuthenticationServiceBean {
             logger.info("When trying to validate password, exception calling authSvc.authenticate: " + sb.toString());
             return null;
         }
-    }
-
-    /**
-     * @todo Consider making the sort order configurable by making it a colum on
-     * AuthenticationProviderRow
-     */
-    public List<String> getAuthenticationProviderIdsSorted() {
-        GitHubOAuth2AP github = new GitHubOAuth2AP(null, null);
-        GoogleOAuth2AP google = new GoogleOAuth2AP(null, null);
-        MicrosoftOAuth2AP microsoft = new MicrosoftOAuth2AP(null, null);
-        return Arrays.asList(
-                BuiltinAuthenticationProvider.PROVIDER_ID,
-                ShibAuthenticationProvider.PROVIDER_ID,
-                OrcidOAuth2AP.PROVIDER_ID_PRODUCTION,
-                OrcidOAuth2AP.PROVIDER_ID_SANDBOX,
-                github.getId(),
-                google.getId(),
-                microsoft.getId()
-        );
     }
     
     public List <WorkflowComment> getWorkflowCommentsByAuthenticatedUser(AuthenticatedUser user){ 

@@ -8,6 +8,7 @@ import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.AuthorizationUrlBuilder;
 import com.github.scribejava.core.oauth.OAuth20Service;
+import edu.harvard.iq.dataverse.LoginPage;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
@@ -92,6 +93,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     protected String clientSecret;
     protected String baseUserEndpoint;
     protected String redirectUrl;
+    
     /**
      * List of scopes to be requested for authorization at identity provider.
      * Defaults to empty so no scope will be requested (use case: public info from GitHub)
@@ -211,6 +213,14 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     public AuthenticationProviderDisplayInfo getInfo() {
         return new AuthenticationProviderDisplayInfo(getId(), getTitle(), getSubTitle());
     }
+    
+    /**
+     * Used in {@link LoginPage#listAuthenticationProviders()} for sorting the providers in the UI
+     * TODO: this might be extended to use a value set by the admin when configuring the provider via JSON.
+     * @return an integer value (sort ascending)
+     */
+    @Override
+    public int getOrder() { return 100; }
     
     @Override
     public String getId() {
