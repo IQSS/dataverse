@@ -22,6 +22,8 @@ import java.util.logging.Logger;
 
 /**
  * Base class for OAuth2 identity providers, such as GitHub and ORCiD.
+ *
+ * TODO: this really should become an interface (contract with {@link OAuth2LoginBackingBean}) when refactoring package
  * 
  * @author michael
  */
@@ -96,6 +98,9 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
      */
     protected List<String> scope = Arrays.asList("");
     
+    /**
+     * TODO: when refactoring the package to be about token flow auth, this hard dependency should be removed.
+     */
     public abstract DefaultApi20 getApiInstance();
     
     protected abstract ParsedUserResponse parseUserResponse( String responseBody );
