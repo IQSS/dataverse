@@ -173,7 +173,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             }
             logger.fine("body of citation response: " + report.toString());
             } while(nextPage==true);
-
+            logger.info("Found citations: " + allData.size());
             List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(allData);
 
             if (!datasetExternalCitations.isEmpty()) {
