@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.POST;
@@ -148,7 +149,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             URL url = new URL(baseUrl + "/events?doi=" + authorityPlusIdentifier + "&source=crossref&page[size]=1000");
             logger.info("Getting " + url.toString());
             boolean nextPage=true;
-            JsonArray allData = null;
+            JsonArrayBuilder dataBuilder = Json.createArrayBuilder();
             do {
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
@@ -160,11 +161,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             JsonObject report = Json.createReader(connection.getInputStream()).readObject();
             JsonObject links = report.getJsonObject("links");
             JsonArray data = report.getJsonArray("data");
-            if(allData==null) {
-                allData=data;
-            } else {
-                allData.addAll(data);
-            }
+            dataBuilder.add(data);
             
             if(links.containsKey("next")) {
                 url=new URL(links.getString("next"));
@@ -174,6 +171,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             }
             logger.fine("body of citation response: " + report.toString());
             } while(nextPage==true);
+            JsonArray allData=dataBuilder.build();
             logger.info("Found citations: " + allData.size());
             List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(allData);
 
