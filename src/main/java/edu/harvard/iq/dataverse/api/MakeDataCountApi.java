@@ -131,26 +131,20 @@ public class MakeDataCountApi extends AbstractApiBean {
     @POST
     @Path("{id}/updateCitationsForDataset")
     public Response updateCitationsForDataset(@PathParam("id") String id) throws MalformedURLException, IOException {
-        String msg = "updateCitationsForDataset called";
-        Dataset dataset = null;
         try {
-            // FIXME: Switch to findDatasetOrDie instead of blindly downloading citations for whatever DOI.
-            // FIXME: remove this parseBooleanOrDie which is only here to throw WrappedResponse.
-            parseBooleanOrDie("true");
-//            dataset = findDatasetOrDie(id);
-//            String authorityPlusIdentifier = dataset.getAuthority() + dataset.getIdentifier();
-            String persistentId = getRequestParameter(":persistentId".substring(1));
+            Dataset dataset = findDatasetOrDie(id);
+            String persistentId = dataset.getGlobalId().toString();
             // DataCite wants "doi=", not "doi:".
             String authorityPlusIdentifier = persistentId.replaceFirst("doi:", "");
-            // curl https://api.datacite.org/events?doi=10.7910/dvn/hqzoob&source=crossref
             String baseUrl = System.getProperty("doi.mdcurlstring");
-            if(null==baseUrl) {
-            	//Backward compatible default to the production server
-            	baseUrl="https://api.datacite.org";
+            if (null == baseUrl) {
+                // Backward compatible default to the production server
+                baseUrl = "https://api.datacite.org";
             }
+            // Request max page size and then loop to handle multiple pages
             URL url = new URL(baseUrl + "/events?doi=" + authorityPlusIdentifier + "&source=crossref&page[size]=1000");
-            logger.info("Getting " + url.toString());
-            boolean nextPage=true;
+            logger.fine("Getting " + url.toString());
+            boolean nextPage = true;
             JsonArrayBuilder dataBuilder = Json.createArrayBuilder();
             do {
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -174,7 +168,7 @@ public class MakeDataCountApi extends AbstractApiBean {
                 }
                 logger.fine("body of citation response: " + report.toString());
             } while (nextPage == true);
-            JsonArray allData=dataBuilder.build();
+            JsonArray allData = dataBuilder.build();
             List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(allData);
 
             if (!datasetExternalCitations.isEmpty()) {
