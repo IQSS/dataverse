@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.makedatacount;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -33,7 +34,14 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
     
     @EJB
     DatasetServiceBean datasetService;
-    
+
+  //Array of relationship types that are considered to be citations
+  static ArrayList<String> relationships = new ArrayList<String>( 
+          Arrays.asList(
+          "is-cited-by",
+          "cites",
+          "is-referenced-by",
+          "references"));
     
     public List<DatasetExternalCitations> parseCitations(JsonArray citations) {
         List<DatasetExternalCitations> datasetExternalCitations = new ArrayList<>();
@@ -44,8 +52,7 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
            
             String localDatasetDOI = citation.getJsonObject("attributes").getString("obj-id");
             String relationship = citation.getJsonObject("attributes").getString("relation-type-id");
-            if (!relationship.equals("is-part-of")) {
-
+            if (relationships.contains(relationship)) {
                 Dataset localDs = null;
                 if (localDatasetDOI.contains("doi")) {
                     String globalId = localDatasetDOI.replace("https://", "").replace("doi.org/", "doi:").toUpperCase().replace("DOI:", "doi:");
