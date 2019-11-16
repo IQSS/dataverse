@@ -153,30 +153,28 @@ public class MakeDataCountApi extends AbstractApiBean {
             boolean nextPage=true;
             JsonArrayBuilder dataBuilder = Json.createArrayBuilder();
             do {
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            int status = connection.getResponseCode();
-            if(status!=200) {
-                logger.warning("Failed to get citations from " + url.toString());
-                return error(Status.fromStatusCode(status), "Failed to get citations from " + url.toString());
-            }
-            JsonObject report = Json.createReader(connection.getInputStream()).readObject();
-            JsonObject links = report.getJsonObject("links");
-            JsonArray data = report.getJsonArray("data");
-            Iterator<JsonValue> iter = data.iterator();
-            while(iter.hasNext()) {
-                dataBuilder.add(iter.next()); 
-            }
-            if(links.containsKey("next")) {
-                url=new URL(links.getString("next"));
-                
-            } else {
-                nextPage=false;
-            }
-            logger.fine("body of citation response: " + report.toString());
-            } while(nextPage==true);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                int status = connection.getResponseCode();
+                if (status != 200) {
+                    logger.warning("Failed to get citations from " + url.toString());
+                    return error(Status.fromStatusCode(status), "Failed to get citations from " + url.toString());
+                }
+                JsonObject report = Json.createReader(connection.getInputStream()).readObject();
+                JsonObject links = report.getJsonObject("links");
+                JsonArray data = report.getJsonArray("data");
+                Iterator<JsonValue> iter = data.iterator();
+                while (iter.hasNext()) {
+                    dataBuilder.add(iter.next());
+                }
+                if (links.containsKey("next")) {
+                    url = new URL(links.getString("next"));
+                } else {
+                    nextPage = false;
+                }
+                logger.fine("body of citation response: " + report.toString());
+            } while (nextPage == true);
             JsonArray allData=dataBuilder.build();
-            logger.info("Found citations: " + allData.size());
             List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(allData);
 
             if (!datasetExternalCitations.isEmpty()) {
