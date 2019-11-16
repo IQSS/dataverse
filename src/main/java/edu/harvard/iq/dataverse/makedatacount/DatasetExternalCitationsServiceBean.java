@@ -33,7 +33,14 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
     
     @EJB
     DatasetServiceBean datasetService;
-    
+
+  //Array of relationship types that are considered to be citations
+  static ArrayList<String> relationships = new ArrayList<String>( 
+          Arrays.asList(
+          "is-cited-by",
+          "cites",
+          "is-referenced-by",
+          "references"));
     
     public List<DatasetExternalCitations> parseCitations(JsonObject report) {
         List<DatasetExternalCitations> datasetExternalCitations = new ArrayList<>();
@@ -44,18 +51,19 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
             exCit.setCitedByUrl(citation.getJsonObject("attributes").getString("subj-id"));
            
             String localDatasetDOI = citation.getJsonObject("attributes").getString("obj-id");
-            
-            Dataset localDs = null;
-            if (localDatasetDOI.contains("doi")) {
-                String globalId = localDatasetDOI.replace("https://", "").replace("doi.org/", "doi:").toUpperCase().replace("DOI:", "doi:");
-                localDs = datasetService.findByGlobalId(globalId);
-                exCit.setDataset(localDs);
-            }
+            String relationship = citation.getJsonObject("attributes").getString("relation-type-id");
+            if (relationships.contains(relationship)) {
+                Dataset localDs = null;
+                if (localDatasetDOI.contains("doi")) {
+                    String globalId = localDatasetDOI.replace("https://", "").replace("doi.org/", "doi:").toUpperCase().replace("DOI:", "doi:");
+                    localDs = datasetService.findByGlobalId(globalId);
+                    exCit.setDataset(localDs);
+                }
 
-            if (localDs != null && !exCit.getCitedByUrl().isEmpty() ) {
-                datasetExternalCitations.add(exCit);
+                if (localDs != null && !exCit.getCitedByUrl().isEmpty()) {
+                    datasetExternalCitations.add(exCit);
+                }
             }
-
         }
         return datasetExternalCitations;
     }
