@@ -170,7 +170,6 @@ public class MakeDataCountApi extends AbstractApiBean {
             } while (nextPage == true);
             JsonArray allData = dataBuilder.build();
             List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(allData);
-
             if (!datasetExternalCitations.isEmpty()) {
                 for (DatasetExternalCitations dm : datasetExternalCitations) {
                     datasetExternalCitationsService.save(dm);

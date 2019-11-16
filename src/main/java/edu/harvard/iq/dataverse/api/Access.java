@@ -301,7 +301,7 @@ public class Access extends AbstractApiBean {
         if (df.isTabularData()) {
             String originalMimeType = df.getDataTable().getOriginalFileFormat();
             dInfo.addServiceAvailable(new OptionalAccessService("original", originalMimeType, "format=original","Saved original (" + originalMimeType + ")"));
-            
+            dInfo.addServiceAvailable(new OptionalAccessService("tabular", "text/tab-separated-values", "format=tab", "Tabular file in native format"));
             dInfo.addServiceAvailable(new OptionalAccessService("R", "application/x-rlang-transport", "format=RData", "Data in R format"));
             dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=prep", "Preprocessed data in JSON"));
             dInfo.addServiceAvailable(new OptionalAccessService("subset", "text/tab-separated-values", "variables=&lt;LIST&gt;", "Column-wise Subsetting"));
@@ -323,7 +323,7 @@ public class Access extends AbstractApiBean {
             logger.fine("is download service supported? key=" + key + ", value=" + value);
             // The loop goes through all query params (e.g. including key, gbrecs, persistentId, etc. )
             // So we need to identify when a service is being called and then let checkIfServiceSupportedAndSetConverter see if the required one exists
-            if (key.equals("imageThumb") || key.equals("format") || key.equals("variables")) {
+            if (key.equals("imageThumb") || key.equals("format") || key.equals("variables") || key.equals("noVarHeader")) {
                 serviceRequested = true;
                 //Only need to check if this key is associated with a service
                 if (downloadInstance.checkIfServiceSupportedAndSetConverter(key, value)) {
@@ -373,6 +373,8 @@ public class Access extends AbstractApiBean {
                     serviceFound = true;
                     break;
                 }
+            } else {
+                
             }
         }
         if (serviceRequested && !serviceFound) {
@@ -381,9 +383,9 @@ public class Access extends AbstractApiBean {
             // a ServiceNotAvailableException. However, since the returns are all files of
             // some sort, it seems reasonable, and more standard, to just return
             // a NotFoundException.
-            throw new NotFoundException();
+            throw new NotFoundException("datafile access error: requested optional service (image scaling, format conversion, etc.) is not supported on this datafile.");
         } // Else - the file itself was requested or we have the info needed to invoke the service and get the derived info
-        logger.warning("Returning download instance");
+        logger.fine("Returning download instance");
         /* 
          * Provide some browser-friendly headers: (?)
          */

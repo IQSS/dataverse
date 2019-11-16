@@ -32,7 +32,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.primefaces.PrimeFaces;
-import org.primefaces.context.RequestContext;
+//import org.primefaces.context.RequestContext;
 
 /**
  *
@@ -474,7 +474,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     public void sendRequestFileAccessNotification(Dataset dataset, Long fileId, AuthenticatedUser requestor) {
         permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream().forEach((au) -> {
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor);
+            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor, false);
         });
 
     }    

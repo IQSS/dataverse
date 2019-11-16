@@ -44,12 +44,6 @@ public class FilesIT {
     @BeforeClass
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
-
-        Response removeSearchApiNonPublicAllowed = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        removeSearchApiNonPublicAllowed.prettyPrint();
-        removeSearchApiNonPublicAllowed.then().assertThat()
-                .statusCode(200);
-
     }
 
     /**
@@ -1098,12 +1092,7 @@ public class FilesIT {
         Response searchShouldFindNothingBecauseUnpublished = UtilIT.search("id:datafile_" + fileId + "_draft", apiToken);
         searchShouldFindNothingBecauseUnpublished.prettyPrint();
         searchShouldFindNothingBecauseUnpublished.then().assertThat()
-                // This is normal. "limited to published data" http://guides.dataverse.org/en/4.7/api/search.html
-                .body("data.total_count", equalTo(0))
-                .statusCode(OK.getStatusCode());
-        // Let's temporarily allow searching of drafts.
-        Response enableNonPublicSearch = UtilIT.enableSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        enableNonPublicSearch.then().assertThat()
+                .body("data.total_count", equalTo(1))
                 .statusCode(OK.getStatusCode());
 
         Response searchResponse = UtilIT.searchAndShowFacets("id:datafile_" + fileId + "_draft", apiToken);
@@ -1118,11 +1107,6 @@ public class FilesIT {
                 // No "fileAccess" facet because :PublicInstall is set to true.
                 .body("data.facets[0].publicationStatus", CoreMatchers.not(equalTo(null)))
                 .statusCode(OK.getStatusCode());
-
-        Response removeSearchApiNonPublicAllowed = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        removeSearchApiNonPublicAllowed.prettyPrint();
-        removeSearchApiNonPublicAllowed.then().assertThat()
-                .statusCode(200);
 
         //reset public install
         UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, "false");

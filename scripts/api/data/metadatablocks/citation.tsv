@@ -128,7 +128,10 @@
 	authorIdentifierScheme	ORCID		0											
 	authorIdentifierScheme	ISNI		1											
 	authorIdentifierScheme	LCNA		2											
-	language	Abkhaz		0											
+	authorIdentifierScheme	DAI		3
+	authorIdentifierScheme	ResearcherID		4
+	authorIdentifierScheme	ScopusID		5
+	language	Abkhaz		0
 	language	Afar		1											
 	language	Afrikaans		2											
 	language	Akan		3											

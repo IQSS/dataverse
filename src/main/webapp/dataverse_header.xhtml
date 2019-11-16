@@ -9,12 +9,10 @@
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:of="http://omnifaces.org/functions"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-
     <o:resourceInclude path="/CustomizationFilesServlet?customFileType=header" rendered="#{!widgetWrapper.widgetView}"/>
-    
     <div id="dataverse-header-block">
         <!-- Navbar Panel -->
-        <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}" role="navigation">
+        <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}">
             <div class="container">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar" aria-pressed="false">
@@ -22,7 +20,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
-                    </button>                       
+                    </button>
                    <!-- QDRCustom- Remove link-to-home logo -->
                     
                 </div>
@@ -33,8 +31,23 @@
                 <div class="collapse navbar-collapse" id="topNavBar">
                     <ul class="nav navbar-nav navbar-right">
                         <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">#{bundle['dataverse.results.btn.addData']} <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <h:outputLink value="/dataverse.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
+                                        <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataverse']}"/>
+                                    </h:outputLink>
+                                </li>
+                                <li>
+                                    <h:outputLink value="/dataset.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
+                                        <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataset']}"/>
+                                    </h:outputLink>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">#{bundle.search} <b class="caret"></b></a>
-                            <ul class="dropdown-menu" style="padding:12px;min-width:350px;">
+                            <ul class="dropdown-menu navbar-search">
                                 <form class="form-inline" role="search">
                                     <label class="sr-only" for="navbarsearch">#{bundle.search}</label>
                                     <div class="input-group">
@@ -49,213 +62,67 @@
                                 </form>
                             </ul>
                         </li>
-                        <form class="navbar-form navbar-left" role="search" style="display:none;">
-                            <div class="form-group">
-                                <label class="sr-only" for="navbarsearch">#{bundle.search}</label>
-                                <input id="navbarsearch" type="text" class="search-input ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" size="28" value="" placeholder="#{bundle['header.search.title']}"/>            
-                            </div>                            
-                            <button type="submit" class="btn btn-default" onclick="window.location = '/dataverse/#{dataverseServiceBean.findRootDataverse().alias}&#63;q=' + document.getElementById('navbarsearch').value;
-                                    return false;">
-                                <span class="glyphicon glyphicon-search"/> #{bundle.find}
-                            </button>
-                        </form>
-
-                        <!-- QDR - replace :NavbarAboutUrl section with About menu/submenu -->                            
-                        <li class="dropdown">
-                            <div style="padding-top:15px; padding-bottom:15px; margin-left:20px;">
-                                <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/about">
-                                        #{bundle['header.about']}
-                                </h:outputLink> 
-                                <span class="dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" data-hover="dropdown" aria-haspopup="true" aria-expanded="false" style="display:inline; padding-left:2px;">
-                                    <b class="caret"></b>
-                                </span>
-                                <ul class="dropdown-menu" style="margin-top:-1px;">
-                                    <li>
-                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/about/governance">
-                                            Governance
-                                        </h:outputLink>
-                                    </li>
-                                     <li>
-                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/membership">
-                                            Institutional Membership
-                                        </h:outputLink>
-                                    </li>
-                    <li>
-                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/contact">
-                                            Contact
-                                        </h:outputLink>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                        <li class="dropdown">
-                            <div style="padding-top:15px; padding-bottom:15px; margin-left:10px;">
-                                <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/deposit">
-                                    Deposit
-                                </h:outputLink> 
-                                <span class="dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" data-hover="dropdown" aria-haspopup="true" aria-expanded="false" style="display:inline; padding-left:2px;">
-                                    <b class="caret"></b>
-                                </span>                            
-                                <ul class="dropdown-menu" style="margin-top:-1px;">
-                                    <li>
-                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/deposit/projects">
-                                            Project Types
-                                        </h:outputLink>
-                                    </li>
-                                    <li>
-                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/deposit/data">
-                                            Forms of Data
-                                        </h:outputLink>
-                                    </li>
-                                    <li>
-                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/deposit/process">
-                                            Deposit Process
-                                        </h:outputLink>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                        <li class="dropdown">
-                            <div style="padding-top:15px; padding-bottom:15px; margin-left:10px;">
-                                <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/discover">
-                                    Discover
-                                </h:outputLink> 
-                                <span class="dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" data-hover="dropdown" aria-haspopup="true" aria-expanded="false" style="display:inline; padding-left:2px;">
-                                    <b class="caret"></b>
-                                </span>
-                                <ul class="dropdown-menu" style="margin-top:-1px;">
-                                    <li>
-                                        <h:outputLink value="/">
-                                            Search and Browse Data
-                                        </h:outputLink>
-                    <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/discover/pilots">
-                                            Pilot Projects
-                                        </h:outputLink>
-                                    </li>
-                                    <!--these will return eventually
-                                    <li>
-                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/discover/pilots">
-                                            Pilot Projects
-                                        </h:outputLink>
-                                    </li> -->
-                                </ul>
-                            </div>
-                        </li>
-                        <li class="dropdown">
-                            <div style="padding-top:15px; padding-bottom:15px; margin-left:10px;">
-                                <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/guidance">
-                                    Guidance and Resources
-                                </h:outputLink> 
-                                <span class="dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" data-hover="dropdown" aria-haspopup="true" aria-expanded="false" style="display:inline; padding-left:2px;">
-                                    <b class="caret"></b>
-                                </span>
-                                <ul class="dropdown-menu" style="margin-top:-1px;">
-                                    <li>
-                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/guidance/managing">
-                                            Managing Data
-                                        </h:outputLink>
-                                    </li>
-                                    <li>
-                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/guidance/human-participants">
-                                            Human Participants
-                                        </h:outputLink>
-                                    </li>
-                                    <li>
-                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/guidance/citing">
-                                            Citing and Referencing Data
-                                        </h:outputLink>
-                                    </li>
-                                    <li>
-                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/guidance/teaching">
-                                            Teaching with Data
-                                        </h:outputLink>
-                                    </li>
-                                    <li>
-                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/guidance/workshops">
-                                            Workshops and Training
-                                        </h:outputLink>
-                                    </li>
-                                    <li>
-                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/guidance/templates">
-                                            Templates for Researchers
-                                        </h:outputLink>
-                                    </li>                                  
-                                </ul>
-                            </div>
-                        </li>
-                        <li class="dropdown">
-                            <div style="padding-top:15px; padding-bottom:15px; margin-left:10px;">
-                                <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/qdr-publications">
-                                    Publications
-                                </h:outputLink> 
-                                <span class="dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" data-hover="dropdown" aria-haspopup="true" aria-expanded="false" style="display:inline; padding-left:2px;">
-                                    <b class="caret"></b>
-                                </span>
-                                <ul class="dropdown-menu" style="margin-top:-1px;">
-                                    <li>
-                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/qdr-blog">
-                                            Blog
-                                        </h:outputLink>
-                                    </li>
-                                    <li>
-                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/qdr-publications/qdr-access">
-                                            QDR Access
-                                        </h:outputLink>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                        <li class="dropdown">
-                            <div style="padding-top:15px; padding-bottom:15px; margin-left:10px;">
-                                <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/initiatives">
-                                    Initiatives
-                                </h:outputLink> 
-                                <span class="dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" data-hover="dropdown" aria-haspopup="true" aria-expanded="false" style="display:inline; padding-left:2px;">
-                                    <b class="caret"></b>
-                                </span>
-                                <ul class="dropdown-menu" style="margin-top:-1px;">
-                                    <li>
-                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/ati">
-                                            Annotation for Transparent Inquiry (ATI)
-                                        </h:outputLink>
-                                    </li>
-                                    <li>
-                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/working-with-sensitive-research-data">
-                                            Working with Sensitive Research Data (WSRD)
-                                        </h:outputLink>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                        <li jsf:rendered="#{dataverseSession.user.superuser}">
-                            <h:outputLink value="/dashboard.xhtml?dataverseId=#{dataverseServiceBean.findRootDataverse().id}">
-                                <h:outputText value="#{bundle['header.dashboard']}" />
+                        <li jsf:rendered="#{!empty settingsWrapper.get(':NavbarAboutUrl')}">
+                            <h:outputLink value="#{settingsWrapper.get(':NavbarAboutUrl')}" target="_blank" rel="noopener">
+                                <h:outputText value="#{bundle['header.about']}"/>
                             </h:outputLink>
                         </li>
-
+                        <li>
+                            <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/#{systemConfig.guidesVersion}/user" target="_blank" rel="noopener">
+                                <h:outputText value="#{bundle['header.guides.user']}"/>
+                            </h:outputLink>
+                        </li>
+                        <li jsf:rendered="#{!empty settingsWrapper.get(':NavbarSupportUrl')}">
+                            <h:outputLink value="#{settingsWrapper.get(':NavbarSupportUrl')}" target="_blank" rel="noopener">
+                                <h:outputText value="#{bundle['header.support']}"/>
+                            </h:outputLink>
+                        </li>
+                        <ui:fragment rendered="#{empty settingsWrapper.get(':NavbarSupportUrl')}">
+                            <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
+                                <p:commandLink oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                    <h:outputText value="#{bundle['header.support']}"/>
+                                </p:commandLink>
+                            </o:form>
+                        </ui:fragment>
+                        <li class="dropdown" jsf:rendered="#{settingsWrapper.localesConfigured}">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="#{bundle.language}">#{dataverseSession.localeTitle} <b class="caret"></b></a>
+                            <ul class="dropdown-menu navbar-language">
+                                <h:form class="form-inline">
+                                    <ui:repeat value="#{settingsWrapper.configuredLocales.entrySet().toArray()}" var="language">
+                                        <li class="#{dataverseSession.localeTitle == language.value ? 'active' : ''}">
+                                            <h:commandLink value="#{language.value}" styleClass="language-menu-link" actionListener="#{dataverseSession.updateLocaleInViewRootAndRedirect(language.key)}" action="submit()"/>
+                                        </li>
+                                    </ui:repeat>
+                                </h:form>
+                            </ul>
+                        </li>
                         <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
                             <li>
-                                <h:outputLink id="login" value="/Shibboleth.sso/Login">
-                                    <f:param name="target" value="#{request.contextPath.concat('/shib.xhtml').concat(navigationWrapper.redirectPage)}" />
+                                <h:outputLink rendered="#{dataverseHeaderFragment.signupAllowed}"
+                                              value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}">
+                                    #{bundle['header.signUp']}
+                                </h:outputLink>
+                            </li>
+                            <li>
+                                <h:outputLink value="/loginpage.xhtml?#{loginRedirectPage}">
                                     #{bundle.login}
                                 </h:outputLink>
                             </li>
-                            <li>
-                                <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/user/register">                                    
-                                    Register
-                                </h:outputLink>
-                            </li>
                         </ui:fragment>
-                        
                         <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                             <li class="dropdown accountName">
-                                <a href="#" id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" role="menu" aria-haspopup="true" aria-expanded="false">
+                                <a href="#" id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown" role="menu" aria-haspopup="true" aria-expanded="false">
                                     <ui:fragment rendered="#{dataverseSession.user.superuser}">
                                         <span class="glyphicon glyphicon-user text-danger"></span>
                                     </ui:fragment>
                                     <h:outputText styleClass="#{dataverseSession.user.superuser ? 'text-danger' : ''}" value="#{dataverseSession.user.displayInfo.title}" id="userDisplayInfoTitle"/>
                                     <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"
-                                                  value="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) }" />                                    <b class="caret"></b>
+                                                  value="#{dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id)}"/>
+                                    <b class="caret"></b>
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li tabindex="-1">
@@ -281,8 +148,8 @@
                                         </li>
                                     </ui:remove>
                                     <li tabindex="-1">
-                                        <!-- QDRCustom- Account Info menu link -->
-                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/user">
+                                        <h:outputLink value="/dataverseuser.xhtml">
+                                            <f:param name="selectTab" value="accountInfo" />
                                             <h:outputText value="#{bundle['header.accountInfo']}" />
                                         </h:outputLink>
                                     </li>
@@ -370,13 +237,13 @@
                     <h:outputText escape="false" style="color:##{!empty dataverse.dataverseTheme.textColor ? dataverse.dataverseTheme.textColor : '888888'};" value="#{StringEscapeUtils:escapeHtml(dataverse.dataverseTheme.tagline)}" />
                 </div>
                 <div class="dataverseHeaderCell dataverseHeaderLink" jsf:rendered="#{!empty dataverse.dataverseTheme.tagline and !empty dataverse.dataverseTheme.linkUrl}">
-                    <h:outputLink value="#{dataverse.dataverseTheme.linkUrl}" style="color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};" target="_blank">
+                    <h:outputLink value="#{dataverse.dataverseTheme.linkUrl}" style="color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};" target="_blank" rel="noopener">
                         <h:outputText value="#{StringEscapeUtils:escapeHtml(dataverse.dataverseTheme.tagline)}" escape="false"/>
                     </h:outputLink>
                 </div>
             </div>
         </div>
-
+	<p:fragment id="breadCrumbPanel" rendered="#{dataverseHeaderFragment.breadcrumbs.size() > 1}">
         <div id="breadcrumbNavBlock" class="container" jsf:rendered="#{dataverseHeaderFragment.breadcrumbs.size() > 1}">
             <ui:repeat value="#{dataverseHeaderFragment.breadcrumbs}" var="breadcrumb" varStatus="status">
                 <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{!status.first}"/>
@@ -392,19 +259,19 @@
                         </ui:fragment>
                         <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataverse}">
                             <c:set var="dvUrl" value="/dataverse/#{breadcrumb.dvObject.alias}"/>
-                            <a id="breadcrumbLnk#{status.index}" href="#{widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? widgetWrapper.wrapURL(dvUrl) : dvUrl}" target="#{!widgetWrapper.widgetView or widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? '' : '_blank'}">
+                            <a id="breadcrumbLnk#{status.index}" href="#{widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? widgetWrapper.wrapURL(dvUrl) : dvUrl}" target="#{!widgetWrapper.widgetView or widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? '' : '_blank'}" rel="#{!widgetWrapper.widgetView or widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? '' : 'noopener'}">
                                 <h:outputText value="#{breadcrumb.breadcrumbText}"/>
                             </a>
                         </ui:fragment>
                         <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataset}">
                             <c:set var="dsUrl" value="/dataset.xhtml?persistentId=#{breadcrumb.dvObject.globalIdString}#{breadcrumb.optionalUrlExtension }"/>
-                            <a id="breadcrumbLnk#{status.index}" href="#{widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? widgetWrapper.wrapURL(dsUrl) : dsUrl}" target="#{!widgetWrapper.widgetView or widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? '' : '_blank'}">
+                            <a id="breadcrumbLnk#{status.index}" href="#{widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? widgetWrapper.wrapURL(dsUrl) : dsUrl}" target="#{!widgetWrapper.widgetView or widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? '' : '_blank'}" rel="#{!widgetWrapper.widgetView or widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? '' : 'noopener'}">
                                 <h:outputText value="#{breadcrumb.breadcrumbText}"/>
                             </a>
                         </ui:fragment>
                         <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataFile}">
                             <c:set var="dsUrl" value="/file.xhtml?fileId=#{breadcrumb.dvObject.id}#{breadcrumb.optionalUrlExtension }"/>
-                            <a id="breadcrumbLnk#{status.index}" href="#{widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? widgetWrapper.wrapURL(dsUrl) : dsUrl}" target="#{!widgetWrapper.widgetView or widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? '' : '_blank'}">
+                            <a id="breadcrumbLnk#{status.index}" href="#{widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? widgetWrapper.wrapURL(dsUrl) : dsUrl}" target="#{!widgetWrapper.widgetView or widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? '' : '_blank'}" rel="#{!widgetWrapper.widgetView or widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? '' : 'noopener'}">
                                 <h:outputText value="#{breadcrumb.breadcrumbText}"/>
                             </a>
                         </ui:fragment>
@@ -412,7 +279,7 @@
                 </div>
             </ui:repeat>
         </div>
-
+	</p:fragment>
         <ui:remove>
             <!-- Removing this temporarily until we can fix the performance issues with it;
                  replaced with generic bookmarks; will have to see how to best make this work
@@ -426,7 +293,6 @@
                         <h:outputText value="#{dv.name}"/>
                     </a>
                 </ui:fragment>
-
                 <ui:fragment rendered="#{dataverseHeaderFragment.hasVisibleChildren(dv)}">
                     <a id="dataverse" styleClass="#{dataverse.id == dv.id ? 'breadcrumbActive' : ''}" role="button">
                         <span class="glyphicon glyphicon-chevron-down"></span>
@@ -444,10 +310,6 @@
                 </p:tree>
             </div>
         </ui:remove>
-
-        
-
-        
         <!-- Message Panel -->
         <p:fragment id="messagePanel" rendered="#{showMessagePanel}">
             <div class="container messagePanel">
@@ -458,19 +320,4 @@
             </div>
         </p:fragment>
     </div>
-    
-    <!-- QDRCustom -->
-    <script>
-        $(document).ready(function () {        
-
-            $('ul.nav li.dropdown').hover(function() {
-                $(this).css('background-color', '#e7e7e7');
-                $(this).find('.dropdown-menu').stop(true, true).fadeIn(200);
-            }, function() {
-                $(this).css('background-color', 'transparent');
-                $(this).find('.dropdown-menu').stop(true, true).fadeOut(200);
-            });
-
-        });
-    </script>
 </ui:composition>

@@ -71,7 +71,8 @@ import javax.faces.event.FacesEvent;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
-import org.primefaces.context.RequestContext;
+import org.primefaces.PrimeFaces;
+//import org.primefaces.context.RequestContext;
 
 /**
  *
@@ -1875,9 +1876,11 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
 
         if(isFileReplaceOperation() && fileReplacePageHelper.hasContentTypeWarning()){
-                    RequestContext context = RequestContext.getCurrentInstance();
-                    RequestContext.getCurrentInstance().update("datasetForm:fileTypeDifferentPopup");
-                    context.execute("PF('fileTypeDifferentPopup').show();");
+                    //RequestContext context = RequestContext.getCurrentInstance();
+                    //RequestContext.getCurrentInstance().update("datasetForm:fileTypeDifferentPopup");
+                    PrimeFaces.current().ajax().update("datasetForm:fileTypeDifferentPopup");
+                    //context.execute("PF('fileTypeDifferentPopup').show();");
+                    PrimeFaces.current().executeScript("PF('fileTypeDifferentPopup').show();");
         }
 
         // We clear the following duplicate warning labels, because we want to 
@@ -2012,9 +2015,11 @@ public class EditDatafilesPage implements java.io.Serializable {
                                     event,
                                     null);
             if(fileReplacePageHelper.hasContentTypeWarning()){
-                    RequestContext context = RequestContext.getCurrentInstance();
-                    RequestContext.getCurrentInstance().update("datasetForm:fileTypeDifferentPopup");
-                    context.execute("PF('fileTypeDifferentPopup').show();");
+                    //RequestContext context = RequestContext.getCurrentInstance();
+                    //RequestContext.getCurrentInstance().update("datasetForm:fileTypeDifferentPopup");
+                    //context.execute("PF('fileTypeDifferentPopup').show();");
+                    PrimeFaces.current().ajax().update("datasetForm:fileTypeDifferentPopup");
+                    PrimeFaces.current().executeScript("PF('fileTypeDifferentPopup').show();");
             }
             return;
                
