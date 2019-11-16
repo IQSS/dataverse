@@ -146,6 +146,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             	baseUrl="https://api.datacite.org";
             }
             URL url = new URL(baseUrl + "/events?doi=" + authorityPlusIdentifier + "&source=crossref&page[size]=1000");
+            logger.info("Getting " + url.toString());
             boolean nextPage=true;
             JsonArray allData = null;
             do {
