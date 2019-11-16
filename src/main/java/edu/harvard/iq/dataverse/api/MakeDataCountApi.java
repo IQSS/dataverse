@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,6 +21,7 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -161,8 +163,10 @@ public class MakeDataCountApi extends AbstractApiBean {
             JsonObject report = Json.createReader(connection.getInputStream()).readObject();
             JsonObject links = report.getJsonObject("links");
             JsonArray data = report.getJsonArray("data");
-            dataBuilder.add(data);
-            
+            Iterator<JsonValue> iter = data.iterator();
+            while(iter.hasNext()) {
+                dataBuilder.add(iter.next()); 
+            }
             if(links.containsKey("next")) {
                 url=new URL(links.getString("next"));
                 
