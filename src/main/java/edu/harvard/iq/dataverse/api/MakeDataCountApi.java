@@ -136,7 +136,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             String persistentId = dataset.getGlobalId().toString();
             // DataCite wants "doi=", not "doi:".
             String authorityPlusIdentifier = persistentId.replaceFirst("doi:", "");
-            String baseUrl = System.getProperty("doi.mdcurlstring");
+            String baseUrl = System.getProperty("doi.mdcbaseurlstring");
             if (null == baseUrl) {
                 // Backward compatible default to the production server
                 baseUrl = "https://api.datacite.org";
