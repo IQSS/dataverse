@@ -1,17 +1,14 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.dataset.deaccession;
 
+import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.engine.command.Command;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCommand;
 import edu.harvard.iq.dataverse.persistence.config.URLValidator;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 
-import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
@@ -24,9 +21,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
  * Backing bean responsible for handling dataset deacession
@@ -37,25 +33,26 @@ public class DatasetDeaccessionDialog implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
 
-    @EJB
-    DatasetVersionServiceBean datasetVersionService;
-    @EJB
-    EjbDataverseEngine commandEngine;
-    @Inject
-    DataverseRequestServiceBean dvRequestService;
+    private DatasetDeaccessionService datasetDeaccessionService;
 
     private Dataset dataset;
 
     private boolean renderDeaccessionDialog = false;
-
     private List<DatasetVersion> selectedDeaccessionVersions;
-
     private Integer deaccessionReasonRadio = 0;
     private String deaccessionReasonText = "";
     private String deaccessionForwardURLFor = "";
-
     private List<DatasetVersion> releasedVersions = new ArrayList<>();
 
+    // -------------------- CONSTRUCTORS --------------------
+    @Deprecated
+    public DatasetDeaccessionDialog() {
+    }
+
+    @Inject
+    public DatasetDeaccessionDialog(DatasetDeaccessionService datasetDeaccessionService) {
+        this.datasetDeaccessionService = datasetDeaccessionService;
+    }
 
     // -------------------- GETTERS --------------------
 
@@ -146,30 +143,22 @@ public class DatasetDeaccessionDialog implements Serializable {
     }
 
     public String deaccessVersions() {
-        Command<DatasetVersion> cmd;
-        try {
-            if (selectedDeaccessionVersions == null) {
-                for (DatasetVersion dv : dataset.getVersions()) {
-                    if (dv.isReleased()) {
-                        DatasetVersion versionToDeaccess = datasetVersionService.find(dv.getId());
-                        updateDeaccessionReasonAndURL(versionToDeaccess);
-                        cmd = new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), versionToDeaccess);
-                        commandEngine.submit(cmd);
-                    }
-                }
-            } else {
-                for (DatasetVersion dv : selectedDeaccessionVersions) {
-                    DatasetVersion versionToDeaccess = datasetVersionService.find(dv.getId());
-                    updateDeaccessionReasonAndURL(versionToDeaccess);
-                    cmd = new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), versionToDeaccess);
-                    commandEngine.submit(cmd);
-                }
-            }
-        } catch (CommandException ex) {
-            logger.severe(ex.getMessage());
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.message.deaccessionFailure"));
+        Try<List<DatasetVersion>> deaccessionOperation;
+        String deaccessionReason = buildDeaccessionReason();
+
+        if (selectedDeaccessionVersions == null) {
+            deaccessionOperation = Try.of(() -> datasetDeaccessionService.deaccessReleasedVersions(dataset.getVersions(), deaccessionReason, deaccessionForwardURLFor));
+        } else {
+            deaccessionOperation = Try.of(() -> datasetDeaccessionService.deaccessVersions(selectedDeaccessionVersions, deaccessionReason, deaccessionForwardURLFor));
         }
-        JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("datasetVersion.message.deaccessionSuccess"));
+
+        if(deaccessionOperation.isSuccess()) {
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("datasetVersion.message.deaccessionSuccess"));
+        } else {
+            logger.log(Level.SEVERE, "Deaccession has failed.", deaccessionOperation.getCause());
+            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.deaccessionFailure"));
+        }
+
         return returnToDataset();
     }
 
@@ -185,43 +174,38 @@ public class DatasetDeaccessionDialog implements Serializable {
         return retList;
     }
 
-    private void updateDeaccessionReasonAndURL(DatasetVersion datasetVersion) {
-        datasetVersion.setVersionNote(buildDeaccessionReason());
-        datasetVersion.setArchiveNote(deaccessionForwardURLFor);
-    }
-    
     private String buildDeaccessionReason() {
-        
+
         String deaccessionReason = StringUtils.EMPTY;
-        
+
         switch (deaccessionReasonRadio) {
-        case 1:
-            deaccessionReason = BundleUtil.getStringFromBundle("file.deaccessionDialog.reason.selectItem.identifiable");
-            break;
-        case 2:
-            deaccessionReason = BundleUtil.getStringFromBundle("file.deaccessionDialog.reason.selectItem.beRetracted");
-            break;
-        case 3:
-            deaccessionReason = BundleUtil.getStringFromBundle("file.deaccessionDialog.reason.selectItem.beTransferred");
-            break;
-        case 4:
-            deaccessionReason = BundleUtil.getStringFromBundle("file.deaccessionDialog.reason.selectItem.IRB");
-            break;
-        case 5:
-            deaccessionReason = BundleUtil.getStringFromBundle("file.deaccessionDialog.reason.selectItem.legalIssue");
-            break;
-        case 6:
-            deaccessionReason = BundleUtil.getStringFromBundle("file.deaccessionDialog.reason.selectItem.notValid");
-            break;
-        case 7:
-            break;
+            case 1:
+                deaccessionReason = BundleUtil.getStringFromBundle("file.deaccessionDialog.reason.selectItem.identifiable");
+                break;
+            case 2:
+                deaccessionReason = BundleUtil.getStringFromBundle("file.deaccessionDialog.reason.selectItem.beRetracted");
+                break;
+            case 3:
+                deaccessionReason = BundleUtil.getStringFromBundle("file.deaccessionDialog.reason.selectItem.beTransferred");
+                break;
+            case 4:
+                deaccessionReason = BundleUtil.getStringFromBundle("file.deaccessionDialog.reason.selectItem.IRB");
+                break;
+            case 5:
+                deaccessionReason = BundleUtil.getStringFromBundle("file.deaccessionDialog.reason.selectItem.legalIssue");
+                break;
+            case 6:
+                deaccessionReason = BundleUtil.getStringFromBundle("file.deaccessionDialog.reason.selectItem.notValid");
+                break;
+            case 7:
+                break;
         }
-        
+
         String deacessionReasonDetail = StringUtils.trimToEmpty(deaccessionReasonText);
         if (!deacessionReasonDetail.isEmpty()) {
             deaccessionReason = deaccessionReason + ' ' + deacessionReasonDetail;
         }
-        
+
         return deaccessionReason.trim();
     }
 
