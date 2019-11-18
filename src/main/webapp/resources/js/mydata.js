@@ -110,6 +110,9 @@ function init_mydata_page(){
       }
     });
 
+    // Add the grey background
+    $('<div id="file-row-panel-backdrop"></div>').insertBefore('.ui-tabs-panel');
+
     // Normal form submit
     /*   mydata_filter_form removed b/c of JSF conflict (ahh..)
     $( "#mydata_filter_form" ).submit(function( event ) {
