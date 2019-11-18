@@ -50,6 +50,7 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
         // given
         Dataset dataset = datasetService.find(56L);
         DatasetVersion versionToBeDeaccessed = dataset.getReleasedVersion();
+        int versionsCount = dataset.getVersions().size();
 
         // when
         deaccessionService.deaccessVersion(versionToBeDeaccessed, "TestReason", "https://www.google.com/");
@@ -58,7 +59,7 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
         Dataset dbDataset = datasetService.find(56L);
 
         assertEquals(DatasetVersion.VersionState.DEACCESSIONED, versionsService.find(versionToBeDeaccessed.getId()).getVersionState());
-        assertEquals(dataset.getVersions().size(), dbDataset.getVersions().size());
+        assertEquals(versionsCount, dbDataset.getVersions().size());
         assertTrue(dbDataset.getVersions()
                 .stream()
                 .anyMatch(version -> version.getVersionState().equals(DatasetVersion.VersionState.DEACCESSIONED)));
