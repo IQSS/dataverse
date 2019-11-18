@@ -12,7 +12,7 @@
        {% set card_border_color = "#ccc" %}
     {% endif %}
 
-    <div style="border:1px solid {{ card_border_color }};padding:4px 10px; margin-bottom:20px; overflow: hidden; font-size: 90%; {{ card_bg_color.next() }}">
+    <div class="cardResult" style="border:1px solid {{ card_border_color }};padding:4px 10px; margin-bottom:20px; overflow: hidden; font-size: 90%; {{ card_bg_color.next() }}">
         <div class="card-title-icon-block" style="font-size: 110%;"> 
  {% if card_info.type == "dataverse" %}
             <span class="icon-dataverse text-brand pull-right" title="Dataverse"></span>

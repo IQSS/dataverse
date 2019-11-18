@@ -502,7 +502,7 @@ span.search-term-match {font-weight: bold;}
 [id$='resultsTable'] div.card-title-icon-block span[class$='lock'] {font-size:inherit; margin-left:0;}
 [id$='resultsTable'] div.card-title-icon-block span[class^='glyphicon'] {margin-top:3px;}
 [id$='resultsTable'] div.card-title-icon-block span.label {vertical-align:15%}
-[id$='resultsTable'] div.card-preview-icon-block {width:110px; float:left; margin:4px 10px 6px 0;}
+[id$='resultsTable'] div.card-preview-icon-block {width:110px; position: absolute; margin:4px 10px 6px 0 !important;}
 [id$='resultsTable'] div.card-preview-icon-block a {display:block; height:48px; line-height:48px;}
 [id$='resultsTable'] div.card-preview-icon-block img {vertical-align:middle; width: 90px; max-height: 60px;}
 [id$='resultsTable'] div.card-preview-icon-block span[class^='icon'],
@@ -1113,7 +1113,7 @@ div.container {
 .dataverseResult > *,
 .datasetResult > *,
 .fileResult > *,
-#div-card-results > div > * {
+.cardResult > * {
   margin-left: 120px;
 }
 
