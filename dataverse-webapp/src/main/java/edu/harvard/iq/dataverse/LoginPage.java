@@ -77,7 +77,7 @@ public class LoginPage implements java.io.Serializable {
     DataverseSession session;
 
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
 
     @EJB
     AuthenticationServiceBean authSvc;
@@ -199,7 +199,7 @@ public class LoginPage implements java.io.Serializable {
     }
 
     private String redirectToRoot() {
-        return "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias();
+        return "dataverse.xhtml?alias=" + dataverseDao.findRootDataverse().getAlias();
     }
 
     public String getCredentialsAuthProviderId() {

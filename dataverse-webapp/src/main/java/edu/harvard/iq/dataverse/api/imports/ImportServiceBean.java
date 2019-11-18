@@ -9,7 +9,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlockDao;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
@@ -85,7 +85,7 @@ public class ImportServiceBean {
     @EJB
     DatasetServiceBean datasetService;
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     @EJB
     DatasetFieldServiceBean datasetfieldService;
 
@@ -114,7 +114,7 @@ public class ImportServiceBean {
     @TransactionAttribute(REQUIRES_NEW)
     public Dataverse createDataverse(String dvName, DataverseRequest dataverseRequest) throws ImportException {
         Dataverse d = new Dataverse();
-        Dataverse root = dataverseService.findByAlias("root");
+        Dataverse root = dataverseDao.findByAlias("root");
         d.setOwner(root);
         d.setAlias(dvName);
         d.setName(dvName);

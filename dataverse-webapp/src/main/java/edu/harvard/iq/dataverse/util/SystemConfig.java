@@ -12,10 +12,8 @@ import javax.inject.Named;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.MissingResourceException;
 import java.util.Properties;
@@ -320,7 +318,7 @@ public class SystemConfig {
     }
 
 //    public String getNameOfInstallation() {
-//        return dataverseService.findRootDataverse().getName();
+//        return dataverseDao.findRootDataverse().getName();
 //    }
 
     public AbstractOAuth2AuthenticationProvider.DevOAuthAccountType getDevOAuthAccountType() {

@@ -61,7 +61,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     @EJB
     EjbDataverseEngine commandEngine;
     @EJB
-    DataverseServiceBean dataverseServiceBean;
+    DataverseDao dataverseDao;
     @EJB
     SettingsServiceBean settingsService;
     @Inject
@@ -124,7 +124,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
 
 
     public String initEditDv() {
-        editDv = dataverseServiceBean.find(editDv.getId());
+        editDv = dataverseDao.find(editDv.getId());
 
         // check if dv exists and user has permission
         if (editDv == null) {

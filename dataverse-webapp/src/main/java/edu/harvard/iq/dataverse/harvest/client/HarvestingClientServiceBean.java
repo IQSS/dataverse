@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.harvest.client;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.harvest.ClientHarvestRun;
@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 @Stateless
 public class HarvestingClientServiceBean implements java.io.Serializable {
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     @EJB
     EjbDataverseEngine engineService;
     @EJB

@@ -1,13 +1,12 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseFacetServiceBean;
 import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevelServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
@@ -33,7 +32,13 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 import static edu.harvard.iq.dataverse.mocks.MockRequestFactory.makeRequest;
-import static edu.harvard.iq.dataverse.persistence.MocksFactory.*;
+import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeAuthenticatedUser;
+import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeDatasetFieldType;
+import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeDataverse;
+import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeDataverseFieldTypeInputLevel;
+import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeRole;
+import static edu.harvard.iq.dataverse.persistence.MocksFactory.nextId;
+import static edu.harvard.iq.dataverse.persistence.MocksFactory.timestamp;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -52,7 +57,7 @@ public class CreateDataverseCommandTest {
     List<DataverseFieldTypeInputLevel> createdDftils;
     List<DataverseFacet> createdFacets;
 
-    DataverseServiceBean dataverses = new DataverseServiceBean() {
+    DataverseDao dataverses = new DataverseDao() {
         @Override
         public boolean isRootDataverseExists() {
             return isRootDvExists;
@@ -176,7 +181,7 @@ public class CreateDataverseCommandTest {
             }
 
             @Override
-            public DataverseServiceBean dataverses() {
+            public DataverseDao dataverses() {
                 return dataverses;
             }
 

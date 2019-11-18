@@ -177,7 +177,7 @@
                                     </li>
                                     <li class="divider"></li>
                                     <li jsf:rendered="#{dataverseSession.user.superuser}" tabindex="-1">
-                                        <h:outputLink value="/dashboard.xhtml?dataverseId=#{dataverseServiceBean.findRootDataverse().id}">
+                                        <h:outputLink value="/dashboard.xhtml?dataverseId=#{dataverseDao.findRootDataverse().id}">
                                             <h:outputText value="#{bundle['header.dashboard']}" />
                                         </h:outputLink>
                                     </li>
@@ -198,7 +198,7 @@
         </nav>
         <ui:include src="text-messagesAndBanners.xhtml">
 
-            <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
+            <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseDao.findRootDataverse()}"/>
         </ui:include>
         <!-- Noscript Error -->
         <noscript>

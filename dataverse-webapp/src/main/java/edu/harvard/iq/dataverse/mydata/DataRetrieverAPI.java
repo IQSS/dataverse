@@ -3,8 +3,8 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
@@ -70,7 +70,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
     @EJB
     AuthenticationServiceBean authenticationService;
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     //@EJB
     //MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
     @EJB
@@ -509,7 +509,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
             myDataCardInfo = doc.getJsonForMyData();
 
             if (!doc.getEntity().isInstanceofDataFile()) {
-                String parentAlias = dataverseService.getParentAliasString(doc);
+                String parentAlias = dataverseDao.getParentAliasString(doc);
                 myDataCardInfo.add("parent_alias", parentAlias);
             }
 

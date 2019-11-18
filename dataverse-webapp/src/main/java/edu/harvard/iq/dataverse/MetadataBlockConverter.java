@@ -20,10 +20,10 @@ import javax.faces.convert.FacesConverter;
 public class MetadataBlockConverter implements Converter {
 
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
 
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
-        MetadataBlock mdb = dataverseService.findMDB(new Long(submittedValue));
+        MetadataBlock mdb = dataverseDao.findMDB(new Long(submittedValue));
         return mdb;
     }
 

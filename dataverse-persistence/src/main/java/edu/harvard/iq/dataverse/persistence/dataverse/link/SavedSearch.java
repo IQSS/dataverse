@@ -39,7 +39,7 @@ public class SavedSearch implements Serializable {
      * https://wiki.apache.org/solr/CommonQueryParameters#fq
      */
     @OneToMany(mappedBy = "savedSearch", cascade = CascadeType.ALL)
-    private List<SavedSearchFilterQuery> savedSearchFilterQueries;
+    private List<SavedSearchFilterQuery> savedSearchFilterQueries = new ArrayList<>();
 
     /**
      * Saved searches are associated with a Dataverse, not a user.

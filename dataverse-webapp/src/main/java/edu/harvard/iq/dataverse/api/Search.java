@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
@@ -49,7 +49,7 @@ public class Search extends AbstractApiBean {
     @EJB
     SearchServiceBean searchService;
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     @EJB
     DvObjectServiceBean dvObjectService;
     @EJB
@@ -313,8 +313,8 @@ public class Search extends AbstractApiBean {
         String subtreesFilter = "";
 
         for (Dataverse dv : subtrees) {
-            if (!dv.equals(dataverseService.findRootDataverse())) {
-                String dataversePath = dataverseService.determineDataversePath(dv);
+            if (!dv.equals(dataverseDao.findRootDataverse())) {
+                String dataversePath = dataverseDao.determineDataversePath(dv);
 
                 subtreesFilter += "\"" + dataversePath + "\" OR ";
 
@@ -337,9 +337,9 @@ public class Search extends AbstractApiBean {
 
     private Dataverse getSubtree(String alias) throws Exception {
         if (StringUtils.isBlank(alias)) {
-            return dataverseService.findRootDataverse();
+            return dataverseDao.findRootDataverse();
         } else {
-            Dataverse subtree = dataverseService.findByAlias(alias);
+            Dataverse subtree = dataverseDao.findByAlias(alias);
             if (subtree != null) {
                 return subtree;
             } else {

@@ -41,7 +41,7 @@ public class ManageGroupsPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(ManageGroupsPage.class.getCanonicalName());
 
-    private DataverseServiceBean dataverseService;
+    private DataverseDao dataverseDao;
     private ExplicitGroupServiceBean explicitGroupService;
     private RoleAssigneeServiceBean roleAssigneeService;
     private PermissionsWrapper permissionsWrapper;
@@ -72,10 +72,10 @@ public class ManageGroupsPage implements java.io.Serializable {
     }
 
     @Inject
-    public ManageGroupsPage(DataverseServiceBean dataverseService, ExplicitGroupServiceBean explicitGroupService,
+    public ManageGroupsPage(DataverseDao dataverseDao, ExplicitGroupServiceBean explicitGroupService,
                             RoleAssigneeServiceBean roleAssigneeService, PermissionsWrapper permissionsWrapper,
                             ManageGroupsCRUDService mgCrudService) {
-        this.dataverseService = dataverseService;
+        this.dataverseDao = dataverseDao;
         this.explicitGroupService = explicitGroupService;
         this.roleAssigneeService = roleAssigneeService;
         this.permissionsWrapper = permissionsWrapper;
@@ -129,7 +129,7 @@ public class ManageGroupsPage implements java.io.Serializable {
 
     // -------------------- LOGIC --------------------
     public String init() {
-        setDataverse(dataverseService.find(getDataverseId()));
+        setDataverse(dataverseDao.find(getDataverseId()));
         Dataverse editDv = getDataverse();
 
         if (editDv == null) {

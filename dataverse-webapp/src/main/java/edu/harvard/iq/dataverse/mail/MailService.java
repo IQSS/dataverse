@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse.mail;
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.notification.dto.EmailNotificationDto;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -34,7 +34,7 @@ import java.util.concurrent.Executors;
 @Stateless
 public class MailService implements java.io.Serializable {
 
-    private DataverseServiceBean dataverseService;
+    private DataverseDao dataverseDao;
     private SettingsServiceBean settingsService;
     private MailMessageCreator mailMessageCreator;
 
@@ -52,8 +52,8 @@ public class MailService implements java.io.Serializable {
     }
 
     @Inject
-    public MailService(DataverseServiceBean dataverseService, SettingsServiceBean settingsService, MailMessageCreator mailMessageCreator) {
-        this.dataverseService = dataverseService;
+    public MailService(DataverseDao dataverseDao, SettingsServiceBean settingsService, MailMessageCreator mailMessageCreator) {
+        this.dataverseDao = dataverseDao;
         this.settingsService = settingsService;
         this.mailMessageCreator = mailMessageCreator;
     }
@@ -122,7 +122,7 @@ public class MailService implements java.io.Serializable {
      */
     public boolean sendMail(String recipientsEmails, String subject, String messageText) {
 
-        String message = mailMessageCreator.createMailFooterMessage(messageText, dataverseService.findRootDataverse().getName(), getSystemAddress());
+        String message = mailMessageCreator.createMailFooterMessage(messageText, dataverseDao.findRootDataverse().getName(), getSystemAddress());
 
         Email email = EmailBuilder.startingBlank()
                 .from(getSystemAddress())

@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.mail.confirmemail;
 
 import com.google.common.collect.Lists;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.common.BundleUtil;
@@ -49,7 +49,7 @@ public class ConfirmEmailServiceBean {
     SystemConfig systemConfig;
 
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -115,7 +115,7 @@ public class ConfirmEmailServiceBean {
 
             String toAddress = aUser.getEmail();
             try {
-                Dataverse rootDataverse = dataverseService.findRootDataverse();
+                Dataverse rootDataverse = dataverseDao.findRootDataverse();
                 if (rootDataverse != null) {
                     String rootDataverseName = rootDataverse.getName();
                     // FIXME: consider refactoring this into MailServiceBean.sendNotificationEmail. CONFIRMEMAIL may be the only type where we don't want an in-app notification.

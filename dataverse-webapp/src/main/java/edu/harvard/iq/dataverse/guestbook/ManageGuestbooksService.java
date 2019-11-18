@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.guestbook;
 
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteGuestbookCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
@@ -17,7 +17,7 @@ public class ManageGuestbooksService {
     private EjbDataverseEngine engineService;
     private DataverseRequestServiceBean dvRequestService;
     private GuestbookServiceBean guestbookService;
-    private DataverseServiceBean dataverseService;
+    private DataverseDao dataverseDao;
 
     // -------------------- CONSTRUCTORS --------------------
     @Deprecated
@@ -26,11 +26,11 @@ public class ManageGuestbooksService {
 
     @Inject
     public ManageGuestbooksService(EjbDataverseEngine engineService, DataverseRequestServiceBean dvRequestService,
-                                   GuestbookServiceBean guestbookService, DataverseServiceBean dataverseService) {
+                                   GuestbookServiceBean guestbookService, DataverseDao dataverseDao) {
         this.engineService = engineService;
         this.dvRequestService = dvRequestService;
         this.guestbookService = guestbookService;
-        this.dataverseService = dataverseService;
+        this.dataverseDao = dataverseDao;
     }
 
     // -------------------- LOGIC --------------------
@@ -43,7 +43,7 @@ public class ManageGuestbooksService {
     }
 
     public Dataverse updateAllowGuestbooksFromRootStatus(long dataverseId, boolean allowGuestbooksFromRoot) {
-        return engineService.submit(new UpdateDataverseGuestbookRootCommand(allowGuestbooksFromRoot, dvRequestService.getDataverseRequest(), dataverseService.find(dataverseId)));
+        return engineService.submit(new UpdateDataverseGuestbookRootCommand(allowGuestbooksFromRoot, dvRequestService.getDataverseRequest(), dataverseDao.find(dataverseId)));
     }
 
     public Guestbook enableGuestbook(long guestbookId) {

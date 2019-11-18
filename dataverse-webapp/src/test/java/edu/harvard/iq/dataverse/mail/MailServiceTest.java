@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.mail;
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.notification.dto.EmailNotificationDto;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -34,7 +34,7 @@ public class MailServiceTest {
     private SettingsServiceBean settingsService;
 
     @Mock
-    private DataverseServiceBean dataverseService;
+    private DataverseDao dataverseDao;
 
     @Mock
     private MailMessageCreator mailMessageCreator;
@@ -54,11 +54,11 @@ public class MailServiceTest {
 
         Dataverse testDataverse = new Dataverse();
         testDataverse.setName("ROOT");
-        Mockito.when(dataverseService.findRootDataverse()).thenReturn(testDataverse);
+        Mockito.when(dataverseDao.findRootDataverse()).thenReturn(testDataverse);
 
         Mockito.doNothing().when(mailer).sendMail(any());
 
-        mailService = new MailService(dataverseService, settingsService, mailMessageCreator);
+        mailService = new MailService(dataverseDao, settingsService, mailMessageCreator);
         mailService.setMailSender(mailer);
     }
 

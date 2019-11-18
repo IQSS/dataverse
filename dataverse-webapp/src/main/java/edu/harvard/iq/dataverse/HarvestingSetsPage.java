@@ -48,7 +48,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
     @EJB
     AuthenticationServiceBean authSvc;
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     @EJB
     OAISetServiceBean oaiSetService;
     @EJB

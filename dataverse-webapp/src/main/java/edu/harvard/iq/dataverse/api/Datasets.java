@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlockDao;
@@ -149,7 +149,7 @@ public class Datasets extends AbstractApiBean {
     DatasetServiceBean datasetService;
 
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
 
     @EJB
     UserNotificationService userNotificationService;
@@ -1000,7 +1000,7 @@ public class Datasets extends AbstractApiBean {
         try {
             User u = findUserOrDie();
             Dataset ds = findDatasetOrDie(id);
-            Dataverse target = dataverseService.findByAlias(targetDataverseAlias);
+            Dataverse target = dataverseDao.findByAlias(targetDataverseAlias);
             if (target == null) {
                 return error(Response.Status.BAD_REQUEST, "Target Dataverse not found.");
             }

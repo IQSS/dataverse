@@ -10,14 +10,14 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle['dashboard.title']} - #{dataverseServiceBean.findRootDataverse().name}"/>
+            <ui:param name="pageTitle" value="#{bundle['dashboard.title']} - #{dataverseDao.findRootDataverse().name}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="dataverseId" value="#{dashboardPage.dataverseId}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{LicenseListingPage.init}"/>
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), bundle['dashboard.title'])}"/>
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseDao.findRootDataverse(), bundle['dashboard.title'])}"/>
                 </f:metadata>
                
                 <div id="dashboard-block" class="content">
@@ -50,7 +50,7 @@
                                     <div class="row text-center">
                                         <div  class="col-xs-12">
                                             <p>
-                                                <a href="/harvestclients.xhtml?dataverseId=#{dataverseServiceBean.findRootDataverse().id}" class="btn btn-primary" role="button">#{bundle['dashboard.card.harvestingclients.btn.manage']}</a>
+                                                <a href="/harvestclients.xhtml?dataverseId=#{dataverseDao.findRootDataverse().id}" class="btn btn-primary" role="button">#{bundle['dashboard.card.harvestingclients.btn.manage']}</a>
                                             </p>
                                         </div>
                                     </div>
@@ -79,7 +79,7 @@
                                     <div class="row text-center">
                                         <div  class="col-xs-12">
                                             <p>
-                                                <a href="/harvestsets.xhtml?dataverseId=#{dataverseServiceBean.findRootDataverse().id}" class="btn btn-primary" role="button">#{bundle['dashboard.card.harvestingserver.btn.manage']}</a>
+                                                <a href="/harvestsets.xhtml?dataverseId=#{dataverseDao.findRootDataverse().id}" class="btn btn-primary" role="button">#{bundle['dashboard.card.harvestingserver.btn.manage']}</a>
                                             </p>
                                         </div>
                                     </div>
@@ -92,7 +92,7 @@
                                         <div class="col-xs-12">
                                             <p class="help-block">
                                                 <h:outputFormat value="#{bundle['dashboard.card.metadataexport.message']}" escape="false">
-                                                    <f:param value="#{dataverseServiceBean.findRootDataverse().displayName}"/>
+                                                    <f:param value="#{dataverseDao.findRootDataverse().displayName}"/>
                                                     <f:param value="&lt;a href=&#34;#{settingsWrapper.guidesBaseUrl}/#{settingsWrapper.guidesVersion}/api&#34; target=&#34;_blank&#34;&gt;"/>
                                                     <f:param value="&lt;/a&gt;"/>
                                                 </h:outputFormat>

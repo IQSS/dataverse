@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.managegroups;
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.ManageGroupsCRUDService;
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
@@ -41,7 +41,7 @@ public class ManageGroupsCRUDServiceIT extends WebappArquillianDeployment {
     @EJB
     private ManageGroupsCRUDService manageGroupsCRUDService;
     @EJB
-    private DataverseServiceBean dataverseService;
+    private DataverseDao dataverseDao;
     @Inject
     private DataverseSession dataverseSession;
     @EJB
@@ -57,7 +57,7 @@ public class ManageGroupsCRUDServiceIT extends WebappArquillianDeployment {
     @Test
     public void shouldCreateGroup() {
         // given
-        Dataverse dv = dataverseService.findByAlias("ownmetadatablocks");
+        Dataverse dv = dataverseDao.findByAlias("ownmetadatablocks");
         RoleAssignee roleAssignee = authenticationService.findAllAuthenticatedUsers().get(0);
 
         // when
@@ -74,7 +74,7 @@ public class ManageGroupsCRUDServiceIT extends WebappArquillianDeployment {
     @Test
     public void shouldUpdateGroup() {
         // given
-        Dataverse dv = dataverseService.findByAlias("ownmetadatablocks");
+        Dataverse dv = dataverseDao.findByAlias("ownmetadatablocks");
         ExplicitGroup explicitGroup = buildExplicitGroup(dv);
 
         em.persist(explicitGroup);
@@ -104,7 +104,7 @@ public class ManageGroupsCRUDServiceIT extends WebappArquillianDeployment {
     @Test
     public void shouldDeleteGroup() {
         // given
-        Dataverse dv = dataverseService.findByAlias("ownmetadatablocks");
+        Dataverse dv = dataverseDao.findByAlias("ownmetadatablocks");
         ExplicitGroup explicitGroup = buildExplicitGroup(dv);
 
         em.persist(explicitGroup);

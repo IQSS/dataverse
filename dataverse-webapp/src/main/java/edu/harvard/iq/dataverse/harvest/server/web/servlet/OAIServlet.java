@@ -22,7 +22,7 @@ import com.lyncode.xoai.services.impl.SimpleResumptionTokenFormat;
 import com.lyncode.xoai.xml.XSISchema;
 import com.lyncode.xoai.xml.XmlWriter;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.ExporterType;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
@@ -71,7 +71,7 @@ public class OAIServlet extends HttpServlet {
     @EJB
     SettingsServiceBean settingsService;
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     @EJB
     DatasetServiceBean datasetService;
 
@@ -163,7 +163,7 @@ public class OAIServlet extends HttpServlet {
         // some of the settings below - such as the max list numbers - 
         // need to be configurable!
 
-        String dataverseName = dataverseService.findRootDataverse().getName();
+        String dataverseName = dataverseDao.findRootDataverse().getName();
         String repositoryName = StringUtils.isEmpty(dataverseName) || "Root".equals(dataverseName) ? "Test Dataverse OAI Archive" : dataverseName + " Dataverse OAI Archive";
 
 

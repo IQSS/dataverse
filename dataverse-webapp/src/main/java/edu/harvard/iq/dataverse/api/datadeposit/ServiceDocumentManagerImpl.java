@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
@@ -26,7 +26,7 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
 
     private static final Logger logger = Logger.getLogger(ServiceDocumentManagerImpl.class.getCanonicalName());
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     @EJB
     PermissionServiceBean permissionService;
     @EJB
@@ -44,7 +44,7 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
         String warning = urlManagerServiceBean.processUrl(sdUri);
         ServiceDocument service = new ServiceDocument();
         SwordWorkspace swordWorkspace = new SwordWorkspace();
-        Dataverse rootDataverse = dataverseService.findRootDataverse();
+        Dataverse rootDataverse = dataverseDao.findRootDataverse();
         if (rootDataverse != null) {
             String name = rootDataverse.getName();
             if (name != null) {

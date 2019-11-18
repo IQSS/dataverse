@@ -3,12 +3,12 @@ package edu.harvard.iq.dataverse.search;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -44,7 +44,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     @EJB
     SearchServiceBean searchService;
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     @EJB
     DatasetServiceBean datasetService;
     @EJB
@@ -240,13 +240,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
         List<String> filterQueriesFinal = new ArrayList<>();
 
         if (dataverseAlias != null) {
-            this.dataverse = dataverseService.findByAlias(dataverseAlias);
+            this.dataverse = dataverseDao.findByAlias(dataverseAlias);
         }
         if (this.dataverse != null) {
-            dataversePath = dataverseService.determineDataversePath(this.dataverse);
+            dataversePath = dataverseDao.determineDataversePath(this.dataverse);
             String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
             //logger.info("SUBTREE parameter: " + dataversePath);
-            if (!this.dataverse.equals(dataverseService.findRootDataverse())) {
+            if (!this.dataverse.equals(dataverseDao.findRootDataverse())) {
                 /**
                  * @todo centralize this into SearchServiceBean
                  */
@@ -257,7 +257,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 this.setRootDv(true);
             }
         } else {
-            this.dataverse = dataverseService.findRootDataverse();
+            this.dataverse = dataverseDao.findRootDataverse();
 //            this.dataverseSubtreeContext = "all";
             this.setRootDv(true);
         }
@@ -367,7 +367,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
                 if (solrSearchResult.getType().equals("dataverses")) {
                     //logger.info("XXRESULT: dataverse: "+solrSearchResult.getEntityId());
-                    dataverseService.populateDvSearchCard(solrSearchResult);
+                    dataverseDao.populateDvSearchCard(solrSearchResult);
                     
                     /*
                     Dataverses cannot be harvested yet.
@@ -411,7 +411,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         } else {
             // if SOLR is down:
 
-            List contentsList = dataverseService.findByOwnerId(dataverse.getId());
+            List contentsList = dataverseDao.findByOwnerId(dataverse.getId());
             contentsList.addAll(datasetService.findByOwnerId(dataverse.getId()));
 //            directChildDvObjectContainerList.addAll(contentsList);
         }
@@ -1180,7 +1180,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 if (dataverse.getId().equals(result.getParentIdAsLong())) {
                     // definitely NOT linked:
                     result.setIsInTree(true);
-                } else if (result.getParentIdAsLong() == dataverseService.findRootDataverse().getId()) {
+                } else if (result.getParentIdAsLong() == dataverseDao.findRootDataverse().getId()) {
                     // the object's parent is the root Dv; and the current 
                     // Dv is NOT root... definitely linked:
                     result.setIsInTree(false);

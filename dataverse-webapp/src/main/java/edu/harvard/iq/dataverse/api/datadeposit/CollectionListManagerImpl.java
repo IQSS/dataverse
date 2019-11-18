@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -32,7 +32,7 @@ public class CollectionListManagerImpl implements CollectionListManager {
 
     private static final Logger logger = Logger.getLogger(CollectionListManagerImpl.class.getCanonicalName());
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     @EJB
     DatasetServiceBean datasetService;
     @EJB
@@ -53,7 +53,7 @@ public class CollectionListManagerImpl implements CollectionListManager {
         String dvAlias = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("dataverse") && dvAlias != null) {
 
-            Dataverse dv = dataverseService.findByAlias(dvAlias);
+            Dataverse dv = dataverseDao.findByAlias(dvAlias);
 
             if (dv != null) {
                 /**

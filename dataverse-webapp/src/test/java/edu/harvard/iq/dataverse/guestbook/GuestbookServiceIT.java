@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.guestbook;
 
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -27,7 +27,7 @@ public class GuestbookServiceIT extends WebappArquillianDeployment {
     private GuestbookService guestbookService;
 
     @Inject
-    private DataverseServiceBean dataverseService;
+    private DataverseDao dataverseDao;
 
     @Inject
     private DataverseSession dataverseSession;
@@ -43,7 +43,7 @@ public class GuestbookServiceIT extends WebappArquillianDeployment {
     @Test
     public void shouldSaveGuestbook() {
         // given
-        Dataverse dataverse = dataverseService.findByAlias("ownmetadatablocks");
+        Dataverse dataverse = dataverseDao.findByAlias("ownmetadatablocks");
         Guestbook newGuestbook = new Guestbook();
         newGuestbook.setName("newGuestbook");
         newGuestbook.setDataverse(dataverse);
@@ -52,7 +52,7 @@ public class GuestbookServiceIT extends WebappArquillianDeployment {
         guestbookService.saveGuestbook(newGuestbook);
 
         // then
-        Dataverse dbDataverse = dataverseService.find(dataverse.getId());
+        Dataverse dbDataverse = dataverseDao.find(dataverse.getId());
         Assert.assertEquals(2, dataverse.getGuestbooks().size());
         Assert.assertTrue(dbDataverse.getGuestbooks()
                 .stream()
@@ -63,7 +63,7 @@ public class GuestbookServiceIT extends WebappArquillianDeployment {
     @Test
     public void shouldEditGuestbook() {
         // given
-        Dataverse dataverse = dataverseService.findByAlias("ownmetadatablocks");
+        Dataverse dataverse = dataverseDao.findByAlias("ownmetadatablocks");
         Guestbook guestbook = dataverse.getGuestbooks().get(0);
         guestbook.setName("editedGuestbookName");
 
@@ -71,7 +71,7 @@ public class GuestbookServiceIT extends WebappArquillianDeployment {
         guestbookService.editGuestbook(guestbook);
 
         // then
-        Dataverse dbDataverse = dataverseService.find(dataverse.getId());
+        Dataverse dbDataverse = dataverseDao.find(dataverse.getId());
         Assert.assertEquals(1, dbDataverse.getGuestbooks().size());
         Assert.assertEquals(guestbook.getName(), dbDataverse.getGuestbooks().get(0).getName());
     }

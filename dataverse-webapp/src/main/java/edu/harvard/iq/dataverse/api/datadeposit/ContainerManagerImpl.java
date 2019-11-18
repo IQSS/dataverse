@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.imports.ImportGenericServiceBean;
@@ -51,7 +51,7 @@ public class ContainerManagerImpl implements ContainerManager {
     @EJB
     protected EjbDataverseEngine engineSvc;
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     @EJB
     DatasetServiceBean datasetService;
     @EJB
@@ -399,7 +399,7 @@ public class ContainerManagerImpl implements ContainerManager {
             } else if ("dataverse".equals(targetType)) {
                 String dvAlias = urlManager.getTargetIdentifier();
                 if (dvAlias != null) {
-                    Dataverse dvToRelease = dataverseService.findByAlias(dvAlias);
+                    Dataverse dvToRelease = dataverseDao.findByAlias(dvAlias);
                     if (dvToRelease != null) {
                         PublishDataverseCommand publishDataverseCommand = new PublishDataverseCommand(dvRequest, dvToRelease);
                         if (!permissionService.isUserAllowedOn(user, publishDataverseCommand, dvToRelease)) {

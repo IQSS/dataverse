@@ -26,7 +26,7 @@ public class FeaturedDataverseServiceBean {
     private EntityManager em;
 
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
 
     private static final Logger logger = Logger.getLogger(FeaturedDataverseServiceBean.class.getCanonicalName());
 
@@ -65,7 +65,7 @@ public class FeaturedDataverseServiceBean {
                 dataverse.setName((String) result[2]);
             }
 
-            dataverse.setDataverseTheme(dataverseService.findDataverseThemeByIdQuick(id));
+            dataverse.setDataverseTheme(dataverseDao.findDataverseThemeByIdQuick(id));
             if (dataverse.getDataverseTheme() != null) {
                 logger.fine("THEME: " + dataverse.getDataverseTheme().getLogo() + ", " + dataverse.getDataverseTheme().getLogoFormat());
             }

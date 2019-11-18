@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValueServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.MetadataBlockDao;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
@@ -51,7 +51,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     DatasetFieldServiceBean datasetFieldService;
 
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
 
     @EJB
     MetadataBlockDao metadataBlockService;
@@ -326,7 +326,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         }
         mdb.setName(values[1]);
         if (!values[2].isEmpty()) {
-            mdb.setOwner(dataverseService.findByAlias(values[2]));
+            mdb.setOwner(dataverseDao.findByAlias(values[2]));
         }
         mdb.setDisplayName(values[3]);
         if (values.length > 4 && !StringUtils.isEmpty(values[4])) {
@@ -364,7 +364,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         } else {
             dsf.setParentDatasetFieldType(null);
         }
-        dsf.setMetadataBlock(dataverseService.findMDBByName(values[15]));
+        dsf.setMetadataBlock(dataverseDao.findMDBByName(values[15]));
         if (values.length > 16 && !StringUtils.isEmpty(values[16])) {
             dsf.setUri(values[16]);
         }

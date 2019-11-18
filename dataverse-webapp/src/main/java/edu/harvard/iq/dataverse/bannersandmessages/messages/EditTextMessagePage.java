@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.bannersandmessages.messages;
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.bannersandmessages.UnsupportedLanguageCleaner;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseTextMessageDto;
@@ -30,7 +30,7 @@ public class EditTextMessagePage implements Serializable {
     PermissionsWrapper permissionsWrapper;
 
     @EJB
-    private DataverseServiceBean dataverseServiceBean;
+    private DataverseDao dataverseDao;
 
     @Inject
     private UnsupportedLanguageCleaner languageCleaner;
@@ -53,7 +53,7 @@ public class EditTextMessagePage implements Serializable {
             return permissionsWrapper.notFound();
         }
 
-        dataverse = dataverseServiceBean.find(dataverseId);
+        dataverse = dataverseDao.find(dataverseId);
 
         if (textMessageId != null) {
             dto = textMessageService.getTextMessage(textMessageId);

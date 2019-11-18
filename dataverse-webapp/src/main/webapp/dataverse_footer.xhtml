@@ -26,12 +26,12 @@
                     <span class="widgetBrandMsg">
                         <h:outputFormat value="#{bundle['footer.widget.datastored']}" escape="false">
                             <o:param>
-                                <a href="/" target="_blank" title="#{dataverseServiceBean.findRootDataverse().displayName}">#{dataverseServiceBean.findRootDataverse().displayName}</a>
+                                <a href="/" target="_blank" title="#{dataverseDao.findRootDataverse().displayName}">#{dataverseDao.findRootDataverse().displayName}</a>
                             </o:param>
                         </h:outputFormat>
 
                         <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
-                            <h:outputLink styleClass="margin-sides highlightBold" value="/loginpage.xhtml?#{loginRedirectPage}" target="_blank" title="#{bundle['footer.widget.login']} #{dataverseServiceBean.findRootDataverse().displayName}">
+                            <h:outputLink styleClass="margin-sides highlightBold" value="/loginpage.xhtml?#{loginRedirectPage}" target="_blank" title="#{bundle['footer.widget.login']} #{dataverseDao.findRootDataverse().displayName}">
                                 #{bundle.login}
                             </h:outputLink>
                         </ui:fragment>

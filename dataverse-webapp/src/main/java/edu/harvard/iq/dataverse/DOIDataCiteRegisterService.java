@@ -46,9 +46,6 @@ public class DOIDataCiteRegisterService {
     private EntityManager em;
 
     @EJB
-    DataverseServiceBean dataverseService;
-
-    @EJB
     DOIDataCiteServiceBean doiDataCiteServiceBean;
 
     @EJB

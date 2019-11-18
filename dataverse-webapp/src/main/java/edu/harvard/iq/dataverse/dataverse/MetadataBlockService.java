@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.dataverse;
 
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevelServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
@@ -25,7 +25,7 @@ import java.util.Set;
 public class MetadataBlockService {
 
     @Inject
-    private DataverseServiceBean dataverseService;
+    private DataverseDao dataverseDao;
 
     @EJB
     private DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService;
@@ -185,7 +185,7 @@ public class MetadataBlockService {
     }
 
     private Set<MetadataBlock> prepareMetadataBlocks(Dataverse dataverse) {
-        Set<MetadataBlock> availableBlocks = new HashSet<>(dataverseService.findSystemMetadataBlocks());
+        Set<MetadataBlock> availableBlocks = new HashSet<>(dataverseDao.findSystemMetadataBlocks());
         Set<MetadataBlock> metadataBlocks = retriveAllDataverseParentsMetaBlocks(dataverse);
         availableBlocks.addAll(metadataBlocks);
 

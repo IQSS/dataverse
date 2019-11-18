@@ -14,8 +14,8 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle.account} - #{dataverseServiceBean.findRootDataverse().name}"/>
-            <ui:param name="dataverse" value="#{dataverseServiceBean.findRootDataverse()}"/>
+            <ui:param name="pageTitle" value="#{bundle.account} - #{dataverseDao.findRootDataverse().name}"/>
+            <ui:param name="dataverse" value="#{dataverseDao.findRootDataverse()}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="loginRedirectPage" value="dataverseuser.xhtml"/>
             <ui:define name="body">
@@ -34,7 +34,7 @@
                     <f:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DataverseUserPage.init}" />
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseDao.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
 
                     <f:viewParam name="q" value="#{MyDataSearchFragment.query}"/>
                     <f:viewParam name="uId" value="#{MyDataSearchFragment.searchUserId}" />
@@ -115,10 +115,10 @@
                                                     <i class="icon-dataverse text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.welcome']}" escape="false">
                                                         <o:param>
-                                                            <h:outputText value="#{dataverseServiceBean.findRootDataverse().name}"/>
+                                                            <h:outputText value="#{dataverseDao.findRootDataverse().name}"/>
                                                         </o:param>
                                                         <o:param>
-                                                            <a href="#{settingsWrapper.guidesBaseUrl}/#{settingsWrapper.guidesVersion}/user/index.html" title="#{dataverseServiceBean.findRootDataverse().name} #{bundle['header.guides.user']}" target="_blank">#{bundle['header.guides.user']}</a>
+                                                            <a href="#{settingsWrapper.guidesBaseUrl}/#{settingsWrapper.guidesVersion}/user/index.html" title="#{dataverseDao.findRootDataverse().name} #{bundle['header.guides.user']}" target="_blank">#{bundle['header.guides.user']}</a>
                                                         </o:param>
                                                         <o:param>
                                                             <a href="https://demo.dataverse.org">#{bundle['notification.demoSite']}</a>

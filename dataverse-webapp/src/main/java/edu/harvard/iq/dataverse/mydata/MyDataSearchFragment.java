@@ -2,10 +2,9 @@ package edu.harvard.iq.dataverse.mydata;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
@@ -15,6 +14,7 @@ import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -58,7 +58,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
     @EJB
     SearchServiceBean searchService;
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     @EJB
     DatasetServiceBean datasetService;
     @EJB
@@ -602,7 +602,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
                 if (dataverse.getId().equals(result.getParentIdAsLong())) {
                     // definitely NOT linked:
                     result.setIsInTree(true);
-                } else if (result.getParentIdAsLong() == dataverseService.findRootDataverse().getId()) {
+                } else if (result.getParentIdAsLong().equals(dataverseDao.findRootDataverse().getId())) {
                     // the object's parent is the root Dv; and the current
                     // Dv is NOT root... definitely linked:
                     result.setIsInTree(false);
@@ -899,7 +899,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
                 // (we'll review this later!)
 
                 if (solrSearchResult.getType().equals("dataverses")) {
-                    dataverseService.populateDvSearchCard(solrSearchResult);
+                    dataverseDao.populateDvSearchCard(solrSearchResult);
 
                 } else if (solrSearchResult.getType().equals("datasets")) {
                     //logger.info("XXRESULT: dataset: "+solrSearchResult.getEntityId());

@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.bannersandmessages.messages;
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseTextMessageDto;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -21,7 +21,7 @@ public class TextMessagePage implements Serializable {
     private Dataverse dataverse;
 
     @EJB
-    private DataverseServiceBean dataverseServiceBean;
+    private DataverseDao dataverseDao;
 
     @EJB
     private LazyDataverseTextMessage lazydataverseTextMessages;
@@ -34,7 +34,7 @@ public class TextMessagePage implements Serializable {
 
     public String init() {
         lazydataverseTextMessages.setDataverseId(dataverseId);
-        dataverse = dataverseServiceBean.find(dataverseId);
+        dataverse = dataverseDao.find(dataverseId);
 
         if (!permissionsWrapper.canEditDataverseTextMessagesAndBanners(dataverseId)) {
             return permissionsWrapper.notAuthorized();

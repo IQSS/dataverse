@@ -49,7 +49,7 @@ public class Shib implements java.io.Serializable {
     @EJB
     ShibServiceBean shibService;
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     @EJB
     GroupServiceBean groupService;
     @EJB
@@ -419,7 +419,7 @@ public class Shib implements java.io.Serializable {
     }
 
     public String getRootDataverseAlias() {
-        Dataverse rootDataverse = dataverseService.findRootDataverse();
+        Dataverse rootDataverse = dataverseDao.findRootDataverse();
         if (rootDataverse != null) {
             String rootDvAlias = rootDataverse.getAlias();
             return rootDvAlias;

@@ -8,6 +8,9 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
@@ -15,6 +18,7 @@ import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFieldTypeInputLevel;
+import edu.harvard.iq.dataverse.persistence.dataverse.link.DataverseLinkingDataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import io.vavr.control.Either;
@@ -23,13 +27,14 @@ import org.primefaces.model.DualListModel;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Stateless
-public class DataverseSaver {
+public class DataverseService {
 
-    private static final Logger logger = Logger.getLogger(DataverseSaver.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DataverseService.class.getCanonicalName());
 
     @Inject
     private DataverseSession session;
@@ -95,6 +100,34 @@ public class DataverseSaver {
         }
 
         return Either.right(dataverse);
+    }
+
+    public Dataverse saveFeaturedDataverse(Dataverse dataverse, List<Dataverse> featuredDataverses) {
+
+        return commandEngine.submit(new UpdateDataverseCommand(dataverse, null,
+                                                               featuredDataverses,
+                                                               dvRequestService.getDataverseRequest(),
+                                                               null));
+    }
+
+    /**
+     * Operation to link one dataverse to the other.
+     */
+    public DataverseLinkingDataverse saveLinkedDataverse(Dataverse dataverseToBeLinked, Dataverse dataverse) {
+
+        return commandEngine.submit(new LinkDataverseCommand(dvRequestService.getDataverseRequest(), dataverseToBeLinked, dataverse));
+    }
+
+    /**
+     * Operation to publish dataverse also known as release dataverse.
+     */
+    public Dataverse publishDataverse(Dataverse dataverseToBePublished) {
+
+        return commandEngine.submit(new PublishDataverseCommand(dvRequestService.getDataverseRequest(), dataverseToBePublished));
+    }
+
+    public void deleteDataverse(Dataverse dataverseToDelete){
+        commandEngine.submit(new DeleteDataverseCommand(dvRequestService.getDataverseRequest(), dataverseToDelete));
     }
 
 }

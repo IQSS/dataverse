@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.imports.ImportGenericServiceBean;
@@ -40,7 +40,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
 
     private static final Logger logger = Logger.getLogger(CollectionDepositManagerImpl.class.getCanonicalName());
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     @EJB
     DatasetServiceBean datasetService;
     @EJB
@@ -77,7 +77,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
 
             logger.log(Level.FINE, "attempting deposit into this dataverse alias: {0}", dvAlias);
 
-            Dataverse dvThatWillOwnDataset = dataverseService.findByAlias(dvAlias);
+            Dataverse dvThatWillOwnDataset = dataverseDao.findByAlias(dvAlias);
 
             if (dvThatWillOwnDataset != null) {
 

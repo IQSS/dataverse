@@ -5,21 +5,21 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+>
     <h:head>
     </h:head>
 
     <h:body>
         <f:metadata>
-            <f:viewParam name="dataverseId" value="#{dataverseServiceBean.findRootDataverse().id}"/>
+            <f:viewParam name="dataverseId" value="#{dataverseDao.findRootDataverse().id}"/>
             <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{harvestingSetsPage.init}"/>
-            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
+            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseDao.findRootDataverse())}"/>
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverse.id), bundle['dashboard.title'])}"/>   
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['harvestserver.title'])}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle['harvestserver.title']} - #{dataverseServiceBean.findRootDataverse().name}"/>
+            <ui:param name="pageTitle" value="#{bundle['harvestserver.title']} - #{dataverseDao.findRootDataverse().name}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
                 <h:form id="harvestingServiceForm" class="form-horizontal">

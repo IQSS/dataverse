@@ -48,7 +48,7 @@ INSERT INTO guestbook (id, createtime, emailrequired, enabled, institutionrequir
 
 --- ROOT -> unreleased ---
 INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate, creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime) 
-    VALUES (51, 'Dataverse', 1, false, NULL, NULL, NULL, NULL, false, NULL, 1, '2019-08-19 13:15:02.415', 1, '2019-08-19 13:14:48.434', '2019-08-19 13:15:02.415', '2019-08-19 13:14:48.799', '2019-09-19 14:37:07.268', '2019-09-19 14:37:07.486');
+    VALUES (51, 'Dataverse', 1, false, NULL, NULL, NULL, NULL, false, NULL, 1, NULL, 1, '2019-08-19 13:14:48.434', '2019-08-19 13:15:02.415', '2019-08-19 13:14:48.799', '2019-09-19 14:37:07.268', '2019-09-19 14:37:07.486');
 INSERT INTO dataverse (id, alias, name, affiliation, dataversetype, description, defaultcontributorrole_id, defaulttemplate_id, facetroot, guestbookroot, metadatablockroot, permissionroot, templateroot, themeroot, allowmessagesbanners) 
     VALUES (51, 'unreleased', 'Unreleased Dataverse', 'ICM UW', 'JOURNALS', 'das', 6, NULL, false, false, false, true, false, true, false);
 INSERT INTO dataversecontact (id, contactemail, displayorder, dataverse_id) VALUES (5, 'unreleased.dv.contact@mailinator.com', 0, 51);

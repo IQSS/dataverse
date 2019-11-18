@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -35,7 +35,7 @@ public class IndexBatchServiceBean {
     @EJB
     SolrIndexServiceBean solrIndexService;
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     @EJB
     DatasetServiceBean datasetService;
     @EJB
@@ -57,10 +57,10 @@ public class IndexBatchServiceBean {
         JsonObjectBuilder previewOfWorkload = Json.createObjectBuilder();
         JsonObjectBuilder dvContainerIds = Json.createObjectBuilder();
 
-        List<Long> dataverseIds = dataverseService.findDataverseIdsForIndexing(skipIndexed);
+        List<Long> dataverseIds = dataverseDao.findDataverseIdsForIndexing(skipIndexed);
 
         JsonArrayBuilder dataverseIdsJson = Json.createArrayBuilder();
-        //List<Dataverse> dataverses = dataverseService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
+        //List<Dataverse> dataverses = dataverseDao.findAllOrSubset(numPartitions, partitionId, skipIndexed);
         for (Long id : dataverseIds) {
             dataverseIdsJson.add(id);
         }
@@ -113,10 +113,10 @@ public class IndexBatchServiceBean {
             resultOfClearingIndexTimes = "Solr index was not cleared before indexing.";
         }
 
-        // List<Dataverse> dataverses = dataverseService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
+        // List<Dataverse> dataverses = dataverseDao.findAllOrSubset(numPartitions, partitionId, skipIndexed);
         // Note: no support for "partitions" in this experimental branch. 
         // The method below returns the ids of all the unindexed dataverses.
-        List<Long> dataverseIds = dataverseIds = dataverseService.findDataverseIdsForIndexing(skipIndexed);
+        List<Long> dataverseIds = dataverseIds = dataverseDao.findDataverseIdsForIndexing(skipIndexed);
 
         int dataverseIndexCount = 0;
         int dataverseFailureCount = 0;
@@ -124,7 +124,7 @@ public class IndexBatchServiceBean {
         for (Long id : dataverseIds) {
             try {
                 dataverseIndexCount++;
-                Dataverse dataverse = dataverseService.find(id);
+                Dataverse dataverse = dataverseDao.find(id);
                 logger.info("indexing dataverse " + dataverseIndexCount + " of " + dataverseIds.size() + " (id=" + id + ", persistentId=" + dataverse.getAlias() + ")");
                 Future<String> result = indexService.indexDataverseInNewTransaction(dataverse);
                 dataverse = null;
@@ -168,10 +168,10 @@ public class IndexBatchServiceBean {
         long start = System.currentTimeMillis();
         int datasetIndexCount = 0, datasetFailureCount = 0, dataverseIndexCount = 0, dataverseFailureCount = 0;
         // get list of Dataverse children
-        List<Long> dataverseChildren = dataverseService.findAllDataverseDataverseChildren(dataverse.getId());
+        List<Long> dataverseChildren = dataverseDao.findAllDataverseDataverseChildren(dataverse.getId());
 
         // get list of Dataset children
-        List<Long> datasetChildren = dataverseService.findAllDataverseDatasetChildren(dataverse.getId());
+        List<Long> datasetChildren = dataverseDao.findAllDataverseDatasetChildren(dataverse.getId());
 
         logger.info("Starting index on " + (dataverseChildren.size() + 1) + " dataverses and " + datasetChildren.size() + " datasets.");
 
@@ -190,7 +190,7 @@ public class IndexBatchServiceBean {
         for (Long childId : dataverseChildren) {
             try {
                 dataverseIndexCount++;
-                Dataverse dv = dataverseService.find(childId);
+                Dataverse dv = dataverseDao.find(childId);
                 logger.info("indexing dataverse " + dataverseIndexCount + " of " + dataverseChildren.size() + " (id=" + childId + ", persistentId=" + dv.getAlias() + ")");
                 Future<String> result = indexService.indexDataverseInNewTransaction(dv);
                 dv = null;

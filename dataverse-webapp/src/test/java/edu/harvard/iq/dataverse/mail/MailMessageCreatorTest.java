@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.mail;
 
 import com.google.common.collect.Sets;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.GenericDao;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.common.BrandingUtil;
@@ -45,7 +45,7 @@ public class MailMessageCreatorTest {
     private PermissionServiceBean permissionService;
 
     @Mock
-    private DataverseServiceBean dataverseService;
+    private DataverseDao dataverseDao;
 
     @Mock
     private ConfirmEmailServiceBean confirmEmailService;
@@ -69,13 +69,13 @@ public class MailMessageCreatorTest {
         RoleAssignment roleAssignment = createRoleAssignment();
 
         Mockito.when(permissionService.getRolesOfUser(Mockito.any(), Mockito.any(Dataverse.class))).thenReturn(Sets.newHashSet(roleAssignment));
-        Mockito.when(dataverseService.findRootDataverse()).thenReturn(rootDataverse);
-        Mockito.when(dataverseService.find(createDataverseEmailNotificationDto().getDvObjectId())).thenReturn(testDataverse);
+        Mockito.when(dataverseDao.findRootDataverse()).thenReturn(rootDataverse);
+        Mockito.when(dataverseDao.find(createDataverseEmailNotificationDto().getDvObjectId())).thenReturn(testDataverse);
         Mockito.when(systemConfig.getDataverseSiteUrl()).thenReturn(SITEURL);
         Mockito.when(systemConfig.getGuidesBaseUrl()).thenReturn(GUIDESBASEURL);
         Mockito.when(systemConfig.getGuidesVersion()).thenReturn(GUIDESVERSION);
 
-        mailMessageCreator = new MailMessageCreator(systemConfig, permissionService, dataverseService, confirmEmailService, genericDao);
+        mailMessageCreator = new MailMessageCreator(systemConfig, permissionService, dataverseDao, confirmEmailService, genericDao);
     }
 
     @Test

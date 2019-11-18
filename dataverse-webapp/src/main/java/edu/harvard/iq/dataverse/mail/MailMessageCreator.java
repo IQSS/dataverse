@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.mail;
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.GenericDao;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.common.BrandingUtil;
@@ -46,7 +46,7 @@ public class MailMessageCreator {
 
     private PermissionServiceBean permissionService;
 
-    private DataverseServiceBean dataverseService;
+    private DataverseDao dataverseDao;
 
     private ConfirmEmailServiceBean confirmEmailService;
 
@@ -61,11 +61,11 @@ public class MailMessageCreator {
 
     @Inject
     public MailMessageCreator(SystemConfig systemConfig, PermissionServiceBean permissionService,
-                              DataverseServiceBean dataverseService, ConfirmEmailServiceBean confirmEmailService,
+                              DataverseDao dataverseDao, ConfirmEmailServiceBean confirmEmailService,
                               GenericDao genericDao) {
         this.systemConfig = systemConfig;
         this.permissionService = permissionService;
-        this.dataverseService = dataverseService;
+        this.dataverseDao = dataverseDao;
         this.confirmEmailService = confirmEmailService;
         this.genericDao = genericDao;
     }
@@ -99,10 +99,10 @@ public class MailMessageCreator {
      * @return message and subject or blank tuple if notificationType didn't match any template.
      */
     public Tuple2<String, String> getMessageAndSubject(EmailNotificationDto notificationDto, String systemEmail) {
-        Lazy<String> rootDataverseName = Lazy.of(() -> dataverseService.findRootDataverse().getName());
+        Lazy<String> rootDataverseName = Lazy.of(() -> dataverseDao.findRootDataverse().getName());
 
         if (notificationDto.getNotificationObjectType() == NotificationObjectType.DATAVERSE) {
-            Dataverse dataverse = dataverseService.find(notificationDto.getDvObjectId());
+            Dataverse dataverse = dataverseDao.find(notificationDto.getDvObjectId());
             String message = dataverseMessage(notificationDto, dataverse);
             String subject = getSubjectText(notificationDto.getNotificationType(), rootDataverseName.get());
 
@@ -153,7 +153,7 @@ public class MailMessageCreator {
      * @return message and subject or blank tuple if notificationType didn't match any template.
      */
     public Tuple2<String, String> getMessageAndSubject(EmailNotificationDto notificationDto, AuthenticatedUser requester) {
-        Lazy<String> rootDataverseName = Lazy.of(() -> dataverseService.findRootDataverse().getName());
+        Lazy<String> rootDataverseName = Lazy.of(() -> dataverseDao.findRootDataverse().getName());
 
         if (notificationDto.getNotificationObjectType() == NotificationObjectType.DATASET_VERSION) {
             DatasetVersion datasetVersion = genericDao.find(notificationDto.getDvObjectId(), DatasetVersion.class);

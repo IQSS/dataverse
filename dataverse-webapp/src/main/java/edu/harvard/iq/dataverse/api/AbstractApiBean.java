@@ -4,10 +4,9 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
+import edu.harvard.iq.dataverse.DataverseLinkingDao;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlockDao;
@@ -21,6 +20,7 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.common.Util;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -171,7 +171,7 @@ public abstract class AbstractApiBean {
     protected DataFileServiceBean fileService;
 
     @EJB
-    protected DataverseServiceBean dataverseSvc;
+    protected DataverseDao dataverseSvc;
 
     @EJB
     protected AuthenticationServiceBean authSvc;
@@ -237,7 +237,7 @@ public abstract class AbstractApiBean {
     protected DatasetLinkingServiceBean dsLinkingService;
 
     @EJB
-    protected DataverseLinkingServiceBean dvLinkingService;
+    protected DataverseLinkingDao dvLinkingService;
 
     @EJB
     protected PasswordValidatorServiceBean passwordValidatorService;

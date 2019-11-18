@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
@@ -41,7 +41,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(AdvancedSearchPage.class.getCanonicalName());
 
     @EJB
-    private DataverseServiceBean dataverseServiceBean;
+    private DataverseDao dataverseDao;
 
     @EJB
     private DatasetFieldServiceBean datasetFieldService;
@@ -67,10 +67,10 @@ public class AdvancedSearchPage implements java.io.Serializable {
     public void init() {
 
         if (dataverseIdentifier != null) {
-            dataverse = dataverseServiceBean.findByAlias(dataverseIdentifier);
+            dataverse = dataverseDao.findByAlias(dataverseIdentifier);
         }
         if (dataverse == null) {
-            dataverse = dataverseServiceBean.findRootDataverse();
+            dataverse = dataverseDao.findRootDataverse();
         }
         List<MetadataBlock> metadataBlocks = dataverse.getRootMetadataBlocks();
         List<DatasetFieldType> metadataFieldList = datasetFieldService.findAllAdvancedSearchFieldTypes();

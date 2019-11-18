@@ -11,7 +11,7 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle['error.404.page.title']} - #{dataverseServiceBean.findRootDataverse().name}"/>
+            <ui:param name="pageTitle" value="#{bundle['error.404.page.title']} - #{dataverseDao.findRootDataverse().name}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="loginRedirectPage" value="dataverse.xhtml"/>
             <ui:param name="showMessagePanel" value="#{true}"/>

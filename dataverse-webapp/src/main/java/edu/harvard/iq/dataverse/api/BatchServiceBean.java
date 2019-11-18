@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.api.imports.ImportException;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil;
@@ -32,7 +32,7 @@ public class BatchServiceBean {
     private static final Logger logger = Logger.getLogger(BatchServiceBean.class.getCanonicalName());
 
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     @EJB
     ImportServiceBean importService;
 
@@ -86,7 +86,7 @@ public class BatchServiceBean {
 
     public JsonArrayBuilder handleDirectory(DataverseRequest dataverseRequest, File dir, ImportUtil.ImportType importType, PrintWriter validationLog, PrintWriter cleanupLog, Boolean createDV) throws ImportException {
         JsonArrayBuilder status = Json.createArrayBuilder();
-        Dataverse owner = dataverseService.findByAlias(dir.getName());
+        Dataverse owner = dataverseDao.findByAlias(dir.getName());
         if (owner == null) {
             if (createDV) {
                 System.out.println("creating new dataverse: " + dir.getName());

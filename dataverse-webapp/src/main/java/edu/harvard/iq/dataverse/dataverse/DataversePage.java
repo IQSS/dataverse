@@ -1,29 +1,22 @@
 package edu.harvard.iq.dataverse.dataverse;
 
-import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import com.google.common.collect.Lists;
+import edu.harvard.iq.dataverse.DataverseDao;
+import edu.harvard.iq.dataverse.DataverseLinkingDao;
 import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FeaturedDataverseServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateSavedSearchCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFeaturedDataverse;
-import edu.harvard.iq.dataverse.persistence.dataverse.link.SavedSearch;
-import edu.harvard.iq.dataverse.persistence.dataverse.link.SavedSearchFilterQuery;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.User;
+import edu.harvard.iq.dataverse.search.SavedSearchService;
 import edu.harvard.iq.dataverse.search.SearchIncludeFragment;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import io.vavr.control.Try;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.model.DualListModel;
@@ -36,7 +29,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,23 +51,23 @@ public class DataversePage implements java.io.Serializable {
     }
 
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     @Inject
     DataverseSession session;
-    @EJB
-    EjbDataverseEngine commandEngine;
     @EJB
     FeaturedDataverseServiceBean featuredDataverseService;
     @EJB
     PermissionServiceBean permissionService;
     @Inject
     SearchIncludeFragment searchIncludeFragment;
-    @Inject
-    DataverseRequestServiceBean dvRequestService;
     @EJB
-    DataverseLinkingServiceBean linkingService;
+    DataverseLinkingDao linkingService;
     @Inject
     PermissionsWrapper permissionsWrapper;
+    @Inject
+    private DataverseService dataverseService;
+    @Inject
+    private SavedSearchService savedSearchService;
 
     private Dataverse dataverse = new Dataverse();
     private LinkMode linkMode;
@@ -124,12 +117,12 @@ public class DataversePage implements java.io.Serializable {
     public String init() {
 
         if (dataverse.getAlias() != null) {
-            dataverse = dataverseService.findByAlias(dataverse.getAlias());
+            dataverse = dataverseDao.findByAlias(dataverse.getAlias());
         } else if (dataverse.getId() != null) {
-            dataverse = dataverseService.find(dataverse.getId());
+            dataverse = dataverseDao.find(dataverse.getId());
         } else {
             try {
-                dataverse = dataverseService.findRootDataverse();
+                dataverse = dataverseDao.findRootDataverse();
             } catch (EJBException e) {
                 // @todo handle case with no root dataverse (a fresh installation) with message about using API to create the root
                 dataverse = null;
@@ -154,16 +147,15 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public String saveFeaturedDataverse() {
-        UpdateDataverseCommand cmd =
-                new UpdateDataverseCommand(dataverse, null, featuredDataverses.getTarget(), dvRequestService.getDataverseRequest(), null);
 
-        try {
-            dataverse = commandEngine.submit(cmd);
+        Try<Dataverse> saveFeaturedDataverseOperation = Try.of(() -> dataverseService.saveFeaturedDataverse(dataverse, featuredDataverses.getTarget()))
+                .onSuccess(savedDataverse -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.feature.update")))
+                .onFailure(ex -> {
+                    logger.log(Level.SEVERE, "Unexpected Exception calling dataverse command", ex);
+                    JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataverse.update.failure"));
+                });
 
-            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.feature.update"));
-        } catch (CommandException ex) {
-            logger.log(Level.SEVERE, "Unexpected Exception calling dataverse command", ex);
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataverse.update.failure"));
+        if (saveFeaturedDataverseOperation.isFailure()) {
             return StringUtils.EMPTY;
         }
 
@@ -185,21 +177,14 @@ public class DataversePage implements java.io.Serializable {
             return returnRedirect();
         }
 
-        linkingDataverse = dataverseService.find(linkingDataverseId);
+        Try.of(() -> dataverseService.saveLinkedDataverse(dataverseDao.find(linkingDataverseId), dataverse))
+                .onFailure(ex -> handleSaveLinkedDataverseExceptions(ex, linkingDataverseId))
+                .onSuccess(savedLinkingDv -> {
+                    linkingDataverse = savedLinkingDv.getLinkingDataverse();
 
-        LinkDataverseCommand cmd = new LinkDataverseCommand(dvRequestService.getDataverseRequest(), linkingDataverse, dataverse);
-        //LinkDvObjectCommand cmd = new LinkDvObjectCommand (session.getUser(), linkingDataverse, dataverse);
-        try {
-            commandEngine.submit(cmd);
-        } catch (CommandException ex) {
-            List<String> args = Arrays.asList(dataverse.getDisplayName(), linkingDataverse.getDisplayName());
-            String msg = BundleUtil.getStringFromBundle("dataverse.link.error", args);
-            logger.log(Level.SEVERE, "{0} {1}", new Object[]{msg, ex});
-            JsfHelper.addFlashErrorMessage(msg);
-            return returnRedirect();
-        }
+                    JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.linked.success.wait", getSuccessMessageArguments()));
+                });
 
-        JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.linked.success.wait", getSuccessMessageArguments()));
         return returnRedirect();
     }
 
@@ -217,7 +202,7 @@ public class DataversePage implements java.io.Serializable {
             JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataverse.link.select"));
             return "";
         }
-        linkingDataverse = dataverseService.find(linkingDataverseId);
+        linkingDataverse = dataverseDao.find(linkingDataverseId);
 
         AuthenticatedUser savedSearchCreator = getAuthenticatedUser();
         if (savedSearchCreator == null) {
@@ -227,65 +212,50 @@ public class DataversePage implements java.io.Serializable {
             return returnRedirect();
         }
 
-        SavedSearch savedSearch = new SavedSearch(searchIncludeFragment.getQuery(), linkingDataverse, savedSearchCreator);
-        savedSearch.setSavedSearchFilterQueries(new ArrayList<>());
-        for (String filterQuery : searchIncludeFragment.getFilterQueriesDebug()) {
-            if (filterQuery != null && !filterQuery.isEmpty()) {
-                SavedSearchFilterQuery ssfq = new SavedSearchFilterQuery(filterQuery, savedSearch);
-                savedSearch.getSavedSearchFilterQueries().add(ssfq);
-            }
-        }
-        CreateSavedSearchCommand cmd = new CreateSavedSearchCommand(dvRequestService.getDataverseRequest(), linkingDataverse, savedSearch);
-        try {
-            commandEngine.submit(cmd);
 
-            List<String> arguments = new ArrayList<>();
-            String linkString = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml(linkingDataverse.getDisplayName()) + "</a>";
-            arguments.add(linkString);
-            String successMessageString = BundleUtil.getStringFromBundle("dataverse.saved.search.success", arguments);
-            JsfHelper.addFlashSuccessMessage(successMessageString);
-            return returnRedirect();
-        } catch (CommandException ex) {
-            String msg = "There was a problem linking this search to yours: " + ex;
-            logger.severe(msg);
-            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataverse.saved.search.failure") + " " + ex);
-            return returnRedirect();
-        }
+        Try.of(() -> savedSearchService.saveSavedDataverseSearch(searchIncludeFragment.getQuery(), searchIncludeFragment.getFilterQueriesDebug(), dataverse))
+                .onSuccess(savedSearch -> {
+                    String hrefArgument = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml(linkingDataverse.getDisplayName()) + "</a>";
+                    JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.saved.search.success", Collections.singleton(hrefArgument)));
+                })
+                .onFailure(ex -> {
+                    logger.log(Level.SEVERE, "There was a problem linking this search", ex);
+                    JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataverse.saved.search.failure") + " " + ex);
+                });
+
+
+        return returnRedirect();
     }
 
     public String releaseDataverse() {
-        if (session.getUser() instanceof AuthenticatedUser) {
-            PublishDataverseCommand cmd = new PublishDataverseCommand(dvRequestService.getDataverseRequest(), dataverse);
-            try {
-                commandEngine.submit(cmd);
-                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.publish.success"));
-
-            } catch (Exception ex) {
-                logger.log(Level.SEVERE, "Unexpected Exception calling  publish dataverse command", ex);
-                JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataverse.publish.failure"));
-
-            }
-        } else {
+        if (!session.getUser().isAuthenticated()) {
             JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataverse.publish.not.authorized"));
         }
-        return returnRedirect();
 
+        Try.of(() -> dataverseService.publishDataverse(dataverse))
+                .onFailure(ex -> {
+                    logger.log(Level.SEVERE, "Unexpected Exception calling  publish dataverse command", ex);
+                    JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataverse.publish.failure"));
+                })
+                .onSuccess(dv -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.publish.success")));
+
+        return returnRedirect();
     }
 
     public String deleteDataverse() {
-        DeleteDataverseCommand cmd = new DeleteDataverseCommand(dvRequestService.getDataverseRequest(), dataverse);
-        try {
-            commandEngine.submit(cmd);
-            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.delete.success"));
-        } catch (Exception ex) {
-            logger.log(Level.SEVERE, "Unexpected Exception calling  delete dataverse command", ex);
-            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataverse.delete.failure"));
-        }
+
+        Try.run(() -> dataverseService.deleteDataverse(dataverse))
+                .onFailure(ex -> {
+                    logger.log(Level.SEVERE, "Unexpected Exception calling  delete dataverse command", ex);
+                    JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataverse.delete.failure"));
+                })
+                .onSuccess(dv -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.delete.success")));
+
         return "/dataverse.xhtml?alias=" + dataverse.getOwner().getAlias() + "&faces-redirect=true";
     }
 
     public Boolean isEmptyDataverse() {
-        return !dataverseService.hasData(dataverse);
+        return !dataverseDao.hasData(dataverse);
     }
 
     public boolean isUserCanChangeAllowMessageAndBanners() {
@@ -297,6 +267,13 @@ public class DataversePage implements java.io.Serializable {
     }
 
     // -------------------- PRIVATE --------------------
+
+    private void handleSaveLinkedDataverseExceptions(Throwable ex, long dataverseToLinkId) {
+        String msg = BundleUtil.getStringFromBundle("dataverse.link.error", Lists.newArrayList(dataverse.getDisplayName()));
+        JsfHelper.addFlashErrorMessage(msg);
+
+        logger.log(Level.SEVERE, "Unable to link dataverse with id: " + dataverse.getId() + " to " + dataverseToLinkId, ex);
+    }
 
 
     private List<String> getSuccessMessageArguments() {
@@ -319,7 +296,7 @@ public class DataversePage implements java.io.Serializable {
     private void initFeaturedDataverses() {
         List<Dataverse> featuredSource = new ArrayList<>();
         List<Dataverse> featuredTarget = new ArrayList<>();
-        featuredSource.addAll(dataverseService.findAllPublishedByOwnerId(dataverse.getId()));
+        featuredSource.addAll(dataverseDao.findAllPublishedByOwnerId(dataverse.getId()));
         featuredSource.addAll(linkingService.findLinkingDataverses(dataverse.getId()));
         List<DataverseFeaturedDataverse> featuredList = featuredDataverseService.findByDataverseId(dataverse.getId());
         for (DataverseFeaturedDataverse dfd : featuredList) {
@@ -336,7 +313,7 @@ public class DataversePage implements java.io.Serializable {
         linkingDVSelectItems = new ArrayList<>();
 
         //Since only a super user function add all dvs
-        dataversesForLinking = dataverseService.findAll();// permissionService.getDataversesUserHasPermissionOn(session.getUser(), Permission.PublishDataverse);
+        dataversesForLinking = dataverseDao.findAll();// permissionService.getDataversesUserHasPermissionOn(session.getUser(), Permission.PublishDataverse);
 
 
         //for linking - make sure the link hasn't occurred and its not int the tree

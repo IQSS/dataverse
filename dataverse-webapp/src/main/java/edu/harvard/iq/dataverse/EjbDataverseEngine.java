@@ -66,7 +66,7 @@ public class EjbDataverseEngine {
     DatasetServiceBean datasetService;
 
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
 
     @EJB
     DataverseRoleServiceBean rolesService;
@@ -135,7 +135,7 @@ public class EjbDataverseEngine {
     GuestbookResponseServiceBean responses;
 
     @EJB
-    DataverseLinkingServiceBean dvLinking;
+    DataverseLinkingDao dvLinking;
 
     @EJB
     DatasetLinkingServiceBean dsLinking;
@@ -296,8 +296,8 @@ public class EjbDataverseEngine {
                 }
 
                 @Override
-                public DataverseServiceBean dataverses() {
-                    return dataverseService;
+                public DataverseDao dataverses() {
+                    return dataverseDao;
                 }
 
                 @Override
@@ -416,7 +416,7 @@ public class EjbDataverseEngine {
                 }
 
                 @Override
-                public DataverseLinkingServiceBean dvLinking() {
+                public DataverseLinkingDao dvLinking() {
                     return dvLinking;
                 }
 

@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.settings;
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import org.junit.Before;
@@ -26,14 +26,14 @@ public class InstallationConfigServiceTest {
     private SettingsServiceBean settingService;
 
     @Mock
-    private DataverseServiceBean dataverseService;
+    private DataverseDao dataverseDao;
 
 
     @Before
     public void setup() {
         Dataverse dataverse = new Dataverse();
         dataverse.setName("rootName");
-        when(dataverseService.findRootDataverse()).thenReturn(dataverse);
+        when(dataverseDao.findRootDataverse()).thenReturn(dataverse);
 
         when(settingService.getValueForKey(Key.SystemEmail)).thenReturn("fake@domain.com");
     }

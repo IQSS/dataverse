@@ -1,10 +1,9 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.mocks.MockRequestFactory;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -19,13 +18,13 @@ import static org.junit.Assert.assertTrue;
  */
 public class UpdatePermissionRootCommandTest {
 
-    private DataverseServiceBean mockBean;
+    private DataverseDao mockBean;
     TestCommandContext testCommandContext;
     boolean serviceBeanCalled;
 
     @Before
     public void setUp() {
-        mockBean = new DataverseServiceBean() {
+        mockBean = new DataverseDao() {
             @Override
             public Dataverse save(Dataverse dv) {
                 serviceBeanCalled = true;
@@ -34,7 +33,7 @@ public class UpdatePermissionRootCommandTest {
         };
         testCommandContext = new TestCommandContext() {
             @Override
-            public DataverseServiceBean dataverses() {
+            public DataverseDao dataverses() {
                 return mockBean;
             }
         };

@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.dataverse.template;
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetFieldsInitializer;
@@ -33,7 +33,7 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 @Named
 public class ManageTemplatesPage implements java.io.Serializable {
 
-    private DataverseServiceBean dvService;
+    private DataverseDao dvService;
     private PermissionsWrapper permissionsWrapper;
     private DatasetFieldsInitializer datasetFieldsInitializer;
     private TemplateService templateService;
@@ -53,7 +53,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
     }
 
     @Inject
-    public ManageTemplatesPage(DataverseServiceBean dvService,
+    public ManageTemplatesPage(DataverseDao dvService,
                                PermissionsWrapper permissionsWrapper,
                                DatasetFieldsInitializer datasetFieldsInitializer, TemplateService templateService) {
         this.dvService = dvService;

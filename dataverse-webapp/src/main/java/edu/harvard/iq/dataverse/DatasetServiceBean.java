@@ -163,7 +163,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * @param partitionId
      * @param skipIndexed
      * @return a list of datasets
-     * @see DataverseServiceBean#findAllOrSubset(long, long, boolean)
+     * @see DataverseDao#findAllOrSubset(long, long, boolean)
      */
     public List<Long> findAllOrSubset(long numPartitions, long partitionId, boolean skipIndexed) {
         if (numPartitions < 1) {

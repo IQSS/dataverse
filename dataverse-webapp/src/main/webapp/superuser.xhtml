@@ -4,14 +4,14 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
-      xmlns:p="http://primefaces.org/ui">
+>
 <f:view locale="#{dataverseSession.localeCode}">
   <h:head>
   </h:head>
 
   <h:body>
     <ui:composition template="/dataverse_template.xhtml">
-      <ui:param name="pageTitle" value="Superuser - #{dataverseServiceBean.findRootDataverse().name}"/>
+      <ui:param name="pageTitle" value="Superuser - #{dataverseDao.findRootDataverse().name}"/>
       <ui:param name="showDataverseHeader" value="false"/>
       <ui:define name="body">
           <f:metadata>

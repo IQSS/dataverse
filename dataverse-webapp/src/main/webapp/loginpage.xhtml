@@ -19,7 +19,7 @@
             <f:viewAction action="#{LoginPage.init}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle.login} - #{dataverseServiceBean.findRootDataverse().name}"/>
+            <ui:param name="pageTitle" value="#{bundle.login} - #{dataverseDao.findRootDataverse().name}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:param name="loginRedirectPage" value="dataverse.xhtml"/>

@@ -79,7 +79,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
     SettingsServiceBean settingsService;
 
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
 
     @EJB
     SystemConfig systemConfig;
@@ -133,7 +133,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
 
     public String getMessageTo() {
         if (recipient == null) {
-            return BrandingUtil.getSupportTeamName(systemAddress, dataverseService.findRootDataverse().getName());
+            return BrandingUtil.getSupportTeamName(systemAddress, dataverseDao.findRootDataverse().getName());
         } else if (recipient.isInstanceofDataverse()) {
             return recipient.getDisplayName() + " " + BundleUtil.getStringFromBundle("contact.contact");
         } else {
@@ -143,7 +143,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
 
     public String getFormHeader() {
         if (recipient == null) {
-            return BrandingUtil.getContactHeader(systemAddress, dataverseService.findRootDataverse().getName());
+            return BrandingUtil.getContactHeader(systemAddress, dataverseDao.findRootDataverse().getName());
         } else if (recipient.isInstanceofDataverse()) {
             return BundleUtil.getStringFromBundle("contact.dataverse.header");
         } else {
@@ -201,8 +201,8 @@ public class SendFeedbackDialog implements java.io.Serializable {
     }
 
     public String sendMessage() {
-        // FIXME: move dataverseService.findRootDataverse() to init
-        String rootDataverseName = dataverseService.findRootDataverse().getName();
+        // FIXME: move dataverseDao.findRootDataverse() to init
+        String rootDataverseName = dataverseDao.findRootDataverse().getName();
         String installationBrandName = BrandingUtil.getInstallationBrandName(rootDataverseName);
         String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName);
         List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(recipient, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, systemConfig.getDataverseSiteUrl(), installationBrandName, supportTeamName);

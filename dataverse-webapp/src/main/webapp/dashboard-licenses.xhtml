@@ -16,7 +16,7 @@
         <f:viewAction action="#{LicenseListingPage.init}"/>
         <f:viewAction action="#{OtherTermsOfUseTab.init}"/>
         <f:viewAction
-                action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
+                action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseDao.findRootDataverse())}"/>
         <f:viewAction
                 action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverse.id), bundle['dashboard.title'])}"/>
         <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dashboard.license.header'])}"/>

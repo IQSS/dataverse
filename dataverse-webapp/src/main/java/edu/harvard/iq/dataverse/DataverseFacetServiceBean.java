@@ -26,7 +26,7 @@ public class DataverseFacetServiceBean implements java.io.Serializable {
     private EntityManager em;
 
     @EJB
-    DataverseServiceBean dataverses;
+    DataverseDao dataverses;
 
     public List<DataverseFacet> findByDataverseId(Long dataverseId) {
         List<DataverseFacet> res = cache.get(dataverseId);

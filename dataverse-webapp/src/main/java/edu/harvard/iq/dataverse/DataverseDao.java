@@ -49,9 +49,9 @@ import java.util.logging.Logger;
  */
 @Stateless
 @Named
-public class DataverseServiceBean implements java.io.Serializable {
+public class DataverseDao implements java.io.Serializable {
 
-    private static final Logger logger = Logger.getLogger(DataverseServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DataverseDao.class.getCanonicalName());
     @EJB
     IndexServiceBean indexService;
 
@@ -62,7 +62,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     DatasetServiceBean datasetService;
 
     @EJB
-    DataverseLinkingServiceBean dataverseLinkingService;
+    DataverseLinkingDao dataverseLinkingService;
 
     @EJB
     DatasetLinkingServiceBean datasetLinkingService;

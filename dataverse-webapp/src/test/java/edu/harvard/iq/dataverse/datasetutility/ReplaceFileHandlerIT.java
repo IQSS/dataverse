@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.datasetutility;
 
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -58,7 +58,7 @@ public class ReplaceFileHandlerIT extends WebappArquillianDeployment {
 
 
     @EJB
-    private DataverseServiceBean dataverseServiceBean;
+    private DataverseDao dataverseDao;
 
     @EJB
     private LicenseDAO licenseDAO;
@@ -178,7 +178,7 @@ public class ReplaceFileHandlerIT extends WebappArquillianDeployment {
     private Dataverse fillDataverseWithRequiredData(Dataverse dataverse) {
         dataverse.setName("TestDataverse");
         dataverse.setAlias("TestDataverseAlias");
-        dataverse.setOwner(dataverseServiceBean.findRootDataverse());
+        dataverse.setOwner(dataverseDao.findRootDataverse());
         dataverse.setDataverseType(Dataverse.DataverseType.LABORATORY);
         dataverse.setCreateDate(new Timestamp(System.currentTimeMillis()));
         dataverse.setModificationTime(new Timestamp(System.currentTimeMillis()));

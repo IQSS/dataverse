@@ -40,7 +40,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DataverseHeaderFragment.class.getName());
 
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
 
     @EJB
     SettingsServiceBean settingsService;
@@ -245,7 +245,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     private Boolean signupAllowed = null;
 
     private String redirectToRoot() {
-        return "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias();
+        return "dataverse.xhtml?alias=" + dataverseDao.findRootDataverse().getAlias();
     }
 
     public boolean isSignupAllowed() {

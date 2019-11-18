@@ -2,8 +2,8 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
+import edu.harvard.iq.dataverse.DataverseLinkingDao;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -26,7 +26,6 @@ import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -34,7 +33,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocument;
@@ -48,7 +46,6 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.ContentHandler;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
@@ -89,7 +86,7 @@ public class IndexServiceBean {
     @EJB
     DvObjectServiceBean dvObjectService;
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     @EJB
     DatasetServiceBean datasetService;
     @EJB
@@ -107,7 +104,7 @@ public class IndexServiceBean {
     @EJB
     DatasetLinkingServiceBean dsLinkingService;
     @EJB
-    DataverseLinkingServiceBean dvLinkingService;
+    DataverseLinkingDao dvLinkingService;
     @EJB
     SettingsServiceBean settingsService;
     @EJB
@@ -1378,7 +1375,7 @@ public class IndexServiceBean {
              * figure out the caching later.
              */
             try {
-                Dataverse rootDataverse = dataverseService.findRootDataverse();
+                Dataverse rootDataverse = dataverseDao.findRootDataverse();
                 return rootDataverse;
             } catch (EJBException ex) {
                 logger.info("caught " + ex);
@@ -1397,7 +1394,7 @@ public class IndexServiceBean {
         if (rootDataverseCached != null) {
             return rootDataverseCached;
         } else {
-            rootDataverseCached = dataverseService.findRootDataverse();
+            rootDataverseCached = dataverseDao.findRootDataverse();
             if (rootDataverseCached != null) {
                 return rootDataverseCached;
             } else {
@@ -1429,8 +1426,8 @@ public class IndexServiceBean {
      */
     public List<Dataverse> findStaleOrMissingDataverses() {
         List<Dataverse> staleDataverses = new ArrayList<>();
-        for (Dataverse dataverse : dataverseService.findAll()) {
-            if (dataverse.equals(dataverseService.findRootDataverse())) {
+        for (Dataverse dataverse : dataverseDao.findAll()) {
+            if (dataverse.equals(dataverseDao.findRootDataverse())) {
                 continue;
             }
             if (stale(dataverse)) {

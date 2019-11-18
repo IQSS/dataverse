@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.guestbook;
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataverse.DataversePage;
@@ -32,7 +32,7 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 public class ManageGuestbooksPage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(ManageGuestbooksPage.class.getCanonicalName());
 
-    private DataverseServiceBean dvService;
+    private DataverseDao dvService;
     private GuestbookResponseServiceBean guestbookResponseService;
     private GuestbookServiceBean guestbookService;
     private DataversePage dvpage;
@@ -52,7 +52,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     }
 
     @Inject
-    public ManageGuestbooksPage(DataverseServiceBean dvService, GuestbookResponseServiceBean guestbookResponseService,
+    public ManageGuestbooksPage(DataverseDao dvService, GuestbookResponseServiceBean guestbookResponseService,
                                 GuestbookServiceBean guestbookService, DataversePage dvpage,
                                 PermissionsWrapper permissionsWrapper,
                                 ManageGuestbooksService manageGuestbooksService) {

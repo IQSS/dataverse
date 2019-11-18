@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.search.savedsearch;
 
 import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
-import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
+import edu.harvard.iq.dataverse.DataverseLinkingDao;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -48,7 +48,7 @@ public class SavedSearchServiceBean {
     @EJB
     DatasetLinkingServiceBean datasetLinkingService;
     @EJB
-    DataverseLinkingServiceBean dataverseLinkingService;
+    DataverseLinkingDao dataverseLinkingService;
     @EJB
     EjbDataverseEngine commandEngine;
 

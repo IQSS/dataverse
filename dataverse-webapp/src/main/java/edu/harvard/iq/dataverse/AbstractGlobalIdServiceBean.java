@@ -25,7 +25,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     private static final Logger logger = Logger.getLogger(AbstractGlobalIdServiceBean.class.getCanonicalName());
 
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     @EJB
     SettingsServiceBean settingsService;
     @EJB
@@ -68,7 +68,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
             authorString = ":unav";
         }
 
-        String producerString = dataverseService.findRootDataverse().getName();
+        String producerString = dataverseDao.findRootDataverse().getName();
 
         if (producerString.isEmpty()) {
             producerString = ":unav";
@@ -425,7 +425,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
         metadataTemplate.setTitle(dvObject.getDisplayName());
-        String producerString = dataverseService.findRootDataverse().getName();
+        String producerString = dataverseDao.findRootDataverse().getName();
         if (producerString.isEmpty()) {
             producerString = ":unav";
         }

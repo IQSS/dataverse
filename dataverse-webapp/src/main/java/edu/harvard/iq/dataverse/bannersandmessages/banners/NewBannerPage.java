@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.bannersandmessages.banners;
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.bannersandmessages.UnsupportedLanguageCleaner;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.BannerMapper;
@@ -42,7 +42,7 @@ public class NewBannerPage implements Serializable {
     private BannerMapper mapper;
 
     @EJB
-    private DataverseServiceBean dataverseServiceBean;
+    private DataverseDao dataverseDao;
 
     @Inject
     private UnsupportedLanguageCleaner languageCleaner;
@@ -66,7 +66,7 @@ public class NewBannerPage implements Serializable {
             return permissionsWrapper.notFound();
         }
 
-        dataverse = dataverseServiceBean.find(dataverseId);
+        dataverse = dataverseDao.find(dataverseId);
 
         dto = bannerId != null ?
                 mapper.mapToDto(dao.getBanner(bannerId)) :
@@ -129,12 +129,12 @@ public class NewBannerPage implements Serializable {
         this.permissionsWrapper = permissionsWrapper;
     }
 
-    public DataverseServiceBean getDataverseServiceBean() {
-        return dataverseServiceBean;
+    public DataverseDao getDataverseDao() {
+        return dataverseDao;
     }
 
-    public void setDataverseServiceBean(DataverseServiceBean dataverseServiceBean) {
-        this.dataverseServiceBean = dataverseServiceBean;
+    public void setDataverseDao(DataverseDao dataverseDao) {
+        this.dataverseDao = dataverseDao;
     }
 
     public Long getDataverseId() {

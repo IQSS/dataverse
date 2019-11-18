@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestingClientCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetHarvestingClientCommand;
@@ -39,7 +39,7 @@ public class HarvestingClients extends AbstractApiBean {
 
 
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     @EJB
     HarvesterServiceBean harvesterService;
     @EJB
@@ -153,7 +153,7 @@ public class HarvestingClients extends AbstractApiBean {
             // TODO: check that it doesn't exist yet...
             harvestingClient.setName(nickName);
             String dataverseAlias = jsonParser().parseHarvestingClient(json, harvestingClient);
-            Dataverse ownerDataverse = dataverseService.findByAlias(dataverseAlias);
+            Dataverse ownerDataverse = dataverseDao.findByAlias(dataverseAlias);
 
             if (ownerDataverse == null) {
                 return error(Response.Status.BAD_REQUEST, "No such dataverse: " + dataverseAlias);

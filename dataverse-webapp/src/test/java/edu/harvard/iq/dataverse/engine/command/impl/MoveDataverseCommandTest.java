@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
+import edu.harvard.iq.dataverse.DataverseLinkingDao;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.engine.NoOpTestEntityManager;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
@@ -170,8 +170,8 @@ public class MoveDataverseCommandTest {
 
         testEngine = new TestDataverseEngine(new TestCommandContext() {
             @Override
-            public DataverseServiceBean dataverses() {
-                return new DataverseServiceBean() {
+            public DataverseDao dataverses() {
+                return new DataverseDao() {
                     @Override
                     public Dataverse save(Dataverse dataverse) {
                         // no-op. The superclass accesses databases which we don't have.
@@ -280,8 +280,8 @@ public class MoveDataverseCommandTest {
             }
 
             @Override
-            public DataverseLinkingServiceBean dvLinking() {
-                return new DataverseLinkingServiceBean() {
+            public DataverseLinkingDao dvLinking() {
+                return new DataverseLinkingDao() {
 
                 };
             }

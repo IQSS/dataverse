@@ -84,7 +84,7 @@ public class PermissionServiceBean {
     RoleAssigneeServiceBean roleAssigneeService;
 
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
 
     @EJB
     DvObjectServiceBean dvObjectServiceBean;
@@ -585,7 +585,7 @@ public class PermissionServiceBean {
         List<Integer> dataverseIdsToCheck = nativeQuery.getResultList();
         List<Dataverse> dataversesUserHasPermissionOn = new LinkedList<>();
         for (int dvIdAsInt : dataverseIdsToCheck) {
-            Dataverse dataverse = dataverseService.find(Long.valueOf(dvIdAsInt));
+            Dataverse dataverse = dataverseDao.find(Long.valueOf(dvIdAsInt));
             if (userOn(user, dataverse).has(permission)) {
                 dataversesUserHasPermissionOn.add(dataverse);
             }
@@ -789,7 +789,7 @@ public class PermissionServiceBean {
         if (dataverseId == null) {
             return false;
         }
-        Dataverse dataverse = dataverseService.find(dataverseId);
+        Dataverse dataverse = dataverseDao.find(dataverseId);
 
         if (dataverse == null) {
             return false;

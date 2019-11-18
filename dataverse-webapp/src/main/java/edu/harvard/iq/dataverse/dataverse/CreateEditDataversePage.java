@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.dataverse;
 
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseFacetServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
@@ -45,7 +45,7 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 public class CreateEditDataversePage implements Serializable {
 
     @EJB
-    private DataverseServiceBean dataverseService;
+    private DataverseDao dataverseDao;
 
     @EJB
     private DatasetFieldServiceBean datasetFieldService;
@@ -57,7 +57,7 @@ public class CreateEditDataversePage implements Serializable {
     private MetadataBlockService metadataBlockService;
 
     @EJB
-    private DataverseSaver metadataBlockSaveManager;
+    private DataverseService metadataBlockSaveManager;
 
     @Inject
     private PermissionsWrapper permissionsWrapper;
@@ -136,7 +136,7 @@ public class CreateEditDataversePage implements Serializable {
             String alias = (String) value;
 
             boolean aliasFound = false;
-            Dataverse dv = dataverseService.findByAlias(alias);
+            Dataverse dv = dataverseDao.findByAlias(alias);
 
             if (dv != null && !dv.getId().equals(dataverse.getId())) {
                 aliasFound = true;
@@ -321,7 +321,7 @@ public class CreateEditDataversePage implements Serializable {
     }
 
     private String setupViewForDataverseEdit() {
-        dataverse = dataverseService.find(dataverseId);
+        dataverse = dataverseDao.find(dataverseId);
         if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
             return permissionsWrapper.notAuthorized();
         }
@@ -334,7 +334,7 @@ public class CreateEditDataversePage implements Serializable {
 
     private String setupViewForDataverseCreation() {
         dataverse = new Dataverse();
-        dataverse.setOwner(dataverseService.find(ownerId));
+        dataverse.setOwner(dataverseDao.find(ownerId));
 
         if (dataverse.getOwner() == null) {
             return permissionsWrapper.notFound();

@@ -55,7 +55,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     @EJB
     AuthenticationServiceBean authSvc;
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseDao dataverseDao;
     @EJB
     HarvestingClientServiceBean harvestingClientService;
     @EJB
@@ -104,7 +104,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     }
 
     public List<Dataverse> completeSelectedDataverse(String query) {
-        return dataverseService.filterByAliasQuery(query);
+        return dataverseDao.filterByAliasQuery(query);
     }
 
     public String init() {
@@ -115,12 +115,12 @@ public class HarvestingClientsPage implements java.io.Serializable {
         }
 
         if (dataverseId != null) {
-            setDataverse(dataverseService.find(getDataverseId()));
+            setDataverse(dataverseDao.find(getDataverseId()));
             if (getDataverse() == null) {
                 return navigationWrapper.notFound();
             }
         } else {
-            setDataverse(dataverseService.findRootDataverse());
+            setDataverse(dataverseDao.findRootDataverse());
         }
 
         configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();

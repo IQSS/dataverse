@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse.guestbook;
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
@@ -43,7 +43,7 @@ public class GuestbookPage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(GuestbookPage.class.getCanonicalName());
 
     private GuestbookServiceBean guestbookHelperService;
-    private DataverseServiceBean dataverseService;
+    private DataverseDao dataverseDao;
     private PermissionsWrapper permissionsWrapper;
     private GuestbookService guestbookService;
 
@@ -67,10 +67,10 @@ public class GuestbookPage implements java.io.Serializable {
     }
 
     @Inject
-    public GuestbookPage(GuestbookServiceBean guestbookHelperService, DataverseServiceBean dataverseService,
+    public GuestbookPage(GuestbookServiceBean guestbookHelperService, DataverseDao dataverseDao,
                          PermissionsWrapper permissionsWrapper, GuestbookService guestbookService) {
         this.guestbookHelperService = guestbookHelperService;
-        this.dataverseService = dataverseService;
+        this.dataverseDao = dataverseDao;
         this.permissionsWrapper = permissionsWrapper;
         this.guestbookService = guestbookService;
     }
@@ -109,7 +109,7 @@ public class GuestbookPage implements java.io.Serializable {
 
     public String init() {
 
-        dataverse = dataverseService.find(ownerId);
+        dataverse = dataverseDao.find(ownerId);
         if (dataverse == null) {
             return permissionsWrapper.notFound();
         }
