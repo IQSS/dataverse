@@ -68,6 +68,7 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
     public void shouldDeaccessVersions() {
         // given
         Dataset dataset = datasetService.find(56L);
+        int versionsCount = dataset.getVersions().size();
 
         // when
         deaccessionService.deaccessVersions(dataset.getVersions(), "TestReason", "https://www.google.com/");
@@ -75,7 +76,7 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
         // then
         Dataset dbDataset = datasetService.find(56L);
 
-        assertEquals(dataset.getVersions().size(), dbDataset.getVersions().size());
+        assertEquals(versionsCount, dbDataset.getVersions().size());
         assertTrue(dbDataset.getVersions().stream()
                 .allMatch(version -> version.getVersionState().equals(DatasetVersion.VersionState.DEACCESSIONED)));
     }
@@ -84,13 +85,14 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
     public void shouldDeaccessReleasedVersions() {
         // given
         Dataset dataset = datasetService.find(56L);
+        int versionsCount = dataset.getVersions().size();
 
         // when
         deaccessionService.deaccessReleasedVersions(dataset.getVersions(), "TestReason", "https://www.google.com/");
 
         // then
         Dataset dbDataset = datasetService.find(56L);
-        assertEquals(dataset.getVersions().size(), dbDataset.getVersions().size());
+        assertEquals(versionsCount, dbDataset.getVersions().size());
         assertFalse(dbDataset.getVersions().stream()
                 .anyMatch(version -> version.getVersionState().equals(DatasetVersion.VersionState.RELEASED)));
     }
