@@ -84,15 +84,16 @@
             
 {% endif %}
     <hr style="margin:.5em;border:0;"/>
-    {%if card_info.is_deaccesioned %}
-          {{ card_info.deaccession_reason }}
-    {% else %}
-        {% if card_info.description %}
-        
-            {{ card_info.description|truncate(250)|safe }}
-        {% endif %}
-    {% endif %}
-            
+    <div>
+      {%if card_info.is_deaccesioned %}
+            {{ card_info.deaccession_reason }}
+      {% else %}
+          {% if card_info.description %}
+          
+              {{ card_info.description|truncate(250)|safe }}
+          {% endif %}
+      {% endif %}
+    </div>        
 </div>   
 
 {%- endfor %}
