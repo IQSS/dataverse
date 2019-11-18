@@ -1,5 +1,8 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.dataset.datasetversion;
 
+import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.common.BundleUtil;
@@ -1159,21 +1162,20 @@ w
         return null;
     }
 
-    public Dataset updateDatasetVersion(DatasetVersion workingVersion, boolean validateLenient) {
-        Set<ConstraintViolation> constraintViolations = workingVersion.validate();
+    public Dataset updateDatasetVersion(DatasetVersion editVersion, boolean validateLenient) {
+        Set<ConstraintViolation> constraintViolations = editVersion.validate();
 
         if (!constraintViolations.isEmpty()) {
             constraintViolations.forEach(constraintViolation -> logger.warning(constraintViolation.getMessage()));
-            throw new ValidationException("There was validation error during updating dataset attempt with id: " + workingVersion.getDataset().getId());
+            throw new ValidationException("There was validation error during updating dataset attempt with id: " + editVersion.getDataset().getId());
         }
 
-        Dataset dataset = workingVersion.getDataset();
+        Dataset dataset = editVersion.getDataset();
         DatasetVersion clonedDataset = dataset.getEditVersion().cloneDatasetVersion();
 
 
         UpdateDatasetVersionCommand command = new UpdateDatasetVersionCommand(dataset,
                                                                               dvRequestService.getDataverseRequest(),
-                                                                              Collections.emptyList(),
                                                                               clonedDataset);
         command.setValidateLenient(validateLenient);
         return commandEngine.submit(command);

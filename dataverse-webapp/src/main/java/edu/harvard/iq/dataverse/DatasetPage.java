@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.dataset.tab.DatasetFilesTab;
 import edu.harvard.iq.dataverse.dataset.tab.DatasetMetadataTab;
 import edu.harvard.iq.dataverse.engine.command.Command;

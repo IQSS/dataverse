@@ -5,7 +5,7 @@ import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DataverseFacetServiceBean;
 import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevelServiceBean;
 import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;

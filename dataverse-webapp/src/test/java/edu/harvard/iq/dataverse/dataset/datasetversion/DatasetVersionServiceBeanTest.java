@@ -1,6 +1,8 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.dataset.datasetversion;
 
 import com.google.common.collect.Lists;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;

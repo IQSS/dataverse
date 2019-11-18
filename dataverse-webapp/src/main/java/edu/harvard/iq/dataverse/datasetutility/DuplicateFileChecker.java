@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse.datasetutility;
 
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 
