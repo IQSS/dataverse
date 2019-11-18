@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.dataverse.template;
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.GenericDao;
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
 import edu.harvard.iq.dataverse.persistence.dataset.Template;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -12,6 +13,7 @@ import io.vavr.control.Try;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,12 +51,45 @@ public class TemplateServiceIT extends WebappArquillianDeployment {
     @Inject
     private DataverseServiceBean dataverseService;
 
+    @Inject
+    private GenericDao genericDao;
+
     @Before
     public void setUp() {
         createSessionUser();
 
         Dataverse dataverse = prepareDataverse();
         em.persist(dataverse);
+    }
+
+    @Test
+    public void createTemplate() {
+        //given
+        Dataverse templateOwner = dataverseService.findRootDataverse();
+        Template freshTemplate = new Template();
+        freshTemplate.setName("testTemplate");
+
+        //when
+        Try<Template> createTemplateOp = templateService.createTemplate(templateOwner, freshTemplate);
+
+        //then
+        Assert.assertTrue(createTemplateOp.isSuccess());
+        Assert.assertTrue(templateOwner.getTemplates().contains(freshTemplate));
+    }
+
+    @Test
+    public void updateTemplate() {
+        //given
+        Template templateForUpdate = genericDao.find(1, Template.class);
+        Dataverse templateOwner = templateForUpdate.getDataverse();
+
+        //when
+        templateForUpdate.setUsageCount(10L);
+
+        templateService.updateTemplate(templateOwner, templateForUpdate);
+
+        //then
+        assertEquals(10, templateForUpdate.getUsageCount().longValue());
     }
 
     @Test
