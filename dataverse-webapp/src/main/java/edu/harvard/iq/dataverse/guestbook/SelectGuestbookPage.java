@@ -1,22 +1,21 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.guestbook;
 
+import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
-import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,33 +28,34 @@ public class SelectGuestbookPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(SelectGuestbookPage.class.getCanonicalName());
 
-    @EJB
     private DatasetServiceBean datasetService;
-
-    @Inject
     private PermissionsWrapper permissionsWrapper;
-
-    @Inject
     private DataverseRequestServiceBean dvRequestService;
-
-    @Inject
-    private PermissionServiceBean permissionService;
-
-    @EJB
-    EjbDataverseEngine commandEngine;
+    private DatasetVersionServiceBean versionService;
 
     private String persistentId;
     private Long datasetId;
 
     private Dataset dataset;
     private DatasetVersion workingVersion;
-    private DatasetVersion clone;
     private Guestbook selectedGuestbook;
     private List<Guestbook> availableGuestbooks;
 
+    // -------------------- CONSTRUCTORS --------------------
+    @Deprecated
+    public SelectGuestbookPage() {
+    }
+
+    @Inject
+    public SelectGuestbookPage(DatasetServiceBean datasetService, PermissionsWrapper permissionsWrapper,
+                               DataverseRequestServiceBean dvRequestService, DatasetVersionServiceBean versionService) {
+        this.datasetService = datasetService;
+        this.permissionsWrapper = permissionsWrapper;
+        this.dvRequestService = dvRequestService;
+        this.versionService = versionService;
+    }
+
     // -------------------- GETTERS --------------------
-
-
     public String getPersistentId() {
         return persistentId;
     }
@@ -100,9 +100,7 @@ public class SelectGuestbookPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
 
-        dataset = datasetService.find(datasetId);
         workingVersion = dataset.getEditVersion();
-        clone = workingVersion.cloneDatasetVersion();
         availableGuestbooks = dataset.getDataverseContext().getAvailableGuestbooks();
 
         JH.addMessage(FacesMessage.SEVERITY_INFO,
@@ -114,20 +112,18 @@ public class SelectGuestbookPage implements java.io.Serializable {
 
     public String save() {
 
-        try {
-            UpdateDatasetVersionCommand cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), new ArrayList<>(), clone);
-            cmd.setValidateLenient(true);
-            dataset = commandEngine.submit(cmd);
-            logger.fine("Successfully executed SaveDatasetCommand.");
-        } catch (EJBException ex) {
-            logger.log(Level.SEVERE, "Couldn't edit dataset guestbook: " + ex.getMessage(), ex);
-            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.guestbookFailure"));
-            return StringUtils.EMPTY;
-        } catch(CommandException ex) {
+        Try<Dataset> selectGuestbookOperation = Try.of(() -> versionService.updateDatasetVersion(workingVersion, true));
+
+        if(selectGuestbookOperation.isFailure()) {
+            Throwable ex = selectGuestbookOperation.getCause();
             logger.log(Level.SEVERE, "CommandException, when attempting to update the dataset: " + ex.getMessage(), ex);
             JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.guestbookFailure"));
             return StringUtils.EMPTY;
         }
+
+        logger.fine("Successfully executed SaveDatasetCommand.");
+        dataset = selectGuestbookOperation.get();
+
         return returnToLatestVersion();
     }
 

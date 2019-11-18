@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.dataset.tab;
 
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.VersionSummaryDTO;
 import edu.harvard.iq.dataverse.dataset.difference.DatasetVersionDifference;
