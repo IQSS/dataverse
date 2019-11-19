@@ -491,6 +491,14 @@
                                             <td>
                                                 <h:outputText value="#{ApiTokenPage.apiTokenExpiration}"/>
                                             </td>
+                                            <td class="text-warning" jsf:rendered="#{true}">
+                                                <span class="glyphicon glyphicon-warning-sign"></span>
+                                                <h:outputText value=" #{bundle['apitoken.expired.warning']}"/>
+                                            </td>
+                                            <td class="text-danger" jsf:rendered="#{false}">
+                                                <span class="glyphicon glyphicon-exclamation-sign"></span>
+                                                <h:outputText value=" #{bundle['apitoken.expired.warning']}"/>
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>
