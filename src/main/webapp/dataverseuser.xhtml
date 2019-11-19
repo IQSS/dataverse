@@ -491,10 +491,11 @@
                                             <td>
                                                 <h:outputText value="#{ApiTokenPage.apiTokenExpiration}"/>
                                             </td>
-                                            <td class="text-warning" jsf:rendered="#{true}">
+                                            <td class="text-warning" jsf:rendered="#{ApiTokenPage.tokenIsExpired()}">
                                                 <span class="glyphicon glyphicon-warning-sign"></span>
-                                                <h:outputText value=" #{bundle['apitoken.expired.warning']}"/>
+                                                <h:outputText value=" #{bundle['apitoken.expired.error']}"/>
                                             </td>
+                                            <!-- leaving warning off for now -->
                                             <td class="text-danger" jsf:rendered="#{false}">
                                                 <span class="glyphicon glyphicon-exclamation-sign"></span>
                                                 <h:outputText value=" #{bundle['apitoken.expired.warning']}"/>

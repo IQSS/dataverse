@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.api.Util;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -88,6 +89,10 @@ public class ApiTokenPage implements java.io.Serializable {
             // It should be impossible to get here from the UI.
             return "";
         }
+    }
+    
+    public Boolean tokenIsExpired(){
+        return apiToken.getExpireTime().before(new Timestamp(System.currentTimeMillis()));
     }
     
     public void revoke() {
