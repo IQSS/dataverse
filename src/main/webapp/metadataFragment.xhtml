@@ -152,21 +152,22 @@
                                                         </div>
                                                     </ui:repeat>
                                                     <ui:fragment rendered="#{dsf.datasetFieldType.controlledVocabulary}">
-                                                        <p:selectOneMenu value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" styleClass="form-control primitive"
-                                                                         id="unique1" required="#{dsf.required}" rendered="#{!dsf.datasetFieldType.allowMultiples}">
-                                                            <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
-                                                            <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
-                                                        </p:selectOneMenu>
-
-                                                        
-                                                        <p:selectCheckboxMenu id="multiple" value="#{dsf.controlledVocabularyValues}"  multiple="true" converter="controlledVocabularyValueConverter"
-                                                                              filter="true" filterMatchMode="startsWith" panelStyle="width:250px">
-                                                            <f:selectItem itemLabel="#{bundle.select}" class="chkbox-label-margin" itemValue="" noSelectionOption="true"/>
-                                                            <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
-                                                        </p:selectCheckboxMenu>
-                                                        
-                                                        <div class="alert-danger" jsf:rendered="#{!empty dsf.validationMessage}">
-                                                            <strong>#{dsf.validationMessage}</strong>
+                                                        <div class="form-group dataset-field-values">
+                                                            <div class="form-col-container col-sm-9 edit-field">
+                                                                <p:selectOneMenu value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" styleClass="form-control primitive"
+                                                                                 id="unique1" required="#{dsf.required}" rendered="#{!dsf.datasetFieldType.allowMultiples}">
+                                                                    <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
+                                                                    <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
+                                                                </p:selectOneMenu>
+                                                                <p:selectCheckboxMenu value="#{dsf.controlledVocabularyValues}" multiple="true" converter="controlledVocabularyValueConverter" styleClass="form-control"
+                                                                                      filter="true" filterMatchMode="startsWith" label="#{bundle.select}"
+                                                                                      id="unique2" rendered="#{dsf.datasetFieldType.allowMultiples}">
+                                                                    <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
+                                                                </p:selectCheckboxMenu>
+                                                                <div class="alert-danger" jsf:rendered="#{!empty dsf.validationMessage}">
+                                                                    <strong>#{dsf.validationMessage}</strong>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </ui:fragment>
                                                 </div>
