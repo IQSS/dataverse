@@ -131,7 +131,7 @@ function init_mydata_page(){
 function addQDRBackdrop () {
     // Add the grey background
     if($('#file-row-panel-backdrop').length==0) {
-      $('<div id="file-row-panel-backdrop"></div>').insertBefore('.ui-tabs-panel');
+      $('<div id="file-row-panel-backdrop"></div>').insertAfter('.ui-tabs-panels');
     }
 }
 
