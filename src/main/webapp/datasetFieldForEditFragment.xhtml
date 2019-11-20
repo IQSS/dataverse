@@ -11,7 +11,7 @@
     <!-- input text start UPDATE: UI:REMOVE applied due to duplicate ID errors, left code as reference incase test scripts complain -->
     <span id="pre-input-#{dsf.datasetFieldType.name}" class="pre-input-tag"/></ui:remove>
     
-    <p:inputText value="#{dsfv.valueForEdit}" id="inputText" required="#{required}"
+    <p:inputText value="#{dsfv.valueForEdit}" id="inputText" pt:aria-required="#{dsf.required}"
                  styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
                  rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary
                              and (dsfv.datasetField.datasetFieldType.fieldType == 'TEXT'
@@ -22,7 +22,7 @@
                              or dsfv.datasetField.datasetFieldType.fieldType == 'EMAIL')}"/>
     <p:watermark for="inputText" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
 
-    <p:inputTextarea value="#{dsfv.valueForEdit}" id="description" required="#{required}"
+    <p:inputTextarea value="#{dsfv.valueForEdit}" id="description" pt:aria-required="#{dsf.required}"
                      rows="5" cols="60" styleClass="form-control"
                      rendered="#{dsfv.datasetField.datasetFieldType.fieldType == 'TEXTBOX'}"/>
     <p:watermark for="description" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
