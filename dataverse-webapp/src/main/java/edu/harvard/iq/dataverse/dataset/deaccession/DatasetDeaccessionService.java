@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.dataset.deaccession;
 
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCommand;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 

@@ -65,7 +65,7 @@ public class TemplateServiceIT extends WebappArquillianDeployment {
     @Test
     public void createTemplate() {
         //given
-        Dataverse templateOwner = dataverseService.findRootDataverse();
+        Dataverse templateOwner = dataverseDao.findRootDataverse();
         Template freshTemplate = new Template();
         freshTemplate.setName("testTemplate");
 
