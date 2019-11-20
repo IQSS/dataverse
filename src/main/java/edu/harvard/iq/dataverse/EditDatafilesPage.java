@@ -729,6 +729,16 @@ public class EditDatafilesPage implements java.io.Serializable {
     //fails silently. This is because they are only granted editDataset permissions
     //for that scope after the creation is completed.  -Matthew 4.7.1
     public void restrictFiles(boolean restricted) throws UnsupportedOperationException{
+        
+        //First make sure they've even selected file(s) to restrict.... 
+        if (this.getSelectedFiles().isEmpty()) {
+            if (restricted) {
+                PrimeFaces.current().executeScript("PF('selectFilesForRestrictEditFilesPage').show()");
+            } else {
+                PrimeFaces.current().executeScript("PF('selectFilesForUnRestrictEditFilesPage').show()");
+            }
+            return;
+        }
 
         // since we are restricted files, first set the previously restricted file list, so we can compare for
         // determining whether to show the access popup
