@@ -158,12 +158,13 @@
                                                             <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
                                                         </p:selectOneMenu>
 
-                                                        <p:selectManyMenu value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" 
-                                                                          id="unique2" required="#{dsf.required}" rendered="#{dsf.datasetFieldType.allowMultiples}">
+                                                        
+                                                        <p:selectCheckboxMenu id="multiple" value="#{dsf.controlledVocabularyValues}"  multiple="true" converter="controlledVocabularyValueConverter"
+                                                                              filter="true" filterMatchMode="startsWith" panelStyle="width:250px">
                                                             <f:selectItem itemLabel="#{bundle.select}" class="chkbox-label-margin" itemValue="" noSelectionOption="true"/>
                                                             <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
-                                                        </p:selectManyMenu>
-
+                                                        </p:selectCheckboxMenu>
+                                                        
                                                         <div class="alert-danger" jsf:rendered="#{!empty dsf.validationMessage}">
                                                             <strong>#{dsf.validationMessage}</strong>
                                                         </div>
