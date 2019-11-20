@@ -74,7 +74,7 @@
                     </p:panel>
 
                     <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
-                        <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" oncomplete="javascript:bind_bsui_components();" />
+                        <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" oncomplete="javascript:bind_bsui_components();addQDRBackdrop();" />
                         <p:tab id="myData" title="#{bundle['user.dataRelatedToMe']}">
                             <ui:include src="mydata_fragment.xhtml"></ui:include>
                         </p:tab>
@@ -354,6 +354,7 @@
                             <script>
                                 //<![CDATA[
                                 $(document).ready(function() {
+                                    addQDRBackdrop();
                                     $("div#apiToken").removeClass("hidden");
                                 });
                                 //Produces "Are you sure you want to leave this page?" alert to allow API token to hide again
