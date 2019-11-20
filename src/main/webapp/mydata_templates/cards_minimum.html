@@ -12,7 +12,7 @@
        {% set card_border_color = "#ccc" %}
     {% endif %}
 
-    <div style="border:1px solid {{ card_border_color }};padding:4px 10px; margin-bottom:20px; overflow: hidden; font-size: 90%; {{ card_bg_color.next() }}">
+    <div class="cardResult" style="border-top:1px solid #DDD; padding:4px 10px; margin-bottom:20px; overflow: hidden; font-size: 90%; {{ card_bg_color.next() }}">
         <div class="card-title-icon-block" style="font-size: 110%;"> 
  {% if card_info.type == "dataverse" %}
             <span class="icon-dataverse text-brand pull-right" title="Dataverse"></span>
@@ -84,15 +84,16 @@
             
 {% endif %}
     <hr style="margin:.5em;border:0;"/>
-    {%if card_info.is_deaccesioned %}
-          {{ card_info.deaccession_reason }}
-    {% else %}
-        {% if card_info.description %}
-        
-            {{ card_info.description|truncate(250)|safe }}
-        {% endif %}
-    {% endif %}
-            
+    <div>
+      {%if card_info.is_deaccesioned %}
+            {{ card_info.deaccession_reason }}
+      {% else %}
+          {% if card_info.description %}
+          
+              {{ card_info.description|truncate(250)|safe }}
+          {% endif %}
+      {% endif %}
+    </div>        
 </div>   
 
 {%- endfor %}

@@ -12,7 +12,7 @@ body.widget-view {margin-bottom:54px;}
 body .ui-widget {font-size: inherit;}
 body .ui-widget .ui-widget-content {background: none;}
 .ui-widget-content a {color: #4b75ff;}
-.ui-widget-content td > a { font-size: 18px !important;}
+.ui-datalist-item .ui-widget-content td > a { font-size: 18px !important;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #337ab7;}
 .ui-tabs.ui-widget-content .ui-tabs-nav li a {color: #333;}
 
@@ -652,7 +652,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #author, #contact {display:block; margin-bottom:.5em;}
 .citation-block {/*-- margin-bottom:.5em; padding-right:0; --*/}
 .bg-citation {background:#DFDFE7; border-color: #DFDFE7;}
-.bg-citation-file {background:#f5f5f5; border: 1px solid #DDD;}
+.bg-citation-file {background:#dfdfe7; border: 1px solid #DDD;}
 .alert-danger.bg-danger {background:#F2DEDE;}
 div.alert-info.bg-citation, div.alert-danger.bg-danger {padding-top:4px; padding-bottom:4px; border-radius:0; color:#333;}
 .citation-block > div.alert-info.bg-citation, .citation-block > div.alert-danger.bg-danger {padding-top:0; padding-bottom:0;}
@@ -1185,7 +1185,7 @@ div.container {
 .dataverseResult > *,
 .datasetResult > *,
 .fileResult > *,
-#div-card-results > div > * {
+.cardResult > * {
   margin-left: 120px;
 }
 
