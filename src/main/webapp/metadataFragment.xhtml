@@ -128,7 +128,6 @@
                                                                 <ui:include src="datasetFieldForEditFragment.xhtml">
                                                                     <ui:param name="dsfv" value="#{dsfv}"/>
                                                                     <ui:param name="dsfvIndex" value="#{valCount.index}"/>
-                                                                    <ui:param name="required" value="#{dsf.required}"/>
                                                                 </ui:include>
                                                             </div>
                                                             <!-- Add / Remove buttons -->
@@ -206,24 +205,23 @@
                                                                 <ui:include src="datasetFieldForEditFragment.xhtml">
                                                                     <ui:param name="dsfv" value="#{subdsf.singleValue}"/>
                                                                     <ui:param name="dsfvIndex" value="0"/>
-                                                                    <ui:param name="required" value="#{subdsf.required}"/>
                                                                 </ui:include>
                                                             </ui:fragment>
                                                             <!-- MOVED SELECT ONE TO dataFieldForEdit -->
                                                             <div jsf:rendered="#{subdsf.datasetFieldType.controlledVocabulary}">
                                                                 <p:selectOneMenu value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;"
-                                                                                 required="#{subdsf.required}" rendered="#{!subdsf.datasetFieldType.allowMultiples}">
+                                                                                 rendered="#{!subdsf.datasetFieldType.allowMultiples}">
                                                                     <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
                                                                     <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
                                                                 </p:selectOneMenu>
                                                                 <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{subdsf.datasetFieldType.allowMultiples}">
                                                                     <p:selectManyCheckbox value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
-                                                                                          required="#{subdsf.required}" layout="pageDirection">
+                                                                                          layout="pageDirection">
                                                                         <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
                                                                     </p:selectManyCheckbox>
                                                                 </div>
-                                                                <div class="alert-danger" jsf:rendered="#{!empty subdsf.validationMessage}">
-                                                                    <strong>#{subdsf.validationMessage}</strong>
+                                                                <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty subdsf.validationMessage}">
+                                                                    <span class="ui-message-error-detail">#{subdsf.validationMessage}</span>
                                                                 </div>
                                                             </div>
                                                         </div>
