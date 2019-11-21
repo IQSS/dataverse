@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.makedatacount;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -34,10 +35,8 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
     @EJB
     DatasetServiceBean datasetService;
     
-    
-    public List<DatasetExternalCitations> parseCitations(JsonObject report) {
+    public List<DatasetExternalCitations> parseCitations(JsonArray citations) {
         List<DatasetExternalCitations> datasetExternalCitations = new ArrayList<>();
-        JsonArray citations = report.getJsonArray("data");
         for (JsonValue citationValue : citations) {
             DatasetExternalCitations exCit = new DatasetExternalCitations();
             JsonObject citation = (JsonObject) citationValue;
