@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseLinkingDao;
@@ -134,6 +135,7 @@ public class MoveDataverseCommandTest {
         // Templates
         List<Template> ts = new ArrayList<>();
         templateA = new Template();
+        templateA.setId(1L);
         templateA.setName("TemplateA");
         templateA.setDataverse(childD);
         ts.add(templateA);
@@ -142,6 +144,10 @@ public class MoveDataverseCommandTest {
         grandchildDD.setTemplateRoot(false);
         grandchildDD.setDefaultTemplate(templateA);
 
+        Template testTemplate = new Template();
+        testTemplate.setName("testTemplate");
+        testTemplate.setId(2L);
+
         List<Template> noneT = new ArrayList<>();
         root.setTemplates(noneT);
         childA.setTemplates(noneT);
@@ -149,7 +155,7 @@ public class MoveDataverseCommandTest {
         childB.setTemplates(noneT);
         childC.setTemplates(noneT);
         grandchildCC.setTemplates(noneT);
-        grandchildDD.setTemplates(noneT);
+        grandchildDD.setTemplates(Lists.newArrayList(testTemplate));
 
         // Metadata blocks
         List<MetadataBlock> mbsE = new ArrayList<>();
