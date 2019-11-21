@@ -150,21 +150,21 @@
                                                             </div>
                                                         </div>
                                                     </ui:repeat>
-                                                    <ui:fragment rendered="#{dsf.datasetFieldType.controlledVocabulary}">
+                                                    <ui:fragment rendered="#{dsf.datasetFieldType.controlledVocabulary}">                                                    
                                                         <div class="form-group dataset-field-values">
                                                             <div class="form-col-container col-sm-9 edit-field">
                                                                 <p:selectOneMenu value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" styleClass="form-control primitive"
-                                                                                 id="unique1" rendered="#{!dsf.datasetFieldType.allowMultiples}">
+                                                                                 id="unique1" required="#{dsf.required}" rendered="#{!dsf.datasetFieldType.allowMultiples}">
                                                                     <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
                                                                     <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
                                                                 </p:selectOneMenu>
-                                                                <p:selectCheckboxMenu value="#{dsf.controlledVocabularyValues}" multiple="true" converter="controlledVocabularyValueConverter" styleClass="form-control"
-                                                                                      filter="true" filterMatchMode="startsWith" label="#{bundle.select}"
+                                                                <p:selectCheckboxMenu value="#{dsf.controlledVocabularyValues}"  converter="controlledVocabularyValueConverter" styleClass="form-control"
+                                                                                      filter="true" filterMatchMode="startsWith" label="#{bundle.select}" multiple="#{!empty dsf.controlledVocabularyValues}"
                                                                                       id="unique2" rendered="#{dsf.datasetFieldType.allowMultiples}">
                                                                     <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
                                                                 </p:selectCheckboxMenu>
-                                                                <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty dsf.validationMessage}">
-                                                                    <span class="ui-message-error-detail">#{dsf.validationMessage}</span>
+                                                                <div class="alert-danger" jsf:rendered="#{!empty dsf.validationMessage}">
+                                                                    <strong>#{dsf.validationMessage}</strong>
                                                                 </div>
                                                             </div>
                                                         </div>
