@@ -435,7 +435,7 @@ public class AuthenticationServiceBean {
         TypedQuery<ApiToken> typedQuery = em.createNamedQuery("ApiToken.findByUser", ApiToken.class);
         typedQuery.setParameter("user", au);
         List<ApiToken> tokens = typedQuery.getResultList();
-        Timestamp latest = new Timestamp(java.time.Instant.now().getEpochSecond());
+        Timestamp latest = new Timestamp(java.time.Instant.now().getEpochSecond()*1000);
         if (tokens.isEmpty()) {
             // Normal case - no token exists
             return null;
@@ -461,6 +461,10 @@ public class AuthenticationServiceBean {
                 if (time.before(latest)) {
                     em.remove(token);
                 } else {
+                    if(goodToken != null) {
+                      em.remove(goodToken);
+                      goodToken = null;
+                    }
                     latest = time;
                     goodToken = token;
                 }
