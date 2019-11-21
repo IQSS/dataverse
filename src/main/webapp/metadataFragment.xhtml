@@ -158,9 +158,17 @@
                                                                     <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
                                                                     <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
                                                                 </p:selectOneMenu>
+                                                                <p:outputPanel id="selectedValsList" style="padding-top:.5em;">
+                                                                    <ui:repeat value="#{dsf.controlledVocabularyValues}" var="cvv" rendered="#{!empty dsf.controlledVocabularyValues}">
+                                                                        <h:outputText value="#{cvv.localeStrValue}"  style="margin-right:.5em;display:inline-block;"/>
+                                                                    </ui:repeat>
+                                                                </p:outputPanel>
+                                       
                                                                 <p:selectCheckboxMenu value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" styleClass="form-control"
-                                                                                      filter="true" filterMatchMode="startsWith" label="#{bundle.select}" multiple="#{!empty dsf.controlledVocabularyValues}"
+                                                                                      filter="true" filterMatchMode="startsWith" label="#{bundle.select}" 
                                                                                       id="unique2" rendered="#{dsf.datasetFieldType.allowMultiples}">
+                                                                    <p:ajax event="toggleSelect" listener="#{DatasetPage.handleSelection}" update="selectedValsList" />
+                                                                    <p:ajax event="change" listener="#{DatasetPage.handleSelection}" update="selectedValsList" />
                                                                     <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
                                                                 </p:selectCheckboxMenu>
                                                                 <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty dsf.validationMessage}">
@@ -214,12 +222,20 @@
                                                                     <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
                                                                     <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
                                                                 </p:selectOneMenu>
-                                                                <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{subdsf.datasetFieldType.allowMultiples}">
-                                                                    <p:selectManyCheckbox value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
-                                                                                          layout="pageDirection">
+                                                                
+                                                                <p:outputPanel id="selectedValsListCompound" style="padding-top:.5em;">
+                                                                    <ui:repeat value="#{subdsf.controlledVocabularyValues}" var="cvv" rendered="#{!empty subdsf.controlledVocabularyValues}">
+                                                                        <h:outputText value="#{cvv.localeStrValue}"  style="margin-right:.5em;display:inline-block;"/>
+                                                                    </ui:repeat>
+                                                                </p:outputPanel>
+
+                                                                    <p:selectCheckboxMenu value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
+                                                                                          rendered="#{subdsf.datasetFieldType.allowMultiples}" label="#{bundle.select}"  >
                                                                         <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
-                                                                    </p:selectManyCheckbox>
-                                                                </div>
+                                                                        <p:ajax event="toggleSelect" listener="#{DatasetPage.handleCVVSelection}" update="selectedValsListCompound" />
+                                                                        <p:ajax event="change" listener="#{DatasetPage.handleCVVSelection}" update="selectedValsListCompound" />
+                                                                    </p:selectCheckboxMenu>
+
                                                                 <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty subdsf.validationMessage}">
                                                                     <span class="ui-message-error-detail">#{subdsf.validationMessage}</span>
                                                                 </div>
