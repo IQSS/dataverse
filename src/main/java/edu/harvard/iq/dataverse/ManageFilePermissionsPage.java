@@ -98,6 +98,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     }
 
     public TreeMap<DataFile, List<RoleAssignmentRow>> getFileMap() {
+        logger.info("File map size at request: " + fileMap.size());
         return fileMap;
     }
 
@@ -148,7 +149,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                 }
                 
                 fileMap.put(file, raList);
-                
+                logger.info("File map size: " + fileMap.size());
                 // populate the file access requests map
                 for (AuthenticatedUser au : file.getFileAccessRequesters()) {
                         List<DataFile> requestedFiles = fileAccessRequestMap.get(au);
