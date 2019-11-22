@@ -26,6 +26,10 @@ import javax.servlet.http.HttpServletRequest;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.io.BufferedReader;
@@ -45,6 +49,8 @@ class OAuth2LoginBackingBeanTest {
     @Mock AuthenticationServiceBean authenticationServiceBean;
     @Mock SystemConfig systemConfig;
     
+    Clock constantClock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+    
     /**
      * Save the current JSF context to reset after all test cases done.
      * Without doing this, many tests will fail with NPEs while fetching the bundle,
@@ -58,6 +64,10 @@ class OAuth2LoginBackingBeanTest {
     
     @BeforeEach
     void setUp() {
+        
+        // create a fixed (not running) clock for testing.
+        // --> reset the clock for every test to the fixed time, to avoid sideeffects of a DeLorean time travel
+        this.loginBackingBean.clock = constantClock;
         this.loginBackingBean.authenticationSvc = this.authenticationServiceBean;
         this.loginBackingBean.systemConfig = this.systemConfig;
         lenient().when(this.authenticationServiceBean.getOAuth2Provider(testIdp.getId())).thenReturn(testIdp);
@@ -109,6 +119,9 @@ class OAuth2LoginBackingBeanTest {
             lenient().when(externalContextMock.getFlash()).thenReturn(flashMock);
             lenient().when(requestMock.getReader()).thenReturn(reader);
             doReturn(loginBackingBean.createState(testIdp, this.redirect)).when(requestMock).getParameter("state");
+            // travel in time at least 10 milliseconds (remote calls & redirects are much likely longer)
+            // (if not doing this tests become flaky on fast machinas)
+            loginBackingBean.clock = Clock.offset(constantClock, Duration.ofMillis(10));
         }
         
         @Test
@@ -231,6 +244,9 @@ class OAuth2LoginBackingBeanTest {
     void parseStateFromRequestStateValid(Optional<String> redirectPage, boolean present) {
         // given
         String stateWithRedirect = loginBackingBean.createState(testIdp, redirectPage);
+        // travel in time at least 10 milliseconds (remote calls & redirects are much likely longer)
+        // (if not doing this tests become flaky on fast machinas)
+        loginBackingBean.clock = Clock.offset(constantClock, Duration.ofMillis(10));
     
         // when & then
         assertThat(loginBackingBean.parseStateFromRequest(stateWithRedirect), is(Optional.of(testIdp)));
