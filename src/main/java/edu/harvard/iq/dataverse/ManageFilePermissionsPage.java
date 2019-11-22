@@ -147,6 +147,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                         addFileToRoleAssignee(ra);                    
                     }
                 }
+                logger.info("RA size: " + raList.size());
+                logger.info("Confirm FID: " + file.getId());
                 
                 fileMap.put(file, raList);
                 logger.info("File map size: " + fileMap.size());
