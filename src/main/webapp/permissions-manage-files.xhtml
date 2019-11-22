@@ -159,7 +159,7 @@
                                     <p:dataTable id="restrictedFiles" var="fileEntry" value="#{manageFilePermissionsPage.fileMap.entrySet().toArray()}"
                                                  emptyMessage="#{bundle['dataverse.permissionsFiles.files.invalidMsg']}">
                                         <p:column width="40%" headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.fileName']}">
-                                            <h:outputText value="#{fileEntry.key.displayName} #{fileEntry.key.getFileMetadata().getId()}"/>
+                                            <h:outputText value="#{fileEntry.key.displayName}"/>
                                         </p:column>
                                         <p:column width="10%" class="text-center" headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.publishedRestrictedState']}" rendered="#{manageFilePermissionsPage.dataset.released}">
                                             <c:set var="fileVersionCount" value="#{fileEntry.key.fileMetadatas.size()}" />

@@ -82,7 +82,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
     Dataset dataset = new Dataset(); 
     private final TreeMap<RoleAssignee,List<RoleAssignmentRow>> roleAssigneeMap = new TreeMap<>();
-    private final TreeMap<DataFile,List<RoleAssignmentRow>> fileMap = new TreeMap<>(new StrictDataFileComp());
+    private final TreeMap<DataFile,List<RoleAssignmentRow>> fileMap = new TreeMap<>();
     private final TreeMap<AuthenticatedUser,List<DataFile>> fileAccessRequestMap = new TreeMap<>();    
 
     public Dataset getDataset() {
@@ -98,7 +98,6 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     }
 
     public TreeMap<DataFile, List<RoleAssignmentRow>> getFileMap() {
-        logger.info("File map size at request: " + fileMap.size());
         return fileMap;
     }
 
@@ -129,11 +128,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         roleAssigneeMap.clear();
         fileMap.clear();
         fileAccessRequestMap.clear();        
-        logger.info("Files Found: " + dataset.getFiles().size());       
+               
         for (DataFile file : dataset.getFiles()) {
-            logger.info("File: " + file.getId());
-            logger.info("FileMeta: " + file.getFileMetadata().getId());
-            logger.info("Restricted: " + file.isRestricted() + " and " + file.getFileMetadata().isRestricted());
             // only include if the file is restricted (or it's draft version is restricted)
             //Added a null check in case there are files that have no metadata records SEK 
                 if (file.getFileMetadata() != null && (file.isRestricted() || file.getFileMetadata().isRestricted())) {
@@ -147,10 +143,9 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                         addFileToRoleAssignee(ra);                    
                     }
                 }
-                logger.info("RA size: " + raList.size());
-                logger.info("Confirm FID: " + file.getId());
+                
                 fileMap.put(file, raList);
-                logger.info("File map size: " + fileMap.size());
+                
                 // populate the file access requests map
                 for (AuthenticatedUser au : file.getFileAccessRequesters()) {
                         List<DataFile> requestedFiles = fileAccessRequestMap.get(au);
@@ -463,16 +458,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         this.renderFileMessages = renderFileMessages;
     }
 
-    class StrictDataFileComp implements Comparator<DataFile>{
-        @Override
-        public int compare(DataFile df1, DataFile df2) {
-            int comparison = df1.compareTo(df2);
-            if(comparison==0) {
-                comparison=df1.getId().compareTo(df2.getId());
-            }
-            return comparison;
-        }
-    }
+
 
 
     // inner class used fordisplay of role assignments

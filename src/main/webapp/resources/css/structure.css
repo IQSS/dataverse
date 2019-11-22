@@ -1212,7 +1212,6 @@ th {background: none !important;}
 .ui-tabs.ui-tabs-top .ui-tabs-nav.ui-widget-header {border-width: 0;}
 
 .panel-heading {display: none;}
-#rolesPermissionsForm  .panel-heading {display: block;}
 
 .panel-body > * {
   border-top: 2px solid rgba(0, 0, 0, 0.1);
