@@ -12,17 +12,13 @@ import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.group.AuthenticatedUsers;
-import edu.harvard.iq.dataverse.persistence.group.ExplicitGroup;
-import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
-import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssigneeDisplayInfo;
@@ -38,11 +34,9 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -445,57 +439,16 @@ public class ManagePermissionsPage implements java.io.Serializable {
         roleAssignments = initRoleAssignments();
     }
 
-    /**
-     * Notify a {@code RoleAssignee} that a role was either assigned or revoked.
-     * Will notify all members of a group.
-     *
-     * @param ra   The {@code RoleAssignee} to be notified.
-     * @param type The type of notification.
-     */
-    private void notifyRoleChange(RoleAssignee ra, NotificationType type) {
-        if (ra instanceof AuthenticatedUser) {
-            userNotificationService.sendNotificationWithEmail((AuthenticatedUser) ra, new Timestamp(new Date().getTime()), type, dvObject.getId(), determineObjectType(dvObject));
-        } else if (ra instanceof ExplicitGroup) {
-            ExplicitGroup eg = (ExplicitGroup) ra;
-            Set<String> explicitGroupMembers = eg.getContainedRoleAssgineeIdentifiers();
-            for (String id : explicitGroupMembers) {
-                RoleAssignee explicitGroupMember = roleAssigneeService.getRoleAssignee(id);
-                if (explicitGroupMember instanceof AuthenticatedUser) {
-                    userNotificationService.sendNotificationWithEmail((AuthenticatedUser) explicitGroupMember, new Timestamp(new Date().getTime()), type, dvObject.getId(), determineObjectType(dvObject));
-                }
-            }
-        }
-    }
-
-    private NotificationObjectType determineObjectType(DvObject dvObject) {
-
-        if (dvObject instanceof Dataverse) {
-            return NotificationObjectType.DATAVERSE;
-        }
-        if (dvObject instanceof Dataset) {
-            return NotificationObjectType.DATASET;
-        }
-
-        return NotificationObjectType.DATAFILE;
-    }
-
     private void assignRole(RoleAssignee ra, DataverseRole r) {
-        Try<RoleAssignment> roleAssignmentOperation = Try.of(() -> managePermissionsService.assignRole(r, ra, dvObject));
-
         List<String> args = Arrays.asList(
                 r.getName(),
                 ra.getDisplayInfo().getTitle(),
                 StringEscapeUtils.escapeHtml(dvObject.getDisplayName())
         );
 
-            if(roleAssignmentOperation.isSuccess()) {
-                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.roleAssignedToFor", args));
-                if (!(r.getAlias().equals(DataverseRole.FILE_DOWNLOADER) && !dvObject.isReleased())) {
-                    notifyRoleChange(ra, NotificationType.ASSIGNROLE);
-                }
-            } else {
-                handleAssignRoleFailure(roleAssignmentOperation.getCause(), args);
-            }
+        Try.of(() -> managePermissionsService.assignRoleWithNotification(r, ra, dvObject))
+                .onSuccess(roleAssignment -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.roleAssignedToFor", args)))
+                .onFailure(throwable -> handleAssignRoleFailure(throwable, args));
 
         showAssignmentMessages();
     }
@@ -665,17 +618,13 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
     // -------------------- PRIVATE ---------------------
     private void removeRoleAssignment(RoleAssignment ra) {
-        Try<Void> revokeOperation = Try.run(() -> managePermissionsService.removeRoleAssignment(ra))
-                .onFailure(this::handleRemoveRoleAssignmentFailure)
-                ;
-
-        if(revokeOperation.isSuccess()) {
-            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.roleWasRemoved",
-                    Arrays.asList(ra.getRole().getName(),
-                            roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle())));
-            RoleAssignee assignee = roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier());
-            notifyRoleChange(assignee, NotificationType.REVOKEROLE);
-        }
+        Try.run(() -> managePermissionsService.removeRoleAssignmentWithNotification(ra))
+                .onSuccess(Void -> {
+                    JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.roleWasRemoved",
+                            Arrays.asList(ra.getRole().getName(),
+                                    roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle())));
+                })
+                .onFailure(this::handleRemoveRoleAssignmentFailure);
     }
 
     private void handleRemoveRoleAssignmentFailure(Throwable throwable) {

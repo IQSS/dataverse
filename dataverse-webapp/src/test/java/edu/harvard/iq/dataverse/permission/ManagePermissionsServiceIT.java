@@ -24,9 +24,11 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -56,13 +58,15 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
     }
 
     @Test
-    public void shouldAssignRole() {
+    public void shouldAssignRoleWithNotification() {
         // given
-        Dataverse dataverse = dataverseDao.find(19L);
+        dataverseSession.setUser(authenticationService.findByID(1L));
+        String userEmail = dataverseSession.getUser().getDisplayInfo().getEmailAddress();
+        Dataverse dataverse = dataverseDao.find(1L);
         DataverseRole roleToBeAssigned = roleService.findBuiltinRoleByAlias("editor");
 
         // when
-        managePermissionsService.assignRole(roleToBeAssigned, dataverseSession.getUser(), dataverse);
+        managePermissionsService.assignRoleWithNotification(roleToBeAssigned, dataverseSession.getUser(), dataverse);
 
         // then
         TypedQuery<RoleAssignment> query = em.createNamedQuery(
@@ -78,30 +82,37 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
         assertEquals(dataverseSession.getUser().getIdentifier(), role.getAssigneeIdentifier());
         assertEquals(dataverse.getId(), role.getDefinitionPoint().getId());
         assertEquals(roleToBeAssigned.getId(), role.getRole().getId());
+
+        await()
+                .atMost(Duration.ofSeconds(5L))
+                .until(() -> smtpServer.mailBox().stream()
+                        .anyMatch(emailModel -> emailModel.getTo().equals(userEmail)));
+
     }
 
     @Test
-    public void shouldAssignRole_withPermissionsException() {
+    public void shouldAssignRoleWithNotification_withPermissionsException() {
         // given
-        Dataverse dataverse = dataverseDao.find(19L);
+        Dataverse dataverse = dataverseDao.find(1L);
         DataverseRole roleToBeAssigned = roleService.findBuiltinRoleByAlias("editor");
         dataverseSession.setUser(GuestUser.get());
 
         // when&then
         thrown.expect(PermissionException.class);
-        RoleAssignment ra = managePermissionsService.assignRole(roleToBeAssigned, dataverseSession.getUser(), dataverse);
+        managePermissionsService.assignRoleWithNotification(roleToBeAssigned, dataverseSession.getUser(), dataverse);
     }
 
     @Test
-    public void shouldRemoveRoleAssignment() {
+    public void removeRoleAssignmentWithNotification() {
         // given
-        Dataverse dataverse = dataverseDao.find(19L);
+        Dataverse dataverse = dataverseDao.find(1L);
+        String userEmail = dataverseSession.getUser().getDisplayInfo().getEmailAddress();
         RoleAssignment toBeRemoved = new RoleAssignment(roleService.findBuiltinRoleByAlias("editor"), dataverseSession.getUser(), dataverse, null);
         em.persist(toBeRemoved);
         em.flush();
 
         // when
-        managePermissionsService.removeRoleAssignment(toBeRemoved);
+        managePermissionsService.removeRoleAssignmentWithNotification(toBeRemoved);
 
         // then
         TypedQuery<RoleAssignment> query = em.createNamedQuery(
@@ -112,12 +123,17 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
         query.setParameter("roleId", roleService.findBuiltinRoleByAlias("editor").getId());
         List<RoleAssignment> roles = query.getResultList();
         assertEquals(0, roles.size());
+
+        await()
+                .atMost(Duration.ofSeconds(5L))
+                .until(() -> smtpServer.mailBox().stream()
+                        .anyMatch(emailModel -> emailModel.getTo().equals(userEmail)));
     }
 
     @Test
-    public void shouldRemoveRoleAssignment_withPermissionsException() {
+    public void removeRoleAssignmentWithNotification_withPermissionsException() {
         // given
-        Dataverse dataverse = dataverseDao.find(19L);
+        Dataverse dataverse = dataverseDao.find(1L);
         RoleAssignment toBeRemoved = new RoleAssignment(roleService.findBuiltinRoleByAlias("editor"), dataverseSession.getUser(), dataverse, null);
         em.persist(toBeRemoved);
         em.flush();
@@ -126,7 +142,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
 
         // when&then
         thrown.expect(PermissionException.class);
-        managePermissionsService.removeRoleAssignment(toBeRemoved);;
+        managePermissionsService.removeRoleAssignmentWithNotification(toBeRemoved);;
     }
 
     @Test

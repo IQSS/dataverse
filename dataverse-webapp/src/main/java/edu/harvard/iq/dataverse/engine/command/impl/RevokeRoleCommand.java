@@ -5,12 +5,12 @@ import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -21,7 +21,7 @@ import java.util.Set;
  * @author michael
  */
 // no annotations here, since permissions are dynamically decided
-public class RevokeRoleCommand extends AbstractVoidCommand {
+public class RevokeRoleCommand extends AbstractVoidCommand implements Serializable {
 
     private final RoleAssignment toBeRevoked;
 

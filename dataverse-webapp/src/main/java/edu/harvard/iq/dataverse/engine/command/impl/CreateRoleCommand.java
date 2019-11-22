@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
@@ -12,13 +11,15 @@ import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.User;
 
+import java.io.Serializable;
+
 /**
  * Create a new role in a dataverse.
  *
  * @author michael
  */
 @RequiredPermissions(Permission.ManageDataversePermissions)
-public class CreateRoleCommand extends AbstractCommand<DataverseRole> {
+public class CreateRoleCommand extends AbstractCommand<DataverseRole> implements Serializable {
 
     private final DataverseRole created;
     private final Dataverse dv;
