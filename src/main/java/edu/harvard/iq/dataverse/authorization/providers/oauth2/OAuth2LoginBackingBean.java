@@ -4,11 +4,13 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.ClockUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.SecureRandom;
+import java.time.Clock;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -62,6 +64,10 @@ public class OAuth2LoginBackingBean implements Serializable {
 
     @Inject
     OAuth2FirstLoginPage newAccountPage;
+    
+    @Inject
+    @ClockUtil.LocalTime
+    Clock clock;
     
     /**
      * Generate the OAuth2 Provider URL to be used in the login page link for the provider.
@@ -179,7 +185,7 @@ public class OAuth2LoginBackingBean implements Serializable {
         String[] stateFields = raw.split("~", -1);
         if (idp.getId().equals(stateFields[0])) {
             long timeOrigin = Long.parseLong(stateFields[1]);
-            long timeDifference = System.currentTimeMillis() - timeOrigin;
+            long timeDifference = this.clock.millis() - timeOrigin;
             if (timeDifference > 0 && timeDifference < STATE_TIMEOUT) {
                 if ( stateFields.length > 3) {
                     this.redirectPage = Optional.ofNullable(stateFields[3]);
@@ -207,7 +213,7 @@ public class OAuth2LoginBackingBean implements Serializable {
         }
         SecureRandom rand = new SecureRandom();
         
-        String base = idp.getId() + "~" + System.currentTimeMillis() 
+        String base = idp.getId() + "~" + this.clock.millis()
                                   + "~" + rand.nextInt(1000)
                                   + redirectPage.map( page -> "~"+page).orElse("");
 
