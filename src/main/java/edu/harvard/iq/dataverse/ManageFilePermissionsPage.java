@@ -128,8 +128,11 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         roleAssigneeMap.clear();
         fileMap.clear();
         fileAccessRequestMap.clear();        
-               
+        logger.info("Files Found: " + dataset.getFiles().size());       
         for (DataFile file : dataset.getFiles()) {
+            logger.info("File: " + file.getId());
+            logger.info("FileMeta: " + file.getFileMetadata().getId());
+            logger.info("Restricted: " + file.isRestricted() + " and " + file.getFileMetadata().isRestricted());
             // only include if the file is restricted (or it's draft version is restricted)
             //Added a null check in case there are files that have no metadata records SEK 
                 if (file.getFileMetadata() != null && (file.isRestricted() || file.getFileMetadata().isRestricted())) {
