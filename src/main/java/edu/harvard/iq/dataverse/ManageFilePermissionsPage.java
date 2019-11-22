@@ -82,7 +82,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
     Dataset dataset = new Dataset(); 
     private final TreeMap<RoleAssignee,List<RoleAssignmentRow>> roleAssigneeMap = new TreeMap<>();
-    private final TreeMap<DataFile,List<RoleAssignmentRow>> fileMap = new TreeMap<>();
+    private final TreeMap<DataFile,List<RoleAssignmentRow>> fileMap = new TreeMap<>(new StrictDataFileComp());
     private final TreeMap<AuthenticatedUser,List<DataFile>> fileAccessRequestMap = new TreeMap<>();    
 
     public Dataset getDataset() {
@@ -149,7 +149,6 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                 }
                 logger.info("RA size: " + raList.size());
                 logger.info("Confirm FID: " + file.getId());
-                
                 fileMap.put(file, raList);
                 logger.info("File map size: " + fileMap.size());
                 // populate the file access requests map
@@ -464,7 +463,16 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         this.renderFileMessages = renderFileMessages;
     }
 
-
+    class StrictDataFileComp implements Comparator<DataFile>{
+        @Override
+        public int compare(DataFile df1, DataFile df2) {
+            int comparison = df1.compareTo(df2);
+            if(comparison==0) {
+                comparison=df1.getId().compareTo(df2.getId());
+            }
+            return comparison;
+        }
+    }
 
 
     // inner class used fordisplay of role assignments
