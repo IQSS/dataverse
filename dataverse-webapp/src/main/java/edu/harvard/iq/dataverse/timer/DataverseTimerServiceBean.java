@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse.timer;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -70,7 +70,7 @@ public class DataverseTimerServiceBean implements Serializable {
     @EJB
     AuthenticationServiceBean authSvc;
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
     @EJB
     OAISetServiceBean oaiSetService;
     @EJB

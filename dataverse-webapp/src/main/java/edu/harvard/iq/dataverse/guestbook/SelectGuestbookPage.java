@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.guestbook;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
@@ -28,7 +28,7 @@ public class SelectGuestbookPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(SelectGuestbookPage.class.getCanonicalName());
 
-    private DatasetServiceBean datasetService;
+    private DatasetDao datasetDao;
     private PermissionsWrapper permissionsWrapper;
     private DataverseRequestServiceBean dvRequestService;
     private DatasetVersionServiceBean versionService;
@@ -47,9 +47,9 @@ public class SelectGuestbookPage implements java.io.Serializable {
     }
 
     @Inject
-    public SelectGuestbookPage(DatasetServiceBean datasetService, PermissionsWrapper permissionsWrapper,
+    public SelectGuestbookPage(DatasetDao datasetDao, PermissionsWrapper permissionsWrapper,
                                DataverseRequestServiceBean dvRequestService, DatasetVersionServiceBean versionService) {
-        this.datasetService = datasetService;
+        this.datasetDao = datasetDao;
         this.permissionsWrapper = permissionsWrapper;
         this.dvRequestService = dvRequestService;
         this.versionService = versionService;
@@ -83,9 +83,9 @@ public class SelectGuestbookPage implements java.io.Serializable {
     // -------------------- LOGIC --------------------
     public String init() {
         if (persistentId != null) {
-            dataset = datasetService.findByGlobalId(persistentId);
+            dataset = datasetDao.findByGlobalId(persistentId);
         } else if (datasetId != null) {
-            dataset = datasetService.find(datasetId);
+            dataset = datasetDao.find(datasetId);
         }
 
         if (dataset == null) {
@@ -96,7 +96,7 @@ public class SelectGuestbookPage implements java.io.Serializable {
         if (!permissionsWrapper.canUpdateDataset(dvRequestService.getDataverseRequest(), dataset)) {
             return permissionsWrapper.notAuthorized();
         }
-        if (datasetService.isInReview(dataset) && !permissionsWrapper.canUpdateAndPublishDataset(dvRequestService.getDataverseRequest(), dataset)) {
+        if (datasetDao.isInReview(dataset) && !permissionsWrapper.canUpdateAndPublishDataset(dvRequestService.getDataverseRequest(), dataset)) {
             return permissionsWrapper.notAuthorized();
         }
 
@@ -141,7 +141,7 @@ public class SelectGuestbookPage implements java.io.Serializable {
 
     // -------------------- PRIVATE --------------------
     private String returnToLatestVersion() {
-        dataset = datasetService.find(dataset.getId());
+        dataset = datasetDao.find(dataset.getId());
         workingVersion = dataset.getLatestVersion();
         if (workingVersion.isDeaccessioned() && dataset.getReleasedVersion() != null) {
             workingVersion = dataset.getReleasedVersion();

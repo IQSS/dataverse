@@ -20,7 +20,7 @@
 package edu.harvard.iq.dataverse.batch.jobs.importer.filesystem;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
@@ -46,7 +46,7 @@ public class FileRecordProcessor implements ItemProcessor {
     JobContext jobContext;
 
     @EJB
-    DatasetServiceBean datasetServiceBean;
+    DatasetDao datasetDao;
 
     @EJB
     DataFileServiceBean dataFileServiceBean;
@@ -57,7 +57,7 @@ public class FileRecordProcessor implements ItemProcessor {
     public void init() {
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         Properties jobParams = jobOperator.getParameters(jobContext.getInstanceId());
-        dataset = datasetServiceBean.find(new Long(jobParams.getProperty("datasetId")));
+        dataset = datasetDao.find(new Long(jobParams.getProperty("datasetId")));
     }
 
     // TODO: This method may be meaningles when used in the context of a "package file" 

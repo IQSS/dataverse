@@ -6,7 +6,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
@@ -93,7 +93,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
     MapLayerMetadataServiceBean mapLayerMetadataService;
 
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
 
     @EJB
     DataFileServiceBean dataFileService;

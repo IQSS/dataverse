@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailComman
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import org.primefaces.event.FileUploadEvent;
@@ -33,7 +32,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DatasetWidgetsPage.class.getCanonicalName());
 
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
 
     @EJB
     EjbDataverseEngine commandEngine;
@@ -63,7 +62,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         if (datasetId == null || datasetId.intValue() <= 0) {
             return permissionsWrapper.notFound();
         }
-        dataset = datasetService.find(datasetId);
+        dataset = datasetDao.find(datasetId);
         if (dataset == null) {
             return permissionsWrapper.notFound();
         }
@@ -75,7 +74,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         if (!permissionsWrapper.canIssueCommand(dataset, UpdateDatasetVersionCommand.class)) {
             return permissionsWrapper.notAuthorized();
         }
-        if (datasetService.isInReview(dataset) && !permissionsWrapper.canUpdateAndPublishDataset(dvRequestService.getDataverseRequest(), dataset)) {
+        if (datasetDao.isInReview(dataset) && !permissionsWrapper.canUpdateAndPublishDataset(dvRequestService.getDataverseRequest(), dataset)) {
             return permissionsWrapper.notAuthorized();
         }
 

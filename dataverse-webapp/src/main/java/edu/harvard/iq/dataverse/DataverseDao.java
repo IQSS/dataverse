@@ -59,7 +59,7 @@ public class DataverseDao implements java.io.Serializable {
     AuthenticationServiceBean authService;
 
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
 
     @EJB
     DataverseLinkingDao dataverseLinkingService;
@@ -292,12 +292,12 @@ public class DataverseDao implements java.io.Serializable {
     // file in every dataset below...
     // -- L.A. 4.0 beta14
         /*
-        for (Dataset dataset : datasetService.findPublishedByOwnerId(dataverse.getId())) {
+        for (Dataset dataset : datasetDao.findPublishedByOwnerId(dataverse.getId())) {
             if (dataset != null) {
                 DatasetVersion releasedVersion = dataset.getReleasedVersion();
                 
                 if (releasedVersion != null) {
-                    if (datasetService.isDatasetCardImageAvailable(releasedVersion, user)) {
+                    if (datasetDao.isDatasetCardImageAvailable(releasedVersion, user)) {
                         return true;
                     }
                 }
@@ -597,7 +597,7 @@ public class DataverseDao implements java.io.Serializable {
         // get list of Dataverse children
         List<Long> dataverseChildren = findIdsByOwnerId(dvId);
         // get list of Dataset children
-        List<Long> datasetChildren = datasetService.findIdsByOwnerId(dvId);
+        List<Long> datasetChildren = datasetDao.findIdsByOwnerId(dvId);
 
         if (dataverseChildren == null) {
             return datasetChildren;

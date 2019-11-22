@@ -1,26 +1,35 @@
-package edu.harvard.iq.dataverse.datafile.page;
+package edu.harvard.iq.dataverse.datafile;
 
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
+import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
+import edu.harvard.iq.dataverse.datafile.pojo.RsyncInfo;
 import edu.harvard.iq.dataverse.engine.command.exception.UpdateDatasetException;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import io.vavr.control.Option;
 import io.vavr.control.Try;
+import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 import javax.validation.ValidationException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Stateless
 public class FileService {
@@ -46,6 +55,13 @@ public class FileService {
 
     // -------------------- LOGIC --------------------
 
+    public Set<Dataset> deleteFiles(Collection<FileMetadata> filesToDelete) {
+
+        return filesToDelete.stream()
+                .map(this::deleteFile)
+                .collect(Collectors.toSet());
+    }
+
     /**
      * If the dataset is realised it creates it's draft version, and then it deletes the file from newly created datasetdraft.
      * Otherwise it deletes the file from current dataset and the actual storage.
@@ -59,6 +75,10 @@ public class FileService {
             constraintViolations.forEach(constraintViolation -> logger.warning(constraintViolation.getMessage()));
             throw new ValidationException("There was validation error during deletion attempt with the dataFile id: " + fileToDelete.getDataFile().getId());
 
+        }
+
+        if (isFileAThumbnail(fileToDelete, datasetFileOwner)) {
+            datasetFileOwner.setThumbnailFile(null);
         }
 
         Dataset updatedDataset = updateDatasetVersion(Lists.newArrayList(fileToDelete), datasetFileOwner);
@@ -95,12 +115,26 @@ public class FileService {
         return datasetFileOwner;
     }
 
+    public Option<RsyncInfo> retrieveRsyncScript(Dataset dataset, DatasetVersion workingVersion) {
+        ScriptRequestResponse scriptRequestResponse = commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset));
+
+        if (StringUtils.isNotEmpty(scriptRequestResponse.getScript())) {
+            return Option.of(new RsyncInfo(scriptRequestResponse.getScript(), DataCaptureModuleUtil.getScriptName(workingVersion)));
+        }
+
+        return Option.none();
+    }
+
     // -------------------- PRIVATE --------------------
 
     private Dataset updateDatasetVersion(List<FileMetadata> filesToDelete, Dataset datasetFileOwner) {
         return Try.of(() -> commandEngine.submit(new UpdateDatasetVersionCommand(datasetFileOwner, dvRequestService.getDataverseRequest(),
                                                                                  filesToDelete)))
                 .getOrElseThrow(throwable -> new UpdateDatasetException("Dataset Update failed with dataset id: " + datasetFileOwner.getId(), throwable));
+    }
+
+    private boolean isFileAThumbnail(FileMetadata thumbnailFile, Dataset datasetFileOwner) {
+        return thumbnailFile.getDataFile().equals(datasetFileOwner.getThumbnailFile());
     }
 
     private void deleteFilePhysically(FileMetadata fileToDelete) {

@@ -61,7 +61,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     @EJB
     HarvesterServiceBean harvesterService;
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
     @EJB
     IndexServiceBean indexService;
     @EJB

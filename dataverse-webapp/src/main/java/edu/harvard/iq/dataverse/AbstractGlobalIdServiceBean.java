@@ -31,7 +31,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     @EJB
     EjbDataverseEngine commandEngine;
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
     @EJB
     DataFileServiceBean datafileService;
     @EJB
@@ -114,7 +114,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         String authority = dvObject.getAuthority() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Authority) : dvObject.getAuthority();
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, commandEngine.getContext());
         if (dvObject.isInstanceofDataset()) {
-            dvObject.setIdentifier(datasetService.generateDatasetIdentifier((Dataset) dvObject, idServiceBean));
+            dvObject.setIdentifier(datasetDao.generateDatasetIdentifier((Dataset) dvObject, idServiceBean));
         } else {
             dvObject.setIdentifier(datafileService.generateDataFileIdentifier((DataFile) dvObject, idServiceBean));
         }

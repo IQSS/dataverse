@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.persistence.harvest.OAISet;
 
@@ -28,7 +28,7 @@ public class Metadata extends AbstractApiBean {
     OAISetServiceBean oaiSetService;
 
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
 
     /**
      * initial attempt at triggering indexing/creation/population of a OAI set without going throught

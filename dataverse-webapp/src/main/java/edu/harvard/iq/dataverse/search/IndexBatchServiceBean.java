@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -37,7 +37,7 @@ public class IndexBatchServiceBean {
     @EJB
     DataverseDao dataverseDao;
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
     @EJB
     DvObjectServiceBean dvObjectService;
     @EJB
@@ -65,7 +65,7 @@ public class IndexBatchServiceBean {
             dataverseIdsJson.add(id);
         }
 
-        List<Long> datasetIds = datasetService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
+        List<Long> datasetIds = datasetDao.findAllOrSubset(numPartitions, partitionId, skipIndexed);
 
         JsonArrayBuilder datasetIdsJson = Json.createArrayBuilder();
         for (Long id : datasetIds) {
@@ -137,7 +137,7 @@ public class IndexBatchServiceBean {
 
         int datasetIndexCount = 0;
         int datasetFailureCount = 0;
-        List<Long> datasetIds = datasetService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
+        List<Long> datasetIds = datasetDao.findAllOrSubset(numPartitions, partitionId, skipIndexed);
         for (Long id : datasetIds) {
             try {
                 datasetIndexCount++;

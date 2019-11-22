@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.dataset.file;
 
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
@@ -59,7 +59,7 @@ public class ReplaceDatafilesPage implements Serializable {
 
     private PermissionsWrapper permissionsWrapper;
     private PermissionServiceBean permissionService;
-    private DatasetServiceBean datasetService;
+    private DatasetDao datasetDao;
     private DataFileServiceBean datafileService;
     private DataverseRequestServiceBean dvRequestService;
     private SettingsServiceBean settingsService;
@@ -85,12 +85,12 @@ public class ReplaceDatafilesPage implements Serializable {
 
     @Inject
     public ReplaceDatafilesPage(ReplaceFileHandler replaceFileHandler, PermissionsWrapper permissionsWrapper, PermissionServiceBean permissionService,
-                                DatasetServiceBean datasetService, DataFileServiceBean datafileService, DataverseRequestServiceBean dvRequestService,
+                                DatasetDao datasetDao, DataFileServiceBean datafileService, DataverseRequestServiceBean dvRequestService,
                                 SettingsServiceBean settingsService) {
         this.replaceFileHandler = replaceFileHandler;
         this.permissionsWrapper = permissionsWrapper;
         this.permissionService = permissionService;
-        this.datasetService = datasetService;
+        this.datasetDao = datasetDao;
         this.datafileService = datafileService;
         this.dvRequestService = dvRequestService;
         this.settingsService = settingsService;
@@ -140,7 +140,7 @@ public class ReplaceDatafilesPage implements Serializable {
     // -------------------- LOGIC --------------------
 
     public String init() {
-        dataset = datasetService.find(datasetId);
+        dataset = datasetDao.find(datasetId);
         fileToBeReplaced = datafileService.find(fileId);
 
         String permissionError = checkPermissions(dataset, fileToBeReplaced);

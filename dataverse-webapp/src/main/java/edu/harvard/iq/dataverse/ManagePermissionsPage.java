@@ -83,7 +83,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
     @Inject
     PermissionsWrapper permissionsWrapper;
     @Inject
-    private DatasetServiceBean datasetService;
+    private DatasetDao datasetDao;
 
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -132,7 +132,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
         if(dvObject instanceof Dataset || dvObject instanceof DataFile) {
             Dataset dataset = dvObject instanceof Dataset ? (Dataset) dvObject : ((DataFile) dvObject).getOwner();
-            if (datasetService.isInReview(dataset)
+            if (datasetDao.isInReview(dataset)
                     && !(permissionsWrapper.canIssuePublishDatasetCommand(dataset)
                     && permissionsWrapper.canManageDatasetOrMinorDatasetPermissions(dvRequestService.getDataverseRequest().getUser(), dataset))) {
                 return permissionsWrapper.notAuthorized();

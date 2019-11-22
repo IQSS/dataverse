@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
@@ -46,7 +46,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     @EJB
     DataverseDao dataverseDao;
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
     @EJB
     DatasetVersionServiceBean datasetVersionService;
     @EJB
@@ -412,7 +412,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             // if SOLR is down:
 
             List contentsList = dataverseDao.findByOwnerId(dataverse.getId());
-            contentsList.addAll(datasetService.findByOwnerId(dataverse.getId()));
+            contentsList.addAll(dataverseDao.findByOwnerId(dataverse.getId()));
 //            directChildDvObjectContainerList.addAll(contentsList);
         }
         /**
@@ -1151,7 +1151,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         // SQL query:
 
         if (harvestedDatasetIds != null) {
-            Map<Long, String> descriptionsForHarvestedDatasets = datasetService.getArchiveDescriptionsForHarvestedDatasets(harvestedDatasetIds);
+            Map<Long, String> descriptionsForHarvestedDatasets = datasetDao.getArchiveDescriptionsForHarvestedDatasets(harvestedDatasetIds);
             if (descriptionsForHarvestedDatasets != null && descriptionsForHarvestedDatasets.size() > 0) {
                 for (SolrSearchResult result : searchResultsList) {
                     if (result.isHarvested()) {

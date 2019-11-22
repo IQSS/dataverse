@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api.batchjob;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
@@ -31,7 +31,7 @@ public class FileRecordJobResource extends AbstractApiBean {
     PermissionServiceBean permissionServiceBean;
 
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
 
     @POST
     @Path("import/datasets/files/{identifier}")

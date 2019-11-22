@@ -1,17 +1,15 @@
 package edu.harvard.iq.dataverse.harvest.server;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.persistence.harvest.OAISet;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient.RemoteSolrException;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
@@ -54,7 +52,7 @@ public class OAISetServiceBean implements java.io.Serializable {
     OAIRecordServiceBean oaiRecordService;
 
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
     
     @Inject
     SolrClient solrServer;
@@ -162,7 +160,7 @@ public class OAISetServiceBean implements java.io.Serializable {
                 // findAllLocalDatasetIds() finds the ids of all the local datasets - 
                 // including the unpublished drafts and deaccessioned ones.
                 // Those will be filtered out further down the line. 
-                datasetIds = datasetService.findAllLocalDatasetIds();
+                datasetIds = datasetDao.findAllLocalDatasetIds();
             }
         } catch (OaiSetException ose) {
             datasetIds = null;
@@ -190,7 +188,7 @@ public class OAISetServiceBean implements java.io.Serializable {
             exportLogger.setUseParentHandlers(false);
             fileHandlerSuceeded = true;
         } catch (IOException | SecurityException ex) {
-            Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DatasetDao.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         if (fileHandlerSuceeded) {

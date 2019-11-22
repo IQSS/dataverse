@@ -66,7 +66,7 @@ public class CreateDatasetPage implements Serializable {
     @EJB
     private UserDataFieldFiller userDataFieldFiller;
     @EJB
-    private DatasetSaver datasetSaver;
+    private DatasetService DatasetService;
 
     private Dataset dataset;
     private Long ownerId;
@@ -159,7 +159,7 @@ public class CreateDatasetPage implements Serializable {
 
         mapTermsOfUseInFiles(newFiles);
 
-        Try<Dataset> createDatasetOperation = Try.of(() -> datasetSaver.createDataset(dataset, selectedTemplate))
+        Try<Dataset> createDatasetOperation = Try.of(() -> DatasetService.createDataset(dataset, selectedTemplate))
                 .onFailure(NotAuthenticatedException.class,
                     ex -> handleErrorMessage(BundleUtil.getStringFromBundle("dataset.create.authenticatedUsersOnly"), ex))
                 .onFailure(EJBException.class,
@@ -172,7 +172,7 @@ public class CreateDatasetPage implements Serializable {
         }
 
 
-        Try.of(() -> datasetSaver.addFilesToDataset(dataset.getId(), newFiles))
+        Try.of(() -> DatasetService.addFilesToDataset(dataset.getId(), newFiles))
             .onFailure(ex -> handleErrorMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess.failedToSaveFiles"), ex))
             .onSuccess(addFilesResult -> handleSuccessOrPartialSuccessMessages(newFiles.size(), addFilesResult))
             .onSuccess(addFilesResult -> dataset = addFilesResult.getDataset());

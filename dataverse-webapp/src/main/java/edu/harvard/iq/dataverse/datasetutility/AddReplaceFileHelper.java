@@ -52,7 +52,7 @@ import java.util.logging.Logger;
  * <p>
  * AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
  * this.ingestService,
- * this.datasetService,
+ * this.datasetDao,
  * this.fileService,
  * this.permissionSvc,
  * this.commandEngine);
@@ -149,7 +149,7 @@ public class AddReplaceFileHelper {
      *
      * @param dataset
      * @param ingestService
-     * @param datasetService
+     * @param datasetDao
      * @param dvRequest
      */
     public AddReplaceFileHelper(DataverseRequest dvRequest,

@@ -21,7 +21,7 @@ import com.lyncode.xoai.model.oaipmh.Verb;
 import com.lyncode.xoai.services.impl.SimpleResumptionTokenFormat;
 import com.lyncode.xoai.xml.XSISchema;
 import com.lyncode.xoai.xml.XmlWriter;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.ExporterType;
@@ -73,7 +73,7 @@ public class OAIServlet extends HttpServlet {
     @EJB
     DataverseDao dataverseDao;
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
 
     @EJB
     SystemConfig systemConfig;
@@ -107,7 +107,7 @@ public class OAIServlet extends HttpServlet {
         }
 
         setRepository = new XsetRepository(setService);
-        itemRepository = new XitemRepository(recordService, datasetService);
+        itemRepository = new XitemRepository(recordService, datasetDao);
 
         repositoryConfiguration = createRepositoryConfiguration();
 

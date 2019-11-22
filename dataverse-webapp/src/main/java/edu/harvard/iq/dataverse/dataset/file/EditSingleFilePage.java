@@ -1,16 +1,16 @@
 package edu.harvard.iq.dataverse.dataset.file;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.EditDatafilesPage;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileDownloadHelper;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.datafile.page.EditDatafilesPage;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -54,7 +54,7 @@ public class EditSingleFilePage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(EditSingleFilePage.class.getCanonicalName());
 
-    private DatasetServiceBean datasetService;
+    private DatasetDao datasetDao;
     private DataFileServiceBean datafileService;
     private PermissionServiceBean permissionService;
     private EjbDataverseEngine commandEngine;
@@ -95,11 +95,11 @@ public class EditSingleFilePage implements java.io.Serializable {
     }
 
     @Inject
-    public EditSingleFilePage(DatasetServiceBean datasetService, DataFileServiceBean datafileService, PermissionServiceBean permissionService,
+    public EditSingleFilePage(DatasetDao datasetDao, DataFileServiceBean datafileService, PermissionServiceBean permissionService,
                               EjbDataverseEngine commandEngine, DataverseSession session, SettingsServiceBean settingsService,
                               IndexServiceBean indexService, DataverseRequestServiceBean dvRequestService, PermissionsWrapper permissionsWrapper,
                               FileDownloadHelper fileDownloadHelper, ProvPopupFragmentBean provPopupFragmentBean) {
-        this.datasetService = datasetService;
+        this.datasetDao = datasetDao;
         this.datafileService = datafileService;
         this.permissionService = permissionService;
         this.commandEngine = commandEngine;
@@ -184,7 +184,7 @@ public class EditSingleFilePage implements java.io.Serializable {
 
         if (dataset.getId() != null) {
             // Set Working Version and Dataset by Dataset Id and Version
-            dataset = datasetService.find(dataset.getId());
+            dataset = datasetDao.find(dataset.getId());
             // Is the Dataset harvested? (because we don't allow editing of harvested
             // files!)
             if (dataset == null || dataset.isHarvested()) {
@@ -207,7 +207,7 @@ public class EditSingleFilePage implements java.io.Serializable {
         if (!permissionService.on(dataset).has(Permission.EditDataset)) {
             return permissionsWrapper.notAuthorized();
         }
-        if (datasetService.isInReview(dataset) && !permissionsWrapper.canUpdateAndPublishDataset(dvRequestService.getDataverseRequest(), dataset)) {
+        if (datasetDao.isInReview(dataset) && !permissionsWrapper.canUpdateAndPublishDataset(dvRequestService.getDataverseRequest(), dataset)) {
             return permissionsWrapper.notAuthorized();
         }
 
@@ -466,7 +466,7 @@ public class EditSingleFilePage implements java.io.Serializable {
         try {
             DatasetThumbnail datasetThumbnail = commandEngine.submit(new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, fileMetadata.getDataFile().getId(), null));
             // look up the dataset again because the UpdateDatasetThumbnailCommand mutates (merges) the dataset
-            dataset = datasetService.find(dataset.getId());
+            dataset = datasetDao.find(dataset.getId());
         } catch (CommandException ex) {
             String error = "Problem setting thumbnail for dataset id " + dataset.getId() + ".: " + ex;
             // show this error to the user?

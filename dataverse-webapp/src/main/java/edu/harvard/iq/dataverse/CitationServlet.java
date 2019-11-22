@@ -20,7 +20,7 @@ import java.io.IOException;
 public class CitationServlet extends HttpServlet {
 
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -36,7 +36,7 @@ public class CitationServlet extends HttpServlet {
 
         String persistentId = request.getParameter("persistentId");
         if (persistentId != null) {
-            Dataset ds = datasetService.findByGlobalId(persistentId);
+            Dataset ds = datasetDao.findByGlobalId(persistentId);
             if (ds != null) {
                 response.sendRedirect("dataset.xhtml?persistentId=" + persistentId);
                 return;

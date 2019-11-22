@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.dataset.datasetversion;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -30,7 +30,7 @@ public class DatasetVersionServiceBeanIT extends WebappArquillianDeployment {
     @Inject
     private DatasetVersionServiceBean datasetVersionService;
     @Inject
-    private DatasetServiceBean datasetService;
+    private DatasetDao datasetDao;
     @Inject
     private GuestbookServiceBean guestbookService;
     @Inject
@@ -46,14 +46,14 @@ public class DatasetVersionServiceBeanIT extends WebappArquillianDeployment {
     @Test
     public void shouldUpdateDatasetVersion() {
         // given
-        Dataset dataset = datasetService.find(56L);
+        Dataset dataset = datasetDao.find(56L);
 
         // when
         dataset.setGuestbook(guestbookService.find(2L));
         datasetVersionService.updateDatasetVersion(dataset.getEditVersion(), true);
 
         // then
-        Dataset dbDataset = datasetService.find(56L);
+        Dataset dbDataset = datasetDao.find(56L);
         assertEquals(2L, (long) dbDataset.getGuestbook().getId());
     }
 }

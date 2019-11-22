@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.datasetutility;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
@@ -67,7 +67,7 @@ public class ReplaceFileHandlerIT extends WebappArquillianDeployment {
     private DataverseSession dataverseSession;
 
     @EJB
-    private DatasetServiceBean datasetService;
+    private DatasetDao datasetDao;
 
     @Test
     public void shouldCreateDataFile() {
@@ -119,7 +119,7 @@ public class ReplaceFileHandlerIT extends WebappArquillianDeployment {
         replaceFileHandler.replaceFile(dataset.getFiles().get(0), dataset, newDataFile);
 
         //then
-        Dataset dbDataset = datasetService.find(dataset.getId());
+        Dataset dbDataset = datasetDao.find(dataset.getId());
 
         List<DatasetVersion> dbDatasetVersions = dbDataset.getVersions();
         Assert.assertEquals(2, dbDatasetVersions.size());

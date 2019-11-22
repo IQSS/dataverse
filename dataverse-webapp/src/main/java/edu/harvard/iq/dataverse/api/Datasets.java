@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
@@ -146,7 +146,7 @@ public class Datasets extends AbstractApiBean {
     DataverseSession session;
 
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
 
     @EJB
     DataverseDao dataverseDao;
@@ -242,7 +242,7 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, exporter + " is not a valid exporter");
         }
 
-        Dataset dataset = datasetService.findByGlobalId(persistentId);
+        Dataset dataset = datasetDao.findByGlobalId(persistentId);
         if (dataset == null) {
             return error(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
         }
@@ -489,7 +489,7 @@ public class Datasets extends AbstractApiBean {
     @Path("/modifyRegistrationAll")
     public Response updateDatasetTargetURLAll() {
         return response(req -> {
-            datasetService.findAll().forEach(ds -> {
+            datasetDao.findAll().forEach(ds -> {
                 try {
                     execCommand(new UpdateDatasetTargetURLCommand(findDatasetOrDie(ds.getId().toString()), req));
                 } catch (WrappedResponse ex) {
@@ -524,7 +524,7 @@ public class Datasets extends AbstractApiBean {
     @Path("/modifyRegistrationPIDMetadataAll")
     public Response updateDatasetPIDMetadataAll() {
         return response(req -> {
-            datasetService.findAll().forEach(ds -> {
+            datasetDao.findAll().forEach(ds -> {
                 try {
                     execCommand(new UpdateDvObjectPIDMetadataCommand(findDatasetOrDie(ds.getId().toString()), req));
                 } catch (WrappedResponse ex) {
@@ -1230,7 +1230,7 @@ public class Datasets extends AbstractApiBean {
             AuthenticatedUser user = findAuthenticatedUserOrDie();
             ScriptRequestResponse scriptRequestResponse = execCommand(new RequestRsyncScriptCommand(createDataverseRequest(user), dataset));
 
-            DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.DcmUpload, user.getId(), "script downloaded");
+            DatasetLock lock = datasetDao.addDatasetLock(dataset.getId(), DatasetLock.Reason.DcmUpload, user.getId(), "script downloaded");
             if (lock == null) {
                 logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
                 return error(Response.Status.FORBIDDEN, "Failed to lock the dataset (dataset id=" + dataset.getId() + ")");
@@ -1313,7 +1313,7 @@ public class Datasets extends AbstractApiBean {
                         if (dcmLock == null) {
                             logger.log(Level.WARNING, "Dataset not locked for DCM upload");
                         } else {
-                            datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.DcmUpload);
+                            datasetDao.removeDatasetLocks(dataset, DatasetLock.Reason.DcmUpload);
                             dataset.removeLock(dcmLock);
                         }
 

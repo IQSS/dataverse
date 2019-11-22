@@ -14,7 +14,7 @@ import com.lyncode.xoai.dataprovider.model.Item;
 import com.lyncode.xoai.dataprovider.model.ItemIdentifier;
 import com.lyncode.xoai.dataprovider.model.Set;
 import com.lyncode.xoai.dataprovider.repository.ItemRepository;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.harvest.OAIRecord;
@@ -36,12 +36,12 @@ public class XitemRepository implements ItemRepository {
     private static Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.xoai.XitemRepository");
 
     private OAIRecordServiceBean recordService;
-    private DatasetServiceBean datasetService;
+    private DatasetDao datasetDao;
 
-    public XitemRepository(OAIRecordServiceBean recordService, DatasetServiceBean datasetService) {
+    public XitemRepository(OAIRecordServiceBean recordService, DatasetDao datasetDao) {
         super();
         this.recordService = recordService;
-        this.datasetService = datasetService;
+        this.datasetDao = datasetDao;
     }
 
     private List<Xitem> list = new ArrayList<Xitem>();
@@ -55,7 +55,7 @@ public class XitemRepository implements ItemRepository {
             Xitem xoaiItem = null;
             for (OAIRecord record : oaiRecords) {
                 if (xoaiItem == null) {
-                    Dataset dataset = datasetService.findByGlobalId(record.getGlobalId());
+                    Dataset dataset = datasetDao.findByGlobalId(record.getGlobalId());
                     if (dataset != null) {
                         xoaiItem = new Xitem(record).withDataset(dataset);
                     }
@@ -196,7 +196,7 @@ public class XitemRepository implements ItemRepository {
 
             for (int i = offset; i < offset + length && i < oaiRecords.size(); i++) {
                 OAIRecord oaiRecord = oaiRecords.get(i);
-                Dataset dataset = datasetService.findByGlobalId(oaiRecord.getGlobalId());
+                Dataset dataset = datasetDao.findByGlobalId(oaiRecord.getGlobalId());
                 if (dataset != null) {
                     Xitem xItem = new Xitem(oaiRecord).withDataset(dataset);
                     xoaiItems.add(xItem);

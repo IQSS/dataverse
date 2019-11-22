@@ -3,8 +3,8 @@ package edu.harvard.iq.dataverse.engine.command;
 import edu.harvard.iq.dataverse.DOIDataCiteServiceBean;
 import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseFacetServiceBean;
 import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevelServiceBean;
@@ -64,7 +64,7 @@ public interface CommandContext {
 
     DvObjectServiceBean dvObjects();
 
-    DatasetServiceBean datasets();
+    DatasetDao datasets();
 
     DataverseDao dataverses();
 

@@ -2,13 +2,12 @@ package edu.harvard.iq.dataverse.dataset.tab;
 
 import com.google.common.base.Strings;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileDownloadHelper;
 import edu.harvard.iq.dataverse.FileDownloadServiceBean;
-import edu.harvard.iq.dataverse.guestbook.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
@@ -21,6 +20,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import edu.harvard.iq.dataverse.guestbook.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.license.TermsOfUseFormMapper;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileCategory;
@@ -73,7 +73,7 @@ public class DatasetFilesTab implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetFilesTab.class.getCanonicalName());
 
-    private DatasetServiceBean datasetService;
+    private DatasetDao datasetDao;
     private DataFileServiceBean datafileService;
     private GuestbookResponseServiceBean guestbookResponseService;
     private ExternalToolServiceBean externalToolService;
@@ -162,7 +162,7 @@ public class DatasetFilesTab implements Serializable {
     @Inject
     public DatasetFilesTab(FileDownloadHelper fileDownloadHelper, DataFileServiceBean datafileService,
                            PermissionServiceBean permissionService, PermissionsWrapper permissionsWrapper,
-                           DataverseRequestServiceBean dvRequestService, DatasetServiceBean datasetService, DataverseSession session,
+                           DataverseRequestServiceBean dvRequestService, DatasetDao datasetDao, DataverseSession session,
                            FileDownloadServiceBean fileDownloadService, GuestbookResponseServiceBean guestbookResponseService,
                            SettingsServiceBean settingsService, EjbDataverseEngine commandEngine,
                            ExternalToolServiceBean externalToolService, TermsOfUseFormMapper termsOfUseFormMapper) {
@@ -171,7 +171,7 @@ public class DatasetFilesTab implements Serializable {
         this.permissionService = permissionService;
         this.permissionsWrapper = permissionsWrapper;
         this.dvRequestService = dvRequestService;
-        this.datasetService = datasetService;
+        this.datasetDao = datasetDao;
         this.session = session;
         this.fileDownloadService = fileDownloadService;
         this.guestbookResponseService = guestbookResponseService;
@@ -397,7 +397,7 @@ public class DatasetFilesTab implements Serializable {
 
         // If the script has been successfully downloaded, lock the dataset:
         String lockInfoMessage = "script downloaded";
-        DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.DcmUpload, session.getUser() != null ? ((AuthenticatedUser) session.getUser()).getId() : null, lockInfoMessage);
+        DatasetLock lock = datasetDao.addDatasetLock(dataset.getId(), DatasetLock.Reason.DcmUpload, session.getUser() != null ? ((AuthenticatedUser) session.getUser()).getId() : null, lockInfoMessage);
         if (lock != null) {
             dataset.addLock(lock);
         } else {
@@ -809,7 +809,7 @@ public class DatasetFilesTab implements Serializable {
     }
 
     private void refreshSelectedFiles() {
-        dataset = datasetService.find(dataset.getId());
+        dataset = datasetDao.find(dataset.getId());
         workingVersion = dataset.getEditVersion();
 
         List<DataFile> selectedDataFiles = selectedFiles.stream()

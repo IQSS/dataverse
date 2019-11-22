@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.mydata;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
@@ -60,7 +60,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
     @EJB
     DataverseDao dataverseDao;
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
     @EJB
     DvObjectServiceBean dvObjectService;
     @Inject
@@ -573,7 +573,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
         // SQL query:
 
         if (harvestedDatasetIds != null) {
-            Map<Long, String> descriptionsForHarvestedDatasets = datasetService.getArchiveDescriptionsForHarvestedDatasets(harvestedDatasetIds);
+            Map<Long, String> descriptionsForHarvestedDatasets = datasetDao.getArchiveDescriptionsForHarvestedDatasets(harvestedDatasetIds);
             if (descriptionsForHarvestedDatasets != null && descriptionsForHarvestedDatasets.size() > 0) {
                 for (SolrSearchResult result : searchResultsList) {
                     if (result.isHarvested()) {

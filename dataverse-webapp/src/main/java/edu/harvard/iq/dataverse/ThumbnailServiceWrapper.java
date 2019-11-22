@@ -41,7 +41,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
     @EJB
     DataverseDao dataverseDao;
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
     @EJB
     DatasetVersionServiceBean datasetVersionService;
     @EJB

@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -74,8 +74,8 @@ public class ReturnDatasetToAuthorCommandTest {
             }
 
             @Override
-            public DatasetServiceBean datasets() {
-                return new DatasetServiceBean() {
+            public DatasetDao datasets() {
+                return new DatasetDao() {
                     {
                         em = new NoOpTestEntityManager();
                     }

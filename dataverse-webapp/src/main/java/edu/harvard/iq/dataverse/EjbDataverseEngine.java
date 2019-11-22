@@ -63,7 +63,7 @@ public class EjbDataverseEngine {
     private static final Logger logger = Logger.getLogger(EjbDataverseEngine.class.getCanonicalName());
 
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
 
     @EJB
     DataverseDao dataverseDao;
@@ -291,8 +291,8 @@ public class EjbDataverseEngine {
             ctxt = new CommandContext() {
 
                 @Override
-                public DatasetServiceBean datasets() {
-                    return datasetService;
+                public DatasetDao datasets() {
+                    return datasetDao;
                 }
 
                 @Override

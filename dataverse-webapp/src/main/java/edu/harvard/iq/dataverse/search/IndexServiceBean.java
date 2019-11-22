@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.search;
 
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseLinkingDao;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
@@ -88,7 +88,7 @@ public class IndexServiceBean {
     @EJB
     DataverseDao dataverseDao;
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
     @EJB
     BuiltinUserServiceBean dataverseUserServiceBean;
     @EJB
@@ -1443,7 +1443,7 @@ public class IndexServiceBean {
      */
     public List<Dataset> findStaleOrMissingDatasets() {
         List<Dataset> staleDatasets = new ArrayList<>();
-        for (Dataset dataset : datasetService.findAll()) {
+        for (Dataset dataset : datasetDao.findAll()) {
             if (stale(dataset)) {
                 staleDatasets.add(dataset);
             }

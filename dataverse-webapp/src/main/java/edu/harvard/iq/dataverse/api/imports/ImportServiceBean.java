@@ -7,8 +7,8 @@ package edu.harvard.iq.dataverse.api.imports;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlockDao;
@@ -83,7 +83,7 @@ public class ImportServiceBean {
     @EJB
     protected EjbDataverseEngine engineSvc;
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
     @EJB
     DataverseDao dataverseDao;
     @EJB
@@ -328,7 +328,7 @@ public class ImportServiceBean {
             ds.setHarvestedFrom(harvestingClient);
             ds.setHarvestIdentifier(harvestIdentifier);
 
-            Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalIdString());
+            Dataset existingDs = datasetDao.findByGlobalId(ds.getGlobalIdString());
 
             if (existingDs != null) {
                 // If this dataset already exists IN ANOTHER DATAVERSE
@@ -499,7 +499,7 @@ public class ImportServiceBean {
             }
 
 
-            Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalIdString());
+            Dataset existingDs = datasetDao.findByGlobalId(ds.getGlobalIdString());
 
             if (existingDs != null) {
                 if (importType.equals(ImportType.HARVEST)) {

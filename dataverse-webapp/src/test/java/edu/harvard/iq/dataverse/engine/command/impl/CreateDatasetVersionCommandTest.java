@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -34,11 +34,11 @@ import static org.junit.Assert.assertEquals;
 public class CreateDatasetVersionCommandTest {
 
     @Mock
-    private DatasetServiceBean datasetService;
+    private DatasetDao datasetDao;
 
     @Before
     public void prepare(){
-        Mockito.when(datasetService.storeVersion(Mockito.any(DatasetVersion.class))).thenReturn(new DatasetVersion());
+        Mockito.when(datasetDao.storeVersion(Mockito.any(DatasetVersion.class))).thenReturn(new DatasetVersion());
     }
 
     @Test
@@ -66,15 +66,15 @@ public class CreateDatasetVersionCommandTest {
 
         TestDataverseEngine testEngine = new TestDataverseEngine(new TestCommandContext() {
             @Override
-            public DatasetServiceBean datasets() {
-                return datasetService;
+            public DatasetDao datasets() {
+                return datasetDao;
             }
         });
 
         testEngine.submit(sut);
 
         // asserts
-        Mockito.verify(datasetService, Mockito.times(1)).storeVersion(Mockito.any());
+        Mockito.verify(datasetDao, Mockito.times(1)).storeVersion(Mockito.any());
         Date dsvCreationDate = dsvNew.getCreateTime();
         assertEquals(dsvCreationDate, dsvNew.getLastUpdateTime());
         assertEquals(dsvCreationDate.getTime(), ds.getModificationTime().getTime());
@@ -98,8 +98,8 @@ public class CreateDatasetVersionCommandTest {
         TestDataverseEngine testEngine = new TestDataverseEngine(new TestCommandContext() {
 
             @Override
-            public DatasetServiceBean datasets() {
-                return datasetService;
+            public DatasetDao datasets() {
+                return datasetDao;
             }
 
         });

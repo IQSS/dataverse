@@ -6,7 +6,7 @@
 package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataConverter;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
@@ -32,7 +32,6 @@ import javax.persistence.PersistenceContext;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-
 import java.io.File;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -58,7 +57,7 @@ public class DDIExportServiceBean {
 
     private static final Logger logger = Logger.getLogger(DDIExportServiceBean.class.getCanonicalName());
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
 
     @EJB
     DataFileServiceBean fileService;
@@ -186,7 +185,7 @@ public class DDIExportServiceBean {
                 throw new IllegalArgumentException("Metadata Export: Invalid datafile id supplied.");
             }
         } else if (OBJECT_TAG_DATASET.equals(objectTag)) {
-            dataObject = datasetService.find(objectId);
+            dataObject = datasetDao.find(objectId);
             if (dataObject == null) {
                 throw new IllegalArgumentException("Metadata Export: Invalid dataset id supplied.");
             }

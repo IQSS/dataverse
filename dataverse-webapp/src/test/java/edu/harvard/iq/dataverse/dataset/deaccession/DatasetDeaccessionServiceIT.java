@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.dataset.deaccession;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -29,7 +29,7 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
     private DatasetDeaccessionService deaccessionService;
 
     @Inject
-    private DatasetServiceBean datasetService;
+    private DatasetDao datasetDao;
 
     @Inject
     private DataverseSession dataverseSession;
@@ -48,7 +48,7 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
     @Test
     public void shouldDeaccessVersion() {
         // given
-        Dataset dataset = datasetService.find(56L);
+        Dataset dataset = datasetDao.find(56L);
         DatasetVersion versionToBeDeaccessed = dataset.getReleasedVersion();
         int versionsCount = dataset.getVersions().size();
 
@@ -56,7 +56,7 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
         deaccessionService.deaccessVersion(versionToBeDeaccessed, "TestReason", "https://www.google.com/");
 
         // then
-        Dataset dbDataset = datasetService.find(56L);
+        Dataset dbDataset = datasetDao.find(56L);
 
         assertEquals(DatasetVersion.VersionState.DEACCESSIONED, versionsService.find(versionToBeDeaccessed.getId()).getVersionState());
         assertEquals(versionsCount, dbDataset.getVersions().size());
@@ -68,14 +68,14 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
     @Test
     public void shouldDeaccessVersions() {
         // given
-        Dataset dataset = datasetService.find(56L);
+        Dataset dataset = datasetDao.find(56L);
         int versionsCount = dataset.getVersions().size();
 
         // when
         deaccessionService.deaccessVersions(dataset.getVersions(), "TestReason", "https://www.google.com/");
 
         // then
-        Dataset dbDataset = datasetService.find(56L);
+        Dataset dbDataset = datasetDao.find(56L);
 
         assertEquals(versionsCount, dbDataset.getVersions().size());
         assertTrue(dbDataset.getVersions().stream()
@@ -85,14 +85,14 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
     @Test
     public void shouldDeaccessReleasedVersions() {
         // given
-        Dataset dataset = datasetService.find(56L);
+        Dataset dataset = datasetDao.find(56L);
         int versionsCount = dataset.getVersions().size();
 
         // when
         deaccessionService.deaccessReleasedVersions(dataset.getVersions(), "TestReason", "https://www.google.com/");
 
         // then
-        Dataset dbDataset = datasetService.find(56L);
+        Dataset dbDataset = datasetDao.find(56L);
         assertEquals(versionsCount, dbDataset.getVersions().size());
         assertFalse(dbDataset.getVersions().stream()
                 .anyMatch(version -> version.getVersionState().equals(DatasetVersion.VersionState.RELEASED)));

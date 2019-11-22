@@ -6,7 +6,7 @@
 package edu.harvard.iq.dataverse.harvest.client;
 
 import com.lyncode.xoai.model.oaipmh.Header;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -65,7 +65,7 @@ public class HarvesterServiceBean {
     private EntityManager em;
 
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
     @Resource
     javax.ejb.TimerService timerService;
     @EJB
@@ -326,7 +326,7 @@ public class HarvesterServiceBean {
             } else if (record.isDeleted()) {
                 hdLogger.info("Deleting harvesting dataset for " + identifier + ", per the OAI server's instructions.");
 
-                Dataset dataset = datasetService.getDatasetByHarvestInfo(oaiHandler.getHarvestingClient().getDataverse(), identifier);
+                Dataset dataset = datasetDao.getDatasetByHarvestInfo(oaiHandler.getHarvestingClient().getDataverse(), identifier);
                 if (dataset != null) {
                     hdLogger.info("Deleting dataset " + dataset.getGlobalIdString());
                     deleteHarvestedDataset(dataset, dataverseRequest, hdLogger);

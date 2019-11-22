@@ -5,13 +5,9 @@
  */
 package edu.harvard.iq.dataverse.harvest.server;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.export.ExportException;
-import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.harvest.OAIRecord;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -39,7 +35,7 @@ import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 public class OAIRecordServiceBean implements java.io.Serializable {
 
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
@@ -70,7 +66,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         if (datasetIds != null) {
             for (Long datasetId : datasetIds) {
                 setUpdateLogger.fine("processing dataset id=" + datasetId);
-                Dataset dataset = datasetService.find(datasetId);
+                Dataset dataset = datasetDao.find(datasetId);
                 if (dataset == null) {
                     setUpdateLogger.fine("failed to find dataset!");
                 } else if (dataset.isReleased() && !dataset.isDeaccessioned()) {

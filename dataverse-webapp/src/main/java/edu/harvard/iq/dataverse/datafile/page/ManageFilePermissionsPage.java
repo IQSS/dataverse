@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.datafile.page;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
@@ -28,7 +28,6 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,7 +49,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(ManageFilePermissionsPage.class.getCanonicalName());
 
-    private DatasetServiceBean datasetService;
+    private DatasetDao datasetDao;
     private RoleAssigneeServiceBean roleAssigneeService;
     private PermissionsWrapper permissionsWrapper;
     private FilePermissionsService filePermissionsService;
@@ -69,10 +68,10 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     }
 
     @Inject
-    public ManageFilePermissionsPage(DatasetServiceBean datasetService, RoleAssigneeServiceBean roleAssigneeService,
-            PermissionsWrapper permissionsWrapper, FilePermissionsService filePermissionsService,
-            DataverseRoleServiceBean roleService) {
-        this.datasetService = datasetService;
+    public ManageFilePermissionsPage(DatasetDao datasetDao, RoleAssigneeServiceBean roleAssigneeService,
+                                     PermissionsWrapper permissionsWrapper, FilePermissionsService filePermissionsService,
+                                     DataverseRoleServiceBean roleService) {
+        this.datasetDao = datasetDao;
         this.roleAssigneeService = roleAssigneeService;
         this.permissionsWrapper = permissionsWrapper;
         this.filePermissionsService = filePermissionsService;
@@ -100,7 +99,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         if (datasetId == null) {
             return permissionsWrapper.notFound();
         }
-        dataset = datasetService.find(datasetId);
+        dataset = datasetDao.find(datasetId);
 
         // check if dvObject exists and user has permission
         if (dataset == null) {

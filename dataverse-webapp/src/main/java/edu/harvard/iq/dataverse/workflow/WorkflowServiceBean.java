@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.workflow;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
@@ -57,7 +57,7 @@ public class WorkflowServiceBean {
     EntityManager em;
 
     @EJB
-    DatasetServiceBean datasets;
+    DatasetDao datasets;
 
     @EJB
     SettingsServiceBean settings;

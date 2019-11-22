@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.datafile.page;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
@@ -20,7 +20,7 @@ import java.util.Optional;
 public class ReorderDataFilesPage implements java.io.Serializable {
 
     @EJB
-    private DatasetServiceBean datasetService;
+    private DatasetDao datasetDao;
     @EJB
     private DatasetVersionServiceBean datasetVersionService;
     @EJB

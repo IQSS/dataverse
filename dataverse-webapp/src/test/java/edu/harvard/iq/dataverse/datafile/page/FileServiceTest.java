@@ -4,14 +4,20 @@ import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
+import edu.harvard.iq.dataverse.datafile.FileService;
+import edu.harvard.iq.dataverse.datafile.pojo.RsyncInfo;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.UpdateDatasetException;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import io.vavr.control.Option;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +32,7 @@ import org.mockito.quality.Strictness;
 import javax.validation.ValidationException;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -149,6 +156,45 @@ class FileServiceTest {
         assertThrows(RuntimeException.class, () -> fileService.saveProvenanceFileWithDesc(fileToEdit, provFile.getDataFile(), "provDesc"));
 
         verify(commandEngine, times(1)).submit(Mockito.any(PersistProvFreeFormCommand.class));
+    }
+
+    @Test
+    public void retrieveRsyncScript() {
+        //given
+        Dataset dataset = new Dataset();
+        dataset.setIdentifier("testId");
+        DatasetVersion datasetVersion = new DatasetVersion();
+        datasetVersion.setDataset(dataset);
+
+        when(commandEngine.submit(any(RequestRsyncScriptCommand.class)))
+                .thenReturn(new ScriptRequestResponse(200, "", 1, "testScript"));
+
+        //when
+        Option<RsyncInfo> rsyncScript = fileService.retrieveRsyncScript(dataset, datasetVersion);
+
+        //then
+        Assert.assertTrue(rsyncScript.isDefined());
+        Assert.assertEquals("testScript", rsyncScript.get().getRsyncScript());
+        Assert.assertEquals("upload-testId.bash", rsyncScript.get().getRsyncScriptFileName());
+
+    }
+
+    @Test
+    public void retrieveRsyncScript_WithMissingScript() {
+        //given
+        Dataset dataset = new Dataset();
+        dataset.setIdentifier("testId");
+        DatasetVersion datasetVersion = new DatasetVersion();
+        datasetVersion.setDataset(dataset);
+
+        when(commandEngine.submit(any(RequestRsyncScriptCommand.class)))
+                .thenReturn(new ScriptRequestResponse(200, "", 1, ""));
+
+        //when
+        Option<RsyncInfo> rsyncScript = fileService.retrieveRsyncScript(dataset, datasetVersion);
+
+        //then
+        Assert.assertTrue(rsyncScript.isEmpty());
     }
 
     // -------------------- PRIVATE --------------------

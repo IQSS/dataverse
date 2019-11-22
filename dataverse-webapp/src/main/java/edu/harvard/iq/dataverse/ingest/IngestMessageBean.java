@@ -21,7 +21,7 @@
 package edu.harvard.iq.dataverse.ingest;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestReport;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 public class IngestMessageBean implements MessageListener {
     private static final Logger logger = Logger.getLogger(IngestMessageBean.class.getCanonicalName());
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
     @EJB
     DataFileServiceBean datafileService;
     @EJB
@@ -129,7 +129,7 @@ public class IngestMessageBean implements MessageListener {
                 if (datafile != null) {
                     Dataset dataset = datafile.getOwner();
                     if (dataset != null && dataset.getId() != null) {
-                        datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.Ingest);
+                        datasetDao.removeDatasetLocks(dataset, DatasetLock.Reason.Ingest);
                     }
                 }
             }

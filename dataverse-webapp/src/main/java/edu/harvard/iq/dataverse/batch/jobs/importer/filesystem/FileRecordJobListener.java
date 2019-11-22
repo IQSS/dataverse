@@ -22,7 +22,7 @@ package edu.harvard.iq.dataverse.batch.jobs.importer.filesystem;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -95,7 +95,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
     ActionLogServiceBean actionLogServiceBean;
 
     @EJB
-    DatasetServiceBean datasetServiceBean;
+    DatasetDao datasetDao;
 
     @EJB
     DataFileServiceBean dataFileServiceBean;
@@ -350,7 +350,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
 
             String datasetId = jobParams.getProperty("datasetId");
 
-            dataset = datasetServiceBean.find(new Long(datasetId));
+            dataset = datasetDao.find(new Long(datasetId));
 
             if (dataset != null) {
                 getJobLogger().log(Level.INFO, "Dataset Identifier (datasetId=" + datasetId + "): " + dataset.getIdentifier());
@@ -359,7 +359,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         }
         if (jobParams.containsKey("datasetPrimaryKey")) {
             long datasetPrimaryKey = Long.parseLong(jobParams.getProperty("datasetPrimaryKey"));
-            dataset = datasetServiceBean.find(datasetPrimaryKey);
+            dataset = datasetDao.find(datasetPrimaryKey);
             if (dataset != null) {
                 getJobLogger().log(Level.INFO, "Dataset Identifier (datasetPrimaryKey=" + datasetPrimaryKey + "): "
                         + dataset.getIdentifier());

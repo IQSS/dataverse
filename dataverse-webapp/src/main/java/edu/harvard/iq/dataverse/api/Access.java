@@ -7,7 +7,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
@@ -123,7 +123,7 @@ public class Access extends AbstractApiBean {
     @EJB
     DataFileServiceBean dataFileService;
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
     @EJB
     DatasetVersionServiceBean versionService;
     @EJB
@@ -804,7 +804,7 @@ public class Access extends AbstractApiBean {
         StorageIO thumbnailDataAccess = null; 
         
         if (!dataverse.isHarvested()) {
-            for (Dataset dataset : datasetService.findPublishedByOwnerId(dataverseId)) {
+            for (Dataset dataset : datasetDao.findPublishedByOwnerId(dataverseId)) {
                 logger.info("dvCardImage: checking dataset "+dataset.getGlobalId());
                 if (dataset != null) {
                     DatasetVersion releasedVersion = dataset.getReleasedVersion();

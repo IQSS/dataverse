@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
@@ -91,7 +91,7 @@ public class DataverseUserPage implements java.io.Serializable {
     @EJB
     UserServiceBean userService;
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
     @EJB
     DataFileServiceBean fileService;
     @EJB
@@ -459,7 +459,7 @@ public class DataverseUserPage implements java.io.Serializable {
                         userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), dataverse));
                         userNotification.setTheObject(dataverse);
                     } else {
-                        Dataset dataset = datasetService.find(userNotification.getObjectId());
+                        Dataset dataset = datasetDao.find(userNotification.getObjectId());
                         if (dataset != null) {
                             userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), dataset));
                             userNotification.setTheObject(dataset);
@@ -480,7 +480,7 @@ public class DataverseUserPage implements java.io.Serializable {
                     break;
                 case GRANTFILEACCESS:
                 case REJECTFILEACCESS:
-                    userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
+                    userNotification.setTheObject(datasetDao.find(userNotification.getObjectId()));
                     break;
 
                 case MAPLAYERUPDATED:
@@ -500,7 +500,7 @@ public class DataverseUserPage implements java.io.Serializable {
                     break;
 
                 case CHECKSUMFAIL:
-                    userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
+                    userNotification.setTheObject(datasetDao.find(userNotification.getObjectId()));
                     break;
 
                 case FILESYSTEMIMPORT:

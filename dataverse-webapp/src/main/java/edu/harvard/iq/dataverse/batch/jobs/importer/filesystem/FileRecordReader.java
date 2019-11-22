@@ -19,7 +19,7 @@
 
 package edu.harvard.iq.dataverse.batch.jobs.importer.filesystem;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -69,7 +69,7 @@ public class FileRecordReader extends AbstractItemReader {
     private SystemConfig systemConfig;
 
     @EJB
-    DatasetServiceBean datasetServiceBean;
+    DatasetDao datasetDao;
 
     @EJB
     AuthenticationServiceBean authenticationServiceBean;
@@ -90,7 +90,7 @@ public class FileRecordReader extends AbstractItemReader {
     public void init() {
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         Properties jobParams = jobOperator.getParameters(jobContext.getInstanceId());
-        dataset = datasetServiceBean.find(new Long(jobParams.getProperty("datasetId")));
+        dataset = datasetDao.find(new Long(jobParams.getProperty("datasetId")));
         user = authenticationServiceBean.getAuthenticatedUser(jobParams.getProperty("userId"));
         mode = jobParams.getProperty("mode");
         uploadFolder = jobParams.getProperty("uploadFolder");

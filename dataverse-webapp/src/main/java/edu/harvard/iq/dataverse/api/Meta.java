@@ -8,7 +8,7 @@ package edu.harvard.iq.dataverse.api;
 
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -64,7 +64,7 @@ public class Meta {
     DataFileServiceBean datafileService;
 
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
 
     @Deprecated
     @Path("variable/{varId}")
@@ -149,7 +149,7 @@ public class Meta {
     @Produces({"application/xml"})
     public String dataset(@PathParam("datasetId") Long datasetId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException /*, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
 
-        Dataset dataset = datasetService.find(datasetId);
+        Dataset dataset = datasetDao.find(datasetId);
         if (dataset == null) {
             throw new NotFoundException();
         }

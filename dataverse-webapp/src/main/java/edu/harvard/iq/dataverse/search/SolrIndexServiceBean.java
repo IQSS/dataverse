@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
@@ -47,7 +47,7 @@ public class SolrIndexServiceBean {
     @EJB
     DataverseDao dataverseDao;
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
     @EJB
     DataverseRoleServiceBean rolesSvc;
     @EJB
@@ -394,7 +394,7 @@ public class SolrIndexServiceBean {
             if (!selfDataverse.equals(dataverseDao.findRootDataverse())) {
                 dvObjectsToReindexPermissionsFor.add(definitionPoint);
             }
-            List<Dataset> directChildDatasetsOfDvDefPoint = datasetService.findByOwnerId(selfDataverse.getId());
+            List<Dataset> directChildDatasetsOfDvDefPoint = datasetDao.findByOwnerId(selfDataverse.getId());
             for (Dataset dataset : directChildDatasetsOfDvDefPoint) {
                 dvObjectsToReindexPermissionsFor.add(dataset);
                 for (DataFile datafile : filesToReIndexPermissionsFor(dataset)) {

@@ -21,8 +21,8 @@
 package edu.harvard.iq.dataverse.ingest;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.files.extension.FileExtension;
 import edu.harvard.iq.dataverse.common.files.mime.ApplicationMimeType;
@@ -128,7 +128,7 @@ public class IngestServiceBean {
     @EJB
     VariableServiceBean variableService;
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
     @EJB
     DatasetFieldServiceBean fieldService;
     @EJB
@@ -462,7 +462,7 @@ public class IngestServiceBean {
         if (count > 0) {
             String info = "Ingest of " + count + " tabular data file(s) is in progress.";
             logger.info(info);
-            datasetService.addDatasetLock(scheduledFiles.get(0).getOwner().getId(),
+            datasetDao.addDatasetLock(scheduledFiles.get(0).getOwner().getId(),
                                           DatasetLock.Reason.Ingest,
                                           (user != null) ? user.getId() : null,
                                           info);

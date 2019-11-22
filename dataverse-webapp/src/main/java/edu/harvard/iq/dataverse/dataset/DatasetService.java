@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.dataset;
 
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DatasetPage;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.engine.command.exception.NotAuthenticatedException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
@@ -28,31 +29,35 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Stateless
-public class DatasetSaver {
+public class DatasetService {
 
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
-    
-    
+
+
     private EjbDataverseEngine commandEngine;
     private UserNotificationService userNotificationService;
-    private DatasetServiceBean datasetService;
+    private DatasetDao datasetDao;
     private DataverseSession session;
     private DataverseRequestServiceBean dvRequestService;
     private IngestServiceBean ingestService;
     private SettingsServiceBean settingsService;
     private ProvPopupFragmentBean provPopupFragmentBean;
-    
-    
+
+
     // -------------------- CONSTRUCTORS --------------------
-    
+
+    @Deprecated
+    public DatasetService() {
+    }
+
     @Inject
-    public DatasetSaver(EjbDataverseEngine commandEngine, UserNotificationService userNotificationService,
-            DatasetServiceBean datasetService, DataverseSession session, DataverseRequestServiceBean dvRequestService,
-            IngestServiceBean ingestService, SettingsServiceBean settingsService,
-            ProvPopupFragmentBean provPopupFragmentBean) {
+    public DatasetService(EjbDataverseEngine commandEngine, UserNotificationService userNotificationService,
+                          DatasetDao datasetDao, DataverseSession session, DataverseRequestServiceBean dvRequestService,
+                          IngestServiceBean ingestService, SettingsServiceBean settingsService,
+                          ProvPopupFragmentBean provPopupFragmentBean) {
         this.commandEngine = commandEngine;
         this.userNotificationService = userNotificationService;
-        this.datasetService = datasetService;
+        this.datasetDao = datasetDao;
         this.session = session;
         this.dvRequestService = dvRequestService;
         this.ingestService = ingestService;
@@ -66,34 +71,34 @@ public class DatasetSaver {
     public Dataset createDataset(Dataset dataset, Template usedTemplate) {
 
         AuthenticatedUser user = retrieveAuthenticatedUser();
-        
+
         CreateNewDatasetCommand createCommand = new CreateNewDatasetCommand(dataset, dvRequestService.getDataverseRequest(), false, usedTemplate);
         dataset = commandEngine.submit(createCommand);
-        
-        
+
+
         userNotificationService.sendNotificationWithEmail(user, dataset.getCreateDate(), NotificationType.CREATEDS,
-                dataset.getLatestVersion().getId(), NotificationObjectType.DATASET_VERSION);
-        
+                                                          dataset.getLatestVersion().getId(), NotificationObjectType.DATASET_VERSION);
+
         return dataset;
     }
-    
+
     public AddFilesResult addFilesToDataset(long datasetId, List<DataFile> newFiles) {
-        
-        Dataset dataset = datasetService.find(datasetId);
+
+        Dataset dataset = datasetDao.find(datasetId);
         AuthenticatedUser user = retrieveAuthenticatedUser();
-        
+
         if (settingsService.isTrueForKey(SettingsServiceBean.Key.ProvCollectionEnabled)) {
             provPopupFragmentBean.saveStageProvFreeformToLatestVersion();
         }
 
         List<DataFile> savedFiles = ingestService.saveAndAddFilesToDataset(dataset.getEditVersion(), newFiles, new DataAccess());
-        
+
         int notSavedFilesCount = newFiles.size() - savedFiles.size();
-        
+
         if (savedFiles.size() == 0) {
             return new AddFilesResult(dataset, notSavedFilesCount, false);
         }
-        
+
         dataset = commandEngine.submit(new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest()));
 
 
@@ -103,7 +108,7 @@ public class DatasetSaver {
 
         //After dataset saved, then persist prov json data
         boolean hasProvenanceErrors = false;
-        
+
         if (settingsService.isTrueForKey(SettingsServiceBean.Key.ProvCollectionEnabled)) {
             try {
                 provPopupFragmentBean.saveStagedProvJson(false, dataset.getLatestVersion().getFileMetadatas());
@@ -112,12 +117,27 @@ public class DatasetSaver {
                 hasProvenanceErrors = true;
             }
         }
-        
+
         return new AddFilesResult(dataset, notSavedFilesCount, hasProvenanceErrors);
     }
-    
+
+    /**
+     * Replaces thumbnail (default if none is set) with the one provided.
+     *
+     * @param datasetForNewThumbnail dataset that will have new thumbnail
+     * @param thumbnailFile          thumbnail that will be set for dataset
+     */
+    public DatasetThumbnail changeDatasetThumbnail(Dataset datasetForNewThumbnail, DataFile thumbnailFile) {
+        return commandEngine.submit(new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(),
+                                                                      datasetForNewThumbnail,
+                                                                      UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail,
+                                                                      thumbnailFile.getId(),
+                                                                      null));
+
+    }
+
     // -------------------- PRIVATE --------------------
-    
+
     private AuthenticatedUser retrieveAuthenticatedUser() {
         if (!session.getUser().isAuthenticated()) {
             throw new NotAuthenticatedException();

@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.MetadataBlockDao;
 import edu.harvard.iq.dataverse.api.imports.ImportException;
@@ -27,7 +27,7 @@ import java.io.PrintWriter;
 public class BatchImport extends AbstractApiBean {
 
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
     @EJB
     DataverseDao dataverseDao;
     @EJB

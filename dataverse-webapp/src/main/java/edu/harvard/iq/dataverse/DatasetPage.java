@@ -89,7 +89,7 @@ public class DatasetPage implements java.io.Serializable {
 
 
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetDao datasetDao;
     @EJB
     DatasetVersionServiceBean datasetVersionService;
     @EJB
@@ -186,9 +186,9 @@ public class DatasetPage implements java.io.Serializable {
 
             if (datasetThumbnail.isFromDataFile()) {
                 if (!datasetThumbnail.getDataFile().equals(dataset.getThumbnailFile())) {
-                    datasetService.assignDatasetThumbnailByNativeQuery(dataset, datasetThumbnail.getDataFile());
+                    datasetDao.assignDatasetThumbnailByNativeQuery(dataset, datasetThumbnail.getDataFile());
                     // refresh the dataset:
-                    dataset = datasetService.find(dataset.getId());
+                    dataset = datasetDao.find(dataset.getId());
                 }
             }
 
@@ -405,7 +405,7 @@ public class DatasetPage implements java.io.Serializable {
             if (persistentId != null) {
                 logger.fine("initializing DatasetPage with persistent ID " + persistentId);
                 // Set Working Version and Dataset by PersistentID
-                dataset = datasetService.findByGlobalId(persistentId);
+                dataset = datasetDao.findByGlobalId(persistentId);
                 if (dataset == null) {
                     logger.warning("No such dataset: " + persistentId);
                     return permissionsWrapper.notFound();
@@ -419,7 +419,7 @@ public class DatasetPage implements java.io.Serializable {
 
             } else if (dataset.getId() != null) {
                 // Set Working Version and Dataset by Datasaet Id and Version
-                dataset = datasetService.find(dataset.getId());
+                dataset = datasetDao.find(dataset.getId());
                 if (dataset == null) {
                     logger.warning("No such dataset: " + dataset);
                     return permissionsWrapper.notFound();
@@ -542,7 +542,7 @@ public class DatasetPage implements java.io.Serializable {
             //the dataset is released
             //in testing we had cases where datasets with 1000 files were remaining locked after being published successfully
                 /*if(dataset.getLatestVersion().isReleased() && dataset.isLockedFor(DatasetLock.Reason.pidRegister)){
-                    datasetService.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.pidRegister);
+                    datasetDao.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.pidRegister);
                 }*/
             if (dataset.isLockedFor(DatasetLock.Reason.pidRegister)) {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.publish.workflow.message"),
@@ -731,7 +731,7 @@ public class DatasetPage implements java.io.Serializable {
     public void refresh() {
         logger.fine("refreshing");
 
-        //dataset = datasetService.find(dataset.getId());
+        //dataset = datasetDao.find(dataset.getId());
         dataset = null;
 
         logger.fine("refreshing working version");
@@ -740,13 +740,13 @@ public class DatasetPage implements java.io.Serializable {
 
         if (persistentId != null) {
             //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
-            dataset = datasetService.findByGlobalId(persistentId);
+            dataset = datasetDao.findByGlobalId(persistentId);
             retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
         } else if (versionId != null) {
             retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
         } else if (dataset.getId() != null) {
             //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
-            dataset = datasetService.find(dataset.getId());
+            dataset = datasetDao.find(dataset.getId());
             retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
         }
 
@@ -871,7 +871,7 @@ public class DatasetPage implements java.io.Serializable {
         boolean retVal = true;
         if (readOnly) {
             // Pass a "real", non-readonly dataset the the LinkDatasetCommand: 
-            dataset = datasetService.find(dataset.getId());
+            dataset = datasetDao.find(dataset.getId());
         }
         LinkDatasetCommand cmd = new LinkDatasetCommand(dvRequestService.getDataverseRequest(), dataverse, dataset);
         try {
@@ -891,7 +891,7 @@ public class DatasetPage implements java.io.Serializable {
 
 
     public List<Dataverse> completeLinkingDataverse(String query) {
-        dataset = datasetService.find(dataset.getId());
+        dataset = datasetDao.find(dataset.getId());
         if (session.getUser().isAuthenticated()) {
             return dataverseDao.filterDataversesForLinking(query, dvRequestService.getDataverseRequest(), dataset);
         } else {
@@ -900,7 +900,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private String returnToLatestVersion() {
-        dataset = datasetService.find(dataset.getId());
+        dataset = datasetDao.find(dataset.getId());
         workingVersion = dataset.getLatestVersion();
         if (workingVersion.isDeaccessioned() && dataset.getReleasedVersion() != null) {
             workingVersion = dataset.getReleasedVersion();
@@ -909,7 +909,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private String returnToDatasetOnly() {
-        dataset = datasetService.find(dataset.getId());
+        dataset = datasetDao.find(dataset.getId());
         return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&faces-redirect=true";
     }
 
@@ -937,7 +937,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isStillLockedForAnyReason() {
         if (dataset.getId() != null) {
-            Dataset testDataset = datasetService.find(dataset.getId());
+            Dataset testDataset = datasetDao.find(dataset.getId());
             if (testDataset != null && testDataset.getId() != null) {
                 logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
                 return testDataset.getLocks().size() > 0;
@@ -959,7 +959,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isLockedForAnyReason() {
         if (dataset.getId() != null) {
-            Dataset testDataset = datasetService.find(dataset.getId());
+            Dataset testDataset = datasetDao.find(dataset.getId());
             if (stateChanged) {
                 return false;
             }

@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseLinkingDao;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
@@ -165,7 +165,7 @@ public abstract class AbstractApiBean {
     protected EjbDataverseEngine engineSvc;
 
     @EJB
-    protected DatasetServiceBean datasetSvc;
+    protected DatasetDao datasetSvc;
 
     @EJB
     protected DataFileServiceBean fileService;

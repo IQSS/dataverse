@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import com.google.common.collect.Lists;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseLinkingDao;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
@@ -260,8 +260,8 @@ public class MoveDataverseCommandTest {
             }
 
             @Override
-            public DatasetServiceBean datasets() {
-                return new DatasetServiceBean() {
+            public DatasetDao datasets() {
+                return new DatasetDao() {
                     @Override
                     public List<Dataset> findByOwnerId(Long ownerId) {
                         return new ArrayList<>();

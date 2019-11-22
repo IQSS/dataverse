@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
@@ -60,8 +60,8 @@ public class UpdateDatasetThumbnailCommandTest {
             }
 
             @Override
-            public DatasetServiceBean datasets() {
-                return new DatasetServiceBean() {
+            public DatasetDao datasets() {
+                return new DatasetDao() {
 
                     @Override
                     public Dataset setDatasetFileAsThumbnail(Dataset dataset, DataFile datasetFileThumbnailToSwitchTo) {
