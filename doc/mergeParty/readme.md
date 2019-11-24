@@ -1,5 +1,5 @@
-# Merge Party Readme
-Welcome to the merge party! This document is intended to give a short overview of why we need this party, when was changed and how to change it. There's much work to do, so we'll keep it short. Hopefully.
+# Merge Party
+Welcome to the merge party! This document is intended to give a short overview of why we need this party, when was it changed and how to change it. There's much work to do, so we'll keep it short, hopefully.
 
 ## What Just Happened
 In order to allow users to log into Dataverse using credentials from other systems (e.g. institutional Shibboleth server), we had to refactor out the internal user management sub-system (formerly known as "DataverseUser") and introduce a new user system. The existing system was taken out of Dataverse but kept in the .war file, as we also need to support standalone instances.
@@ -16,7 +16,7 @@ From a merge standpoint, this means that code that previously referenced `Datave
 
 Most of these changes have been done by Michael/Phil - otherwise, the `auth` branch would not compile.
 
-Since the guest user does not live in the database, it does not have an id. Moreover, JPA classes cannot link directly to it\*. But have no fear - all users (and, really, all `RoleAssignee`s, which are users or groups) have an identifier. When you need to reference a user (and later, a group) just use the identifier (it's of type `String`). When needing to convert an identifier to a user, call `RoleAssigneeServiceBean.getRoleAssignee( identifier )` in the general case, or `AuthenticationServiceBean.getAuthenticatedUser(identifier)` if you're certain the identifier is of an authenticated user.
+Since the guest user does not live in the database so it does not have an id. Moreover, JPA classes cannot link directly to it\*. But have no fear - all users (and, really, all `RoleAssignee`s, which are users or groups) have an identifier. When you need to reference a user (and later, a group) just use the identifier (it's of type `String`). When needing to convert an identifier to a user, call `RoleAssigneeServiceBean.getRoleAssignee( identifier )` in the general case, or `AuthenticationServiceBean.getAuthenticatedUser(identifier)` if you're certain the identifier is of an authenticated user.
 
 
 \* We have debated this for a while, since we could have created a dummy record, like we've done so far. We went with this solution, as it is cleaner, can't be messed up by SQL scripts, and will make even more sense once groups arrive.
