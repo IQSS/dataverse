@@ -142,7 +142,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
 
         // when&then
         thrown.expect(PermissionException.class);
-        managePermissionsService.removeRoleAssignmentWithNotification(toBeRemoved);;
+        managePermissionsService.removeRoleAssignmentWithNotification(toBeRemoved);
     }
 
     @Test

@@ -24,8 +24,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.Set;
+import java.time.Instant;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -109,16 +108,15 @@ public class ManagePermissionsService implements Serializable {
      */
     private void notifyRoleChange(RoleAssignee ra, DvObject dvObject, NotificationType type) {
         if (ra instanceof AuthenticatedUser) {
-            userNotificationService.sendNotificationWithEmail((AuthenticatedUser) ra, new Timestamp(new Date().getTime()), type, dvObject.getId(), determineObjectType(dvObject));
+            userNotificationService.sendNotificationWithEmail((AuthenticatedUser) ra, Timestamp.from(Instant.now()), type, dvObject.getId(), determineObjectType(dvObject));
         } else if (ra instanceof ExplicitGroup) {
             ExplicitGroup eg = (ExplicitGroup) ra;
-            Set<String> explicitGroupMembers = eg.getContainedRoleAssgineeIdentifiers();
-            for (String id : explicitGroupMembers) {
-                RoleAssignee explicitGroupMember = roleAssigneeService.getRoleAssignee(id);
-                if (explicitGroupMember instanceof AuthenticatedUser) {
-                    userNotificationService.sendNotificationWithEmail((AuthenticatedUser) explicitGroupMember, new Timestamp(new Date().getTime()), type, dvObject.getId(), determineObjectType(dvObject));
-                }
-            }
+
+            eg.getContainedRoleAssgineeIdentifiers().stream()
+                    .map(roleId -> roleAssigneeService.getRoleAssignee(roleId))
+                    .filter(roleAssignee -> roleAssignee instanceof AuthenticatedUser)
+                    .forEach(explicitGroupMember -> userNotificationService.sendNotificationWithEmail((AuthenticatedUser) explicitGroupMember,
+                            Timestamp.from(Instant.now()), type, dvObject.getId(), determineObjectType(dvObject)));
         }
     }
 
