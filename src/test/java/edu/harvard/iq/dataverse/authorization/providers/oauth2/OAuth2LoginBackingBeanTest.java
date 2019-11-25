@@ -140,7 +140,7 @@ class OAuth2LoginBackingBeanTest {
             // fake the code received from the provider
             when(requestMock.getParameter("code")).thenReturn(code);
             // let's deep-fake the result of getUserRecord()
-            doReturn(userRecord).when(testIdp).getUserRecord(code);
+            doReturn(userRecord).when(testIdp).getUserRecord(code, null);
     
             // WHEN (& then)
             // capture the redirect target from the faces context
@@ -168,7 +168,7 @@ class OAuth2LoginBackingBeanTest {
             // fake the code received from the provider
             when(requestMock.getParameter("code")).thenReturn(code);
             // let's deep-fake the result of getUserRecord()
-            doReturn(userRecord).when(testIdp).getUserRecord(code);
+            doReturn(userRecord).when(testIdp).getUserRecord(code, null);
             doReturn(tokenData).when(userRecord).getTokenData();
             // also fake the result of the lookup in the auth service
             doReturn(userIdentifier).when(userRecord).getUserRecordIdentifier();

@@ -129,31 +129,20 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     }
     
     /**
-     * Build an OAuth20Service based on client ID & secret. This will not contain a
-     * callback URL, which is not necessary after running through code flow.
-     * Build uses the real API object for the target service like GitHub etc.
-     * @return A usable OAuth20Service object
-     */
-    public OAuth20Service getService() {
-        return new ServiceBuilder(getClientId())
-            .apiSecret(getClientSecret())
-            .build(getApiInstance());
-    }
-    
-    /**
      * Receive user data from OAuth2 provider after authn/z has been successfull. (Callback view uses this)
      * Request a token and access the resource, parse output and return user details.
      * @param code The authz code sent from the provider
+     * @param redirectUrl The redirect URL (some providers require this when fetching the access token, e. g. Google)
      * @return A user record containing all user details accessible for us
      * @throws IOException Thrown when communication with the provider fails
      * @throws OAuth2Exception Thrown when we cannot access the user details for some reason
      * @throws InterruptedException Thrown when the requests thread is failing
      * @throws ExecutionException Thrown when the requests thread is failing
      */
-    public OAuth2UserRecord getUserRecord(String code)
+    public OAuth2UserRecord getUserRecord(String code, String redirectUrl)
         throws IOException, OAuth2Exception, InterruptedException, ExecutionException {
         
-        OAuth20Service service = getService();
+        OAuth20Service service = getService(redirectUrl);
         OAuth2AccessToken accessToken = service.getAccessToken(code);
         
         // We need to check if scope is null first: GitHub is used without scope, so the responses scope is null.
