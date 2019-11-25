@@ -490,6 +490,12 @@
             <artifactId>scribejava-apis</artifactId>
             <version>6.9.0</version>
         </dependency>
+        <!-- OpenID Connect authentication -->
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>oauth2-oidc-sdk</artifactId>
+            <version>6.18</version>
+        </dependency>
         <!-- EXPERIMENTAL: -->
         <!-- lyncode xoai OAI-PMH implementation: -->
         <!-- unfortunately, their 4.10 version -->
