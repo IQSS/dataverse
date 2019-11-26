@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Authenticat
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GoogleOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.MicrosoftOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
@@ -436,7 +437,7 @@ public class AuthenticationServiceBean {
         try {
             return typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
-            logger.log(Level.INFO, "When looking up API token for {0} caught {1}", new Object[]{au, ex});
+            logger.log(Level.FINE, "When looking up API token for {0} caught {1}", new Object[]{au, ex});
             return null;
         }
     }
@@ -880,13 +881,15 @@ public class AuthenticationServiceBean {
     public List<String> getAuthenticationProviderIdsSorted() {
         GitHubOAuth2AP github = new GitHubOAuth2AP(null, null);
         GoogleOAuth2AP google = new GoogleOAuth2AP(null, null);
+        MicrosoftOAuth2AP microsoft = new MicrosoftOAuth2AP(null, null);
         return Arrays.asList(
                 BuiltinAuthenticationProvider.PROVIDER_ID,
                 ShibAuthenticationProvider.PROVIDER_ID,
                 OrcidOAuth2AP.PROVIDER_ID_PRODUCTION,
                 OrcidOAuth2AP.PROVIDER_ID_SANDBOX,
                 github.getId(),
-                google.getId()
+                google.getId(),
+                microsoft.getId()
         );
     }
     

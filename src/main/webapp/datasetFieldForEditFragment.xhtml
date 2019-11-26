@@ -1,15 +1,17 @@
-<div
+<ui:composition
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:f="http://java.sun.com/jsf/core"
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:c="http://java.sun.com/jsp/jstl/core"
     xmlns:p="http://primefaces.org/ui"
+    xmlns:pt="http://java.sun.com/jsf/passthrough"
     xmlns:jsf="http://xmlns.jcp.org/jsf">
 
-    <!-- input text start -->
-    <span id="pre-input-#{dsf.datasetFieldType.name}" class="pre-input-tag"/>
-
-    <p:inputText value="#{dsfv.valueForEdit}" id="inputText"
+    <ui:remove>
+    <!-- input text start UPDATE: UI:REMOVE applied due to duplicate ID errors, left code as reference incase test scripts complain -->
+    <span id="pre-input-#{dsf.datasetFieldType.name}" class="pre-input-tag"/></ui:remove>
+    
+    <p:inputText value="#{dsfv.valueForEdit}" id="inputText" pt:aria-required="#{dsf.required}"
                  styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
                  rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary
                              and (dsfv.datasetField.datasetFieldType.fieldType == 'TEXT'
@@ -18,15 +20,13 @@
                              or dsfv.datasetField.datasetFieldType.fieldType == 'URL'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'DATE'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'EMAIL')}"/>
-
     <p:watermark for="inputText" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
 
-    <p:inputTextarea value="#{dsfv.valueForEdit}" id="description"
+    <p:inputTextarea value="#{dsfv.valueForEdit}" id="description" pt:aria-required="#{dsf.required}"
                      rows="5" cols="60" styleClass="form-control"
                      rendered="#{dsfv.datasetField.datasetFieldType.fieldType == 'TEXTBOX'}"/>
-
     <p:watermark for="description" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
-
+    
     <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{dsfvIndex eq 0 and !empty dsfv.datasetField.validationMessage}">
         <span class="ui-message-error-detail">#{dsfv.datasetField.validationMessage}</span>
     </div>
@@ -40,7 +40,6 @@
         <input type="button" id="replicationDataButton"
                class="btn btn-default" value="#{bundle['dataset.AddReplication']}"
                onclick="replicationFor();return false;"/>
-
         <script>
             //<![CDATA[
             function replicationFor() {
@@ -50,4 +49,4 @@
             //]]>
         </script>
     </ui:fragment>
-</div>
+</ui:composition>

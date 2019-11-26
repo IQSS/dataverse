@@ -39,36 +39,7 @@
                 <h:form id="dataverseUserForm">
 
                     <p:focus context="dataverseUserForm"/>
-                    <div class="clearfix" jsf:rendered="#{empty DataverseUserPage.editMode}">
-                        <div class="btn-group pull-right" jsf:rendered="#{DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
-                            <button type="button" id="editAccount" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                <ui:fragment rendered="#{DataverseUserPage.accountDetailsEditable}">
-                                    <span class="glyphicon glyphicon-pencil"/> #{bundle['account.edit']}
-                                </ui:fragment>
-                                <ui:fragment rendered="#{! DataverseUserPage.accountDetailsEditable}">
-                                    #{bundle['account.info']}
-                                </ui:fragment>
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu pull-right text-left" role="menu">
-                                <ui:fragment rendered="#{DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
-                                    <li>
-                                        <p:commandLink id="editAccount" rendered="#{DataverseUserPage.accountDetailsEditable}"
-                                                       actionListener="#{DataverseUserPage.edit}" update="@form" oncomplete="javascript:bind_bsui_components();">
-                                            <h:outputText value="#{bundle['account.info']}" />
-                                        </p:commandLink>
-                                    </li>
-                                    <li>
-                                        <p:commandLink id="changePassword" rendered="#{DataverseUserPage.passwordEditable}" 
-                                                       actionListener="#{DataverseUserPage.changePassword}" update="@form" oncomplete="javascript:bind_bsui_components();">
-                                            <h:outputText value="#{bundle.passwd}" />
-                                        </p:commandLink>
-                                    </li>
-                                </ui:fragment>
-                            </ul>
-                        </div>
-                    </div>
-
+                    
                     <p:panel rendered="#{DataverseUserPage.editMode == 'FORGOT'}">
                         <h:outputText value="#{bundle['user.lostPasswdTip']}" />
                     </p:panel>
@@ -325,6 +296,20 @@
                                                     <h:outputFormat value="#{bundle['notification.email.apiTokenGenerated.subject']}" escape="false">
                                                     </h:outputFormat>
                                                 </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'INGESTCOMPLETED'}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.ingestCompleted']}" escape="false">
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'INGESTCOMPLETEDWITHERRORS'}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.ingestCompletedWithErrors']}" escape="false">
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
 
                                             </ui:fragment>
                                             <h:outputText value="#{item.localeSendDate}" styleClass="text-muted small"/>
@@ -341,6 +326,35 @@
                             </div>
                         </p:tab>
                         <p:tab id="accountInfo" title="#{bundle['header.user.selectTab.accountInfo']}">
+                            <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{empty DataverseUserPage.editMode or DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
+                                <div class="btn-group">
+                                    <button type="button" id="editAccount" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                        <ui:fragment rendered="#{DataverseUserPage.accountDetailsEditable}">
+                                            <span class="glyphicon glyphicon-pencil"/> #{bundle['account.edit']}
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{! DataverseUserPage.accountDetailsEditable}">
+                                            #{bundle['account.info']}
+                                        </ui:fragment>
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu pull-right text-left" role="menu">
+                                        <ui:fragment rendered="#{DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
+                                            <li>
+                                                <p:commandLink id="editAccount" rendered="#{DataverseUserPage.accountDetailsEditable}"
+                                                               actionListener="#{DataverseUserPage.edit}" update="@form" oncomplete="javascript:bind_bsui_components();">
+                                                    <h:outputText value="#{bundle['account.info']}" />
+                                                </p:commandLink>
+                                            </li>
+                                            <li>
+                                                <p:commandLink id="changePassword" rendered="#{DataverseUserPage.passwordEditable}" 
+                                                               actionListener="#{DataverseUserPage.changePassword}" update="@form" oncomplete="javascript:bind_bsui_components();">
+                                                    <h:outputText value="#{bundle.passwd}" />
+                                                </p:commandLink>
+                                            </li>
+                                        </ui:fragment>
+                                    </ul>
+                                </div>
+                            </div>
                             <div class="form-horizontal" jsf:rendered="#{!empty DataverseUserPage.currentUser}">
                                 <div class="form-group" jsf:rendered="#{not DataverseUserPage.accountDetailsEditable}">
                                     <div class="col-sm-12">
@@ -467,10 +481,33 @@
                                     <f:param value="&lt;/a&gt;"/>
                                 </h:outputFormat>
                             </p>
+                            <div class="metadata-container margin-bottom-half" jsf:rendered="${ApiTokenPage.apiTokenExpiration != ''}">
+                                <table class="metadata">
+                                    <tbody>
+                                        <tr>
+                                            <th scope="row">
+                                                <h:outputText value="#{bundle['apitoken.expirationDate.label']}"/>
+                                            </th>
+                                            <td>
+                                                <h:outputText value="#{ApiTokenPage.apiTokenExpiration}"/>
+                                            </td>
+                                            <td class="text-warning" jsf:rendered="#{ApiTokenPage.tokenIsExpired()}">
+                                                <span class="glyphicon glyphicon-warning-sign"></span>
+                                                <h:outputText value=" #{bundle['apitoken.expired.error']}"/>
+                                            </td>
+                                            <!-- leaving warning off for now -->
+                                            <td class="text-danger" jsf:rendered="#{false}">
+                                                <span class="glyphicon glyphicon-exclamation-sign"></span>
+                                                <h:outputText value=" #{bundle['apitoken.expired.warning']}"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                             <div id="apiToken" class="highlight hidden">
-                                 <pre>
+                                <pre>
                                     <code class="language-html" data-lang="html">${ApiTokenPage.apiToken}</code>
-                                 </pre>
+                                </pre>
                             </div>
                             <!--Script removes "hidden" class from div containing API token to stop javascript browser exploits-->
                             <script>
@@ -484,9 +521,12 @@
                                 });
                                 //]]>
                             </script>
-                            <div>
+                            <div class="btn-toolbar" role="toolbar">
                                 <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
                                     #{ApiTokenPage.checkForApiToken() ? bundle['apitoken.regenerateBtn'] : bundle['apitoken.generateBtn']}
+                                </button>
+                                <button class="btn btn-default" jsf:action="#{ApiTokenPage.revoke()}" jsf:rendered="${ApiTokenPage.apiTokenExpiration != ''}">
+                                    #{bundle['apitoken.revokeBtn']}
                                 </button>
                             </div>
                         </p:tab>
@@ -668,6 +708,5 @@
                 </h:form>
             </ui:define>
         </ui:composition>
-
     </h:body>
 </html>
