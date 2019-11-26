@@ -119,7 +119,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      */
     @Override
     protected ParsedUserResponse parseUserResponse(String responseBody) {
-        throw new UnsupportedOperationException("OIDC provider cannot provide a ScribeJava API instance object");
+        throw new UnsupportedOperationException("OIDC provider uses the SDK to parse the response.");
     }
     
     /**
