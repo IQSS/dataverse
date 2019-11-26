@@ -419,6 +419,11 @@
                     </p:fragment>
                     <!-- END Top Button/Citation Blocks -->
                     <div id="contentTabs">
+                    <div jsf:rendered="#{FilePage.publiclyDownloadable}">Is Downloadable</div>
+                    <div jsf:rendered="#{(FilePage.toolsWithPreviews.size() > 0)}">Tools exist</div>
+                    <div jsf:rendered="#{fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">Can Download</div>
+                    <div>#{FilePage.fileMetadata.datasetVersion.getId()}</div>
+                    <div>#{FilePage.fileMetadata.datasetVersion.dataset.latestVersion.getId()}</div>
                         <div id="file-row-panel-backdrop"></div>
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{FilePage.selectedTabIndex}">
                             <p:ajax event="tabChange" listener="#{FilePage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
