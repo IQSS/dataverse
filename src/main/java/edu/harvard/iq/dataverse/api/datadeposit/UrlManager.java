@@ -30,35 +30,6 @@ public class UrlManager {
         } catch (URISyntaxException ex) {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Invalid URL syntax: " + url);
         }
-        /**
-         * @todo: figure out another way to check for http. We used to use
-         * javaNetUri.getScheme() but now that we are using "ProxyPass /
-         * ajp://localhost:8009/" in Apache it's always http rather than https.
-         *
-         * http://serverfault.com/questions/6128/how-do-i-force-apache-to-use-https-in-conjunction-with-ajp
-         * http://stackoverflow.com/questions/1685563/apache-webserver-jboss-ajp-connectivity-with-https
-         * http://stackoverflow.com/questions/12460422/how-do-ensure-that-apache-ajp-to-tomcat-connection-is-secure-encrypted
-         */
-        if (!"https".equals(javaNetUri.getScheme())) {
-            /**
-             * @todo figure out how to prevent this stackstrace from showing up
-             * in Glassfish logs:
-             *
-             * Unable to populate SSL attributes
-             * java.lang.IllegalStateException: SSLEngine is null at
-             * org.glassfish.grizzly.ssl.SSLSupportImpl
-             *
-             * https://github.com/IQSS/dataverse/issues/643
-             *
-             * SSLOptions +StdEnvVars +ExportCertData ?
-             *
-             * [#GLASSFISH-20694] Glassfish 4.0 and jk Unable to populate SSL
-             * attributes - Java.net JIRA -
-             * https://java.net/jira/browse/GLASSFISH-20694
-             */
-            logger.fine("https is required but protocol was " + javaNetUri.getScheme());
-//            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "https is required but protocol was " + javaNetUri.getScheme());
-        }
         this.port = javaNetUri.getPort();
         String[] urlPartsArray = javaNetUri.getPath().split("/");
         List<String> urlParts = Arrays.asList(urlPartsArray);
@@ -152,47 +123,14 @@ public class UrlManager {
     }
 
     String getHostnamePlusBaseUrlPath(String url) throws SwordError {
-        String optionalPort = "";
-        URI u;
-        try {
-            u = new URI(url);
-        } catch (URISyntaxException ex) {
-            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "unable to part URL");
-        }
-        int port = u.getPort();
-        if (port != -1) {
-            // https often runs on port 8181 in dev
-            optionalPort = ":" + port;
-        }
-        String requestedHostname = u.getHost();
-        String hostName = System.getProperty(SystemConfig.FQDN);
-        if (hostName == null) {
-            hostName = "localhost";
-        }
-        /**
-         * @todo should this be configurable? In dev it's convenient to override
-         * the JVM option and force traffic to localhost.
-         */
-        if (requestedHostname.equals("localhost")) {
-            hostName = "localhost";
-        }
         /**
          * @todo Any problem with returning the current API version rather than
          * the version that was operated on? Both should work. If SWORD API
          * users are operating on the URLs returned (as they should) returning
          * the current version will avoid deprecation warnings on the Dataverse
          * side.
-         *
-         * @todo Prevent "https://localhost:8080" from being returned. It should
-         * either be "http://localhost:8080" or "https://localhost:8181". Use
-         * SystemConfig.getDataverseSiteUrl instead of SystemConfig.FQDN above.
-         * It's worse for security to not have https hard coded here but if
-         * users have configured dataverse.siteUrl to be http rather than https
-         * we assume they are doing this on purpose (despite our warnings in the
-         * Installation Guide), perhaps because they are only kicking the tires
-         * on Dataverse.
          */
-        return "https://" + hostName + optionalPort + swordConfiguration.getBaseUrlPathCurrent();
+        return SystemConfig.getDataverseSiteUrlStatic() + swordConfiguration.getBaseUrlPathCurrent();
     }
 
     public String getOriginalUrl() {
