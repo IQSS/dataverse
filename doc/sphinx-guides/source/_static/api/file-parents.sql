@@ -31,8 +31,8 @@ select
     -- ID of the file
     dvo.id as fileid,
     fmd.label as filename,
-    -- Strip out newlines in dataset titles.
-    regexp_replace(dsfv.value, '[\r\n]+', ' ', 'g' ) as dataset_name,
+    -- Strip out newlines and tabs in dataset titles.
+    regexp_replace(dsfv.value, '[\r\n\t]+', ' ', 'g' ) as dataset_name,
     -- Dataverses that are direct children of the root dataverse.
     tree.id_path[1] as dataverse_level_1_id,
     level1dv.alias as dataverse_level_1_alias,
@@ -48,11 +48,11 @@ select
     -- Separate multiple subjects with a delimeter.
     string_agg(cvv.strvalue, ';') AS subjects,
     -- Dataset publication date.
-    --dsv.releasetime as dataset_publication_date,
+    dsv.releasetime as dataset_publication_date
     -- File creation date.
     --dvo.createdate as file_creation_date,
     -- File publication date.
-    dvo.publicationdate as file_publication_date
+    --dvo.publicationdate as file_publication_date
 from filemetadata fmd, datasetversion dsv,
 datasetfieldvalue dsfv, datasetfield dsf,
 datasetfield dsfsub, datasetfield_controlledvocabularyvalue dsfcvv,
@@ -83,6 +83,13 @@ and dsv.releasetime is not NULL
 and dsv.id = maxversion.id
 -- ... done getting the latest published version of the dataset.
 and dvo.id = filedatefilter.id
+-- optionally limit to datasets published at a certain time
+-- fast (16 seconds) for all but last day of 2018
+--and dsv.releasetime BETWEEN '2018-01-01' AND '2018-12-30'
+-- slow (unbounded) for all of 2018
+--and dsv.releasetime BETWEEN '2018-01-01' AND '2018-12-31'
+-- fast for just the last day of 2018
+--and dsv.releasetime BETWEEN '2018-12-30' AND '2018-12-31'
 GROUP BY
 -- Group by all the fields above *except* subject for the string_agg above.
 fileid,
@@ -97,6 +104,5 @@ dataverse_level_2_friendly_name,
 dataverse_level_3_id,
 dataverse_level_3_alias,
 dataverse_level_3_friendly_name,
---dataset_publication_date,
-file_publication_date
-order by file_publication_date desc;
+dataset_publication_date
+order by dataset_publication_date desc;
