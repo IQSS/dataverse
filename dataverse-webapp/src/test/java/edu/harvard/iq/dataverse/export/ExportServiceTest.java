@@ -203,6 +203,21 @@ public class ExportServiceTest {
     }
 
     @Test
+    @DisplayName("export DatasetVersion as string for DublinCore")
+    public void exportDatasetVersionAsString_forDublinCore() throws IOException, JsonParseException {
+        //given
+        DatasetVersion datasetVersion = parseDatasetVersionFromClasspath("json/testDataset.json");
+        prepareDataForExport(datasetVersion);
+
+        //when
+        Either<DataverseError, String> exportedDataset =
+                exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.DUBLINCORE);
+
+        //then
+        Assert.assertEquals(readFileToString("exportdata/dublincore.xml"), exportedDataset.get());
+    }
+
+    @Test
     @DisplayName("Get all exporters")
     public void getAllExporters() {
         //when

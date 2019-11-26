@@ -12,7 +12,6 @@ import org.apache.commons.lang.StringUtils;
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateful;
 import javax.inject.Inject;
-import javax.xml.validation.Schema;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,6 +56,8 @@ public class ExportService {
         exporters.put(ExporterType.DATACITE, new DataCiteExporter());
 
         exporters.put(ExporterType.DCTERMS, new DCTermsExporter(isEmailExcludedFromExport));
+
+        exporters.put(ExporterType.DUBLINCORE, new DublinCoreExporter(isEmailExcludedFromExport));
 
         exporters.put(ExporterType.OAIDDI, new OAI_DDIExporter(isEmailExcludedFromExport, systemConfig.getDataverseSiteUrl()));
 
