@@ -3,16 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.dataverse.themewidget;
 
+import edu.harvard.iq.dataverse.DataverseDao;
+import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.context.RequestContext;
 import org.primefaces.event.FileUploadEvent;
@@ -59,13 +61,11 @@ public class ThemeWidgetFragment implements java.io.Serializable {
 
 
     @EJB
-    EjbDataverseEngine commandEngine;
-    @EJB
     DataverseDao dataverseDao;
     @EJB
     SettingsServiceBean settingsService;
     @Inject
-    DataverseRequestServiceBean dvRequestService;
+    private ThemeWidgetService themeWidgetService;
 
 
     @Inject
@@ -248,8 +248,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     }
 
     public boolean getInheritCustomization() {
-        boolean inherit = editDv == null || !editDv.getThemeRoot();
-        return inherit;
+        return editDv == null || !editDv.getThemeRoot();
     }
 
     public void setInheritCustomization(boolean inherit) {
@@ -279,27 +278,29 @@ public class ThemeWidgetFragment implements java.io.Serializable {
 
 
     public String save() {
-        // If this Dv isn't the root, delete the uploaded file and remove theme
-        // before saving.
-        if (!editDv.isThemeRoot()) {
-            uploadedFile = null;
-            editDv.setDataverseTheme(null);
+        Try<Dataverse> saveOperation;
+
+        if (editDv.isThemeRoot()) {
+            saveOperation = Try.of(() -> themeWidgetService.saveOrUpdateUploadedTheme(editDv, uploadedFile));
+        } else {
+            saveOperation = Try.of(() -> themeWidgetService.inheritThemeFromRoot(editDv))
+                    .onSuccess(editedDataverse -> editDv = editedDataverse);
         }
-        Command<Dataverse> cmd = new UpdateDataverseThemeCommand(editDv, this.uploadedFile, dvRequestService.getDataverseRequest());
-        try {
-            commandEngine.submit(cmd);
-        } catch (Exception ex) {
-            logger.log(Level.SEVERE, "error updating dataverse theme", ex);
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataverse.save.failed"), BundleUtil.getStringFromBundle("dataverse.theme.failure")));
+
+        saveOperation.andThen(dataverse -> this.cleanupTempDirectory());
+
+        if (saveOperation.isSuccess()) {
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.theme.success"));
+            return "dataverse.xhtml?faces-redirect=true&alias=" + editDv.getAlias();
+        } else {
+            logger.log(Level.SEVERE, "error updating dataverse theme", saveOperation.getCause());
+            JsfHelper.addErrorMessage(null,
+                    BundleUtil.getStringFromBundle("dataverse.save.failed"),
+                    BundleUtil.getStringFromBundle("dataverse.theme.failure"));
 
             return null;
-        } finally {
-            this.cleanupTempDirectory();
         }
-        JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.theme.success"));
-        return "dataverse.xhtml?faces-redirect=true&alias=" + editDv.getAlias();  // go to dataverse page
     }
-
 }
 
 

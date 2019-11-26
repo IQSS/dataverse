@@ -34,6 +34,9 @@ INSERT INTO dataversesubjects (dataverse_id, controlledvocabularyvalue_id) VALUE
 INSERT INTO dataversesubjects (dataverse_id, controlledvocabularyvalue_id) VALUES (1, 3);
 INSERT INTO dataversesubjects (dataverse_id, controlledvocabularyvalue_id) VALUES (1, 14);
 
+INSERT INTO dataversetheme (id, backgroundcolor, linkcolor, linkurl, logo, logoalignment, logobackgroundcolor, logoformat, tagline, textcolor, dataverse_id)
+    VALUES (1,'FFFFFF','428BCA','http://google.com','nonExistingLogo.png','CENTER','9c519c','SQUARE','sefgdfgsdfgsdfg','888888',1);
+
 
 --- ROOT -> ownmetadatablocks ---
 INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate, creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
@@ -45,6 +48,8 @@ INSERT INTO dataversefacet (id, displayorder, datasetfieldtype_id, dataverse_id)
 INSERT INTO dataversecontact (id, contactemail, displayorder, dataverse_id) VALUES (2, 'ownmetadatablocks.dv.contact@mailinator.com', 0, 19);
 INSERT INTO guestbook (id, createtime, emailrequired, enabled, institutionrequired, name, namerequired, positionrequired, dataverse_id)
     VALUES (2, '2019-06-06 08:27:43.217', false, false, false, 'Simple guestbook', true, false, 19);
+INSERT INTO dataversetheme (id, backgroundcolor, linkcolor, linkurl, logo, logoalignment, logobackgroundcolor, logoformat, tagline, textcolor, dataverse_id)
+    VALUES (2,'FFFFFF','428BCA','http://google.com','nonExistingLogo.png','CENTER','9c519c','SQUARE','sefgdfgsdfgsdfg','888888',19);
 
 --- ROOT -> unreleased ---
 INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate, creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
