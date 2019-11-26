@@ -12,11 +12,12 @@
 
     <!-- Search Form + Add Data Button -->
     <div class="row panelSearchForm" jsf:rendered="#{!SearchIncludeFragment.solrIsDown}">
-        <div class="#{widgetWrapper.widgetView ? 'col-sm-12' : 'col-sm-8'}">
+        <div class="#{widgetWrapper.widgetView ? 'col-xs-12' : 'col-xs-8'}">
             <h:form>
-                <p:inputText id="searchBasic" styleClass="search-input" size="40" value="#{SearchIncludeFragment.query}" onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
+                <p:inputText id="searchBasic" styleClass="search-input" size="35" value="#{SearchIncludeFragment.query}" onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
                 <p:watermark for="searchBasic" value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.search.input.watermark'] : bundle['dataverse.search.input.watermark']}"/>
-                <p:commandLink id="searchbutton" styleClass="btn btn-default" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage, DataversePage.dataverse)}">
+                <p:commandLink id="searchbutton" styleClass="btn btn-default" 
+                               action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage, DataversePage.dataverse)}">
                     <span class="glyphicon glyphicon-search"/> #{bundle['dataverse.search.btn.find']}
                 </p:commandLink>
                 <p:remoteCommand name="submitsearch" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage, DataversePage.dataverse)}"/>
@@ -27,8 +28,8 @@
                 </h:outputLink>
             </h:form>
         </div>
-        <div class="col-sm-4 text-right col-manage-action" jsf:rendered="#{!widgetWrapper.widgetView}">
-            <div class="button-block pull-right">
+        <div class="col-xs-4 text-right col-manage-action" jsf:rendered="#{!widgetWrapper.widgetView}">
+            <div class="button-block">
                 <!-- ADD DATA -->
                 <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
                 <ui:fragment rendered="#{!dataverseSession.user.authenticated and (permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
@@ -667,31 +668,4 @@
             <a class="btn btn-default" href="/loginpage.xhtml#{navigationWrapper.redirectPage}" title="#{bundle['dataverse.results.dialog.addDataGuest.login.title']}">#{bundle['login']}</a>
         </div>
     </p:dialog>
-    <script>
-        <ui:remove>
-        // The javascript below would be called once the page finished 
-        // the initial rendering, and trigger an extra partial submit that 
-        // displayed the extra cosmetic features of the page - the thumbnails
-        // primarily - thus making the initial load happen faster. 
-        // We have decided to disable this feature (at least for now) in order 
-        // to be able to change SearchIncludeFragment and ThumbnailServiceWrapper 
-        // to @RequestScoped (to eliminate the objects in memory associated with the 
-        // @View scope).
-        // For postLoad() see: https://github.com/IQSS/dataverse/issues/2004
-        //<![CDATA[
-        //$(document).ready(function () {
-            // Calls the p:remoteCommand postLoad.
-            // Posted at end of fragment to work correctly with Account information
-        //    postLoad();
-
-        //    $('[data-toggle=offcanvas]').click(function() {
-        //        $('.row-offcanvas').toggleClass('active', 200);
-        //    });
-        //});
-        //]]>
-        </ui:remove>
-
-        
-        
-    </script>
 </ui:composition>

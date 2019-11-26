@@ -2,10 +2,9 @@
  * Rebind bootstrap UI components after Primefaces ajax calls
  */
 function bind_bsui_components(){
-    // Breadcrumb Tree Keep Open
-    $(document).on('click', '.dropdown-menu', function (e) {
-        $(this).hasClass('keep-open'),
-        e.stopPropagation();
+    // Facet panel Filter Results btn toggle
+    $(document).on('click', '[data-toggle=offcanvas]', function() {
+        $('.row-offcanvas').toggleClass('active', 200);
     });
     
     // Collapse Header Icons
