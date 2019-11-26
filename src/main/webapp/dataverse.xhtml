@@ -213,9 +213,7 @@
                                 </h:outputLabel>
                                 <div class="form-col-container">
                                     <p class="help-block">
-                                        <h:outputFormat value="#{bundle.htmlAllowedMsg}" escape="false">
-                                            <f:param value="#{bundle.htmlAllowedTags}"/>
-                                        </h:outputFormat>
+                                        <h:outputText value="#{bundle.htmlAllowedMsg}" escape="false"/>
                                     </p>
                                     <p:inputTextarea id="description" styleClass="form-control" value="#{DataversePage.dataverse.description}"
                                                     rows="6" cols="50"
@@ -777,7 +775,7 @@
                     var scrollPos=0;
                     $(document).ready(function () {
                         initCarousel();
-                        popoverHTML('#{bundle.htmlAllowedTitle}');
+                        popoverHTML('#{bundle.htmlAllowedTitle}','#{bundle.htmlAllowedTags}');
                     });
                     function initCarousel() {
                         var owl1 = $("#featuredDataversesList");
