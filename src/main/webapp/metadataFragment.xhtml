@@ -168,8 +168,6 @@
                                                                 <p:selectCheckboxMenu value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" styleClass="form-control"
                                                                                       filter="true" filterMatchMode="startsWith" label="#{bundle.select}"  multiple="#{!empty dsf.controlledVocabularyValues}"
                                                                                       id="unique2" rendered="#{dsf.datasetFieldType.allowMultiples}">
-                                                                    <p:ajax event="toggleSelect" listener="#{DatasetPage.handleSelection}" update="@this" />
-                                                                    <p:ajax event="change" listener="#{DatasetPage.handleSelection}" update="@this" />
                                                                     <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
                                                                 </p:selectCheckboxMenu>
                                                                 <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty dsf.validationMessage}">
@@ -233,8 +231,6 @@
                                                                     <p:selectCheckboxMenu value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
                                                                                           rendered="#{subdsf.datasetFieldType.allowMultiples}" label="#{bundle.select}" multiple="#{!empty subdsf.controlledVocabularyValues }"  >
                                                                         <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
-                                                                        <p:ajax event="toggleSelect" listener="#{DatasetPage.handleCVVSelection}" update="@this" />
-                                                                        <p:ajax event="change" listener="#{DatasetPage.handleCVVSelection}" update="@this" />
                                                                     </p:selectCheckboxMenu>
 
                                                                 <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty subdsf.validationMessage}">
