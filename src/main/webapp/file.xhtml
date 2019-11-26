@@ -441,7 +441,7 @@
 
 
                             <p:tab id="previewTab" title="#{bundle['file.previewTab.header']}" rendered="#{FilePage.publiclyDownloadable and (FilePage.toolsWithPreviews.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)
-                                                            and FilePage.fileMetadata.datasetVersion == FilePage.fileMetadata.datasetVersion.dataset.latestVersion}">
+                                                            and FilePage.fileMetadata.datasetVersion.isPublished()}">
                                 <!-- Add external tools as an inner tab with buttons to full tool-->
                                     <!-- Preview Button Group -->
                                     <div>
