@@ -95,7 +95,8 @@
                                                      style="display:none"
                                                      process="@this :dataverseForm:selectHostDataverse"
                                                      update="@form,:breadCrumbPanel"
-                                                     action="#{DataversePage.updateOwnerDataverse()}">
+                                                     action="#{DataversePage.updateOwnerDataverse()}"
+                                                     oncomplete="bind_bsui_components();">
                                     </p:commandButton>
                                 </div>
                             </div>
