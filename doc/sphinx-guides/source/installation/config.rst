@@ -1859,3 +1859,14 @@ Allows Cross-Origin Resource sharing(CORS). By default this setting is absent an
 If you don’t want to allow CORS for your installation, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:AllowCors``
+
+.. _:HideDatasetThumbnails:
+
+:HideDatasetThumbnails
+++++++++++++++++++++++
+
+Dataset thumbnails are described at :ref:`thumbnails-widgets` in the User Guide.
+
+To disable a custom thumbnail (user uploaded or selected from a data file) from appearing, set ``:HideDatasetThumbnails`` to true like this:
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:HideDatasetThumbnails``

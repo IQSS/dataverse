@@ -398,6 +398,11 @@ public class DatasetPage implements java.io.Serializable {
             
             
         }
+        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.HideDatasetThumbnails, false)) {
+            // This installation doesn't want to show a custom thumbnail on the dataset landing page.
+            thumbnailString = "";
+            return null;
+        }
         return thumbnailString;
     }
 
